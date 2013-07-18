@@ -631,7 +631,7 @@ namespace MinecraftClient
             sh.CopyTo(data, 4 + (username.Length * 2));
 
             //host
-            byte[] bhost = Encoding.Unicode.GetBytes(username);
+            byte[] bhost = Encoding.Unicode.GetBytes(host);
             Array.Reverse(bhost);
             bhost.CopyTo(data, 6 + (username.Length * 2));
 
