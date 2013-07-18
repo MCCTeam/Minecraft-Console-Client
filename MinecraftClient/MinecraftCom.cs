@@ -614,8 +614,7 @@ namespace MinecraftClient
             data[1] = protocolversion;
 
             //short len
-            byte[] sh = new byte[2];
-            sh = BitConverter.GetBytes((short)username.Length);
+            byte[] sh = BitConverter.GetBytes((short)username.Length);
             Array.Reverse(sh);
             sh.CopyTo(data, 2);
 
@@ -625,7 +624,6 @@ namespace MinecraftClient
             name.CopyTo(data, 4);
 
             //short len
-            sh = new byte[2];
             sh = BitConverter.GetBytes((short)host.Length);
             Array.Reverse(sh);
             sh.CopyTo(data, 4 + (username.Length * 2));
@@ -636,7 +634,6 @@ namespace MinecraftClient
             bhost.CopyTo(data, 6 + (username.Length * 2));
 
             //port
-            sh = new byte[4];
             sh = BitConverter.GetBytes(port);
             Array.Reverse(sh);
             sh.CopyTo(data, 6 + (username.Length * 2) + (host.Length * 2));
