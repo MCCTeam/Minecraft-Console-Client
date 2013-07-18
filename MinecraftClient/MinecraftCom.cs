@@ -778,12 +778,12 @@ namespace MinecraftClient
                 byte[] chat = new byte[3 + (message.Length * 2)];
                 chat[0] = (byte)3;
 
-                byte[] msglen = new byte[2];
+                byte[] msglen;
                 msglen = BitConverter.GetBytes((short)message.Length);
                 Array.Reverse(msglen);
                 msglen.CopyTo(chat, 1);
 
-                byte[] msg = new byte[message.Length * 2];
+                byte[] msg;
                 msg = Encoding.Unicode.GetBytes(message);
                 Array.Reverse(msg);
                 msg.CopyTo(chat, 3);
@@ -801,12 +801,12 @@ namespace MinecraftClient
                 byte[] reason = new byte[3 + (message.Length * 2)];
                 reason[0] = (byte)0xff;
 
-                byte[] msglen = new byte[2];
+                byte[] msglen;
                 msglen = BitConverter.GetBytes((short)message.Length);
                 Array.Reverse(msglen);
                 msglen.CopyTo(reason, 1);
 
-                byte[] msg = new byte[message.Length * 2];
+                byte[] msg;
                 msg = Encoding.Unicode.GetBytes(message);
                 Array.Reverse(msg);
                 msg.CopyTo(reason, 3);
