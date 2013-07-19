@@ -77,16 +77,19 @@ namespace MinecraftClient
 
         protected static string getVerbatim(string text)
         {
-            string verbatim = "";
-            for (int i = 0; i < text.Length; i++)
-            {
-                if (text[i] == '§')
-                {
-                    i++; //Will skip also the next char
-                }
-                else verbatim += text[i]; //Add the char
-            }
-            return verbatim;
+            if ( String.IsNullOrEmpty(text) )
+                return String.Empty;
+
+            int idx = 0;
+            var data = new char[text.Length];
+
+            for ( int i = 0; i < text.Length; i++ )
+                if ( text[i] != '§' )
+                    data[idx++] = text[i];
+                else
+                    i++;
+
+            return new string(data, 0, idx);
         }
 
         /// <summary>
@@ -95,32 +98,17 @@ namespace MinecraftClient
 
         protected static bool isValidName(string username)
         {
-            if (username == "") { return false; }
-            string validchars =
-              "abcdefghijklmnopqrstuvwxyz"
-            + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            + "1234567890_";
+            if ( String.IsNullOrEmpty(username) )
+                return false;
 
-            bool passe = false;
-            bool ok = true;
-            for (int i = 0; i < username.Length; i++)
-            {
-                passe = false;
-                for (int j = 0; j < validchars.Length; j++)
-                {
-                    if (username[i] == validchars[j])
-                    {
-                        passe = true;
-                        break;
-                    }
-                }
-                if (!passe)
-                {
-                    ok = false;
-                    break;
-                }
-            }
-            return ok;
+            foreach ( char c in username )
+                if ( !((c >= 'a' && c <= 'z')
+                        || (c >= 'A' && c <= 'Z')
+                        || (c >= '0' && c <= '9')
+                        || c == '_') )
+                    return false;
+
+            return true;
         }
 
         /// <summary>
