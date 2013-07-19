@@ -486,14 +486,14 @@ namespace MinecraftClient
 
             private string chooseword()
             {
-                if (System.IO.File.Exists(English ? "words.txt" : "mots.txt"))
+                if (System.IO.File.Exists(English ? "config/hangman/words.txt" : "mots.txt"))
                 {
                     string[] dico = System.IO.File.ReadAllLines(English ? "words.txt" : "mots.txt");
                     return dico[new Random().Next(dico.Length)];
                 }
                 else
                 {
-                    LogToConsole(English ? "Cannot find words.txt !" : "Fichier mots.txt introuvable !");
+                    LogToConsole(English ? "Cannot find words.txt in config/hangman!" : "mots.txt Fichier introuvable dans config/hangman!");
                     return English ? "WORDSAREMISSING" : "DICOMANQUANT";
                 }
             }
@@ -502,14 +502,14 @@ namespace MinecraftClient
             {
                 List<string> owners = new List<string>();
                 owners.Add("CONSOLE");
-                if (System.IO.File.Exists("bot-owners.txt"))
+                if (System.IO.File.Exists("config/bot-owners.txt"))
                 {
-                    foreach (string s in System.IO.File.ReadAllLines("bot-owners.txt"))
+                    foreach (string s in System.IO.File.ReadAllLines("config/bot-owners.txt"))
                     {
                         owners.Add(s.ToUpper());
                     }
                 }
-                else LogToConsole(English ? "Cannot find bot-owners.txt !" : "Fichier bot-owners.txt introuvable !");
+                else LogToConsole(English ? "Cannot find bot-owners.txt in config folder!" : "bot-owners.txt Fichier introuvable dans config!");
                 return owners.ToArray();
             }
 
@@ -557,27 +557,27 @@ namespace MinecraftClient
 
             public override void Initialize()
             {
-                if (System.IO.File.Exists("alerts.txt"))
+                if (System.IO.File.Exists("config/alerts.txt"))
                 {
-                    dictionnary = System.IO.File.ReadAllLines("alerts.txt");
+                    dictionnary = System.IO.File.ReadAllLines("config/alerts.txt");
 
                     for (int i = 0; i < dictionnary.Length; i++)
                     {
                         dictionnary[i] = dictionnary[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find alerts.txt !");
+                else LogToConsole("Cannot find alerts.txt in the config folder!");
 
-                if (System.IO.File.Exists("alerts-exclude.txt"))
+                if (System.IO.File.Exists("config/alerts-exclude.txt"))
                 {
-                    excludelist = System.IO.File.ReadAllLines("alerts-exclude.txt");
+                    excludelist = System.IO.File.ReadAllLines("config/alerts-exclude.txt");
 
                     for (int i = 0; i < excludelist.Length; i++)
                     {
                         excludelist[i] = excludelist[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find alerts-exclude.txt !");
+                else LogToConsole("Cannot find alerts-exclude.txt in the config folder!");
             }
 
             public override void GetText(string text)
@@ -786,16 +786,16 @@ namespace MinecraftClient
             public override void Initialize()
             {
                 McTcpClient.AttemptsLeft = attempts;
-                if (System.IO.File.Exists("kickmessages.txt"))
+                if (System.IO.File.Exists("config/kickmessages.txt"))
                 {
-                    dictionnary = System.IO.File.ReadAllLines("kickmessages.txt");
+                    dictionnary = System.IO.File.ReadAllLines("config/kickmessages.txt");
 
                     for (int i = 0; i < dictionnary.Length; i++)
                     {
                         dictionnary[i] = dictionnary[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find kickmessages.txt !");
+                else LogToConsole("Cannot find kickmessages.txt in the config directory!");
             }
 
             public override bool OnDisconnect(DisconnectReason reason, string message)
