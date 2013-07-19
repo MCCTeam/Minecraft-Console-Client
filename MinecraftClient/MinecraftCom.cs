@@ -283,11 +283,11 @@ namespace MinecraftClient
         }
         private string readNextString()
         {
-            short lenght = readNextShort();
-            if (lenght > 0)
+            short length = readNextShort();
+            if (length > 0)
             {
-                byte[] cache = new byte[lenght * 2];
-                Receive(cache, 0, lenght * 2, SocketFlags.None);
+                byte[] cache = new byte[length * 2];
+                Receive(cache, 0, length * 2, SocketFlags.None);
                 string result = ByteArrayToString(cache);
                 return result;
             }
@@ -329,7 +329,7 @@ namespace MinecraftClient
                 readData(1); //Item count
                 readData(2); //Item damage
                 short length = readNextShort();
-                //If lenght of optional NBT data > 0, read it
+                //If length of optional NBT data > 0, read it
                 if (length > 0) { readData(length); }
             }
         }
