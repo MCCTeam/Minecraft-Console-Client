@@ -552,18 +552,18 @@ namespace MinecraftClient
 
         public class Alerts : ChatBot
         {
-            private string[] dictionnary = new string[0];
+            private string[] dictionary = new string[0];
             private string[] excludelist = new string[0];
 
             public override void Initialize()
             {
                 if (System.IO.File.Exists("config/alerts.txt"))
                 {
-                    dictionnary = System.IO.File.ReadAllLines("config/alerts.txt");
+                    dictionary = System.IO.File.ReadAllLines("config/alerts.txt");
 
-                    for (int i = 0; i < dictionnary.Length; i++)
+                    for (int i = 0; i < dictionary.Length; i++)
                     {
-                        dictionnary[i] = dictionnary[i].ToLower();
+                        dictionary[i] = dictionary[i].ToLower();
                     }
                 }
                 else LogToConsole("Cannot find alerts.txt in the config folder!");
@@ -584,7 +584,7 @@ namespace MinecraftClient
             {
                 text = getVerbatim(text);
                 string comp = text.ToLower();
-                foreach (string alert in dictionnary)
+                foreach (string alert in dictionary)
                 {
                     if (comp.Contains(alert))
                     {
@@ -764,7 +764,7 @@ namespace MinecraftClient
 
         public class AutoRelog : ChatBot
         {
-            private string[] dictionnary = new string[0];
+            private string[] dictionary = new string[0];
             private int attempts;
             private int delay;
 
@@ -788,11 +788,11 @@ namespace MinecraftClient
                 McTcpClient.AttemptsLeft = attempts;
                 if (System.IO.File.Exists("config/kickmessages.txt"))
                 {
-                    dictionnary = System.IO.File.ReadAllLines("config/kickmessages.txt");
+                    dictionary = System.IO.File.ReadAllLines("config/kickmessages.txt");
 
-                    for (int i = 0; i < dictionnary.Length; i++)
+                    for (int i = 0; i < dictionary.Length; i++)
                     {
-                        dictionnary[i] = dictionnary[i].ToLower();
+                        dictionary[i] = dictionary[i].ToLower();
                     }
                 }
                 else LogToConsole("Cannot find kickmessages.txt in the config directory!");
@@ -802,7 +802,7 @@ namespace MinecraftClient
             {
                 message = getVerbatim(message);
                 string comp = message.ToLower();
-                foreach (string msg in dictionnary)
+                foreach (string msg in dictionary)
                 {
                     if (comp.Contains(msg))
                     {
@@ -840,6 +840,16 @@ namespace MinecraftClient
                     UnloadBot(); //This bot is no more needed.
                 }
             }
+        }
+
+        /// <summary>
+        /// Runs a list of commands
+        /// Usage: bot:scripting:filename
+        /// </summary>
+
+        public class scripting : ChatBot
+        {
+
         }
     }
 }
