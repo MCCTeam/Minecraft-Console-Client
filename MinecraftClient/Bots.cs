@@ -486,14 +486,14 @@ namespace MinecraftClient
 
             private string chooseword()
             {
-                if (System.IO.File.Exists(English ? "config/hangman/words.txt" : "mots.txt"))
+                if (System.IO.File.Exists(English ? "config/hangman-words.txt" : "config/pendu-mots.txt"))
                 {
                     string[] dico = System.IO.File.ReadAllLines(English ? "words.txt" : "mots.txt");
                     return dico[new Random().Next(dico.Length)];
                 }
                 else
                 {
-                    LogToConsole(English ? "Cannot find words.txt in config/hangman!" : "mots.txt Fichier introuvable dans config/hangman!");
+                    LogToConsole(English ? "Cannot find words.txt in config directory !" : "Fichier mots.txt introuvable dans config/hangman dossier!");
                     return English ? "WORDSAREMISSING" : "DICOMANQUANT";
                 }
             }
@@ -509,7 +509,7 @@ namespace MinecraftClient
                         owners.Add(s.ToUpper());
                     }
                 }
-                else LogToConsole(English ? "Cannot find bot-owners.txt in config folder!" : "bot-owners.txt Fichier introuvable dans config!");
+                else LogToConsole(English ? "Cannot find bot-owners.txt in config folder!" : "Fichier bot-owners.txt introuvable dans config!");
                 return owners.ToArray();
             }
 
