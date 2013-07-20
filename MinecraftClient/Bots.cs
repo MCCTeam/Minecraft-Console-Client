@@ -486,14 +486,14 @@ namespace MinecraftClient
 
             private string chooseword()
             {
-                if (System.IO.File.Exists(English ? "words.txt" : "mots.txt"))
+                if (System.IO.File.Exists(English ? "config/hangman-words.txt" : "config/pendu-mots.txt"))
                 {
                     string[] dico = System.IO.File.ReadAllLines(English ? "words.txt" : "mots.txt");
                     return dico[new Random().Next(dico.Length)];
                 }
                 else
                 {
-                    LogToConsole(English ? "Cannot find words.txt !" : "Fichier mots.txt introuvable !");
+                    LogToConsole(English ? "Cannot find words.txt in config directory !" : "Fichier mots.txt introuvable dans config/hangman dossier!");
                     return English ? "WORDSAREMISSING" : "DICOMANQUANT";
                 }
             }
@@ -502,14 +502,14 @@ namespace MinecraftClient
             {
                 List<string> owners = new List<string>();
                 owners.Add("CONSOLE");
-                if (System.IO.File.Exists("bot-owners.txt"))
+                if (System.IO.File.Exists("config/bot-owners.txt"))
                 {
-                    foreach (string s in System.IO.File.ReadAllLines("bot-owners.txt"))
+                    foreach (string s in System.IO.File.ReadAllLines("config/bot-owners.txt"))
                     {
                         owners.Add(s.ToUpper());
                     }
                 }
-                else LogToConsole(English ? "Cannot find bot-owners.txt !" : "Fichier bot-owners.txt introuvable !");
+                else LogToConsole(English ? "Cannot find bot-owners.txt in config folder!" : "Fichier bot-owners.txt introuvable dans config!");
                 return owners.ToArray();
             }
 
@@ -552,39 +552,39 @@ namespace MinecraftClient
 
         public class Alerts : ChatBot
         {
-            private string[] dictionnary = new string[0];
+            private string[] dictionary = new string[0];
             private string[] excludelist = new string[0];
 
             public override void Initialize()
             {
-                if (System.IO.File.Exists("alerts.txt"))
+                if (System.IO.File.Exists("config/alerts.txt"))
                 {
-                    dictionnary = System.IO.File.ReadAllLines("alerts.txt");
+                    dictionary = System.IO.File.ReadAllLines("config/alerts.txt");
 
-                    for (int i = 0; i < dictionnary.Length; i++)
+                    for (int i = 0; i < dictionary.Length; i++)
                     {
-                        dictionnary[i] = dictionnary[i].ToLower();
+                        dictionary[i] = dictionary[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find alerts.txt !");
+                else LogToConsole("Cannot find alerts.txt in the config folder!");
 
-                if (System.IO.File.Exists("alerts-exclude.txt"))
+                if (System.IO.File.Exists("config/alerts-exclude.txt"))
                 {
-                    excludelist = System.IO.File.ReadAllLines("alerts-exclude.txt");
+                    excludelist = System.IO.File.ReadAllLines("config/alerts-exclude.txt");
 
                     for (int i = 0; i < excludelist.Length; i++)
                     {
                         excludelist[i] = excludelist[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find alerts-exclude.txt !");
+                else LogToConsole("Cannot find alerts-exclude.txt in the config folder!");
             }
 
             public override void GetText(string text)
             {
                 text = getVerbatim(text);
                 string comp = text.ToLower();
-                foreach (string alert in dictionnary)
+                foreach (string alert in dictionary)
                 {
                     if (comp.Contains(alert))
                     {
@@ -764,7 +764,7 @@ namespace MinecraftClient
 
         public class AutoRelog : ChatBot
         {
-            private string[] dictionnary = new string[0];
+            private string[] dictionary = new string[0];
             private int attempts;
             private int delay;
 
@@ -786,23 +786,23 @@ namespace MinecraftClient
             public override void Initialize()
             {
                 McTcpClient.AttemptsLeft = attempts;
-                if (System.IO.File.Exists("kickmessages.txt"))
+                if (System.IO.File.Exists("config/kickmessages.txt"))
                 {
-                    dictionnary = System.IO.File.ReadAllLines("kickmessages.txt");
+                    dictionary = System.IO.File.ReadAllLines("config/kickmessages.txt");
 
-                    for (int i = 0; i < dictionnary.Length; i++)
+                    for (int i = 0; i < dictionary.Length; i++)
                     {
-                        dictionnary[i] = dictionnary[i].ToLower();
+                        dictionary[i] = dictionary[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find kickmessages.txt !");
+                else LogToConsole("Cannot find kickmessages.txt in the config directory!");
             }
 
             public override bool OnDisconnect(DisconnectReason reason, string message)
             {
                 message = getVerbatim(message);
                 string comp = message.ToLower();
-                foreach (string msg in dictionnary)
+                foreach (string msg in dictionary)
                 {
                     if (comp.Contains(msg))
                     {
@@ -838,6 +838,72 @@ namespace MinecraftClient
                 {
                     SendText("/login " + password);
                     UnloadBot(); //This bot is no more needed.
+                }
+            }
+        }
+
+        /// <summary>
+        /// Runs a list of commands
+        /// Usage: bot:scripting:filename
+        /// Script must be placed in the config directory
+        /// </summary>
+
+        public class scripting : ChatBot
+        {
+            private string file;
+            private string[] lines = new string[0];
+            public scripting(string filename)
+            {
+                file = filename;
+            }
+
+            public override void Initialize()
+            {
+                // Loads the given file from the startup parameters
+                if (System.IO.File.Exists("config/" + file))
+                {
+                    lines = System.IO.File.ReadAllLines("config/" + file); // Load the given bot text file (containing commands)
+                    for (int i = 0; i < lines.Length; i++) // Parse through each line of the bot text file
+                    {
+                        System.Threading.Thread.Sleep(100);
+
+                        string this_line = lines[i].Trim(); // Removes all whitespaces at start and end of current line
+
+                        if (this_line.Length == 0)
+                        {
+                            // Skip a completely empty line
+                        }
+                        else if (this_line.Trim().StartsWith("//"))
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkGray;
+                            Console.WriteLine("BOT:" + this_line);
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            // Don't do anything for a comment line, denoted by '//'
+                        }
+                        else if (this_line.StartsWith("send "))
+                        {
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            SendText((lines[i].Trim().Substring(5, lines[i].Length - 5)));
+                            // Send the command
+                        }
+                        else if (this_line.StartsWith("wait "))
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkGray;
+                            Console.WriteLine("BOT:Pausing for " + Convert.ToInt32(lines[i].Substring(5, lines[i].Length - 5)) * 100 + "ms...");
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            System.Threading.Thread.Sleep(Convert.ToInt32(lines[i].Substring(5, lines[i].Length - 5)) * 100);
+                            // Do a wait (given in milliseconds)
+                        }
+                        else if (this_line.StartsWith("exit"))
+                        {
+                            Program.B_Client.Disconnect();
+                        } // Optional exit only if called in bot text file,
+                    }
+                    UnloadBot(); // Otherwise continue operation of Client to normal (non-bot) usage
+                }
+                else
+                {
+                    Console.WriteLine(file + " not found! Please make sure that the file is located in the config directory.");
                 }
             }
         }

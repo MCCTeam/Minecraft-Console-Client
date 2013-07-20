@@ -52,6 +52,13 @@
   <PropertyGroup>
     <SignManifests>false</SignManifests>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>resources\appicon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>MinecraftClient.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
     <Reference Include="BouncyCastle.Crypto, Version=1.7.4114.6375, Culture=neutral, PublicKeyToken=0e99375e54769942">
       <SpecificVersion>False</SpecificVersion>
@@ -110,11 +117,12 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BouncyCastle.Crypto.dll" />
-    <Content Include="IKVM.OpenJDK.Core.dll" />
-    <Content Include="IKVM.OpenJDK.Security.dll" />
-    <Content Include="IKVM.OpenJDK.Util.dll" />
-    <Content Include="IKVM.Runtime.dll" />
+    <Content Include="resources\appicon.ico" />
+    <Content Include="lib\BouncyCastle.Crypto.dll" />
+    <Content Include="lib\IKVM.OpenJDK.Core.dll" />
+    <Content Include="lib\IKVM.OpenJDK.Security.dll" />
+    <Content Include="lib\IKVM.OpenJDK.Util.dll" />
+    <Content Include="lib\IKVM.Runtime.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

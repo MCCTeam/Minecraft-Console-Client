@@ -141,7 +141,7 @@ namespace MinecraftClient
                     ChatBot.LogToConsole("Waiting 5 seconds (" + AttemptsLeft + " attempts left)...");
                     Thread.Sleep(5000); AttemptsLeft--; Program.Restart();
                 }
-                else if (!singlecommand){ Console.ReadLine(); }
+                else if (!singlecommand) { Console.ReadLine(); }
             }
         }
 
@@ -156,6 +156,11 @@ namespace MinecraftClient
             {
                 while (client.Client.Connected)
                 {
+                    if (Program.scripting_enabled)
+                    {
+                        handler.BotLoad(new Bots.scripting(Program.scripting_param));
+                        Program.scripting_enabled = false;
+                    }
                     text = ConsoleIO.ReadLine();
                     if (text == "/quit" || text == "/reco" || text == "/reconnect") { break; }
                     while (text.Length > 0 && text[0] == ' ') { text = text.Substring(1); }
