@@ -218,6 +218,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Disconnect from the server and exit the program
+        /// </summary>
+
+        protected void DisconnectAndExit()
+        {
+            Program.Exit();
+        }
+
+        /// <summary>
         /// Unload the chatbot, and release associated memory.
         /// </summary>
 
@@ -899,7 +908,7 @@ namespace MinecraftClient
                                         sleepticks = ticks;
                                         break;
                                     case "disconnect":
-                                        Program.Exit();
+                                        DisconnectAndExit();
                                         break;
                                     case "exit": //Exit bot & stay connected to the server
                                         UnloadBot();
@@ -911,6 +920,7 @@ namespace MinecraftClient
                     else
                     {
                         //No more instructions to interpret
+                        UnloadBot();
                     }
                 }
             }
