@@ -18,6 +18,7 @@ namespace MinecraftClient
         public static string scripting_param;
         // End Scripting Bot Parameters
         private static McTcpClient Client;
+        public static McTcpClient B_Client;
         private static string loginusername = "";
         private static string user = "";
         private static string pass = "";

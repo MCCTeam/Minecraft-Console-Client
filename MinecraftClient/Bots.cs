@@ -868,8 +868,9 @@ namespace MinecraftClient
                         System.Threading.Thread.Sleep(100);
 
                         string this_line = lines[i].Trim(); // Removes all whitespaces at start and end of current line
-                        
-                        if (this_line.Length == 0) {
+
+                        if (this_line.Length == 0)
+                        {
                             // Skip a completely empty line
                         }
                         else if (this_line.Trim().StartsWith("//"))
@@ -893,9 +894,10 @@ namespace MinecraftClient
                             System.Threading.Thread.Sleep(Convert.ToInt32(lines[i].Substring(5, lines[i].Length - 5)) * 100);
                             // Do a wait (given in milliseconds)
                         }
-                        else if (this_line.StartsWith("exit")) {
-                            //Program.Client.Disconnect();
-                            } // Optional exit only if called in bot text file,
+                        else if (this_line.StartsWith("exit"))
+                        {
+                            Program.B_Client.Disconnect();
+                        } // Optional exit only if called in bot text file,
                     }
                     UnloadBot(); // Otherwise continue operation of Client to normal (non-bot) usage
                 }
