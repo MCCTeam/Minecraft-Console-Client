@@ -848,11 +848,14 @@ namespace MinecraftClient
         /// Script must be placed in the config directory
         /// </summary>
 
-        public class scripting : ChatBot
+        public class Scripting : ChatBot
         {
             private string file;
             private string[] lines = new string[0];
-            public scripting(string filename)
+            private int sleepticks = 10;
+            private int sleepticks_interval = 10;
+            private int nextline = 0;
+            public Scripting(string filename)
             {
                 file = filename;
             }
@@ -862,48 +865,65 @@ namespace MinecraftClient
                 // Loads the given file from the startup parameters
                 if (System.IO.File.Exists("config/" + file))
                 {
+                    LogToConsole("Loading script: \"" + file + "\"");
                     lines = System.IO.File.ReadAllLines("config/" + file); // Load the given bot text file (containing commands)
-                    for (int i = 0; i < lines.Length; i++) // Parse through each line of the bot text file
-                    {
-                        System.Threading.Thread.Sleep(100);
-
-                        string this_line = lines[i].Trim(); // Removes all whitespaces at start and end of current line
-
-                        if (this_line.Length == 0)
-                        {
-                            // Skip a completely empty line
-                        }
-                        else if (this_line.Trim().StartsWith("//"))
-                        {
-                            Console.ForegroundColor = ConsoleColor.DarkGray;
-                            Console.WriteLine("BOT:" + this_line);
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            // Don't do anything for a comment line, denoted by '//'
-                        }
-                        else if (this_line.StartsWith("send "))
-                        {
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            SendText((lines[i].Trim().Substring(5, lines[i].Length - 5)));
-                            // Send the command
-                        }
-                        else if (this_line.StartsWith("wait "))
-                        {
-                            Console.ForegroundColor = ConsoleColor.DarkGray;
-                            Console.WriteLine("BOT:Pausing for " + Convert.ToInt32(lines[i].Substring(5, lines[i].Length - 5)) * 100 + "ms...");
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            System.Threading.Thread.Sleep(Convert.ToInt32(lines[i].Substring(5, lines[i].Length - 5)) * 100);
-                            // Do a wait (given in milliseconds)
-                        }
-                        else if (this_line.StartsWith("exit"))
-                        {
-                            Program.B_Client.Disconnect();
-                        } // Optional exit only if called in bot text file,
-                    }
-                    UnloadBot(); // Otherwise continue operation of Client to normal (non-bot) usage
                 }
                 else
                 {
-                    Console.WriteLine(file + " not found! Please make sure that the file is located in the config directory.");
+                    LogToConsole("File \"" + file + "\" not found in the config directory!");
+                    UnloadBot(); //No need to keep the bot active
+                }
+            }
+
+            public override void Update()
+            {
+                if (sleepticks > 0) { sleepticks--; }
+                else
+                {
+                    if (nextline < lines.Length) //Is there an instruction left to interpret?
+                    {
+                        string instruction_line = lines[nextline].Trim(); // Removes all whitespaces at start and end of current line
+                        nextline++; //Move the cursor so that the next time the following line will be interpreted
+                        sleepticks = sleepticks_interval; //Used to delay next command sending and prevent from beign kicked for spamming
+
+                        if (instruction_line.Length > 0)
+                        {
+                            if (instruction_line.Trim().StartsWith("//"))
+                            {
+                                LogToConsole(instruction_line); //Ignore comments but write them to the console
+                            }
+                            else
+                            {
+                                string instruction_name = instruction_line.Split(' ')[0];
+                                switch (instruction_name.ToLower())
+                                {
+                                    case "send":
+                                        SendText(instruction_line.Substring(5, instruction_line.Length - 5));
+                                        break;
+                                    case "wait":
+                                        int ticks = 10;
+                                        try
+                                        {
+                                            ticks = Convert.ToInt32(instruction_line.Substring(5, instruction_line.Length - 5));
+                                        }
+                                        catch {}
+                                        LogToConsole("Waiting " + ticks / 10 + " seconds...");
+                                        sleepticks = ticks;
+                                        break;
+                                    case "disconnect":
+                                        Program.Exit();
+                                        break;
+                                    case "exit": //Exit bot & stay connected to the server
+                                        UnloadBot();
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //No more instructions to interpret
+                    }
                 }
             }
         }

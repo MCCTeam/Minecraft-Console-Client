@@ -13,12 +13,7 @@ namespace MinecraftClient
 
     class Program
     {
-        // Scripting Bot Parameters - bearbear12345
-        public static bool scripting_enabled;
-        public static string scripting_param;
-        // End Scripting Bot Parameters
         private static McTcpClient Client;
-        public static McTcpClient B_Client;
         private static string loginusername = "";
         private static string user = "";
         private static string pass = "";
@@ -206,22 +201,8 @@ namespace MinecraftClient
                                         #endregion
                                         handler.BotLoad(new Bots.AutoRelog(delay, retries)); break;
 
-                                    case "xauth":
-                                        if (botargs.Length > 2) { handler.BotLoad(new Bots.xAuth(botargs[2])); } break;
-                                    case "scripting":
-                                        if (botargs.Length > 2)
-                                        {
-                                            scripting_enabled = true;
-                                            scripting_param = botargs[2];
-                                            //handler.BotLoad(new Bots.scripting(botargs[2])); 
-                                        }
-                                        else
-                                        {
-                                            scripting_enabled = true;
-                                            scripting_param = "scripting.txt";
-                                            //Launches later on after connected in MinecraftCom.cs
-                                        }
-                                        break;
+                                    case "xauth": if (botargs.Length > 2) { handler.BotLoad(new Bots.xAuth(botargs[2])); } break;
+                                    case "scripting": if (botargs.Length > 2) { handler.BotLoad(new Bots.Scripting(botargs[2])); } break;
                                 }
                                 command = "";
                             }
@@ -272,6 +253,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Disconnect the current client from the server and exit the app
+        /// </summary>
+
+        public static void Exit()
+        {
+            new System.Threading.Thread(new System.Threading.ThreadStart(t_exit)).Start();
+        }
+
+        /// <summary>
         /// Pause the program, usually when an error or a kick occured, letting the user press Enter to quit OR type /reconnect
         /// </summary>
         /// <returns>Return True if the user typed "/reconnect"</returns>
@@ -296,6 +286,16 @@ namespace MinecraftClient
             if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
             Console.WriteLine("Restarting Minecraft Console Client...");
             InitializeClient();
+        }
+
+        /// <summary>
+        /// Private thread for exiting the program. Called through Exit()
+        /// </summary>
+
+        private static void t_exit()
+        {
+            if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
+            Environment.Exit(0);
         }
     }
 }

@@ -156,11 +156,6 @@ namespace MinecraftClient
             {
                 while (client.Client.Connected)
                 {
-                    if (Program.scripting_enabled)
-                    {
-                        handler.BotLoad(new Bots.scripting(Program.scripting_param));
-                        Program.scripting_enabled = false;
-                    }
                     text = ConsoleIO.ReadLine();
                     if (text == "/quit" || text == "/reco" || text == "/reconnect") { break; }
                     while (text.Length > 0 && text[0] == ' ') { text = text.Substring(1); }
