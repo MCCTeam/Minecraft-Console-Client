@@ -62,8 +62,7 @@ namespace MinecraftClient
 
                 //Hide the password
                 Console.CursorTop--;
-                string str_len = new String('*', pass.Length);
-                Console.Write("Password : <" + str_len + ">");
+                Console.Write("Password : <******>");
                 for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
             }
 

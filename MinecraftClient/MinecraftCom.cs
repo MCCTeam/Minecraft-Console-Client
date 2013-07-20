@@ -31,8 +31,7 @@ namespace MinecraftClient
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 WebClient wClient = new WebClient();
-                string str_len = new String('*', pass.Length);
-                Console.WriteLine("https://login.minecraft.net/?user=" + user + "&password=<" + str_len + ">&version=13");
+                Console.WriteLine("https://login.minecraft.net/?user=" + user + "&password=<******>&version=13");
                 string result = wClient.DownloadString("https://login.minecraft.net/?user=" + user + "&password=" + pass + "&version=13");
                 outdata = result;
                 Console.WriteLine(result);
