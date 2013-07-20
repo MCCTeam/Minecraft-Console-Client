@@ -283,15 +283,15 @@ namespace MinecraftClient
         }
         private string readNextString()
         {
-            short lenght = readNextShort();
+            ushort lenght = (ushort)readNextShort();
             if (lenght > 0)
             {
                 byte[] cache = new byte[lenght * 2];
                 Receive(cache, 0, lenght * 2, SocketFlags.None);
-                string result = ByteArrayToString(cache);
+                string result = Encoding.BigEndianUnicode.GetString(cache);
                 return result;
             }
-            else return "";
+            else return String.Empty;
         }
         private byte[] readNextByteArray()
         {
@@ -485,21 +485,6 @@ namespace MinecraftClient
             }
             Console.ForegroundColor = ConsoleColor.Gray;
         }
-        private string ReverseString(string a)
-        {
-            char[] tmp = a.ToCharArray();
-            Array.Reverse(tmp);
-            return new string(tmp);
-        }
-        private string ByteArrayToString(byte[] ba)
-        {
-            string conv = "";
-            for (int i = 1; i < ba.Length; i += 2)
-            {
-                conv += (char)ba[i];
-            }
-            return conv;
-        }
 
         public void setVersion(byte ver) { protocolversion = ver; }
         public void setClient(TcpClient n) { c = n; }
@@ -588,9 +573,8 @@ namespace MinecraftClient
         }
         public bool Handshake(string username, string sessionID, ref string serverID, ref byte[] token, string host, int port)
         {
-            username = ReverseString(username);
             //array
-            byte[] data = new byte[10 + (username.Length * 2) + (host.Length * 2)];
+            byte[] data = new byte[10 + (username.Length + host.Length) * 2];
 
             //packet id
             data[0] = (byte)2;
@@ -619,9 +603,8 @@ namespace MinecraftClient
             sh.CopyTo(data, 2);
 
             //username
-            byte[] name = Encoding.Unicode.GetBytes(username);
-            Array.Reverse(name);
-            name.CopyTo(data, 4);
+            byte[] bname = Encoding.BigEndianUnicode.GetBytes(username);
+            bname.CopyTo(data, 4);
 
             //short len
             sh = BitConverter.GetBytes((short)host.Length);
@@ -629,8 +612,7 @@ namespace MinecraftClient
             sh.CopyTo(data, 4 + (username.Length * 2));
 
             //host
-            byte[] bhost = Encoding.Unicode.GetBytes(host);
-            Array.Reverse(bhost);
+            byte[] bhost = Encoding.BigEndianUnicode.GetBytes(host);
             bhost.CopyTo(data, 6 + (username.Length * 2));
 
             //port
@@ -667,7 +649,8 @@ namespace MinecraftClient
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.WriteLine("Handshake sussessful. (Server ID: " + serverID + ')');
                     Console.ForegroundColor = ConsoleColor.Gray;
-                    return StartEncryption(ReverseString(username), sessionID, token, serverID, PublicServerkey, SecretKey);
+
+                    return StartEncryption(username, sessionID, token, serverID, PublicServerkey, SecretKey);
                 }
             }
             else return false;
@@ -769,9 +752,11 @@ namespace MinecraftClient
         }
         public bool SendChatMessage(string message)
         {
+            if ( String.IsNullOrEmpty(message) )
+                return false;
+
             try
             {
-                message = ReverseString(message);
                 byte[] chat = new byte[3 + (message.Length * 2)];
                 chat[0] = (byte)3;
 
@@ -781,8 +766,7 @@ namespace MinecraftClient
                 msglen.CopyTo(chat, 1);
 
                 byte[] msg;
-                msg = Encoding.Unicode.GetBytes(message);
-                Array.Reverse(msg);
+                msg = Encoding.BigEndianUnicode.GetBytes(message);
                 msg.CopyTo(chat, 3);
 
                 Send(chat);
@@ -792,9 +776,11 @@ namespace MinecraftClient
         }
         public void Disconnect(string message)
         {
+            if ( message == null )
+                message = String.Empty;
+
             try
             {
-                message = ReverseString(message);
                 byte[] reason = new byte[3 + (message.Length * 2)];
                 reason[0] = (byte)0xff;
 
@@ -804,8 +790,7 @@ namespace MinecraftClient
                 msglen.CopyTo(reason, 1);
 
                 byte[] msg;
-                msg = Encoding.Unicode.GetBytes(message);
-                Array.Reverse(msg);
+                msg = Encoding.BigEndianUnicode.GetBytes(message);
                 msg.CopyTo(reason, 3);
 
                 Send(reason);
