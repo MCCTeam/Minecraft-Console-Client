@@ -8,7 +8,7 @@ namespace MinecraftClient
     /// <summary>
     /// This class parses JSON chat data from MC 1.6+ and returns the appropriate string to be printed.
     /// </summary>
-    
+
     static class ChatParser
     {
         /// <summary>
@@ -54,11 +54,11 @@ namespace MinecraftClient
 
         private static string color2tag(string colorname)
         {
-            switch(colorname.ToLower())
+            switch (colorname.ToLower())
             {
                 case "black": return "§0";
                 case "dark_blue": return "§1";
-                case "dark_green" : return "§2";
+                case "dark_green": return "§2";
                 case "dark_cyan": return "§3";
                 case "dark_cyanred": return "§4";
                 case "dark_magenta": return "§5";
@@ -278,7 +278,7 @@ namespace MinecraftClient
                         return colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + colorcode;
                     }
                     else return "";
-                
+
                 case JSONData.DataType.Array:
                     string result = "";
                     foreach (JSONData item in data.DataArray)

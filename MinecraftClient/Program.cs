@@ -13,6 +13,10 @@ namespace MinecraftClient
 
     class Program
     {
+        // Scripting Bot Parameters - bearbear12345
+        public static bool scripting_enabled;
+        public static string scripting_param;
+        // End Scripting Bot Parameters
         private static McTcpClient Client;
         private static string loginusername = "";
         private static string user = "";
@@ -50,17 +54,20 @@ namespace MinecraftClient
 
             //Asking the user to type in missing data such as Username and Password
 
-            if (user == "") {
+            if (user == "")
+            {
                 Console.Write("Username : ");
                 user = Console.ReadLine();
             }
-            if (pass == "") {
+            if (pass == "")
+            {
                 Console.Write("Password : ");
                 pass = Console.ReadLine();
 
                 //Hide the password
                 Console.CursorTop--;
-                Console.Write("Password : <******>");
+                string str_len = new String('*', pass.Length);
+                Console.Write("Password : <" + str_len + ">");
                 for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
             }
 
@@ -78,6 +85,7 @@ namespace MinecraftClient
 
         private static void InitializeClient()
         {
+
             MinecraftCom.LoginResult result;
             string logindata = "";
 
@@ -199,12 +207,24 @@ namespace MinecraftClient
 
                                     case "xauth":
                                         if (botargs.Length > 2) { handler.BotLoad(new Bots.xAuth(botargs[2])); } break;
+                                    case "scripting":
+                                        if (botargs.Length > 2)
+                                        {
+                                            scripting_enabled = true;
+                                            scripting_param = botargs[2];
+                                            //handler.BotLoad(new Bots.scripting(botargs[2])); 
+                                        }
+                                        else
+                                        {
+                                            scripting_enabled = true;
+                                            scripting_param = "scripting.txt";
+                                            //Launches later on after connected in MinecraftCom.cs
+                                        }
+                                        break;
                                 }
-
                                 command = "";
                             }
                         }
-
                         //Start the main TCP client
                         if (command != "")
                         {

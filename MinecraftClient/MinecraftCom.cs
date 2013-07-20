@@ -16,7 +16,7 @@ namespace MinecraftClient
         #region Login to Minecraft.net, Obtaining a session ID
 
         public enum LoginResult { Error, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
-        
+
         /// <summary>
         /// Allows to login to a premium Minecraft account, and retrieve the session ID.
         /// </summary>
@@ -31,7 +31,8 @@ namespace MinecraftClient
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 WebClient wClient = new WebClient();
-                Console.WriteLine("https://login.minecraft.net/?user=" + user + "&password=<******>&version=13");
+                string str_len = new String('*', pass.Length);
+                Console.WriteLine("https://login.minecraft.net/?user=" + user + "&password=<" + str_len + ">&version=13");
                 string result = wClient.DownloadString("https://login.minecraft.net/?user=" + user + "&password=" + pass + "&version=13");
                 outdata = result;
                 Console.WriteLine(result);
@@ -133,7 +134,7 @@ namespace MinecraftClient
                     //If the client gets out of sync, check the last green packet processing code.
                     //if (result == ProcessResult.OK) { printstring("§a0x" + id.ToString("X"), false); }
                     //else { printstring("§c0x" + id.ToString("X"), false); }
-                    
+
                     if (result == ProcessResult.ConnectionLost)
                     {
                         return false;
