@@ -96,9 +96,10 @@ namespace MinecraftClient
             TranslationRules["commands.message.display.outgoing"] = "§7You whisper to %s: %s";
 
             //Load an external dictionnary of translation rules
-            if (System.IO.File.Exists("translations.lang"))
+            var path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "translations.lang");
+            if (System.IO.File.Exists(path))
             {
-                string[] translations = System.IO.File.ReadAllLines("translations.lang");
+                string[] translations = System.IO.File.ReadAllLines(path);
                 foreach (string line in translations)
                 {
                     if (line.Length > 0)
