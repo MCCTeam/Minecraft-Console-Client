@@ -435,7 +435,7 @@ namespace MinecraftClient
             readData(12 * (chunkcount));
         }
 
-        private void setcolor(char c)
+        private static void setcolor(char c)
         {
             switch (c)
             {
@@ -458,32 +458,44 @@ namespace MinecraftClient
                 case 'r': Console.ForegroundColor = ConsoleColor.White; break;
             }
         }
-        private void printstring(string str, bool acceptnewlines)
+
+        private static void printstring(string str, bool acceptnewlines)
         {
-            if (str != "")
-            {
-                char prev = ' ';
-                foreach (char c in str)
-                {
-                    if (c == '§')
-                    {
-                        prev = c;
-                        continue;
-                    }
-                    else if (prev == '§')
-                    {
-                        setcolor(c);
-                        prev = c;
-                    }
-                    else
-                    {
-                        if (c == '\n' && !acceptnewlines) { continue; }
-                        else ConsoleIO.Write(c);
+            if (!String.IsNullOrEmpty(str)) {
+                int start = 0;
+                int end = str.Length;
+
+                for (int i = 0; (i < end); ++i) {
+                    char c = str[i];
+
+                    if (c == '§' || (!acceptnewlines && c == '\n')) {
+                        if (i - start > 0)
+                            ConsoleIO.Write(str.Substring(start, i - start));
+
+                        if (c == '§') {
+                            if (++i != end)
+                                setcolor(str[i]);
+                            else {
+                                start = end;
+                                break;
+                            }
+                        }
+                        else {
+                            // '\n' -> ' ' for "1\n2"
+                            //ConsoleIO.Write(" ");
+                        }
+
+                        start = i + 1;
                     }
                 }
-                ConsoleIO.Write('\n');
+
+                if (start != end)
+                    ConsoleIO.Write(str.Substring(start) + "\n");
+                else
+                    ConsoleIO.Write("\n");
+
+                Console.ForegroundColor = ConsoleColor.Gray;
             }
-            Console.ForegroundColor = ConsoleColor.Gray;
         }
 
         public void setVersion(byte ver) { protocolversion = ver; }
@@ -773,9 +785,11 @@ namespace MinecraftClient
                 Array.Reverse(msglen);
                 msglen.CopyTo(reason, 1);
 
-                byte[] msg;
-                msg = Encoding.BigEndianUnicode.GetBytes(message);
-                msg.CopyTo(reason, 3);
+                if (message.Length > 0) {
+                    byte[] msg;
+                    msg = Encoding.BigEndianUnicode.GetBytes(message);
+                    msg.CopyTo(reason, 3);
+                }
 
                 Send(reason);
             }
