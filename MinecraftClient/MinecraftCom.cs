@@ -460,25 +460,20 @@ namespace MinecraftClient
         }
         private void printstring(string str, bool acceptnewlines)
         {
-            if (str != "")
+            if (!String.IsNullOrEmpty(str))
             {
-                char prev = ' ';
-                foreach (char c in str)
+                if (!acceptnewlines) { str = str.Replace('\n', ' '); }
+                string[] subs = str.Split(new char[] { '§' });
+                if (subs[0].Length > 0) { ConsoleIO.Write(subs[0]); }
+                for (int i = 1; i < subs.Length; i++)
                 {
-                    if (c == '§')
+                    if (subs[i].Length > 0)
                     {
-                        prev = c;
-                        continue;
-                    }
-                    else if (prev == '§')
-                    {
-                        setcolor(c);
-                        prev = c;
-                    }
-                    else
-                    {
-                        if (c == '\n' && !acceptnewlines) { continue; }
-                        else ConsoleIO.Write(c);
+                        setcolor(subs[i][0]);
+                        if (subs[i].Length > 1)
+                        {
+                            ConsoleIO.Write(subs[i].Substring(1, subs[i].Length - 1));
+                        }
                     }
                 }
                 ConsoleIO.Write('\n');

@@ -16,9 +16,9 @@ namespace MinecraftClient
         private static LinkedList<string> previous = new LinkedList<string>();
         private static string buffer = "";
         private static string buffer2 = "";
-        private static bool consolelock = false;
         private static bool reading = false;
-        private static bool writing = false;
+        private static bool reading_lock = false;
+        private static bool writing_lock = false;
 
         #region Read User Input
         public static string ReadLine()
@@ -32,8 +32,8 @@ namespace MinecraftClient
             while (k.Key != ConsoleKey.Enter)
             {
                 k = Console.ReadKey(true);
-                while (writing) { }
-                consolelock = true;
+                while (writing_lock) { }
+                reading_lock = true;
                 switch (k.Key)
                 {
                     case ConsoleKey.Escape:
@@ -86,13 +86,15 @@ namespace MinecraftClient
                             Console.Write(buffer);
                         }
                         break;
+                    case ConsoleKey.Tab:
+                        break;
                     default:
                         AddChar(k.KeyChar);
                         break;
                 }
-                consolelock = false;
+                reading_lock = false;
             }
-            while (writing) { }
+            while (writing_lock) { }
             reading = false;
             previous.AddLast(buffer + buffer2);
             return buffer + buffer2;
@@ -102,8 +104,8 @@ namespace MinecraftClient
         #region Console Output
         public static void Write(string text)
         {
-            while (consolelock) { }
-            writing = true;
+            while (reading_lock) { }
+            writing_lock = true;
             if (reading)
             {
                 ConsoleColor fore = Console.ForegroundColor;
@@ -135,7 +137,7 @@ namespace MinecraftClient
                 Console.BackgroundColor = back;
             }
             else Console.Write(text);
-            writing = false;
+            writing_lock = false;
         }
 
         public static void WriteLine(string line)
@@ -179,15 +181,12 @@ namespace MinecraftClient
         }
         private static void GoBack()
         {
-            if (buffer.Length > 0)
+            if (Console.CursorLeft == 0)
             {
-                if (Console.CursorLeft == 0)
-                {
-                    Console.CursorLeft = Console.BufferWidth - 1;
-                    Console.CursorTop--;
-                }
-                else Console.Write('\b');
+                Console.CursorLeft = Console.BufferWidth - 1;
+                Console.CursorTop--;
             }
+            else Console.Write('\b');
         }
         private static void GoLeft()
         {
