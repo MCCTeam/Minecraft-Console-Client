@@ -435,7 +435,7 @@ namespace MinecraftClient
             readData(12 * (chunkcount));
         }
 
-        private void setcolor(char c)
+        private static void setcolor(char c)
         {
             switch (c)
             {
@@ -458,7 +458,7 @@ namespace MinecraftClient
                 case 'r': Console.ForegroundColor = ConsoleColor.White; break;
             }
         }
-        private void printstring(string str, bool acceptnewlines)
+        private static void printstring(string str, bool acceptnewlines)
         {
             if (!String.IsNullOrEmpty(str))
             {
@@ -682,12 +682,7 @@ namespace MinecraftClient
         }
         public bool FinalizeLogin()
         {
-            //Creating byte array
-            byte[] data = new byte[2];
-            data[0] = 0xCD;
-            data[1] = 0;
-
-            Send(data);
+            Send(new byte[] { 0xCD, 0 });
             try
             {
                 byte[] pid = new byte[1];
@@ -768,9 +763,12 @@ namespace MinecraftClient
                 Array.Reverse(msglen);
                 msglen.CopyTo(reason, 1);
 
-                byte[] msg;
-                msg = Encoding.BigEndianUnicode.GetBytes(message);
-                msg.CopyTo(reason, 3);
+                if (message.Length > 0)
+                {
+                    byte[] msg;
+                    msg = Encoding.BigEndianUnicode.GetBytes(message);
+                    msg.CopyTo(reason, 3);
+                }
 
                 Send(reason);
             }
