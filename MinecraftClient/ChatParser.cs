@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
@@ -139,7 +140,15 @@ namespace MinecraftClient
             if (!init) { InitRules(); init = true; }
             if (TranslationRules.ContainsKey(rulename))
             {
-                string[] syntax = TranslationRules[rulename].Split(new string[2] { "%s", "%d" }, StringSplitOptions.None);
+                if ((TranslationRules[rulename].IndexOf("%1$s") >= 0 && TranslationRules[rulename].IndexOf("%2$s") >= 0)
+                    && (TranslationRules[rulename].IndexOf("%1$s") > TranslationRules[rulename].IndexOf("%2$s")))
+                {
+                    while (using_data.Count < 2) { using_data.Add(""); }
+                    string tmp = using_data[0];
+                    using_data[0] = using_data[1];
+                    using_data[1] = tmp;
+                }
+                string[] syntax = TranslationRules[rulename].Split(new string[] { "%s", "%d", "%1$s", "%2$s" }, StringSplitOptions.None);
                 while (using_data.Count < syntax.Length - 1) { using_data.Add(""); }
                 string[] using_array = using_data.ToArray();
                 string translated = "";
