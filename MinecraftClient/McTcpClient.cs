@@ -194,6 +194,7 @@ namespace MinecraftClient
                 else if (text == "/reco" || text == "/reconnect")
                 {
                     ConsoleIO.WriteLine("You have left the server.");
+                    handler.SendRespawnPacket();
                     Program.Restart();
                 }
             }

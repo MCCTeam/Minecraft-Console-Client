@@ -251,7 +251,10 @@ namespace MinecraftClient
                 case 0x83: readData(4); nbr = readNextShort(); readData(nbr); break;
                 case 0x84: readData(11); nbr = readNextShort(); if (nbr > 0) { readData(nbr); } break;
                 case 0x85: if (protocolversion >= 74) { readData(13); } break;
-                case 0xC8: if (protocolversion >= 72) { readData(8); } else readData(5); break;
+                case 0xC8:
+                    if (readNextInt() == 2022) { printstring("You are dead. Type /reco to respawn & reconnect.", false); }
+                    if (protocolversion >= 72) { readData(4); } else readData(1);
+                    break;
                 case 0xC9: readNextString(); readData(3); break;
                 case 0xCA: if (protocolversion >= 72) { readData(9); } else readData(3); break;
                 case 0xCB: readNextString(); break;
@@ -744,6 +747,15 @@ namespace MinecraftClient
                 msg.CopyTo(chat, 3);
 
                 Send(chat);
+                return true;
+            }
+            catch (SocketException) { return false; }
+        }
+        public bool SendRespawnPacket()
+        {
+            try
+            {
+                Send(new byte[] { 0xCD, 1 });
                 return true;
             }
             catch (SocketException) { return false; }
