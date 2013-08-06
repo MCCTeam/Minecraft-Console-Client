@@ -11,7 +11,7 @@ namespace MinecraftClient
     /// The class containing all the core functions needed to communicate with a Minecraft server.
     /// </summary>
 
-    public class MinecraftCom
+    public class MinecraftCom : IAutoComplete
     {
         #region Login to Minecraft.net, Obtaining a session ID
 
@@ -257,7 +257,7 @@ namespace MinecraftClient
                     break;
                 case 0xC9: readNextString(); readData(3); break;
                 case 0xCA: if (protocolversion >= 72) { readData(9); } else readData(3); break;
-                case 0xCB: readNextString(); break;
+                case 0xCB: autocomplete_result = readNextString(); autocomplete_received = true; break;
                 case 0xCC: readNextString(); readData(4); break;
                 case 0xCD: readData(1); break;
                 case 0xCE: if (protocolversion > 51) { readNextString(); readNextString(); readData(1); } break;
@@ -482,6 +482,30 @@ namespace MinecraftClient
                 ConsoleIO.Write('\n');
             }
             Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
+        private bool autocomplete_received = false;
+        private string autocomplete_result = "";
+        public string AutoComplete(string behindcursor)
+        {
+            if (String.IsNullOrEmpty(behindcursor))
+                return "";
+
+            byte[] autocomplete = new byte[3 + (behindcursor.Length * 2)];
+            autocomplete[0] = 0xCB;
+            byte[] msglen = BitConverter.GetBytes((short)behindcursor.Length);
+            Array.Reverse(msglen); msglen.CopyTo(autocomplete, 1);
+            byte[] msg = Encoding.BigEndianUnicode.GetBytes(behindcursor);
+            msg.CopyTo(autocomplete, 3);
+
+            autocomplete_received = false;
+            autocomplete_result = behindcursor;
+            Send(autocomplete);
+
+            int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
+            while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
+            string[] results = autocomplete_result.Split((char)0x00);
+            return results[0];
         }
 
         public void setVersion(byte ver) { protocolversion = ver; }

@@ -123,6 +123,7 @@ namespace MinecraftClient
                         //Will handle the connection for this client
                         Console.WriteLine("Version is supported.");
                         MinecraftCom handler = new MinecraftCom();
+                        ConsoleIO.SetAutoCompleteEngine(handler);
                         handler.setVersion(protocolversion);
 
                         //Load & initialize bots if needed

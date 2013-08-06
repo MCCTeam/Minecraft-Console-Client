@@ -13,6 +13,8 @@ namespace MinecraftClient
     public static class ConsoleIO
     {
         public static void Reset() { if (reading) { reading = false; Console.Write("\b \b"); } }
+        public static void SetAutoCompleteEngine(IAutoComplete engine) { autocomplete_engine = engine; }
+        private static IAutoComplete autocomplete_engine;
         private static LinkedList<string> previous = new LinkedList<string>();
         private static string buffer = "";
         private static string buffer2 = "";
@@ -87,6 +89,20 @@ namespace MinecraftClient
                         }
                         break;
                     case ConsoleKey.Tab:
+                        if (autocomplete_engine != null && buffer.Length > 0)
+                        {
+                            string[] tmp = buffer.Split(' ');
+                            if (tmp.Length > 0)
+                            {
+                                string word_tocomplete = tmp[tmp.Length - 1];
+                                string word_autocomplete = autocomplete_engine.AutoComplete(word_tocomplete);
+                                if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
+                                {
+                                    while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
+                                    foreach (char c in word_autocomplete) { AddChar(c); }
+                                }
+                            }
+                        }
                         break;
                     default:
                         AddChar(k.KeyChar);
@@ -214,5 +230,15 @@ namespace MinecraftClient
             for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
         }
         #endregion
+    }
+
+    /// <summary>
+    /// Interface for TAB autocompletion
+    /// Allows to use any object which has an AutoComplete() method using the IAutocomplete interface
+    /// </summary>
+
+    public interface IAutoComplete
+    {
+        string AutoComplete(string BehindCursor);
     }
 }
