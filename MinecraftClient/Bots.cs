@@ -483,14 +483,14 @@ namespace MinecraftClient
 
             private string chooseword()
             {
-                if (System.IO.File.Exists(English ? "config/hangman-words.txt" : "config/pendu-mots.txt"))
+                if (System.IO.File.Exists(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR))
                 {
-                    string[] dico = System.IO.File.ReadAllLines(English ? "words.txt" : "mots.txt");
+                    string[] dico = System.IO.File.ReadAllLines(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR);
                     return dico[new Random().Next(dico.Length)];
                 }
                 else
                 {
-                    LogToConsole(English ? "Cannot find words.txt in config directory !" : "Fichier mots.txt introuvable dans config/hangman dossier!");
+                    LogToConsole(English ? "File not found: " + Settings.Hangman_FileWords_EN : "Fichier introuvable : " + Settings.Hangman_FileWords_FR);
                     return English ? "WORDSAREMISSING" : "DICOMANQUANT";
                 }
             }
@@ -499,14 +499,14 @@ namespace MinecraftClient
             {
                 List<string> owners = new List<string>();
                 owners.Add("CONSOLE");
-                if (System.IO.File.Exists("config/bot-owners.txt"))
+                if (System.IO.File.Exists(Settings.Bots_OwnersFile))
                 {
-                    foreach (string s in System.IO.File.ReadAllLines("config/bot-owners.txt"))
+                    foreach (string s in System.IO.File.ReadAllLines(Settings.Bots_OwnersFile))
                     {
                         owners.Add(s.ToUpper());
                     }
                 }
-                else LogToConsole(English ? "Cannot find bot-owners.txt in config folder!" : "Fichier bot-owners.txt introuvable dans config!");
+                else LogToConsole(English ? "File not found: " + Settings.Bots_OwnersFile : "Fichier introuvable : " + Settings.Bots_OwnersFile);
                 return owners.ToArray();
             }
 
@@ -554,27 +554,27 @@ namespace MinecraftClient
 
             public override void Initialize()
             {
-                if (System.IO.File.Exists("config/alerts.txt"))
+                if (System.IO.File.Exists(Settings.Alerts_MatchesFile))
                 {
-                    dictionary = System.IO.File.ReadAllLines("config/alerts.txt");
+                    dictionary = System.IO.File.ReadAllLines(Settings.Alerts_MatchesFile);
 
                     for (int i = 0; i < dictionary.Length; i++)
                     {
                         dictionary[i] = dictionary[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find alerts.txt in the config folder!");
+                else LogToConsole("File not found: " + Settings.Alerts_MatchesFile);
 
-                if (System.IO.File.Exists("config/alerts-exclude.txt"))
+                if (System.IO.File.Exists(Settings.Alerts_ExcludesFile))
                 {
-                    excludelist = System.IO.File.ReadAllLines("config/alerts-exclude.txt");
+                    excludelist = System.IO.File.ReadAllLines(Settings.Alerts_ExcludesFile);
 
                     for (int i = 0; i < excludelist.Length; i++)
                     {
                         excludelist[i] = excludelist[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find alerts-exclude.txt in the config folder!");
+                else LogToConsole("File not found : " + Settings.Alerts_ExcludesFile);
             }
 
             public override void GetText(string text)
@@ -708,6 +708,18 @@ namespace MinecraftClient
                 }
             }
 
+            public static MessageFilter str2filter(string filtername)
+            {
+                switch (filtername)
+                {
+                    case "all": return MessageFilter.AllText;
+                    case "messages": return MessageFilter.AllMessages;
+                    case "chat": return MessageFilter.OnlyChat;
+                    case "private": return MessageFilter.OnlyWhispers;
+                    default: return MessageFilter.AllText;
+                }
+            }
+
             public override void GetText(string text)
             {
                 text = getVerbatim(text);
@@ -783,16 +795,16 @@ namespace MinecraftClient
             public override void Initialize()
             {
                 McTcpClient.AttemptsLeft = attempts;
-                if (System.IO.File.Exists("config/kickmessages.txt"))
+                if (System.IO.File.Exists(Settings.AutoRelog_KickMessagesFile))
                 {
-                    dictionary = System.IO.File.ReadAllLines("config/kickmessages.txt");
+                    dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile);
 
                     for (int i = 0; i < dictionary.Length; i++)
                     {
                         dictionary[i] = dictionary[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find kickmessages.txt in the config directory!");
+                else LogToConsole("File not found: " + Settings.AutoRelog_KickMessagesFile);
             }
 
             public override bool OnDisconnect(DisconnectReason reason, string message)
@@ -860,14 +872,13 @@ namespace MinecraftClient
             public override void Initialize()
             {
                 // Loads the given file from the startup parameters
-                if (System.IO.File.Exists("config/" + file))
+                if (System.IO.File.Exists(file))
                 {
-                    LogToConsole("Loading script: \"" + file + "\"");
-                    lines = System.IO.File.ReadAllLines("config/" + file); // Load the given bot text file (containing commands)
+                    lines = System.IO.File.ReadAllLines(file); // Load the given bot text file (containing commands)
                 }
                 else
                 {
-                    LogToConsole("File \"" + file + "\" not found in the config directory!");
+                    LogToConsole("File not found: " + file);
                     UnloadBot(); //No need to keep the bot active
                 }
             }
@@ -885,11 +896,7 @@ namespace MinecraftClient
 
                         if (instruction_line.Length > 0)
                         {
-                            if (instruction_line.Trim().StartsWith("//"))
-                            {
-                                LogToConsole(instruction_line); //Ignore comments but write them to the console
-                            }
-                            else
+                            if (!instruction_line.StartsWith("//") && !instruction_line.StartsWith("#"))
                             {
                                 string instruction_name = instruction_line.Split(' ')[0];
                                 switch (instruction_name.ToLower())
@@ -903,8 +910,7 @@ namespace MinecraftClient
                                         {
                                             ticks = Convert.ToInt32(instruction_line.Substring(5, instruction_line.Length - 5));
                                         }
-                                        catch {}
-                                        LogToConsole("Waiting " + ticks / 10 + " seconds...");
+                                        catch { }
                                         sleepticks = ticks;
                                         break;
                                     case "disconnect":
@@ -913,8 +919,12 @@ namespace MinecraftClient
                                     case "exit": //Exit bot & stay connected to the server
                                         UnloadBot();
                                         break;
+                                    default:
+                                        sleepticks = 0; Update(); //Unknown command : process next line immediately
+                                        break;
                                 }
                             }
+                            else { sleepticks = 0; Update(); } //Comment: process next line immediately
                         }
                     }
                     else

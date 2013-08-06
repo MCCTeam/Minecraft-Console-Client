@@ -813,7 +813,7 @@ namespace MinecraftClient
         }
 
         private List<ChatBot> bots = new List<ChatBot>();
-        public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); }
+        public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
         public void BotClear() { bots.Clear(); }
     }
