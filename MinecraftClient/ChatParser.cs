@@ -8,7 +8,7 @@ namespace MinecraftClient
     /// <summary>
     /// This class parses JSON chat data from MC 1.6+ and returns the appropriate string to be printed.
     /// </summary>
-    
+
     static class ChatParser
     {
         /// <summary>
@@ -21,7 +21,7 @@ namespace MinecraftClient
         {
             int cursorpos = 0;
             JSONData jsonData = String2Data(json, ref cursorpos);
-            return JSONData2String(jsonData).Replace("u0027", "'");
+            return JSONData2String(jsonData);
         }
 
         /// <summary>
@@ -54,11 +54,11 @@ namespace MinecraftClient
 
         private static string color2tag(string colorname)
         {
-            switch(colorname.ToLower())
+            switch (colorname.ToLower())
             {
                 case "black": return "§0";
                 case "dark_blue": return "§1";
-                case "dark_green" : return "§2";
+                case "dark_green": return "§2";
                 case "dark_cyan": return "§3";
                 case "dark_cyanred": return "§4";
                 case "dark_magenta": return "§5";
@@ -96,9 +96,9 @@ namespace MinecraftClient
             TranslationRules["commands.message.display.outgoing"] = "§7You whisper to %s: %s";
 
             //Load an external dictionnary of translation rules
-            if (System.IO.File.Exists("translations.lang"))
+            if (System.IO.File.Exists(Settings.TranslationsFile))
             {
-                string[] translations = System.IO.File.ReadAllLines("translations.lang");
+                string[] translations = System.IO.File.ReadAllLines(Settings.TranslationsFile);
                 foreach (string line in translations)
                 {
                     if (line.Length > 0)
@@ -118,9 +118,9 @@ namespace MinecraftClient
             else //No external dictionnary found.
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("MC 1.6+ warning: Translations file \"translations.lang\" not found."
+                ConsoleIO.WriteLine("MC 1.6+ warning: Translations file \"" + Settings.TranslationsFile + "\" not found."
                 + "\nYou can pick a translation file from .minecraft\\assets\\lang\\"
-                + "\nCopy to the same folder as MinecraftClient & rename to \"translations.lang\""
+                + "\nCopy to the same folder as MinecraftClient & rename to \"" + Settings.TranslationsFile + "\""
                 + "\nSome messages won't be properly printed without this file.");
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
@@ -139,7 +139,15 @@ namespace MinecraftClient
             if (!init) { InitRules(); init = true; }
             if (TranslationRules.ContainsKey(rulename))
             {
-                string[] syntax = TranslationRules[rulename].Split(new string[2] { "%s", "%d" }, StringSplitOptions.None);
+                if ((TranslationRules[rulename].IndexOf("%1$s") >= 0 && TranslationRules[rulename].IndexOf("%2$s") >= 0)
+                    && (TranslationRules[rulename].IndexOf("%1$s") > TranslationRules[rulename].IndexOf("%2$s")))
+                {
+                    while (using_data.Count < 2) { using_data.Add(""); }
+                    string tmp = using_data[0];
+                    using_data[0] = using_data[1];
+                    using_data[1] = tmp;
+                }
+                string[] syntax = TranslationRules[rulename].Split(new string[] { "%s", "%d", "%1$s", "%2$s" }, StringSplitOptions.None);
                 while (using_data.Count < syntax.Length - 1) { using_data.Add(""); }
                 string[] using_array = using_data.ToArray();
                 string translated = "";
@@ -205,7 +213,25 @@ namespace MinecraftClient
                         cursorpos++;
                         while (toparse[cursorpos] != '"')
                         {
-                            if (toparse[cursorpos] == '\\') { cursorpos++; }
+                            if (toparse[cursorpos] == '\\')
+                            {
+                                try //Unicode character \u0123
+                                {
+                                    if (toparse[cursorpos + 1] == 'u'
+                                        && isHex(toparse[cursorpos + 2])
+                                        && isHex(toparse[cursorpos + 3])
+                                        && isHex(toparse[cursorpos + 4])
+                                        && isHex(toparse[cursorpos + 5]))
+                                    {
+                                        //"abc\u0123abc" => "0123" => 0123 => Unicode char n°0123 => Add char to string
+                                        data.StringValue += char.ConvertFromUtf32(int.Parse(toparse.Substring(cursorpos + 2, 4), System.Globalization.NumberStyles.HexNumber));
+                                        cursorpos += 6; continue;
+                                    }
+                                    else cursorpos++; //Normal character escapement \"
+                                }
+                                catch (IndexOutOfRangeException) { cursorpos++; } // \u01<end of string>
+                                catch (ArgumentOutOfRangeException) { cursorpos++; } // Unicode index 0123 was invalid
+                            }
                             data.StringValue += toparse[cursorpos];
                             cursorpos++;
                         }
@@ -278,7 +304,7 @@ namespace MinecraftClient
                         return colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + colorcode;
                     }
                     else return "";
-                
+
                 case JSONData.DataType.Array:
                     string result = "";
                     foreach (JSONData item in data.DataArray)
@@ -293,5 +319,13 @@ namespace MinecraftClient
 
             return "";
         }
+
+        /// <summary>
+        /// Small function for checking if a char is an hexadecimal char (0-9 A-F a-f)
+        /// </summary>
+        /// <param name="c">Char to test</param>
+        /// <returns>True if hexadecimal</returns>
+
+        private static bool isHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
     }
 }

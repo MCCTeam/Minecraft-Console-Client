@@ -14,12 +14,8 @@ namespace MinecraftClient
     class Program
     {
         private static McTcpClient Client;
-        private static string loginusername = "";
-        private static string user = "";
-        private static string pass = "";
-        private static string ip = "";
-        private static string command = "";
-        private static string[] startupargs;
+        public static string[] startupargs;
+        public const string Version = "1.6.0";
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -27,36 +23,134 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC 1.4.6 to 1.6.2 - v1.5.2 - By ORelio (or3L1o@live.fr)");
+            Console.WriteLine("Console Client for MC 1.4.6 to 1.6.2 - v" + Version + " - By ORelio (or3L1o@live.fr)");
 
-            //Processing Command-line arguments
+            //Processing Command-line arguments or Config File
 
-            if (args.Length >= 1)
+            if (args.Length == 1 && System.IO.File.Exists(args[0]))
             {
-                user = args[0];
+                Settings.LoadSettings(args[0]);
+            }
+            else if (args.Length >= 1)
+            {
+                Settings.Login = args[0];
                 if (args.Length >= 2)
                 {
-                    pass = args[1];
+                    Settings.Password = args[1];
                     if (args.Length >= 3)
                     {
-                        ip = args[2];
+                        Settings.ServerIP = args[2];
+
+                        //Single command?
                         if (args.Length >= 4)
                         {
-                            command = args[3];
+                            Settings.SingleCommand = args[3];
+                        }
+
+                        //Use bots? (will disable single command)
+                        for (int i = 3; i < args.Length; i++)
+                        {
+                            if (args[i].Length > 4 && args[i].Substring(0, 4).ToLower() == "bot:")
+                            {
+                                Settings.SingleCommand = "";
+                                string[] botargs = args[i].ToLower().Split(':');
+                                switch (botargs[1])
+                                {
+                                    #region Process bots settings
+                                    case "antiafk":
+                                        Settings.AntiAFK_Enabled = true;
+                                        if (botargs.Length > 2)
+                                        {
+                                            try { Settings.AntiAFK_Delay = Convert.ToInt32(botargs[2]); }
+                                            catch (FormatException) { }
+                                        } break;
+
+                                    case "pendu":
+                                        Settings.Hangman_Enabled = true;
+                                        Settings.Hangman_English = false;
+                                        break;
+
+                                    case "hangman":
+                                        Settings.Hangman_Enabled = true;
+                                        Settings.Hangman_English = true;
+                                        break;
+
+                                    case "alerts":
+                                        Settings.Alerts_Enabled = true;
+                                        break;
+
+                                    case "log":
+                                        Settings.ChatLog_Enabled = true;
+                                        Settings.ChatLog_DateTime = true;
+                                        Settings.ChatLog_File = "chat-" + Settings.ServerIP.Replace(':', '-') + ".log";
+                                        if (botargs.Length > 2)
+                                        {
+                                            Settings.ChatLog_DateTime = Settings.str2bool(botargs[2]);
+                                            if (botargs.Length > 3)
+                                            {
+                                                Settings.ChatLog_Filter = Bots.ChatLog.str2filter(botargs[3]);
+                                                if (botargs.Length > 4 && botargs[4] != "") { Settings.ChatLog_File = botargs[4]; }
+                                            }
+                                        } break;
+
+                                    case "logplayerlist":
+                                        Settings.PlayerLog_File = "connected-" + Settings.ServerIP.Replace(':', '-') + ".log";
+                                        if (botargs.Length > 2)
+                                        {
+                                            try { Settings.PlayerLog_Delay = Convert.ToInt32(botargs[2]); }
+                                            catch (FormatException) { }
+                                        } break;
+
+                                    case "autorelog":
+                                        if (botargs.Length > 2)
+                                        {
+                                            try { Settings.AutoRelog_Delay = Convert.ToInt32(botargs[2]); }
+                                            catch (FormatException) { }
+                                            if (botargs.Length > 3)
+                                            {
+                                                try { Settings.AutoRelog_Retries = Convert.ToInt32(botargs[3]); }
+                                                catch (FormatException) { }
+                                            }
+                                        } break;
+
+                                    case "xauth":
+                                        if (botargs.Length > 2)
+                                        {
+                                            Settings.xAuth_Enabled = true;
+                                            Settings.xAuth_Password = botargs[2];
+                                        } break;
+
+                                    case "scripting":
+                                        if (botargs.Length > 2)
+                                        {
+                                            Settings.Scripting_Enabled = true;
+                                            Settings.Scripting_ScriptFile = botargs[2];
+                                        } break;
+
+                                    #endregion
+                                }
+                            }
                         }
                     }
                 }
             }
+            else if (System.IO.File.Exists("MinecraftClient.ini"))
+            {
+                Settings.LoadSettings("MinecraftClient.ini");
+            }
+            else Settings.WriteDefaultSettings("MinecraftClient.ini");
 
             //Asking the user to type in missing data such as Username and Password
 
-            if (user == "") {
+            if (Settings.Login == "")
+            {
                 Console.Write("Username : ");
-                user = Console.ReadLine();
+                Settings.Login = Console.ReadLine();
             }
-            if (pass == "") {
+            if (Settings.Password == "")
+            {
                 Console.Write("Password : ");
-                pass = Console.ReadLine();
+                Settings.Password = Console.ReadLine();
 
                 //Hide the password
                 Console.CursorTop--;
@@ -64,11 +158,7 @@ namespace MinecraftClient
                 for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
             }
 
-            //Save the arguments
             startupargs = args;
-            loginusername = user;
-
-            //Start the Client
             InitializeClient();
         }
 
@@ -78,37 +168,38 @@ namespace MinecraftClient
 
         private static void InitializeClient()
         {
+
             MinecraftCom.LoginResult result;
             string logindata = "";
 
-            if (pass == "-")
+            if (Settings.Password == "-")
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine("You chose to run in offline mode.");
                 Console.ForegroundColor = ConsoleColor.Gray;
                 result = MinecraftCom.LoginResult.Success;
-                logindata = "0:deprecated:" + user + ":0";
+                logindata = "0:deprecated:" + Settings.Login + ":0";
             }
             else
             {
                 Console.WriteLine("Connecting to Minecraft.net...");
-                result = MinecraftCom.GetLogin(loginusername, pass, ref logindata);
+                result = MinecraftCom.GetLogin(Settings.Login, Settings.Password, ref logindata);
             }
             if (result == MinecraftCom.LoginResult.Success)
             {
-                user = logindata.Split(':')[2];
+                Settings.Username = logindata.Split(':')[2];
                 string sessionID = logindata.Split(':')[3];
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
-                if (ip == "")
+                if (Settings.ServerIP == "")
                 {
                     Console.Write("Server IP : ");
-                    ip = Console.ReadLine();
+                    Settings.ServerIP = Console.ReadLine();
                 }
 
                 //Get server version
                 Console.WriteLine("Retrieving Server Info...");
                 byte protocolversion = 0; string version = "";
-                if (MinecraftCom.GetServerInfo(ip, ref protocolversion, ref version))
+                if (MinecraftCom.GetServerInfo(Settings.ServerIP, ref protocolversion, ref version))
                 {
                     //Supported protocol version ?
                     int[] supportedVersions = { 51, 60, 61, 72, 73, 74 };
@@ -120,97 +211,25 @@ namespace MinecraftClient
                         //Will handle the connection for this client
                         Console.WriteLine("Version is supported.");
                         MinecraftCom handler = new MinecraftCom();
+                        ConsoleIO.SetAutoCompleteEngine(handler);
                         handler.setVersion(protocolversion);
 
                         //Load & initialize bots if needed
-                        foreach (string arg in startupargs)
-                        {
-                            if (arg.Length > 4 && arg.Substring(0, 4).ToLower() == "bot:")
-                            {
-                                int param;
-                                string[] botargs = arg.ToLower().Split(':');
-                                switch (botargs[1])
-                                {
-                                    case "antiafk":
-                                        #region Arguments for the AntiAFK bot
-                                        param = 600;
-                                        if (botargs.Length > 2)
-                                        {
-                                            try { param = Convert.ToInt32(botargs[2]); }
-                                            catch (FormatException) { }
-                                        }
-                                        #endregion
-                                        handler.BotLoad(new Bots.AntiAFK(param)); break;
-
-                                    case "pendu": handler.BotLoad(new Bots.Pendu(false)); break;
-                                    case "hangman": handler.BotLoad(new Bots.Pendu(true)); break;
-                                    case "alerts": handler.BotLoad(new Bots.Alerts()); break;
-
-                                    case "log":
-                                        #region Arguments for the ChatLog bot
-                                        bool datetime = true;
-                                        string file = "chat-" + ip + ".log";
-                                        Bots.ChatLog.MessageFilter filter = Bots.ChatLog.MessageFilter.AllMessages;
-                                        if (botargs.Length > 2)
-                                        {
-                                            datetime = (botargs[2] != "0");
-                                            if (botargs.Length > 3)
-                                            {
-                                                switch (botargs[3])
-                                                {
-                                                    case "all": filter = Bots.ChatLog.MessageFilter.AllText; break;
-                                                    case "messages": filter = Bots.ChatLog.MessageFilter.AllMessages; break;
-                                                    case "chat": filter = Bots.ChatLog.MessageFilter.OnlyChat; break;
-                                                    case "private": filter = Bots.ChatLog.MessageFilter.OnlyWhispers; break;
-                                                }
-                                                if (botargs.Length > 4 && botargs[4] != "") { file = botargs[4]; }
-                                            }
-                                        }
-                                        #endregion
-                                        handler.BotLoad(new Bots.ChatLog(file, filter, datetime)); break;
-
-                                    case "logplayerlist":
-                                        #region Arguments for the PlayerListLogger bot
-                                        param = 600;
-                                        if (botargs.Length > 2)
-                                        {
-                                            try { param = Convert.ToInt32(botargs[2]); }
-                                            catch (FormatException) { }
-                                        }
-                                        #endregion
-                                        handler.BotLoad(new Bots.PlayerListLogger(param, "connected-" + ip + ".log")); break;
-
-                                    case "autorelog":
-                                        #region Arguments for the AutoRelog bot
-                                        int delay = 10;
-                                        if (botargs.Length > 2)
-                                        {
-                                            try { delay = Convert.ToInt32(botargs[2]); }
-                                            catch (FormatException) { }
-                                        }
-                                        int retries = 3;
-                                        if (botargs.Length > 3)
-                                        {
-                                            try { retries = Convert.ToInt32(botargs[3]); }
-                                            catch (FormatException) { }
-                                        }
-                                        #endregion
-                                        handler.BotLoad(new Bots.AutoRelog(delay, retries)); break;
-
-                                    case "xauth":
-                                        if (botargs.Length > 2) { handler.BotLoad(new Bots.xAuth(botargs[2])); } break;
-                                }
-
-                                command = "";
-                            }
-                        }
+                        if (Settings.AntiAFK_Enabled)   { handler.BotLoad(new Bots.AntiAFK(Settings.AntiAFK_Delay)); }
+                        if (Settings.Hangman_Enabled)   { handler.BotLoad(new Bots.Pendu(Settings.Hangman_English)); }
+                        if (Settings.Alerts_Enabled)    { handler.BotLoad(new Bots.Alerts()); }
+                        if (Settings.ChatLog_Enabled)   { handler.BotLoad(new Bots.ChatLog(Settings.ChatLog_File, Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+                        if (Settings.PlayerLog_Enabled) { handler.BotLoad(new Bots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.PlayerLog_File)); }
+                        if (Settings.AutoRelog_Enabled) { handler.BotLoad(new Bots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
+                        if (Settings.xAuth_Enabled)     { handler.BotLoad(new Bots.xAuth(Settings.xAuth_Password)); }
+                        if (Settings.Scripting_Enabled) { handler.BotLoad(new Bots.Scripting(Settings.Scripting_ScriptFile)); }
 
                         //Start the main TCP client
-                        if (command != "")
+                        if (Settings.SingleCommand != "")
                         {
-                            Client = new McTcpClient(user, sessionID, ip, handler, command);
+                            Client = new McTcpClient(Settings.Username, sessionID, Settings.ServerIP, handler, Settings.SingleCommand);
                         }
-                        else Client = new McTcpClient(user, sessionID, ip, handler);
+                        else Client = new McTcpClient(Settings.Username, sessionID, Settings.ServerIP, handler);
                     }
                     else
                     {
@@ -237,7 +256,7 @@ namespace MinecraftClient
                     case MinecraftCom.LoginResult.Error: Console.WriteLine("Network error."); break;
                 }
                 while (Console.KeyAvailable) { Console.ReadKey(false); }
-                if (command == "") { ReadLineReconnect(); }
+                if (Settings.SingleCommand == "") { ReadLineReconnect(); }
             }
         }
 
@@ -248,6 +267,15 @@ namespace MinecraftClient
         public static void Restart()
         {
             new System.Threading.Thread(new System.Threading.ThreadStart(t_restart)).Start();
+        }
+
+        /// <summary>
+        /// Disconnect the current client from the server and exit the app
+        /// </summary>
+
+        public static void Exit()
+        {
+            new System.Threading.Thread(new System.Threading.ThreadStart(t_exit)).Start();
         }
 
         /// <summary>
@@ -275,6 +303,16 @@ namespace MinecraftClient
             if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
             Console.WriteLine("Restarting Minecraft Console Client...");
             InitializeClient();
+        }
+
+        /// <summary>
+        /// Private thread for exiting the program. Called through Exit()
+        /// </summary>
+
+        private static void t_exit()
+        {
+            if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
+            Environment.Exit(0);
         }
     }
 }

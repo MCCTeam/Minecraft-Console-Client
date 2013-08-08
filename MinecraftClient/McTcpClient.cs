@@ -141,7 +141,7 @@ namespace MinecraftClient
                     ChatBot.LogToConsole("Waiting 5 seconds (" + AttemptsLeft + " attempts left)...");
                     Thread.Sleep(5000); AttemptsLeft--; Program.Restart();
                 }
-                else if (!singlecommand){ Console.ReadLine(); }
+                else if (!singlecommand) { Console.ReadLine(); }
             }
         }
 
@@ -194,6 +194,7 @@ namespace MinecraftClient
                 else if (text == "/reco" || text == "/reconnect")
                 {
                     ConsoleIO.WriteLine("You have left the server.");
+                    handler.SendRespawnPacket();
                     Program.Restart();
                 }
             }

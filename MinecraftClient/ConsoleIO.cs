@@ -13,12 +13,14 @@ namespace MinecraftClient
     public static class ConsoleIO
     {
         public static void Reset() { if (reading) { reading = false; Console.Write("\b \b"); } }
+        public static void SetAutoCompleteEngine(IAutoComplete engine) { autocomplete_engine = engine; }
+        private static IAutoComplete autocomplete_engine;
         private static LinkedList<string> previous = new LinkedList<string>();
         private static string buffer = "";
         private static string buffer2 = "";
-        private static bool consolelock = false;
         private static bool reading = false;
-        private static bool writing = false;
+        private static bool reading_lock = false;
+        private static bool writing_lock = false;
 
         #region Read User Input
         public static string ReadLine()
@@ -32,8 +34,8 @@ namespace MinecraftClient
             while (k.Key != ConsoleKey.Enter)
             {
                 k = Console.ReadKey(true);
-                while (writing) { }
-                consolelock = true;
+                while (writing_lock) { }
+                reading_lock = true;
                 switch (k.Key)
                 {
                     case ConsoleKey.Escape:
@@ -86,13 +88,29 @@ namespace MinecraftClient
                             Console.Write(buffer);
                         }
                         break;
+                    case ConsoleKey.Tab:
+                        if (autocomplete_engine != null && buffer.Length > 0)
+                        {
+                            string[] tmp = buffer.Split(' ');
+                            if (tmp.Length > 0)
+                            {
+                                string word_tocomplete = tmp[tmp.Length - 1];
+                                string word_autocomplete = autocomplete_engine.AutoComplete(word_tocomplete);
+                                if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
+                                {
+                                    while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
+                                    foreach (char c in word_autocomplete) { AddChar(c); }
+                                }
+                            }
+                        }
+                        break;
                     default:
                         AddChar(k.KeyChar);
                         break;
                 }
-                consolelock = false;
+                reading_lock = false;
             }
-            while (writing) { }
+            while (writing_lock) { }
             reading = false;
             previous.AddLast(buffer + buffer2);
             return buffer + buffer2;
@@ -102,8 +120,8 @@ namespace MinecraftClient
         #region Console Output
         public static void Write(string text)
         {
-            while (consolelock) { }
-            writing = true;
+            while (reading_lock) { }
+            writing_lock = true;
             if (reading)
             {
                 ConsoleColor fore = Console.ForegroundColor;
@@ -135,7 +153,7 @@ namespace MinecraftClient
                 Console.BackgroundColor = back;
             }
             else Console.Write(text);
-            writing = false;
+            writing_lock = false;
         }
 
         public static void WriteLine(string line)
@@ -179,15 +197,12 @@ namespace MinecraftClient
         }
         private static void GoBack()
         {
-            if (buffer.Length > 0)
+            if (Console.CursorLeft == 0)
             {
-                if (Console.CursorLeft == 0)
-                {
-                    Console.CursorLeft = Console.BufferWidth - 1;
-                    Console.CursorTop--;
-                }
-                else Console.Write('\b');
+                Console.CursorLeft = Console.BufferWidth - 1;
+                Console.CursorTop--;
             }
+            else Console.Write('\b');
         }
         private static void GoLeft()
         {
@@ -215,5 +230,15 @@ namespace MinecraftClient
             for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
         }
         #endregion
+    }
+
+    /// <summary>
+    /// Interface for TAB autocompletion
+    /// Allows to use any object which has an AutoComplete() method using the IAutocomplete interface
+    /// </summary>
+
+    public interface IAutoComplete
+    {
+        string AutoComplete(string BehindCursor);
     }
 }

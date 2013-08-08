@@ -11,12 +11,12 @@ namespace MinecraftClient
     /// The class containing all the core functions needed to communicate with a Minecraft server.
     /// </summary>
 
-    public class MinecraftCom
+    public class MinecraftCom : IAutoComplete
     {
         #region Login to Minecraft.net, Obtaining a session ID
 
         public enum LoginResult { Error, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
-        
+
         /// <summary>
         /// Allows to login to a premium Minecraft account, and retrieve the session ID.
         /// </summary>
@@ -133,7 +133,7 @@ namespace MinecraftClient
                     //If the client gets out of sync, check the last green packet processing code.
                     //if (result == ProcessResult.OK) { printstring("§a0x" + id.ToString("X"), false); }
                     //else { printstring("§c0x" + id.ToString("X"), false); }
-                    
+
                     if (result == ProcessResult.ConnectionLost)
                     {
                         return false;
@@ -182,7 +182,7 @@ namespace MinecraftClient
                     string message = readNextString();
                     if (protocolversion >= 72)
                     {
-                        //printstring("§8" + message, false); //Debug
+                        //printstring("§8" + message, false); //Debug : Show the RAW JSON data
                         message = ChatParser.ParseText(message);
                         printstring(message, false);
                     }
@@ -251,10 +251,13 @@ namespace MinecraftClient
                 case 0x83: readData(4); nbr = readNextShort(); readData(nbr); break;
                 case 0x84: readData(11); nbr = readNextShort(); if (nbr > 0) { readData(nbr); } break;
                 case 0x85: if (protocolversion >= 74) { readData(13); } break;
-                case 0xC8: if (protocolversion >= 72) { readData(8); } else readData(5); break;
+                case 0xC8:
+                    if (readNextInt() == 2022) { printstring("You are dead. Type /reco to respawn & reconnect.", false); }
+                    if (protocolversion >= 72) { readData(4); } else readData(1);
+                    break;
                 case 0xC9: readNextString(); readData(3); break;
                 case 0xCA: if (protocolversion >= 72) { readData(9); } else readData(3); break;
-                case 0xCB: readNextString(); break;
+                case 0xCB: autocomplete_result = readNextString(); autocomplete_received = true; break;
                 case 0xCC: readNextString(); readData(4); break;
                 case 0xCD: readData(1); break;
                 case 0xCE: if (protocolversion > 51) { readNextString(); readNextString(); readData(1); } break;
@@ -283,12 +286,12 @@ namespace MinecraftClient
         }
         private string readNextString()
         {
-            short lenght = readNextShort();
-            if (lenght > 0)
+            ushort length = (ushort)readNextShort();
+            if (length > 0)
             {
-                byte[] cache = new byte[lenght * 2];
-                Receive(cache, 0, lenght * 2, SocketFlags.None);
-                string result = ByteArrayToString(cache);
+                byte[] cache = new byte[length * 2];
+                Receive(cache, 0, length * 2, SocketFlags.None);
+                string result = Encoding.BigEndianUnicode.GetString(cache);
                 return result;
             }
             else return "";
@@ -329,7 +332,7 @@ namespace MinecraftClient
                 readData(1); //Item count
                 readData(2); //Item damage
                 short length = readNextShort();
-                //If lenght of optional NBT data > 0, read it
+                //If length of optional NBT data > 0, read it
                 if (length > 0) { readData(length); }
             }
         }
@@ -435,7 +438,7 @@ namespace MinecraftClient
             readData(12 * (chunkcount));
         }
 
-        private void setcolor(char c)
+        private static void setcolor(char c)
         {
             switch (c)
             {
@@ -458,47 +461,51 @@ namespace MinecraftClient
                 case 'r': Console.ForegroundColor = ConsoleColor.White; break;
             }
         }
-        private void printstring(string str, bool acceptnewlines)
+        private static void printstring(string str, bool acceptnewlines)
         {
-            if (str != "")
+            if (!String.IsNullOrEmpty(str))
             {
-                char prev = ' ';
-                foreach (char c in str)
+                if (!acceptnewlines) { str = str.Replace('\n', ' '); }
+                string[] subs = str.Split(new char[] { '§' });
+                if (subs[0].Length > 0) { ConsoleIO.Write(subs[0]); }
+                for (int i = 1; i < subs.Length; i++)
                 {
-                    if (c == '§')
+                    if (subs[i].Length > 0)
                     {
-                        prev = c;
-                        continue;
-                    }
-                    else if (prev == '§')
-                    {
-                        setcolor(c);
-                        prev = c;
-                    }
-                    else
-                    {
-                        if (c == '\n' && !acceptnewlines) { continue; }
-                        else ConsoleIO.Write(c);
+                        setcolor(subs[i][0]);
+                        if (subs[i].Length > 1)
+                        {
+                            ConsoleIO.Write(subs[i].Substring(1, subs[i].Length - 1));
+                        }
                     }
                 }
                 ConsoleIO.Write('\n');
             }
             Console.ForegroundColor = ConsoleColor.Gray;
         }
-        private string ReverseString(string a)
+
+        private bool autocomplete_received = false;
+        private string autocomplete_result = "";
+        public string AutoComplete(string behindcursor)
         {
-            char[] tmp = a.ToCharArray();
-            Array.Reverse(tmp);
-            return new string(tmp);
-        }
-        private string ByteArrayToString(byte[] ba)
-        {
-            string conv = "";
-            for (int i = 1; i < ba.Length; i += 2)
-            {
-                conv += (char)ba[i];
-            }
-            return conv;
+            if (String.IsNullOrEmpty(behindcursor))
+                return "";
+
+            byte[] autocomplete = new byte[3 + (behindcursor.Length * 2)];
+            autocomplete[0] = 0xCB;
+            byte[] msglen = BitConverter.GetBytes((short)behindcursor.Length);
+            Array.Reverse(msglen); msglen.CopyTo(autocomplete, 1);
+            byte[] msg = Encoding.BigEndianUnicode.GetBytes(behindcursor);
+            msg.CopyTo(autocomplete, 3);
+
+            autocomplete_received = false;
+            autocomplete_result = behindcursor;
+            Send(autocomplete);
+
+            int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
+            while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
+            string[] results = autocomplete_result.Split((char)0x00);
+            return results[0];
         }
 
         public void setVersion(byte ver) { protocolversion = ver; }
@@ -588,29 +595,13 @@ namespace MinecraftClient
         }
         public bool Handshake(string username, string sessionID, ref string serverID, ref byte[] token, string host, int port)
         {
-            username = ReverseString(username);
             //array
-            byte[] data = new byte[10 + (username.Length * 2) + (host.Length * 2)];
+            byte[] data = new byte[10 + (username.Length + host.Length) * 2];
 
             //packet id
             data[0] = (byte)2;
 
-            //Protocol Version - Minecraft 1.3.1 & 1.3.2
-            //data[1] = (byte)39;
-
-            //Protocol Version - Minecraft 1.4.2
-            //data[1] = (byte)47;
-
-            //Protocol Version - Minecraft 1.4.4
-            //data[1] = (byte)49;
-
-            //Protocol Version - Minecraft 1.4.6 & 1.4.7
-            //data[1] = (byte)51;
-
-            //Protocol Version - Minecraft 1.5.0
-            //data[1] = (byte)60;
-
-            //Protocol Version - Custom
+            //Protocol Version
             data[1] = protocolversion;
 
             //short len
@@ -619,9 +610,8 @@ namespace MinecraftClient
             sh.CopyTo(data, 2);
 
             //username
-            byte[] name = Encoding.Unicode.GetBytes(username);
-            Array.Reverse(name);
-            name.CopyTo(data, 4);
+            byte[] bname = Encoding.BigEndianUnicode.GetBytes(username);
+            bname.CopyTo(data, 4);
 
             //short len
             sh = BitConverter.GetBytes((short)host.Length);
@@ -629,8 +619,7 @@ namespace MinecraftClient
             sh.CopyTo(data, 4 + (username.Length * 2));
 
             //host
-            byte[] bhost = Encoding.Unicode.GetBytes(host);
-            Array.Reverse(bhost);
+            byte[] bhost = Encoding.BigEndianUnicode.GetBytes(host);
             bhost.CopyTo(data, 6 + (username.Length * 2));
 
             //port
@@ -667,7 +656,7 @@ namespace MinecraftClient
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.WriteLine("Handshake sussessful. (Server ID: " + serverID + ')');
                     Console.ForegroundColor = ConsoleColor.Gray;
-                    return StartEncryption(ReverseString(username), sessionID, token, serverID, PublicServerkey, SecretKey);
+                    return StartEncryption(username, sessionID, token, serverID, PublicServerkey, SecretKey);
                 }
             }
             else return false;
@@ -720,12 +709,7 @@ namespace MinecraftClient
         }
         public bool FinalizeLogin()
         {
-            //Creating byte array
-            byte[] data = new byte[2];
-            data[0] = 0xCD;
-            data[1] = 0;
-
-            Send(data);
+            Send(new byte[] { 0xCD, 0 });
             try
             {
                 byte[] pid = new byte[1];
@@ -769,9 +753,11 @@ namespace MinecraftClient
         }
         public bool SendChatMessage(string message)
         {
+            if (String.IsNullOrEmpty(message))
+                return true;
+
             try
             {
-                message = ReverseString(message);
                 byte[] chat = new byte[3 + (message.Length * 2)];
                 chat[0] = (byte)3;
 
@@ -781,8 +767,7 @@ namespace MinecraftClient
                 msglen.CopyTo(chat, 1);
 
                 byte[] msg;
-                msg = Encoding.Unicode.GetBytes(message);
-                Array.Reverse(msg);
+                msg = Encoding.BigEndianUnicode.GetBytes(message);
                 msg.CopyTo(chat, 3);
 
                 Send(chat);
@@ -790,11 +775,22 @@ namespace MinecraftClient
             }
             catch (SocketException) { return false; }
         }
-        public void Disconnect(string message)
+        public bool SendRespawnPacket()
         {
             try
             {
-                message = ReverseString(message);
+                Send(new byte[] { 0xCD, 1 });
+                return true;
+            }
+            catch (SocketException) { return false; }
+        }
+        public void Disconnect(string message)
+        {
+            if (message == null)
+                message = "";
+
+            try
+            {
                 byte[] reason = new byte[3 + (message.Length * 2)];
                 reason[0] = (byte)0xff;
 
@@ -803,10 +799,12 @@ namespace MinecraftClient
                 Array.Reverse(msglen);
                 msglen.CopyTo(reason, 1);
 
-                byte[] msg;
-                msg = Encoding.Unicode.GetBytes(message);
-                Array.Reverse(msg);
-                msg.CopyTo(reason, 3);
+                if (message.Length > 0)
+                {
+                    byte[] msg;
+                    msg = Encoding.BigEndianUnicode.GetBytes(message);
+                    msg.CopyTo(reason, 3);
+                }
 
                 Send(reason);
             }
@@ -815,7 +813,7 @@ namespace MinecraftClient
         }
 
         private List<ChatBot> bots = new List<ChatBot>();
-        public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); }
+        public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
         public void BotClear() { bots.Clear(); }
     }
