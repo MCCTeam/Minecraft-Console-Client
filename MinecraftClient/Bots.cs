@@ -77,16 +77,19 @@ namespace MinecraftClient
 
         protected static string getVerbatim(string text)
         {
-            string verbatim = "";
-            for (int i = 0; i < text.Length; i++)
-            {
-                if (text[i] == '§')
-                {
-                    i++; //Will skip also the next char
-                }
-                else verbatim += text[i]; //Add the char
-            }
-            return verbatim;
+            if ( String.IsNullOrEmpty(text) )
+                return String.Empty;
+
+            int idx = 0;
+            var data = new char[text.Length];
+
+            for ( int i = 0; i < text.Length; i++ )
+                if ( text[i] != '§' )
+                    data[idx++] = text[i];
+                else
+                    i++;
+
+            return new string(data, 0, idx);
         }
 
         /// <summary>
@@ -95,32 +98,17 @@ namespace MinecraftClient
 
         protected static bool isValidName(string username)
         {
-            if (username == "") { return false; }
-            string validchars =
-              "abcdefghijklmnopqrstuvwxyz"
-            + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            + "1234567890_";
+            if ( String.IsNullOrEmpty(username) )
+                return false;
 
-            bool passe = false;
-            bool ok = true;
-            for (int i = 0; i < username.Length; i++)
-            {
-                passe = false;
-                for (int j = 0; j < validchars.Length; j++)
-                {
-                    if (username[i] == validchars[j])
-                    {
-                        passe = true;
-                        break;
-                    }
-                }
-                if (!passe)
-                {
-                    ok = false;
-                    break;
-                }
-            }
-            return ok;
+            foreach ( char c in username )
+                if ( !((c >= 'a' && c <= 'z')
+                        || (c >= 'A' && c <= 'Z')
+                        || (c >= '0' && c <= '9')
+                        || c == '_') )
+                    return false;
+
+            return true;
         }
 
         /// <summary>
@@ -227,6 +215,15 @@ namespace MinecraftClient
         {
             McTcpClient.AttemptsLeft = ExtraAttempts;
             Program.Restart();
+        }
+
+        /// <summary>
+        /// Disconnect from the server and exit the program
+        /// </summary>
+
+        protected void DisconnectAndExit()
+        {
+            Program.Exit();
         }
 
         /// <summary>
@@ -486,14 +483,14 @@ namespace MinecraftClient
 
             private string chooseword()
             {
-                if (System.IO.File.Exists(English ? "words.txt" : "mots.txt"))
+                if (System.IO.File.Exists(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR))
                 {
-                    string[] dico = System.IO.File.ReadAllLines(English ? "words.txt" : "mots.txt");
+                    string[] dico = System.IO.File.ReadAllLines(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR);
                     return dico[new Random().Next(dico.Length)];
                 }
                 else
                 {
-                    LogToConsole(English ? "Cannot find words.txt !" : "Fichier mots.txt introuvable !");
+                    LogToConsole(English ? "File not found: " + Settings.Hangman_FileWords_EN : "Fichier introuvable : " + Settings.Hangman_FileWords_FR);
                     return English ? "WORDSAREMISSING" : "DICOMANQUANT";
                 }
             }
@@ -502,14 +499,14 @@ namespace MinecraftClient
             {
                 List<string> owners = new List<string>();
                 owners.Add("CONSOLE");
-                if (System.IO.File.Exists("bot-owners.txt"))
+                if (System.IO.File.Exists(Settings.Bots_OwnersFile))
                 {
-                    foreach (string s in System.IO.File.ReadAllLines("bot-owners.txt"))
+                    foreach (string s in System.IO.File.ReadAllLines(Settings.Bots_OwnersFile))
                     {
                         owners.Add(s.ToUpper());
                     }
                 }
-                else LogToConsole(English ? "Cannot find bot-owners.txt !" : "Fichier bot-owners.txt introuvable !");
+                else LogToConsole(English ? "File not found: " + Settings.Bots_OwnersFile : "Fichier introuvable : " + Settings.Bots_OwnersFile);
                 return owners.ToArray();
             }
 
@@ -552,39 +549,39 @@ namespace MinecraftClient
 
         public class Alerts : ChatBot
         {
-            private string[] dictionnary = new string[0];
+            private string[] dictionary = new string[0];
             private string[] excludelist = new string[0];
 
             public override void Initialize()
             {
-                if (System.IO.File.Exists("alerts.txt"))
+                if (System.IO.File.Exists(Settings.Alerts_MatchesFile))
                 {
-                    dictionnary = System.IO.File.ReadAllLines("alerts.txt");
+                    dictionary = System.IO.File.ReadAllLines(Settings.Alerts_MatchesFile);
 
-                    for (int i = 0; i < dictionnary.Length; i++)
+                    for (int i = 0; i < dictionary.Length; i++)
                     {
-                        dictionnary[i] = dictionnary[i].ToLower();
+                        dictionary[i] = dictionary[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find alerts.txt !");
+                else LogToConsole("File not found: " + Settings.Alerts_MatchesFile);
 
-                if (System.IO.File.Exists("alerts-exclude.txt"))
+                if (System.IO.File.Exists(Settings.Alerts_ExcludesFile))
                 {
-                    excludelist = System.IO.File.ReadAllLines("alerts-exclude.txt");
+                    excludelist = System.IO.File.ReadAllLines(Settings.Alerts_ExcludesFile);
 
                     for (int i = 0; i < excludelist.Length; i++)
                     {
                         excludelist[i] = excludelist[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find alerts-exclude.txt !");
+                else LogToConsole("File not found : " + Settings.Alerts_ExcludesFile);
             }
 
             public override void GetText(string text)
             {
                 text = getVerbatim(text);
                 string comp = text.ToLower();
-                foreach (string alert in dictionnary)
+                foreach (string alert in dictionary)
                 {
                     if (comp.Contains(alert))
                     {
@@ -711,6 +708,18 @@ namespace MinecraftClient
                 }
             }
 
+            public static MessageFilter str2filter(string filtername)
+            {
+                switch (filtername.ToLower())
+                {
+                    case "all": return MessageFilter.AllText;
+                    case "messages": return MessageFilter.AllMessages;
+                    case "chat": return MessageFilter.OnlyChat;
+                    case "private": return MessageFilter.OnlyWhispers;
+                    default: return MessageFilter.AllText;
+                }
+            }
+
             public override void GetText(string text)
             {
                 text = getVerbatim(text);
@@ -764,7 +773,7 @@ namespace MinecraftClient
 
         public class AutoRelog : ChatBot
         {
-            private string[] dictionnary = new string[0];
+            private string[] dictionary = new string[0];
             private int attempts;
             private int delay;
 
@@ -786,23 +795,23 @@ namespace MinecraftClient
             public override void Initialize()
             {
                 McTcpClient.AttemptsLeft = attempts;
-                if (System.IO.File.Exists("kickmessages.txt"))
+                if (System.IO.File.Exists(Settings.AutoRelog_KickMessagesFile))
                 {
-                    dictionnary = System.IO.File.ReadAllLines("kickmessages.txt");
+                    dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile);
 
-                    for (int i = 0; i < dictionnary.Length; i++)
+                    for (int i = 0; i < dictionary.Length; i++)
                     {
-                        dictionnary[i] = dictionnary[i].ToLower();
+                        dictionary[i] = dictionary[i].ToLower();
                     }
                 }
-                else LogToConsole("Cannot find kickmessages.txt !");
+                else LogToConsole("File not found: " + Settings.AutoRelog_KickMessagesFile);
             }
 
             public override bool OnDisconnect(DisconnectReason reason, string message)
             {
                 message = getVerbatim(message);
                 string comp = message.ToLower();
-                foreach (string msg in dictionnary)
+                foreach (string msg in dictionary)
                 {
                     if (comp.Contains(msg))
                     {
@@ -838,6 +847,91 @@ namespace MinecraftClient
                 {
                     SendText("/login " + password);
                     UnloadBot(); //This bot is no more needed.
+                }
+            }
+        }
+
+        /// <summary>
+        /// Runs a list of commands
+        /// Usage: bot:scripting:filename
+        /// Script must be placed in the config directory
+        /// </summary>
+
+        public class Scripting : ChatBot
+        {
+            private string file;
+            private string[] lines = new string[0];
+            private int sleepticks = 10;
+            private int sleepticks_interval = 10;
+            private int nextline = 0;
+            public Scripting(string filename)
+            {
+                file = filename;
+            }
+
+            public override void Initialize()
+            {
+                // Loads the given file from the startup parameters
+                if (System.IO.File.Exists(file))
+                {
+                    lines = System.IO.File.ReadAllLines(file); // Load the given bot text file (containing commands)
+                }
+                else
+                {
+                    LogToConsole("File not found: " + file);
+                    UnloadBot(); //No need to keep the bot active
+                }
+            }
+
+            public override void Update()
+            {
+                if (sleepticks > 0) { sleepticks--; }
+                else
+                {
+                    if (nextline < lines.Length) //Is there an instruction left to interpret?
+                    {
+                        string instruction_line = lines[nextline].Trim(); // Removes all whitespaces at start and end of current line
+                        nextline++; //Move the cursor so that the next time the following line will be interpreted
+                        sleepticks = sleepticks_interval; //Used to delay next command sending and prevent from beign kicked for spamming
+
+                        if (instruction_line.Length > 0)
+                        {
+                            if (!instruction_line.StartsWith("//") && !instruction_line.StartsWith("#"))
+                            {
+                                string instruction_name = instruction_line.Split(' ')[0];
+                                switch (instruction_name.ToLower())
+                                {
+                                    case "send":
+                                        SendText(instruction_line.Substring(5, instruction_line.Length - 5));
+                                        break;
+                                    case "wait":
+                                        int ticks = 10;
+                                        try
+                                        {
+                                            ticks = Convert.ToInt32(instruction_line.Substring(5, instruction_line.Length - 5));
+                                        }
+                                        catch { }
+                                        sleepticks = ticks;
+                                        break;
+                                    case "disconnect":
+                                        DisconnectAndExit();
+                                        break;
+                                    case "exit": //Exit bot & stay connected to the server
+                                        UnloadBot();
+                                        break;
+                                    default:
+                                        sleepticks = 0; Update(); //Unknown command : process next line immediately
+                                        break;
+                                }
+                            }
+                            else { sleepticks = 0; Update(); } //Comment: process next line immediately
+                        }
+                    }
+                    else
+                    {
+                        //No more instructions to interpret
+                        UnloadBot();
+                    }
                 }
             }
         }

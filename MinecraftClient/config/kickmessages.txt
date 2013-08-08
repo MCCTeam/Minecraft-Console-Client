@@ -1,0 +1,4 @@
+Connection has been lost
+Server is restarting
+Server is full
+Too Many people
