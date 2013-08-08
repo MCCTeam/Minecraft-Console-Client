@@ -21,7 +21,7 @@ namespace MinecraftClient
         {
             int cursorpos = 0;
             JSONData jsonData = String2Data(json, ref cursorpos);
-            return JSONData2String(jsonData).Replace("u0027", "'");
+            return JSONData2String(jsonData);
         }
 
         /// <summary>
@@ -213,7 +213,25 @@ namespace MinecraftClient
                         cursorpos++;
                         while (toparse[cursorpos] != '"')
                         {
-                            if (toparse[cursorpos] == '\\') { cursorpos++; }
+                            if (toparse[cursorpos] == '\\')
+                            {
+                                try //Unicode character \u0123
+                                {
+                                    if (toparse[cursorpos + 1] == 'u'
+                                        && isHex(toparse[cursorpos + 2])
+                                        && isHex(toparse[cursorpos + 3])
+                                        && isHex(toparse[cursorpos + 4])
+                                        && isHex(toparse[cursorpos + 5]))
+                                    {
+                                        //"abc\u0123abc" => "0123" => 0123 => Unicode char n°0123 => Add char to string
+                                        data.StringValue += char.ConvertFromUtf32(int.Parse(toparse.Substring(cursorpos + 2, 4), System.Globalization.NumberStyles.HexNumber));
+                                        cursorpos += 6; continue;
+                                    }
+                                    else cursorpos++; //Normal character escapement \"
+                                }
+                                catch (IndexOutOfRangeException) { cursorpos++; } // \u01<end of string>
+                                catch (ArgumentOutOfRangeException) { cursorpos++; } // Unicode index 0123 was invalid
+                            }
                             data.StringValue += toparse[cursorpos];
                             cursorpos++;
                         }
@@ -301,5 +319,13 @@ namespace MinecraftClient
 
             return "";
         }
+
+        /// <summary>
+        /// Small function for checking if a char is an hexadecimal char (0-9 A-F a-f)
+        /// </summary>
+        /// <param name="c">Char to test</param>
+        /// <returns>True if hexadecimal</returns>
+
+        private static bool isHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
     }
 }

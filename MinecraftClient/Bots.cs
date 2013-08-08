@@ -710,7 +710,7 @@ namespace MinecraftClient
 
             public static MessageFilter str2filter(string filtername)
             {
-                switch (filtername)
+                switch (filtername.ToLower())
                 {
                     case "all": return MessageFilter.AllText;
                     case "messages": return MessageFilter.AllMessages;

@@ -182,7 +182,7 @@ namespace MinecraftClient
                     string message = readNextString();
                     if (protocolversion >= 72)
                     {
-                        //printstring("§8" + message, false); //Debug
+                        //printstring("§8" + message, false); //Debug : Show the RAW JSON data
                         message = ChatParser.ParseText(message);
                         printstring(message, false);
                     }
