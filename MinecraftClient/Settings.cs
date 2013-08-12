@@ -23,6 +23,7 @@ namespace MinecraftClient
         public static string SingleCommand = "";
 
         //Other Settings
+        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\lang\en_US.lang";
         public static string TranslationsFile = "translations.lang";
         public static string Bots_OwnersFile = "bot-owners.txt";
 

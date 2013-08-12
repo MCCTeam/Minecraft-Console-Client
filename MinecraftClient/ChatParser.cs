@@ -95,6 +95,11 @@ namespace MinecraftClient
             TranslationRules["commands.message.display.incoming"] = "§7%s whispers to you: %s";
             TranslationRules["commands.message.display.outgoing"] = "§7You whisper to %s: %s";
 
+            //Use translations from Minecraft assets if a copy of the game is installed?
+            if (!System.IO.File.Exists(Settings.TranslationsFile)
+              && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
+            { Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir; }
+
             //Load an external dictionnary of translation rules
             if (System.IO.File.Exists(Settings.TranslationsFile))
             {
