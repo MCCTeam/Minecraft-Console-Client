@@ -33,8 +33,8 @@ namespace MinecraftClient
         //Hangman Settings
         public static bool Hangman_Enabled = false;
         public static bool Hangman_English = true;
-        public static string Hangman_FileWords_EN = "words.txt";
-        public static string Hangman_FileWords_FR = "mots.txt";
+        public static string Hangman_FileWords_EN = "hangman-en.txt";
+        public static string Hangman_FileWords_FR = "hangman-fr.txt";
 
         //Alerts Settings
         public static bool Alerts_Enabled = false;
@@ -193,7 +193,7 @@ namespace MinecraftClient
 
         public static void WriteDefaultSettings(string settingsfile)
         {
-            System.IO.File.WriteAllText(settingsfile, "#Minecraft Console Client v" + Program.Version + "\r\n#Startup Config File\r\n\r\n[Main]\r\n\r\n#General settings\r\n#leave blank = prompt user on startup\r\n#Use \"-\" as password for offline mode\r\n\r\nlogin=\r\npassword=\r\nserverip=\r\n\r\n#Advanced settings\r\n\r\ntranslationsfile=translations.lang\r\nbotownersfile=bot-owners.txt\r\nconsoletitle=Minecraft Console Client\r\n\r\n#Bot Settings\r\n\r\n[Alerts]\r\nenabled=false\r\nalertsfile=alerts.txt\r\nexcludesfile=alerts-exclude.txt\r\n\r\n[AntiAFK]\r\nenabled=false\r\ndelay=600 #10 = 1s\r\n\r\n[AutoRelog]\r\nenabled=false\r\ndelay=10\r\nretries=3\r\nkickmessagesfile=kickmessages.txt\r\n\r\n[ChatLog]\r\nenabled=false\r\ntimestamps=true\r\nfilter=messages\r\nlogfile=chatlog.txt\r\n\r\n[Hangman]\r\nenabled=false\r\nenglish=true\r\nwordsfile=words.txt\r\nfichiermots=mots.txt\r\n\r\n[Scripting]\r\nenabled=false\r\nscriptfile=testscript.txt\r\n");
+            System.IO.File.WriteAllText(settingsfile, "#Minecraft Console Client v" + Program.Version + "\r\n#Startup Config File\r\n\r\n[Main]\r\n\r\n#General settings\r\n#leave blank = prompt user on startup\r\n#Use \"-\" as password for offline mode\r\n\r\nlogin=\r\npassword=\r\nserverip=\r\n\r\n#Advanced settings\r\n\r\ntranslationsfile=translations.lang\r\nbotownersfile=bot-owners.txt\r\nconsoletitle=Minecraft Console Client\r\n\r\n#Bot Settings\r\n\r\n[Alerts]\r\nenabled=false\r\nalertsfile=alerts.txt\r\nexcludesfile=alerts-exclude.txt\r\n\r\n[AntiAFK]\r\nenabled=false\r\ndelay=600 #10 = 1s\r\n\r\n[AutoRelog]\r\nenabled=false\r\ndelay=10\r\nretries=3 #-1 = unlimited\r\nkickmessagesfile=kickmessages.txt\r\n\r\n[ChatLog]\r\nenabled=false\r\ntimestamps=true\r\nfilter=messages\r\nlogfile=chatlog.txt\r\n\r\n[Hangman]\r\nenabled=false\r\nenglish=true\r\nwordsfile=hangman-en.txt\r\nfichiermots=hangman-fr.txt\r\n\r\n[Scripting]\r\nenabled=false\r\nscriptfile=testscript.txt\r\n", Encoding.UTF8);
         }
 
         public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }

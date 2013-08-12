@@ -118,9 +118,8 @@ namespace MinecraftClient
             else //No external dictionnary found.
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("MC 1.6+ warning: Translations file \"" + Settings.TranslationsFile + "\" not found."
+                ConsoleIO.WriteLine("MC 1.6+ warning: Translations file not found: \"" + Settings.TranslationsFile + "\""
                 + "\nYou can pick a translation file from .minecraft\\assets\\lang\\"
-                + "\nCopy to the same folder as MinecraftClient & rename to \"" + Settings.TranslationsFile + "\""
                 + "\nSome messages won't be properly printed without this file.");
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
