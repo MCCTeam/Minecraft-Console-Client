@@ -467,6 +467,7 @@ namespace MinecraftClient
             if (!String.IsNullOrEmpty(str))
             {
                 if (!acceptnewlines) { str = str.Replace('\n', ' '); }
+                if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(str); return; }
                 string[] subs = str.Split(new char[] { '§' });
                 if (subs[0].Length > 0) { ConsoleIO.Write(subs[0]); }
                 for (int i = 1; i < subs.Length; i++)

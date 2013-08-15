@@ -14,6 +14,7 @@ namespace MinecraftClient
     {
         public static void Reset() { if (reading) { reading = false; Console.Write("\b \b"); } }
         public static void SetAutoCompleteEngine(IAutoComplete engine) { autocomplete_engine = engine; }
+        public static bool basicIO = false;
         private static IAutoComplete autocomplete_engine;
         private static LinkedList<string> previous = new LinkedList<string>();
         private static string buffer = "";
@@ -25,6 +26,7 @@ namespace MinecraftClient
         #region Read User Input
         public static string ReadLine()
         {
+            if (basicIO) { return Console.ReadLine(); }
             ConsoleKeyInfo k = new ConsoleKeyInfo();
             Console.Write('>');
             reading = true;
@@ -120,6 +122,7 @@ namespace MinecraftClient
         #region Console Output
         public static void Write(string text)
         {
+            if (basicIO) { Console.Write(text); return; }
             while (reading_lock) { }
             writing_lock = true;
             if (reading)
