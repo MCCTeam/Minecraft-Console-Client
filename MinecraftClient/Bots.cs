@@ -599,6 +599,9 @@ namespace MinecraftClient
                         if (ok)
                         {
                             Console.Beep(); //Text found !
+
+                            if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(comp.Replace(alert, "§c" + alert + "§r")); } else {
+
                             #region Displaying the text with the interesting part highlighted
 
                             Console.BackgroundColor = ConsoleColor.DarkGray;
@@ -652,7 +655,8 @@ namespace MinecraftClient
                             ConsoleIO.Write('\n');
 
                             #endregion
-
+                            
+                            }
                         }
                     }
                 }
