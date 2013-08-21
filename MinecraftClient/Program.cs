@@ -151,18 +151,21 @@ namespace MinecraftClient
 
             if (Settings.Login == "")
             {
-                Console.Write("Username : ");
+                Console.Write(ConsoleIO.basicIO ? "Please type the username of your choice.\n" : "Username : ");
                 Settings.Login = Console.ReadLine();
             }
             if (Settings.Password == "")
             {
-                Console.Write("Password : ");
+                Console.Write(ConsoleIO.basicIO ? "Please type the password for " + Settings.Login + ".\n" : "Password : ");
                 Settings.Password = Console.ReadLine();
 
-                //Hide the password
-                Console.CursorTop--;
-                Console.Write("Password : <******>");
-                for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
+                if (!ConsoleIO.basicIO)
+                {
+                    //Hide the password
+                    Console.CursorTop--;
+                    Console.Write("Password : <******>");
+                    for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
+                }
             }
 
             startupargs = args;
