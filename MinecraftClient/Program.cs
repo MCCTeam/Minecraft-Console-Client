@@ -149,8 +149,9 @@ namespace MinecraftClient
             }
             if (Settings.Password == "")
             {
+                
+                Console.Write("WARNING: Your password is not obfuscuated until you hit enter. \n WARNING: Meaning anyone behind you can see your password!!\n ");
                 Console.Write("Password : ");
-                Console.Write("WARNING: Your password is not obfuscuated until you hit enter. \n WARNING: Meaning anyone behind you can see your password!! ");
                 Settings.Password = Console.ReadLine();
 
                 //Hide the password
