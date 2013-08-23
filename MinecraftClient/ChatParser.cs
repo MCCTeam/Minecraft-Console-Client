@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftClient
+namespace EcoCityCraftClient
 {
     /// <summary>
     /// This class parses JSON chat data from MC 1.6+ and returns the appropriate string to be printed.
@@ -120,7 +120,7 @@ namespace MinecraftClient
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 ConsoleIO.WriteLine("MC 1.6+ warning: Translations file \"" + Settings.TranslationsFile + "\" not found."
                 + "\nYou can pick a translation file from .minecraft\\assets\\lang\\"
-                + "\nCopy to the same folder as MinecraftClient & rename to \"" + Settings.TranslationsFile + "\""
+                + "\nCopy to the same folder as EcoCityCraftClient & rename to \"" + Settings.TranslationsFile + "\""
                 + "\nSome messages won't be properly printed without this file.");
                 Console.ForegroundColor = ConsoleColor.Gray;
             }

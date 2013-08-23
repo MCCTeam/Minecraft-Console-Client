@@ -7,3 +7,4 @@ send commands and receive text messages in a fast and easy way without having to
 This source code is published under the CDDL-1.0 license.
 
 More info at http://www.minecraftforum.net/topic/1314800-/
+This is a customized source for EcoCityCraft

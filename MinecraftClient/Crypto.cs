@@ -10,7 +10,7 @@ using javax.crypto.spec;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 
-namespace MinecraftClient
+namespace EcoCityCraftClient
 {
     /// <summary>
     /// Cryptographic functions ported from Minecraft Source Code (Java). Decompiled with MCP. Copy, paste, little adjustements.

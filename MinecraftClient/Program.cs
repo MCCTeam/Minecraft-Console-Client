@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftClient
+namespace EcoCityCraftClient
 {
     /// <summary>
     /// Minecraft Console Client by ORelio (c) 2012-2013.
@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         private static McTcpClient Client;
         public static string[] startupargs;
-        public const string Version = "1.6.0";
+        public const string Version = "1.6.2";
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -23,7 +23,7 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC 1.4.6 to 1.6.2 - v" + Version + " - By ORelio (or3L1o@live.fr)");
+            Console.WriteLine("EcoCityCraft Console Client for MC 1.6.2 \nv" + Version + "\nCustomized by JamieSinn");
 
             //Processing Command-line arguments or Config File
 
@@ -134,11 +134,11 @@ namespace MinecraftClient
                     }
                 }
             }
-            else if (System.IO.File.Exists("MinecraftClient.ini"))
+            else if (System.IO.File.Exists("EcoCityCraftClient.ini"))
             {
-                Settings.LoadSettings("MinecraftClient.ini");
+                Settings.LoadSettings("EcoCityCraftClient.ini");
             }
-            else Settings.WriteDefaultSettings("MinecraftClient.ini");
+            else Settings.WriteDefaultSettings("EcoCityCraftClient.ini");
 
             //Asking the user to type in missing data such as Username and Password
 
@@ -149,6 +149,8 @@ namespace MinecraftClient
             }
             if (Settings.Password == "")
             {
+                
+                Console.Write("WARNING: Your password is not obfuscuated until you hit enter. \nWARNING: Meaning anyone behind you can see your password!!\n");
                 Console.Write("Password : ");
                 Settings.Password = Console.ReadLine();
 
@@ -239,7 +241,7 @@ namespace MinecraftClient
                 }
                 else
                 {
-                    Console.WriteLine("Failed to ping this IP.");
+                    Console.WriteLine("Failed to ping mc.ecocitycraft.com");
                     ReadLineReconnect();
                 }
             }

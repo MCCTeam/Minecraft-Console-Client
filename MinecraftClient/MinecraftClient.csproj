@@ -8,8 +8,8 @@
     <ProjectGuid>{1E2FACE4-F5CA-4323-9641-740C6A551770}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MinecraftClient</RootNamespace>
-    <AssemblyName>MinecraftClient</AssemblyName>
+    <RootNamespace>EcoCityCraftClient</RootNamespace>
+    <AssemblyName>EcoCityCraftClient</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -56,7 +56,7 @@
     <ApplicationIcon>resources\appicon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>MinecraftClient.Program</StartupObject>
+    <StartupObject>EcoCityCraftClient.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
