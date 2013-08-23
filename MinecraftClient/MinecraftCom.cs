@@ -656,7 +656,7 @@ namespace MinecraftClient
                     var PublicServerkey = Crypto.GenerateRSAPublicKey(Serverkey_RAW);
                     var SecretKey = Crypto.GenerateAESPrivateKey();
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.WriteLine("Handshake sussessful. (Server ID: " + serverID + ')');
+                    Console.WriteLine("Handshake successful. (Server ID: " + serverID + ')');
                     Console.ForegroundColor = ConsoleColor.Gray;
                     return StartEncryption(username, sessionID, token, serverID, PublicServerkey, SecretKey);
                 }

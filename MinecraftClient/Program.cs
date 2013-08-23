@@ -157,13 +157,12 @@ namespace MinecraftClient
             if (Settings.Password == "")
             {
                 Console.Write(ConsoleIO.basicIO ? "Please type the password for " + Settings.Login + ".\n" : "Password : ");
-                Settings.Password = Console.ReadLine();
-
+                Settings.Password = ConsoleIO.basicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+                if (Settings.Password == "") { Settings.Password = "-"; }
                 if (!ConsoleIO.basicIO)
                 {
-                    //Hide the password
-                    Console.CursorTop--;
-                    Console.Write("Password : <******>");
+                    //Hide password length
+                    Console.CursorTop--; Console.Write("Password : <******>");
                     for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
                 }
             }
