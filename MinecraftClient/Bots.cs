@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftClient
+namespace EcoCityCraftClient
 {
     ///
     /// Welcome to the Bot API file !

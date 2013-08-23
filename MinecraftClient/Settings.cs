@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace MinecraftClient
+namespace EcoCityCraftClient
 {
     /// <summary>
     /// Contains main settings for Minecraft Console Client
@@ -19,7 +19,7 @@ namespace MinecraftClient
         public static string Login = "";
         public static string Username = "";
         public static string Password = "";
-        public static string ServerIP = "";
+        public static string ServerIP = "mc.ecocitycraft.com";
         public static string SingleCommand = "";
 
         //Other Settings

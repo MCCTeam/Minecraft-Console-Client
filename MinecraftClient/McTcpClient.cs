@@ -7,7 +7,7 @@ using System.Threading;
 using System.IO;
 using System.Net;
 
-namespace MinecraftClient
+namespace EcoCityCraftClient
 {
     /// <summary>
     /// The main client class, used to connect to a Minecraft server.
@@ -184,11 +184,20 @@ namespace MinecraftClient
                         else handler.SendChatMessage(text);
                     }
                 }
-
+                if (text.Contains(Settings.Username))
+                {
+                    System.Media.SystemSounds.Beep.Play();
+                }
                 if (text == "/quit")
                 {
                     ConsoleIO.WriteLine("You have left the server.");
                     Disconnect();
+                }
+                if (text.Equals("/.credits"))
+                {
+                    ConsoleIO.WriteLine("Original By ORelio (or3L1o@live.fr)");
+                    ConsoleIO.WriteLine("Customized By JamieSinn");
+                    ConsoleIO.WriteLine("See http://www.minecraftforum.net/topic/1314800-windows-minecraft-console-client-162/ for help and more info.");
                 }
 
                 else if (text == "/reco" || text == "/reconnect")

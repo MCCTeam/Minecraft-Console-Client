@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftClient
+namespace EcoCityCraftClient
 {
     /// <summary>
     /// Allows simultaneous console input and output without breaking user input

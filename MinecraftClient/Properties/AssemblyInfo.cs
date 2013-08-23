@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Minecraft Console Client")]
+[assembly: AssemblyTitle("EcoCityCraft Console Client - JamieSinn")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MinecraftClient")]
-[assembly: AssemblyCopyright("Copyright © ORelio 2012-2013")]
+[assembly: AssemblyProduct("EcoCityCraftClient")]
+[assembly: AssemblyCopyright("Copyright © JamieSinn(Customizations) ORelio(Original) 2012-2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.3")]
-[assembly: AssemblyFileVersion("1.3")]
+[assembly: AssemblyVersion("1.6.2")]
+[assembly: AssemblyFileVersion("1.6.2")]
