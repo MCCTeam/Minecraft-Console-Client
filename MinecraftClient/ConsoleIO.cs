@@ -14,6 +14,7 @@ namespace MinecraftClient
     {
         public static void Reset() { if (reading) { reading = false; Console.Write("\b \b"); } }
         public static void SetAutoCompleteEngine(IAutoComplete engine) { autocomplete_engine = engine; }
+        public static bool basicIO = false;
         private static IAutoComplete autocomplete_engine;
         private static LinkedList<string> previous = new LinkedList<string>();
         private static string buffer = "";
@@ -23,8 +24,51 @@ namespace MinecraftClient
         private static bool writing_lock = false;
 
         #region Read User Input
+        public static string ReadPassword()
+        {
+            string password = "";
+            ConsoleKeyInfo k = new ConsoleKeyInfo();
+            while (k.Key != ConsoleKey.Enter)
+            {
+                k = Console.ReadKey(true);
+                switch (k.Key)
+                {
+                    case ConsoleKey.Enter:
+                        Console.Write('\n');
+                        return password;
+
+                    case ConsoleKey.Backspace:
+                        if (password.Length > 0)
+                        {
+                            Console.Write("\b \b");
+                            password = password.Substring(0, password.Length - 1);
+                        }
+                        break;
+
+                    case ConsoleKey.Escape:
+                    case ConsoleKey.LeftArrow:
+                    case ConsoleKey.RightArrow:
+                    case ConsoleKey.Home:
+                    case ConsoleKey.End:
+                    case ConsoleKey.Delete:
+                    case ConsoleKey.Oem6:
+                    case ConsoleKey.DownArrow:
+                    case ConsoleKey.UpArrow:
+                    case ConsoleKey.Tab:
+                        break;
+
+                    default:
+                        Console.Write('*');
+                        password += k.KeyChar;
+                        break;
+                }
+            }
+            return password;
+        }
+
         public static string ReadLine()
         {
+            if (basicIO) { return Console.ReadLine(); }
             ConsoleKeyInfo k = new ConsoleKeyInfo();
             Console.Write('>');
             reading = true;
@@ -120,6 +164,7 @@ namespace MinecraftClient
         #region Console Output
         public static void Write(string text)
         {
+            if (basicIO) { Console.Write(text); return; }
             while (reading_lock) { }
             writing_lock = true;
             if (reading)

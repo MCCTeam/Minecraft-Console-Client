@@ -25,6 +25,13 @@ namespace MinecraftClient
         {
             Console.WriteLine("Console Client for MC 1.4.6 to 1.6.2 - v" + Version + " - By ORelio (or3L1o@live.fr)");
 
+            //Basic Input/Output ?
+            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
+            {
+                ConsoleIO.basicIO = true;
+                args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
+            }
+
             //Processing Command-line arguments or Config File
 
             if (args.Length == 1 && System.IO.File.Exists(args[0]))
@@ -144,18 +151,20 @@ namespace MinecraftClient
 
             if (Settings.Login == "")
             {
-                Console.Write("Username : ");
+                Console.Write(ConsoleIO.basicIO ? "Please type the username of your choice.\n" : "Username : ");
                 Settings.Login = Console.ReadLine();
             }
             if (Settings.Password == "")
             {
-                Console.Write("Password : ");
-                Settings.Password = Console.ReadLine();
-
-                //Hide the password
-                Console.CursorTop--;
-                Console.Write("Password : <******>");
-                for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
+                Console.Write(ConsoleIO.basicIO ? "Please type the password for " + Settings.Login + ".\n" : "Password : ");
+                Settings.Password = ConsoleIO.basicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+                if (Settings.Password == "") { Settings.Password = "-"; }
+                if (!ConsoleIO.basicIO)
+                {
+                    //Hide password length
+                    Console.CursorTop--; Console.Write("Password : <******>");
+                    for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
+                }
             }
 
             startupargs = args;
@@ -251,6 +260,7 @@ namespace MinecraftClient
                 {
                     case MinecraftCom.LoginResult.AccountMigrated: Console.WriteLine("Account migrated, use e-mail as username."); break;
                     case MinecraftCom.LoginResult.Blocked: Console.WriteLine("Too many failed logins. Please try again later."); break;
+                    case MinecraftCom.LoginResult.BadRequest: Console.WriteLine("Login attempt rejected: Bad request."); break;
                     case MinecraftCom.LoginResult.WrongPassword: Console.WriteLine("Incorrect password."); break;
                     case MinecraftCom.LoginResult.NotPremium: Console.WriteLine("User not premium."); break;
                     case MinecraftCom.LoginResult.Error: Console.WriteLine("Network error."); break;

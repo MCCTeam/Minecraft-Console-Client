@@ -157,31 +157,46 @@ namespace MinecraftClient
                 while (client.Client.Connected)
                 {
                     text = ConsoleIO.ReadLine();
-                    if (text == "/quit" || text == "/reco" || text == "/reconnect") { break; }
-                    while (text.Length > 0 && text[0] == ' ') { text = text.Substring(1); }
-                    if (text != "")
+                    if (ConsoleIO.basicIO && text.Length > 0 && text[0] == (char)0x00)
                     {
-                        //Message is too long
-                        if (text.Length > 100)
+                        //Process a request from the GUI
+                        string[] command = text.Substring(1).Split((char)0x00);
+                        switch (command[0].ToLower())
                         {
-                            if (text[0] == '/')
-                            {
-                                //Send the first 100 chars of the command
-                                text = text.Substring(0, 100);
-                                handler.SendChatMessage(text);
-                            }
-                            else
-                            {
-                                //Send the message splitted in sereval messages
-                                while (text.Length > 100)
-                                {
-                                    handler.SendChatMessage(text.Substring(0, 100));
-                                    text = text.Substring(100, text.Length - 100);
-                                }
-                                handler.SendChatMessage(text);
-                            }
+                            case "autocomplete":
+                                if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
+                                else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
+                                break;
                         }
-                        else handler.SendChatMessage(text);
+                    }
+                    else
+                    {
+                        if (text == "/quit" || text == "/reco" || text == "/reconnect") { break; }
+                        while (text.Length > 0 && text[0] == ' ') { text = text.Substring(1); }
+                        if (text != "")
+                        {
+                            //Message is too long
+                            if (text.Length > 100)
+                            {
+                                if (text[0] == '/')
+                                {
+                                    //Send the first 100 chars of the command
+                                    text = text.Substring(0, 100);
+                                    handler.SendChatMessage(text);
+                                }
+                                else
+                                {
+                                    //Send the message splitted in sereval messages
+                                    while (text.Length > 100)
+                                    {
+                                        handler.SendChatMessage(text.Substring(0, 100));
+                                        text = text.Substring(100, text.Length - 100);
+                                    }
+                                    handler.SendChatMessage(text);
+                                }
+                            }
+                            else handler.SendChatMessage(text);
+                        }
                     }
                 }
 
