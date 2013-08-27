@@ -119,7 +119,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="resources\appicon.ico" />
-    <Content Include="lib\BouncyCastle.Crypto.dll" />
     <Content Include="lib\IKVM.OpenJDK.Core.dll" />
     <Content Include="lib\IKVM.OpenJDK.Security.dll" />
     <Content Include="lib\IKVM.OpenJDK.Util.dll" />

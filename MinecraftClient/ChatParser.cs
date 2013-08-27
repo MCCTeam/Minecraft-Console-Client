@@ -95,6 +95,11 @@ namespace MinecraftClient
             TranslationRules["commands.message.display.incoming"] = "§7%s whispers to you: %s";
             TranslationRules["commands.message.display.outgoing"] = "§7You whisper to %s: %s";
 
+            //Use translations from Minecraft assets if a copy of the game is installed?
+            if (!System.IO.File.Exists(Settings.TranslationsFile)
+              && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
+            { Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir; }
+
             //Load an external dictionnary of translation rules
             if (System.IO.File.Exists(Settings.TranslationsFile))
             {
@@ -118,9 +123,8 @@ namespace MinecraftClient
             else //No external dictionnary found.
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("MC 1.6+ warning: Translations file \"" + Settings.TranslationsFile + "\" not found."
+                ConsoleIO.WriteLine("MC 1.6+ warning: Translations file not found: \"" + Settings.TranslationsFile + "\""
                 + "\nYou can pick a translation file from .minecraft\\assets\\lang\\"
-                + "\nCopy to the same folder as MinecraftClient & rename to \"" + Settings.TranslationsFile + "\""
                 + "\nSome messages won't be properly printed without this file.");
                 Console.ForegroundColor = ConsoleColor.Gray;
             }

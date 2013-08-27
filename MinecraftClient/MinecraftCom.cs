@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         #region Login to Minecraft.net, Obtaining a session ID
 
-        public enum LoginResult { Error, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
+        public enum LoginResult { Error, Success, WrongPassword, Blocked, AccountMigrated, NotPremium, BadRequest };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account, and retrieve the session ID.
@@ -32,11 +32,12 @@ namespace MinecraftClient
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 WebClient wClient = new WebClient();
                 Console.WriteLine("https://login.minecraft.net/?user=" + user + "&password=<******>&version=13");
-                string result = wClient.DownloadString("https://login.minecraft.net/?user=" + user + "&password=" + pass + "&version=13");
+                string result = Encoding.ASCII.GetString(wClient.UploadValues("https://login.minecraft.net/", new System.Collections.Specialized.NameValueCollection() { { "user", user }, { "password", pass }, { "version", "13" } } ));
                 outdata = result;
                 Console.WriteLine(result);
                 Console.ForegroundColor = ConsoleColor.Gray;
                 if (result == "Bad login") { return LoginResult.WrongPassword; }
+                if (result == "Bad request") { return LoginResult.BadRequest; }
                 if (result == "User not premium") { return LoginResult.NotPremium; }
                 if (result == "Too many failed logins") { return LoginResult.Blocked; }
                 if (result == "Account migrated, use e-mail as username.") { return LoginResult.AccountMigrated; }
@@ -466,6 +467,7 @@ namespace MinecraftClient
             if (!String.IsNullOrEmpty(str))
             {
                 if (!acceptnewlines) { str = str.Replace('\n', ' '); }
+                if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(str); return; }
                 string[] subs = str.Split(new char[] { '§' });
                 if (subs[0].Length > 0) { ConsoleIO.Write(subs[0]); }
                 for (int i = 1; i < subs.Length; i++)
@@ -654,7 +656,7 @@ namespace MinecraftClient
                     var PublicServerkey = Crypto.GenerateRSAPublicKey(Serverkey_RAW);
                     var SecretKey = Crypto.GenerateAESPrivateKey();
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.WriteLine("Handshake sussessful. (Server ID: " + serverID + ')');
+                    Console.WriteLine("Handshake successful. (Server ID: " + serverID + ')');
                     Console.ForegroundColor = ConsoleColor.Gray;
                     return StartEncryption(username, sessionID, token, serverID, PublicServerkey, SecretKey);
                 }

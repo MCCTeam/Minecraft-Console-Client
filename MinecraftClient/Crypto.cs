@@ -7,8 +7,6 @@ using java.security;
 using java.security.spec;
 using javax.crypto;
 using javax.crypto.spec;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
 
 namespace MinecraftClient
 {
@@ -27,9 +25,9 @@ namespace MinecraftClient
 
         public static SecretKey GenerateAESPrivateKey()
         {
-            CipherKeyGenerator var0 = new CipherKeyGenerator();
-            var0.Init(new KeyGenerationParameters(new Org.BouncyCastle.Security.SecureRandom(), 128));
-            return new SecretKeySpec(var0.GenerateKey(), "AES");
+            AesManaged aes = new AesManaged();
+            aes.KeySize = 128; aes.GenerateKey();
+            return new SecretKeySpec(aes.Key, "AES"); 
         }
 
         public static byte[] getServerHash(String toencode, PublicKey par1PublicKey, SecretKey par2SecretKey)
