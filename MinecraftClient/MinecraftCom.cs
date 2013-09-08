@@ -8,6 +8,18 @@ using System.Net.Sockets;
 namespace MinecraftClient
 {
     /// <summary>
+    /// A temporary fix class.  Trusts *ALL* certificates.
+    /// Should be replaced with a proper solution
+    /// Such as one listed here: http://www.mono-project.com/UsingTrustedRootsRespectfully
+    class DoNotCheckCertPolicy : ICertificatePolicy
+    {
+        public bool CheckValidationResult(ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
+        {
+            return true;
+        }
+    }
+
+    /// <summary>
     /// The class containing all the core functions needed to communicate with a Minecraft server.
     /// </summary>
 
@@ -29,6 +41,7 @@ namespace MinecraftClient
         {
             try
             {
+                ServicePointManager.CertificatePolicy = new DoNotCheckCertPolicy(); // TODO: replace policy
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 WebClient wClient = new WebClient();
                 Console.WriteLine("https://login.minecraft.net/?user=" + user + "&password=<******>&version=13");
