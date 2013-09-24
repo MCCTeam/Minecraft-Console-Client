@@ -244,12 +244,13 @@ namespace MinecraftClient
                     {
                         Console.WriteLine("Cannot connect to the server : This version is not supported !");
                         ReadLineReconnect();
+                        System.Threading.Thread.Sleep(10 * 1000); Restart();
                     }
                 }
                 else
                 {
                     Console.WriteLine("Failed to ping this IP.");
-                    ReadLineReconnect();
+                    System.Threading.Thread.Sleep(10 * 1000); Restart();
                 }
             }
             else
@@ -266,7 +267,8 @@ namespace MinecraftClient
                     case MinecraftCom.LoginResult.Error: Console.WriteLine("Network error."); break;
                 }
                 while (Console.KeyAvailable) { Console.ReadKey(false); }
-                if (Settings.SingleCommand == "") { ReadLineReconnect(); }
+                if (Settings.SingleCommand == "") {System.Threading.Thread.Sleep(10 * 1000); Restart();
+                }
             }
         }
 
