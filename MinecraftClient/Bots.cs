@@ -289,7 +289,7 @@ namespace MinecraftClient
                 count++;
                 if (count == timeping)
                 {
-                    SendText("/ping");
+                    SendText(Settings.AntiAFK_Text);
                     count = 0;
                 }
             }
