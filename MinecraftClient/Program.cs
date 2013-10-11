@@ -211,7 +211,7 @@ namespace MinecraftClient
                 if (MinecraftCom.GetServerInfo(Settings.ServerIP, ref protocolversion, ref version))
                 {
                     //Supported protocol version ?
-                    int[] supportedVersions = { 51, 60, 61, 72, 73, 74 };
+                    int[] supportedVersions = { 51, 60, 61, 72, 73, 74, 78 };
                     if (Array.IndexOf(supportedVersions, protocolversion) > -1)
                     {
                         //Minecraft 1.6+ ? Load translations
