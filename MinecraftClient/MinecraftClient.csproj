@@ -144,9 +144,6 @@
     <Content Include="lib\IKVM.OpenJDK.Util.dll" />
     <Content Include="lib\IKVM.Runtime.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="MinecraftClient_TemporaryKey.pfx" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
