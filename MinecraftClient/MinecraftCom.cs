@@ -79,7 +79,19 @@ namespace MinecraftClient
             Console.ForegroundColor = ConsoleColor.DarkGray;
             WebClient client = new WebClient();
             Console.Write("http://session.minecraft.net/game/joinserver.jsp?user=" + user + "&sessionId=" + sessionID + "&serverId=" + hash + " ... ");
-            string result = client.DownloadString("http://session.minecraft.net/game/joinserver.jsp?user=" + user + "&sessionId=" + sessionID + "&serverId=" + hash);
+            string result;
+            try
+            {
+                result = client.DownloadString("http://session.minecraft.net/game/joinserver.jsp?user=" + user + "&sessionId=" + sessionID + "&serverId=" + hash);
+            }
+            catch (WebException e)
+            {
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine();
+                Console.WriteLine("Error while connecting to session server: " + e.Message);
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                return false;
+            }
             Console.WriteLine(result);
             Console.ForegroundColor = ConsoleColor.Gray;
             return (result == "OK");
