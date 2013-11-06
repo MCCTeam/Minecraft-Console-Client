@@ -171,7 +171,7 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        if (text == "/quit" || text == "/reco" || text == "/reconnect") { break; }
+                        if (text.ToLower() == "/quit" || text.ToLower().StartsWith("/exec ") || text.ToLower() == "/reco" || text.ToLower() == "/reconnect") { break; }
                         while (text.Length > 0 && text[0] == ' ') { text = text.Substring(1); }
                         if (text != "")
                         {
@@ -200,13 +200,18 @@ namespace MinecraftClient
                     }
                 }
 
-                if (text == "/quit")
+                if (text.ToLower() == "/quit")
                 {
                     ConsoleIO.WriteLine("You have left the server.");
                     Disconnect();
                 }
 
-                else if (text == "/reco" || text == "/reconnect")
+                else if (text.ToLower().StartsWith("/exec ")) {
+                    handler.BotLoad(new Bots.Scripting("config/" + text.Split()[1]));
+                }
+
+
+                else if (text.ToLower() == "/reco" || text.ToLower() == "/reconnect")
                 {
                     ConsoleIO.WriteLine("You have left the server.");
                     handler.SendRespawnPacket();
