@@ -299,12 +299,12 @@ namespace MinecraftClient
         }
         private string readNextString()
         {
-            ushort length = (ushort)readNextShort();
+            int length = readNextVarInt();
             if (length > 0)
             {
-                byte[] cache = new byte[length * 2];
-                Receive(cache, 0, length * 2, SocketFlags.None);
-                string result = Encoding.BigEndianUnicode.GetString(cache);
+                byte[] cache = new byte[length];
+                Receive(cache, 0, length, SocketFlags.None);
+                string result = Encoding.UTF8.GetString(cache);
                 return result;
             }
             else return "";
@@ -450,6 +450,36 @@ namespace MinecraftClient
             readData(datalen);
             readData(12 * (chunkcount));
         }
+        private int readNextVarInt()
+        {
+            int i = 0;
+            int j = 0;
+            while (true)
+            {
+                int k = readNextByte();
+                i |= (k & 0x7F) << j++ * 7;
+                if (j > 5) throw new OverflowException("VarInt too big");
+                if ((k & 0x80) != 128) break;
+            }
+            return i;
+        }
+        private static byte[] getVarInt(int paramInt)
+        {
+            List<byte> bytes = new List<byte>();
+            while ((paramInt & -128) != 0)
+            {
+                bytes.Add((byte)(paramInt & 127 | 128));
+                paramInt = (int)(((uint)paramInt) >> 7);
+            }
+            return bytes.ToArray();
+        }
+        private static byte[] concatBytes(params byte[][] bytes)
+        {
+            List<byte> result = new List<byte>();
+            foreach (byte[] array in bytes)
+                result.AddRange(array);
+            return result.ToArray();
+        }
 
         private static void setcolor(char c)
         {
@@ -565,39 +595,42 @@ namespace MinecraftClient
                 }
 
                 TcpClient tcp = new TcpClient(host, port);
-                byte[] ping = new byte[2] { 0xfe, 0x01 };
-                tcp.Client.Send(ping, SocketFlags.None);
+                
+                byte[] packet_id = getVarInt(0);
+                byte[] protocol_version = getVarInt(4);
+                byte[] server_adress_val = Encoding.UTF8.GetBytes(host);
+                byte[] server_adress_len = getVarInt(server_adress_val.Length);
+                byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
+                byte[] next_state = getVarInt(1);
+                byte[] packet = concatBytes(packet_id, protocol_version, server_adress_len, server_adress_val, server_port, next_state);
+                byte[] tosend = concatBytes(getVarInt(packet.Length), packet);
 
-                tcp.Client.Receive(ping, 0, 1, SocketFlags.None);
-                if (ping[0] == 0xff)
+                tcp.Client.Send(tosend, SocketFlags.None);
+
+                byte[] status_request = getVarInt(0);
+                byte[] request_packet = concatBytes(getVarInt(status_request.Length), status_request);
+
+                tcp.Client.Send(request_packet, SocketFlags.None);
+
+                MinecraftCom ComTmp = new MinecraftCom();
+                ComTmp.setClient(tcp);
+                if (ComTmp.readNextVarInt() > 0) //Read Response length //<- STUCK HERE (NO ANSWER FROM SERVER)
                 {
-                    MinecraftCom ComTmp = new MinecraftCom();
-                    ComTmp.setClient(tcp);
-                    string result = ComTmp.readNextString();
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    //Console.WriteLine(result.Replace((char)0x00, ' '));
-                    if (result.Length > 2 && result[0] == '§' && result[1] == '1')
+                    if (ComTmp.readNextVarInt() == 0x00) //Read Packet ID
                     {
-                        string[] tmp = result.Split((char)0x00);
-                        protocolversion = (byte)Int16.Parse(tmp[1]);
-                        version = tmp[2];
+                        string result = ComTmp.readNextString();
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        Console.WriteLine(result);
+                        //Console.WriteLine("Server version : MC " + version + " (protocol v" + protocolversion + ").");*/
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        //return true;
+                        return false; //MC 1.7+ not supported
                     }
-                    else
-                    {
-                        protocolversion = (byte)39;
-                        version = "B1.8.1 - 1.3.2";
-                    }
-                    Console.WriteLine("Server version : MC " + version + " (protocol v" + protocolversion + ").");
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    return true;
                 }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.WriteLine("Unexpected answer from the server (is that a Minecraft server ?)");
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    return false;
-                }
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine("Unexpected answer from the server (is that a MC 1.7+ server ?)");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                return false;
             }
             catch
             {

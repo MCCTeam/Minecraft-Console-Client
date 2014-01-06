@@ -23,7 +23,7 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC 1.4.6 to 1.6.4 - v" + Version + " - By ORelio & Contributors");
+            Console.WriteLine("Console Client for MC 1.7.2 - v" + Version + " - By ORelio & Contributors");
 
             //Basic Input/Output ?
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
@@ -211,11 +211,11 @@ namespace MinecraftClient
                 if (MinecraftCom.GetServerInfo(Settings.ServerIP, ref protocolversion, ref version))
                 {
                     //Supported protocol version ?
-                    int[] supportedVersions = { 51, 60, 61, 72, 73, 74, 78 };
+                    int[] supportedVersions = { 4 };
                     if (Array.IndexOf(supportedVersions, protocolversion) > -1)
                     {
-                        //Minecraft 1.6+ ? Load translations
-                        if (protocolversion >= 72) { ChatParser.InitTranslations(); }
+                        //Load translations (Minecraft 1.6+)
+                        ChatParser.InitTranslations();
 
                         //Will handle the connection for this client
                         Console.WriteLine("Version is supported.");
