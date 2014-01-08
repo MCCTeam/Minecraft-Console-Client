@@ -19,6 +19,7 @@ namespace MinecraftClient
         public static string Login = "";
         public static string Username = "";
         public static string Password = "";
+        public static string UUID = "";
         public static string ServerIP = "";
         public static string SingleCommand = "";
 

@@ -285,17 +285,24 @@ namespace MinecraftClient
 
         private static string JSONData2String(JSONData data)
         {
+            string extra_result = "";
             string colorcode = "";
             switch (data.Type)
             {
                 case JSONData.DataType.Object:
+                    if (data.Properties.ContainsKey("extra"))
+                    {
+                        JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
+                        foreach (JSONData item in extras)
+                            extra_result += JSONData2String(item);
+                    }
                     if (data.Properties.ContainsKey("color"))
                     {
                         colorcode = color2tag(JSONData2String(data.Properties["color"]));
                     }
                     if (data.Properties.ContainsKey("text"))
                     {
-                        return colorcode + JSONData2String(data.Properties["text"]) + colorcode;
+                        return extra_result + colorcode + JSONData2String(data.Properties["text"]) + colorcode;
                     }
                     else if (data.Properties.ContainsKey("translate"))
                     {
@@ -308,9 +315,9 @@ namespace MinecraftClient
                                 using_data.Add(JSONData2String(array[i]));
                             }
                         }
-                        return colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + colorcode;
+                        return extra_result + colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + colorcode;
                     }
-                    else return "";
+                    else return extra_result;
 
                 case JSONData.DataType.Array:
                     string result = "";

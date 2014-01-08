@@ -179,7 +179,7 @@ namespace MinecraftClient
         {
 
             MinecraftCom.LoginResult result;
-            string logindata = "";
+            string sessionID = "";
 
             if (Settings.Password == "-")
             {
@@ -187,17 +187,15 @@ namespace MinecraftClient
                 Console.WriteLine("You chose to run in offline mode.");
                 Console.ForegroundColor = ConsoleColor.Gray;
                 result = MinecraftCom.LoginResult.Success;
-                logindata = "0:deprecated:" + Settings.Login + ":0";
+                sessionID = "0";
             }
             else
             {
                 Console.WriteLine("Connecting to Minecraft.net...");
-                result = MinecraftCom.GetLogin(Settings.Login, Settings.Password, ref logindata);
+                result = MinecraftCom.GetLogin(ref Settings.Login, Settings.Password, ref sessionID, ref Settings.UUID);
             }
             if (result == MinecraftCom.LoginResult.Success)
             {
-                Settings.Username = logindata.Split(':')[2];
-                string sessionID = logindata.Split(':')[3];
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
                 if (Settings.ServerIP == "")
                 {
@@ -260,7 +258,6 @@ namespace MinecraftClient
                 {
                     case MinecraftCom.LoginResult.AccountMigrated: Console.WriteLine("Account migrated, use e-mail as username."); break;
                     case MinecraftCom.LoginResult.Blocked: Console.WriteLine("Too many failed logins. Please try again later."); break;
-                    case MinecraftCom.LoginResult.BadRequest: Console.WriteLine("Login attempt rejected: Bad request."); break;
                     case MinecraftCom.LoginResult.WrongPassword: Console.WriteLine("Incorrect password."); break;
                     case MinecraftCom.LoginResult.NotPremium: Console.WriteLine("User not premium."); break;
                     case MinecraftCom.LoginResult.Error: Console.WriteLine("Network error."); break;

@@ -82,54 +82,43 @@ namespace MinecraftClient
 
             try
             {
-                Console.WriteLine("Connecting...");
+                Console.WriteLine("Logging in...");
                 client = new TcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
                 handler.setClient(client);
-                byte[] token = new byte[1]; string serverID = "";
-                if (handler.Handshake(user, sessionID, ref serverID, ref token, host, port))
+                if (handler.Login(user, sessionID, host, port))
                 {
-                    Console.WriteLine("Logging in...");
-
-                    if (handler.FinalizeLogin())
+                    //Single command sending
+                    if (singlecommand)
                     {
-                        //Single command sending
-                        if (singlecommand)
-                        {
-                            handler.SendChatMessage(command);
-                            Console.Write("Command ");
-                            Console.ForegroundColor = ConsoleColor.DarkGray;
-                            Console.Write(command);
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.WriteLine(" sent.");
-                            Thread.Sleep(5000);
-                            handler.Disconnect("disconnect.quitting");
-                            Thread.Sleep(1000);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Server was successfuly joined.\nType '/quit' to leave the server.");
-
-                            //Command sending thread, allowing user input
-                            t_sender = new Thread(new ThreadStart(StartTalk));
-                            t_sender.Name = "CommandSender";
-                            t_sender.Start();
-
-                            //Data receiving thread, allowing text receiving
-                            t_updater = new Thread(new ThreadStart(Updater));
-                            t_updater.Name = "PacketHandler";
-                            t_updater.Start();
-                        }
+                        handler.SendChatMessage(command);
+                        Console.Write("Command ");
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        Console.Write(command);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.WriteLine(" sent.");
+                        Thread.Sleep(5000);
+                        handler.Disconnect("disconnect.quitting");
+                        Thread.Sleep(1000);
                     }
                     else
                     {
-                        Console.WriteLine("Login failed.");
-                        if (!singlecommand) { Program.ReadLineReconnect(); }
+                        Console.WriteLine("Server was successfuly joined.\nType '/quit' to leave the server.");
+
+                        //Command sending thread, allowing user input
+                        t_sender = new Thread(new ThreadStart(StartTalk));
+                        t_sender.Name = "CommandSender";
+                        t_sender.Start();
+
+                        //Data receiving thread, allowing text receiving
+                        t_updater = new Thread(new ThreadStart(Updater));
+                        t_updater.Name = "PacketHandler";
+                        t_updater.Start();
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Invalid session ID.");
+                    Console.WriteLine("Login failed.");
                     if (!singlecommand) { Program.ReadLineReconnect(); }
                 }
             }
