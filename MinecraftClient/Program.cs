@@ -179,6 +179,7 @@ namespace MinecraftClient
         {
 
             MinecraftCom.LoginResult result;
+            string username = Settings.Login;
             string sessionID = "";
 
             if (Settings.Password == "-")
@@ -192,8 +193,9 @@ namespace MinecraftClient
             else
             {
                 Console.WriteLine("Connecting to Minecraft.net...");
-                result = MinecraftCom.GetLogin(ref Settings.Login, Settings.Password, ref sessionID, ref Settings.UUID);
+                result = MinecraftCom.GetLogin(ref username, Settings.Password, ref sessionID, ref Settings.UUID);
             }
+            Settings.Username = username;
             if (result == MinecraftCom.LoginResult.Success)
             {
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
