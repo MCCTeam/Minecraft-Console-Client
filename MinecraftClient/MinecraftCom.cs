@@ -127,7 +127,7 @@ namespace MinecraftClient
         public bool HasBeenKicked { get { return connectionlost; } }
         bool connectionlost = false;
         bool encrypted = false;
-        byte protocolversion;
+        int protocolversion;
 
         public bool Update()
         {
@@ -471,6 +471,7 @@ namespace MinecraftClient
                 bytes.Add((byte)(paramInt & 127 | 128));
                 paramInt = (int)(((uint)paramInt) >> 7);
             }
+            bytes.Add((byte)paramInt);
             return bytes.ToArray();
         }
         private static byte[] concatBytes(params byte[][] bytes)
@@ -479,6 +480,10 @@ namespace MinecraftClient
             foreach (byte[] array in bytes)
                 result.AddRange(array);
             return result.ToArray();
+        }
+        private static int atoi(string str)
+        {
+            return int.Parse(new string(str.Trim().TakeWhile(char.IsDigit).ToArray()));
         }
 
         private static void setcolor(char c)
@@ -552,7 +557,7 @@ namespace MinecraftClient
             return results[0];
         }
 
-        public void setVersion(byte ver) { protocolversion = ver; }
+        public void setVersion(int ver) { protocolversion = ver; }
         public void setClient(TcpClient n) { c = n; }
         private void setEncryptedClient(Crypto.AesStream n) { s = n; encrypted = true; }
         private void Receive(byte[] buffer, int start, int offset, SocketFlags f)
@@ -573,7 +578,7 @@ namespace MinecraftClient
             else c.Client.Send(buffer);
         }
 
-        public static bool GetServerInfo(string serverIP, ref byte protocolversion, ref string version)
+        public static bool GetServerInfo(string serverIP, ref int protocolversion, ref string version)
         {
             try
             {
@@ -614,17 +619,26 @@ namespace MinecraftClient
 
                 MinecraftCom ComTmp = new MinecraftCom();
                 ComTmp.setClient(tcp);
-                if (ComTmp.readNextVarInt() > 0) //Read Response length //<- STUCK HERE (NO ANSWER FROM SERVER)
+                if (ComTmp.readNextVarInt() > 0) //Read Response length
                 {
                     if (ComTmp.readNextVarInt() == 0x00) //Read Packet ID
                     {
-                        string result = ComTmp.readNextString();
-                        Console.ForegroundColor = ConsoleColor.DarkGray;
-                        Console.WriteLine(result);
-                        //Console.WriteLine("Server version : MC " + version + " (protocol v" + protocolversion + ").");*/
-                        Console.ForegroundColor = ConsoleColor.Gray;
-                        //return true;
-                        return false; //MC 1.7+ not supported
+                        string result = ComTmp.readNextString(); //Get the Json data
+                        if (result[0] == '{' && result.Contains("protocol\":") && result.Contains("name\":\""))
+                        {
+                            string[] tmp_ver = result.Split(new string[] { "protocol\":" }, StringSplitOptions.None);
+                            string[] tmp_name = result.Split(new string[] { "name\":\"" }, StringSplitOptions.None);
+                            if (tmp_ver.Length >= 2 && tmp_name.Length >= 2)
+                            {
+                                protocolversion = atoi(tmp_ver[1]);
+                                version = tmp_name[1].Split('"')[0];
+                                Console.ForegroundColor = ConsoleColor.DarkGray;
+                                //Console.WriteLine(result); //Debug: show the full Json string
+                                Console.WriteLine("Server version : " + version + " (protocol v" + protocolversion + ").");
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                                return true;
+                            }
+                        }
                     }
                 }
                 Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -642,39 +656,23 @@ namespace MinecraftClient
         }
         public bool Handshake(string username, string sessionID, ref string serverID, ref byte[] token, string host, int port)
         {
-            //array
-            byte[] data = new byte[10 + (username.Length + host.Length) * 2];
+            byte[] packet_id = getVarInt(0);
+            byte[] protocol_version = getVarInt(4);
+            byte[] server_adress_val = Encoding.UTF8.GetBytes(host);
+            byte[] server_adress_len = getVarInt(server_adress_val.Length);
+            byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
+            byte[] next_state = getVarInt(1);
+            byte[] handshake_packet = concatBytes(packet_id, protocol_version, server_adress_len, server_adress_val, server_port, next_state);
+            byte[] handshake_packet_tosend = concatBytes(getVarInt(handshake_packet.Length), handshake_packet);
 
-            //packet id
-            data[0] = (byte)2;
+            Send(handshake_packet_tosend);
 
-            //Protocol Version
-            data[1] = protocolversion;
+            byte[] username_val = Encoding.UTF8.GetBytes(username);
+            byte[] username_len = getVarInt(username_val.Length);
+            byte[] login_packet = concatBytes(packet_id, username_len, username_val);
+            byte[] login_packet_tosend = concatBytes(getVarInt(login_packet.Length), login_packet);
 
-            //short len
-            byte[] sh = BitConverter.GetBytes((short)username.Length);
-            Array.Reverse(sh);
-            sh.CopyTo(data, 2);
-
-            //username
-            byte[] bname = Encoding.BigEndianUnicode.GetBytes(username);
-            bname.CopyTo(data, 4);
-
-            //short len
-            sh = BitConverter.GetBytes((short)host.Length);
-            Array.Reverse(sh);
-            sh.CopyTo(data, 4 + (username.Length * 2));
-
-            //host
-            byte[] bhost = Encoding.BigEndianUnicode.GetBytes(host);
-            bhost.CopyTo(data, 6 + (username.Length * 2));
-
-            //port
-            sh = BitConverter.GetBytes(port);
-            Array.Reverse(sh);
-            sh.CopyTo(data, 6 + (username.Length * 2) + (host.Length * 2));
-
-            Send(data);
+            Send(login_packet_tosend);
 
             byte[] pid = new byte[1];
             Receive(pid, 0, 1, SocketFlags.None);

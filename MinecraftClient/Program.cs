@@ -207,7 +207,7 @@ namespace MinecraftClient
 
                 //Get server version
                 Console.WriteLine("Retrieving Server Info...");
-                byte protocolversion = 0; string version = "";
+                int protocolversion = 0; string version = "";
                 if (MinecraftCom.GetServerInfo(Settings.ServerIP, ref protocolversion, ref version))
                 {
                     //Supported protocol version ?
