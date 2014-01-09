@@ -13,7 +13,7 @@ namespace MinecraftClient
 
     public class MinecraftCom : IAutoComplete
     {
-        #region Login to Minecraft.net, Obtaining a session ID
+        #region Login to Minecraft.net and get a new session ID
 
         public enum LoginResult { Error, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
 
@@ -77,35 +77,23 @@ namespace MinecraftClient
         #region Session checking when joining a server in online mode
 
         /// <summary>
-        /// This method allows to join an online-mode server.
-        /// It Should be called between the handshake and the login attempt.
+        /// Check session using the Yggdrasil authentication scheme. Allow to join an online-mode server
         /// </summary>
         /// <param name="user">Username</param>
-        /// <param name="sessionID">A valid session ID for this username</param>
-        /// <param name="hash">Hash returned by the server during the handshake</param>
-        /// <returns>Returns true if the check was successful</returns>
+        /// <param name="accesstoken">Session ID</param>
+        /// <param name="serverhash">Server ID</param>
+        /// <returns>TRUE if session was successfully checked</returns>
 
-        public static bool SessionCheck(string user, string sessionID, string hash)
+        public static bool SessionCheck(string uuid, string accesstoken, string serverhash)
         {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            WebClient client = new WebClient();
-            Console.Write("http://session.minecraft.net/game/joinserver.jsp?user=" + user + "&sessionId=" + sessionID + "&serverId=" + hash + " ... ");
-            string result;
             try
             {
-                result = client.DownloadString("http://session.minecraft.net/game/joinserver.jsp?user=" + user + "&sessionId=" + sessionID + "&serverId=" + hash);
+                WebClient wClient = new WebClient();
+                wClient.Headers.Add("Content-Type: application/json");
+                string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
+                return (wClient.UploadString("https://sessionserver.mojang.com/session/minecraft/join", json_request) == "");
             }
-            catch (WebException e)
-            {
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.WriteLine();
-                Console.WriteLine("Error while connecting to session server: " + e.Message);
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                return false;
-            }
-            Console.WriteLine(result);
-            Console.ForegroundColor = ConsoleColor.Gray;
-            return (result == "OK");
+            catch (WebException) { return false; }
         }
 
         #endregion
@@ -166,7 +154,7 @@ namespace MinecraftClient
                             autocomplete_received = true;
                             tab_list = tab_list.Trim();
                             if (tab_list.Length > 0)
-                                ConsoleIO.WriteLine(tab_list);
+                                printstring("§8" + tab_list, false);
                             break;
                         case 0x40: string reason = readNextString();
                             ConsoleIO.WriteLine("Disconnected by Server :");
@@ -447,7 +435,7 @@ namespace MinecraftClient
                 return false;
             }
         }
-        public bool Login(string username, string sessionID, string host, int port)
+        public bool Login(string username, string uuid, string sessionID, string host, int port)
         {
             byte[] packet_id = getVarInt(0);
             byte[] protocol_version = getVarInt(4);
@@ -470,13 +458,14 @@ namespace MinecraftClient
             int size = readNextVarInt(); //Packet size
             int pid = readNextVarInt(); //Packet ID
             size -= getVarInt(pid).Length;
+            /*
             while (pid == 0x3F) //Skip some early plugin messages
             {
                 readData(size);
                 size = readNextVarInt();
                 pid = readNextVarInt();
                 size -= getVarInt(pid).Length;
-            }
+            }*/
             if (pid == 0x00) //Login rejected
             {
                 Console.WriteLine("Login rejected by Server :");
@@ -490,10 +479,7 @@ namespace MinecraftClient
                 byte[] token = readNextByteArray();
                 var PublicServerkey = Crypto.GenerateRSAPublicKey(Serverkey_RAW);
                 var SecretKey = Crypto.GenerateAESPrivateKey();
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine("Handshake successful. (Server ID: " + serverID + ')');
-                Console.ForegroundColor = ConsoleColor.Gray;
-                return StartEncryption(username, sessionID, token, serverID, PublicServerkey, SecretKey);
+                return StartEncryption(uuid, sessionID, token, serverID, PublicServerkey, SecretKey);
             }
             else if (pid == 0x02) //Login successfull
             {
@@ -504,7 +490,7 @@ namespace MinecraftClient
             }
             else return false;
         }
-        public bool StartEncryption(string username, string sessionID, byte[] token, string serverIDhash, java.security.PublicKey serverKey, javax.crypto.SecretKey secretKey)
+        public bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, java.security.PublicKey serverKey, javax.crypto.SecretKey secretKey)
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
             ConsoleIO.WriteLine("Crypto keys & hash generated.");
@@ -513,7 +499,7 @@ namespace MinecraftClient
             if (serverIDhash != "-")
             {
                 Console.WriteLine("Checking Session...");
-                if (!SessionCheck(username, sessionID, new java.math.BigInteger(Crypto.getServerHash(serverIDhash, serverKey, secretKey)).toString(16)))
+                if (!SessionCheck(uuid, sessionID, new java.math.BigInteger(Crypto.getServerHash(serverIDhash, serverKey, secretKey)).toString(16)))
                 {
                     return false;
                 }
@@ -531,61 +517,13 @@ namespace MinecraftClient
             byte[] encryption_response_tosend = concatBytes(getVarInt(encryption_response.Length), encryption_response);
             Send(encryption_response_tosend);
 
+            //Start client-side encryption
+            setEncryptedClient(Crypto.SwitchToAesMode(c.GetStream(), secretKey));
+
             //Get the next packet
-            int size = readNextVarInt(); //Packet size
-            int pid = readNextVarInt(); //Packet ID
-            if (pid == 0x02)
-            {
-                setEncryptedClient(Crypto.SwitchToAesMode(c.GetStream(), secretKey));
-                return true;
-            }
-            else return false;
+            readNextVarInt(); //Skip Packet size (not needed)
+            return (readNextVarInt() == 0x02); //Packet ID. 0x02 = Login Success
         }
-        /*
-        public bool FinalizeLogin()
-        {
-            Send(new byte[] { 0xCD, 0 });
-            try
-            {
-                byte[] pid = new byte[1];
-                try
-                {
-                    if (c.Connected)
-                    {
-                        Receive(pid, 0, 1, SocketFlags.None);
-                        while (pid[0] >= 0xC0 && pid[0] != 0xFF) //Skip some early packets or plugin messages
-                        {
-                            processPacket(pid[0]);
-                            Receive(pid, 0, 1, SocketFlags.None);
-                        }
-                        if (pid[0] == (byte)1)
-                        {
-                            readData(4); readNextString(); readData(5);
-                            return true; //The Server accepted the request
-                        }
-                        else if (pid[0] == (byte)0xFF)
-                        {
-                            string reason = readNextString();
-                            Console.WriteLine("Login rejected by Server :"); printstring(reason, true);
-                            for (int i = 0; i < bots.Count; i++) { bots[i].OnDisconnect(ChatBot.DisconnectReason.LoginRejected, reason); }
-                            return false;
-                        }
-                    }
-                }
-                catch
-                {
-                    //Connection failed
-                    return false;
-                }
-            }
-            catch
-            {
-                //Network error
-                Console.WriteLine("Connection Lost.");
-                return false;
-            }
-            return false; //Login was unsuccessful (received a kick...)
-        }*/
 
         public bool SendChatMessage(string message)
         {

@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         private static McTcpClient Client;
         public static string[] startupargs;
-        public const string Version = "1.6.0";
+        public const string Version = "1.7.0";
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -179,8 +179,9 @@ namespace MinecraftClient
         {
 
             MinecraftCom.LoginResult result;
-            string username = Settings.Login;
+            Settings.Username = Settings.Login;
             string sessionID = "";
+            string UUID = "";
 
             if (Settings.Password == "-")
             {
@@ -193,9 +194,8 @@ namespace MinecraftClient
             else
             {
                 Console.WriteLine("Connecting to Minecraft.net...");
-                result = MinecraftCom.GetLogin(ref username, Settings.Password, ref sessionID, ref Settings.UUID);
+                result = MinecraftCom.GetLogin(ref Settings.Username, Settings.Password, ref sessionID, ref UUID);
             }
-            Settings.Username = username;
             if (result == MinecraftCom.LoginResult.Success)
             {
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
@@ -236,9 +236,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            Client = new McTcpClient(Settings.Username, sessionID, Settings.ServerIP, handler, Settings.SingleCommand);
+                            Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, handler, Settings.SingleCommand);
                         }
-                        else Client = new McTcpClient(Settings.Username, sessionID, Settings.ServerIP, handler);
+                        else Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, handler);
                     }
                     else
                     {

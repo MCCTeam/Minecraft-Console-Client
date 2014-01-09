@@ -59,17 +59,17 @@ namespace MinecraftClient
                 case "black": return "§0";
                 case "dark_blue": return "§1";
                 case "dark_green": return "§2";
-                case "dark_cyan": return "§3";
-                case "dark_cyanred": return "§4";
-                case "dark_magenta": return "§5";
-                case "dark_yellow": return "§6";
+                case "dark_aqua": return "§3";
+                case "dark_red": return "§4";
+                case "dark_purple": return "§5";
+                case "gold": return "§6";
                 case "gray": return "§7";
                 case "dark_gray": return "§8";
                 case "blue": return "§9";
                 case "green": return "§a";
-                case "cyan": return "§b";
+                case "aqua": return "§b";
                 case "red": return "§c";
-                case "magenta": return "§d";
+                case "light_purple": return "§d";
                 case "yellow": return "§e";
                 case "white": return "§f";
                 default: return "";
@@ -294,7 +294,7 @@ namespace MinecraftClient
                     {
                         JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
                         foreach (JSONData item in extras)
-                            extra_result += JSONData2String(item);
+                            extra_result = extra_result + JSONData2String(item) + "§r";
                     }
                     if (data.Properties.ContainsKey("color"))
                     {

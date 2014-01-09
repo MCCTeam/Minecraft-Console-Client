@@ -34,9 +34,9 @@ namespace MinecraftClient
         /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
         /// <param name="server_port">The server IP (serveradress or serveradress:port)</param>
 
-        public McTcpClient(string username, string sessionID, string server_port, MinecraftCom handler)
+        public McTcpClient(string username, string uuid, string sessionID, string server_port, MinecraftCom handler)
         {
-            StartClient(username, sessionID, server_port, false, handler, "");
+            StartClient(username, uuid, sessionID, server_port, false, handler, "");
         }
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace MinecraftClient
         /// <param name="server_port">The server IP (serveradress or serveradress:port)</param>
         /// <param name="command">The text or command to send.</param>
 
-        public McTcpClient(string username, string sessionID, string server_port, MinecraftCom handler, string command)
+        public McTcpClient(string username, string uuid, string sessionID, string server_port, MinecraftCom handler, string command)
         {
-            StartClient(username, sessionID, server_port, true, handler, command);
+            StartClient(username, uuid, sessionID, server_port, true, handler, command);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace MinecraftClient
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
 
-        private void StartClient(string user, string sessionID, string server_port, bool singlecommand, MinecraftCom handler, string command)
+        private void StartClient(string user, string uuid, string sessionID, string server_port, bool singlecommand, MinecraftCom handler, string command)
         {
             this.handler = handler;
             username = user;
@@ -86,7 +86,7 @@ namespace MinecraftClient
                 client = new TcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
                 handler.setClient(client);
-                if (handler.Login(user, sessionID, host, port))
+                if (handler.Login(user, uuid, sessionID, host, port))
                 {
                     //Single command sending
                     if (singlecommand)
