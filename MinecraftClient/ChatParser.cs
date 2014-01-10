@@ -59,17 +59,17 @@ namespace MinecraftClient
                 case "black": return "§0";
                 case "dark_blue": return "§1";
                 case "dark_green": return "§2";
-                case "dark_cyan": return "§3";
-                case "dark_cyanred": return "§4";
-                case "dark_magenta": return "§5";
-                case "dark_yellow": return "§6";
+                case "dark_aqua": return "§3";
+                case "dark_red": return "§4";
+                case "dark_purple": return "§5";
+                case "gold": return "§6";
                 case "gray": return "§7";
                 case "dark_gray": return "§8";
                 case "blue": return "§9";
                 case "green": return "§a";
-                case "cyan": return "§b";
+                case "aqua": return "§b";
                 case "red": return "§c";
-                case "magenta": return "§d";
+                case "light_purple": return "§d";
                 case "yellow": return "§e";
                 case "white": return "§f";
                 default: return "";
@@ -95,10 +95,13 @@ namespace MinecraftClient
             TranslationRules["commands.message.display.incoming"] = "§7%s whispers to you: %s";
             TranslationRules["commands.message.display.outgoing"] = "§7You whisper to %s: %s";
 
-            //Use translations from Minecraft assets if a copy of the game is installed?
-            if (!System.IO.File.Exists(Settings.TranslationsFile)
+            //Use translations from Minecraft assets if translation file is not found but a copy of the game is installed?
+            if (!System.IO.File.Exists(Settings.TranslationsFile) //Try en_US.lang
               && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
             { Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir; }
+            if (!System.IO.File.Exists(Settings.TranslationsFile) //Still not found? try en_GB.lang
+              && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir_Alt))
+            { Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir_Alt; }
 
             //Load an external dictionnary of translation rules
             if (System.IO.File.Exists(Settings.TranslationsFile))
@@ -123,7 +126,7 @@ namespace MinecraftClient
             else //No external dictionnary found.
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("MC 1.6+ warning: Translations file not found: \"" + Settings.TranslationsFile + "\""
+                ConsoleIO.WriteLine("Translations file not found: \"" + Settings.TranslationsFile + "\""
                 + "\nYou can pick a translation file from .minecraft\\assets\\lang\\"
                 + "\nSome messages won't be properly printed without this file.");
                 Console.ForegroundColor = ConsoleColor.Gray;
@@ -282,17 +285,24 @@ namespace MinecraftClient
 
         private static string JSONData2String(JSONData data)
         {
+            string extra_result = "";
             string colorcode = "";
             switch (data.Type)
             {
                 case JSONData.DataType.Object:
+                    if (data.Properties.ContainsKey("extra"))
+                    {
+                        JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
+                        foreach (JSONData item in extras)
+                            extra_result = extra_result + JSONData2String(item) + "§r";
+                    }
                     if (data.Properties.ContainsKey("color"))
                     {
                         colorcode = color2tag(JSONData2String(data.Properties["color"]));
                     }
                     if (data.Properties.ContainsKey("text"))
                     {
-                        return colorcode + JSONData2String(data.Properties["text"]) + colorcode;
+                        return extra_result + colorcode + JSONData2String(data.Properties["text"]) + colorcode;
                     }
                     else if (data.Properties.ContainsKey("translate"))
                     {
@@ -305,9 +315,9 @@ namespace MinecraftClient
                                 using_data.Add(JSONData2String(array[i]));
                             }
                         }
-                        return colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + colorcode;
+                        return extra_result + colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + colorcode;
                     }
-                    else return "";
+                    else return extra_result;
 
                 case JSONData.DataType.Array:
                     string result = "";

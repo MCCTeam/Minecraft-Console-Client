@@ -34,9 +34,9 @@ namespace MinecraftClient
         /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
         /// <param name="server_port">The server IP (serveradress or serveradress:port)</param>
 
-        public McTcpClient(string username, string sessionID, string server_port, MinecraftCom handler)
+        public McTcpClient(string username, string uuid, string sessionID, string server_port, MinecraftCom handler)
         {
-            StartClient(username, sessionID, server_port, false, handler, "");
+            StartClient(username, uuid, sessionID, server_port, false, handler, "");
         }
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace MinecraftClient
         /// <param name="server_port">The server IP (serveradress or serveradress:port)</param>
         /// <param name="command">The text or command to send.</param>
 
-        public McTcpClient(string username, string sessionID, string server_port, MinecraftCom handler, string command)
+        public McTcpClient(string username, string uuid, string sessionID, string server_port, MinecraftCom handler, string command)
         {
-            StartClient(username, sessionID, server_port, true, handler, command);
+            StartClient(username, uuid, sessionID, server_port, true, handler, command);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace MinecraftClient
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
 
-        private void StartClient(string user, string sessionID, string server_port, bool singlecommand, MinecraftCom handler, string command)
+        private void StartClient(string user, string uuid, string sessionID, string server_port, bool singlecommand, MinecraftCom handler, string command)
         {
             this.handler = handler;
             username = user;
@@ -82,54 +82,43 @@ namespace MinecraftClient
 
             try
             {
-                Console.WriteLine("Connecting...");
+                Console.WriteLine("Logging in...");
                 client = new TcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
                 handler.setClient(client);
-                byte[] token = new byte[1]; string serverID = "";
-                if (handler.Handshake(user, sessionID, ref serverID, ref token, host, port))
+                if (handler.Login(user, uuid, sessionID, host, port))
                 {
-                    Console.WriteLine("Logging in...");
-
-                    if (handler.FinalizeLogin())
+                    //Single command sending
+                    if (singlecommand)
                     {
-                        //Single command sending
-                        if (singlecommand)
-                        {
-                            handler.SendChatMessage(command);
-                            Console.Write("Command ");
-                            Console.ForegroundColor = ConsoleColor.DarkGray;
-                            Console.Write(command);
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            Console.WriteLine(" sent.");
-                            Thread.Sleep(5000);
-                            handler.Disconnect("disconnect.quitting");
-                            Thread.Sleep(1000);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Server was successfuly joined.\nType '/quit' to leave the server.");
-
-                            //Command sending thread, allowing user input
-                            t_sender = new Thread(new ThreadStart(StartTalk));
-                            t_sender.Name = "CommandSender";
-                            t_sender.Start();
-
-                            //Data receiving thread, allowing text receiving
-                            t_updater = new Thread(new ThreadStart(Updater));
-                            t_updater.Name = "PacketHandler";
-                            t_updater.Start();
-                        }
+                        handler.SendChatMessage(command);
+                        Console.Write("Command ");
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        Console.Write(command);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.WriteLine(" sent.");
+                        Thread.Sleep(5000);
+                        handler.Disconnect("disconnect.quitting");
+                        Thread.Sleep(1000);
                     }
                     else
                     {
-                        Console.WriteLine("Login failed.");
-                        if (!singlecommand) { Program.ReadLineReconnect(); }
+                        Console.WriteLine("Server was successfuly joined.\nType '/quit' to leave the server.");
+
+                        //Command sending thread, allowing user input
+                        t_sender = new Thread(new ThreadStart(StartTalk));
+                        t_sender.Name = "CommandSender";
+                        t_sender.Start();
+
+                        //Data receiving thread, allowing text receiving
+                        t_updater = new Thread(new ThreadStart(Updater));
+                        t_updater.Name = "PacketHandler";
+                        t_updater.Start();
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Invalid session ID.");
+                    Console.WriteLine("Login failed.");
                     if (!singlecommand) { Program.ReadLineReconnect(); }
                 }
             }
@@ -171,7 +160,7 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        if (text == "/quit" || text == "/reco" || text == "/reconnect") { break; }
+                        if (text.ToLower() == "/quit" || text.ToLower().StartsWith("/exec ") || text.ToLower() == "/reco" || text.ToLower() == "/reconnect") { break; }
                         while (text.Length > 0 && text[0] == ' ') { text = text.Substring(1); }
                         if (text != "")
                         {
@@ -200,13 +189,18 @@ namespace MinecraftClient
                     }
                 }
 
-                if (text == "/quit")
+                if (text.ToLower() == "/quit")
                 {
                     ConsoleIO.WriteLine("You have left the server.");
                     Disconnect();
                 }
 
-                else if (text == "/reco" || text == "/reconnect")
+                else if (text.ToLower().StartsWith("/exec ")) {
+                    handler.BotLoad(new Bots.Scripting("config/" + text.Split()[1]));
+                }
+
+
+                else if (text.ToLower() == "/reco" || text.ToLower() == "/reconnect")
                 {
                     ConsoleIO.WriteLine("You have left the server.");
                     handler.SendRespawnPacket();

@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         private static McTcpClient Client;
         public static string[] startupargs;
-        public const string Version = "1.6.0";
+        public const string Version = "1.7.0";
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -23,7 +23,7 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC 1.4.6 to 1.6.4 - v" + Version + " - By ORelio & Contributors");
+            Console.WriteLine("Console Client for MC 1.7.2 to 1.7.4 - v" + Version + " - By ORelio & Contributors");
 
             //Basic Input/Output ?
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
@@ -179,7 +179,9 @@ namespace MinecraftClient
         {
 
             MinecraftCom.LoginResult result;
-            string logindata = "";
+            Settings.Username = Settings.Login;
+            string sessionID = "";
+            string UUID = "";
 
             if (Settings.Password == "-")
             {
@@ -187,17 +189,15 @@ namespace MinecraftClient
                 Console.WriteLine("You chose to run in offline mode.");
                 Console.ForegroundColor = ConsoleColor.Gray;
                 result = MinecraftCom.LoginResult.Success;
-                logindata = "0:deprecated:" + Settings.Login + ":0";
+                sessionID = "0";
             }
             else
             {
                 Console.WriteLine("Connecting to Minecraft.net...");
-                result = MinecraftCom.GetLogin(Settings.Login, Settings.Password, ref logindata);
+                result = MinecraftCom.GetLogin(ref Settings.Username, Settings.Password, ref sessionID, ref UUID);
             }
             if (result == MinecraftCom.LoginResult.Success)
             {
-                Settings.Username = logindata.Split(':')[2];
-                string sessionID = logindata.Split(':')[3];
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
                 if (Settings.ServerIP == "")
                 {
@@ -207,15 +207,15 @@ namespace MinecraftClient
 
                 //Get server version
                 Console.WriteLine("Retrieving Server Info...");
-                byte protocolversion = 0; string version = "";
+                int protocolversion = 0; string version = "";
                 if (MinecraftCom.GetServerInfo(Settings.ServerIP, ref protocolversion, ref version))
                 {
                     //Supported protocol version ?
-                    int[] supportedVersions = { 51, 60, 61, 72, 73, 74, 78 };
+                    int[] supportedVersions = { 4 };
                     if (Array.IndexOf(supportedVersions, protocolversion) > -1)
                     {
-                        //Minecraft 1.6+ ? Load translations
-                        if (protocolversion >= 72) { ChatParser.InitTranslations(); }
+                        //Load translations (Minecraft 1.6+)
+                        ChatParser.InitTranslations();
 
                         //Will handle the connection for this client
                         Console.WriteLine("Version is supported.");
@@ -236,9 +236,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            Client = new McTcpClient(Settings.Username, sessionID, Settings.ServerIP, handler, Settings.SingleCommand);
+                            Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, handler, Settings.SingleCommand);
                         }
-                        else Client = new McTcpClient(Settings.Username, sessionID, Settings.ServerIP, handler);
+                        else Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, handler);
                     }
                     else
                     {
@@ -260,7 +260,6 @@ namespace MinecraftClient
                 {
                     case MinecraftCom.LoginResult.AccountMigrated: Console.WriteLine("Account migrated, use e-mail as username."); break;
                     case MinecraftCom.LoginResult.Blocked: Console.WriteLine("Too many failed logins. Please try again later."); break;
-                    case MinecraftCom.LoginResult.BadRequest: Console.WriteLine("Login attempt rejected: Bad request."); break;
                     case MinecraftCom.LoginResult.WrongPassword: Console.WriteLine("Incorrect password."); break;
                     case MinecraftCom.LoginResult.NotPremium: Console.WriteLine("User not premium."); break;
                     case MinecraftCom.LoginResult.Error: Console.WriteLine("Network error."); break;
