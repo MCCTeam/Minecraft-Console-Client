@@ -156,7 +156,7 @@ namespace MinecraftClient
                             if (tab_list.Length > 0)
                                 printstring("§8" + tab_list, false);
                             break;
-                        case 0x40: string reason = readNextString();
+                        case 0x40: string reason = ChatParser.ParseText(readNextString());
                             ConsoleIO.WriteLine("Disconnected by Server :");
                             printstring(reason, true);
                             connectionlost = true;
@@ -455,21 +455,12 @@ namespace MinecraftClient
 
             Send(login_packet_tosend);
 
-            int size = readNextVarInt(); //Packet size
+            readNextVarInt(); //Packet size
             int pid = readNextVarInt(); //Packet ID
-            size -= getVarInt(pid).Length;
-            /*
-            while (pid == 0x3F) //Skip some early plugin messages
-            {
-                readData(size);
-                size = readNextVarInt();
-                pid = readNextVarInt();
-                size -= getVarInt(pid).Length;
-            }*/
             if (pid == 0x00) //Login rejected
             {
                 Console.WriteLine("Login rejected by Server :");
-                printstring(readNextString().Replace('"', ' '), true);
+                printstring(ChatParser.ParseText(readNextString()), true);
                 return false;
             }
             else if (pid == 0x01) //Encryption request

@@ -23,7 +23,7 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC 1.7.2 - v" + Version + " - By ORelio & Contributors");
+            Console.WriteLine("Console Client for MC 1.7.2 to 1.7.4 - v" + Version + " - By ORelio & Contributors");
 
             //Basic Input/Output ?
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
