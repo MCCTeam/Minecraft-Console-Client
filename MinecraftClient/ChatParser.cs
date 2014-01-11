@@ -21,7 +21,7 @@ namespace MinecraftClient
         {
             int cursorpos = 0;
             JSONData jsonData = String2Data(json, ref cursorpos);
-            return JSONData2String(jsonData);
+            return JSONData2String(jsonData, "");
         }
 
         /// <summary>
@@ -281,28 +281,28 @@ namespace MinecraftClient
         /// Use a JSON Object to build the corresponding string
         /// </summary>
         /// <param name="data">JSON object to convert</param>
+        /// <param name="colorcode">Allow parent color code to affect child elements (set to "" for function init)</param>
         /// <returns>returns the Minecraft-formatted string</returns>
 
-        private static string JSONData2String(JSONData data)
+        private static string JSONData2String(JSONData data, string colorcode)
         {
             string extra_result = "";
-            string colorcode = "";
             switch (data.Type)
             {
                 case JSONData.DataType.Object:
+                    if (data.Properties.ContainsKey("color"))
+                    {
+                        colorcode = color2tag(JSONData2String(data.Properties["color"], ""));
+                    }
                     if (data.Properties.ContainsKey("extra"))
                     {
                         JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
                         foreach (JSONData item in extras)
-                            extra_result = extra_result + JSONData2String(item);
-                    }
-                    if (data.Properties.ContainsKey("color"))
-                    {
-                        colorcode = color2tag(JSONData2String(data.Properties["color"]));
+                            extra_result = extra_result + JSONData2String(item, colorcode) + "§r";
                     }
                     if (data.Properties.ContainsKey("text"))
                     {
-                        return colorcode + JSONData2String(data.Properties["text"]) + extra_result;
+                        return colorcode + JSONData2String(data.Properties["text"], colorcode) + extra_result;
                     }
                     else if (data.Properties.ContainsKey("translate"))
                     {
@@ -314,10 +314,10 @@ namespace MinecraftClient
                             JSONData[] array = data.Properties["with"].DataArray.ToArray();
                             for (int i = 0; i < array.Length; i++)
                             {
-                                using_data.Add(JSONData2String(array[i]));
+                                using_data.Add(JSONData2String(array[i], colorcode));
                             }
                         }
-                        return colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + extra_result;
+                        return colorcode + TranslateString(JSONData2String(data.Properties["translate"], ""), using_data) + extra_result;
                     }
                     else return extra_result;
 
@@ -325,12 +325,12 @@ namespace MinecraftClient
                     string result = "";
                     foreach (JSONData item in data.DataArray)
                     {
-                        result += JSONData2String(item);
+                        result += JSONData2String(item, colorcode);
                     }
                     return result;
 
                 case JSONData.DataType.String:
-                    return data.StringValue;
+                    return colorcode + data.StringValue;
             }
 
             return "";
