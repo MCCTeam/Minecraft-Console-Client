@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient
@@ -29,7 +28,9 @@ namespace MinecraftClient
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
             {
                 ConsoleIO.basicIO = true;
-                args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
+                
+                // Dunno how to convert that.
+                //args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
             }
 
             //Processing Command-line arguments or Config File

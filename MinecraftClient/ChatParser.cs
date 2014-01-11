@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient
@@ -166,7 +165,7 @@ namespace MinecraftClient
                 translated += syntax[syntax.Length - 1];
                 return translated;
             }
-            else return "[" + rulename + "] " + String.Join(" ", using_data);
+            else return "[" + rulename + "] " + String.Join(" ", using_data.ToArray());
         }
 
         /// <summary>
