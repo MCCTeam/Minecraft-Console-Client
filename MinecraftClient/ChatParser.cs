@@ -294,7 +294,7 @@ namespace MinecraftClient
                     {
                         JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
                         foreach (JSONData item in extras)
-                            extra_result = extra_result + JSONData2String(item) + "§r";
+                            extra_result = extra_result + JSONData2String(item);
                     }
                     if (data.Properties.ContainsKey("color"))
                     {
@@ -302,20 +302,22 @@ namespace MinecraftClient
                     }
                     if (data.Properties.ContainsKey("text"))
                     {
-                        return extra_result + colorcode + JSONData2String(data.Properties["text"]) + colorcode;
+                        return colorcode + JSONData2String(data.Properties["text"]) + extra_result;
                     }
                     else if (data.Properties.ContainsKey("translate"))
                     {
                         List<string> using_data = new List<string>();
-                        if (data.Properties.ContainsKey("using"))
+                        if (data.Properties.ContainsKey("using") && !data.Properties.ContainsKey("with"))
+                            data.Properties["with"] = data.Properties["using"];
+                        if (data.Properties.ContainsKey("with"))
                         {
-                            JSONData[] array = data.Properties["using"].DataArray.ToArray();
+                            JSONData[] array = data.Properties["with"].DataArray.ToArray();
                             for (int i = 0; i < array.Length; i++)
                             {
                                 using_data.Add(JSONData2String(array[i]));
                             }
                         }
-                        return extra_result + colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + colorcode;
+                        return colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + extra_result;
                     }
                     else return extra_result;
 
