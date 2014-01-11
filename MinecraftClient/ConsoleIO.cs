@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
+using System.Threading;
 
 namespace MinecraftClient
 {
@@ -80,77 +82,86 @@ namespace MinecraftClient
                 k = Console.ReadKey(true);
                 while (writing_lock) { }
                 reading_lock = true;
-                switch (k.Key)
+                if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
                 {
-                    case ConsoleKey.Escape:
-                        ClearLineAndBuffer();
-                        break;
-                    case ConsoleKey.Backspace:
-                        RemoveOneChar();
-                        break;
-                    case ConsoleKey.Enter:
-                        Console.Write('\n');
-                        break;
-                    case ConsoleKey.LeftArrow:
-                        GoLeft();
-                        break;
-                    case ConsoleKey.RightArrow:
-                        GoRight();
-                        break;
-                    case ConsoleKey.Home:
-                        while (buffer.Length > 0) { GoLeft(); }
-                        break;
-                    case ConsoleKey.End:
-                        while (buffer2.Length > 0) { GoRight(); }
-                        break;
-                    case ConsoleKey.Delete:
-                        if (buffer2.Length > 0)
-                        {
-                            GoRight();
+                    string clip = ReadClipboard();
+                    foreach (char c in clip)
+                        AddChar(c);
+                }
+                else
+                {
+                    switch (k.Key)
+                    {
+                        case ConsoleKey.Escape:
+                            ClearLineAndBuffer();
+                            break;
+                        case ConsoleKey.Backspace:
                             RemoveOneChar();
-                        }
-                        break;
-                    case ConsoleKey.Oem6:
-                        break;
-                    case ConsoleKey.DownArrow:
-                        if (previous.Count > 0)
-                        {
-                            ClearLineAndBuffer();
-                            buffer = previous.First.Value;
-                            previous.AddLast(buffer);
-                            previous.RemoveFirst();
-                            Console.Write(buffer);
-                        }
-                        break;
-                    case ConsoleKey.UpArrow:
-                        if (previous.Count > 0)
-                        {
-                            ClearLineAndBuffer();
-                            buffer = previous.Last.Value;
-                            previous.AddFirst(buffer);
-                            previous.RemoveLast();
-                            Console.Write(buffer);
-                        }
-                        break;
-                    case ConsoleKey.Tab:
-                        if (autocomplete_engine != null && buffer.Length > 0)
-                        {
-                            string[] tmp = buffer.Split(' ');
-                            if (tmp.Length > 0)
+                            break;
+                        case ConsoleKey.Enter:
+                            Console.Write('\n');
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            GoLeft();
+                            break;
+                        case ConsoleKey.RightArrow:
+                            GoRight();
+                            break;
+                        case ConsoleKey.Home:
+                            while (buffer.Length > 0) { GoLeft(); }
+                            break;
+                        case ConsoleKey.End:
+                            while (buffer2.Length > 0) { GoRight(); }
+                            break;
+                        case ConsoleKey.Delete:
+                            if (buffer2.Length > 0)
                             {
-                                string word_tocomplete = tmp[tmp.Length - 1];
-                                string word_autocomplete = autocomplete_engine.AutoComplete(word_tocomplete);
-                                if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
+                                GoRight();
+                                RemoveOneChar();
+                            }
+                            break;
+                        case ConsoleKey.Oem6:
+                            break;
+                        case ConsoleKey.DownArrow:
+                            if (previous.Count > 0)
+                            {
+                                ClearLineAndBuffer();
+                                buffer = previous.First.Value;
+                                previous.AddLast(buffer);
+                                previous.RemoveFirst();
+                                Console.Write(buffer);
+                            }
+                            break;
+                        case ConsoleKey.UpArrow:
+                            if (previous.Count > 0)
+                            {
+                                ClearLineAndBuffer();
+                                buffer = previous.Last.Value;
+                                previous.AddFirst(buffer);
+                                previous.RemoveLast();
+                                Console.Write(buffer);
+                            }
+                            break;
+                        case ConsoleKey.Tab:
+                            if (autocomplete_engine != null && buffer.Length > 0)
+                            {
+                                string[] tmp = buffer.Split(' ');
+                                if (tmp.Length > 0)
                                 {
-                                    while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
-                                    foreach (char c in word_autocomplete) { AddChar(c); }
+                                    string word_tocomplete = tmp[tmp.Length - 1];
+                                    string word_autocomplete = autocomplete_engine.AutoComplete(word_tocomplete);
+                                    if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
+                                    {
+                                        while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
+                                        foreach (char c in word_autocomplete) { AddChar(c); }
+                                    }
                                 }
                             }
-                        }
-                        break;
-                    default:
-                        AddChar(k.KeyChar);
-                        break;
+                            break;
+                        default:
+                            AddChar(k.KeyChar);
+                            break;
+                    }
                 }
                 reading_lock = false;
             }
@@ -212,7 +223,7 @@ namespace MinecraftClient
         }
         #endregion
 
-        #region subfunctions
+        #region Subfunctions
         private static void ClearLineAndBuffer()
         {
             while (buffer2.Length > 0) { GoRight(); }
@@ -273,6 +284,27 @@ namespace MinecraftClient
             buffer += c;
             Console.Write(buffer2);
             for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
+        }
+        #endregion
+
+        #region Clipboard management
+        private static string ReadClipboard()
+        {
+            string clipdata = "";
+            Thread staThread = new Thread(new ThreadStart(
+                delegate
+                {
+                    try
+                    {
+                        clipdata = Clipboard.GetText();
+                    }
+                    catch { }
+                }
+            ));
+            staThread.SetApartmentState(ApartmentState.STA);
+            staThread.Start();
+            staThread.Join();
+            return clipdata;
         }
         #endregion
     }
