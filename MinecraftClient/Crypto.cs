@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 using java.security;
@@ -25,7 +24,7 @@ namespace MinecraftClient
 
         public static SecretKey GenerateAESPrivateKey()
         {
-            AesManaged aes = new AesManaged();
+            RijndaelManaged aes = new RijndaelManaged();
             aes.KeySize = 128; aes.GenerateKey();
             return new SecretKeySpec(aes.Key, "AES"); 
         }

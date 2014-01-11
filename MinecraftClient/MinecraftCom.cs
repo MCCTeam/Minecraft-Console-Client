@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
@@ -266,7 +266,7 @@ namespace MinecraftClient
         }
         private static int atoi(string str)
         {
-            return int.Parse(new string(str.Trim().TakeWhile(char.IsDigit).ToArray()));
+            return Int32.Parse(Regex.Match(str, @"\d+").Value);
         }
 
         private static void setcolor(char c)

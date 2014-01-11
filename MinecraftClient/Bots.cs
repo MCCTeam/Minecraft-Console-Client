@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient
@@ -398,18 +397,21 @@ namespace MinecraftClient
 
                 if (isPrivateMessage(text, ref message, ref username))
                 {
-                    if (owners.Contains(username.ToUpper()))
+                    foreach (string x in owners)
                     {
-                        switch (message)
+                        if (x.Contains(username.ToUpper()))
                         {
-                            case "start":
-                                start();
-                                break;
-                            case "stop":
-                                running = false;
-                                break;
-                            default:
-                                break;
+                            switch (message)
+                            {
+                                case "start":
+                                    start();
+                                    break;
+                                case "stop":
+                                    running = false;
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
                 }
@@ -422,7 +424,7 @@ namespace MinecraftClient
                             char letter = message.ToUpper()[0];
                             if (letter >= 'A' && letter <= 'Z')
                             {
-                                if (letters.Contains(letter))
+                                if (letters.IndexOf(letter.ToString(), StringComparison.OrdinalIgnoreCase) >= 0)
                                 {
                                     SendText(English ? ("Letter " + letter + " has already been tried.") : ("Le " + letter + " a déjà été proposé."));
                                 }
@@ -431,7 +433,7 @@ namespace MinecraftClient
                                     letters += letter;
                                     compteur = compteur_param;
 
-                                    if (word.Contains(letter))
+                                    if (word.IndexOf(letter.ToString(), StringComparison.OrdinalIgnoreCase) >= 0)
                                     {
                                         for (int i = 0; i < word.Length; i++) { if (word[i] == letter) { discovered[i] = true; } }
                                         SendText(English ? ("Yes, the word contains a " + letter + '!') : ("Le " + letter + " figurait bien dans le mot :)"));
