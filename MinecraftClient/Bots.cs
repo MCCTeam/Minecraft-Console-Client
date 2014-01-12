@@ -875,14 +875,33 @@ namespace MinecraftClient
 
             public override void Initialize()
             {
-                // Loads the given file from the startup parameters
-                if (System.IO.File.Exists(file))
+                //Load the given file from the startup parameters
+                //Automatically look in subfolders and try to add ".txt" file extension
+                string[] files = new string[]
                 {
-                    lines = System.IO.File.ReadAllLines(file); // Load the given bot text file (containing commands)
+                    file,
+                    file + ".txt",
+                    "scripts\\" + file,
+                    "scripts\\" + file + ".txt",
+                    "config\\" + file,
+                    "config\\" + file + ".txt",
+                };
+
+                bool file_found = false;
+
+                foreach (string possible_file in files)
+                {
+                    if (System.IO.File.Exists(possible_file))
+                    {
+                        lines = System.IO.File.ReadAllLines(possible_file);
+                        file_found = true;
+                        break;
+                    }
                 }
-                else
+
+                if (!file_found)
                 {
-                    LogToConsole("File not found: " + file);
+                    LogToConsole("File not found: '" + file + "'");
                     UnloadBot(); //No need to keep the bot active
                 }
             }
