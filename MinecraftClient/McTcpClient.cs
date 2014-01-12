@@ -143,6 +143,9 @@ namespace MinecraftClient
         {
             try
             {
+                //Needed if the player is dead
+                handler.SendRespawnPacket();
+
                 while (client.Client.Connected)
                 {
                     text = ConsoleIO.ReadLine();
@@ -160,9 +163,21 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        if (text.ToLower() == "/quit" || text.ToLower().StartsWith("/exec ") || text.ToLower() == "/reco" || text.ToLower() == "/reconnect") { break; }
-                        while (text.Length > 0 && text[0] == ' ') { text = text.Substring(1); }
-                        if (text != "")
+                        text = text.Trim();
+                        if (text.ToLower() == "/quit" || text.ToLower() == "/reco")
+                        {
+                            break;
+                        }
+                        else if (text.ToLower() == "/respawn")
+                        {
+                            handler.SendRespawnPacket();
+                            ConsoleIO.WriteLine("You have respawned.");
+                        }
+                        else if (text.ToLower().StartsWith("/script "))
+                        {
+                            handler.BotLoad(new Bots.Scripting(text.Substring(8)));
+                        }
+                        else if (text != "")
                         {
                             //Message is too long
                             if (text.Length > 100)
@@ -175,7 +190,7 @@ namespace MinecraftClient
                                 }
                                 else
                                 {
-                                    //Send the message splitted in sereval messages
+                                    //Send the message splitted in several messages
                                     while (text.Length > 100)
                                     {
                                         handler.SendChatMessage(text.Substring(0, 100));
@@ -189,22 +204,10 @@ namespace MinecraftClient
                     }
                 }
 
-                if (text.ToLower() == "/quit")
+                switch (text.ToLower())
                 {
-                    ConsoleIO.WriteLine("You have left the server.");
-                    Disconnect();
-                }
-
-                else if (text.ToLower().StartsWith("/exec ")) {
-                    handler.BotLoad(new Bots.Scripting("config/" + text.Split()[1]));
-                }
-
-
-                else if (text.ToLower() == "/reco" || text.ToLower() == "/reconnect")
-                {
-                    ConsoleIO.WriteLine("You have left the server.");
-                    handler.SendRespawnPacket();
-                    Program.Restart();
+                    case "/quit": Program.Exit(); break;
+                    case "/reco": Program.Restart(); break;
                 }
             }
             catch (IOException) { }

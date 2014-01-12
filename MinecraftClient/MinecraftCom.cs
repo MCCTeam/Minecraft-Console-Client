@@ -549,6 +549,9 @@ namespace MinecraftClient
             if (message == null)
                 message = "";
 
+            message.Replace("\"", "\\\"");
+            message = "\"" + message + "\"";
+
             try
             {
                 byte[] packet_id = getVarInt(0x40);
