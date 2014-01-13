@@ -23,8 +23,9 @@ namespace MinecraftClient
         public static string SingleCommand = "";
 
         //Other Settings
-        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\virtual\legacy\lang\en_US.lang";
-        public static string TranslationsFile_FromMCDir_Alt = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\virtual\legacy\lang\en_GB.lang";
+        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\virtual\legacy\lang\en_GB.lang";
+        public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.7.4.json";
+        public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static string TranslationsFile = "translations.lang";
         public static string Bots_OwnersFile = "bot-owners.txt";
 

@@ -96,14 +96,37 @@ namespace MinecraftClient
             TranslationRules["commands.message.display.outgoing"] = "§7You whisper to %s: %s";
 
             //Use translations from Minecraft assets if translation file is not found but a copy of the game is installed?
-            if (!System.IO.File.Exists(Settings.TranslationsFile) //Try en_US.lang
+            if (!System.IO.File.Exists(Settings.TranslationsFile) //Try en_GB.lang
               && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
-            { Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir; }
-            if (!System.IO.File.Exists(Settings.TranslationsFile) //Still not found? try en_GB.lang
-              && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir_Alt))
-            { Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir_Alt; }
+            {
+                Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir;
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                ConsoleIO.WriteLine("Using en_GB.lang from your Minecraft directory.");
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
 
-            //Load an external dictionnary of translation rules
+            //Still not found? try downloading en_GB from Mojang's servers?
+            if (!System.IO.File.Exists(Settings.TranslationsFile))
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                ConsoleIO.WriteLine("Downloading en_GB.lang from Mojang's servers...");
+                try
+                {
+                        string assets_index = downloadString(Settings.TranslationsFile_Website_Index);
+                        string[] tmp = assets_index.Split(new string[] { "lang/en_GB.lang" }, StringSplitOptions.None);
+                        tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
+                        string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
+                        System.IO.File.WriteAllText(Settings.TranslationsFile, downloadString(Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash));
+                        ConsoleIO.WriteLine("Done. File saved as \"" + Settings.TranslationsFile + '"');
+                }
+                catch
+                {
+                    ConsoleIO.WriteLine("Failed to download the file.");
+                }
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
+
+            //Load the external dictionnary of translation rules or display an error message
             if (System.IO.File.Exists(Settings.TranslationsFile))
             {
                 string[] translations = System.IO.File.ReadAllLines(Settings.TranslationsFile);
@@ -343,5 +366,23 @@ namespace MinecraftClient
         /// <returns>True if hexadecimal</returns>
 
         private static bool isHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
+
+        /// <summary>
+        /// Do a HTTP request to get a webpage or text data from a server file
+        /// </summary>
+        /// <param name="url">URL of resource</param>
+        /// <returns>Returns resource data if success, otherwise a WebException is raised</returns>
+
+        private static string downloadString(string url)
+        {
+            System.Net.HttpWebRequest myRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
+            myRequest.Method = "GET";
+            System.Net.WebResponse myResponse = myRequest.GetResponse();
+            System.IO.StreamReader sr = new System.IO.StreamReader(myResponse.GetResponseStream(), System.Text.Encoding.UTF8);
+            string result = sr.ReadToEnd();
+            sr.Close();
+            myResponse.Close();
+            return result;
+        }
     }
 }
