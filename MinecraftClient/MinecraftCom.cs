@@ -333,7 +333,6 @@ namespace MinecraftClient
         private void setEncryptedClient(Crypto.AesStream n) { s = n; encrypted = true; }
         private void Receive(byte[] buffer, int start, int offset, SocketFlags f)
         {
-            while (c.Client.Available < start + offset) { }
             if (encrypted)
             {
                 s.Read(buffer, start, offset);
