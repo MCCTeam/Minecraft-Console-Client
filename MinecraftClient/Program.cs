@@ -167,6 +167,9 @@ namespace MinecraftClient
                 }
             }
 
+            //Set login as console title to identify it easier when multiple instances are running
+            Console.Title = "Console Client for MC - " + Settings.Login;
+
             startupargs = args;
             InitializeClient();
         }
