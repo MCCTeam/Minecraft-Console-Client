@@ -21,6 +21,7 @@ namespace MinecraftClient
         public static string Password = "";
         public static string ServerIP = "";
         public static string SingleCommand = "";
+        public static string ConsoleTitle = "Minecraft Console Client";
 
         //Other Settings
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\virtual\legacy\lang\en_GB.lang";
@@ -121,7 +122,7 @@ namespace MinecraftClient
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "translationsfile": TranslationsFile = argValue; break;
                                                 case "botownersfile": Bots_OwnersFile = argValue; break;
-                                                case "consoletitle": Console.Title = argValue; break;
+                                                case "consoletitle": ConsoleTitle = argValue; break;
                                             }
                                             break;
 

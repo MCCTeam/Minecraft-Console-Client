@@ -23,7 +23,6 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.Title = "Minecraft Console Client";
             Console.WriteLine("Console Client for MC 1.7.2 to 1.7.4 - v" + Version + " - By ORelio & Contributors");
 
             //Basic Input/Output ?
@@ -148,6 +147,8 @@ namespace MinecraftClient
             }
             else Settings.WriteDefaultSettings("MinecraftClient.ini");
 
+            Console.Title = Settings.ConsoleTitle;
+
             //Asking the user to type in missing data such as Username and Password
 
             if (Settings.Login == "")
@@ -199,7 +200,7 @@ namespace MinecraftClient
             }
             if (result == MinecraftCom.LoginResult.Success)
             {
-                Console.Title += " - " + Settings.Username;
+                Console.Title = Settings.ConsoleTitle + " - " + Settings.Username;
 
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
                 if (Settings.ServerIP == "")
