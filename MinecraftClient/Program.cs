@@ -23,6 +23,7 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
+            Console.Title = "Minecraft Console Client";
             Console.WriteLine("Console Client for MC 1.7.2 to 1.7.4 - v" + Version + " - By ORelio & Contributors");
 
             //Basic Input/Output ?
@@ -167,9 +168,6 @@ namespace MinecraftClient
                 }
             }
 
-            //Set login as console title to identify it easier when multiple instances are running
-            Console.Title = "Console Client for MC - " + Settings.Login;
-
             startupargs = args;
             InitializeClient();
         }
@@ -201,6 +199,8 @@ namespace MinecraftClient
             }
             if (result == MinecraftCom.LoginResult.Success)
             {
+                Console.Title += " - " + Settings.Username;
+
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
                 if (Settings.ServerIP == "")
                 {
