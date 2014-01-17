@@ -4,7 +4,7 @@
     <StartArguments>TestBot - localhost</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
-    <PublishUrlHistory>publish\</PublishUrlHistory>
+    <PublishUrlHistory>publish\|C:\Users\Robert\Desktop\</PublishUrlHistory>
     <InstallUrlHistory />
     <SupportUrlHistory />
     <UpdateUrlHistory />
