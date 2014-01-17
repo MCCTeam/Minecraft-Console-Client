@@ -264,7 +264,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// This bot sends a /ping command every 60 seconds in order to stay non-afk.
+        /// This bot sends a command every 60 seconds in order to stay non-afk.
         /// </summary>
 
         public class AntiAFK : ChatBot
@@ -289,7 +289,7 @@ namespace MinecraftClient
                 count++;
                 if (count == timeping)
                 {
-                    SendText("/ping");
+                    SendText(Settings.AntiAFK_Command);
                     count = 0;
                 }
             }
@@ -917,9 +917,9 @@ namespace MinecraftClient
                         nextline++; //Move the cursor so that the next time the following line will be interpreted
                         sleepticks = sleepticks_interval; //Used to delay next command sending and prevent from beign kicked for spamming
 
-                        if (instruction_line.Length > 0)
+                        if (instruction_line.Length > 1)
                         {
-                            if (!instruction_line.StartsWith("//") && !instruction_line.StartsWith("#"))
+                            if (instruction_line[0] != '#' && instruction_line[0] != '/' && instruction_line[1] != '/')
                             {
                                 string instruction_name = instruction_line.Split(' ')[0];
                                 switch (instruction_name.ToLower())

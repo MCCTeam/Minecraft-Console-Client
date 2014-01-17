@@ -33,6 +33,7 @@ namespace MinecraftClient
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
         public static int AntiAFK_Delay = 600;
+        public static string AntiAFK_Command = "/ping";
 
         //Hangman Settings
         public static bool Hangman_Enabled = false;
@@ -140,6 +141,7 @@ namespace MinecraftClient
                                             {
                                                 case "enabled": AntiAFK_Enabled = str2bool(argValue); break;
                                                 case "delay": AntiAFK_Delay = str2int(argValue); break;
+                                                case "command": AntiAFK_Command = argValue == "" ? "/ping" : argValue; break;
                                             }
                                             break;
 
@@ -197,7 +199,56 @@ namespace MinecraftClient
 
         public static void WriteDefaultSettings(string settingsfile)
         {
-            System.IO.File.WriteAllText(settingsfile, "#Minecraft Console Client v" + Program.Version + "\r\n#Startup Config File\r\n\r\n[Main]\r\n\r\n#General settings\r\n#leave blank = prompt user on startup\r\n#Use \"-\" as password for offline mode\r\n\r\nlogin=\r\npassword=\r\nserverip=\r\n\r\n#Advanced settings\r\n\r\ntranslationsfile=translations.lang\r\nbotownersfile=bot-owners.txt\r\nconsoletitle=Minecraft Console Client\r\n\r\n#Bot Settings\r\n\r\n[Alerts]\r\nenabled=false\r\nalertsfile=alerts.txt\r\nexcludesfile=alerts-exclude.txt\r\n\r\n[AntiAFK]\r\nenabled=false\r\ndelay=600 #10 = 1s\r\n\r\n[AutoRelog]\r\nenabled=false\r\ndelay=10\r\nretries=3 #-1 = unlimited\r\nkickmessagesfile=kickmessages.txt\r\n\r\n[ChatLog]\r\nenabled=false\r\ntimestamps=true\r\nfilter=messages\r\nlogfile=chatlog.txt\r\n\r\n[Hangman]\r\nenabled=false\r\nenglish=true\r\nwordsfile=hangman-en.txt\r\nfichiermots=hangman-fr.txt\r\n\r\n[Scripting]\r\nenabled=false\r\nscriptfile=testscript.txt\r\n", Encoding.UTF8);
+            System.IO.File.WriteAllText(settingsfile, "#Minecraft Console Client v" + Program.Version + "\r\n"
+                + "#Startup Config File\r\n"
+                + "\r\n"
+                + "[Main]\r\n"
+                + "\r\n"
+                + "#General settings\r\n"
+                + "#leave blank = prompt user on startup\r\n"
+                + "#Use \"-\" as password for offline mode\r\n"
+                + "\r\n"
+                + "login=\r\npassword=\r\nserverip=\r\n"
+                + "\r\n"
+                + "#Advanced settings\r\n"
+                + "\r\n"
+                + "translationsfile=translations.lang\r\n"
+                + "botownersfile=bot-owners.txt\r\n"
+                + "consoletitle=Minecraft Console Client\r\n"
+                + "\r\n"
+                + "#Bot Settings\r\n"
+                + "\r\n"
+                + "[Alerts]\r\n"
+                + "enabled=false\r\n"
+                + "alertsfile=alerts.txt\r\n"
+                + "excludesfile=alerts-exclude.txt\r\n"
+                + "\r\n"
+                + "[AntiAFK]\r\n"
+                + "enabled=false\r\n"
+                + "delay=600 #10 = 1s\r\n"
+                + "command=/ping\r\n"
+                + "\r\n"
+                + "[AutoRelog]\r\n"
+                + "enabled=false\r\n"
+                + "delay=10\r\n"
+                + "retries=3 #-1 = unlimited\r\n"
+                + "kickmessagesfile=kickmessages.txt\r\n"
+                + "\r\n"
+                + "[ChatLog]\r\n"
+                + "enabled=false\r\n"
+                + "timestamps=true\r\n"
+                + "filter=messages\r\n"
+                + "logfile=chatlog.txt\r\n"
+                + "\r\n"
+                + "[Hangman]\r\n"
+                + "enabled=false\r\n"
+                + "english=true\r\n"
+                + "wordsfile=hangman-en.txt\r\n"
+                + "fichiermots=hangman-fr.txt\r\n"
+                + "\r\n"
+                + "[Scripting]\r\n"
+                + "enabled=false\r\n"
+                + "scriptfile=testscript.txt\r\n", Encoding.UTF8);
         }
 
         public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }
