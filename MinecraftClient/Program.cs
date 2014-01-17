@@ -32,13 +32,24 @@ namespace MinecraftClient
                 args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
             }
 
-            //Processing Command-line arguments or Config File
-
-            if (args.Length == 1 && System.IO.File.Exists(args[0]))
+            //Process ini configuration file
+            if (args.Length >= 1 && System.IO.File.Exists(args[0]) && System.IO.Path.GetExtension(args[0]).ToLower() == ".ini")
             {
                 Settings.LoadSettings(args[0]);
+
+                //remove ini configuration file from arguments array
+                List<string> args_tmp = args.ToList<string>();
+                args_tmp.RemoveAt(0);
+                args = args_tmp.ToArray();
             }
-            else if (args.Length >= 1)
+            else if (System.IO.File.Exists("MinecraftClient.ini"))
+            {
+                Settings.LoadSettings("MinecraftClient.ini");
+            }
+            else Settings.WriteDefaultSettings("MinecraftClient.ini");
+
+            //Other command-line arguments
+            if (args.Length >= 1)
             {
                 Settings.Login = args[0];
                 if (args.Length >= 2)
@@ -141,11 +152,6 @@ namespace MinecraftClient
                     }
                 }
             }
-            else if (System.IO.File.Exists("MinecraftClient.ini"))
-            {
-                Settings.LoadSettings("MinecraftClient.ini");
-            }
-            else Settings.WriteDefaultSettings("MinecraftClient.ini");
 
             if (Settings.ConsoleTitle != "")
             {
