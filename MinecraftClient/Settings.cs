@@ -21,7 +21,7 @@ namespace MinecraftClient
         public static string Password = "";
         public static string ServerIP = "";
         public static string SingleCommand = "";
-        public static string ConsoleTitle = "Minecraft Console Client";
+        public static string ConsoleTitle = "";
 
         //Other Settings
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\virtual\legacy\lang\en_GB.lang";
@@ -214,7 +214,7 @@ namespace MinecraftClient
                 + "\r\n"
                 + "translationsfile=translations.lang\r\n"
                 + "botownersfile=bot-owners.txt\r\n"
-                + "consoletitle=Minecraft Console Client\r\n"
+                + "consoletitle=Minecraft Console Client - %username%\r\n"
                 + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"

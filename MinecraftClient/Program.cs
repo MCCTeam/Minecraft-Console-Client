@@ -147,7 +147,10 @@ namespace MinecraftClient
             }
             else Settings.WriteDefaultSettings("MinecraftClient.ini");
 
-            Console.Title = Settings.ConsoleTitle;
+            if (Settings.ConsoleTitle != "")
+            {
+                Console.Title = Settings.ConsoleTitle.Replace("%username%", "New Window");
+            }
 
             //Asking the user to type in missing data such as Username and Password
 
@@ -200,7 +203,10 @@ namespace MinecraftClient
             }
             if (result == MinecraftCom.LoginResult.Success)
             {
-                Console.Title = Settings.ConsoleTitle + " - " + Settings.Username;
+                if (Settings.ConsoleTitle != "")
+                {
+                    Console.Title = Settings.ConsoleTitle.Replace("%username%", Settings.Username);
+                }
 
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
                 if (Settings.ServerIP == "")
