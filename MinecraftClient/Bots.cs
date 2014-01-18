@@ -127,10 +127,10 @@ namespace MinecraftClient
             try
             {
                 //Detect vanilla /tell messages
-                //Someone whispers message
+                //Someone whispers to you: message
                 if (tmp.Length > 2 && tmp[1] == "whispers")
                 {
-                    message = text.Substring(tmp[0].Length + 10);
+                    message = text.Substring(tmp[0].Length + 18);
                     sender = tmp[0];
                     return isValidName(sender);
                 }
