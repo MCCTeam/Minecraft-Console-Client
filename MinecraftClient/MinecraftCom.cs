@@ -287,23 +287,42 @@ namespace MinecraftClient
             if (!String.IsNullOrEmpty(str))
             {
                 if (!acceptnewlines) { str = str.Replace('\n', ' '); }
-                if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(str); return; }
-                string[] subs = str.Split(new char[] { '§' });
-                if (subs[0].Length > 0) { ConsoleIO.Write(subs[0]); }
-                for (int i = 1; i < subs.Length; i++)
+                if (ConsoleIO.basicIO)
                 {
-                    if (subs[i].Length > 0)
+                    string line = "";
+                    string[] subs = str.Split(new char[] {'§'});
+                    if (subs[0].Length > 0) { line += subs[0]; }
+                    for (int i = 1; i < subs.Length; i++)
                     {
-                        setcolor(subs[i][0]);
                         if (subs[i].Length > 1)
                         {
-                            ConsoleIO.Write(subs[i].Substring(1, subs[i].Length - 1));
+                            line += (subs[i].Substring(1, subs[i].Length - 1));
+                        }
+
+                    }
+
+                    ConsoleIO.WriteLine(line); return;
+                }
+                else
+                {
+                    string[] subs = str.Split(new char[] {'§'});
+                    if (subs[0].Length > 0) { ConsoleIO.Write(subs[0]); }
+                    for (int i = 1; i < subs.Length; i++)
+                    {
+                        if (subs[i].Length > 0)
+                        {
+                            setcolor(subs[i][0]);
+                            if (subs[i].Length > 1)
+                            {
+                                ConsoleIO.Write(subs[i].Substring(1, subs[i].Length - 1));
+                            }
                         }
                     }
+                    ConsoleIO.Write('\n');
                 }
-                ConsoleIO.Write('\n');
+                Console.ForegroundColor = ConsoleColor.Gray;
             }
-            Console.ForegroundColor = ConsoleColor.Gray;
+
         }
 
         private bool autocomplete_received = false;
