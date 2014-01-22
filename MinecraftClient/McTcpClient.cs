@@ -103,7 +103,7 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        Console.WriteLine("Server was successfuly joined.\nType '/quit' to leave the server.");
+                        Console.WriteLine("Server was successfully joined.\nType '/quit' to leave the server.");
 
                         //Command sending thread, allowing user input
                         t_sender = new Thread(new ThreadStart(StartTalk));
