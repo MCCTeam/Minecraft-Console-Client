@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         private static McTcpClient Client;
         public static string[] startupargs;
-        public const string Version = "1.7.0";
+        public const string Version = "1.7.1";
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
