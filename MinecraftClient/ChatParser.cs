@@ -21,7 +21,7 @@ namespace MinecraftClient
         {
             int cursorpos = 0;
             JSONData jsonData = String2Data(json, ref cursorpos);
-            return JSONData2String(jsonData);
+            return JSONData2String(jsonData, "");
         }
 
         /// <summary>
@@ -96,14 +96,37 @@ namespace MinecraftClient
             TranslationRules["commands.message.display.outgoing"] = "§7You whisper to %s: %s";
 
             //Use translations from Minecraft assets if translation file is not found but a copy of the game is installed?
-            if (!System.IO.File.Exists(Settings.TranslationsFile) //Try en_US.lang
+            if (!System.IO.File.Exists(Settings.TranslationsFile) //Try en_GB.lang
               && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
-            { Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir; }
-            if (!System.IO.File.Exists(Settings.TranslationsFile) //Still not found? try en_GB.lang
-              && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir_Alt))
-            { Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir_Alt; }
+            {
+                Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir;
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                ConsoleIO.WriteLine("Using en_GB.lang from your Minecraft directory.");
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
 
-            //Load an external dictionnary of translation rules
+            //Still not found? try downloading en_GB from Mojang's servers?
+            if (!System.IO.File.Exists(Settings.TranslationsFile))
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                ConsoleIO.WriteLine("Downloading en_GB.lang from Mojang's servers...");
+                try
+                {
+                        string assets_index = downloadString(Settings.TranslationsFile_Website_Index);
+                        string[] tmp = assets_index.Split(new string[] { "lang/en_GB.lang" }, StringSplitOptions.None);
+                        tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
+                        string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
+                        System.IO.File.WriteAllText(Settings.TranslationsFile, downloadString(Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash));
+                        ConsoleIO.WriteLine("Done. File saved as \"" + Settings.TranslationsFile + '"');
+                }
+                catch
+                {
+                    ConsoleIO.WriteLine("Failed to download the file.");
+                }
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
+
+            //Load the external dictionnary of translation rules or display an error message
             if (System.IO.File.Exists(Settings.TranslationsFile))
             {
                 string[] translations = System.IO.File.ReadAllLines(Settings.TranslationsFile);
@@ -281,41 +304,43 @@ namespace MinecraftClient
         /// Use a JSON Object to build the corresponding string
         /// </summary>
         /// <param name="data">JSON object to convert</param>
+        /// <param name="colorcode">Allow parent color code to affect child elements (set to "" for function init)</param>
         /// <returns>returns the Minecraft-formatted string</returns>
 
-        private static string JSONData2String(JSONData data)
+        private static string JSONData2String(JSONData data, string colorcode)
         {
             string extra_result = "";
-            string colorcode = "";
             switch (data.Type)
             {
                 case JSONData.DataType.Object:
+                    if (data.Properties.ContainsKey("color"))
+                    {
+                        colorcode = color2tag(JSONData2String(data.Properties["color"], ""));
+                    }
                     if (data.Properties.ContainsKey("extra"))
                     {
                         JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
                         foreach (JSONData item in extras)
-                            extra_result = extra_result + JSONData2String(item) + "§r";
-                    }
-                    if (data.Properties.ContainsKey("color"))
-                    {
-                        colorcode = color2tag(JSONData2String(data.Properties["color"]));
+                            extra_result = extra_result + JSONData2String(item, colorcode) + "§r";
                     }
                     if (data.Properties.ContainsKey("text"))
                     {
-                        return extra_result + colorcode + JSONData2String(data.Properties["text"]) + colorcode;
+                        return colorcode + JSONData2String(data.Properties["text"], colorcode) + extra_result;
                     }
                     else if (data.Properties.ContainsKey("translate"))
                     {
                         List<string> using_data = new List<string>();
-                        if (data.Properties.ContainsKey("using"))
+                        if (data.Properties.ContainsKey("using") && !data.Properties.ContainsKey("with"))
+                            data.Properties["with"] = data.Properties["using"];
+                        if (data.Properties.ContainsKey("with"))
                         {
-                            JSONData[] array = data.Properties["using"].DataArray.ToArray();
+                            JSONData[] array = data.Properties["with"].DataArray.ToArray();
                             for (int i = 0; i < array.Length; i++)
                             {
-                                using_data.Add(JSONData2String(array[i]));
+                                using_data.Add(JSONData2String(array[i], colorcode));
                             }
                         }
-                        return extra_result + colorcode + TranslateString(JSONData2String(data.Properties["translate"]), using_data) + colorcode;
+                        return colorcode + TranslateString(JSONData2String(data.Properties["translate"], ""), using_data) + extra_result;
                     }
                     else return extra_result;
 
@@ -323,12 +348,12 @@ namespace MinecraftClient
                     string result = "";
                     foreach (JSONData item in data.DataArray)
                     {
-                        result += JSONData2String(item);
+                        result += JSONData2String(item, colorcode);
                     }
                     return result;
 
                 case JSONData.DataType.String:
-                    return data.StringValue;
+                    return colorcode + data.StringValue;
             }
 
             return "";
@@ -341,5 +366,23 @@ namespace MinecraftClient
         /// <returns>True if hexadecimal</returns>
 
         private static bool isHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
+
+        /// <summary>
+        /// Do a HTTP request to get a webpage or text data from a server file
+        /// </summary>
+        /// <param name="url">URL of resource</param>
+        /// <returns>Returns resource data if success, otherwise a WebException is raised</returns>
+
+        private static string downloadString(string url)
+        {
+            System.Net.HttpWebRequest myRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
+            myRequest.Method = "GET";
+            System.Net.WebResponse myResponse = myRequest.GetResponse();
+            System.IO.StreamReader sr = new System.IO.StreamReader(myResponse.GetResponseStream(), System.Text.Encoding.UTF8);
+            string result = sr.ReadToEnd();
+            sr.Close();
+            myResponse.Close();
+            return result;
+        }
     }
 }

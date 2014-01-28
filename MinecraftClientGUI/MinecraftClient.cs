@@ -59,7 +59,7 @@ namespace MinecraftClientGUI
                 Client.StartInfo.FileName = ExePath;
                 Client.StartInfo.Arguments = arguments;
                 Client.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                Client.StartInfo.StandardOutputEncoding = Encoding.GetEncoding(850);
+                Client.StartInfo.StandardOutputEncoding = Encoding.GetEncoding(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage);
                 Client.StartInfo.UseShellExecute = false;
                 Client.StartInfo.RedirectStandardOutput = true;
                 Client.StartInfo.RedirectStandardInput = true;

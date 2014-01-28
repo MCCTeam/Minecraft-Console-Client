@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         private static McTcpClient Client;
         public static string[] startupargs;
-        public const string Version = "1.7.0";
+        public const string Version = "1.7.1";
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -29,16 +29,28 @@ namespace MinecraftClient
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
             {
                 ConsoleIO.basicIO = true;
+                Console.OutputEncoding = Console.InputEncoding = Encoding.GetEncoding(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage);
                 args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
             }
 
-            //Processing Command-line arguments or Config File
-
-            if (args.Length == 1 && System.IO.File.Exists(args[0]))
+            //Process ini configuration file
+            if (args.Length >= 1 && System.IO.File.Exists(args[0]) && System.IO.Path.GetExtension(args[0]).ToLower() == ".ini")
             {
                 Settings.LoadSettings(args[0]);
+
+                //remove ini configuration file from arguments array
+                List<string> args_tmp = args.ToList<string>();
+                args_tmp.RemoveAt(0);
+                args = args_tmp.ToArray();
             }
-            else if (args.Length >= 1)
+            else if (System.IO.File.Exists("MinecraftClient.ini"))
+            {
+                Settings.LoadSettings("MinecraftClient.ini");
+            }
+            else Settings.WriteDefaultSettings("MinecraftClient.ini");
+
+            //Other command-line arguments
+            if (args.Length >= 1)
             {
                 Settings.Login = args[0];
                 if (args.Length >= 2)
@@ -141,11 +153,11 @@ namespace MinecraftClient
                     }
                 }
             }
-            else if (System.IO.File.Exists("MinecraftClient.ini"))
+
+            if (Settings.ConsoleTitle != "")
             {
-                Settings.LoadSettings("MinecraftClient.ini");
+                Console.Title = Settings.ConsoleTitle.Replace("%username%", "New Window");
             }
-            else Settings.WriteDefaultSettings("MinecraftClient.ini");
 
             //Asking the user to type in missing data such as Username and Password
 
@@ -198,6 +210,11 @@ namespace MinecraftClient
             }
             if (result == MinecraftCom.LoginResult.Success)
             {
+                if (Settings.ConsoleTitle != "")
+                {
+                    Console.Title = Settings.ConsoleTitle.Replace("%username%", Settings.Username);
+                }
+
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
                 if (Settings.ServerIP == "")
                 {

@@ -132,16 +132,6 @@ namespace MinecraftClient
                             message = ChatParser.ParseText(message);
                             printstring(message, false);
                             for (int i = 0; i < bots.Count; i++) { bots[i].GetText(message); } break;
-                        case 0x37:
-                            int stats_count = readNextVarInt();
-                            for (int i = 0; i < stats_count; i++)
-                            {
-                                string stat_name = readNextString();
-                                readNextVarInt(); //stat value
-                                if (stat_name == "stat.deaths")
-                                    printstring("You are dead. Type /reco to respawn & reconnect.", false);
-                            }
-                            break;
                         case 0x3A:
                             int autocomplete_count = readNextVarInt();
                             string tab_list = "";
@@ -343,7 +333,6 @@ namespace MinecraftClient
         private void setEncryptedClient(Crypto.AesStream n) { s = n; encrypted = true; }
         private void Receive(byte[] buffer, int start, int offset, SocketFlags f)
         {
-            while (c.Client.Available < start + offset) { }
             if (encrypted)
             {
                 s.Read(buffer, start, offset);
@@ -548,6 +537,9 @@ namespace MinecraftClient
         {
             if (message == null)
                 message = "";
+
+            message.Replace("\"", "\\\"");
+            message = "\"" + message + "\"";
 
             try
             {

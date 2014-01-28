@@ -127,10 +127,10 @@ namespace MinecraftClient
             try
             {
                 //Detect vanilla /tell messages
-                //Someone whispers message
+                //Someone whispers to you: message
                 if (tmp.Length > 2 && tmp[1] == "whispers")
                 {
-                    message = text.Substring(tmp[0].Length + 10);
+                    message = text.Substring(tmp[0].Length + 18);
                     sender = tmp[0];
                     return isValidName(sender);
                 }
@@ -264,7 +264,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// This bot sends a /ping command every 60 seconds in order to stay non-afk.
+        /// This bot sends a command every 60 seconds in order to stay non-afk.
         /// </summary>
 
         public class AntiAFK : ChatBot
@@ -289,7 +289,7 @@ namespace MinecraftClient
                 count++;
                 if (count == timeping)
                 {
-                    SendText("/ping");
+                    SendText(Settings.AntiAFK_Command);
                     count = 0;
                 }
             }
@@ -875,14 +875,33 @@ namespace MinecraftClient
 
             public override void Initialize()
             {
-                // Loads the given file from the startup parameters
-                if (System.IO.File.Exists(file))
+                //Load the given file from the startup parameters
+                //Automatically look in subfolders and try to add ".txt" file extension
+                string[] files = new string[]
                 {
-                    lines = System.IO.File.ReadAllLines(file); // Load the given bot text file (containing commands)
+                    file,
+                    file + ".txt",
+                    "scripts\\" + file,
+                    "scripts\\" + file + ".txt",
+                    "config\\" + file,
+                    "config\\" + file + ".txt",
+                };
+
+                bool file_found = false;
+
+                foreach (string possible_file in files)
+                {
+                    if (System.IO.File.Exists(possible_file))
+                    {
+                        lines = System.IO.File.ReadAllLines(possible_file);
+                        file_found = true;
+                        break;
+                    }
                 }
-                else
+
+                if (!file_found)
                 {
-                    LogToConsole("File not found: " + file);
+                    LogToConsole("File not found: '" + file + "'");
                     UnloadBot(); //No need to keep the bot active
                 }
             }
@@ -898,9 +917,9 @@ namespace MinecraftClient
                         nextline++; //Move the cursor so that the next time the following line will be interpreted
                         sleepticks = sleepticks_interval; //Used to delay next command sending and prevent from beign kicked for spamming
 
-                        if (instruction_line.Length > 0)
+                        if (instruction_line.Length > 1)
                         {
-                            if (!instruction_line.StartsWith("//") && !instruction_line.StartsWith("#"))
+                            if (instruction_line[0] != '#' && instruction_line[0] != '/' && instruction_line[1] != '/')
                             {
                                 string instruction_name = instruction_line.Split(' ')[0];
                                 switch (instruction_name.ToLower())
