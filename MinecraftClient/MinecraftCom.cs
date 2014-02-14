@@ -396,12 +396,20 @@ namespace MinecraftClient
                         string result = ComTmp.readNextString(); //Get the Json data
                         if (result[0] == '{' && result.Contains("protocol\":") && result.Contains("name\":\""))
                         {
-                            string[] tmp_ver = result.Split(new string[] { "protocol\":" }, StringSplitOptions.None);
-                            string[] tmp_name = result.Split(new string[] { "name\":\"" }, StringSplitOptions.None);
+                            string tmp_ver = result.Split(new string[] { "protocol\":" }, StringSplitOptions.None)[1];
+                            string tmp_name = result.Split(new string[] { "name\":\"" }, StringSplitOptions.None)[1];
+
+                            //Detecting Forge (which is not supported)
+                            if (result.Contains("modinfo\":"))
+                            {
+                                tmp_name += "Forge ";
+                                tmp_ver = "0";
+                            }
+
                             if (tmp_ver.Length >= 2 && tmp_name.Length >= 2)
                             {
-                                protocolversion = atoi(tmp_ver[1]);
-                                version = tmp_name[1].Split('"')[0];
+                                protocolversion = atoi(tmp_ver);
+                                version = tmp_name.Split('"')[0];
                                 Console.ForegroundColor = ConsoleColor.DarkGray;
                                 //Console.WriteLine(result); //Debug: show the full Json string
                                 Console.WriteLine("Server version : " + version + " (protocol v" + protocolversion + ").");
