@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using MinecraftClient.Network.Packets;
+using MinecraftClient.Network.IO;
 
 namespace MinecraftClient
 {
@@ -348,6 +350,60 @@ namespace MinecraftClient
             else c.Client.Send(buffer);
         }
 
+        private void SendPacket(IPacket packet)
+        {
+            MinecraftStream stream = new MinecraftStream(c.GetStream());
+            packet.WritePacket(stream);
+        }
+
+        private IPacket ReadLoginPacket(TcpClient client)
+        {
+            int size = readNextVarInt();
+            int pid = readNextVarInt();
+            if (Response.ServerLoginResponse[pid] != null)
+            {
+                var packet = Response.ServerLoginResponse[pid]();
+
+                MinecraftStream stream = new MinecraftStream(c.GetStream());
+                packet.ReadPacket(stream);
+                return packet;
+            }
+            else readData(size - getVarInt(pid).Length);
+            return null;
+        }
+
+        private IPacket ReadStatusPacket(TcpClient client)
+        {
+            int size = readNextVarInt();
+            int pid = readNextVarInt();
+            if (Response.ServerStatusResponse[pid] != null)
+            {
+                var packet = Response.ServerStatusResponse[pid]();
+
+                MinecraftStream stream = new MinecraftStream(c.GetStream());
+                packet.ReadPacket(stream);
+                return packet;
+            }
+            else readData(size - getVarInt(pid).Length);
+            return null;
+        }
+
+        private IPacket ReadPlayPacket(TcpClient client)
+        {
+            int size = readNextVarInt();
+            int pid = readNextVarInt();
+            if (Response.ServerPlayResponse[pid] != null)
+            {
+                var packet = Response.ServerPlayResponse[pid]();
+
+                MinecraftStream stream = new MinecraftStream(c.GetStream());
+                packet.ReadPacket(stream);
+                return packet;
+            }
+            else readData(size - getVarInt(pid).Length);
+            return null;
+        }
+
         public static bool GetServerInfo(string serverIP, ref int protocolversion, ref string version)
         {
             try
@@ -431,26 +487,19 @@ namespace MinecraftClient
                 return false;
             }
         }
-        public bool Login(string username, string uuid, string sessionID, string host, int port)
+        public bool Login(string username, string uuid, string sessionID, string host, short port)
         {
-            byte[] packet_id = getVarInt(0);
-            byte[] protocol_version = getVarInt(4);
-            byte[] server_adress_val = Encoding.UTF8.GetBytes(host);
-            byte[] server_adress_len = getVarInt(server_adress_val.Length);
-            byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
-            byte[] next_state = getVarInt(2);
-            byte[] handshake_packet = concatBytes(packet_id, protocol_version, server_adress_len, server_adress_val, server_port, next_state);
-            byte[] handshake_packet_tosend = concatBytes(getVarInt(handshake_packet.Length), handshake_packet);
+            SendPacket(new Handshake
+            {
+                ProtocolVersion = 4,
+                ServerAddress = host,
+                ServerPort = port,
+                NextState = 2,
+            });
 
-            Send(handshake_packet_tosend);
+            SendPacket(new LoginStart { User = username });
 
-            byte[] username_val = Encoding.UTF8.GetBytes(username);
-            byte[] username_len = getVarInt(username_val.Length);
-            byte[] login_packet = concatBytes(packet_id, username_len, username_val);
-            byte[] login_packet_tosend = concatBytes(getVarInt(login_packet.Length), login_packet);
-
-            Send(login_packet_tosend);
-
+            //IPacket response = ReadLoginPacket(c);
             readNextVarInt(); //Packet size
             int pid = readNextVarInt(); //Packet ID
             if (pid == 0x00) //Login rejected

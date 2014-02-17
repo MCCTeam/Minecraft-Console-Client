@@ -6,6 +6,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.Net;
+using MinecraftClient.Network.Packets;
+using MinecraftClient.Network.IO;
 
 namespace MinecraftClient
 {
@@ -19,7 +21,7 @@ namespace MinecraftClient
         public static int AttemptsLeft = 0;
 
         string host;
-        int port;
+        short port;
         string username;
         string text;
         Thread t_updater;
@@ -75,7 +77,7 @@ namespace MinecraftClient
             {
                 try
                 {
-                    port = Convert.ToInt32(sip[1]);
+                    port = Convert.ToInt16(sip[1]);
                 }
                 catch (FormatException) { port = 25565; }
             }
@@ -132,6 +134,12 @@ namespace MinecraftClient
                 }
                 else if (!singlecommand) { Console.ReadLine(); }
             }
+        }
+
+        public void SendPacket(IPacket packet)
+        {
+            MinecraftStream stream = new MinecraftStream(client.GetStream());
+            packet.WritePacket(stream);
         }
 
         /// <summary>
