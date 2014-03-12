@@ -559,6 +559,7 @@ namespace MinecraftClient
             }
             catch (SocketException) { }
             catch (System.IO.IOException) { }
+            catch (NullReferenceException) { }
         }
 
         private List<ChatBot> bots = new List<ChatBot>();
