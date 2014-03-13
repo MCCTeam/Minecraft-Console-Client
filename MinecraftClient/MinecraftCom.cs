@@ -486,7 +486,7 @@ namespace MinecraftClient
             if (serverIDhash != "-")
             {
                 Console.WriteLine("Checking Session...");
-                if (!SessionCheck(uuid, sessionID, new java.math.BigInteger(Crypto.getServerHash(serverIDhash, serverKey, secretKey)).toString(16)))
+                if (!SessionCheck(uuid, sessionID, Crypto.getServerHash(serverIDhash, serverKey, secretKey)))
                 {
                     return false;
                 }

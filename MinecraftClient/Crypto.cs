@@ -30,30 +30,11 @@ namespace MinecraftClient
             return new SecretKeySpec(aes.Key, "AES"); 
         }
 
-        public static byte[] getServerHash(String toencode, PublicKey par1PublicKey, SecretKey par2SecretKey)
-        {
-            return digest("SHA-1", new byte[][] { Encoding.GetEncoding("iso-8859-1").GetBytes(toencode), par2SecretKey.getEncoded(), par1PublicKey.getEncoded() });
-        }
-
         public static byte[] Encrypt(Key par0Key, byte[] par1ArrayOfByte)
         {
             return func_75885_a(1, par0Key, par1ArrayOfByte);
         }
 
-        private static byte[] digest(String par0Str, byte[][] par1ArrayOfByte)
-        {
-            MessageDigest var2 = MessageDigest.getInstance(par0Str);
-            byte[][] var3 = par1ArrayOfByte;
-            int var4 = par1ArrayOfByte.Length;
-
-            for (int var5 = 0; var5 < var4; ++var5)
-            {
-                byte[] var6 = var3[var5];
-                var2.update(var6);
-            }
-
-            return var2.digest();
-        }
         private static byte[] func_75885_a(int par0, Key par1Key, byte[] par2ArrayOfByte)
         {
             try
@@ -96,6 +77,53 @@ namespace MinecraftClient
             Console.Error.WriteLine("Cipher creation failed!");
             return null;
         }
+
+        /* Server Hash Computation */
+
+        public static string getServerHash(String toencode, PublicKey par1PublicKey, SecretKey par2SecretKey)
+        {
+            byte[] hash = digest(new byte[][] { Encoding.GetEncoding("iso-8859-1").GetBytes(toencode), par2SecretKey.getEncoded(), par1PublicKey.getEncoded() });
+            bool negative = (hash[0] & 0x80) == 0x80;
+            if (negative) { hash = TwosComplimentLittleEndian(hash); }
+            string result = GetHexString(hash).TrimStart('0');
+            if (negative) { result = "-" + result; }
+            return result;
+        }
+
+        private static byte[] digest(byte[][] tohash)
+        {
+            SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider();
+            for (int i = 0; i < tohash.Length; i++)
+                sha1.TransformBlock(tohash[i], 0, tohash[i].Length, tohash[i], 0);
+            sha1.TransformFinalBlock(new byte[] { }, 0, 0);
+            return sha1.Hash;
+        }
+
+        private static string GetHexString(byte[] p)
+        {
+            string result = string.Empty;
+            for (int i = 0; i < p.Length; i++)
+                result += p[i].ToString("x2");
+            return result;
+        }
+
+        private static byte[] TwosComplimentLittleEndian(byte[] p)
+        {
+            int i;
+            bool carry = true;
+            for (i = p.Length - 1; i >= 0; i--)
+            {
+                p[i] = (byte)~p[i];
+                if (carry)
+                {
+                    carry = p[i] == 0xFF;
+                    p[i]++;
+                }
+            }
+            return p;
+        }
+
+        /* Encrypted Stream between client and server */
 
         public static AesStream SwitchToAesMode(System.IO.Stream stream, Key key)
         {
