@@ -462,11 +462,9 @@ namespace MinecraftClient
             else if (pid == 0x01) //Encryption request
             {
                 string serverID = readNextString();
-                byte[] Serverkey_RAW = readNextByteArray();
+                byte[] Serverkey = readNextByteArray();
                 byte[] token = readNextByteArray();
-                var PublicServerkey = Crypto.GenerateRSAPublicKey(Serverkey_RAW);
-                var SecretKey = Crypto.GenerateAESPrivateKey();
-                return StartEncryption(uuid, sessionID, token, serverID, PublicServerkey, SecretKey);
+                return StartEncryption(uuid, sessionID, token, serverID, Serverkey);
             }
             else if (pid == 0x02) //Login successfull
             {
@@ -477,8 +475,11 @@ namespace MinecraftClient
             }
             else return false;
         }
-        public bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, java.security.PublicKey serverKey, javax.crypto.SecretKey secretKey)
+        public bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverKey)
         {
+            System.Security.Cryptography.RSACryptoServiceProvider RSAService = Crypto.DecodeRSAPublicKey(serverKey);
+            byte[] secretKey = Crypto.GenerateAESPrivateKey();
+
             Console.ForegroundColor = ConsoleColor.DarkGray;
             ConsoleIO.WriteLine("Crypto keys & hash generated.");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -493,8 +494,8 @@ namespace MinecraftClient
             }
 
             //Encrypt the data
-            byte[] key_enc = Crypto.Encrypt(serverKey, secretKey.getEncoded());
-            byte[] token_enc = Crypto.Encrypt(serverKey, token);
+            byte[] key_enc = RSAService.Encrypt(secretKey, false);
+            byte[] token_enc = RSAService.Encrypt(token, false);
             byte[] key_len = BitConverter.GetBytes((short)key_enc.Length); Array.Reverse(key_len);
             byte[] token_len = BitConverter.GetBytes((short)token_enc.Length); Array.Reverse(token_len);
 
@@ -505,7 +506,7 @@ namespace MinecraftClient
             Send(encryption_response_tosend);
 
             //Start client-side encryption
-            setEncryptedClient(Crypto.SwitchToAesMode(c.GetStream(), secretKey));
+            setEncryptedClient(new Crypto.AesStream(c.GetStream(), secretKey));
 
             //Get the next packet
             readNextVarInt(); //Skip Packet size (not needed)

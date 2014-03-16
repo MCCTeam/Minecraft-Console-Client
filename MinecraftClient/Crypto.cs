@@ -3,92 +3,148 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
-using java.security;
-using java.security.spec;
-using javax.crypto;
-using javax.crypto.spec;
 
 namespace MinecraftClient
 {
     /// <summary>
-    /// Cryptographic functions ported from Minecraft Source Code (Java). Decompiled with MCP. Copy, paste, little adjustements.
+    /// Methods for handling all the crypto stuff: RSA (Encryption Key Request), AES (Encrypted Stream), SHA-1 (Server Hash).
     /// </summary>
 
     public class Crypto
     {
-        public static PublicKey GenerateRSAPublicKey(byte[] key)
-        {
-            X509EncodedKeySpec localX509EncodedKeySpec = new X509EncodedKeySpec(key);
-            KeyFactory localKeyFactory = KeyFactory.getInstance("RSA");
-            return localKeyFactory.generatePublic(localX509EncodedKeySpec);
-        }
+        /// <summary>
+        /// Get a cryptographic service for encrypting data using the server's RSA public key
+        /// </summary>
+        /// <param name="key">Byte array containing the encoded key</param>
+        /// <returns>Returns the corresponding RSA Crypto Service</returns>
 
-        public static SecretKey GenerateAESPrivateKey()
+        public static RSACryptoServiceProvider DecodeRSAPublicKey(byte[] x509key)
         {
-            AesManaged aes = new AesManaged();
-            aes.KeySize = 128; aes.GenerateKey();
-            return new SecretKeySpec(aes.Key, "AES"); 
-        }
+            /* Code from StackOverflow no. 18091460 */
 
-        public static byte[] Encrypt(Key par0Key, byte[] par1ArrayOfByte)
-        {
-            return func_75885_a(1, par0Key, par1ArrayOfByte);
-        }
+            byte[] SeqOID = { 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };
 
-        private static byte[] func_75885_a(int par0, Key par1Key, byte[] par2ArrayOfByte)
-        {
-            try
+            System.IO.MemoryStream ms = new System.IO.MemoryStream(x509key);
+            System.IO.BinaryReader reader = new System.IO.BinaryReader(ms);
+
+            if (reader.ReadByte() == 0x30)
+                ReadASNLength(reader); //skip the size
+            else
+                return null;
+
+            int identifierSize = 0; //total length of Object Identifier section
+            if (reader.ReadByte() == 0x30)
+                identifierSize = ReadASNLength(reader);
+            else
+                return null;
+
+            if (reader.ReadByte() == 0x06) //is the next element an object identifier?
             {
-                return cypherencrypt(par0, par1Key.getAlgorithm(), par1Key).doFinal(par2ArrayOfByte);
-            }
-            catch (IllegalBlockSizeException var4)
-            {
-                var4.printStackTrace();
-            }
-            catch (BadPaddingException var5)
-            {
-                var5.printStackTrace();
+                int oidLength = ReadASNLength(reader);
+                byte[] oidBytes = new byte[oidLength];
+                reader.Read(oidBytes, 0, oidBytes.Length);
+                if (oidBytes.SequenceEqual(SeqOID) == false) //is the object identifier rsaEncryption PKCS#1?
+                    return null;
+
+                int remainingBytes = identifierSize - 2 - oidBytes.Length;
+                reader.ReadBytes(remainingBytes);
             }
 
-            Console.Error.WriteLine("Cipher data failed!");
+            if (reader.ReadByte() == 0x03) //is the next element a bit string?
+            {
+                ReadASNLength(reader); //skip the size
+                reader.ReadByte(); //skip unused bits indicator
+                if (reader.ReadByte() == 0x30)
+                {
+                    ReadASNLength(reader); //skip the size
+                    if (reader.ReadByte() == 0x02) //is it an integer?
+                    {
+                        int modulusSize = ReadASNLength(reader);
+                        byte[] modulus = new byte[modulusSize];
+                        reader.Read(modulus, 0, modulus.Length);
+                        if (modulus[0] == 0x00) //strip off the first byte if it's 0
+                        {
+                            byte[] tempModulus = new byte[modulus.Length - 1];
+                            Array.Copy(modulus, 1, tempModulus, 0, modulus.Length - 1);
+                            modulus = tempModulus;
+                        }
+
+                        if (reader.ReadByte() == 0x02) //is it an integer?
+                        {
+                            int exponentSize = ReadASNLength(reader);
+                            byte[] exponent = new byte[exponentSize];
+                            reader.Read(exponent, 0, exponent.Length);
+
+                            RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
+                            RSAParameters RSAKeyInfo = new RSAParameters();
+                            RSAKeyInfo.Modulus = modulus;
+                            RSAKeyInfo.Exponent = exponent;
+                            RSA.ImportParameters(RSAKeyInfo);
+                            return RSA;
+                        }
+                    }
+                }
+            }
             return null;
         }
-        private static Cipher cypherencrypt(int par0, String par1Str, Key par2Key)
-        {
-            try
-            {
-                Cipher var3 = Cipher.getInstance(par1Str);
-                var3.init(par0, par2Key);
-                return var3;
-            }
-            catch (InvalidKeyException var4)
-            {
-                var4.printStackTrace();
-            }
-            catch (NoSuchAlgorithmException var5)
-            {
-                var5.printStackTrace();
-            }
-            catch (NoSuchPaddingException var6)
-            {
-                var6.printStackTrace();
-            }
 
-            Console.Error.WriteLine("Cipher creation failed!");
-            return null;
+        /// <summary>
+        /// Subfunction for decrypting ASN.1 (x509) RSA certificate data fields lengths
+        /// </summary>
+        /// <param name="reader">StreamReader containing the stream to decode</param>
+        /// <returns>Return the read length</returns>
+
+        private static int ReadASNLength(System.IO.BinaryReader reader)
+        {
+            //Note: this method only reads lengths up to 4 bytes long as
+            //this is satisfactory for the majority of situations.
+            int length = reader.ReadByte();
+            if ((length & 0x00000080) == 0x00000080) //is the length greater than 1 byte
+            {
+                int count = length & 0x0000000f;
+                byte[] lengthBytes = new byte[4];
+                reader.Read(lengthBytes, 4 - count, count);
+                Array.Reverse(lengthBytes); //
+                length = BitConverter.ToInt32(lengthBytes, 0);
+            }
+            return length;
         }
 
-        /* Server Hash Computation */
+        /// <summary>
+        /// Generate a new random AES key for symmetric encryption
+        /// </summary>
+        /// <returns>Returns a byte array containing the key</returns>
 
-        public static string getServerHash(String toencode, PublicKey par1PublicKey, SecretKey par2SecretKey)
+        public static byte[] GenerateAESPrivateKey()
         {
-            byte[] hash = digest(new byte[][] { Encoding.GetEncoding("iso-8859-1").GetBytes(toencode), par2SecretKey.getEncoded(), par1PublicKey.getEncoded() });
+            AesManaged AES = new AesManaged();
+            AES.KeySize = 128; AES.GenerateKey();
+            return AES.Key;
+        }
+
+        /// <summary>
+        /// Get a SHA-1 hash for online-mode session checking
+        /// </summary>
+        /// <param name="serverID">Server ID hash</param>
+        /// <param name="PublicKey">Server's RSA key</param>
+        /// <param name="SecretKey">Secret key chosen by the client</param>
+        /// <returns>Returns the corresponding SHA-1 hex hash</returns>
+
+        public static string getServerHash(string serverID, byte[] PublicKey, byte[] SecretKey)
+        {
+            byte[] hash = digest(new byte[][] { Encoding.GetEncoding("iso-8859-1").GetBytes(serverID), SecretKey, PublicKey });
             bool negative = (hash[0] & 0x80) == 0x80;
-            if (negative) { hash = TwosComplimentLittleEndian(hash); }
+            if (negative) { hash = TwosComplementLittleEndian(hash); }
             string result = GetHexString(hash).TrimStart('0');
             if (negative) { result = "-" + result; }
             return result;
         }
+
+        /// <summary>
+        /// Generate a SHA-1 hash using several byte arrays
+        /// </summary>
+        /// <param name="tohash">array of byte arrays to hash</param>
+        /// <returns>Returns the hashed data</returns>
 
         private static byte[] digest(byte[][] tohash)
         {
@@ -99,6 +155,12 @@ namespace MinecraftClient
             return sha1.Hash;
         }
 
+        /// <summary>
+        /// Converts a byte array to its hex string representation
+        /// </summary>
+        /// <param name="p">Byte array to convert</param>
+        /// <returns>Returns the string representation</returns>
+
         private static string GetHexString(byte[] p)
         {
             string result = string.Empty;
@@ -107,7 +169,13 @@ namespace MinecraftClient
             return result;
         }
 
-        private static byte[] TwosComplimentLittleEndian(byte[] p)
+        /// <summary>
+        /// Compute the two's complement of a little endian byte array
+        /// </summary>
+        /// <param name="p">Byte array to compute</param>
+        /// <returns>Returns the corresponding two's complement</returns>
+
+        private static byte[] TwosComplementLittleEndian(byte[] p)
         {
             int i;
             bool carry = true;
@@ -123,15 +191,8 @@ namespace MinecraftClient
             return p;
         }
 
-        /* Encrypted Stream between client and server */
-
-        public static AesStream SwitchToAesMode(System.IO.Stream stream, Key key)
-        {
-            return new AesStream(stream, key.getEncoded());
-        }
-
         /// <summary>
-        /// An encrypted stream using AES
+        /// An encrypted stream using AES, used for encrypting network data on the fly using AES.
         /// </summary>
 
         public class AesStream : System.IO.Stream
