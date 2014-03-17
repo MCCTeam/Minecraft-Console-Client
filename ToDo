@@ -1,0 +1,2 @@
+Rename MinecraftStream
+Redo Read func in MinecraftStream: No more links to other methods , like Write func. Each byte is important

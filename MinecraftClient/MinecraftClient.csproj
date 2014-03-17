@@ -38,6 +38,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -75,6 +76,13 @@
     <Compile Include="Crypto.cs" />
     <Compile Include="ChatParser.cs" />
     <Compile Include="MinecraftCom.cs" />
+    <Compile Include="Network\Packets\IPacket.cs" />
+    <Compile Include="Network\Packets\PacketsClient.cs" />
+    <Compile Include="Network\Packets\PacketsParse.cs" />
+    <Compile Include="Network\Packets\PacketsServer.cs" />
+    <Compile Include="Network\Packets\PacketsType.cs" />
+    <Compile Include="Network\IO\MinecraftStream.cs" />
+    <Compile Include="Network\IO\MinecraftStream.Stream.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="McTcpClient.cs" />
