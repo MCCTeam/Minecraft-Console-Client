@@ -214,7 +214,7 @@ namespace MinecraftClient
                 + "\r\n"
                 + "language=en_GB\r\n"
                 + "botownersfile=bot-owners.txt\r\n"
-                + "consoletitle=Minecraft Console Client - %username%\r\n"
+                + "consoletitle=%username% - Minecraft Console Client\r\n"
                 + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"
