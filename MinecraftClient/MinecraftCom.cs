@@ -240,6 +240,18 @@ namespace MinecraftClient
             }
             return i;
         }
+        public static byte[] getPaddingPacket()
+        {
+            //Will generate a 15-bytes long padding packet
+            byte[] id = getVarInt(0x17); //Plugin Message
+            byte[] channel_name = Encoding.UTF8.GetBytes("MCC|Pad");
+            byte[] channel_name_len = getVarInt(channel_name.Length);
+            byte[] data = new byte[] { 0x00, 0x00, 0x00 };
+            byte[] data_len = BitConverter.GetBytes((short)data.Length); Array.Reverse(data_len);
+            byte[] packet_data = concatBytes(id, channel_name_len, channel_name, data_len, data);
+            byte[] packet_length = getVarInt(packet_data.Length);
+            return concatBytes(packet_length, packet_data);
+        }
         private static byte[] getVarInt(int paramInt)
         {
             List<byte> bytes = new List<byte>();

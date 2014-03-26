@@ -407,6 +407,9 @@ namespace MinecraftClient
                 for (int i = offset; i - offset < count; i++)
                     tosend_cache.Add(buffer[i]);
 
+                if (tosend_cache.Count < 16)
+                    tosend_cache.AddRange(MinecraftCom.getPaddingPacket());
+
                 while (tosend_cache.Count > 16)
                 {
                     byte[] temp_in = new byte[16];
