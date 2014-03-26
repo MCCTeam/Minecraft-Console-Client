@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         #region Login to Minecraft.net and get a new session ID
 
-        public enum LoginResult { Error, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
+        public enum LoginResult { OtherError, SSLError, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -68,7 +68,11 @@ namespace MinecraftClient
                     }
                     else return LoginResult.Blocked;
                 }
-                else return LoginResult.Error;
+                else if (e.Status == WebExceptionStatus.SendFailure)
+                {
+                    return LoginResult.SSLError;
+                }
+                else return LoginResult.OtherError;
             }
         }
 
@@ -99,7 +103,7 @@ namespace MinecraftClient
         #endregion
 
         TcpClient c = new TcpClient();
-        Crypto.AesStream s;
+        Crypto.IAesStream s;
 
         public bool HasBeenKicked { get { return connectionlost; } }
         bool connectionlost = false;
@@ -330,7 +334,7 @@ namespace MinecraftClient
 
         public void setVersion(int ver) { protocolversion = ver; }
         public void setClient(TcpClient n) { c = n; }
-        private void setEncryptedClient(Crypto.AesStream n) { s = n; encrypted = true; }
+        private void setEncryptedClient(Crypto.IAesStream n) { s = n; encrypted = true; }
         private void Receive(byte[] buffer, int start, int offset, SocketFlags f)
         {
             if (encrypted)
@@ -506,7 +510,10 @@ namespace MinecraftClient
             Send(encryption_response_tosend);
 
             //Start client-side encryption
-            setEncryptedClient(new Crypto.AesStream(c.GetStream(), secretKey));
+            Crypto.IAesStream encrypted;
+            if (Program.isUsingMono) { encrypted = new Crypto.MonoAesStream(c.GetStream(), secretKey); }
+            else encrypted = new Crypto.AesStream(c.GetStream(), secretKey);
+            setEncryptedClient(encrypted);
 
             //Get the next packet
             readNextVarInt(); //Skip Packet size (not needed)

@@ -6,7 +6,7 @@ using System.Text;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by ORelio (c) 2012-2013.
+    /// Minecraft Console Client by ORelio (c) 2012-2014.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
@@ -279,7 +279,18 @@ namespace MinecraftClient
                     case MinecraftCom.LoginResult.Blocked: Console.WriteLine("Too many failed logins. Please try again later."); break;
                     case MinecraftCom.LoginResult.WrongPassword: Console.WriteLine("Incorrect password."); break;
                     case MinecraftCom.LoginResult.NotPremium: Console.WriteLine("User not premium."); break;
-                    case MinecraftCom.LoginResult.Error: Console.WriteLine("Network error."); break;
+                    case MinecraftCom.LoginResult.OtherError: Console.WriteLine("Network error."); break;
+                    case MinecraftCom.LoginResult.SSLError: Console.WriteLine("SSL Error.");
+                        if (isUsingMono)
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkGray;
+                            Console.WriteLine("It appears that you are using Mono to run this program."
+                                + '\n' + "The first time, you have to import HTTPS certificates using:"
+                                + '\n' + "mozroots --import --ask-remove");
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            return;
+                        }
+                        break;
                 }
                 while (Console.KeyAvailable) { Console.ReadKey(false); }
                 if (Settings.SingleCommand == "") { ReadLineReconnect(); }
@@ -318,6 +329,18 @@ namespace MinecraftClient
                 return true;
             }
             else return false;
+        }
+
+        /// <summary>
+        /// Detect if the user is running Minecraft Console Client through Mono
+        /// </summary>
+
+        public static bool isUsingMono
+        {
+            get
+            {
+                return Type.GetType("Mono.Runtime") != null;
+            }
         }
 
         /// <summary>
