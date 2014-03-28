@@ -95,29 +95,25 @@ namespace MinecraftClient
             TranslationRules["commands.message.display.incoming"] = "§7%s whispers to you: %s";
             TranslationRules["commands.message.display.outgoing"] = "§7You whisper to %s: %s";
 
-            //Use translations from Minecraft assets if translation file is not found but a copy of the game is installed?
-            if (!System.IO.File.Exists(Settings.TranslationsFile) //Try en_GB.lang
-              && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
-            {
-                Settings.TranslationsFile = Settings.TranslationsFile_FromMCDir;
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Using en_GB.lang from your Minecraft directory.");
-                Console.ForegroundColor = ConsoleColor.Gray;
-            }
+            //Language file in a subfolder, depending on the language setting
+            if (!System.IO.Directory.Exists("lang"))
+                System.IO.Directory.CreateDirectory("lang");
 
-            //Still not found? try downloading en_GB from Mojang's servers?
-            if (!System.IO.File.Exists(Settings.TranslationsFile))
+            string Language_File = "lang\\" + Settings.Language + ".lang";
+
+            //File not found? Try downloading language file from Mojang's servers?
+            if (!System.IO.File.Exists(Language_File))
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Downloading en_GB.lang from Mojang's servers...");
+                ConsoleIO.WriteLine("Downloading '" + Settings.Language + ".lang' from Mojang servers...");
                 try
                 {
                         string assets_index = downloadString(Settings.TranslationsFile_Website_Index);
-                        string[] tmp = assets_index.Split(new string[] { "lang/en_GB.lang" }, StringSplitOptions.None);
+                        string[] tmp = assets_index.Split(new string[] { "lang/" + Settings.Language + ".lang" }, StringSplitOptions.None);
                         tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
                         string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
-                        System.IO.File.WriteAllText(Settings.TranslationsFile, downloadString(Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash));
-                        ConsoleIO.WriteLine("Done. File saved as \"" + Settings.TranslationsFile + '"');
+                        System.IO.File.WriteAllText(Language_File, downloadString(Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash));
+                        ConsoleIO.WriteLine("Done. File saved as '" + Language_File + '\'');
                 }
                 catch
                 {
@@ -126,10 +122,20 @@ namespace MinecraftClient
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
 
-            //Load the external dictionnary of translation rules or display an error message
-            if (System.IO.File.Exists(Settings.TranslationsFile))
+            //Download Failed? Defaulting to en_GB.lang if the game is installed
+            if (!System.IO.File.Exists(Language_File) //Try en_GB.lang
+              && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
             {
-                string[] translations = System.IO.File.ReadAllLines(Settings.TranslationsFile);
+                Language_File = Settings.TranslationsFile_FromMCDir;
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                ConsoleIO.WriteLine("Defaulting to en_GB.lang from your Minecraft directory.");
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
+
+            //Load the external dictionnary of translation rules or display an error message
+            if (System.IO.File.Exists(Language_File))
+            {
+                string[] translations = System.IO.File.ReadAllLines(Language_File);
                 foreach (string line in translations)
                 {
                     if (line.Length > 0)
@@ -149,8 +155,7 @@ namespace MinecraftClient
             else //No external dictionnary found.
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Translations file not found: \"" + Settings.TranslationsFile + "\""
-                + "\nYou can pick a translation file from .minecraft\\assets\\lang\\"
+                ConsoleIO.WriteLine("Translations file not found: \"" + Language_File + "\""
                 + "\nSome messages won't be properly printed without this file.");
                 Console.ForegroundColor = ConsoleColor.Gray;
             }

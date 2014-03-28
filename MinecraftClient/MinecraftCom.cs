@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         #region Login to Minecraft.net and get a new session ID
 
-        public enum LoginResult { Error, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
+        public enum LoginResult { OtherError, SSLError, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -68,7 +68,11 @@ namespace MinecraftClient
                     }
                     else return LoginResult.Blocked;
                 }
-                else return LoginResult.Error;
+                else if (e.Status == WebExceptionStatus.SendFailure)
+                {
+                    return LoginResult.SSLError;
+                }
+                else return LoginResult.OtherError;
             }
         }
 
@@ -99,7 +103,7 @@ namespace MinecraftClient
         #endregion
 
         TcpClient c = new TcpClient();
-        Crypto.AesStream s;
+        Crypto.IAesStream s;
 
         public bool HasBeenKicked { get { return connectionlost; } }
         bool connectionlost = false;
@@ -236,6 +240,18 @@ namespace MinecraftClient
             }
             return i;
         }
+        public static byte[] getPaddingPacket()
+        {
+            //Will generate a 15-bytes long padding packet
+            byte[] id = getVarInt(0x17); //Plugin Message
+            byte[] channel_name = Encoding.UTF8.GetBytes("MCC|Pad");
+            byte[] channel_name_len = getVarInt(channel_name.Length);
+            byte[] data = new byte[] { 0x00, 0x00, 0x00 };
+            byte[] data_len = BitConverter.GetBytes((short)data.Length); Array.Reverse(data_len);
+            byte[] packet_data = concatBytes(id, channel_name_len, channel_name, data_len, data);
+            byte[] packet_length = getVarInt(packet_data.Length);
+            return concatBytes(packet_length, packet_data);
+        }
         private static byte[] getVarInt(int paramInt)
         {
             List<byte> bytes = new List<byte>();
@@ -330,7 +346,7 @@ namespace MinecraftClient
 
         public void setVersion(int ver) { protocolversion = ver; }
         public void setClient(TcpClient n) { c = n; }
-        private void setEncryptedClient(Crypto.AesStream n) { s = n; encrypted = true; }
+        private void setEncryptedClient(Crypto.IAesStream n) { s = n; encrypted = true; }
         private void Receive(byte[] buffer, int start, int offset, SocketFlags f)
         {
             if (encrypted)
@@ -398,10 +414,17 @@ namespace MinecraftClient
                         {
                             string[] tmp_ver = result.Split(new string[] { "protocol\":" }, StringSplitOptions.None);
                             string[] tmp_name = result.Split(new string[] { "name\":\"" }, StringSplitOptions.None);
+
                             if (tmp_ver.Length >= 2 && tmp_name.Length >= 2)
                             {
                                 protocolversion = atoi(tmp_ver[1]);
                                 version = tmp_name[1].Split('"')[0];
+                                if (result.Contains("modinfo\":"))
+                                {
+                                    //Server is running Forge (which is not supported)
+                                    version = "Forge " + version;
+                                    protocolversion = 0;
+                                }
                                 Console.ForegroundColor = ConsoleColor.DarkGray;
                                 //Console.WriteLine(result); //Debug: show the full Json string
                                 Console.WriteLine("Server version : " + version + " (protocol v" + protocolversion + ").");
@@ -455,11 +478,9 @@ namespace MinecraftClient
             else if (pid == 0x01) //Encryption request
             {
                 string serverID = readNextString();
-                byte[] Serverkey_RAW = readNextByteArray();
+                byte[] Serverkey = readNextByteArray();
                 byte[] token = readNextByteArray();
-                var PublicServerkey = Crypto.GenerateRSAPublicKey(Serverkey_RAW);
-                var SecretKey = Crypto.GenerateAESPrivateKey();
-                return StartEncryption(uuid, sessionID, token, serverID, PublicServerkey, SecretKey);
+                return StartEncryption(uuid, sessionID, token, serverID, Serverkey);
             }
             else if (pid == 0x02) //Login successfull
             {
@@ -470,8 +491,11 @@ namespace MinecraftClient
             }
             else return false;
         }
-        public bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, java.security.PublicKey serverKey, javax.crypto.SecretKey secretKey)
+        public bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverKey)
         {
+            System.Security.Cryptography.RSACryptoServiceProvider RSAService = Crypto.DecodeRSAPublicKey(serverKey);
+            byte[] secretKey = Crypto.GenerateAESPrivateKey();
+
             Console.ForegroundColor = ConsoleColor.DarkGray;
             ConsoleIO.WriteLine("Crypto keys & hash generated.");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -479,15 +503,15 @@ namespace MinecraftClient
             if (serverIDhash != "-")
             {
                 Console.WriteLine("Checking Session...");
-                if (!SessionCheck(uuid, sessionID, new java.math.BigInteger(Crypto.getServerHash(serverIDhash, serverKey, secretKey)).toString(16)))
+                if (!SessionCheck(uuid, sessionID, Crypto.getServerHash(serverIDhash, serverKey, secretKey)))
                 {
                     return false;
                 }
             }
 
             //Encrypt the data
-            byte[] key_enc = Crypto.Encrypt(serverKey, secretKey.getEncoded());
-            byte[] token_enc = Crypto.Encrypt(serverKey, token);
+            byte[] key_enc = RSAService.Encrypt(secretKey, false);
+            byte[] token_enc = RSAService.Encrypt(token, false);
             byte[] key_len = BitConverter.GetBytes((short)key_enc.Length); Array.Reverse(key_len);
             byte[] token_len = BitConverter.GetBytes((short)token_enc.Length); Array.Reverse(token_len);
 
@@ -498,7 +522,10 @@ namespace MinecraftClient
             Send(encryption_response_tosend);
 
             //Start client-side encryption
-            setEncryptedClient(Crypto.SwitchToAesMode(c.GetStream(), secretKey));
+            Crypto.IAesStream encrypted;
+            if (Program.isUsingMono) { encrypted = new Crypto.MonoAesStream(c.GetStream(), secretKey); }
+            else encrypted = new Crypto.AesStream(c.GetStream(), secretKey);
+            setEncryptedClient(encrypted);
 
             //Get the next packet
             readNextVarInt(); //Skip Packet size (not needed)
@@ -552,6 +579,7 @@ namespace MinecraftClient
             }
             catch (SocketException) { }
             catch (System.IO.IOException) { }
+            catch (NullReferenceException) { }
         }
 
         private List<ChatBot> bots = new List<ChatBot>();
