@@ -355,7 +355,6 @@ namespace MinecraftClient
             private bool[] discovered;
             private string word = "";
             private string letters = "";
-            private string[] owners;
             private bool English;
 
             /// <summary>
@@ -366,11 +365,6 @@ namespace MinecraftClient
             public Pendu(bool english)
             {
                 English = english;
-            }
-
-            public override void Initialize()
-            {
-                owners = getowners();
             }
 
             public override void Update()
@@ -398,7 +392,7 @@ namespace MinecraftClient
 
                 if (isPrivateMessage(text, ref message, ref username))
                 {
-                    if (owners.Contains(username.ToUpper()))
+                    if (Settings.Bots_Owners.Contains(username.ToLower()))
                     {
                         switch (message)
                         {
@@ -493,21 +487,6 @@ namespace MinecraftClient
                     LogToConsole(English ? "File not found: " + Settings.Hangman_FileWords_EN : "Fichier introuvable : " + Settings.Hangman_FileWords_FR);
                     return English ? "WORDSAREMISSING" : "DICOMANQUANT";
                 }
-            }
-
-            private string[] getowners()
-            {
-                List<string> owners = new List<string>();
-                owners.Add("CONSOLE");
-                if (System.IO.File.Exists(Settings.Bots_OwnersFile))
-                {
-                    foreach (string s in System.IO.File.ReadAllLines(Settings.Bots_OwnersFile))
-                    {
-                        owners.Add(s.ToUpper());
-                    }
-                }
-                else LogToConsole(English ? "File not found: " + Settings.Bots_OwnersFile : "Fichier introuvable : " + Settings.Bots_OwnersFile);
-                return owners.ToArray();
             }
 
             private string word_cached

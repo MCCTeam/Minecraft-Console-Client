@@ -27,7 +27,7 @@ namespace MinecraftClient
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\9e\9e2fdc43fc1c7024ff5922b998fadb2971a64ee0"; //MC 1.7.4 en_GB.lang
         public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.7.4.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
-        public static string Bots_OwnersFile = "bot-owners.txt";
+        public static List<string> Bots_Owners = new List<string>(new string[] { "console" });
         public static string Language = "en_GB";
 
         //AntiAFK Settings
@@ -118,8 +118,13 @@ namespace MinecraftClient
                                                 case "serverip": ServerIP = argValue; break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
-                                                case "botownersfile": Bots_OwnersFile = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
+                                                case "botowners":
+                                                    Bots_Owners.Clear();
+                                                    Bots_Owners.Add("console");
+                                                    foreach (string name in argValue.ToLower().Replace(" ", "").Split(','))
+                                                        Bots_Owners.Add(name);
+                                                    break;
                                             }
                                             break;
 
@@ -209,7 +214,7 @@ namespace MinecraftClient
                 + "#Advanced settings\r\n"
                 + "\r\n"
                 + "language=en_GB\r\n"
-                + "botownersfile=bot-owners.txt\r\n"
+                + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
                 + "\r\n"
                 + "#Bot Settings\r\n"
