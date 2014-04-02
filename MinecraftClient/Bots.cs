@@ -235,6 +235,28 @@ namespace MinecraftClient
             handler.BotUnLoad(this);
         }
 
+        /// <summary>
+        /// Send a private message to a player
+        /// </summary>
+        /// <param name="player">Player name</param>
+        /// <param name="message">Message</param>
+
+        protected void SendPrivateMessage(string player, string message)
+        {
+            SendText("/tell " + player + ' ' + message);
+        }
+
+        /// <summary>
+        /// Run a script from a file using a Scripting bot
+        /// </summary>
+        /// <param name="filename">File name</param>
+        /// <param name="playername">Player name to send error messages, if applicable</param>
+
+        protected void RunScript(string filename, string playername = "")
+        {
+            handler.BotLoad(new Bots.Scripting(filename, playername));
+        }
+
         #endregion
     }
 
@@ -822,9 +844,18 @@ namespace MinecraftClient
             private int sleepticks = 10;
             private int sleepticks_interval = 10;
             private int nextline = 0;
+            private string owner;
+
             public Scripting(string filename)
             {
                 file = filename;
+            }
+
+            public Scripting(string filename, string ownername)
+                :this(filename)
+            {
+                if (ownername != "")
+                    owner = ownername;
             }
 
             public override void Initialize()
@@ -856,8 +887,12 @@ namespace MinecraftClient
                 if (!file_found)
                 {
                     LogToConsole("File not found: '" + file + "'");
+                    if (owner != null)
+                        SendPrivateMessage(owner, "File not found: '" + file + "'");
                     UnloadBot(); //No need to keep the bot active
                 }
+                else if (owner != null)
+                    SendPrivateMessage(owner, "Script '" + file + "' loaded.");
             }
 
             public override void Update()
@@ -908,6 +943,59 @@ namespace MinecraftClient
                     {
                         //No more instructions to interpret
                         UnloadBot();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Allow to perform operations using whispers to the bot
+        /// </summary>
+
+        public class RemoteControl : ChatBot
+        {
+            public override void GetText(string text)
+            {
+                text = getVerbatim(text);
+                string command = "", sender = "";
+                if (isPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower()))
+                {
+                    string cmd_name = command.Split(' ')[0];
+                    switch (cmd_name.ToLower())
+                    {
+                        case "exit":
+                            DisconnectAndExit();
+                            break;
+                        case "reco":
+                            ReconnectToTheServer();
+                            break;
+                        case "script":
+                            if (command.Length >= 8)
+                                RunScript(command.Substring(7), sender);
+                            break;
+                        case "send":
+                            if (command.Length >= 6)
+                                SendText(command.Substring(5));
+                            break;
+                        case "help":
+                            if (command.Length >= 6)
+                            {
+                                string help_cmd_name = command.Substring(5).ToLower();
+                                switch (help_cmd_name)
+                                {
+                                    case "exit": SendPrivateMessage(sender, "exit: disconnect from the server."); break;
+                                    case "reco": SendPrivateMessage(sender, "reco: restart and reconnct to the server."); break;
+                                    case "script": SendPrivateMessage(sender, "script <scriptname>: run a script file."); break;
+                                    case "send": SendPrivateMessage(sender, "send <text>: send a chat message or command."); break;
+                                    case "help": SendPrivateMessage(sender, "help <cmdname>: show brief help about a command."); break;
+                                    default: SendPrivateMessage(sender, "help: unknown command '" + help_cmd_name + "'."); break;
+                                }
+                            }
+                            else SendPrivateMessage(sender, "help <cmdname>. Available commands: exit, reco, script, send.");
+                            break;
+                        default:
+                            SendPrivateMessage(sender, "Unknown command '" + cmd_name + "'. Use 'help' for help.");
+                            break;
                     }
                 }
             }

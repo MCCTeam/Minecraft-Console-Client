@@ -27,7 +27,7 @@ namespace MinecraftClient
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\9e\9e2fdc43fc1c7024ff5922b998fadb2971a64ee0"; //MC 1.7.4 en_GB.lang
         public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.7.4.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
-        public static List<string> Bots_Owners = new List<string>(new string[] { "console" });
+        public static List<string> Bots_Owners = new List<string>();
         public static string Language = "en_GB";
 
         //AntiAFK Settings
@@ -67,8 +67,10 @@ namespace MinecraftClient
         public static bool Scripting_Enabled = false;
         public static string Scripting_ScriptFile = "script.txt";
 
+        //Remote Control
+        public static bool RemoteCtrl_Enabled = false;
 
-        private enum ParseMode { Default, Main, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, Scripting };
+        private enum ParseMode { Default, Main, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, Scripting, RemoteControl };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -99,6 +101,7 @@ namespace MinecraftClient
                                     case "hangman": pMode = ParseMode.Hangman; break;
                                     case "main": pMode = ParseMode.Main; break;
                                     case "scripting": pMode = ParseMode.Scripting; break;
+                                    case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -121,7 +124,6 @@ namespace MinecraftClient
                                                 case "consoletitle": ConsoleTitle = argValue; break;
                                                 case "botowners":
                                                     Bots_Owners.Clear();
-                                                    Bots_Owners.Add("console");
                                                     foreach (string name in argValue.ToLower().Replace(" ", "").Split(','))
                                                         Bots_Owners.Add(name);
                                                     break;
@@ -183,6 +185,13 @@ namespace MinecraftClient
                                                 case "scriptfile": Scripting_ScriptFile = argValue; break;
                                             }
                                             break;
+
+                                        case ParseMode.RemoteControl:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": RemoteCtrl_Enabled = str2bool(argValue); break;
+                                            }
+                                            break;
                                     }
                                 }
                             }
@@ -206,7 +215,7 @@ namespace MinecraftClient
                 + "[Main]\r\n"
                 + "\r\n"
                 + "#General settings\r\n"
-                + "#leave blank = prompt user on startup\r\n"
+                + "#leave blank to prompt user on startup\r\n"
                 + "#Use \"-\" as password for offline mode\r\n"
                 + "\r\n"
                 + "login=\r\npassword=\r\nserverip=\r\n"
@@ -249,7 +258,10 @@ namespace MinecraftClient
                 + "\r\n"
                 + "[Scripting]\r\n"
                 + "enabled=false\r\n"
-                + "scriptfile=testscript.txt\r\n", Encoding.UTF8);
+                + "scriptfile=testscript.txt\r\n"
+                + "\r\n"
+                + "[RemoteControl]\r\n"
+                + "enabled=false\r\n", Encoding.UTF8);
         }
 
         public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }

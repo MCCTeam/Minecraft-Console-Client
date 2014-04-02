@@ -163,6 +163,7 @@ namespace MinecraftClient
                         if (Settings.PlayerLog_Enabled) { handler.BotLoad(new Bots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.PlayerLog_File)); }
                         if (Settings.AutoRelog_Enabled) { handler.BotLoad(new Bots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
                         if (Settings.Scripting_Enabled) { handler.BotLoad(new Bots.Scripting(Settings.Scripting_ScriptFile)); }
+                        if (Settings.RemoteCtrl_Enabled){ handler.BotLoad(new Bots.RemoteControl()); }
 
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
