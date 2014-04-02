@@ -65,91 +65,6 @@ namespace MinecraftClient
                         {
                             Settings.SingleCommand = args[3];
                         }
-
-                        //Use bots? (will disable single command)
-                        for (int i = 3; i < args.Length; i++)
-                        {
-                            if (args[i].Length > 4 && args[i].Substring(0, 4).ToLower() == "bot:")
-                            {
-                                Settings.SingleCommand = "";
-                                string[] botargs = args[i].ToLower().Split(':');
-                                switch (botargs[1])
-                                {
-                                    #region Process bots settings
-                                    case "antiafk":
-                                        Settings.AntiAFK_Enabled = true;
-                                        if (botargs.Length > 2)
-                                        {
-                                            try { Settings.AntiAFK_Delay = Convert.ToInt32(botargs[2]); }
-                                            catch (FormatException) { }
-                                        } break;
-
-                                    case "pendu":
-                                        Settings.Hangman_Enabled = true;
-                                        Settings.Hangman_English = false;
-                                        break;
-
-                                    case "hangman":
-                                        Settings.Hangman_Enabled = true;
-                                        Settings.Hangman_English = true;
-                                        break;
-
-                                    case "alerts":
-                                        Settings.Alerts_Enabled = true;
-                                        break;
-
-                                    case "log":
-                                        Settings.ChatLog_Enabled = true;
-                                        Settings.ChatLog_DateTime = true;
-                                        Settings.ChatLog_File = "chat-" + Settings.ServerIP.Replace(':', '-') + ".log";
-                                        if (botargs.Length > 2)
-                                        {
-                                            Settings.ChatLog_DateTime = Settings.str2bool(botargs[2]);
-                                            if (botargs.Length > 3)
-                                            {
-                                                Settings.ChatLog_Filter = Bots.ChatLog.str2filter(botargs[3]);
-                                                if (botargs.Length > 4 && botargs[4] != "") { Settings.ChatLog_File = botargs[4]; }
-                                            }
-                                        } break;
-
-                                    case "logplayerlist":
-                                        Settings.PlayerLog_File = "connected-" + Settings.ServerIP.Replace(':', '-') + ".log";
-                                        if (botargs.Length > 2)
-                                        {
-                                            try { Settings.PlayerLog_Delay = Convert.ToInt32(botargs[2]); }
-                                            catch (FormatException) { }
-                                        } break;
-
-                                    case "autorelog":
-                                        if (botargs.Length > 2)
-                                        {
-                                            try { Settings.AutoRelog_Delay = Convert.ToInt32(botargs[2]); }
-                                            catch (FormatException) { }
-                                            if (botargs.Length > 3)
-                                            {
-                                                try { Settings.AutoRelog_Retries = Convert.ToInt32(botargs[3]); }
-                                                catch (FormatException) { }
-                                            }
-                                        } break;
-
-                                    case "xauth":
-                                        if (botargs.Length > 2)
-                                        {
-                                            Settings.xAuth_Enabled = true;
-                                            Settings.xAuth_Password = botargs[2];
-                                        } break;
-
-                                    case "scripting":
-                                        if (botargs.Length > 2)
-                                        {
-                                            Settings.Scripting_Enabled = true;
-                                            Settings.Scripting_ScriptFile = botargs[2];
-                                        } break;
-
-                                    #endregion
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -247,7 +162,6 @@ namespace MinecraftClient
                         if (Settings.ChatLog_Enabled)   { handler.BotLoad(new Bots.ChatLog(Settings.ChatLog_File, Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
                         if (Settings.PlayerLog_Enabled) { handler.BotLoad(new Bots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.PlayerLog_File)); }
                         if (Settings.AutoRelog_Enabled) { handler.BotLoad(new Bots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
-                        if (Settings.xAuth_Enabled)     { handler.BotLoad(new Bots.xAuth(Settings.xAuth_Password)); }
                         if (Settings.Scripting_Enabled) { handler.BotLoad(new Bots.Scripting(Settings.Scripting_ScriptFile)); }
 
                         //Start the main TCP client

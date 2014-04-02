@@ -63,10 +63,6 @@ namespace MinecraftClient
         public static int AutoRelog_Retries = 3;
         public static string AutoRelog_KickMessagesFile = "kickmessages.txt";
 
-        //xAuth Settings
-        public static bool xAuth_Enabled = false;
-        public static string xAuth_Password = "";
-
         //Scripting Settings
         public static bool Scripting_Enabled = false;
         public static string Scripting_ScriptFile = "script.txt";

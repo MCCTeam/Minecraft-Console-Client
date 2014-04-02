@@ -831,31 +831,6 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Automatically send login command on servers usign the xAuth plugin
-        /// </summary>
-
-        public class xAuth : ChatBot
-        {
-            private string password;
-            private int countdown = 50;
-
-            public xAuth(string pass)
-            {
-                password = pass;
-            }
-
-            public override void Update()
-            {
-                countdown--;
-                if (countdown == 0)
-                {
-                    SendText("/login " + password);
-                    UnloadBot(); //This bot is no more needed.
-                }
-            }
-        }
-
-        /// <summary>
         /// Runs a list of commands
         /// Usage: bot:scripting:filename
         /// Script must be placed in the config directory
