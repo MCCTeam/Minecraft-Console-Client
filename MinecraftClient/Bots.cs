@@ -977,6 +977,13 @@ namespace MinecraftClient
                             if (command.Length >= 6)
                                 SendText(command.Substring(5));
                             break;
+                        case "connect":
+                            if (command.Length >= 9)
+                            {
+                                Settings.ServerIP = command.Substring(8);
+                                ReconnectToTheServer();
+                            }
+                            break;
                         case "help":
                             if (command.Length >= 6)
                             {
@@ -987,11 +994,12 @@ namespace MinecraftClient
                                     case "reco": SendPrivateMessage(sender, "reco: restart and reconnct to the server."); break;
                                     case "script": SendPrivateMessage(sender, "script <scriptname>: run a script file."); break;
                                     case "send": SendPrivateMessage(sender, "send <text>: send a chat message or command."); break;
+                                    case "connect": SendPrivateMessage(sender, "connect <serverip>: connect to the specified server."); break;
                                     case "help": SendPrivateMessage(sender, "help <cmdname>: show brief help about a command."); break;
                                     default: SendPrivateMessage(sender, "help: unknown command '" + help_cmd_name + "'."); break;
                                 }
                             }
-                            else SendPrivateMessage(sender, "help <cmdname>. Available commands: exit, reco, script, send.");
+                            else SendPrivateMessage(sender, "help <cmdname>. Available commands: exit, reco, script, send, connect.");
                             break;
                         default:
                             SendPrivateMessage(sender, "Unknown command '" + cmd_name + "'. Use 'help' for help.");
