@@ -302,6 +302,11 @@ namespace MinecraftClient
         {
             if (!String.IsNullOrEmpty(str))
             {
+                if (Settings.chatTimeStamps)
+                {
+                    int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
+                    ConsoleIO.Write(hour.ToString("00") + ':' + minute.ToString("00") + ':' + second.ToString("00") + ' ');
+                }
                 if (!acceptnewlines) { str = str.Replace('\n', ' '); }
                 if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(str); return; }
                 string[] subs = str.Split(new char[] { '§' });

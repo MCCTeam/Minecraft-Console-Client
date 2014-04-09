@@ -29,6 +29,7 @@ namespace MinecraftClient
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static List<string> Bots_Owners = new List<string>();
         public static string Language = "en_GB";
+        public static bool chatTimeStamps = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -122,6 +123,7 @@ namespace MinecraftClient
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
+                                                case "timestamps": chatTimeStamps = str2bool(argValue); break;
                                                 case "botowners":
                                                     Bots_Owners.Clear();
                                                     foreach (string name in argValue.ToLower().Replace(" ", "").Split(','))
@@ -225,6 +227,7 @@ namespace MinecraftClient
                 + "language=en_GB\r\n"
                 + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
+                + "timestamps=false\r\n"
                 + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"
