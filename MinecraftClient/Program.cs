@@ -162,7 +162,7 @@ namespace MinecraftClient
                         if (Settings.ChatLog_Enabled)   { handler.BotLoad(new Bots.ChatLog(Settings.ChatLog_File, Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
                         if (Settings.PlayerLog_Enabled) { handler.BotLoad(new Bots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.PlayerLog_File)); }
                         if (Settings.AutoRelog_Enabled) { handler.BotLoad(new Bots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
-                        if (Settings.StartupScript_Enabled) { handler.BotLoad(new Bots.Scripting(Settings.StartupScript_ScriptFile)); Settings.StartupScript_Enabled = false; }
+                        if (Settings.StartupScript_Enabled) { handler.BotLoad(new Bots.Script(Settings.StartupScript_ScriptFile)); Settings.StartupScript_Enabled = false; }
                         if (Settings.RemoteCtrl_Enabled){ handler.BotLoad(new Bots.RemoteControl()); }
 
                         //Start the main TCP client

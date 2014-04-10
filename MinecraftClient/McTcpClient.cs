@@ -175,7 +175,7 @@ namespace MinecraftClient
                         }
                         else if (text.ToLower().StartsWith("/script "))
                         {
-                            handler.BotLoad(new Bots.Scripting(text.Substring(8)));
+                            handler.BotLoad(new Bots.Script(text.Substring(8)));
                         }
                         else if (text != "")
                         {

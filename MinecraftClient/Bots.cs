@@ -254,7 +254,7 @@ namespace MinecraftClient
 
         protected void RunScript(string filename, string playername = "")
         {
-            handler.BotLoad(new Bots.Scripting(filename, playername));
+            handler.BotLoad(new Bots.Script(filename, playername));
         }
 
         #endregion
@@ -833,11 +833,9 @@ namespace MinecraftClient
 
         /// <summary>
         /// Runs a list of commands
-        /// Usage: bot:scripting:filename
-        /// Script must be placed in the config directory
         /// </summary>
 
-        public class Scripting : ChatBot
+        public class Script : ChatBot
         {
             private string file;
             private string[] lines = new string[0];
@@ -846,12 +844,12 @@ namespace MinecraftClient
             private int nextline = 0;
             private string owner;
 
-            public Scripting(string filename)
+            public Script(string filename)
             {
                 file = filename;
             }
 
-            public Scripting(string filename, string ownername)
+            public Script(string filename, string ownername)
                 :this(filename)
             {
                 if (ownername != "")

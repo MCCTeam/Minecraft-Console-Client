@@ -597,12 +597,12 @@ namespace MinecraftClient
             catch (ObjectDisposedException) { }
 
             foreach (ChatBot bot in bots)
-                if (bot is Bots.Scripting)
-                    scripts_on_hold.Add((Bots.Scripting)bot);
+                if (bot is Bots.Script)
+                    scripts_on_hold.Add((Bots.Script)bot);
         }
 
         private List<ChatBot> bots = new List<ChatBot>();
-        private static List<Bots.Scripting> scripts_on_hold = new List<Bots.Scripting>();
+        private static List<Bots.Script> scripts_on_hold = new List<Bots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
         public void BotClear() { bots.Clear(); }
