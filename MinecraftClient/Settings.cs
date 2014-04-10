@@ -64,9 +64,9 @@ namespace MinecraftClient
         public static int AutoRelog_Retries = 3;
         public static string AutoRelog_KickMessagesFile = "kickmessages.txt";
 
-        //Scripting Settings
-        public static bool Scripting_Enabled = false;
-        public static string Scripting_ScriptFile = "script.txt";
+        //Startup Script Settings
+        public static bool StartupScript_Enabled = false;
+        public static string StartupScript_ScriptFile = "script.txt";
 
         //Remote Control
         public static bool RemoteCtrl_Enabled = false;
@@ -101,7 +101,7 @@ namespace MinecraftClient
                                     case "chatlog": pMode = ParseMode.ChatLog; break;
                                     case "hangman": pMode = ParseMode.Hangman; break;
                                     case "main": pMode = ParseMode.Main; break;
-                                    case "scripting": pMode = ParseMode.Scripting; break;
+                                    case "startupscript": pMode = ParseMode.Scripting; break;
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
@@ -183,8 +183,8 @@ namespace MinecraftClient
                                         case ParseMode.Scripting:
                                             switch (argName.ToLower())
                                             {
-                                                case "enabled": Scripting_Enabled = str2bool(argValue); break;
-                                                case "scriptfile": Scripting_ScriptFile = argValue; break;
+                                                case "enabled": StartupScript_Enabled = str2bool(argValue); break;
+                                                case "scriptfile": StartupScript_ScriptFile = argValue; break;
                                             }
                                             break;
 
@@ -259,7 +259,7 @@ namespace MinecraftClient
                 + "wordsfile=hangman-en.txt\r\n"
                 + "fichiermots=hangman-fr.txt\r\n"
                 + "\r\n"
-                + "[Scripting]\r\n"
+                + "[StartupScript]\r\n"
                 + "enabled=false\r\n"
                 + "scriptfile=testscript.txt\r\n"
                 + "\r\n"

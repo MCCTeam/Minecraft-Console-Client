@@ -162,7 +162,7 @@ namespace MinecraftClient
                         if (Settings.ChatLog_Enabled)   { handler.BotLoad(new Bots.ChatLog(Settings.ChatLog_File, Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
                         if (Settings.PlayerLog_Enabled) { handler.BotLoad(new Bots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.PlayerLog_File)); }
                         if (Settings.AutoRelog_Enabled) { handler.BotLoad(new Bots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
-                        if (Settings.Scripting_Enabled) { handler.BotLoad(new Bots.Scripting(Settings.Scripting_ScriptFile)); }
+                        if (Settings.StartupScript_Enabled) { handler.BotLoad(new Bots.Scripting(Settings.StartupScript_ScriptFile)); Settings.StartupScript_Enabled = false; }
                         if (Settings.RemoteCtrl_Enabled){ handler.BotLoad(new Bots.RemoteControl()); }
 
                         //Start the main TCP client
@@ -192,6 +192,7 @@ namespace MinecraftClient
                 {
                     case MinecraftCom.LoginResult.AccountMigrated: Console.WriteLine("Account migrated, use e-mail as username."); break;
                     case MinecraftCom.LoginResult.Blocked: Console.WriteLine("Too many failed logins. Please try again later."); break;
+                    case MinecraftCom.LoginResult.ServiceUnavailable: Console.WriteLine("Login servers are unavailable. Please try again later."); break;
                     case MinecraftCom.LoginResult.WrongPassword: Console.WriteLine("Incorrect password."); break;
                     case MinecraftCom.LoginResult.NotPremium: Console.WriteLine("User not premium."); break;
                     case MinecraftCom.LoginResult.OtherError: Console.WriteLine("Network error."); break;

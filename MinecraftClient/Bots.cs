@@ -931,6 +931,13 @@ namespace MinecraftClient
                                     case "exit": //Exit bot & stay connected to the server
                                         UnloadBot();
                                         break;
+                                    case "connect":
+                                        if (instruction_line.Length >= 9)
+                                        {
+                                            Settings.ServerIP = instruction_line.Substring(8);
+                                            ReconnectToTheServer();
+                                        }
+                                        break;
                                     default:
                                         sleepticks = 0; Update(); //Unknown command : process next line immediately
                                         break;

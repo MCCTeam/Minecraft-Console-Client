@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         #region Login to Minecraft.net and get a new session ID
 
-        public enum LoginResult { OtherError, SSLError, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
+        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -66,6 +66,10 @@ namespace MinecraftClient
                             else return LoginResult.WrongPassword;
                         }
                     }
+                    else if ((int)response.StatusCode == 503)
+                    {
+                        return LoginResult.ServiceUnavailable;
+                    }
                     else return LoginResult.Blocked;
                 }
                 else if (e.Status == WebExceptionStatus.SendFailure)
@@ -110,6 +114,11 @@ namespace MinecraftClient
         bool encrypted = false;
         int protocolversion;
 
+        public MinecraftCom()
+        {
+            foreach (ChatBot bot in scripts_on_hold) { bots.Add(bot); }
+            scripts_on_hold.Clear();
+        }
         public bool Update()
         {
             for (int i = 0; i < bots.Count; i++) { bots[i].Update(); }
@@ -586,9 +595,14 @@ namespace MinecraftClient
             catch (System.IO.IOException) { }
             catch (NullReferenceException) { }
             catch (ObjectDisposedException) { }
+
+            foreach (ChatBot bot in bots)
+                if (bot is Bots.Scripting)
+                    scripts_on_hold.Add((Bots.Scripting)bot);
         }
 
         private List<ChatBot> bots = new List<ChatBot>();
+        private static List<Bots.Scripting> scripts_on_hold = new List<Bots.Scripting>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
         public void BotClear() { bots.Clear(); }
