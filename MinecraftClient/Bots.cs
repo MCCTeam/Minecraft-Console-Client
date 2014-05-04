@@ -9,7 +9,17 @@ namespace MinecraftClient
     /// Welcome to the Bot API file !
     /// The virtual class "ChatBot" contains anything you need for creating chat bots
     /// Inherit from this class while adding your bot class to the namespace "Bots", below.
-    /// Once your bot is created, simply edit the switch in Program.cs to add the corresponding command-line argument!
+    /// Once your bot is created, read the explanations below to start using it in the MinecraftClient app.
+    ///
+    /// Pieces of code to add in other parts of the program for your bot. Line numbers are approximative.
+    /// Program.cs:166 | if (Settings.YourBot_Enabled){ handler.BotLoad(new Bots.YourBot()); }
+    /// Settings.cs:73 | public static bool YourBot_Enabled = false;
+    /// Settings.cs:74 | private enum ParseMode { /* [...] */, YourBot };
+    /// Settings.cs:106| case "yourbot": pMode = ParseMode.YourBot; break;
+    /// Settings.cs:197| case ParseMode.YourBot: switch (argName.ToLower()) { case "enabled": YourBot_Enabled = str2bool(argValue); break; } break;
+    /// Settings.cs:267| + "[YourBot]\r\n" + "enabled=false\r\n"
+    /// Here your are. Now you will have a setting in MinecraftClient.ini for enabling your brand new bot.
+    /// Delete MinecraftClient.ini to re-generate it or add the lines [YourBot] and enabled=true to the existing one.
     ///
 
     /// <summary>

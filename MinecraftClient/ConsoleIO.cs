@@ -164,13 +164,6 @@ namespace MinecraftClient
                         default:
                             if (k.KeyChar != 0)
                                 AddChar(k.KeyChar);
-                            /*
-                            reading_lock = false;
-                            WriteLine("CHAR: " + ((int)k.KeyChar));
-                            if (!System.IO.File.Exists("debug-chars.txt")) { System.IO.File.Create("debug-chars.txt"); }
-                            System.IO.File.AppendAllText("debug-chars.txt", "'" + k.KeyChar + "' " + ((int)k.KeyChar) + "\r\n");
-                            reading_lock = true;
-                            */
                             break;
                     }
                 }

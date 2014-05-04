@@ -183,14 +183,14 @@ namespace MinecraftClient
             System.IO.File.WriteAllText("debug.txt", dump);
             System.Diagnostics.Process.Start("debug.txt");
         }
-        public bool OnConnectionLost()
+        public bool OnConnectionLost(ChatBot.DisconnectReason reason, string reason_message)
         {
             if (!connectionlost)
             {
                 connectionlost = true;
                 for (int i = 0; i < bots.Count; i++)
                 {
-                    if (bots[i].OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Connection has been lost."))
+                    if (bots[i].OnDisconnect(reason, reason_message))
                     {
                         return true; //The client is about to restart
                     }
