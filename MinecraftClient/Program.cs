@@ -156,14 +156,15 @@ namespace MinecraftClient
                         handler.setVersion(protocolversion);
 
                         //Load & initialize bots if needed
-                        if (Settings.AntiAFK_Enabled)   { handler.BotLoad(new Bots.AntiAFK(Settings.AntiAFK_Delay)); }
-                        if (Settings.Hangman_Enabled)   { handler.BotLoad(new Bots.Pendu(Settings.Hangman_English)); }
-                        if (Settings.Alerts_Enabled)    { handler.BotLoad(new Bots.Alerts()); }
-                        if (Settings.ChatLog_Enabled)   { handler.BotLoad(new Bots.ChatLog(Settings.ChatLog_File, Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-                        if (Settings.PlayerLog_Enabled) { handler.BotLoad(new Bots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.PlayerLog_File)); }
-                        if (Settings.AutoRelog_Enabled) { handler.BotLoad(new Bots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
-                        if (Settings.StartupScript_Enabled) { handler.BotLoad(new Bots.Script(Settings.StartupScript_ScriptFile)); Settings.StartupScript_Enabled = false; }
-                        if (Settings.RemoteCtrl_Enabled){ handler.BotLoad(new Bots.RemoteControl()); }
+                        if (Settings.AntiAFK_Enabled)         { handler.BotLoad(new Bots.AntiAFK(Settings.AntiAFK_Delay)); }
+                        if (Settings.Hangman_Enabled)         { handler.BotLoad(new Bots.Pendu(Settings.Hangman_English)); }
+                        if (Settings.Alerts_Enabled)          { handler.BotLoad(new Bots.Alerts()); }
+                        if (Settings.ChatLog_Enabled)         { handler.BotLoad(new Bots.ChatLog(Settings.ChatLog_File, Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+                        if (Settings.PlayerLog_Enabled)       { handler.BotLoad(new Bots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.PlayerLog_File)); }
+                        if (Settings.AutoRelog_Enabled)       { handler.BotLoad(new Bots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
+                        if (Settings.StartupScript_Enabled)   { handler.BotLoad(new Bots.Script(Settings.StartupScript_ScriptFile)); Settings.StartupScript_Enabled = false; }
+                        if (Settings.ScriptScheduler_Enabled) { handler.BotLoad(new Bots.ScriptScheduler(Settings.ScriptScheduler_TasksFile)); }
+                        if (Settings.RemoteCtrl_Enabled)      { handler.BotLoad(new Bots.RemoteControl()); }
 
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")

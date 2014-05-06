@@ -68,10 +68,14 @@ namespace MinecraftClient
         public static bool StartupScript_Enabled = false;
         public static string StartupScript_ScriptFile = "script.txt";
 
+        //Script Scheduler Settings
+        public static bool ScriptScheduler_Enabled = false;
+        public static string ScriptScheduler_TasksFile = "tasks.ini";
+
         //Remote Control
         public static bool RemoteCtrl_Enabled = false;
 
-        private enum ParseMode { Default, Main, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, Scripting, RemoteControl };
+        private enum ParseMode { Default, Main, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -101,7 +105,7 @@ namespace MinecraftClient
                                     case "chatlog": pMode = ParseMode.ChatLog; break;
                                     case "hangman": pMode = ParseMode.Hangman; break;
                                     case "main": pMode = ParseMode.Main; break;
-                                    case "startupscript": pMode = ParseMode.Scripting; break;
+                                    case "scriptscheduler": pMode = ParseMode.ScriptScheduler; break;
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
@@ -180,11 +184,11 @@ namespace MinecraftClient
                                             }
                                             break;
 
-                                        case ParseMode.Scripting:
+                                        case ParseMode.ScriptScheduler:
                                             switch (argName.ToLower())
                                             {
-                                                case "enabled": StartupScript_Enabled = str2bool(argValue); break;
-                                                case "scriptfile": StartupScript_ScriptFile = argValue; break;
+                                                case "enabled": ScriptScheduler_Enabled = str2bool(argValue); break;
+                                                case "tasksfile": ScriptScheduler_TasksFile = argValue; break;
                                             }
                                             break;
 
@@ -259,9 +263,9 @@ namespace MinecraftClient
                 + "wordsfile=hangman-en.txt\r\n"
                 + "fichiermots=hangman-fr.txt\r\n"
                 + "\r\n"
-                + "[StartupScript]\r\n"
+                + "[ScriptScheduler]\r\n"
                 + "enabled=false\r\n"
-                + "scriptfile=testscript.txt\r\n"
+                + "tasksfile=tasks.ini\r\n"
                 + "\r\n"
                 + "[RemoteControl]\r\n"
                 + "enabled=false\r\n", Encoding.UTF8);
