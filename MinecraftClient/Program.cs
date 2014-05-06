@@ -143,7 +143,7 @@ namespace MinecraftClient
                 if (MinecraftCom.GetServerInfo(Settings.ServerIP, ref protocolversion, ref version))
                 {
                     //Supported protocol version ?
-                    int[] supportedVersions = { 4 };
+                    int[] supportedVersions = { 4, 5 };
                     if (Array.IndexOf(supportedVersions, protocolversion) > -1)
                     {
                         //Load translations (Minecraft 1.6+)
