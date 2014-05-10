@@ -44,6 +44,7 @@ namespace MinecraftClient
 
         //Alerts Settings
         public static bool Alerts_Enabled = false;
+        public static bool Alerts_Beep_Enabled = true;
         public static string Alerts_MatchesFile = "alerts.txt";
         public static string Alerts_ExcludesFile = "alerts-exclude.txt";
 
@@ -63,10 +64,6 @@ namespace MinecraftClient
         public static int AutoRelog_Delay = 10;
         public static int AutoRelog_Retries = 3;
         public static string AutoRelog_KickMessagesFile = "kickmessages.txt";
-
-        //Startup Script Settings
-        public static bool StartupScript_Enabled = false;
-        public static string StartupScript_ScriptFile = "script.txt";
 
         //Script Scheduler Settings
         public static bool ScriptScheduler_Enabled = false;
@@ -142,6 +139,7 @@ namespace MinecraftClient
                                                 case "enabled": Alerts_Enabled = str2bool(argValue); break;
                                                 case "alertsfile": Alerts_MatchesFile = argValue; break;
                                                 case "excludesfile": Alerts_ExcludesFile = argValue; break;
+                                                case "beeponalert": Alerts_Beep_Enabled = str2bool(argValue); break;
                                             }
                                             break;
 
@@ -239,6 +237,7 @@ namespace MinecraftClient
                 + "enabled=false\r\n"
                 + "alertsfile=alerts.txt\r\n"
                 + "excludesfile=alerts-exclude.txt\r\n"
+                + "beeponalert=true\r\n"
                 + "\r\n"
                 + "[AntiAFK]\r\n"
                 + "enabled=false\r\n"

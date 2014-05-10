@@ -610,7 +610,7 @@ namespace MinecraftClient
 
                         if (ok)
                         {
-                            Console.Beep(); //Text found !
+                            if (Settings.Alerts_Beep_Enabled) { Console.Beep(); } //Text found !
 
                             if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(comp.Replace(alert, "§c" + alert + "§r")); } else {
 
