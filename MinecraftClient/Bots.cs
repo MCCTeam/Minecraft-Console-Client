@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 
 namespace MinecraftClient
 {
@@ -9,7 +10,17 @@ namespace MinecraftClient
     /// Welcome to the Bot API file !
     /// The virtual class "ChatBot" contains anything you need for creating chat bots
     /// Inherit from this class while adding your bot class to the namespace "Bots", below.
-    /// Once your bot is created, simply edit the switch in Program.cs to add the corresponding command-line argument!
+    /// Once your bot is created, read the explanations below to start using it in the MinecraftClient app.
+    ///
+    /// Pieces of code to add in other parts of the program for your bot. Line numbers are approximative.
+    /// Program.cs:166 | if (Settings.YourBot_Enabled){ handler.BotLoad(new Bots.YourBot()); }
+    /// Settings.cs:73 | public static bool YourBot_Enabled = false;
+    /// Settings.cs:74 | private enum ParseMode { /* [...] */, YourBot };
+    /// Settings.cs:106| case "yourbot": pMode = ParseMode.YourBot; break;
+    /// Settings.cs:197| case ParseMode.YourBot: switch (argName.ToLower()) { case "enabled": YourBot_Enabled = str2bool(argValue); break; } break;
+    /// Settings.cs:267| + "[YourBot]\r\n" + "enabled=false\r\n"
+    /// Here your are. Now you will have a setting in MinecraftClient.ini for enabling your brand new bot.
+    /// Delete MinecraftClient.ini to re-generate it or add the lines [YourBot] and enabled=true to the existing one.
     ///
 
     /// <summary>
@@ -235,6 +246,28 @@ namespace MinecraftClient
             handler.BotUnLoad(this);
         }
 
+        /// <summary>
+        /// Send a private message to a player
+        /// </summary>
+        /// <param name="player">Player name</param>
+        /// <param name="message">Message</param>
+
+        protected void SendPrivateMessage(string player, string message)
+        {
+            SendText("/tell " + player + ' ' + message);
+        }
+
+        /// <summary>
+        /// Run a script from a file using a Scripting bot
+        /// </summary>
+        /// <param name="filename">File name</param>
+        /// <param name="playername">Player name to send error messages, if applicable</param>
+
+        protected void RunScript(string filename, string playername = "")
+        {
+            handler.BotLoad(new Bots.Script(filename, playername));
+        }
+
         #endregion
     }
 
@@ -355,7 +388,6 @@ namespace MinecraftClient
             private bool[] discovered;
             private string word = "";
             private string letters = "";
-            private string[] owners;
             private bool English;
 
             /// <summary>
@@ -366,11 +398,6 @@ namespace MinecraftClient
             public Pendu(bool english)
             {
                 English = english;
-            }
-
-            public override void Initialize()
-            {
-                owners = getowners();
             }
 
             public override void Update()
@@ -398,7 +425,7 @@ namespace MinecraftClient
 
                 if (isPrivateMessage(text, ref message, ref username))
                 {
-                    if (owners.Contains(username.ToUpper()))
+                    if (Settings.Bots_Owners.Contains(username.ToLower()))
                     {
                         switch (message)
                         {
@@ -495,21 +522,6 @@ namespace MinecraftClient
                 }
             }
 
-            private string[] getowners()
-            {
-                List<string> owners = new List<string>();
-                owners.Add("CONSOLE");
-                if (System.IO.File.Exists(Settings.Bots_OwnersFile))
-                {
-                    foreach (string s in System.IO.File.ReadAllLines(Settings.Bots_OwnersFile))
-                    {
-                        owners.Add(s.ToUpper());
-                    }
-                }
-                else LogToConsole(English ? "File not found: " + Settings.Bots_OwnersFile : "Fichier introuvable : " + Settings.Bots_OwnersFile);
-                return owners.ToArray();
-            }
-
             private string word_cached
             {
                 get
@@ -598,7 +610,7 @@ namespace MinecraftClient
 
                         if (ok)
                         {
-                            Console.Beep(); //Text found !
+                            if (Settings.Alerts_Beep_Enabled) { Console.Beep(); } //Text found !
 
                             if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(comp.Replace(alert, "§c" + alert + "§r")); } else {
 
@@ -831,77 +843,68 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Automatically send login command on servers usign the xAuth plugin
-        /// </summary>
-
-        public class xAuth : ChatBot
-        {
-            private string password;
-            private int countdown = 50;
-
-            public xAuth(string pass)
-            {
-                password = pass;
-            }
-
-            public override void Update()
-            {
-                countdown--;
-                if (countdown == 0)
-                {
-                    SendText("/login " + password);
-                    UnloadBot(); //This bot is no more needed.
-                }
-            }
-        }
-
-        /// <summary>
         /// Runs a list of commands
-        /// Usage: bot:scripting:filename
-        /// Script must be placed in the config directory
         /// </summary>
 
-        public class Scripting : ChatBot
+        public class Script : ChatBot
         {
             private string file;
             private string[] lines = new string[0];
             private int sleepticks = 10;
             private int sleepticks_interval = 10;
             private int nextline = 0;
-            public Scripting(string filename)
+            private string owner;
+
+            public Script(string filename)
             {
                 file = filename;
             }
 
-            public override void Initialize()
+            public Script(string filename, string ownername)
+                :this(filename)
             {
-                //Load the given file from the startup parameters
+                if (ownername != "")
+                    owner = ownername;
+            }
+
+            public static bool lookForScript(ref string filename)
+            {
                 //Automatically look in subfolders and try to add ".txt" file extension
                 string[] files = new string[]
                 {
-                    file,
-                    file + ".txt",
-                    "scripts\\" + file,
-                    "scripts\\" + file + ".txt",
-                    "config\\" + file,
-                    "config\\" + file + ".txt",
+                    filename,
+                    filename + ".txt",
+                    "scripts\\" + filename,
+                    "scripts\\" + filename + ".txt",
+                    "config\\" + filename,
+                    "config\\" + filename + ".txt",
                 };
-
-                bool file_found = false;
 
                 foreach (string possible_file in files)
                 {
                     if (System.IO.File.Exists(possible_file))
                     {
-                        lines = System.IO.File.ReadAllLines(possible_file);
-                        file_found = true;
-                        break;
+                        filename = possible_file;
+                        return true;
                     }
                 }
 
-                if (!file_found)
+                return false;
+            }
+
+            public override void Initialize()
+            {
+                //Load the given file from the startup parameters
+                if (lookForScript(ref file))
+                {
+                    lines = System.IO.File.ReadAllLines(file);
+                    if (owner != null) { SendPrivateMessage(owner, "Script '" + file + "' loaded."); }
+                }
+                else
                 {
                     LogToConsole("File not found: '" + file + "'");
+                    if (owner != null)
+                        SendPrivateMessage(owner, "File not found: '" + file + "'");
                     UnloadBot(); //No need to keep the bot active
                 }
             }
@@ -942,6 +945,13 @@ namespace MinecraftClient
                                     case "exit": //Exit bot & stay connected to the server
                                         UnloadBot();
                                         break;
+                                    case "connect":
+                                        if (instruction_line.Length >= 9)
+                                        {
+                                            Settings.ServerIP = instruction_line.Substring(8);
+                                            ReconnectToTheServer();
+                                        }
+                                        break;
                                     default:
                                         sleepticks = 0; Update(); //Unknown command : process next line immediately
                                         break;
@@ -954,6 +964,201 @@ namespace MinecraftClient
                     {
                         //No more instructions to interpret
                         UnloadBot();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Trigger scripts on specific events
+        /// </summary>
+
+        public class ScriptScheduler : ChatBot
+        {
+            private class TaskDesc
+            {
+                public string script_file = null;
+                public bool triggerOnFirstLogin = false;
+                public bool triggerOnLogin = false;
+                public bool triggerOnTime = false;
+                public List<DateTime> triggerOnTime_Times = new List<DateTime>();
+                public bool alreadyTriggered = false;
+            }
+
+            private static bool firstlogin_done = false;
+
+            private string tasksfile;
+            private bool serverlogin_done;
+            private List<TaskDesc> tasks = new List<TaskDesc>();
+            private int verifytasks_timeleft = 10;
+            private int verifytasks_delay = 10;
+
+            public ScriptScheduler(string tasksfile)
+            {
+                this.tasksfile = tasksfile;
+                serverlogin_done = false;
+            }
+
+            public override void Initialize()
+            {
+                //Load the given file from the startup parameters
+                if (System.IO.File.Exists(tasksfile))
+                {
+                    TaskDesc current_task = null;
+                    String[] lines = System.IO.File.ReadAllLines(tasksfile);
+                    foreach (string lineRAW in lines)
+                    {
+                        string line = lineRAW.Split('#')[0].Trim();
+                        if (line.Length > 0)
+                        {
+                            if (line[0] == '[' && line[line.Length - 1] == ']')
+                            {
+                                switch (line.Substring(1, line.Length - 2).ToLower())
+                                {
+                                    case "task":
+                                        checkAddTask(current_task);
+                                        current_task = new TaskDesc(); //Create a blank task
+                                        break;
+                                }
+                            }
+                            else if (current_task != null)
+                            {
+                                string argName = line.Split('=')[0];
+                                if (line.Length > (argName.Length + 1))
+                                {
+                                    string argValue = line.Substring(argName.Length + 1);
+                                    switch (argName.ToLower())
+                                    {
+                                        case "triggeronfirstlogin": current_task.triggerOnFirstLogin = Settings.str2bool(argValue); break;
+                                        case "triggeronlogin": current_task.triggerOnLogin = Settings.str2bool(argValue); break;
+                                        case "triggerontime": current_task.triggerOnTime = Settings.str2bool(argValue); break;
+                                        case "timevalue": try { current_task.triggerOnTime_Times.Add(DateTime.ParseExact(argValue, "HH:mm", CultureInfo.InvariantCulture)); } catch { } break;
+                                        case "script": current_task.script_file = argValue; break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    checkAddTask(current_task);
+                }
+                else
+                {
+                    LogToConsole("File not found: '" + tasksfile + "'");
+                    UnloadBot(); //No need to keep the bot active
+                }
+            }
+
+            private void checkAddTask(TaskDesc current_task)
+            {
+                if (current_task != null)
+                {
+                    //Check if we built a valid task before adding it
+                    if (current_task.script_file != null && Script.lookForScript(ref current_task.script_file) //Check if file exists
+                        && (current_task.triggerOnLogin || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0))) //Look for a valid trigger
+                    {
+                        tasks.Add(current_task);
+                    }
+                }
+            }
+
+            public override void Update()
+            {
+                if (verifytasks_timeleft <= 0)
+                {
+                    verifytasks_timeleft = verifytasks_delay;
+                    if (serverlogin_done)
+                    {
+                        foreach (TaskDesc task in tasks)
+                        {
+                            if (task.triggerOnTime)
+                            {
+                                foreach (DateTime time in task.triggerOnTime_Times)
+                                {
+                                    if (time.Hour == DateTime.Now.Hour && time.Minute == DateTime.Now.Minute)
+                                    {
+                                        if (!task.alreadyTriggered)
+                                        {
+                                            task.alreadyTriggered = true;
+                                            RunScript(task.script_file);
+                                        }
+                                    }
+                                }
+                            }
+                            else task.alreadyTriggered = false;
+                        }
+                    }
+                    else
+                    {
+                        foreach (TaskDesc task in tasks)
+                        {
+                            if (task.triggerOnLogin || (firstlogin_done == false && task.triggerOnFirstLogin))
+                                RunScript(task.script_file);
+                        }
+
+                        firstlogin_done = true;
+                        serverlogin_done = true;
+                    }
+                }
+                else verifytasks_timeleft--;
+            }
+        }
+
+        /// <summary>
+        /// Allow to perform operations using whispers to the bot
+        /// </summary>
+
+        public class RemoteControl : ChatBot
+        {
+            public override void GetText(string text)
+            {
+                text = getVerbatim(text);
+                string command = "", sender = "";
+                if (isPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower()))
+                {
+                    string cmd_name = command.Split(' ')[0];
+                    switch (cmd_name.ToLower())
+                    {
+                        case "exit":
+                            DisconnectAndExit();
+                            break;
+                        case "reco":
+                            ReconnectToTheServer();
+                            break;
+                        case "script":
+                            if (command.Length >= 8)
+                                RunScript(command.Substring(7), sender);
+                            break;
+                        case "send":
+                            if (command.Length >= 6)
+                                SendText(command.Substring(5));
+                            break;
+                        case "connect":
+                            if (command.Length >= 9)
+                            {
+                                Settings.ServerIP = command.Substring(8);
+                                ReconnectToTheServer();
+                            }
+                            break;
+                        case "help":
+                            if (command.Length >= 6)
+                            {
+                                string help_cmd_name = command.Substring(5).ToLower();
+                                switch (help_cmd_name)
+                                {
+                                    case "exit": SendPrivateMessage(sender, "exit: disconnect from the server."); break;
+                                    case "reco": SendPrivateMessage(sender, "reco: restart and reconnct to the server."); break;
+                                    case "script": SendPrivateMessage(sender, "script <scriptname>: run a script file."); break;
+                                    case "send": SendPrivateMessage(sender, "send <text>: send a chat message or command."); break;
+                                    case "connect": SendPrivateMessage(sender, "connect <serverip>: connect to the specified server."); break;
+                                    case "help": SendPrivateMessage(sender, "help <cmdname>: show brief help about a command."); break;
+                                    default: SendPrivateMessage(sender, "help: unknown command '" + help_cmd_name + "'."); break;
+                                }
+                            }
+                            else SendPrivateMessage(sender, "help <cmdname>. Available commands: exit, reco, script, send, connect.");
+                            break;
+                        default:
+                            SendPrivateMessage(sender, "Unknown command '" + cmd_name + "'. Use 'help' for help.");
+                            break;
                     }
                 }
             }

@@ -27,8 +27,9 @@ namespace MinecraftClient
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\9e\9e2fdc43fc1c7024ff5922b998fadb2971a64ee0"; //MC 1.7.4 en_GB.lang
         public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.7.4.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
-        public static string Bots_OwnersFile = "bot-owners.txt";
+        public static List<string> Bots_Owners = new List<string>();
         public static string Language = "en_GB";
+        public static bool chatTimeStamps = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -43,6 +44,7 @@ namespace MinecraftClient
 
         //Alerts Settings
         public static bool Alerts_Enabled = false;
+        public static bool Alerts_Beep_Enabled = true;
         public static string Alerts_MatchesFile = "alerts.txt";
         public static string Alerts_ExcludesFile = "alerts-exclude.txt";
 
@@ -63,16 +65,14 @@ namespace MinecraftClient
         public static int AutoRelog_Retries = 3;
         public static string AutoRelog_KickMessagesFile = "kickmessages.txt";
 
-        //xAuth Settings
-        public static bool xAuth_Enabled = false;
-        public static string xAuth_Password = "";
+        //Script Scheduler Settings
+        public static bool ScriptScheduler_Enabled = false;
+        public static string ScriptScheduler_TasksFile = "tasks.ini";
 
-        //Scripting Settings
-        public static bool Scripting_Enabled = false;
-        public static string Scripting_ScriptFile = "script.txt";
+        //Remote Control
+        public static bool RemoteCtrl_Enabled = false;
 
-
-        private enum ParseMode { Default, Main, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, Scripting };
+        private enum ParseMode { Default, Main, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -102,7 +102,8 @@ namespace MinecraftClient
                                     case "chatlog": pMode = ParseMode.ChatLog; break;
                                     case "hangman": pMode = ParseMode.Hangman; break;
                                     case "main": pMode = ParseMode.Main; break;
-                                    case "scripting": pMode = ParseMode.Scripting; break;
+                                    case "scriptscheduler": pMode = ParseMode.ScriptScheduler; break;
+                                    case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -122,8 +123,13 @@ namespace MinecraftClient
                                                 case "serverip": ServerIP = argValue; break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
-                                                case "botownersfile": Bots_OwnersFile = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
+                                                case "timestamps": chatTimeStamps = str2bool(argValue); break;
+                                                case "botowners":
+                                                    Bots_Owners.Clear();
+                                                    foreach (string name in argValue.ToLower().Replace(" ", "").Split(','))
+                                                        Bots_Owners.Add(name);
+                                                    break;
                                             }
                                             break;
 
@@ -133,6 +139,7 @@ namespace MinecraftClient
                                                 case "enabled": Alerts_Enabled = str2bool(argValue); break;
                                                 case "alertsfile": Alerts_MatchesFile = argValue; break;
                                                 case "excludesfile": Alerts_ExcludesFile = argValue; break;
+                                                case "beeponalert": Alerts_Beep_Enabled = str2bool(argValue); break;
                                             }
                                             break;
 
@@ -175,11 +182,18 @@ namespace MinecraftClient
                                             }
                                             break;
 
-                                        case ParseMode.Scripting:
+                                        case ParseMode.ScriptScheduler:
                                             switch (argName.ToLower())
                                             {
-                                                case "enabled": Scripting_Enabled = str2bool(argValue); break;
-                                                case "scriptfile": Scripting_ScriptFile = argValue; break;
+                                                case "enabled": ScriptScheduler_Enabled = str2bool(argValue); break;
+                                                case "tasksfile": ScriptScheduler_TasksFile = argValue; break;
+                                            }
+                                            break;
+
+                                        case ParseMode.RemoteControl:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": RemoteCtrl_Enabled = str2bool(argValue); break;
                                             }
                                             break;
                                     }
@@ -205,7 +219,7 @@ namespace MinecraftClient
                 + "[Main]\r\n"
                 + "\r\n"
                 + "#General settings\r\n"
-                + "#leave blank = prompt user on startup\r\n"
+                + "#leave blank to prompt user on startup\r\n"
                 + "#Use \"-\" as password for offline mode\r\n"
                 + "\r\n"
                 + "login=\r\npassword=\r\nserverip=\r\n"
@@ -213,8 +227,9 @@ namespace MinecraftClient
                 + "#Advanced settings\r\n"
                 + "\r\n"
                 + "language=en_GB\r\n"
-                + "botownersfile=bot-owners.txt\r\n"
+                + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
+                + "timestamps=false\r\n"
                 + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"
@@ -222,6 +237,7 @@ namespace MinecraftClient
                 + "enabled=false\r\n"
                 + "alertsfile=alerts.txt\r\n"
                 + "excludesfile=alerts-exclude.txt\r\n"
+                + "beeponalert=true\r\n"
                 + "\r\n"
                 + "[AntiAFK]\r\n"
                 + "enabled=false\r\n"
@@ -246,9 +262,12 @@ namespace MinecraftClient
                 + "wordsfile=hangman-en.txt\r\n"
                 + "fichiermots=hangman-fr.txt\r\n"
                 + "\r\n"
-                + "[Scripting]\r\n"
+                + "[ScriptScheduler]\r\n"
                 + "enabled=false\r\n"
-                + "scriptfile=testscript.txt\r\n", Encoding.UTF8);
+                + "tasksfile=tasks.ini\r\n"
+                + "\r\n"
+                + "[RemoteControl]\r\n"
+                + "enabled=false\r\n", Encoding.UTF8);
         }
 
         public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }

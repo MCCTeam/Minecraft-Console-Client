@@ -1,4 +1,0 @@
-send Hello World! I'm a bot.
-wait 60
-send Now quitting :)
-disconnect

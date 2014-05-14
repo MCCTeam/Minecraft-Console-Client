@@ -119,7 +119,7 @@ namespace MinecraftClient
                 else
                 {
                     Console.WriteLine("Login failed.");
-                    if (!singlecommand) { Program.ReadLineReconnect(); }
+                    if (!singlecommand && !handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, "Login failed.")) { Program.ReadLineReconnect(); }
                 }
             }
             catch (SocketException)
@@ -175,7 +175,7 @@ namespace MinecraftClient
                         }
                         else if (text.ToLower().StartsWith("/script "))
                         {
-                            handler.BotLoad(new Bots.Scripting(text.Substring(8)));
+                            handler.BotLoad(new Bots.Script(text.Substring(8)));
                         }
                         else if (text != "")
                         {
@@ -235,7 +235,7 @@ namespace MinecraftClient
             if (!handler.HasBeenKicked)
             {
                 ConsoleIO.WriteLine("Connection has been lost.");
-                if (!handler.OnConnectionLost() && !Program.ReadLineReconnect()) { t_sender.Abort(); }
+                if (!handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "Connection has been lost.") && !Program.ReadLineReconnect()) { t_sender.Abort(); }
             }
             else if (Program.ReadLineReconnect()) { t_sender.Abort(); }
         }

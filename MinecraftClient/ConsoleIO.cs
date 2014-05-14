@@ -60,8 +60,11 @@ namespace MinecraftClient
                         break;
 
                     default:
-                        Console.Write('*');
-                        password += k.KeyChar;
+                        if (k.KeyChar != 0)
+                        {
+                            Console.Write('*');
+                            password += k.KeyChar;
+                        }
                         break;
                 }
             }
@@ -159,7 +162,8 @@ namespace MinecraftClient
                             }
                             break;
                         default:
-                            AddChar(k.KeyChar);
+                            if (k.KeyChar != 0)
+                                AddChar(k.KeyChar);
                             break;
                     }
                 }

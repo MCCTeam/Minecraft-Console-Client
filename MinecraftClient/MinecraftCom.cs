@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         #region Login to Minecraft.net and get a new session ID
 
-        public enum LoginResult { OtherError, SSLError, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
+        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -66,6 +66,10 @@ namespace MinecraftClient
                             else return LoginResult.WrongPassword;
                         }
                     }
+                    else if ((int)response.StatusCode == 503)
+                    {
+                        return LoginResult.ServiceUnavailable;
+                    }
                     else return LoginResult.Blocked;
                 }
                 else if (e.Status == WebExceptionStatus.SendFailure)
@@ -110,6 +114,11 @@ namespace MinecraftClient
         bool encrypted = false;
         int protocolversion;
 
+        public MinecraftCom()
+        {
+            foreach (ChatBot bot in scripts_on_hold) { bots.Add(bot); }
+            scripts_on_hold.Clear();
+        }
         public bool Update()
         {
             for (int i = 0; i < bots.Count; i++) { bots[i].Update(); }
@@ -174,14 +183,14 @@ namespace MinecraftClient
             System.IO.File.WriteAllText("debug.txt", dump);
             System.Diagnostics.Process.Start("debug.txt");
         }
-        public bool OnConnectionLost()
+        public bool OnConnectionLost(ChatBot.DisconnectReason reason, string reason_message)
         {
             if (!connectionlost)
             {
                 connectionlost = true;
                 for (int i = 0; i < bots.Count; i++)
                 {
-                    if (bots[i].OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Connection has been lost."))
+                    if (bots[i].OnDisconnect(reason, reason_message))
                     {
                         return true; //The client is about to restart
                     }
@@ -302,6 +311,11 @@ namespace MinecraftClient
         {
             if (!String.IsNullOrEmpty(str))
             {
+                if (Settings.chatTimeStamps)
+                {
+                    int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
+                    ConsoleIO.Write(hour.ToString("00") + ':' + minute.ToString("00") + ':' + second.ToString("00") + ' ');
+                }
                 if (!acceptnewlines) { str = str.Replace('\n', ' '); }
                 if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(str); return; }
                 string[] subs = str.Split(new char[] { '§' });
@@ -450,7 +464,7 @@ namespace MinecraftClient
         public bool Login(string username, string uuid, string sessionID, string host, int port)
         {
             byte[] packet_id = getVarInt(0);
-            byte[] protocol_version = getVarInt(4);
+            byte[] protocol_version = getVarInt(protocolversion);
             byte[] server_adress_val = Encoding.UTF8.GetBytes(host);
             byte[] server_adress_len = getVarInt(server_adress_val.Length);
             byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
@@ -580,9 +594,15 @@ namespace MinecraftClient
             catch (SocketException) { }
             catch (System.IO.IOException) { }
             catch (NullReferenceException) { }
+            catch (ObjectDisposedException) { }
+
+            foreach (ChatBot bot in bots)
+                if (bot is Bots.Script)
+                    scripts_on_hold.Add((Bots.Script)bot);
         }
 
         private List<ChatBot> bots = new List<ChatBot>();
+        private static List<Bots.Script> scripts_on_hold = new List<Bots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
         public void BotClear() { bots.Clear(); }
