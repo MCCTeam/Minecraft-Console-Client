@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         private static McTcpClient Client;
         public static string[] startupargs;
-        public const string Version = "1.7.2";
+        public const string Version = "1.7.3";
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -23,7 +23,7 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC 1.7.2 to 1.7.5 - v" + Version + " - By ORelio & Contributors");
+            Console.WriteLine("Console Client for MC 1.7.2 to 1.7.9 - v" + Version + " - By ORelio & Contributors");
 
             //Basic Input/Output ?
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
