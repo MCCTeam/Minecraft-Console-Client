@@ -218,8 +218,7 @@ namespace MinecraftClient
             {
                 byte[] cache = new byte[length];
                 Receive(cache, 0, length, SocketFlags.None);
-                string result = Encoding.UTF8.GetString(cache);
-                return result;
+                return Encoding.UTF8.GetString(cache);
             }
             else return "";
         }
@@ -363,11 +362,15 @@ namespace MinecraftClient
         private void setEncryptedClient(Crypto.IAesStream n) { s = n; encrypted = true; }
         private void Receive(byte[] buffer, int start, int offset, SocketFlags f)
         {
-            if (encrypted)
+            int read = 0;
+            while (read < offset)
             {
-                s.Read(buffer, start, offset);
+                if (encrypted)
+                {
+                    read += s.Read(buffer, start + read, offset - read);
+                }
+                else read += c.Client.Receive(buffer, start + read, offset - read, f);
             }
-            else c.Client.Receive(buffer, start, offset, f);
         }
         private void Send(byte[] buffer)
         {
@@ -400,7 +403,8 @@ namespace MinecraftClient
                 }
 
                 TcpClient tcp = new TcpClient(host, port);
-                
+                tcp.ReceiveBufferSize = 1024 * 1024;
+
                 byte[] packet_id = getVarInt(0);
                 byte[] protocol_version = getVarInt(4);
                 byte[] server_adress_val = Encoding.UTF8.GetBytes(host);
