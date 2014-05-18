@@ -181,7 +181,12 @@ namespace MinecraftClient
                 else
                 {
                     Console.WriteLine("Failed to ping this IP.");
-                    ReadLineReconnect();
+                    if (Settings.AutoRelog_Enabled)
+                    {
+                        Bots.AutoRelog bot = new Bots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries);
+                        if (!bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Failed to ping this IP.")) { ReadLineReconnect(); }
+                    }
+                    else ReadLineReconnect();
                 }
             }
             else
