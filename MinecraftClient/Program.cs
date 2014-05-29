@@ -196,7 +196,6 @@ namespace MinecraftClient
                 switch (result)
                 {
                     case MinecraftCom.LoginResult.AccountMigrated: Console.WriteLine("Account migrated, use e-mail as username."); break;
-                    case MinecraftCom.LoginResult.Blocked: Console.WriteLine("Too many failed logins. Please try again later."); break;
                     case MinecraftCom.LoginResult.ServiceUnavailable: Console.WriteLine("Login servers are unavailable. Please try again later."); break;
                     case MinecraftCom.LoginResult.WrongPassword: Console.WriteLine("Incorrect password."); break;
                     case MinecraftCom.LoginResult.NotPremium: Console.WriteLine("User not premium."); break;

@@ -15,7 +15,7 @@ namespace MinecraftClient
     {
         #region Login to Minecraft.net and get a new session ID
 
-        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, Blocked, AccountMigrated, NotPremium };
+        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -70,7 +70,13 @@ namespace MinecraftClient
                     {
                         return LoginResult.ServiceUnavailable;
                     }
-                    else return LoginResult.Blocked;
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        ConsoleIO.WriteLine("Got error code from server: " + (int)response.StatusCode);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        return LoginResult.OtherError;
+                    }
                 }
                 else if (e.Status == WebExceptionStatus.SendFailure)
                 {
