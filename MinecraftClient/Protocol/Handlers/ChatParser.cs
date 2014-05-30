@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftClient
+namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
     /// This class parses JSON chat data from MC 1.6+ and returns the appropriate string to be printed.
@@ -127,9 +127,7 @@ namespace MinecraftClient
               && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
             {
                 Language_File = Settings.TranslationsFile_FromMCDir;
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Defaulting to en_GB.lang from your Minecraft directory.");
-                Console.ForegroundColor = ConsoleColor.Gray;
+                ConsoleIO.WriteLineFormatted("§8Defaulting to en_GB.lang from your Minecraft directory.", false);
             }
 
             //Load the external dictionnary of translation rules or display an error message
@@ -148,16 +146,12 @@ namespace MinecraftClient
                     }
                 }
 
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Translations file loaded.");
-                Console.ForegroundColor = ConsoleColor.Gray;
+                ConsoleIO.WriteLineFormatted("§8Translations file loaded.", false);
             }
             else //No external dictionnary found.
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Translations file not found: \"" + Language_File + "\""
-                + "\nSome messages won't be properly printed without this file.");
-                Console.ForegroundColor = ConsoleColor.Gray;
+                ConsoleIO.WriteLineFormatted("§8Translations file not found: \"" + Language_File + "\""
+                + "\nSome messages won't be properly printed without this file.", true);
             }
         }
 

@@ -23,6 +23,14 @@ namespace MinecraftClient
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
 
+        //Proxy Settings
+        public static bool ProxyEnabled = false;
+        public static string ProxyHost = "";
+        public static int ProxyPort = 0;
+        public static Proxy.ProxyHandler.Type proxyType = Proxy.ProxyHandler.Type.HTTP;
+        public static string ProxyUsername = "";
+        public static string ProxyPassword = "";
+
         //Other Settings
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\9e\9e2fdc43fc1c7024ff5922b998fadb2971a64ee0"; //MC 1.7.4 en_GB.lang
         public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.7.4.json";
@@ -52,7 +60,7 @@ namespace MinecraftClient
         public static bool ChatLog_Enabled = false;
         public static bool ChatLog_DateTime = true;
         public static string ChatLog_File = "chatlog.txt";
-        public static Bots.ChatLog.MessageFilter ChatLog_Filter = Bots.ChatLog.MessageFilter.AllMessages;
+        public static ChatBots.ChatLog.MessageFilter ChatLog_Filter = ChatBots.ChatLog.MessageFilter.AllMessages;
 
         //PlayerListLog Settings
         public static bool PlayerLog_Enabled = false;
@@ -72,7 +80,7 @@ namespace MinecraftClient
         //Remote Control
         public static bool RemoteCtrl_Enabled = false;
 
-        private enum ParseMode { Default, Main, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
+        private enum ParseMode { Default, Main, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -104,6 +112,7 @@ namespace MinecraftClient
                                     case "main": pMode = ParseMode.Main; break;
                                     case "scriptscheduler": pMode = ParseMode.ScriptScheduler; break;
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
+                                    case "proxy": pMode = ParseMode.Proxy; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -167,7 +176,7 @@ namespace MinecraftClient
                                             {
                                                 case "enabled": ChatLog_Enabled = str2bool(argValue); break;
                                                 case "timestamps": ChatLog_DateTime = str2bool(argValue); break;
-                                                case "filter": ChatLog_Filter = Bots.ChatLog.str2filter(argValue); break;
+                                                case "filter": ChatLog_Filter = ChatBots.ChatLog.str2filter(argValue); break;
                                                 case "logfile": ChatLog_File = argValue; break;
                                             }
                                             break;
@@ -196,6 +205,24 @@ namespace MinecraftClient
                                                 case "enabled": RemoteCtrl_Enabled = str2bool(argValue); break;
                                             }
                                             break;
+
+                                        case ParseMode.Proxy:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": ProxyEnabled = str2bool(argValue); break;
+                                                case "type":
+                                                    argValue = argValue.ToLower();
+                                                    if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
+                                                    else if (argValue == "socks4") { proxyType = Proxy.ProxyHandler.Type.SOCKS4; }
+                                                    else if (argValue == "socks4a"){ proxyType = Proxy.ProxyHandler.Type.SOCKS4a;}
+                                                    else if (argValue == "socks5") { proxyType = Proxy.ProxyHandler.Type.SOCKS5; }
+                                                    break;
+                                                case "host": ProxyHost = argValue; break;
+                                                case "port": ProxyPort = str2int(argValue); break;
+                                                case "username": ProxyUsername = argValue; break;
+                                                case "password": ProxyPassword = argValue; break;
+                                            }
+                                            break;
                                     }
                                 }
                             }
@@ -222,7 +249,9 @@ namespace MinecraftClient
                 + "#leave blank to prompt user on startup\r\n"
                 + "#Use \"-\" as password for offline mode\r\n"
                 + "\r\n"
-                + "login=\r\npassword=\r\nserverip=\r\n"
+                + "login=\r\n"
+                + "password=\r\n"
+                + "serverip=\r\n"
                 + "\r\n"
                 + "#Advanced settings\r\n"
                 + "\r\n"
@@ -230,6 +259,14 @@ namespace MinecraftClient
                 + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
                 + "timestamps=false\r\n"
+                + "\r\n"
+                + "[Proxy]\r\n"
+                + "enabled=false\r\n"
+                + "type=HTTP #Supported types: HTTP, SOCKS4, SOCKS4a, SOCKS5\r\n"
+                + "host=0.0.0.0\r\n"
+                + "port=8080\r\n"
+                + "username=\r\n"
+                + "password=\r\n"
                 + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"

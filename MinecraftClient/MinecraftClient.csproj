@@ -53,7 +53,7 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>resources\appicon.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>MinecraftClient.Program</StartupObject>
@@ -70,14 +70,42 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bots.cs" />
+    <Compile Include="ChatBots\Alerts.cs" />
+    <Compile Include="ChatBots\AntiAFK.cs" />
+    <Compile Include="ChatBots\AutoRelog.cs" />
+    <Compile Include="ChatBots\ChatLog.cs" />
+    <Compile Include="ChatBots\HangmanGame.cs" />
+    <Compile Include="ChatBots\PlayerListLogger.cs" />
+    <Compile Include="ChatBots\RemoteControl.cs" />
+    <Compile Include="ChatBots\Script.cs" />
+    <Compile Include="ChatBots\ScriptScheduler.cs" />
+    <Compile Include="ChatBots\TestBot.cs" />
+    <Compile Include="ChatBot.cs" />
     <Compile Include="ConsoleIO.cs" />
-    <Compile Include="Crypto.cs" />
-    <Compile Include="ChatParser.cs" />
-    <Compile Include="MinecraftCom.cs" />
+    <Compile Include="Crypto\Streams\MonoAesStream.cs" />
+    <Compile Include="Crypto\Streams\RegularAesStream.cs" />
+    <Compile Include="Crypto\CryptoHandler.cs" />
+    <Compile Include="Protocol\Handlers\ChatParser.cs" />
+    <Compile Include="Crypto\IAesStream.cs" />
+    <Compile Include="Crypto\IPaddingProvider.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="McTcpClient.cs" />
+    <Compile Include="Protocol\Handlers\Protocol16.cs" />
+    <Compile Include="Protocol\IMinecraftCom.cs" />
+    <Compile Include="Protocol\IMinecraftComHandler.cs" />
+    <Compile Include="Protocol\Handlers\Protocol17.cs" />
+    <Compile Include="Protocol\ProtocolHandler.cs" />
+    <Compile Include="Proxy\ProxyHandler.cs" />
+    <Compile Include="Proxy\Handlers\EventArgs\CreateConnectionAsyncCompletedEventArgs.cs" />
+    <Compile Include="Proxy\Handlers\Exceptions\ProxyException.cs" />
+    <Compile Include="Proxy\Handlers\HttpProxyClient.cs" />
+    <Compile Include="Proxy\Handlers\IProxyClient.cs" />
+    <Compile Include="Proxy\Handlers\ProxyClientFactory.cs" />
+    <Compile Include="Proxy\Handlers\Socks4aProxyClient.cs" />
+    <Compile Include="Proxy\Handlers\Socks4ProxyClient.cs" />
+    <Compile Include="Proxy\Handlers\Socks5ProxyClient.cs" />
+    <Compile Include="Proxy\Handlers\Utils.cs" />
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -103,7 +131,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="resources\appicon.ico" />
+    <Content Include="Resources\AppIcon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
