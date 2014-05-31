@@ -55,6 +55,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool Update()
         {
+            handler.OnUpdate();
             bool connection_ok = true;
             while (c.Client.Available > 0 && connection_ok)
             {
@@ -651,6 +652,7 @@ namespace MinecraftClient.Protocol.Handlers
             try
             {
                 TcpClient tcp = ProxyHandler.newTcpClient(host, port);
+                tcp.ReceiveTimeout = 5000; //MC 1.7.2+ SpigotMC servers won't answer, so we need a reasonable timeout.
                 byte[] ping = new byte[2] { 0xfe, 0x01 };
                 tcp.Client.Send(ping, SocketFlags.None);
 
