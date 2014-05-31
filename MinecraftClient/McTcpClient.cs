@@ -113,8 +113,7 @@ namespace MinecraftClient
                 client = ProxyHandler.newTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
                 handler = Protocol.ProtocolHandler.getProtocolHandler(client, protocolversion, this);
-                Console.WriteLine("Version is supported.");
-                Console.WriteLine("Logging in...");
+                Console.WriteLine("Version is supported.\nLogging in...");
                 
                 if (handler.Login())
                 {

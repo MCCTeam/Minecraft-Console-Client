@@ -218,11 +218,15 @@ namespace MinecraftClient
 
         public static bool ReadLineReconnect()
         {
-            string text = Console.ReadLine();
-            if (text == "reco" || text == "reconnect" || text == "/reco" || text == "/reconnect")
+            if (!Settings.exitOnFailure)
             {
-                Program.Restart();
-                return true;
+                string text = Console.ReadLine();
+                if (text == "reco" || text == "reconnect" || text == "/reco" || text == "/reconnect")
+                {
+                    Program.Restart();
+                    return true;
+                }
+                else return false;
             }
             else return false;
         }

@@ -38,6 +38,7 @@ namespace MinecraftClient
         public static List<string> Bots_Owners = new List<string>();
         public static string Language = "en_GB";
         public static bool chatTimeStamps = false;
+        public static bool exitOnFailure = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -134,6 +135,7 @@ namespace MinecraftClient
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
                                                 case "timestamps": chatTimeStamps = str2bool(argValue); break;
+                                                case "exitonfailure": exitOnFailure = str2bool(argValue); break;
                                                 case "botowners":
                                                     Bots_Owners.Clear();
                                                     foreach (string name in argValue.ToLower().Replace(" ", "").Split(','))
@@ -258,6 +260,7 @@ namespace MinecraftClient
                 + "language=en_GB\r\n"
                 + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
+                + "exitonfailure=false\r\n"
                 + "timestamps=false\r\n"
                 + "\r\n"
                 + "[Proxy]\r\n"
