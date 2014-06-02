@@ -100,7 +100,7 @@ namespace MinecraftClient.Protocol
             try
             {
                 string result = "";
-                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + user + "\", \"password\": \"" + pass + "\" }";
+                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + jsonEncode(user) + "\", \"password\": \"" + jsonEncode(pass) + "\" }";
                 int code = doHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
                 if (code == 200)
                 {
@@ -203,6 +203,31 @@ namespace MinecraftClient.Protocol
                 return Settings.str2int(raw_result.Split(' ')[1]);
             }
             else return 520; //Web server is returning an unknown error
+        }
+
+        /// <summary>
+        /// Encode a string to a json string.
+        /// Will convert special chars to \u0000 unicode escape sequences.
+        /// </summary>
+        /// <param name="text">Source text</param>
+        /// <returns>Encoded text</returns>
+
+        private static string jsonEncode(string text)
+        {
+            StringBuilder result = new StringBuilder();
+            foreach (char c in text)
+            {
+                if (char.IsLetterOrDigit(c))
+                {
+                    result.Append(c);
+                }
+                else
+                {
+                    result.Append("\\u");
+                    result.Append(((int)c).ToString("x4"));
+                }
+            }
+            return result.ToString();
         }
     }
 }
