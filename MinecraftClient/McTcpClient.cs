@@ -189,6 +189,11 @@ namespace MinecraftClient
                         {
                             BotLoad(new ChatBots.Script(text.Substring(8)));
                         }
+                        else if (text.ToLower().StartsWith("/connect "))
+                        {
+                            Settings.ServerIP = text.Substring(9);
+                            Program.Restart();
+                        }
                         else if (text != "")
                         {
                             //Message is too long

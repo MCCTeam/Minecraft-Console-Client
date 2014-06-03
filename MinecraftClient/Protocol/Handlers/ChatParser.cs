@@ -56,22 +56,23 @@ namespace MinecraftClient.Protocol.Handlers
         {
             switch (colorname.ToLower())
             {
-                case "black": return "§0";
-                case "dark_blue": return "§1";
-                case "dark_green": return "§2";
-                case "dark_aqua": return "§3";
-                case "dark_red": return "§4";
-                case "dark_purple": return "§5";
-                case "gold": return "§6";
-                case "gray": return "§7";
-                case "dark_gray": return "§8";
-                case "blue": return "§9";
-                case "green": return "§a";
-                case "aqua": return "§b";
-                case "red": return "§c";
-                case "light_purple": return "§d";
-                case "yellow": return "§e";
-                case "white": return "§f";
+                /* MC 1.7+ Name           MC 1.6 Name           Classic tag */
+                case "black":        /*  Blank if same  */      return "§0";
+                case "dark_blue":                               return "§1";
+                case "dark_green":                              return "§2";
+                case "dark_aqua":       case "dark_cyan":       return "§3";
+                case "dark_red":                                return "§4";
+                case "dark_purple":     case "dark_magenta":    return "§5";
+                case "gold":            case "dark_yellow":     return "§6";
+                case "gray":                                    return "§7";
+                case "dark_gray":                               return "§8";
+                case "blue":                                    return "§9";
+                case "green":                                   return "§a";
+                case "aqua":            case "cyan":            return "§b";
+                case "red":                                     return "§c";
+                case "light_purple":    case "magenta":         return "§d";
+                case "yellow":                                  return "§e";
+                case "white":                                   return "§f";
                 default: return "";
             }
         }

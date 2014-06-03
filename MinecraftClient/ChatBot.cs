@@ -138,10 +138,15 @@ namespace MinecraftClient
             try
             {
                 //Detect vanilla /tell messages
-                //Someone whispers to you: message
+                //Someone whispers message (MC 1.5)
+                //Someone whispers to you: message (MC 1.7)
                 if (tmp.Length > 2 && tmp[1] == "whispers")
                 {
-                    message = text.Substring(tmp[0].Length + 18);
+                    if (tmp.Length > 4 && tmp[2] == "to" && tmp[3] == "you:")
+                    {
+                        message = text.Substring(tmp[0].Length + 18); //MC 1.7
+                    }
+                    else message = text.Substring(tmp[0].Length + 10); //MC 1.5
                     sender = tmp[0];
                     return isValidName(sender);
                 }

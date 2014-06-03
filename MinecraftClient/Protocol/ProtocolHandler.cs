@@ -148,7 +148,7 @@ namespace MinecraftClient.Protocol
         }
 
         /// <summary>
-        /// Check session using Mojang's Yggdrasil authentication scheme. Allow to join an online-mode server
+        /// Check session using Mojang's Yggdrasil authentication scheme. Allows to join an online-mode server
         /// </summary>
         /// <param name="user">Username</param>
         /// <param name="accesstoken">Session ID</param>
