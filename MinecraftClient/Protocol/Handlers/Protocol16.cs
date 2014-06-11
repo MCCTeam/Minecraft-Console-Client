@@ -434,12 +434,12 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (serverID == "-")
                 {
-                    ConsoleIO.WriteLineFormatted("§8Server is in offline mode.", false);
+                    ConsoleIO.WriteLineFormatted("§8Server is in offline mode.");
                     return true; //No need to check session or start encryption
                 }
                 else
                 {
-                    ConsoleIO.WriteLineFormatted("§8Handshake successful. (Server ID: " + serverID + ')', false);
+                    ConsoleIO.WriteLineFormatted("§8Handshake successful. (Server ID: " + serverID + ')');
                     return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey);
                 }
             }
@@ -451,7 +451,7 @@ namespace MinecraftClient.Protocol.Handlers
             System.Security.Cryptography.RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverKey);
             byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
 
-            ConsoleIO.WriteLineFormatted("§8Crypto keys & hash generated.", false);
+            ConsoleIO.WriteLineFormatted("§8Crypto keys & hash generated.");
 
             if (serverIDhash != "-")
             {
@@ -675,7 +675,7 @@ namespace MinecraftClient.Protocol.Handlers
                         protocolversion = (byte)39;
                         version = "B1.8.1 - 1.3.2";
                     }
-                    ConsoleIO.WriteLineFormatted("§8Server version : MC " + version + " (protocol v" + protocolversion + ").", false);
+                    ConsoleIO.WriteLineFormatted("§8Server version : MC " + version + " (protocol v" + protocolversion + ").");
                     return true;
                 }
                 else return false;

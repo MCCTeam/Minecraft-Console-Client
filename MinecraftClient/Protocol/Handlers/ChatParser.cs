@@ -128,7 +128,7 @@ namespace MinecraftClient.Protocol.Handlers
               && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
             {
                 Language_File = Settings.TranslationsFile_FromMCDir;
-                ConsoleIO.WriteLineFormatted("§8Defaulting to en_GB.lang from your Minecraft directory.", false);
+                ConsoleIO.WriteLineFormatted("§8Defaulting to en_GB.lang from your Minecraft directory.");
             }
 
             //Load the external dictionnary of translation rules or display an error message
@@ -147,12 +147,12 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
 
-                ConsoleIO.WriteLineFormatted("§8Translations file loaded.", false);
+                ConsoleIO.WriteLineFormatted("§8Translations file loaded.");
             }
             else //No external dictionnary found.
             {
                 ConsoleIO.WriteLineFormatted("§8Translations file not found: \"" + Language_File + "\""
-                + "\nSome messages won't be properly printed without this file.", true);
+                + "\nSome messages won't be properly printed without this file.");
             }
         }
 

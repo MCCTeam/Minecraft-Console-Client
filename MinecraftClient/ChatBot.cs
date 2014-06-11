@@ -209,7 +209,7 @@ namespace MinecraftClient
 
         public static void LogToConsole(string text)
         {
-            ConsoleIO.WriteLineFormatted("§8[BOT] " + text, true);
+            ConsoleIO.WriteLineFormatted("§8[BOT] " + text);
         }
 
         /// <summary>

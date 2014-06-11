@@ -49,7 +49,7 @@ namespace MinecraftClient.Proxy
 
                     if (!proxy_ok)
                     {
-                        ConsoleIO.WriteLineFormatted("§8Connected to proxy " + Settings.ProxyHost + ':' + Settings.ProxyPort, false);
+                        ConsoleIO.WriteLineFormatted("§8Connected to proxy " + Settings.ProxyHost + ':' + Settings.ProxyPort);
                         proxy_ok = true;
                     }
 
@@ -59,7 +59,7 @@ namespace MinecraftClient.Proxy
             }
             catch (ProxyException e)
             {
-                ConsoleIO.WriteLineFormatted("§8" + e.Message, false);
+                ConsoleIO.WriteLineFormatted("§8" + e.Message);
                 proxy = null;
                 return null;
             }

@@ -249,7 +249,7 @@ namespace MinecraftClient
         /// <param name="str">String to write</param>
         /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>
 
-        public static void WriteLineFormatted(string str, bool acceptnewlines)
+        public static void WriteLineFormatted(string str, bool acceptnewlines = true)
         {
             if (basicIO) { Console.WriteLine(str); return; }
             if (!String.IsNullOrEmpty(str))

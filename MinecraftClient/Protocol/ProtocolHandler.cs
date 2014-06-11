@@ -54,13 +54,13 @@ namespace MinecraftClient.Protocol
                 }
                 else
                 {
-                    ConsoleIO.WriteLineFormatted("§8Unexpected answer from the server (is that a Minecraft server ?)", false);
+                    ConsoleIO.WriteLineFormatted("§8Unexpected answer from the server (is that a Minecraft server ?)");
                     return false;
                 }
             }
             catch
             {
-                ConsoleIO.WriteLineFormatted("§8An error occured while attempting to connect to this IP.", false);
+                ConsoleIO.WriteLineFormatted("§8An error occured while attempting to connect to this IP.");
                 return false;
             }
         }
@@ -133,7 +133,7 @@ namespace MinecraftClient.Protocol
                 }
                 else
                 {
-                    ConsoleIO.WriteLineFormatted("§8Got error code from server: " + code, false);
+                    ConsoleIO.WriteLineFormatted("§8Got error code from server: " + code);
                     return LoginResult.OtherError;
                 }
             }

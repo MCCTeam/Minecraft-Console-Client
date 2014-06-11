@@ -81,7 +81,10 @@ namespace MinecraftClient
         //Remote Control
         public static bool RemoteCtrl_Enabled = false;
 
-        private enum ParseMode { Default, Main, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
+        //App variables
+        private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
+
+        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -225,6 +228,12 @@ namespace MinecraftClient
                                                 case "password": ProxyPassword = argValue; break;
                                             }
                                             break;
+
+                                        case ParseMode.AppVars:
+                                            string varName = new string(argName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
+                                            if (varName.Length > 0)
+                                                AppVars[varName] = argValue;
+                                            break;
                                     }
                                 }
                             }
@@ -263,6 +272,11 @@ namespace MinecraftClient
                 + "exitonfailure=false\r\n"
                 + "timestamps=false\r\n"
                 + "\r\n"
+                + "[AppVars]\r\n"
+                + "#yourvar=yourvalue\r\n"
+                + "#can be used in other fields as %yourvar%\r\n"
+                + "#%username% and %serverip% are reserved variable names.\r\n"
+                + "\r\n"
                 + "[Proxy]\r\n"
                 + "enabled=false\r\n"
                 + "type=HTTP #Supported types: HTTP, SOCKS4, SOCKS4a, SOCKS5\r\n"
@@ -294,7 +308,7 @@ namespace MinecraftClient
                 + "enabled=false\r\n"
                 + "timestamps=true\r\n"
                 + "filter=messages\r\n"
-                + "logfile=chatlog.txt\r\n"
+                + "logfile=chatlog-%username%-%serverip%.txt\r\n"
                 + "\r\n"
                 + "[Hangman]\r\n"
                 + "enabled=false\r\n"
@@ -313,5 +327,62 @@ namespace MinecraftClient
         public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }
         public static bool str2bool(string str) { return str == "true" || str == "1"; }
 
+        /// <summary>
+        /// Replace %variables% with their value
+        /// </summary>
+        /// <param name="str">String to parse</param>
+        /// <returns>Modifier string</returns>
+
+        public static string replaceVars(string str)
+        {
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (str[i] == '%')
+                {
+                    bool varname_ok = true;
+                    StringBuilder var_name = new StringBuilder();
+                    for (int j = i + 1; j < str.Length; j++)
+                    {
+                        if (!char.IsLetterOrDigit(str[j]))
+                        {
+                            if (str[j] == '%')
+                            {
+                                varname_ok = var_name.Length > 0;
+                                break;
+                            }
+                            else
+                            {
+                                varname_ok = false;
+                                break;
+                            }
+                        }
+                        else var_name.Append(str[j]);
+                    }
+                    if (varname_ok)
+                    {
+                        string varname = var_name.ToString();
+                        string varname_lower = varname.ToLower();
+                        i = i + varname.Length + 1;
+                        if (varname_lower == "username")
+                        {
+                            result.Append(Username);
+                        }
+                        else if (varname_lower == "serverip")
+                        {
+                            result.Append(ServerIP.Split(':')[0]);
+                        }
+                        else if (AppVars.ContainsKey(varname_lower))
+                        {
+                            result.Append(AppVars[varname_lower]);
+                        }
+                        else result.Append("%" + varname + '%');
+                    }
+                    else result.Append(str[i]);
+                }
+                else result.Append(str[i]);
+            }
+            return result.ToString();
+        }
     }
 }

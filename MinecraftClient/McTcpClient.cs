@@ -101,10 +101,10 @@ namespace MinecraftClient
                 if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
                 if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
                 if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
-                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ChatLog_File.Replace("%username%", Settings.Username), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.PlayerLog_File.Replace("%username%", Settings.Username))); }
+                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.replaceVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.replaceVars(Settings.PlayerLog_File))); }
                 if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
-                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ScriptScheduler_TasksFile.Replace("%username%", Settings.Username))); }
+                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.replaceVars(Settings.ScriptScheduler_TasksFile))); }
                 if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
             }
 
@@ -120,7 +120,7 @@ namespace MinecraftClient
                     if (singlecommand)
                     {
                         handler.SendChatMessage(command);
-                        ConsoleIO.WriteLineFormatted("§7Command §8" + command + "§7 sent.", false);
+                        ConsoleIO.WriteLineFormatted("§7Command §8" + command + "§7 sent.");
                         Thread.Sleep(5000);
                         handler.Disconnect();
                         Thread.Sleep(1000);
@@ -276,12 +276,12 @@ namespace MinecraftClient
 
                 case ChatBot.DisconnectReason.InGameKick:
                     ConsoleIO.WriteLine("Disconnected by Server :");
-                    ConsoleIO.WriteLineFormatted(message, true);
+                    ConsoleIO.WriteLineFormatted(message);
                     break;
 
                 case ChatBot.DisconnectReason.LoginRejected:
                     ConsoleIO.WriteLine("Login failed :");
-                    ConsoleIO.WriteLineFormatted(message, true);
+                    ConsoleIO.WriteLineFormatted(message);
                     break;
             }
 
@@ -298,7 +298,16 @@ namespace MinecraftClient
         public void OnUpdate()
         {
             for (int i = 0; i < bots.Count; i++)
-                bots[i].Update();
+            {
+                try
+                {
+                    bots[i].Update();
+                }
+                catch (Exception e)
+                {
+                    ConsoleIO.WriteLineFormatted("§8Got error from " + bots[i].ToString() + ": " + e.ToString());
+                }
+            }
         }
 
         /// <summary>

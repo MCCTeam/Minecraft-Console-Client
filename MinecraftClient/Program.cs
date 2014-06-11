@@ -72,7 +72,8 @@ namespace MinecraftClient
 
             if (Settings.ConsoleTitle != "")
             {
-                Console.Title = Settings.ConsoleTitle.Replace("%username%", "New Window");
+                Settings.Username = "New Window";
+                Console.Title = Settings.replaceVars(Settings.ConsoleTitle);
             }
 
             //Asking the user to type in missing data such as Username and Password
@@ -112,7 +113,7 @@ namespace MinecraftClient
 
             if (Settings.Password == "-")
             {
-                ConsoleIO.WriteLineFormatted("§8You chose to run in offline mode.", false);
+                ConsoleIO.WriteLineFormatted("§8You chose to run in offline mode.");
                 result = ProtocolHandler.LoginResult.Success;
                 sessionID = "0";
             }
@@ -126,7 +127,7 @@ namespace MinecraftClient
             {
                 if (Settings.ConsoleTitle != "")
                 {
-                    Console.Title = Settings.ConsoleTitle.Replace("%username%", Settings.Username);
+                    Console.Title = Settings.replaceVars(Settings.ConsoleTitle);
                 }
 
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
@@ -183,7 +184,7 @@ namespace MinecraftClient
                         {
                             ConsoleIO.WriteLineFormatted("§8It appears that you are using Mono to run this program."
                                 + '\n' + "The first time, you have to import HTTPS certificates using:"
-                                + '\n' + "mozroots --import --ask-remove", true);
+                                + '\n' + "mozroots --import --ask-remove");
                             return;
                         }
                         break;
