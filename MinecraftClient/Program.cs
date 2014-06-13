@@ -59,7 +59,7 @@ namespace MinecraftClient
                     Settings.Password = args[1];
                     if (args.Length >= 3)
                     {
-                        Settings.ServerIP = args[2];
+                        Settings.setServerIP(args[2]);
 
                         //Single command?
                         if (args.Length >= 4)
@@ -73,7 +73,7 @@ namespace MinecraftClient
             if (Settings.ConsoleTitle != "")
             {
                 Settings.Username = "New Window";
-                Console.Title = Settings.replaceVars(Settings.ConsoleTitle);
+                Console.Title = Settings.expandVars(Settings.ConsoleTitle);
             }
 
             //Asking the user to type in missing data such as Username and Password
@@ -127,14 +127,14 @@ namespace MinecraftClient
             {
                 if (Settings.ConsoleTitle != "")
                 {
-                    Console.Title = Settings.replaceVars(Settings.ConsoleTitle);
+                    Console.Title = Settings.expandVars(Settings.ConsoleTitle);
                 }
 
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
                 if (Settings.ServerIP == "")
                 {
                     Console.Write("Server IP : ");
-                    Settings.ServerIP = Console.ReadLine();
+                    Settings.setServerIP(Console.ReadLine());
                 }
 
                 //Get server version
@@ -147,9 +147,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, protocolversion, Settings.SingleCommand);
+                            Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, Settings.ServerPort, protocolversion, Settings.SingleCommand);
                         }
-                        else Client = new McTcpClient(Settings.Username, UUID, sessionID, protocolversion, Settings.ServerIP);
+                        else Client = new McTcpClient(Settings.Username, UUID, sessionID, protocolversion, Settings.ServerIP, Settings.ServerPort);
                     }
                     catch (NotSupportedException)
                     {

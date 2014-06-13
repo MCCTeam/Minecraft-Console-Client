@@ -44,25 +44,31 @@ namespace MinecraftClient
         /// Starts the main chat client
         /// </summary>
         /// <param name="username">The chosen username of a premium Minecraft Account</param>
-        /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
-        /// <param name="server_port">The server IP (serveradress or serveradress:port)</param>
+        /// <param name="uuid">The player's UUID for online-mode authentication</param>
+        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
+        /// <param name="server_ip">The server IP</param>
+        /// <param name="port">The server port to use</param>
+        /// <param name="protocolversion">Minecraft protocol version to use</param>
 
-        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, string server_port)
+        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, string server_ip, short port)
         {
-            StartClient(username, uuid, sessionID, server_port, protocolversion, false, "");
+            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, false, "");
         }
 
         /// <summary>
         /// Starts the main chat client in single command sending mode
         /// </summary>
         /// <param name="username">The chosen username of a premium Minecraft Account</param>
-        /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
-        /// <param name="server_port">The server IP (serveradress or serveradress:port)</param>
+        /// <param name="uuid">The player's UUID for online-mode authentication</param>
+        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
+        /// <param name="server_ip">The server IP</param>
+        /// <param name="port">The server port to use</param>
+        /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
 
-        public McTcpClient(string username, string uuid, string sessionID, string server_port, int protocolversion, string command)
+        public McTcpClient(string username, string uuid, string sessionID, string server_ip, short port, int protocolversion, string command)
         {
-            StartClient(username, uuid, sessionID, server_port, protocolversion, true, command);
+            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, true, command);
         }
 
         /// <summary>
@@ -70,41 +76,30 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="user">The chosen username of a premium Minecraft Account</param>
         /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
-        /// <param name="server_port">The server IP (serveradress or serveradress:port)/param>
+        /// <param name="server_ip">The server IP</param>
+        /// <param name="port">The server port to use</param>
+        /// <param name="protocolversion">Minecraft protocol version to use</param>
+        /// <param name="uuid">The player's UUID for online-mode authentication</param>
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
 
-        private void StartClient(string user, string uuid, string sessionID, string server_port, int protocolversion, bool singlecommand, string command)
+        private void StartClient(string user, string uuid, string sessionID, string server_ip, short port, int protocolversion, bool singlecommand, string command)
         {
-            string[] sip = server_port.Split(':');
-
             this.sessionid = sessionID;
             this.uuid = uuid;
             this.username = user;
-            this.host = sip[0];
-
-            if (sip.Length == 1)
-            {
-                port = 25565;
-            }
-            else
-            {
-                try
-                {
-                    port = Convert.ToInt32(sip[1]);
-                }
-                catch (FormatException) { port = 25565; }
-            }
+            this.host = server_ip;
+            this.port = port;
 
             if (!singlecommand)
             {
                 if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
                 if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
                 if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
-                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.replaceVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.replaceVars(Settings.PlayerLog_File))); }
+                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.expandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.expandVars(Settings.PlayerLog_File))); }
                 if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
-                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.replaceVars(Settings.ScriptScheduler_TasksFile))); }
+                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.expandVars(Settings.ScriptScheduler_TasksFile))); }
                 if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
             }
 
@@ -191,7 +186,7 @@ namespace MinecraftClient
                         }
                         else if (text.ToLower().StartsWith("/connect "))
                         {
-                            Settings.ServerIP = text.Substring(9);
+                            Settings.setServerIP(text.Substring(9));
                             Program.Restart();
                         }
                         else if (text != "")

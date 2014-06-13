@@ -20,6 +20,7 @@ namespace MinecraftClient
         public static string Username = "";
         public static string Password = "";
         public static string ServerIP = "";
+        public static short ServerPort = 25565;
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
 
@@ -133,7 +134,7 @@ namespace MinecraftClient
                                             {
                                                 case "login": Login = argValue; break;
                                                 case "password": Password = argValue; break;
-                                                case "serverip": ServerIP = argValue; break;
+                                                case "serverip": setServerIP(argValue); break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
@@ -328,55 +329,73 @@ namespace MinecraftClient
         public static bool str2bool(string str) { return str == "true" || str == "1"; }
 
         /// <summary>
+        /// Parse a "serverip:port" couple and store the values in ServerIP and ServerPort variables
+        /// </summary>
+
+        public static void setServerIP(string serverIP)
+        {
+            string[] sip = serverIP.Split(':');
+            ServerIP = sip[0];
+            if (sip.Length == 1)
+            {
+                ServerPort = 25565;
+            }
+            else
+            {
+                try
+                {
+                    ServerPort = Convert.ToInt16(sip[1]);
+                }
+                catch (FormatException) { ServerPort = 25565; }
+            }
+        }
+
+        /// <summary>
         /// Replace %variables% with their value
         /// </summary>
         /// <param name="str">String to parse</param>
         /// <returns>Modifier string</returns>
 
-        public static string replaceVars(string str)
+        public static string expandVars(string str)
         {
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < str.Length; i++)
             {
                 if (str[i] == '%')
                 {
-                    bool varname_ok = true;
+                    bool varname_ok = false;
                     StringBuilder var_name = new StringBuilder();
+
                     for (int j = i + 1; j < str.Length; j++)
                     {
                         if (!char.IsLetterOrDigit(str[j]))
                         {
                             if (str[j] == '%')
-                            {
                                 varname_ok = var_name.Length > 0;
-                                break;
-                            }
-                            else
-                            {
-                                varname_ok = false;
-                                break;
-                            }
+                            break;
                         }
                         else var_name.Append(str[j]);
                     }
+
                     if (varname_ok)
                     {
                         string varname = var_name.ToString();
                         string varname_lower = varname.ToLower();
                         i = i + varname.Length + 1;
-                        if (varname_lower == "username")
+
+                        switch (varname_lower)
                         {
-                            result.Append(Username);
+                            case "username": result.Append(Username); break;
+                            case "serverip": result.Append(ServerIP); break;
+                            case "serverport": result.Append(ServerPort); break;
+                            default:
+                                if (AppVars.ContainsKey(varname_lower))
+                                {
+                                    result.Append(AppVars[varname_lower]);
+                                }
+                                else result.Append("%" + varname + '%');
+                                break;
                         }
-                        else if (varname_lower == "serverip")
-                        {
-                            result.Append(ServerIP.Split(':')[0]);
-                        }
-                        else if (AppVars.ContainsKey(varname_lower))
-                        {
-                            result.Append(AppVars[varname_lower]);
-                        }
-                        else result.Append("%" + varname + '%');
                     }
                     else result.Append(str[i]);
                 }

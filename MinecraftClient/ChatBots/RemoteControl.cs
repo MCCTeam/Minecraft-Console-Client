@@ -37,7 +37,7 @@ namespace MinecraftClient.ChatBots
                     case "connect":
                         if (command.Length >= 9)
                         {
-                            Settings.ServerIP = command.Substring(8);
+                            Settings.setServerIP(command.Substring(8));
                             ReconnectToTheServer();
                         }
                         break;
