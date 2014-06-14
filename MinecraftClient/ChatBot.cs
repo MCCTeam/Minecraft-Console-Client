@@ -84,25 +84,27 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Check if the given command is a valid internal MCC command
+        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
-        /// <param name="command">The command or command name</param>
-        /// <returns>TRUE if this is an internal command</returns>
+        /// <param name="command">The command to process</param>
+        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
 
-        protected bool isInternalCommand(string command)
+        protected bool performInternalCommand(string command)
         {
-            return handler.isInternalCommand(command);
+            string temp = "";
+            return handler.performInternalCommand(command, ref temp);
         }
 
         /// <summary>
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
-        /// <param name="command">The command</param>
-        /// <returns>TRUE if the command was successfully recognized and performed</returns>
+        /// <param name="command">The command to process</param>
+        /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
 
-        protected bool performInternalCommand(string command)
+        protected bool performInternalCommand(string command, ref string response_msg)
         {
-            return handler.performInternalCommand(command);
+            return handler.performInternalCommand(command, ref response_msg);
         }
 
         /// <summary>

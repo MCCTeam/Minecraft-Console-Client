@@ -17,33 +17,11 @@ namespace MinecraftClient.ChatBots
             string command = "", sender = "";
             if (isPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower()))
             {
-                string cmd_name = command.Split(' ')[0];
-                switch (cmd_name.ToLower())
+                string response = "";
+                performInternalCommand(command, ref response);
+                if (response.Length > 0)
                 {
-                    case "help":
-                        if (command.Length >= 6)
-                        {
-                            string help_cmd_name = command.Substring(5).ToLower();
-                            switch (help_cmd_name)
-                            {
-                                case "exit": SendPrivateMessage(sender, "exit: disconnect from the server."); break;
-                                case "reco": SendPrivateMessage(sender, "reco: restart and reconnct to the server."); break;
-                                case "script": SendPrivateMessage(sender, "script <scriptname>: run a script file."); break;
-                                case "send": SendPrivateMessage(sender, "send <text>: send a chat message or command."); break;
-                                case "connect": SendPrivateMessage(sender, "connect <serverip>: connect to the specified server."); break;
-                                case "help": SendPrivateMessage(sender, "help <cmdname>: show brief help about a command."); break;
-                                default: SendPrivateMessage(sender, "help: unknown command '" + help_cmd_name + "'."); break;
-                            }
-                        }
-                        else SendPrivateMessage(sender, "help <cmdname>. Available commands: exit, reco, script, send, connect.");
-                        break;
-                    default:
-                        if (isInternalCommand(command))
-                        {
-                            performInternalCommand(command);
-                        }
-                        else SendPrivateMessage(sender, "Unknown command '" + cmd_name + "'. Use 'help' for help.");
-                        break;
+                    SendPrivateMessage(sender, response);
                 }
             }
             else if (isTeleportRequest(text, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower()))

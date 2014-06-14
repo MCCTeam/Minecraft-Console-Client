@@ -175,12 +175,16 @@ namespace MinecraftClient
                         {
                             if (text[0] == '/')
                             {
+                                string response_msg = "";
                                 string command = text.Substring(1);
-                                if (isInternalCommand(command))
+                                if (!performInternalCommand(Settings.expandVars(command), ref response_msg))
                                 {
-                                    performInternalCommand(command, true);
+                                    SendChatMessage(text);
                                 }
-                                else SendChatMessage(text);
+                                else if (response_msg.Length > 0)
+                                {
+                                    ConsoleIO.WriteLineFormatted("§8" + response_msg);
+                                }
                             }
                         }
                     }
@@ -190,38 +194,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Check if the given command is a valid internal MCC command
-        /// </summary>
-        /// <param name="command">The command or command name</param>
-        /// <returns>TRUE if this is an internal command</returns>
-
-        public bool isInternalCommand(string command)
-        {
-            string command_name = command.Split(' ')[0].ToLower();
-            switch (command_name)
-            {
-                case "exit":
-                case "quit":
-                case "reco":
-                case "respawn":
-                case "send":
-                case "script":
-                case "connect":
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        /// <summary>
         /// Perform an internal MCC command (not a server command, use SendChatMessage() instead for that!)
         /// </summary>
         /// <param name="command">The command</param>
         /// <param name="interactive_mode">Set to true if command was sent by the user using the command prompt</param>
-        /// <returns>TRUE if the command was successfully recognized and performed</returns>
+        /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
 
-        public bool performInternalCommand(string command, bool interactive_mode = false)
+        public bool performInternalCommand(string command, ref string response_msg)
         {
+            response_msg = "";
             string[] command_args = command.Split(' ');
             string command_name = command_args[0].ToLower();
             switch (command_name)
@@ -237,8 +219,7 @@ namespace MinecraftClient
                 
                 case "respawn":
                     handler.SendRespawnPacket();
-                    if (interactive_mode)
-                        ConsoleIO.WriteLine("You have respawned.");
+                    response_msg = "You have respawned.";
                     break;
 
                 case "send":
@@ -247,22 +228,65 @@ namespace MinecraftClient
                         string text = command.Substring(5);
                         SendChatMessage(text);
                     }
+                    else response_msg = "send <text>: send a chat message or command.";
+                    break;
+
+                case "set":
+                    if (command.Length > 3)
+                    {
+                        string[] temp = command.Substring(3).Split('=');
+                        if (temp.Length > 1)
+                        {
+                            if (!Settings.setVar(temp[0], command.Substring(temp[0].Length + 5)))
+                            {
+                                response_msg = "variable name must be A-Za-z0-9.";
+                            }
+                        }
+                        else response_msg = "set varname=value: set a custom %variable%.";
+                    }
+                    else response_msg = "set varname=value: set a custom %variable%.";
                     break;
 
                 case "script":
                     if (command.Length > 8)
+                    {
                         BotLoad(new ChatBots.Script(command.Substring(8)));
-                        break;
+                    }
+                    else response_msg = "script <scriptname>: run a script file.";
+                    break;
 
                 case "connect":
-                        if (command_args.Length > 1)
+                    if (command_args.Length > 1)
+                    {
+                        Settings.setServerIP(command_args[1]);
+                        Program.Restart();
+                    }
+                    else response_msg = "connect <serverip>: connect to the specified server.";
+                    break;
+
+                case "help":
+                    if (command.Length >= 6)
+                    {
+                        string help_cmd_name = command.Substring(5).ToLower();
+                        switch (help_cmd_name)
                         {
-                            Settings.setServerIP(command_args[1]);
-                            Program.Restart();
+                            case "quit": response_msg = "quit: disconnect from the server."; break;
+                            case "exit": response_msg = "exit: disconnect from the server."; break;
+                            case "reco": response_msg = "reco: restart and reconnct to the server."; break;
+                            case "respawn": response_msg = "respawn: respawn after death."; break;
+                            case "send": response_msg = "send <text>: send a chat message or command."; break;
+                            case "set": response_msg = "set varname=value: set a custom %variable%."; break;
+                            case "script": response_msg = "script <scriptname>: run a script file."; break;
+                            case "connect": response_msg = "connect <serverip>: connect to the specified server."; break;
+                            case "help": response_msg = "help <cmdname>: show brief help about a command."; break;
+                            default: response_msg = "help: unknown command '" + help_cmd_name + "'."; break;
                         }
+                    }
+                    else response_msg = "help <cmdname>. Available commands: exit, reco, script, send, connect.";
                     break;
 
                 default:
+                    response_msg = "Unknown command '" + command_name + "'. Use 'help' for help.";
                     return false;
             }
             return true;

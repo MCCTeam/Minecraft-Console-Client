@@ -233,9 +233,7 @@ namespace MinecraftClient
                                             break;
 
                                         case ParseMode.AppVars:
-                                            string varName = new string(argName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
-                                            if (varName.Length > 0)
-                                                AppVars[varName] = argValue;
+                                            setVar(argName, argValue);
                                             break;
                                     }
                                 }
@@ -351,6 +349,24 @@ namespace MinecraftClient
                 }
                 catch (FormatException) { ServerPort = 25565; }
             }
+        }
+
+        /// <summary>
+        /// Set a custom %variable% which will be available through expandVars()
+        /// </summary>
+        /// <param name="varName">Name of the variable</param>
+        /// <param name="varData">Value of the variable</param>
+        /// <returns>True if the parameters were valid</returns>
+
+        public static bool setVar(string varName, string varData)
+        {
+            varName = new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
+            if (varName.Length > 0)
+            {
+                AppVars[varName] = varData;
+                return true;
+            }
+            else return false;
         }
 
         /// <summary>

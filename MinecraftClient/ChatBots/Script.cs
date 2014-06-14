@@ -87,6 +87,7 @@ namespace MinecraftClient.ChatBots
                     {
                         if (instruction_line[0] != '#' && instruction_line[0] != '/' && instruction_line[1] != '/')
                         {
+                            instruction_line = Settings.expandVars(instruction_line);
                             string instruction_name = instruction_line.Split(' ')[0];
                             switch (instruction_name.ToLower())
                             {
@@ -100,11 +101,10 @@ namespace MinecraftClient.ChatBots
                                     sleepticks = ticks;
                                     break;
                                 default:
-                                    if (isInternalCommand(instruction_line))
+                                    if (!performInternalCommand(instruction_line))
                                     {
-                                        performInternalCommand(instruction_line);
+                                        sleepticks = 0; Update(); //Unknown command : process next line immediately
                                     }
-                                    else sleepticks = 0; Update(); //Unknown command : process next line immediately
                                     break;
                             }
                         }
