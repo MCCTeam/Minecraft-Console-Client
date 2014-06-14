@@ -146,7 +146,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Returns true is the text passed is a private message sent to the bot
+        /// Returns true if the text passed is a private message sent to the bot
         /// </summary>
         /// <param name="text">text to test</param>
         /// <param name="message">if it's a private message, this will contain the message</param>
@@ -155,6 +155,7 @@ namespace MinecraftClient
 
         protected static bool isPrivateMessage(string text, ref string message, ref string sender)
         {
+            text = getVerbatim(text);
             if (text == "") { return false; }
             string[] tmp = text.Split(' ');
 
@@ -190,7 +191,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Returns true is the text passed is a public message written by a player on the chat
+        /// Returns true if the text passed is a public message written by a player on the chat
         /// </summary>
         /// <param name="text">text to test</param>
         /// <param name="message">if it's message, this will contain the message</param>
@@ -204,6 +205,7 @@ namespace MinecraftClient
             //<*Faction Someone> message
             //<*Faction Someone>: message
             //<*Faction ~Nicknamed>: message
+            text = getVerbatim(text);
             if (text == "") { return false; }
             if (text[0] == '<')
             {
@@ -221,6 +223,25 @@ namespace MinecraftClient
                     return isValidName(sender);
                 }
                 catch (IndexOutOfRangeException) { return false; }
+            }
+            else return false;
+        }
+
+        /// <summary>
+        /// Returns true if the text passed is a teleport request (Essentials)
+        /// </summary>
+        /// <param name="text">Text to parse</param>
+        /// <param name="sender">Will contain the sender's username, if it's a teleport request</param>
+        /// <returns>Returns true if the text is a teleport request</returns>
+
+        protected static bool isTeleportRequest(string text, ref string sender)
+        {
+            text = getVerbatim(text);
+            sender = text.Split(' ')[0];
+            if (text.EndsWith("has requested to teleport to you.")
+             || text.EndsWith("has requested that you teleport to them."))
+            {
+                return isValidName(sender);
             }
             else return false;
         }

@@ -46,6 +46,10 @@ namespace MinecraftClient.ChatBots
                         break;
                 }
             }
+            else if (isTeleportRequest(text, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower()))
+            {
+                SendText("/tpaccept");
+            }
         }
     }
 }
