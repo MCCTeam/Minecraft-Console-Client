@@ -171,58 +171,101 @@ namespace MinecraftClient
                     else
                     {
                         text = text.Trim();
-                        if (text.ToLower() == "/quit" || text.ToLower() == "/reco")
+                        if (text.Length > 0)
                         {
-                            break;
-                        }
-                        else if (text.ToLower() == "/respawn")
-                        {
-                            handler.SendRespawnPacket();
-                            ConsoleIO.WriteLine("You have respawned.");
-                        }
-                        else if (text.ToLower().StartsWith("/script "))
-                        {
-                            BotLoad(new ChatBots.Script(text.Substring(8)));
-                        }
-                        else if (text.ToLower().StartsWith("/connect "))
-                        {
-                            Settings.setServerIP(text.Substring(9));
-                            Program.Restart();
-                        }
-                        else if (text != "")
-                        {
-                            //Message is too long
-                            if (text.Length > 100)
+                            if (text[0] == '/')
                             {
-                                if (text[0] == '/')
+                                string command = text.Substring(1);
+                                if (isInternalCommand(command))
                                 {
-                                    //Send the first 100 chars of the command
-                                    text = text.Substring(0, 100);
-                                    handler.SendChatMessage(text);
+                                    performInternalCommand(command, true);
                                 }
-                                else
-                                {
-                                    //Send the message splitted into several messages
-                                    while (text.Length > 100)
-                                    {
-                                        handler.SendChatMessage(text.Substring(0, 100));
-                                        text = text.Substring(100, text.Length - 100);
-                                    }
-                                    handler.SendChatMessage(text);
-                                }
+                                else SendChatMessage(text);
                             }
-                            else handler.SendChatMessage(text);
                         }
                     }
                 }
-
-                switch (text.ToLower())
-                {
-                    case "/quit": Program.Exit(); break;
-                    case "/reco": Program.Restart(); break;
-                }
             }
             catch (IOException) { }
+        }
+
+        /// <summary>
+        /// Check if the given command is a valid internal MCC command
+        /// </summary>
+        /// <param name="command">The command or command name</param>
+        /// <returns>TRUE if this is an internal command</returns>
+
+        public bool isInternalCommand(string command)
+        {
+            string command_name = command.Split(' ')[0].ToLower();
+            switch (command_name)
+            {
+                case "exit":
+                case "quit":
+                case "reco":
+                case "respawn":
+                case "send":
+                case "script":
+                case "connect":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Perform an internal MCC command (not a server command, use SendChatMessage() instead for that!)
+        /// </summary>
+        /// <param name="command">The command</param>
+        /// <param name="interactive_mode">Set to true if command was sent by the user using the command prompt</param>
+        /// <returns>TRUE if the command was successfully recognized and performed</returns>
+
+        public bool performInternalCommand(string command, bool interactive_mode = false)
+        {
+            string[] command_args = command.Split(' ');
+            string command_name = command_args[0].ToLower();
+            switch (command_name)
+            {
+                case "exit":
+                case "quit":
+                    Program.Exit();
+                    break;
+                
+                case "reco":
+                    Program.Restart();
+                    break;
+                
+                case "respawn":
+                    handler.SendRespawnPacket();
+                    if (interactive_mode)
+                        ConsoleIO.WriteLine("You have respawned.");
+                    break;
+
+                case "send":
+                    if (command.Length > 5)
+                    {
+                        string text = command.Substring(5);
+                        SendChatMessage(text);
+                    }
+                    break;
+
+                case "script":
+                    if (command.Length > 8)
+                        BotLoad(new ChatBots.Script(command.Substring(8)));
+                        break;
+
+                case "connect":
+                        if (command_args.Length > 1)
+                        {
+                            Settings.setServerIP(command_args[1]);
+                            Program.Restart();
+                        }
+                    break;
+
+                default:
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -306,12 +349,33 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Send a chat message to the server
+        /// Send a chat message or command to the server
         /// </summary>
+        /// <param name="text">Text to send to the server</param>
+        /// <returns>True if the text was sent with no error</returns>
 
-        public void SendChatMessage(string message)
+        public bool SendChatMessage(string text)
         {
-            handler.SendChatMessage(message);
+            if (text.Length > 100) //Message is too long?
+            {
+                if (text[0] == '/')
+                {
+                    //Send the first 100 chars of the command
+                    text = text.Substring(0, 100);
+                    return handler.SendChatMessage(text);
+                }
+                else
+                {
+                    //Send the message splitted into several messages
+                    while (text.Length > 100)
+                    {
+                        handler.SendChatMessage(text.Substring(0, 100));
+                        text = text.Substring(100, text.Length - 100);
+                    }
+                    return handler.SendChatMessage(text);
+                }
+            }
+            else return handler.SendChatMessage(text);
         }
     }
 }

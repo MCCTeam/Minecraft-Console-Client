@@ -90,9 +90,6 @@ namespace MinecraftClient.ChatBots
                             string instruction_name = instruction_line.Split(' ')[0];
                             switch (instruction_name.ToLower())
                             {
-                                case "send":
-                                    SendText(instruction_line.Substring(5, instruction_line.Length - 5));
-                                    break;
                                 case "wait":
                                     int ticks = 10;
                                     try
@@ -102,21 +99,12 @@ namespace MinecraftClient.ChatBots
                                     catch { }
                                     sleepticks = ticks;
                                     break;
-                                case "disconnect":
-                                    DisconnectAndExit();
-                                    break;
-                                case "exit": //Exit bot & stay connected to the server
-                                    UnloadBot();
-                                    break;
-                                case "connect":
-                                    if (instruction_line.Length >= 9)
-                                    {
-                                        Settings.setServerIP(instruction_line.Substring(8));
-                                        ReconnectToTheServer();
-                                    }
-                                    break;
                                 default:
-                                    sleepticks = 0; Update(); //Unknown command : process next line immediately
+                                    if (isInternalCommand(instruction_line))
+                                    {
+                                        performInternalCommand(instruction_line);
+                                    }
+                                    else sleepticks = 0; Update(); //Unknown command : process next line immediately
                                     break;
                             }
                         }

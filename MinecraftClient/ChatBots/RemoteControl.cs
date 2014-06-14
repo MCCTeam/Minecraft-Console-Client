@@ -20,27 +20,6 @@ namespace MinecraftClient.ChatBots
                 string cmd_name = command.Split(' ')[0];
                 switch (cmd_name.ToLower())
                 {
-                    case "exit":
-                        DisconnectAndExit();
-                        break;
-                    case "reco":
-                        ReconnectToTheServer();
-                        break;
-                    case "script":
-                        if (command.Length >= 8)
-                            RunScript(command.Substring(7), sender);
-                        break;
-                    case "send":
-                        if (command.Length >= 6)
-                            SendText(command.Substring(5));
-                        break;
-                    case "connect":
-                        if (command.Length >= 9)
-                        {
-                            Settings.setServerIP(command.Substring(8));
-                            ReconnectToTheServer();
-                        }
-                        break;
                     case "help":
                         if (command.Length >= 6)
                         {
@@ -59,7 +38,11 @@ namespace MinecraftClient.ChatBots
                         else SendPrivateMessage(sender, "help <cmdname>. Available commands: exit, reco, script, send, connect.");
                         break;
                     default:
-                        SendPrivateMessage(sender, "Unknown command '" + cmd_name + "'. Use 'help' for help.");
+                        if (isInternalCommand(command))
+                        {
+                            performInternalCommand(command);
+                        }
+                        else SendPrivateMessage(sender, "Unknown command '" + cmd_name + "'. Use 'help' for help.");
                         break;
                 }
             }

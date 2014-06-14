@@ -75,11 +75,34 @@ namespace MinecraftClient
         /// Send text to the server. Can be anything such as chat messages or commands
         /// </summary>
         /// <param name="text">Text to send to the server</param>
+        /// <returns>True if the text was sent with no error</returns>
 
-        protected void SendText(string text)
+        protected bool SendText(string text)
         {
             ConsoleIO.WriteLineFormatted("§8BOT:" + text, false);
-            handler.SendChatMessage(text);
+            return handler.SendChatMessage(text);
+        }
+
+        /// <summary>
+        /// Check if the given command is a valid internal MCC command
+        /// </summary>
+        /// <param name="command">The command or command name</param>
+        /// <returns>TRUE if this is an internal command</returns>
+
+        protected bool isInternalCommand(string command)
+        {
+            return handler.isInternalCommand(command);
+        }
+
+        /// <summary>
+        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
+        /// </summary>
+        /// <param name="command">The command</param>
+        /// <returns>TRUE if the command was successfully recognized and performed</returns>
+
+        protected bool performInternalCommand(string command)
+        {
+            return handler.performInternalCommand(command);
         }
 
         /// <summary>
