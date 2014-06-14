@@ -21,6 +21,7 @@ namespace MinecraftClient
         public static string Password = "";
         public static string ServerIP = "";
         public static short ServerPort = 25565;
+        public static string ServerVersion  = "";
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
 
@@ -82,7 +83,7 @@ namespace MinecraftClient
         //Remote Control
         public static bool RemoteCtrl_Enabled = false;
 
-        //App variables
+        //Custom app variables
         private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
 
         private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
@@ -140,6 +141,7 @@ namespace MinecraftClient
                                                 case "consoletitle": ConsoleTitle = argValue; break;
                                                 case "timestamps": chatTimeStamps = str2bool(argValue); break;
                                                 case "exitonfailure": exitOnFailure = str2bool(argValue); break;
+                                                case "mcversion": ServerVersion = argValue; break;
                                                 case "botowners":
                                                     Bots_Owners.Clear();
                                                     foreach (string name in argValue.ToLower().Replace(" ", "").Split(','))
@@ -270,6 +272,7 @@ namespace MinecraftClient
                 + "language=en_GB\r\n"
                 + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
+                + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "exitonfailure=false\r\n"
                 + "timestamps=false\r\n"
                 + "\r\n"

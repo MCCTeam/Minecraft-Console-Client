@@ -496,8 +496,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <returns>True if ping was successful</returns>
 
-        public static bool doPing(string host, int port, ref int protocolversion, ref string version)
+        public static bool doPing(string host, int port, ref int protocolversion)
         {
+            string version = "";
             TcpClient tcp = ProxyHandler.newTcpClient(host, port);
             tcp.ReceiveBufferSize = 1024 * 1024;
 

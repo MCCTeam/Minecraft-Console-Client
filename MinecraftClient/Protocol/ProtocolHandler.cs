@@ -19,36 +19,19 @@ namespace MinecraftClient.Protocol
         /// Retrieve information about a Minecraft server
         /// </summary>
         /// <param name="serverIP">Server IP to ping</param>
+        /// <param name="serverPort">Server Port to ping</param>
         /// <param name="protocolversion">Will contain protocol version, if ping successful</param>
-        /// <param name="version">Will contain minecraft version, if ping successful</param>
         /// <returns>TRUE if ping was successful</returns>
 
-        public static bool GetServerInfo(string serverIP, ref int protocolversion, ref string version)
+        public static bool GetServerInfo(string serverIP, short serverPort, ref int protocolversion)
         {
             try
             {
-                string host; int port;
-                string[] sip = serverIP.Split(':');
-                host = sip[0];
-
-                if (sip.Length == 1)
-                {
-                    port = 25565;
-                }
-                else
-                {
-                    try
-                    {
-                        port = Convert.ToInt32(sip[1]);
-                    }
-                    catch (FormatException) { port = 25565; }
-                }
-
-                if (Protocol16Handler.doPing(host, port, ref protocolversion, ref version))
+                if (Protocol16Handler.doPing(serverIP, serverPort, ref protocolversion))
                 {
                     return true;
                 }
-                else if (Protocol17Handler.doPing(host, port, ref protocolversion, ref version))
+                else if (Protocol17Handler.doPing(serverIP, serverPort, ref protocolversion))
                 {
                     return true;
                 }
@@ -81,7 +64,60 @@ namespace MinecraftClient.Protocol
             int[] supportedVersions_Protocol17 = { 4, 5 };
             if (Array.IndexOf(supportedVersions_Protocol17, ProtocolVersion) > -1)
                 return new Protocol17Handler(Client, ProtocolVersion, Handler);
-            throw new NotSupportedException("The protocol version '" + ProtocolVersion + "' is not supported.");
+            throw new NotSupportedException("The protocol version no." + ProtocolVersion + " is not supported.");
+        }
+
+        /// <summary>
+        /// Convert a human-readable Minecraft version number to network protocol version number
+        /// </summary>
+        /// <param name="MCVersion">The Minecraft version number</param>
+        /// <returns>The protocol version number or 0 if could not determine protocol version: error, unknown, not supported</returns>
+
+        public static int MCVer2ProtocolVersion(string MCVersion)
+        {
+            if (MCVersion.Contains('.'))
+            {
+                switch (MCVersion.Split(' ')[0].Trim())
+                {
+                    case "1.4.6":
+                    case "1.4.7":
+                        return 51;
+                    case "1.5.1":
+                        return 60;
+                    case "1.5.2":
+                        return 61;
+                    case "1.6.0":
+                        return 72;
+                    case "1.6.1":
+                    case "1.6.2":
+                    case "1.6.3":
+                    case "1.6.4":
+                        return 73;
+                    case "1.7.2":
+                    case "1.7.3":
+                    case "1.7.4":
+                    case "1.7.5":
+                        return 4;
+                    case "1.7.6":
+                    case "1.7.7":
+                    case "1.7.8":
+                    case "1.7.9":
+                        return 5;
+                    default:
+                        return 0;
+                }
+            }
+            else
+            {
+                try
+                {
+                    return Int32.Parse(MCVersion);
+                }
+                catch
+                {
+                    return -1;
+                }
+            }
         }
 
         public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium };

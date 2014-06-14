@@ -647,10 +647,11 @@ namespace MinecraftClient.Protocol.Handlers
             return packet_data;
         }
 
-        public static bool doPing(string host, int port, ref int protocolversion, ref string version)
+        public static bool doPing(string host, int port, ref int protocolversion)
         {
             try
             {
+                string version = "";
                 TcpClient tcp = ProxyHandler.newTcpClient(host, port);
                 tcp.ReceiveTimeout = 5000; //MC 1.7.2+ SpigotMC servers won't answer, so we need a reasonable timeout.
                 byte[] ping = new byte[2] { 0xfe, 0x01 };

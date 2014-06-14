@@ -138,9 +138,35 @@ namespace MinecraftClient
                 }
 
                 //Get server version
-                Console.WriteLine("Retrieving Server Info...");
-                int protocolversion = 0; string version = "";
-                if (ProtocolHandler.GetServerInfo(Settings.ServerIP, ref protocolversion, ref version))
+                int protocolversion = 0;
+
+                if (Settings.ServerVersion != "" && Settings.ServerVersion.ToLower() != "auto")
+                {
+                    protocolversion = Protocol.ProtocolHandler.MCVer2ProtocolVersion(Settings.ServerVersion);
+                    if (protocolversion != 0)
+                    {
+                        ConsoleIO.WriteLineFormatted("§8Using Minecraft version " + Settings.ServerVersion + " (protocol v" + protocolversion + ')');
+                    }
+                    else ConsoleIO.WriteLineFormatted("§8Unknown or not supported MC version '" + Settings.ServerVersion + "'.\nSwitching to autodetection mode.");
+                }
+
+                if (protocolversion == 0)
+                {
+                    Console.WriteLine("Retrieving Server Info...");
+                    if (!ProtocolHandler.GetServerInfo(Settings.ServerIP, Settings.ServerPort, ref protocolversion))
+                    {
+                        Console.WriteLine("Failed to ping this IP.");
+                        if (Settings.AutoRelog_Enabled)
+                        {
+                            ChatBots.AutoRelog bot = new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries);
+                            if (!bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Failed to ping this IP.")) { ReadLineReconnect(); }
+                        }
+                        else ReadLineReconnect();
+                        return;
+                    }
+                }
+
+                if (protocolversion != 0)
                 {
                     try
                     {
@@ -159,13 +185,8 @@ namespace MinecraftClient
                 }
                 else
                 {
-                    Console.WriteLine("Failed to ping this IP.");
-                    if (Settings.AutoRelog_Enabled)
-                    {
-                        ChatBots.AutoRelog bot = new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries);
-                        if (!bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Failed to ping this IP.")) { ReadLineReconnect(); }
-                    }
-                    else ReadLineReconnect();
+                    Console.WriteLine("Failed to determine server version.");
+                    ReadLineReconnect();
                 }
             }
             else
