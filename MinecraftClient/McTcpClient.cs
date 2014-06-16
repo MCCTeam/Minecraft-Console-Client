@@ -186,6 +186,7 @@ namespace MinecraftClient
                                     ConsoleIO.WriteLineFormatted("§8" + response_msg);
                                 }
                             }
+                            else SendChatMessage(text);
                         }
                     }
                 }

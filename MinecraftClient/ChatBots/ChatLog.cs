@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace MinecraftClient.ChatBots
 {
@@ -104,9 +105,10 @@ namespace MinecraftClient.ChatBots
                 tosave = "" + D + '-' + M + '-' + Y + ' ' + h + ':' + m + ':' + s + ' ' + tosave;
             }
 
-            System.IO.FileStream stream = new System.IO.FileStream(logfile, System.IO.FileMode.OpenOrCreate);
-            System.IO.StreamWriter writer = new System.IO.StreamWriter(stream);
-            stream.Seek(0, System.IO.SeekOrigin.End);
+            Directory.CreateDirectory(Path.GetDirectoryName(logfile));
+            FileStream stream = new FileStream(logfile, FileMode.OpenOrCreate);
+            StreamWriter writer = new StreamWriter(stream);
+            stream.Seek(0, SeekOrigin.End);
             writer.WriteLine(tosave);
             writer.Dispose();
             stream.Close();
