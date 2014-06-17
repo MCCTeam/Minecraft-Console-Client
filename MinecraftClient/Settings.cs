@@ -41,6 +41,7 @@ namespace MinecraftClient
         public static string Language = "en_GB";
         public static bool chatTimeStamps = false;
         public static bool exitOnFailure = false;
+        public static char internalCmdChar = '/';
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -119,6 +120,7 @@ namespace MinecraftClient
                                     case "scriptscheduler": pMode = ParseMode.ScriptScheduler; break;
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     case "proxy": pMode = ParseMode.Proxy; break;
+                                    case "appvars": pMode = ParseMode.AppVars; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -147,6 +149,15 @@ namespace MinecraftClient
                                                     foreach (string name in argValue.ToLower().Replace(" ", "").Split(','))
                                                         Bots_Owners.Add(name);
                                                     break;
+                                                case "internalcmdchar":
+                                                    switch (argValue.ToLower())
+                                                    {
+                                                        case "none": internalCmdChar = ' '; break;
+                                                        case "slash": internalCmdChar = '/'; break;
+                                                        case "backslash": internalCmdChar = '\\'; break;
+                                                    }
+                                                    break;
+                                                    
                                             }
                                             break;
 
@@ -270,6 +281,7 @@ namespace MinecraftClient
                 + "language=en_GB\r\n"
                 + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
+                + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "exitonfailure=false\r\n"
                 + "timestamps=false\r\n"

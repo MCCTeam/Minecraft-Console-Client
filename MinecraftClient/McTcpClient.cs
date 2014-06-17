@@ -124,7 +124,9 @@ namespace MinecraftClient
                     {
                         foreach (ChatBot bot in scripts_on_hold) { bots.Add(bot); }
                         scripts_on_hold.Clear();
-                        Console.WriteLine("Server was successfully joined.\nType '/quit' to leave the server.");
+                        Console.WriteLine("Server was successfully joined.\nType '"
+                            + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)
+                            + "quit' to leave the server.");
                         StartTalk();
                     }
                 }
@@ -173,17 +175,17 @@ namespace MinecraftClient
                         text = text.Trim();
                         if (text.Length > 0)
                         {
-                            if (text[0] == '/')
+                            if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
                             {
                                 string response_msg = "";
-                                string command = text.Substring(1);
-                                if (!performInternalCommand(Settings.expandVars(command), ref response_msg))
+                                string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
+                                if (!performInternalCommand(Settings.expandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
                                 {
                                     SendChatMessage(text);
                                 }
                                 else if (response_msg.Length > 0)
                                 {
-                                    ConsoleIO.WriteLineFormatted("§8" + response_msg);
+                                    ConsoleIO.WriteLineFormatted("§8MCC: " + response_msg);
                                 }
                             }
                             else SendChatMessage(text);
@@ -235,7 +237,7 @@ namespace MinecraftClient
                 case "set":
                     if (command.Length > 3)
                     {
-                        string[] temp = command.Substring(3).Split('=');
+                        string[] temp = command.Substring(4).Split('=');
                         if (temp.Length > 1)
                         {
                             if (!Settings.setVar(temp[0], command.Substring(temp[0].Length + 5)))
