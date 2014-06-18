@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MinecraftClient.Protocol;
+using System.Reflection;
 
 namespace MinecraftClient
 {
@@ -284,6 +285,19 @@ namespace MinecraftClient
         {
             if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
             Environment.Exit(0);
+        }
+
+        /// <summary>
+        /// Enumerate types in namespace through reflection
+        /// </summary>
+        /// <param name="nameSpace">Namespace to process</param>
+        /// <param name="assembly">Assembly to use. Default is Assembly.GetExecutingAssembly()</param>
+        /// <returns></returns>
+
+        public static Type[] GetTypesInNamespace(string nameSpace, Assembly assembly = null)
+        {
+            if (assembly == null) { assembly = Assembly.GetExecutingAssembly(); }
+            return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
         }
     }
 }

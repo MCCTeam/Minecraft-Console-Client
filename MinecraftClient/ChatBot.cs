@@ -8,7 +8,8 @@ namespace MinecraftClient
     ///
     /// Welcome to the Bot API file !
     /// The virtual class "ChatBot" contains anything you need for creating chat bots
-    /// Inherit from this class while adding your bot class to the folder "Bots".
+    /// Inherit from this class while adding your bot class to the folder "ChatBots".
+    /// Override the methods you want for handling events: Initialize, Update, GetText.
     /// Once your bot is created, read the explanations below to start using it in the MinecraftClient app.
     ///
     /// Pieces of code to add in other parts of the program for your bot. Line numbers are approximative.

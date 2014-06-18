@@ -81,6 +81,14 @@
     <Compile Include="ChatBots\ScriptScheduler.cs" />
     <Compile Include="ChatBots\TestBot.cs" />
     <Compile Include="ChatBot.cs" />
+    <Compile Include="Command.cs" />
+    <Compile Include="Commands\Connect.cs" />
+    <Compile Include="Commands\Exit.cs" />
+    <Compile Include="Commands\Reco.cs" />
+    <Compile Include="Commands\Respawn.cs" />
+    <Compile Include="Commands\Script.cs" />
+    <Compile Include="Commands\Send.cs" />
+    <Compile Include="Commands\Set.cs" />
     <Compile Include="ConsoleIO.cs" />
     <Compile Include="Crypto\Streams\MonoAesStream.cs" />
     <Compile Include="Crypto\Streams\RegularAesStream.cs" />

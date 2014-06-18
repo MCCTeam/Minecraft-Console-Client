@@ -17,6 +17,8 @@ namespace MinecraftClient
 
     public class McTcpClient : IMinecraftComHandler
     {
+        private static List<string> cmd_names = new List<string>();
+        private static Dictionary<string, Command> cmds = new Dictionary<string, Command>();
         private List<ChatBot> bots = new List<ChatBot>();
         private static List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
@@ -206,91 +208,59 @@ namespace MinecraftClient
 
         public bool performInternalCommand(string command, ref string response_msg)
         {
-            response_msg = "";
-            string[] command_args = command.Split(' ');
-            string command_name = command_args[0].ToLower();
-            switch (command_name)
+            /* Load commands from the 'Commands' namespace */
+
+            if (cmds.Count == 0)
             {
-                case "exit":
-                case "quit":
-                    Program.Exit();
-                    break;
-                
-                case "reco":
-                    Program.Restart();
-                    break;
-                
-                case "respawn":
-                    handler.SendRespawnPacket();
-                    response_msg = "You have respawned.";
-                    break;
-
-                case "send":
-                    if (command.Length > 5)
+                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
+                foreach (Type type in cmds_classes)
+                {
+                    if (type.IsSubclassOf(typeof(Command)))
                     {
-                        string text = command.Substring(5);
-                        SendChatMessage(text);
-                    }
-                    else response_msg = "send <text>: send a chat message or command.";
-                    break;
-
-                case "set":
-                    if (command.Length > 3)
-                    {
-                        string[] temp = command.Substring(4).Split('=');
-                        if (temp.Length > 1)
+                        try
                         {
-                            if (!Settings.setVar(temp[0], command.Substring(temp[0].Length + 5)))
-                            {
-                                response_msg = "variable name must be A-Za-z0-9.";
-                            }
+                            Command cmd = (Command)Activator.CreateInstance(type);
+                            cmds[cmd.CMDName.ToLower()] = cmd;
+                            cmd_names.Add(cmd.CMDName.ToLower());
+                            foreach (string alias in cmd.getCMDAliases())
+                                cmds[alias.ToLower()] = cmd;
                         }
-                        else response_msg = "set varname=value: set a custom %variable%.";
-                    }
-                    else response_msg = "set varname=value: set a custom %variable%.";
-                    break;
-
-                case "script":
-                    if (command.Length > 8)
-                    {
-                        BotLoad(new ChatBots.Script(command.Substring(8)));
-                    }
-                    else response_msg = "script <scriptname>: run a script file.";
-                    break;
-
-                case "connect":
-                    if (command_args.Length > 1)
-                    {
-                        Settings.setServerIP(command_args[1]);
-                        Program.Restart();
-                    }
-                    else response_msg = "connect <serverip>: connect to the specified server.";
-                    break;
-
-                case "help":
-                    if (command.Length >= 6)
-                    {
-                        string help_cmd_name = command.Substring(5).ToLower();
-                        switch (help_cmd_name)
+                        catch (Exception e)
                         {
-                            case "quit": response_msg = "quit: disconnect from the server."; break;
-                            case "exit": response_msg = "exit: disconnect from the server."; break;
-                            case "reco": response_msg = "reco: restart and reconnct to the server."; break;
-                            case "respawn": response_msg = "respawn: respawn after death."; break;
-                            case "send": response_msg = "send <text>: send a chat message or command."; break;
-                            case "set": response_msg = "set varname=value: set a custom %variable%."; break;
-                            case "script": response_msg = "script <scriptname>: run a script file."; break;
-                            case "connect": response_msg = "connect <serverip>: connect to the specified server."; break;
-                            case "help": response_msg = "help <cmdname>: show brief help about a command."; break;
-                            default: response_msg = "help: unknown command '" + help_cmd_name + "'."; break;
+                            ConsoleIO.WriteLine(e.Message);
                         }
                     }
-                    else response_msg = "help <cmdname>. Available commands: exit, reco, script, send, connect.";
-                    break;
+                }
+            }
 
-                default:
-                    response_msg = "Unknown command '" + command_name + "'. Use 'help' for help.";
-                    return false;
+            /* Process the provided command */
+
+            string command_name = command.Split(' ')[0].ToLower();
+            if (command_name == "help")
+            {
+                if (Command.hasArg(command))
+                {
+                    string help_cmdname = Command.getArgs(command)[0].ToLower();
+                    if (help_cmdname == "help")
+                    {
+                        response_msg = "help <cmdname>: show brief help about a command.";
+                    }
+                    else if (cmds.ContainsKey(help_cmdname))
+                    {
+                        response_msg = cmds[help_cmdname].CMDDesc;
+                    }
+                    else response_msg = "Unknown command '" + command_name + "'. Use 'help' for command list.";
+                }
+                else response_msg = "help <cmdname>. Available commands: " + String.Join(", ", cmd_names.ToArray());
+            }
+            else if (cmds.ContainsKey(command_name))
+            {
+                response_msg = cmds[command_name].Run(this, command);
+            }
+            else
+            {
+                response_msg = "Unknown command '" + command_name + "'. Use 'help' for help.";
+                return false;
             }
             return true;
         }
@@ -403,6 +373,16 @@ namespace MinecraftClient
                 }
             }
             else return handler.SendChatMessage(text);
+        }
+
+        /// <summary>
+        /// Allow to respawn after death
+        /// </summary>
+        /// <returns>True if packet successfully sent</returns>
+
+        public bool SendRespawnPacket()
+        {
+            return handler.SendRespawnPacket();
         }
     }
 }
