@@ -41,6 +41,7 @@ namespace MinecraftClient
         
         TcpClient client;
         IMinecraftCom handler;
+        Thread cmdprompt;
 
         /// <summary>
         /// Starts the main chat client
@@ -126,10 +127,14 @@ namespace MinecraftClient
                     {
                         foreach (ChatBot bot in scripts_on_hold) { bots.Add(bot); }
                         scripts_on_hold.Clear();
+                        
                         Console.WriteLine("Server was successfully joined.\nType '"
                             + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)
                             + "quit' to leave the server.");
-                        StartTalk();
+                        
+                        cmdprompt = new Thread(new ThreadStart(CommandPrompt));
+                        cmdprompt.Name = "MCC Command prompt";
+                        cmdprompt.Start();
                     }
                 }
             }
@@ -149,7 +154,7 @@ namespace MinecraftClient
         /// Allows the user to send chat messages, commands, and to leave the server.
         /// </summary>
 
-        private void StartTalk()
+        private void CommandPrompt()
         {
             try
             {
@@ -183,14 +188,14 @@ namespace MinecraftClient
                                 string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
                                 if (!performInternalCommand(Settings.expandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
                                 {
-                                    SendChatMessage(text);
+                                    SendText(text);
                                 }
                                 else if (response_msg.Length > 0)
                                 {
                                     ConsoleIO.WriteLineFormatted("§8MCC: " + response_msg);
                                 }
                             }
-                            else SendChatMessage(text);
+                            else SendText(text);
                         }
                     }
                 }
@@ -199,7 +204,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Perform an internal MCC command (not a server command, use SendChatMessage() instead for that!)
+        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command</param>
         /// <param name="interactive_mode">Set to true if command was sent by the user using the command prompt</param>
@@ -277,6 +282,10 @@ namespace MinecraftClient
 
             handler.Disconnect();
             handler.Dispose();
+
+            if (cmdprompt != null)
+                cmdprompt.Abort();
+
             Thread.Sleep(1000);
 
             if (client != null) { client.Close(); }
@@ -351,7 +360,7 @@ namespace MinecraftClient
         /// <param name="text">Text to send to the server</param>
         /// <returns>True if the text was sent with no error</returns>
 
-        public bool SendChatMessage(string text)
+        public bool SendText(string text)
         {
             if (text.Length > 100) //Message is too long?
             {

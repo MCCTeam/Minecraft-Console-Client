@@ -81,7 +81,7 @@ namespace MinecraftClient
         protected bool SendText(string text)
         {
             ConsoleIO.WriteLineFormatted("§8BOT:" + text, false);
-            return handler.SendChatMessage(text);
+            return handler.SendText(text);
         }
 
         /// <summary>

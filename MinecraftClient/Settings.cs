@@ -84,8 +84,9 @@ namespace MinecraftClient
         //Remote Control
         public static bool RemoteCtrl_Enabled = false;
 
-        //Custom app variables
+        //Custom app variables and Minecraft accounts
         private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
+        private static Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
 
         private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
 
@@ -157,7 +158,19 @@ namespace MinecraftClient
                                                         case "backslash": internalCmdChar = '\\'; break;
                                                     }
                                                     break;
-                                                    
+                                                case "accountsfile":
+                                                    if (File.Exists(argValue))
+                                                    {
+                                                        foreach (string account_line in File.ReadAllLines(argValue))
+                                                        {
+                                                            //Each line contains account data: 'Alias,Login,Password'
+                                                            string[] account_data = account_line.Split('#')[0].Trim().Split(',');
+                                                            if (account_data.Length == 3)
+                                                                Accounts[account_data[0].ToLower()]
+                                                                    = new KeyValuePair<string, string>(account_data[1], account_data[2]);
+                                                        }
+                                                    }
+                                                    break;
                                             }
                                             break;
 
@@ -283,13 +296,14 @@ namespace MinecraftClient
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
+                + "accountsfile=accounts.txt\r\n"
                 + "exitonfailure=false\r\n"
                 + "timestamps=false\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
                 + "#yourvar=yourvalue\r\n"
-                + "#can be used in other fields as %yourvar%\r\n"
-                + "#%username% and %serverip% are reserved variable names.\r\n"
+                + "#can be used in some other fields as %yourvar%\r\n"
+                + "#%username% and %serverip% are reserved variables.\r\n"
                 + "\r\n"
                 + "[Proxy]\r\n"
                 + "enabled=false\r\n"
@@ -342,25 +356,50 @@ namespace MinecraftClient
         public static bool str2bool(string str) { return str == "true" || str == "1"; }
 
         /// <summary>
+        /// Load login/password using an account alias
+        /// </summary>
+        /// <returns>True if the account was found and loaded</returns>
+
+        public static bool setAccount(string accountAlias)
+        {
+            accountAlias = accountAlias.ToLower();
+            if (Accounts.ContainsKey(accountAlias))
+            {
+                Settings.Login = Accounts[accountAlias].Key;
+                Settings.Password = Accounts[accountAlias].Value;
+                return true;
+            }
+            else return false;
+        }
+
+        /// <summary>
         /// Parse a "serverip:port" couple and store the values in ServerIP and ServerPort variables
         /// </summary>
+        /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
 
-        public static void setServerIP(string serverIP)
+        public static bool setServerIP(string serverIP)
         {
             string[] sip = serverIP.Split(':');
-            ServerIP = sip[0];
-            if (sip.Length == 1)
-            {
-                ServerPort = 25565;
-            }
-            else
+            string host = sip[0];
+            short port = 25565;
+            
+            if (sip.Length > 1)
             {
                 try
                 {
-                    ServerPort = Convert.ToInt16(sip[1]);
+                    port = Convert.ToInt16(sip[1]);
                 }
-                catch (FormatException) { ServerPort = 25565; }
+                catch (FormatException) { return false; }
             }
+
+            if (host == "localhost" || host.Contains('.'))
+            {
+                ServerIP = host;
+                ServerPort = port;
+                return true;
+            }
+            
+            return false;
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace MinecraftClient.Commands
         {
             if (hasArg(command))
             {
-                handler.SendChatMessage(getArg(command));
+                handler.SendText(getArg(command));
                 return "";
             }
             else return CMDDesc;
