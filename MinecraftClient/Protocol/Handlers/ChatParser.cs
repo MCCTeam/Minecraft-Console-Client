@@ -100,7 +100,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (!System.IO.Directory.Exists("lang"))
                 System.IO.Directory.CreateDirectory("lang");
 
-            string Language_File = "lang\\" + Settings.Language + ".lang";
+            string Language_File = "lang" + (Program.isUsingMono ? '/' : '\\') + Settings.Language + ".lang";
 
             //File not found? Try downloading language file from Mojang's servers?
             if (!System.IO.File.Exists(Language_File))

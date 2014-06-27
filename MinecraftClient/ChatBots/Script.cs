@@ -33,15 +33,16 @@ namespace MinecraftClient.ChatBots
         public static bool lookForScript(ref string filename)
         {
             //Automatically look in subfolders and try to add ".txt" file extension
+            char dir_slash = Program.isUsingMono ? '/' : '\\';
             string[] files = new string[]
-                {
-                    filename,
-                    filename + ".txt",
-                    "scripts\\" + filename,
-                    "scripts\\" + filename + ".txt",
-                    "config\\" + filename,
-                    "config\\" + filename + ".txt",
-                };
+            {
+                filename,
+                filename + ".txt",
+                "scripts" + dir_slash + filename,
+                "scripts" + dir_slash + filename + ".txt",
+                "config" + dir_slash + filename,
+                "config" + dir_slash + filename + ".txt",
+            };
 
             foreach (string possible_file in files)
             {
