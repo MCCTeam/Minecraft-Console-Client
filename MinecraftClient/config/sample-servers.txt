@@ -1,0 +1,18 @@
+﻿# Minecraft Console Client
+# Server list file
+
+# Put server data as comma separated values
+# Values are: Alias,ServerIP:Port
+# Aliases cannot contains dots or spaces
+# The name "localhost" cannot be used as an alias
+# It allows an easier and faster server switching
+# with short aliases instead of full server IP
+# It also adds a bit of privacy for remote control
+
+# Usage examples:
+# /tell <mybot> connect Server1
+# /connect Server2
+
+Server1,localhost
+Server2,mc.awesomeserver.com:25567
+Server3,192.168.1.27:1348 # Example of LAN server

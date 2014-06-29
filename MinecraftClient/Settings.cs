@@ -87,6 +87,7 @@ namespace MinecraftClient
         //Custom app variables and Minecraft accounts
         private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
         private static Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
+        private static Dictionary<string, KeyValuePair<string, short>> Servers = new Dictionary<string, KeyValuePair<string, short>>();
 
         private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
 
@@ -145,11 +146,13 @@ namespace MinecraftClient
                                                 case "timestamps": chatTimeStamps = str2bool(argValue); break;
                                                 case "exitonfailure": exitOnFailure = str2bool(argValue); break;
                                                 case "mcversion": ServerVersion = argValue; break;
+
                                                 case "botowners":
                                                     Bots_Owners.Clear();
                                                     foreach (string name in argValue.ToLower().Replace(" ", "").Split(','))
                                                         Bots_Owners.Add(name);
                                                     break;
+
                                                 case "internalcmdchar":
                                                     switch (argValue.ToLower())
                                                     {
@@ -158,7 +161,8 @@ namespace MinecraftClient
                                                         case "backslash": internalCmdChar = '\\'; break;
                                                     }
                                                     break;
-                                                case "accountsfile":
+
+                                                case "accountlist":
                                                     if (File.Exists(argValue))
                                                     {
                                                         foreach (string account_line in File.ReadAllLines(argValue))
@@ -169,6 +173,31 @@ namespace MinecraftClient
                                                                 Accounts[account_data[0].ToLower()]
                                                                     = new KeyValuePair<string, string>(account_data[1], account_data[2]);
                                                         }
+                                                    }
+                                                    break;
+
+                                                case "serverlist":
+                                                    if (File.Exists(argValue))
+                                                    {
+                                                        //Backup current server info
+                                                        string server_host_temp = ServerIP;
+                                                        short server_port_temp = ServerPort;
+
+                                                        foreach (string server_line in File.ReadAllLines(argValue))
+                                                        {
+                                                            //Each line contains server data: 'Alias,Host:Port'
+                                                            string[] server_data = server_line.Split('#')[0].Trim().Split(',');
+                                                            if (server_data.Length == 2
+                                                                && server_data[0] != "localhost"
+                                                                && !server_data[0].Contains('.')
+                                                                && setServerIP(server_data[1]))
+                                                                Servers[server_data[0].ToLower()]
+                                                                    = new KeyValuePair<string, short>(ServerIP, ServerPort);
+                                                        }
+                                                        
+                                                        //Restore current server info
+                                                        ServerIP = server_host_temp;
+                                                        ServerPort = server_port_temp;
                                                     }
                                                     break;
                                             }
@@ -296,7 +325,8 @@ namespace MinecraftClient
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
-                + "accountsfile=accounts.txt\r\n"
+                + "accountlist=accounts.txt\r\n"
+                + "serverlist=servers.txt\r\n"
                 + "exitonfailure=false\r\n"
                 + "timestamps=false\r\n"
                 + "\r\n"
@@ -373,13 +403,13 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Parse a "serverip:port" couple and store the values in ServerIP and ServerPort variables
+        /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
         /// </summary>
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
 
-        public static bool setServerIP(string serverIP)
+        public static bool setServerIP(string server)
         {
-            string[] sip = serverIP.Split(':');
+            string[] sip = server.Split(':');
             string host = sip[0];
             short port = 25565;
             
@@ -397,6 +427,11 @@ namespace MinecraftClient
                 ServerIP = host;
                 ServerPort = port;
                 return true;
+            }
+            else if (Servers.ContainsKey(server))
+            {
+                ServerIP = Servers[server].Key;
+                ServerPort = Servers[server].Value;
             }
             
             return false;
