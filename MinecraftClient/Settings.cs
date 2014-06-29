@@ -187,11 +187,12 @@ namespace MinecraftClient
                                                         {
                                                             //Each line contains server data: 'Alias,Host:Port'
                                                             string[] server_data = server_line.Split('#')[0].Trim().Split(',');
+                                                            server_data[0] = server_data[0].ToLower();
                                                             if (server_data.Length == 2
                                                                 && server_data[0] != "localhost"
                                                                 && !server_data[0].Contains('.')
                                                                 && setServerIP(server_data[1]))
-                                                                Servers[server_data[0].ToLower()]
+                                                                Servers[server_data[0]]
                                                                     = new KeyValuePair<string, short>(ServerIP, ServerPort);
                                                         }
                                                         
