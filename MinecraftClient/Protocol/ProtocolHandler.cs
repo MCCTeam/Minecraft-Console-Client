@@ -176,11 +176,11 @@ namespace MinecraftClient.Protocol
             catch (System.Security.Authentication.AuthenticationException)
             {
                 return LoginResult.SSLError;
-            }/*
+            }
             catch
             {
                 return LoginResult.OtherError;
-            }*/
+            }
         }
 
         /// <summary>

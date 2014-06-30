@@ -42,6 +42,7 @@ namespace MinecraftClient
         public static bool chatTimeStamps = false;
         public static bool exitOnFailure = false;
         public static char internalCmdChar = '/';
+        public static bool playerHeadAsIcon = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -328,6 +329,7 @@ namespace MinecraftClient
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
+                + "playerheadicon=true\r\n"
                 + "exitonfailure=false\r\n"
                 + "timestamps=false\r\n"
                 + "\r\n"

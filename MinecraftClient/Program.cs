@@ -127,11 +127,13 @@ namespace MinecraftClient
             if (result == ProtocolHandler.LoginResult.Success)
             {
                 if (Settings.ConsoleTitle != "")
-                {
                     Console.Title = Settings.expandVars(Settings.ConsoleTitle);
-                }
-
+                
+                if (Settings.playerHeadAsIcon)
+                    ConsoleIcon.setPlayerIconAsync(Settings.Username);
+                
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
+                
                 if (Settings.ServerIP == "")
                 {
                     Console.Write("Server IP : ");
