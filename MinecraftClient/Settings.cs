@@ -146,6 +146,7 @@ namespace MinecraftClient
                                                 case "consoletitle": ConsoleTitle = argValue; break;
                                                 case "timestamps": chatTimeStamps = str2bool(argValue); break;
                                                 case "exitonfailure": exitOnFailure = str2bool(argValue); break;
+                                                case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
                                                 case "mcversion": ServerVersion = argValue; break;
 
                                                 case "botowners":
