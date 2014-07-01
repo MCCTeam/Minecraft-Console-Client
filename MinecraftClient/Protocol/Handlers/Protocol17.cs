@@ -422,6 +422,7 @@ namespace MinecraftClient.Protocol.Handlers
                 return true;
             }
             catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
         }
 
         /// <summary>

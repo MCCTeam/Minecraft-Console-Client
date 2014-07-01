@@ -72,7 +72,7 @@ namespace MinecraftClient.ChatBots
                             Console.ForegroundColor = ConsoleColor.White;
 
                             //Will be used for text displaying
-                            string[] temp = comp.Split(alert.Split(','), StringSplitOptions.RemoveEmptyEntries);
+                            string[] temp = comp.Split(alert.Split(','), StringSplitOptions.None);
                             int p = 0;
 
                             //Special case : alert in the beginning of the text
