@@ -239,21 +239,24 @@ namespace MinecraftClient
         /// <summary>
         /// Pause the program, usually when an error or a kick occured, letting the user press Enter to quit OR type /reconnect
         /// </summary>
-        /// <returns>Return True if the user typed "/reconnect"</returns>
 
-        public static bool ReadLineReconnect()
+        public static void ReadLineReconnect()
         {
             if (!Settings.exitOnFailure)
             {
-                string text = Console.ReadLine();
-                if (text == "reco" || text == "reconnect" || text == "/reco" || text == "/reconnect")
+                string text = Console.ReadLine().Trim();
+                if (text.Length > 0 && (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar))
                 {
-                    Program.Restart();
-                    return true;
+                    if (Settings.internalCmdChar != ' ')
+                        text = text.Substring(1);
+
+                    if (text.StartsWith("reco"))
+                        new Commands.Reco().Run(null, Settings.expandVars(text));
+
+                    if (text.StartsWith("connect"))
+                        new Commands.Connect().Run(null, Settings.expandVars(text));
                 }
-                else return false;
             }
-            else return false;
         }
 
         /// <summary>
