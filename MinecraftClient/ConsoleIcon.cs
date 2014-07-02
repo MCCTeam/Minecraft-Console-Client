@@ -7,6 +7,7 @@ using System.Threading;
 using System.Net;
 using System.IO;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace MinecraftClient
 {
@@ -41,7 +42,10 @@ namespace MinecraftClient
                             SetConsoleIcon(skin.GetHicon()); //Set skin as icon
                         }
                     }
-                    catch (WebException) { } //Skin not found
+                    catch (WebException) //Skin not found? Reset to default icon
+                    {
+                        SetConsoleIcon(Icon.ExtractAssociatedIcon(Application.ExecutablePath).Handle);
+                    }
                 }
             }
             ));
