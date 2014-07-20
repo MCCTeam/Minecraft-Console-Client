@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace MinecraftClient
 {
@@ -70,6 +71,7 @@ namespace MinecraftClient
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
+        /*  All the methods in this ChatBot class should do the job for you.   */
         /* =================================================================== */
 
         /// <summary>
@@ -80,7 +82,7 @@ namespace MinecraftClient
 
         protected bool SendText(string text)
         {
-            ConsoleIO.WriteLineFormatted("§8BOT:" + text, false);
+            LogToConsole("Sending '" + text + "'");
             return handler.SendText(text);
         }
 
@@ -257,6 +259,19 @@ namespace MinecraftClient
         public static void LogToConsole(string text)
         {
             ConsoleIO.WriteLineFormatted("§8[BOT] " + text);
+
+            if (String.IsNullOrEmpty(Settings.chatbotLogFile))
+            {
+                if (!File.Exists(Settings.chatbotLogFile))
+                {
+                    try { Directory.CreateDirectory(Path.GetDirectoryName(Settings.chatbotLogFile)); }
+                    catch { return; /* Invalid path or access denied */ }
+                    try { File.WriteAllText(Settings.chatbotLogFile, ""); }
+                    catch { return; /* Invalid file name or access denied */ }
+                }
+
+                File.AppendAllLines(Settings.chatbotLogFile, new string[] { getTimestamp() + ' ' + text });
+            }
         }
 
         /// <summary>
@@ -316,6 +331,25 @@ namespace MinecraftClient
         protected void RunScript(string filename, string playername = "")
         {
             handler.BotLoad(new ChatBots.Script(filename, playername));
+        }
+
+        /// <summary>
+        /// Get a D-M-Y h:m:s timestamp representing the current system date and time
+        /// </summary>
+
+        protected static string getTimestamp()
+        {
+            DateTime time = DateTime.Now;
+
+            string D = time.Day.ToString("00");
+            string M = time.Month.ToString("00");
+            string Y = time.Year.ToString("0000");
+
+            string h = time.Hour.ToString("00");
+            string m = time.Minute.ToString("00");
+            string s = time.Second.ToString("00");
+
+            return "" + D + '-' + M + '-' + Y + ' ' + h + ':' + m + ':' + s;
         }
     }
 }

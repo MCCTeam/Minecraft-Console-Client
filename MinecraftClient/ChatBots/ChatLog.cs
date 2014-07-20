@@ -90,20 +90,7 @@ namespace MinecraftClient.ChatBots
         private void save(string tosave)
         {
             if (dateandtime)
-            {
-                int day = DateTime.Now.Day, month = DateTime.Now.Month;
-                int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
-
-                string D = day < 10 ? "0" + day : "" + day;
-                string M = month < 10 ? "0" + month : "" + day;
-                string Y = "" + DateTime.Now.Year;
-
-                string h = hour < 10 ? "0" + hour : "" + hour;
-                string m = minute < 10 ? "0" + minute : "" + minute;
-                string s = second < 10 ? "0" + second : "" + second;
-
-                tosave = "" + D + '-' + M + '-' + Y + ' ' + h + ':' + m + ':' + s + ' ' + tosave;
-            }
+                tosave = getTimestamp() + ' ' + tosave;
 
             Directory.CreateDirectory(Path.GetDirectoryName(logfile));
             FileStream stream = new FileStream(logfile, FileMode.OpenOrCreate);

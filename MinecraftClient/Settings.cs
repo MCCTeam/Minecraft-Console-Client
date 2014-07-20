@@ -43,6 +43,7 @@ namespace MinecraftClient
         public static bool exitOnFailure = false;
         public static char internalCmdChar = '/';
         public static bool playerHeadAsIcon = false;
+        public static string chatbotLogFile = "";
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -147,6 +148,7 @@ namespace MinecraftClient
                                                 case "timestamps": chatTimeStamps = str2bool(argValue); break;
                                                 case "exitonfailure": exitOnFailure = str2bool(argValue); break;
                                                 case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
+                                                case "chatbotlogfile": chatbotLogFile = argValue; break;
                                                 case "mcversion": ServerVersion = argValue; break;
 
                                                 case "botowners":
@@ -328,6 +330,7 @@ namespace MinecraftClient
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
+                + "chatbotlogfile= #leave empty for no logfile\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"

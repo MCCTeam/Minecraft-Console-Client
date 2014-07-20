@@ -85,6 +85,7 @@
     <Compile Include="Command.cs" />
     <Compile Include="Commands\Connect.cs" />
     <Compile Include="Commands\Exit.cs" />
+    <Compile Include="Commands\Log.cs" />
     <Compile Include="Commands\Reco.cs" />
     <Compile Include="Commands\Respawn.cs" />
     <Compile Include="Commands\Script.cs" />
