@@ -26,6 +26,7 @@ namespace MinecraftClient.Crypto.Streams
             RijndaelManaged aes = GenerateAES(key);
             enc = aes.CreateEncryptor();
             dec = aes.CreateDecryptor();
+            pad = provider;
         }
         public System.IO.Stream BaseStream { get; set; }
 
