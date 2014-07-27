@@ -289,6 +289,7 @@ namespace MinecraftClient
         private static void t_exit()
         {
             if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
+            if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToCMDIcon(); }
             Environment.Exit(0);
         }
 

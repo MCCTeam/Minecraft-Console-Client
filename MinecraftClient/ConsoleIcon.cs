@@ -27,12 +27,11 @@ namespace MinecraftClient
 
         public static void setPlayerIconAsync(string playerName)
         {
-            Thread t = new Thread(new ThreadStart(delegate
+            if (!Program.isUsingMono) //Windows Only
             {
-                if (!Program.isUsingMono) //Windows Only
+                Thread t = new Thread(new ThreadStart(delegate
                 {
                     HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create("http://skins.minecraft.net/MinecraftSkins/" + playerName + ".png");
-
                     try
                     {
                         using (HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse())
@@ -44,13 +43,33 @@ namespace MinecraftClient
                     }
                     catch (WebException) //Skin not found? Reset to default icon
                     {
-                        SetConsoleIcon(Icon.ExtractAssociatedIcon(Application.ExecutablePath).Handle);
+                        try
+                        {
+                            SetConsoleIcon(Icon.ExtractAssociatedIcon(Application.ExecutablePath).Handle);
+                        }
+                        catch { }
                     }
                 }
+                ));
+                t.Name = "Player skin icon setter";
+                t.Start();
             }
-            ));
-            t.Name = "Player skin icon setter";
-            t.Start();
+        }
+
+        /// <summary>
+        /// Set the icon back to the default CMD icon
+        /// </summary>
+
+        public static void revertToCMDIcon()
+        {
+            if (!Program.isUsingMono) //Windows Only
+            {
+                try
+                {
+                    SetConsoleIcon(Icon.ExtractAssociatedIcon(Environment.SystemDirectory + "\\cmd.exe").Handle);
+                }
+                catch { }
+            }
         }
     }
 }
