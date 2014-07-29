@@ -182,8 +182,10 @@ namespace MinecraftClient
 
                 //Detect Essentials (Bukkit) /m messages
                 //[Someone -> me] message
-                else if (text[0] == '[' && tmp.Length > 3 && tmp[1] == "->"
-                        && (tmp[2] == "me]" || tmp[2] == "moi]")) //'me' is replaced by 'moi' in french servers
+                //[Someone [rank] -> me] message
+                else if (text[0] == '[' && tmp.Length > 3 && (tmp[1] == "->" || tmp[2] == "->")
+                        && ((tmp[2] == "me]" || tmp[2] == "moi]")
+                         || (tmp[3] == "me]" || tmp[3] == "moi]"))) //'me' is replaced by 'moi' in french servers
                 {
                     message = text.Substring(tmp[0].Length + 4 + tmp[2].Length + 1);
                     sender = tmp[0].Substring(1);
