@@ -18,8 +18,11 @@ namespace MinecraftClient.ChatBots
             public bool triggerOnFirstLogin = false;
             public bool triggerOnLogin = false;
             public bool triggerOnTime = false;
+            public bool triggerOnInterval = false;
+            public int triggerOnInterval_Interval = 0;
+            public int triggerOnInterval_Interval_Countdown = 0;
             public List<DateTime> triggerOnTime_Times = new List<DateTime>();
-            public bool alreadyTriggered = false;
+            public bool triggerOnTime_alreadyTriggered = false;
         }
 
         private static bool firstlogin_done = false;
@@ -69,8 +72,9 @@ namespace MinecraftClient.ChatBots
                                     case "triggeronfirstlogin": current_task.triggerOnFirstLogin = Settings.str2bool(argValue); break;
                                     case "triggeronlogin": current_task.triggerOnLogin = Settings.str2bool(argValue); break;
                                     case "triggerontime": current_task.triggerOnTime = Settings.str2bool(argValue); break;
-                                    case "timevalue": try { current_task.triggerOnTime_Times.Add(DateTime.ParseExact(argValue, "HH:mm", CultureInfo.InvariantCulture)); }
-                                        catch { } break;
+                                    case "triggeroninterval": current_task.triggerOnInterval = Settings.str2bool(argValue); break;
+                                    case "timevalue": try { current_task.triggerOnTime_Times.Add(DateTime.ParseExact(argValue, "HH:mm", CultureInfo.InvariantCulture)); } catch { } break;
+                                    case "timeinterval": int interval = 1; int.TryParse(argValue, out interval); current_task.triggerOnInterval_Interval = interval; break;
                                     case "script": current_task.script_file = argValue; break;
                                 }
                             }
@@ -92,8 +96,11 @@ namespace MinecraftClient.ChatBots
             {
                 //Check if we built a valid task before adding it
                 if (current_task.script_file != null && Script.lookForScript(ref current_task.script_file) //Check if file exists
-                    && (current_task.triggerOnLogin || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0))) //Look for a valid trigger
+                    && (current_task.triggerOnLogin
+                    || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0))
+                    || (current_task.triggerOnInterval && current_task.triggerOnInterval_Interval > 0)) //Look for a valid trigger
                 {
+                    current_task.triggerOnInterval_Interval_Countdown = current_task.triggerOnInterval_Interval; //Init countdown for interval
                     tasks.Add(current_task);
                 }
             }
@@ -110,19 +117,34 @@ namespace MinecraftClient.ChatBots
                     {
                         if (task.triggerOnTime)
                         {
+                            bool matching_time_found = false;
+                            
                             foreach (DateTime time in task.triggerOnTime_Times)
                             {
                                 if (time.Hour == DateTime.Now.Hour && time.Minute == DateTime.Now.Minute)
                                 {
-                                    if (!task.alreadyTriggered)
+                                    matching_time_found = true;
+                                    if (!task.triggerOnTime_alreadyTriggered)
                                     {
-                                        task.alreadyTriggered = true;
+                                        task.triggerOnTime_alreadyTriggered = true;
                                         RunScript(task.script_file);
                                     }
                                 }
                             }
+
+                            if (!matching_time_found)
+                                task.triggerOnTime_alreadyTriggered = false;
                         }
-                        else task.alreadyTriggered = false;
+
+                        if (task.triggerOnInterval)
+                        {
+                            if (task.triggerOnInterval_Interval_Countdown == 0)
+                            {
+                                task.triggerOnInterval_Interval_Countdown = task.triggerOnInterval_Interval;
+                                RunScript(task.script_file);
+                            }
+                            else task.triggerOnInterval_Interval_Countdown--;
+                        }
                     }
                 }
                 else
