@@ -44,9 +44,20 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void Updater()
         {
+            int keep_alive_interval = 100;
+            int keep_alive_timer = 100;
             try
             {
-                do { Thread.Sleep(100); }
+                do
+                {
+                    Thread.Sleep(100);
+                    keep_alive_timer--;
+                    if (keep_alive_timer <= 0)
+                    {
+                        Send(getPaddingPacket());
+                        keep_alive_timer = keep_alive_interval;
+                    }
+                }
                 while (Update());
             }
             catch (System.IO.IOException) { }
