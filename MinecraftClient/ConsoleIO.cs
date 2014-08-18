@@ -159,7 +159,7 @@ namespace MinecraftClient
                                 if (tmp.Length > 0)
                                 {
                                     string word_tocomplete = tmp[tmp.Length - 1];
-                                    string word_autocomplete = autocomplete_engine.AutoComplete(word_tocomplete);
+                                    string word_autocomplete = autocomplete_engine.AutoComplete(buffer);
                                     if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
                                     {
                                         while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
