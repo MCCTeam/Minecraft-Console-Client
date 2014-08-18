@@ -264,7 +264,7 @@ namespace MinecraftClient
             }
             else
             {
-                response_msg = "Unknown command '" + command_name + "'. Use 'help' for help.";
+                response_msg = "Unknown command '" + command_name + "'. Use '" + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + "help' for help.";
                 return false;
             }
             return true;
@@ -332,7 +332,7 @@ namespace MinecraftClient
             foreach (ChatBot bot in bots)
                 will_restart |= bot.OnDisconnect(reason, message);
 
-            if (!will_restart) { Program.ReadLineReconnect(); }
+            if (!will_restart) { Program.OfflineCommandPrompt(); }
         }
 
         /// <summary>

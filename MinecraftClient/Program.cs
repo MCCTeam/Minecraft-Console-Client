@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MinecraftClient.Protocol;
 using System.Reflection;
+using System.Threading;
 
 namespace MinecraftClient
 {
@@ -25,7 +26,7 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC 1.4.6 to 1.7.9 - v" + Version + " - By ORelio & Contributors");
+            Console.WriteLine("Console Client for MC 1.4.6 to 1.7.10 - v" + Version + " - By ORelio & Contributors");
 
             //Basic Input/Output ?
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
@@ -162,9 +163,9 @@ namespace MinecraftClient
                         if (Settings.AutoRelog_Enabled)
                         {
                             ChatBots.AutoRelog bot = new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries);
-                            if (!bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Failed to ping this IP.")) { ReadLineReconnect(); }
+                            if (!bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Failed to ping this IP.")) { OfflineCommandPrompt(); }
                         }
-                        else ReadLineReconnect();
+                        else OfflineCommandPrompt();
                         return;
                     }
                 }
@@ -183,13 +184,13 @@ namespace MinecraftClient
                     catch (NotSupportedException)
                     {
                         Console.WriteLine("Cannot connect to the server : This version is not supported !");
-                        ReadLineReconnect();
+                        OfflineCommandPrompt();
                     }
                 }
                 else
                 {
                     Console.WriteLine("Failed to determine server version.");
-                    ReadLineReconnect();
+                    OfflineCommandPrompt();
                 }
             }
             else
@@ -214,7 +215,7 @@ namespace MinecraftClient
                         break;
                 }
                 while (Console.KeyAvailable) { Console.ReadKey(false); }
-                if (Settings.SingleCommand == "") { ReadLineReconnect(); }
+                if (Settings.SingleCommand == "") { OfflineCommandPrompt(); }
             }
         }
 
@@ -224,7 +225,13 @@ namespace MinecraftClient
 
         public static void Restart()
         {
-            new System.Threading.Thread(new System.Threading.ThreadStart(t_restart)).Start();
+            new Thread(new ThreadStart(delegate
+            {
+                if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                Console.WriteLine("Restarting Minecraft Console Client...");
+                InitializeClient();
+            })).Start();
         }
 
         /// <summary>
@@ -233,29 +240,63 @@ namespace MinecraftClient
 
         public static void Exit()
         {
-            new System.Threading.Thread(new System.Threading.ThreadStart(t_exit)).Start();
+            new Thread(new ThreadStart(delegate
+            {
+                if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToCMDIcon(); }
+                Environment.Exit(0);
+            })).Start();
         }
 
         /// <summary>
         /// Pause the program, usually when an error or a kick occured, letting the user press Enter to quit OR type /reconnect
         /// </summary>
 
-        public static void ReadLineReconnect()
+        public static void OfflineCommandPrompt()
         {
-            if (!Settings.exitOnFailure)
+            if (!Settings.exitOnFailure && offlinePrompt == null)
             {
-                string text = Console.ReadLine().Trim();
-                if (text.Length > 0 && (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar))
+                offlinePrompt = new Thread(new ThreadStart(delegate
                 {
-                    if (Settings.internalCmdChar != ' ')
-                        text = text.Substring(1);
-
-                    if (text.StartsWith("reco"))
-                        new Commands.Reco().Run(null, Settings.expandVars(text));
-
-                    if (text.StartsWith("connect"))
-                        new Commands.Connect().Run(null, Settings.expandVars(text));
-                }
+                    string command = " ";
+                    ConsoleIO.WriteLineFormatted("Not connected to any server. Use '" + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + "help' for help.");
+                    ConsoleIO.WriteLineFormatted("Or press Enter to exit Minecraft Console Client.");
+                    while (command.Length > 0)
+                    {
+                        if (!ConsoleIO.basicIO) { ConsoleIO.Write('>'); }
+                        command = Console.ReadLine().Trim();
+                        if (command.Length > 0)
+                        {
+                            if (Settings.internalCmdChar != ' ' && command[0] == Settings.internalCmdChar)
+                            {
+                                string message = "";
+                                command = command.Substring(1);
+                                if (command.StartsWith("reco"))
+                                {
+                                    message = new Commands.Reco().Run(null, Settings.expandVars(command));
+                                }
+                                else if (command.StartsWith("connect"))
+                                {
+                                    message = new Commands.Connect().Run(null, Settings.expandVars(command));
+                                }
+                                else if (command.StartsWith("exit") || command.StartsWith("quit"))
+                                {
+                                    message = new Commands.Exit().Run(null, Settings.expandVars(command));
+                                }
+                                else if (command.StartsWith("help"))
+                                {
+                                    ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Reco().CMDDesc);
+                                    ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Connect().CMDDesc);
+                                }
+                                else ConsoleIO.WriteLineFormatted("§8Unknown command '" + command.Split(' ')[0] + "'.");
+                                if (message != "") { ConsoleIO.WriteLineFormatted("§8MCC: " + message); }
+                            }
+                            else ConsoleIO.WriteLineFormatted("§8Please type a command or press Enter to exit.");
+                        }
+                    }
+                }));
+                offlinePrompt.Start();
             }
         }
 
@@ -269,28 +310,6 @@ namespace MinecraftClient
             {
                 return Type.GetType("Mono.Runtime") != null;
             }
-        }
-
-        /// <summary>
-        /// Private thread for restarting the program. Called through Restart()
-        /// </summary>
-
-        private static void t_restart()
-        {
-            if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
-            Console.WriteLine("Restarting Minecraft Console Client...");
-            InitializeClient();
-        }
-
-        /// <summary>
-        /// Private thread for exiting the program. Called through Exit()
-        /// </summary>
-
-        private static void t_exit()
-        {
-            if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
-            if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToCMDIcon(); }
-            Environment.Exit(0);
         }
 
         /// <summary>
