@@ -1,13 +1,8 @@
 # This is a sample script for Minecraft Console Client
 # Any line beginning with "#" is ignored and treated as a comment.
-# Allowed instructions: send, wait, disconnect, exit
-#  send <text> : send a message or a command to the server
-#  wait <time> : wait X ticks (10 ticks = 1 second)
-#  connect <serverip> : go to the given server and resume the script
-#  disconnect : disconnect from the server and exit the client
-#  exit : exit this script but stay connected to the server
+# Allowed instructions: see README file for an updated list of instructions.
 
 send Hello World! I'm a bot scripted using Minecraft Console Client.
 wait 60
 send Now quitting. Bye :)
-disconnect
+exit

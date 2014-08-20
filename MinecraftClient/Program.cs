@@ -14,11 +14,12 @@ namespace MinecraftClient
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
 
-    class Program
+    static class Program
     {
         private static McTcpClient Client;
         public static string[] startupargs;
-        public const string Version = "1.8.0-Indev";
+        public const string Version = "1.8.0 Beta";
+        private static Thread offlinePrompt = null;
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
