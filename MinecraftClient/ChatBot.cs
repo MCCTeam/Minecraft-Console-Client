@@ -274,7 +274,7 @@ namespace MinecraftClient
         {
             ConsoleIO.WriteLineFormatted("§8[BOT] " + text);
 
-            if (String.IsNullOrEmpty(Settings.chatbotLogFile))
+            if (!String.IsNullOrEmpty(Settings.chatbotLogFile))
             {
                 if (!File.Exists(Settings.chatbotLogFile))
                 {
