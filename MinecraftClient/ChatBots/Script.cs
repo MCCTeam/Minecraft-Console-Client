@@ -106,7 +106,7 @@ namespace MinecraftClient.ChatBots
                                     {
                                         sleepticks = 0; Update(); //Unknown command : process next line immediately
                                     }
-                                    else LogToConsole(instruction_line);
+                                    else if (instruction_name.ToLower() != "log") { LogToConsole(instruction_line); }
                                     break;
                             }
                         }
