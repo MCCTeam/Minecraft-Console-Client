@@ -283,8 +283,19 @@ namespace MinecraftClient
                                                     else if (argValue == "socks4a"){ proxyType = Proxy.ProxyHandler.Type.SOCKS4a;}
                                                     else if (argValue == "socks5") { proxyType = Proxy.ProxyHandler.Type.SOCKS5; }
                                                     break;
-                                                case "host": ProxyHost = argValue; break;
-                                                case "port": ProxyPort = str2int(argValue); break;
+                                                case "server":
+                                                    string[] host_splitted = argValue.Split(':');
+                                                    if (host_splitted.Length == 1)
+                                                    {
+                                                        ProxyHost = host_splitted[0];
+                                                        ProxyPort = 80;
+                                                    }
+                                                    else if (host_splitted.Length == 2)
+                                                    {
+                                                        ProxyHost = host_splitted[0];
+                                                        ProxyPort = str2int(host_splitted[1]);
+                                                    }
+                                                    break;
                                                 case "username": ProxyUsername = argValue; break;
                                                 case "password": ProxyPassword = argValue; break;
                                             }
@@ -345,8 +356,7 @@ namespace MinecraftClient
                 + "[Proxy]\r\n"
                 + "enabled=false\r\n"
                 + "type=HTTP #Supported types: HTTP, SOCKS4, SOCKS4a, SOCKS5\r\n"
-                + "host=0.0.0.0\r\n"
-                + "port=8080\r\n"
+                + "server=0.0.0.0:0000\r\n"
                 + "username=\r\n"
                 + "password=\r\n"
                 + "\r\n"
