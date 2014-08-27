@@ -57,7 +57,7 @@ In scripts and remote control, no slash is needed to perform the command.
  - connect <server> [account] : go to the given server and resume the script
  - script <script name> : run a script containing a list of commands
  - send <text> : send a message or a command to the server
- - respawn : allows to respawn after death
+ - respawn : Use this to respawn if you are dead (like clicking "respawn" ingame)
  - log <text> : display some text in the console (useful for scripts)
  - set varname=value : set a value which can be used as %varname% in further commands
  - wait <time> : wait <time> : wait X ticks (10 ticks = ~1 second. Only for scripts)
