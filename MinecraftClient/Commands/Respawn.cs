@@ -8,7 +8,7 @@ namespace MinecraftClient.Commands
     public class Respawn : Command
     {
         public override string CMDName { get { return "respawn"; } }
-        public override string CMDDesc { get { return "respawn: respawn after death."; } }
+        public override string CMDDesc { get { return "respawn: Use this to respawn if you are dead."; } }
 
         public override string Run(McTcpClient handler, string command)
         {
