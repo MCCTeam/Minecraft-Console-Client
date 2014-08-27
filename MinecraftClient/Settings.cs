@@ -439,6 +439,7 @@ namespace MinecraftClient
             {
                 ServerIP = Servers[server].Key;
                 ServerPort = Servers[server].Value;
+                return true;
             }
             
             return false;
