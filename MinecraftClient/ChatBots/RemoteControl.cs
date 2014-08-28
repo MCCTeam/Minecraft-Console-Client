@@ -24,7 +24,7 @@ namespace MinecraftClient.ChatBots
                     SendPrivateMessage(sender, response);
                 }
             }
-            else if (isTeleportRequest(text, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower()))
+            else if (Settings.RemoteCtrl_AutoTpaccept && isTeleportRequest(text, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower()))
             {
                 SendText("/tpaccept");
             }

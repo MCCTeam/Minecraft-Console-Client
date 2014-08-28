@@ -85,6 +85,7 @@ namespace MinecraftClient
 
         //Remote Control
         public static bool RemoteCtrl_Enabled = false;
+        public static bool RemoteCtrl_AutoTpaccept = true;
 
         //Custom app variables and Minecraft accounts
         private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
@@ -269,6 +270,7 @@ namespace MinecraftClient
                                             switch (argName.ToLower())
                                             {
                                                 case "enabled": RemoteCtrl_Enabled = str2bool(argValue); break;
+                                                case "autotpaccept": RemoteCtrl_AutoTpaccept = str2bool(argValue); break;
                                             }
                                             break;
 
@@ -396,7 +398,8 @@ namespace MinecraftClient
                 + "tasksfile=tasks.ini\r\n"
                 + "\r\n"
                 + "[RemoteControl]\r\n"
-                + "enabled=false\r\n", Encoding.UTF8);
+                + "enabled=false\r\n"
+                + "autotpaccept=true\r\n", Encoding.UTF8);
         }
 
         public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }
