@@ -18,23 +18,23 @@ namespace MinecraftClient.ChatBots
         {
             if (System.IO.File.Exists(Settings.Alerts_MatchesFile))
             {
-                dictionary = System.IO.File.ReadAllLines(Settings.Alerts_MatchesFile);
-
-                for (int i = 0; i < dictionary.Length; i++)
-                {
-                    dictionary[i] = dictionary[i].ToLower();
-                }
+                List<string> tmp_dictionary = new List<string>();
+                string[] file_lines = System.IO.File.ReadAllLines(Settings.Alerts_MatchesFile);
+                foreach (string line in file_lines)
+                    if (line.Trim().Length > 0 && !tmp_dictionary.Contains(line.ToLower()))
+                        tmp_dictionary.Add(line.ToLower());
+                dictionary = tmp_dictionary.ToArray();
             }
             else LogToConsole("File not found: " + Settings.Alerts_MatchesFile);
 
             if (System.IO.File.Exists(Settings.Alerts_ExcludesFile))
             {
-                excludelist = System.IO.File.ReadAllLines(Settings.Alerts_ExcludesFile);
-
-                for (int i = 0; i < excludelist.Length; i++)
-                {
-                    excludelist[i] = excludelist[i].ToLower();
-                }
+                List<string> tmp_excludelist = new List<string>();
+                string[] file_lines = System.IO.File.ReadAllLines(Settings.Alerts_ExcludesFile);
+                foreach (string line in file_lines)
+                    if (line.Trim().Length > 0 && !tmp_excludelist.Contains(line.Trim().ToLower()))
+                        tmp_excludelist.Add(line.ToLower());
+                excludelist = tmp_excludelist.ToArray();
             }
             else LogToConsole("File not found : " + Settings.Alerts_ExcludesFile);
         }
