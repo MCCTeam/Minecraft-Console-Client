@@ -64,6 +64,9 @@ namespace MinecraftClient.Protocol
             int[] supportedVersions_Protocol17 = { 4, 5 };
             if (Array.IndexOf(supportedVersions_Protocol17, ProtocolVersion) > -1)
                 return new Protocol17Handler(Client, ProtocolVersion, Handler);
+            int[] supportedVersions_Protocol18 = { 47 };
+            if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
+                return new Protocol18Handler(Client, ProtocolVersion, Handler);
             throw new NotSupportedException("The protocol version no." + ProtocolVersion + " is not supported.");
         }
 
@@ -104,6 +107,8 @@ namespace MinecraftClient.Protocol
                     case "1.7.9":
                     case "1.7.10":
                         return 5;
+                    case "1.8.0":
+                        return 47;
                     default:
                         return 0;
                 }
