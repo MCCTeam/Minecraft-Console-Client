@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftClient
+namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
     /// This class parses JSON chat data from MC 1.6+ and returns the appropriate string to be printed.
@@ -56,22 +56,23 @@ namespace MinecraftClient
         {
             switch (colorname.ToLower())
             {
-                case "black": return "§0";
-                case "dark_blue": return "§1";
-                case "dark_green": return "§2";
-                case "dark_aqua": return "§3";
-                case "dark_red": return "§4";
-                case "dark_purple": return "§5";
-                case "gold": return "§6";
-                case "gray": return "§7";
-                case "dark_gray": return "§8";
-                case "blue": return "§9";
-                case "green": return "§a";
-                case "aqua": return "§b";
-                case "red": return "§c";
-                case "light_purple": return "§d";
-                case "yellow": return "§e";
-                case "white": return "§f";
+                /* MC 1.7+ Name           MC 1.6 Name           Classic tag */
+                case "black":        /*  Blank if same  */      return "§0";
+                case "dark_blue":                               return "§1";
+                case "dark_green":                              return "§2";
+                case "dark_aqua":       case "dark_cyan":       return "§3";
+                case "dark_red":                                return "§4";
+                case "dark_purple":     case "dark_magenta":    return "§5";
+                case "gold":            case "dark_yellow":     return "§6";
+                case "gray":                                    return "§7";
+                case "dark_gray":                               return "§8";
+                case "blue":                                    return "§9";
+                case "green":                                   return "§a";
+                case "aqua":            case "cyan":            return "§b";
+                case "red":                                     return "§c";
+                case "light_purple":    case "magenta":         return "§d";
+                case "yellow":                                  return "§e";
+                case "white":                                   return "§f";
                 default: return "";
             }
         }
@@ -99,7 +100,7 @@ namespace MinecraftClient
             if (!System.IO.Directory.Exists("lang"))
                 System.IO.Directory.CreateDirectory("lang");
 
-            string Language_File = "lang\\" + Settings.Language + ".lang";
+            string Language_File = "lang" + (Program.isUsingMono ? '/' : '\\') + Settings.Language + ".lang";
 
             //File not found? Try downloading language file from Mojang's servers?
             if (!System.IO.File.Exists(Language_File))
@@ -127,9 +128,7 @@ namespace MinecraftClient
               && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
             {
                 Language_File = Settings.TranslationsFile_FromMCDir;
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Defaulting to en_GB.lang from your Minecraft directory.");
-                Console.ForegroundColor = ConsoleColor.Gray;
+                ConsoleIO.WriteLineFormatted("§8Defaulting to en_GB.lang from your Minecraft directory.");
             }
 
             //Load the external dictionnary of translation rules or display an error message
@@ -148,16 +147,12 @@ namespace MinecraftClient
                     }
                 }
 
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Translations file loaded.");
-                Console.ForegroundColor = ConsoleColor.Gray;
+                ConsoleIO.WriteLineFormatted("§8Translations file loaded.");
             }
             else //No external dictionnary found.
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Translations file not found: \"" + Language_File + "\""
+                ConsoleIO.WriteLineFormatted("§8Translations file not found: \"" + Language_File + "\""
                 + "\nSome messages won't be properly printed without this file.");
-                Console.ForegroundColor = ConsoleColor.Gray;
             }
         }
 

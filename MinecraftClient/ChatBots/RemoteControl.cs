@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace MinecraftClient.ChatBots
+{
+    /// <summary>
+    /// Allow to perform operations using whispers to the bot
+    /// </summary>
+
+    public class RemoteControl : ChatBot
+    {
+        public override void GetText(string text)
+        {
+            text = getVerbatim(text);
+            string command = "", sender = "";
+            if (isPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower()))
+            {
+                string response = "";
+                performInternalCommand(command, ref response);
+                if (response.Length > 0)
+                {
+                    SendPrivateMessage(sender, response);
+                }
+            }
+            else if (Settings.RemoteCtrl_AutoTpaccept && isTeleportRequest(text, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower()))
+            {
+                SendText("/tpaccept");
+            }
+        }
+    }
+}

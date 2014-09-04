@@ -6,50 +6,72 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.Net;
+using MinecraftClient.Protocol;
+using MinecraftClient.Proxy;
 
 namespace MinecraftClient
 {
     /// <summary>
     /// The main client class, used to connect to a Minecraft server.
-    /// It allows message sending and text receiving.
     /// </summary>
 
-    class McTcpClient
+    public class McTcpClient : IMinecraftComHandler
     {
+        private static List<string> cmd_names = new List<string>();
+        private static Dictionary<string, Command> cmds = new Dictionary<string, Command>();
+        private List<ChatBot> bots = new List<ChatBot>();
+        private static List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
+        public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
+        public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
+        public void BotClear() { bots.Clear(); }
+
         public static int AttemptsLeft = 0;
 
-        string host;
-        int port;
-        string username;
-        string text;
-        Thread t_updater;
-        Thread t_sender;
+        private string host;
+        private int port;
+        private string username;
+        private string uuid;
+        private string sessionid;
+
+        public int getServerPort() { return port; }
+        public string getServerHost() { return host; }
+        public string getUsername() { return username; }
+        public string getUserUUID() { return uuid; }
+        public string getSessionID() { return sessionid; }
+        
         TcpClient client;
-        MinecraftCom handler;
+        IMinecraftCom handler;
+        Thread cmdprompt;
 
         /// <summary>
-        /// Starts the main chat client, wich will login to the server using the MinecraftCom class.
+        /// Starts the main chat client
         /// </summary>
         /// <param name="username">The chosen username of a premium Minecraft Account</param>
-        /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
-        /// <param name="server_port">The server IP (serveradress or serveradress:port)</param>
+        /// <param name="uuid">The player's UUID for online-mode authentication</param>
+        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
+        /// <param name="server_ip">The server IP</param>
+        /// <param name="port">The server port to use</param>
+        /// <param name="protocolversion">Minecraft protocol version to use</param>
 
-        public McTcpClient(string username, string uuid, string sessionID, string server_port, MinecraftCom handler)
+        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, string server_ip, short port)
         {
-            StartClient(username, uuid, sessionID, server_port, false, handler, "");
+            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, false, "");
         }
 
         /// <summary>
-        /// Starts the main chat client in single command sending mode, wich will login to the server using the MinecraftCom class, send the command and close.
+        /// Starts the main chat client in single command sending mode
         /// </summary>
         /// <param name="username">The chosen username of a premium Minecraft Account</param>
-        /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
-        /// <param name="server_port">The server IP (serveradress or serveradress:port)</param>
+        /// <param name="uuid">The player's UUID for online-mode authentication</param>
+        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
+        /// <param name="server_ip">The server IP</param>
+        /// <param name="port">The server port to use</param>
+        /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
 
-        public McTcpClient(string username, string uuid, string sessionID, string server_port, MinecraftCom handler, string command)
+        public McTcpClient(string username, string uuid, string sessionID, string server_ip, short port, int protocolversion, string command)
         {
-            StartClient(username, uuid, sessionID, server_port, true, handler, command);
+            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, true, command);
         }
 
         /// <summary>
@@ -57,69 +79,63 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="user">The chosen username of a premium Minecraft Account</param>
         /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
-        /// <param name="server_port">The server IP (serveradress or serveradress:port)/param>
+        /// <param name="server_ip">The server IP</param>
+        /// <param name="port">The server port to use</param>
+        /// <param name="protocolversion">Minecraft protocol version to use</param>
+        /// <param name="uuid">The player's UUID for online-mode authentication</param>
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
 
-        private void StartClient(string user, string uuid, string sessionID, string server_port, bool singlecommand, MinecraftCom handler, string command)
+        private void StartClient(string user, string uuid, string sessionID, string server_ip, short port, int protocolversion, bool singlecommand, string command)
         {
-            this.handler = handler;
-            username = user;
-            string[] sip = server_port.Split(':');
-            host = sip[0];
-            if (sip.Length == 1)
+            this.sessionid = sessionID;
+            this.uuid = uuid;
+            this.username = user;
+            this.host = server_ip;
+            this.port = port;
+
+            if (!singlecommand)
             {
-                port = 25565;
-            }
-            else
-            {
-                try
-                {
-                    port = Convert.ToInt32(sip[1]);
-                }
-                catch (FormatException) { port = 25565; }
+                if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
+                if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
+                if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
+                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.expandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.expandVars(Settings.PlayerLog_File))); }
+                if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
+                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.expandVars(Settings.ScriptScheduler_TasksFile))); }
+                if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
             }
 
             try
             {
-                Console.WriteLine("Logging in...");
-                client = new TcpClient(host, port);
+                client = ProxyHandler.newTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
-                handler.setClient(client);
-                if (handler.Login(user, uuid, sessionID, host, port))
+                handler = Protocol.ProtocolHandler.getProtocolHandler(client, protocolversion, this);
+                Console.WriteLine("Version is supported.\nLogging in...");
+                
+                if (handler.Login())
                 {
-                    //Single command sending
                     if (singlecommand)
                     {
                         handler.SendChatMessage(command);
-                        Console.Write("Command ");
-                        Console.ForegroundColor = ConsoleColor.DarkGray;
-                        Console.Write(command);
-                        Console.ForegroundColor = ConsoleColor.Gray;
-                        Console.WriteLine(" sent.");
+                        ConsoleIO.WriteLineFormatted("§7Command §8" + command + "§7 sent.");
                         Thread.Sleep(5000);
-                        handler.Disconnect("disconnect.quitting");
+                        handler.Disconnect();
                         Thread.Sleep(1000);
                     }
                     else
                     {
-                        Console.WriteLine("Server was successfully joined.\nType '/quit' to leave the server.");
-
-                        //Command sending thread, allowing user input
-                        t_sender = new Thread(new ThreadStart(StartTalk));
-                        t_sender.Name = "CommandSender";
-                        t_sender.Start();
-
-                        //Data receiving thread, allowing text receiving
-                        t_updater = new Thread(new ThreadStart(Updater));
-                        t_updater.Name = "PacketHandler";
-                        t_updater.Start();
+                        foreach (ChatBot bot in scripts_on_hold) { bots.Add(bot); }
+                        scripts_on_hold.Clear();
+                        
+                        Console.WriteLine("Server was successfully joined.\nType '"
+                            + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)
+                            + "quit' to leave the server.");
+                        
+                        cmdprompt = new Thread(new ThreadStart(CommandPrompt));
+                        cmdprompt.Name = "MCC Command prompt";
+                        cmdprompt.Start();
                     }
-                }
-                else
-                {
-                    Console.WriteLine("Login failed.");
-                    if (!singlecommand && !handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, "Login failed.")) { Program.ReadLineReconnect(); }
                 }
             }
             catch (SocketException)
@@ -136,14 +152,14 @@ namespace MinecraftClient
 
         /// <summary>
         /// Allows the user to send chat messages, commands, and to leave the server.
-        /// Will be automatically called on a separate Thread by StartClient()
         /// </summary>
 
-        private void StartTalk()
+        private void CommandPrompt()
         {
             try
             {
-                //Needed if the player is dead
+                string text = "";
+                Thread.Sleep(500);
                 handler.SendRespawnPacket();
 
                 while (client.Client.Connected)
@@ -164,80 +180,94 @@ namespace MinecraftClient
                     else
                     {
                         text = text.Trim();
-                        if (text.ToLower() == "/quit" || text.ToLower() == "/reco")
+                        if (text.Length > 0)
                         {
-                            break;
-                        }
-                        else if (text.ToLower() == "/respawn")
-                        {
-                            handler.SendRespawnPacket();
-                            ConsoleIO.WriteLine("You have respawned.");
-                        }
-                        else if (text.ToLower().StartsWith("/script "))
-                        {
-                            handler.BotLoad(new Bots.Script(text.Substring(8)));
-                        }
-                        else if (text != "")
-                        {
-                            //Message is too long
-                            if (text.Length > 100)
+                            if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
                             {
-                                if (text[0] == '/')
+                                string response_msg = "";
+                                string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
+                                if (!performInternalCommand(Settings.expandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
                                 {
-                                    //Send the first 100 chars of the command
-                                    text = text.Substring(0, 100);
-                                    handler.SendChatMessage(text);
+                                    SendText(text);
                                 }
-                                else
+                                else if (response_msg.Length > 0)
                                 {
-                                    //Send the message splitted in several messages
-                                    while (text.Length > 100)
-                                    {
-                                        handler.SendChatMessage(text.Substring(0, 100));
-                                        text = text.Substring(100, text.Length - 100);
-                                    }
-                                    handler.SendChatMessage(text);
+                                    ConsoleIO.WriteLineFormatted("§8MCC: " + response_msg);
                                 }
                             }
-                            else handler.SendChatMessage(text);
+                            else SendText(text);
                         }
                     }
-                }
-
-                switch (text.ToLower())
-                {
-                    case "/quit": Program.Exit(); break;
-                    case "/reco": Program.Restart(); break;
                 }
             }
             catch (IOException) { }
         }
 
         /// <summary>
-        /// Receive the data (including chat messages) from the server, and keep the connection alive.
-        /// Will be automatically called on a separate Thread by StartClient()
+        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
+        /// <param name="command">The command</param>
+        /// <param name="interactive_mode">Set to true if command was sent by the user using the command prompt</param>
+        /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
 
-        private void Updater()
+        public bool performInternalCommand(string command, ref string response_msg)
         {
-            try
-            {
-                //handler.DebugDump();
-                do
-                {
-                    Thread.Sleep(100);
-                } while (handler.Update());
-            }
-            catch (IOException) { }
-            catch (SocketException) { }
-            catch (ObjectDisposedException) { }
+            /* Load commands from the 'Commands' namespace */
 
-            if (!handler.HasBeenKicked)
+            if (cmds.Count == 0)
             {
-                ConsoleIO.WriteLine("Connection has been lost.");
-                if (!handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "Connection has been lost.") && !Program.ReadLineReconnect()) { t_sender.Abort(); }
+                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
+                foreach (Type type in cmds_classes)
+                {
+                    if (type.IsSubclassOf(typeof(Command)))
+                    {
+                        try
+                        {
+                            Command cmd = (Command)Activator.CreateInstance(type);
+                            cmds[cmd.CMDName.ToLower()] = cmd;
+                            cmd_names.Add(cmd.CMDName.ToLower());
+                            foreach (string alias in cmd.getCMDAliases())
+                                cmds[alias.ToLower()] = cmd;
+                        }
+                        catch (Exception e)
+                        {
+                            ConsoleIO.WriteLine(e.Message);
+                        }
+                    }
+                }
             }
-            else if (Program.ReadLineReconnect()) { t_sender.Abort(); }
+
+            /* Process the provided command */
+
+            string command_name = command.Split(' ')[0].ToLower();
+            if (command_name == "help")
+            {
+                if (Command.hasArg(command))
+                {
+                    string help_cmdname = Command.getArgs(command)[0].ToLower();
+                    if (help_cmdname == "help")
+                    {
+                        response_msg = "help <cmdname>: show brief help about a command.";
+                    }
+                    else if (cmds.ContainsKey(help_cmdname))
+                    {
+                        response_msg = cmds[help_cmdname].CMDDesc;
+                    }
+                    else response_msg = "Unknown command '" + command_name + "'. Use 'help' for command list.";
+                }
+                else response_msg = "help <cmdname>. Available commands: " + String.Join(", ", cmd_names.ToArray());
+            }
+            else if (cmds.ContainsKey(command_name))
+            {
+                response_msg = cmds[command_name].Run(this, command);
+            }
+            else
+            {
+                response_msg = "Unknown command '" + command_name + "'. Use '" + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + "help' for help.";
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -246,11 +276,122 @@ namespace MinecraftClient
 
         public void Disconnect()
         {
-            handler.Disconnect("disconnect.quitting");
+            foreach (ChatBot bot in bots)
+                if (bot is ChatBots.Script)
+                    scripts_on_hold.Add((ChatBots.Script)bot);
+
+            handler.Disconnect();
+            handler.Dispose();
+
+            if (cmdprompt != null)
+                cmdprompt.Abort();
+
             Thread.Sleep(1000);
-            if (t_updater != null) { t_updater.Abort(); }
-            if (t_sender != null) { t_sender.Abort(); }
+
             if (client != null) { client.Close(); }
+        }
+
+        /// <summary>
+        /// Received some text from the server
+        /// </summary>
+        /// <param name="text">Text received</param>
+
+        public void OnTextReceived(string text)
+        {
+            ConsoleIO.WriteLineFormatted(text, false);
+            foreach (ChatBot bot in bots)
+                bot.GetText(text);
+        }
+
+        /// <summary>
+        /// When connection has been lost
+        /// </summary>
+
+        public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
+        {
+            bool will_restart = false;
+
+            switch (reason)
+            {
+                case ChatBot.DisconnectReason.ConnectionLost:
+                    message = "Connection has been lost.";
+                    ConsoleIO.WriteLine(message);
+                    break;
+
+                case ChatBot.DisconnectReason.InGameKick:
+                    ConsoleIO.WriteLine("Disconnected by Server :");
+                    ConsoleIO.WriteLineFormatted(message);
+                    break;
+
+                case ChatBot.DisconnectReason.LoginRejected:
+                    ConsoleIO.WriteLine("Login failed :");
+                    ConsoleIO.WriteLineFormatted(message);
+                    break;
+            }
+
+            foreach (ChatBot bot in bots)
+                will_restart |= bot.OnDisconnect(reason, message);
+
+            if (!will_restart) { Program.OfflineCommandPrompt(); }
+        }
+
+        /// <summary>
+        /// Called ~10 times per second by the protocol handler
+        /// </summary>
+
+        public void OnUpdate()
+        {
+            for (int i = 0; i < bots.Count; i++)
+            {
+                try
+                {
+                    bots[i].Update();
+                }
+                catch (Exception e)
+                {
+                    ConsoleIO.WriteLineFormatted("§8Got error from " + bots[i].ToString() + ": " + e.ToString());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send a chat message or command to the server
+        /// </summary>
+        /// <param name="text">Text to send to the server</param>
+        /// <returns>True if the text was sent with no error</returns>
+
+        public bool SendText(string text)
+        {
+            if (text.Length > 100) //Message is too long?
+            {
+                if (text[0] == '/')
+                {
+                    //Send the first 100 chars of the command
+                    text = text.Substring(0, 100);
+                    return handler.SendChatMessage(text);
+                }
+                else
+                {
+                    //Send the message splitted into several messages
+                    while (text.Length > 100)
+                    {
+                        handler.SendChatMessage(text.Substring(0, 100));
+                        text = text.Substring(100, text.Length - 100);
+                    }
+                    return handler.SendChatMessage(text);
+                }
+            }
+            else return handler.SendChatMessage(text);
+        }
+
+        /// <summary>
+        /// Allow to respawn after death
+        /// </summary>
+        /// <returns>True if packet successfully sent</returns>
+
+        public bool SendRespawnPacket()
+        {
+            return handler.SendRespawnPacket();
         }
     }
 }

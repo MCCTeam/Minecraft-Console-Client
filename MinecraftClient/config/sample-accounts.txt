@@ -1,0 +1,14 @@
+﻿# Minecraft Console Client
+# Account list file
+
+# Put account data as comma separated values
+# Values are: Alias,Login,Password
+# It allows a fast account switching
+# without directly using the credentials
+
+# Usage examples:
+# /tell <mybot> reco Player2
+# /connect <serverip> Player1
+
+Player1,playerone@email.com,thepassword
+Player2,TestBot,-

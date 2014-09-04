@@ -20,8 +20,18 @@ namespace MinecraftClient
         public static string Username = "";
         public static string Password = "";
         public static string ServerIP = "";
+        public static short ServerPort = 25565;
+        public static string ServerVersion  = "";
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
+
+        //Proxy Settings
+        public static bool ProxyEnabled = false;
+        public static string ProxyHost = "";
+        public static int ProxyPort = 0;
+        public static Proxy.ProxyHandler.Type proxyType = Proxy.ProxyHandler.Type.HTTP;
+        public static string ProxyUsername = "";
+        public static string ProxyPassword = "";
 
         //Other Settings
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\9e\9e2fdc43fc1c7024ff5922b998fadb2971a64ee0"; //MC 1.7.4 en_GB.lang
@@ -30,6 +40,10 @@ namespace MinecraftClient
         public static List<string> Bots_Owners = new List<string>();
         public static string Language = "en_GB";
         public static bool chatTimeStamps = false;
+        public static bool exitOnFailure = false;
+        public static char internalCmdChar = '/';
+        public static bool playerHeadAsIcon = false;
+        public static string chatbotLogFile = "";
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -52,7 +66,7 @@ namespace MinecraftClient
         public static bool ChatLog_Enabled = false;
         public static bool ChatLog_DateTime = true;
         public static string ChatLog_File = "chatlog.txt";
-        public static Bots.ChatLog.MessageFilter ChatLog_Filter = Bots.ChatLog.MessageFilter.AllMessages;
+        public static ChatBots.ChatLog.MessageFilter ChatLog_Filter = ChatBots.ChatLog.MessageFilter.AllMessages;
 
         //PlayerListLog Settings
         public static bool PlayerLog_Enabled = false;
@@ -71,8 +85,14 @@ namespace MinecraftClient
 
         //Remote Control
         public static bool RemoteCtrl_Enabled = false;
+        public static bool RemoteCtrl_AutoTpaccept = true;
 
-        private enum ParseMode { Default, Main, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
+        //Custom app variables and Minecraft accounts
+        private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
+        private static Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
+        private static Dictionary<string, KeyValuePair<string, short>> Servers = new Dictionary<string, KeyValuePair<string, short>>();
+
+        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -104,6 +124,8 @@ namespace MinecraftClient
                                     case "main": pMode = ParseMode.Main; break;
                                     case "scriptscheduler": pMode = ParseMode.ScriptScheduler; break;
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
+                                    case "proxy": pMode = ParseMode.Proxy; break;
+                                    case "appvars": pMode = ParseMode.AppVars; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -120,15 +142,69 @@ namespace MinecraftClient
                                             {
                                                 case "login": Login = argValue; break;
                                                 case "password": Password = argValue; break;
-                                                case "serverip": ServerIP = argValue; break;
+                                                case "serverip": setServerIP(argValue); break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
                                                 case "timestamps": chatTimeStamps = str2bool(argValue); break;
+                                                case "exitonfailure": exitOnFailure = str2bool(argValue); break;
+                                                case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
+                                                case "chatbotlogfile": chatbotLogFile = argValue; break;
+                                                case "mcversion": ServerVersion = argValue; break;
+
                                                 case "botowners":
                                                     Bots_Owners.Clear();
                                                     foreach (string name in argValue.ToLower().Replace(" ", "").Split(','))
                                                         Bots_Owners.Add(name);
+                                                    break;
+
+                                                case "internalcmdchar":
+                                                    switch (argValue.ToLower())
+                                                    {
+                                                        case "none": internalCmdChar = ' '; break;
+                                                        case "slash": internalCmdChar = '/'; break;
+                                                        case "backslash": internalCmdChar = '\\'; break;
+                                                    }
+                                                    break;
+
+                                                case "accountlist":
+                                                    if (File.Exists(argValue))
+                                                    {
+                                                        foreach (string account_line in File.ReadAllLines(argValue))
+                                                        {
+                                                            //Each line contains account data: 'Alias,Login,Password'
+                                                            string[] account_data = account_line.Split('#')[0].Trim().Split(',');
+                                                            if (account_data.Length == 3)
+                                                                Accounts[account_data[0].ToLower()]
+                                                                    = new KeyValuePair<string, string>(account_data[1], account_data[2]);
+                                                        }
+                                                    }
+                                                    break;
+
+                                                case "serverlist":
+                                                    if (File.Exists(argValue))
+                                                    {
+                                                        //Backup current server info
+                                                        string server_host_temp = ServerIP;
+                                                        short server_port_temp = ServerPort;
+
+                                                        foreach (string server_line in File.ReadAllLines(argValue))
+                                                        {
+                                                            //Each line contains server data: 'Alias,Host:Port'
+                                                            string[] server_data = server_line.Split('#')[0].Trim().Split(',');
+                                                            server_data[0] = server_data[0].ToLower();
+                                                            if (server_data.Length == 2
+                                                                && server_data[0] != "localhost"
+                                                                && !server_data[0].Contains('.')
+                                                                && setServerIP(server_data[1]))
+                                                                Servers[server_data[0]]
+                                                                    = new KeyValuePair<string, short>(ServerIP, ServerPort);
+                                                        }
+                                                        
+                                                        //Restore current server info
+                                                        ServerIP = server_host_temp;
+                                                        ServerPort = server_port_temp;
+                                                    }
                                                     break;
                                             }
                                             break;
@@ -167,7 +243,7 @@ namespace MinecraftClient
                                             {
                                                 case "enabled": ChatLog_Enabled = str2bool(argValue); break;
                                                 case "timestamps": ChatLog_DateTime = str2bool(argValue); break;
-                                                case "filter": ChatLog_Filter = Bots.ChatLog.str2filter(argValue); break;
+                                                case "filter": ChatLog_Filter = ChatBots.ChatLog.str2filter(argValue); break;
                                                 case "logfile": ChatLog_File = argValue; break;
                                             }
                                             break;
@@ -194,7 +270,41 @@ namespace MinecraftClient
                                             switch (argName.ToLower())
                                             {
                                                 case "enabled": RemoteCtrl_Enabled = str2bool(argValue); break;
+                                                case "autotpaccept": RemoteCtrl_AutoTpaccept = str2bool(argValue); break;
                                             }
+                                            break;
+
+                                        case ParseMode.Proxy:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": ProxyEnabled = str2bool(argValue); break;
+                                                case "type":
+                                                    argValue = argValue.ToLower();
+                                                    if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
+                                                    else if (argValue == "socks4") { proxyType = Proxy.ProxyHandler.Type.SOCKS4; }
+                                                    else if (argValue == "socks4a"){ proxyType = Proxy.ProxyHandler.Type.SOCKS4a;}
+                                                    else if (argValue == "socks5") { proxyType = Proxy.ProxyHandler.Type.SOCKS5; }
+                                                    break;
+                                                case "server":
+                                                    string[] host_splitted = argValue.Split(':');
+                                                    if (host_splitted.Length == 1)
+                                                    {
+                                                        ProxyHost = host_splitted[0];
+                                                        ProxyPort = 80;
+                                                    }
+                                                    else if (host_splitted.Length == 2)
+                                                    {
+                                                        ProxyHost = host_splitted[0];
+                                                        ProxyPort = str2int(host_splitted[1]);
+                                                    }
+                                                    break;
+                                                case "username": ProxyUsername = argValue; break;
+                                                case "password": ProxyPassword = argValue; break;
+                                            }
+                                            break;
+
+                                        case ParseMode.AppVars:
+                                            setVar(argName, argValue);
                                             break;
                                     }
                                 }
@@ -222,14 +332,35 @@ namespace MinecraftClient
                 + "#leave blank to prompt user on startup\r\n"
                 + "#Use \"-\" as password for offline mode\r\n"
                 + "\r\n"
-                + "login=\r\npassword=\r\nserverip=\r\n"
+                + "login=\r\n"
+                + "password=\r\n"
+                + "serverip=\r\n"
                 + "\r\n"
                 + "#Advanced settings\r\n"
                 + "\r\n"
                 + "language=en_GB\r\n"
                 + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username% - Minecraft Console Client\r\n"
+                + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
+                + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
+                + "chatbotlogfile= #leave empty for no logfile\r\n"
+                + "accountlist=accounts.txt\r\n"
+                + "serverlist=servers.txt\r\n"
+                + "playerheadicon=true\r\n"
+                + "exitonfailure=false\r\n"
                 + "timestamps=false\r\n"
+                + "\r\n"
+                + "[AppVars]\r\n"
+                + "#yourvar=yourvalue\r\n"
+                + "#can be used in some other fields as %yourvar%\r\n"
+                + "#%username% and %serverip% are reserved variables.\r\n"
+                + "\r\n"
+                + "[Proxy]\r\n"
+                + "enabled=false\r\n"
+                + "type=HTTP #Supported types: HTTP, SOCKS4, SOCKS4a, SOCKS5\r\n"
+                + "server=0.0.0.0:0000\r\n"
+                + "username=\r\n"
+                + "password=\r\n"
                 + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"
@@ -254,7 +385,7 @@ namespace MinecraftClient
                 + "enabled=false\r\n"
                 + "timestamps=true\r\n"
                 + "filter=messages\r\n"
-                + "logfile=chatlog.txt\r\n"
+                + "logfile=chatlog-%username%-%serverip%.txt\r\n"
                 + "\r\n"
                 + "[Hangman]\r\n"
                 + "enabled=false\r\n"
@@ -267,11 +398,136 @@ namespace MinecraftClient
                 + "tasksfile=tasks.ini\r\n"
                 + "\r\n"
                 + "[RemoteControl]\r\n"
-                + "enabled=false\r\n", Encoding.UTF8);
+                + "enabled=false\r\n"
+                + "autotpaccept=true\r\n", Encoding.UTF8);
         }
 
         public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }
         public static bool str2bool(string str) { return str == "true" || str == "1"; }
 
+        /// <summary>
+        /// Load login/password using an account alias
+        /// </summary>
+        /// <returns>True if the account was found and loaded</returns>
+
+        public static bool setAccount(string accountAlias)
+        {
+            accountAlias = accountAlias.ToLower();
+            if (Accounts.ContainsKey(accountAlias))
+            {
+                Settings.Login = Accounts[accountAlias].Key;
+                Settings.Password = Accounts[accountAlias].Value;
+                return true;
+            }
+            else return false;
+        }
+
+        /// <summary>
+        /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
+        /// </summary>
+        /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
+
+        public static bool setServerIP(string server)
+        {
+            string[] sip = server.Split(':');
+            string host = sip[0];
+            short port = 25565;
+            
+            if (sip.Length > 1)
+            {
+                try
+                {
+                    port = Convert.ToInt16(sip[1]);
+                }
+                catch (FormatException) { return false; }
+            }
+
+            if (host == "localhost" || host.Contains('.'))
+            {
+                ServerIP = host;
+                ServerPort = port;
+                return true;
+            }
+            else if (Servers.ContainsKey(server))
+            {
+                ServerIP = Servers[server].Key;
+                ServerPort = Servers[server].Value;
+                return true;
+            }
+            
+            return false;
+        }
+
+        /// <summary>
+        /// Set a custom %variable% which will be available through expandVars()
+        /// </summary>
+        /// <param name="varName">Name of the variable</param>
+        /// <param name="varData">Value of the variable</param>
+        /// <returns>True if the parameters were valid</returns>
+
+        public static bool setVar(string varName, string varData)
+        {
+            varName = new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
+            if (varName.Length > 0)
+            {
+                AppVars[varName] = varData;
+                return true;
+            }
+            else return false;
+        }
+
+        /// <summary>
+        /// Replace %variables% with their value
+        /// </summary>
+        /// <param name="str">String to parse</param>
+        /// <returns>Modifier string</returns>
+
+        public static string expandVars(string str)
+        {
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (str[i] == '%')
+                {
+                    bool varname_ok = false;
+                    StringBuilder var_name = new StringBuilder();
+
+                    for (int j = i + 1; j < str.Length; j++)
+                    {
+                        if (!char.IsLetterOrDigit(str[j]))
+                        {
+                            if (str[j] == '%')
+                                varname_ok = var_name.Length > 0;
+                            break;
+                        }
+                        else var_name.Append(str[j]);
+                    }
+
+                    if (varname_ok)
+                    {
+                        string varname = var_name.ToString();
+                        string varname_lower = varname.ToLower();
+                        i = i + varname.Length + 1;
+
+                        switch (varname_lower)
+                        {
+                            case "username": result.Append(Username); break;
+                            case "serverip": result.Append(ServerIP); break;
+                            case "serverport": result.Append(ServerPort); break;
+                            default:
+                                if (AppVars.ContainsKey(varname_lower))
+                                {
+                                    result.Append(AppVars[varname_lower]);
+                                }
+                                else result.Append("%" + varname + '%');
+                                break;
+                        }
+                    }
+                    else result.Append(str[i]);
+                }
+                else result.Append(str[i]);
+            }
+            return result.ToString();
+        }
     }
 }

@@ -25,7 +25,10 @@ namespace MinecraftClient
         private static bool reading_lock = false;
         private static bool writing_lock = false;
 
-        #region Read User Input
+        /// <summary>
+        /// Read a password from the standard input
+        /// </summary>
+
         public static string ReadPassword()
         {
             string password = "";
@@ -70,6 +73,10 @@ namespace MinecraftClient
             }
             return password;
         }
+
+        /// <summary>
+        /// Read a line from the standard input
+        /// </summary>
 
         public static string ReadLine()
         {
@@ -152,7 +159,7 @@ namespace MinecraftClient
                                 if (tmp.Length > 0)
                                 {
                                     string word_tocomplete = tmp[tmp.Length - 1];
-                                    string word_autocomplete = autocomplete_engine.AutoComplete(word_tocomplete);
+                                    string word_autocomplete = autocomplete_engine.AutoComplete(buffer);
                                     if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
                                     {
                                         while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
@@ -174,9 +181,11 @@ namespace MinecraftClient
             previous.AddLast(buffer + buffer2);
             return buffer + buffer2;
         }
-        #endregion
+        
+        /// <summary>
+        /// Write a string to the standard output, without newline character
+        /// </summary>
 
-        #region Console Output
         public static void Write(string text)
         {
             if (basicIO) { Console.Write(text); return; }
@@ -216,16 +225,79 @@ namespace MinecraftClient
             writing_lock = false;
         }
 
+        /// <summary>
+        /// Write a string to the standard output with a trailing newline
+        /// </summary>
+
         public static void WriteLine(string line)
         {
             Write(line + '\n');
         }
 
+        /// <summary>
+        /// Write a single character to the standard output
+        /// </summary>
+
         public static void Write(char c)
         {
             Write("" + c);
         }
-        #endregion
+
+        /// <summary>
+        /// Write a Minecraft-Formatted string to the standard output, using §c color codes
+        /// </summary>
+        /// <param name="str">String to write</param>
+        /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>
+
+        public static void WriteLineFormatted(string str, bool acceptnewlines = true)
+        {
+            if (basicIO) { Console.WriteLine(str); return; }
+            if (!String.IsNullOrEmpty(str))
+            {
+                if (Settings.chatTimeStamps)
+                {
+                    int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
+                    ConsoleIO.Write(hour.ToString("00") + ':' + minute.ToString("00") + ':' + second.ToString("00") + ' ');
+                }
+                if (!acceptnewlines) { str = str.Replace('\n', ' '); }
+                if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(str); return; }
+                string[] subs = str.Split(new char[] { '§' });
+                if (subs[0].Length > 0) { ConsoleIO.Write(subs[0]); }
+                for (int i = 1; i < subs.Length; i++)
+                {
+                    if (subs[i].Length > 0)
+                    {
+                        switch (subs[i][0])
+                        {
+                            case '0': Console.ForegroundColor = ConsoleColor.Gray; break; //Should be Black but Black is non-readable on a black background
+                            case '1': Console.ForegroundColor = ConsoleColor.DarkBlue; break;
+                            case '2': Console.ForegroundColor = ConsoleColor.DarkGreen; break;
+                            case '3': Console.ForegroundColor = ConsoleColor.DarkCyan; break;
+                            case '4': Console.ForegroundColor = ConsoleColor.DarkRed; break;
+                            case '5': Console.ForegroundColor = ConsoleColor.DarkMagenta; break;
+                            case '6': Console.ForegroundColor = ConsoleColor.DarkYellow; break;
+                            case '7': Console.ForegroundColor = ConsoleColor.Gray; break;
+                            case '8': Console.ForegroundColor = ConsoleColor.DarkGray; break;
+                            case '9': Console.ForegroundColor = ConsoleColor.Blue; break;
+                            case 'a': Console.ForegroundColor = ConsoleColor.Green; break;
+                            case 'b': Console.ForegroundColor = ConsoleColor.Cyan; break;
+                            case 'c': Console.ForegroundColor = ConsoleColor.Red; break;
+                            case 'd': Console.ForegroundColor = ConsoleColor.Magenta; break;
+                            case 'e': Console.ForegroundColor = ConsoleColor.Yellow; break;
+                            case 'f': Console.ForegroundColor = ConsoleColor.White; break;
+                            case 'r': Console.ForegroundColor = ConsoleColor.White; break;
+                        }
+
+                        if (subs[i].Length > 1)
+                        {
+                            ConsoleIO.Write(subs[i].Substring(1, subs[i].Length - 1));
+                        }
+                    }
+                }
+                ConsoleIO.Write('\n');
+            }
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
 
         #region Subfunctions
         private static void ClearLineAndBuffer()
