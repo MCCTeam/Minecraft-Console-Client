@@ -1,6 +1,6 @@
-========================================================================
- Minecraft Client v1.8.0 BETA for Minecraft 1.7.2 to 1.7.10 - By ORelio
-========================================================================
+==================================================================
+ Minecraft Client v1.8.0 for Minecraft 1.4.6 to 1.8.0 - By ORelio
+==================================================================
 
 Thanks for dowloading Minecraft Console Client!
 
@@ -61,6 +61,7 @@ In scripts and remote control, no slash is needed to perform the command.
  - log <text> : display some text in the console (useful for scripts)
  - set varname=value : set a value which can be used as %varname% in further commands
  - wait <time> : wait <time> : wait X ticks (10 ticks = ~1 second. Only for scripts)
+ - help : show command help. Tip: Use "/send /help" for server help
 
 [account] is an account alias defined in accounts file, read more below.
 <server> is either a server IP or a server alias defined in servers file
@@ -160,7 +161,7 @@ When the remote control bot is enabled, you can send commands to your bot using 
 Don't forget to add your username in botowners INI setting if you want it to obey.
 To perform a command simply do the following: /tell <yourbot> <thecommand>
 Where <thecommand> is an internal command as described in "Internal commands" section.
-The remote control will automatically accept /tpa and /tpahere requests from the bot owners.
+If enabled, remote control will auto-accept /tpa and /tpahere requests from the bot owners.
 
 =========================
  Disclaimer & Last words
