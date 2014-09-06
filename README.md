@@ -6,7 +6,8 @@ send commands and receive text messages in a fast and easy way without having to
 
 ##How to use
 
-Downloads, help and more info at http://www.minecraftforum.net/topic/1314800-/
+Downloads, help and more info available on the [Minecraft Forum thread](http://www.minecraftforum.net/topic/1314800-/)'s first post.<br/>
+Alternatively, you can take a look at the [README](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/README.txt) file from the latest stable binary release.
 
 ##License
 
