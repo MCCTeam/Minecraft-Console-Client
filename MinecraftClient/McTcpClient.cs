@@ -349,7 +349,11 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    ConsoleIO.WriteLineFormatted("§8Got error from " + bots[i].ToString() + ": " + e.ToString());
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLineFormatted("§8Got error from " + bots[i].ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
                 }
             }
         }
