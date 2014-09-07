@@ -429,6 +429,7 @@ namespace MinecraftClient
 
         public static bool setServerIP(string server)
         {
+            server = server.ToLower();
             string[] sip = server.Split(':');
             string host = sip[0];
             short port = 25565;
