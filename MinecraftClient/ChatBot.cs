@@ -273,18 +273,19 @@ namespace MinecraftClient
         public static void LogToConsole(string text)
         {
             ConsoleIO.WriteLineFormatted("§8[BOT] " + text);
+            string logfile = Settings.expandVars(Settings.chatbotLogFile);
 
-            if (!String.IsNullOrEmpty(Settings.chatbotLogFile))
+            if (!String.IsNullOrEmpty(logfile))
             {
-                if (!File.Exists(Settings.chatbotLogFile))
+                if (!File.Exists(logfile))
                 {
-                    try { Directory.CreateDirectory(Path.GetDirectoryName(Settings.chatbotLogFile)); }
+                    try { Directory.CreateDirectory(Path.GetDirectoryName(logfile)); }
                     catch { return; /* Invalid path or access denied */ }
-                    try { File.WriteAllText(Settings.chatbotLogFile, ""); }
+                    try { File.WriteAllText(logfile, ""); }
                     catch { return; /* Invalid file name or access denied */ }
                 }
 
-                File.AppendAllLines(Settings.chatbotLogFile, new string[] { getTimestamp() + ' ' + text });
+                File.AppendAllLines(logfile, new string[] { getTimestamp() + ' ' + text });
             }
         }
 

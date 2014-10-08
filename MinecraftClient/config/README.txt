@@ -1,5 +1,5 @@
 ==================================================================
- Minecraft Client v1.8.0 for Minecraft 1.4.6 to 1.8.0 - By ORelio
+ Minecraft Client v1.8.1 for Minecraft 1.4.6 to 1.8.0 - By ORelio
 ==================================================================
 
 Thanks for dowloading Minecraft Console Client!

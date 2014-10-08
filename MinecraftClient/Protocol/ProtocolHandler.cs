@@ -183,6 +183,14 @@ namespace MinecraftClient.Protocol
             {
                 return LoginResult.SSLError;
             }
+            catch (System.IO.IOException e)
+            {
+                if (e.Message.Contains("authentication"))
+                {
+                    return LoginResult.SSLError;
+                }
+                else return LoginResult.OtherError;
+            }
             catch
             {
                 return LoginResult.OtherError;
