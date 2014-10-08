@@ -299,7 +299,7 @@ namespace MinecraftClient
         public void OnTextReceived(string text)
         {
             ConsoleIO.WriteLineFormatted(text, false);
-            foreach (ChatBot bot in bots)
+            foreach (ChatBot bot in new List<ChatBot>(bots))
                 bot.GetText(text);
         }
 
