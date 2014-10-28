@@ -624,15 +624,5 @@ namespace MinecraftClient.Protocol.Handlers
             while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
             return autocomplete_result;
         }
-
-        /// <summary>
-        /// Ping a Minecraft server to get information about the server
-        /// </summary>
-        /// <returns>True if ping was successful</returns>
-
-        public static bool doPing(string host, int port, ref int protocolversion)
-        {
-            return Protocol17Handler.doPing(host, port, ref protocolversion);
-        }
     }
 }
