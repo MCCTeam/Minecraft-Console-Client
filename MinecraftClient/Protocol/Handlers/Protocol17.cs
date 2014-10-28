@@ -544,7 +544,9 @@ namespace MinecraftClient.Protocol.Handlers
                         if (tmp_ver.Length >= 2 && tmp_name.Length >= 2)
                         {
                             protocolversion = atoi(tmp_ver[1]);
-                            version = tmp_name[1].Split('"')[0];
+
+                            // Handle if "name" exists twice, like when connecting to a server with another user logged in.
+                            version = (tmp_name.Length == 2) ? tmp_name[1].Split('"')[0] : tmp_name[2].Split('"')[0];
                             if (result.Contains("modinfo\":"))
                             {
                                 //Server is running Forge (which is not supported)
