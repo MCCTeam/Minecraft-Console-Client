@@ -632,57 +632,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         public static bool doPing(string host, int port, ref int protocolversion)
         {
-            string version = "";
-            TcpClient tcp = ProxyHandler.newTcpClient(host, port);
-            tcp.ReceiveBufferSize = 1024 * 1024;
-
-            byte[] packet_id = getVarInt(0);
-            byte[] protocol_version = getVarInt(4);
-            byte[] server_adress_val = Encoding.UTF8.GetBytes(host);
-            byte[] server_adress_len = getVarInt(server_adress_val.Length);
-            byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
-            byte[] next_state = getVarInt(1);
-            byte[] packet = concatBytes(packet_id, protocol_version, server_adress_len, server_adress_val, server_port, next_state);
-            byte[] tosend = concatBytes(getVarInt(packet.Length), packet);
-
-            tcp.Client.Send(tosend, SocketFlags.None);
-
-            byte[] status_request = getVarInt(0);
-            byte[] request_packet = concatBytes(getVarInt(status_request.Length), status_request);
-
-            tcp.Client.Send(request_packet, SocketFlags.None);
-
-            int packetID = -1;
-            byte[] packetData = new byte[] { };
-            Protocol18Handler ComTmp = new Protocol18Handler(tcp);
-            ComTmp.readNextPacket(ref packetID, ref packetData);
-            if (packetData.Length > 0) //Verify Response length
-            {
-                if (packetID == 0x00) //Read Packet ID
-                {
-                    string result = ComTmp.readNextString(ref packetData); //Get the Json data
-                    if (result[0] == '{' && result.Contains("protocol\":") && result.Contains("name\":\""))
-                    {
-                        string[] tmp_ver = result.Split(new string[] { "protocol\":" }, StringSplitOptions.None);
-                        string[] tmp_name = result.Split(new string[] { "name\":\"" }, StringSplitOptions.None);
-
-                        if (tmp_ver.Length >= 2 && tmp_name.Length >= 2)
-                        {
-                            protocolversion = atoi(tmp_ver[1]);
-                            version = tmp_name[1].Split('"')[0];
-                            if (result.Contains("modinfo\":"))
-                            {
-                                //Server is running Forge (which is not supported)
-                                version = "Forge " + version;
-                                protocolversion = 0;
-                            }
-                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + ").");
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
+            return Protocol17Handler.doPing(host, port, ref protocolversion);
         }
     }
 }
