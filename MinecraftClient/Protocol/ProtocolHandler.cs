@@ -23,7 +23,7 @@ namespace MinecraftClient.Protocol
         /// <param name="protocolversion">Will contain protocol version, if ping successful</param>
         /// <returns>TRUE if ping was successful</returns>
 
-        public static bool GetServerInfo(string serverIP, int serverPort, ref int protocolversion)
+        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion)
         {
             try
             {
