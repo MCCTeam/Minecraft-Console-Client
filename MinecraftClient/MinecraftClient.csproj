@@ -131,6 +131,7 @@
     <Compile Include="Proxy\Handlers\Socks5ProxyClient.cs" />
     <Compile Include="Proxy\Handlers\Utils.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Commands\List.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
