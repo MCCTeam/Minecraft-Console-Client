@@ -137,33 +137,31 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x00:
+                    case 0x00: //Keep-Alive
                         SendPacket(0x00, getVarInt(readNextVarInt(ref packetData)));
                         break;
-                    case 0x02:
+                    case 0x02: //Chat message
                         handler.OnTextReceived(ChatParser.ParseText(readNextString(ref packetData)));
                         break;
-                    case 0x0C: //Entity Look and Relative Move
-                        //ConsoleIO.WriteLineFormatted("§8 0x0C entity:" + readNextVarInt(ref packetData) + " has come in to sight");
-                        break;
-                    case 0x38: // update player list
-                        int action = readNextVarInt (ref packetData);
-                        int numActions = readNextVarInt (ref packetData);
-                        string uuid = readNextUUID (ref packetData);
-                        switch (action) {
-                            case 0x00:
-                                string name = readNextString (ref packetData);
-                                handler.addPlayer (uuid, name);
+                    case 0x38: //Player List update
+                        int action = readNextVarInt(ref packetData);
+                        int numActions = readNextVarInt(ref packetData);
+                        Guid uuid = readNextUUID(ref packetData);
+                        switch (action)
+                        {
+                            case 0x00: //Player Join
+                                string name = readNextString(ref packetData);
+                                handler.OnPlayerJoin(uuid, name);
                                 break;
-                            case 0x04:
-                                handler.removePlayer (uuid);
+                            case 0x04: //Player Leave
+                                handler.OnPlayerLeave(uuid);
                                 break;
                             default:
-                                //do nothing
+                                //Unknown player list item type
                                 break;
                         }
                         break;
-                    case 0x3A:
+                    case 0x3A: //Tab-Complete Result
                         int autocomplete_count = readNextVarInt(ref packetData);
                         string tab_list = "";
                         for (int i = 0; i < autocomplete_count; i++)
@@ -177,10 +175,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (tab_list.Length > 0)
                             ConsoleIO.WriteLineFormatted("§8" + tab_list, false);
                         break;
-                    case 0x40:
+                    case 0x40: //Kick Packet
                         handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(readNextString(ref packetData)));
                         return false;
-                    case 0x46:
+                    case 0x46: //Network Compression Treshold Info
                         compression_treshold = readNextVarInt(ref packetData);
                         break;
                     default:
@@ -280,11 +278,11 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a uuid from a cache of bytes and remove it from the cache
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
-        /// <returns>The uuid as a string</returns>
+        /// <returns>The uuid</returns>
 
-        private string readNextUUID(ref byte[] cache)
+        private Guid readNextUUID(ref byte[] cache)
         {
-            return BitConverter.ToString(readData (16, ref cache)).Replace ("-", string.Empty).ToLower();
+            return new Guid(readData(16, ref cache));
         }
 
         /// <summary>

@@ -12,8 +12,14 @@ namespace MinecraftClient.Commands
 
         public override string Run(McTcpClient handler, string command)
         {
-                handler.ListPlayers();
+            string[] onlinePlayers = handler.getOnlinePlayers();
+            if (onlinePlayers.Length == 0) //Not properly handled by Protocol handler?
+            {
+                //Fallback to server /list command
+                handler.SendText("/list");
                 return "";
+            }
+            else return "PlayerList: " + String.Join(", ", onlinePlayers);
         }
     }
 }

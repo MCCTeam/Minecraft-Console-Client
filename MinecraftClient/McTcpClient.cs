@@ -20,6 +20,7 @@ namespace MinecraftClient
         private static List<string> cmd_names = new List<string>();
         private static Dictionary<string, Command> cmds = new Dictionary<string, Command>();
         private List<ChatBot> bots = new List<ChatBot>();
+        private Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid,string>();
         private static List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
@@ -32,8 +33,6 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
-
-        public Dictionary<string, string> players;
 
         public int getServerPort() { return port; }
         public string getServerHost() { return host; }
@@ -58,7 +57,6 @@ namespace MinecraftClient
         public McTcpClient(string username, string uuid, string sessionID, int protocolversion, string server_ip, ushort port)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, false, "");
-            players = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -392,35 +390,44 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Display a list of players
-        /// </summary>
-        /// <returns>True if the players can be listed</returns>
-
-        public bool ListPlayers()
-        {
-            ConsoleIO.WriteLine ("Player List");
-            foreach (string player in players.Values)
-                ConsoleIO.WriteLine (player); 
-            return true;
-        }
-
-        /// <summary>
         /// Allow to respawn after death
         /// </summary>
         /// <returns>True if packet successfully sent</returns>
 
         public bool SendRespawnPacket()
         {
-            return handler.SendRespawnPacket ();
+            return handler.SendRespawnPacket();
         }
 
-        public void addPlayer(string uuid, string name) {
-            players[uuid] = name;
+        /// <summary>
+        /// Triggered when a new player joins the game
+        /// </summary>
+        /// <param name="uuid">UUID of the player</param>
+        /// <param name="name">Name of the player</param>
+
+        public void OnPlayerJoin(Guid uuid, string name)
+        {
+            onlinePlayers[uuid] = name;
         }
-        public void removePlayer(string uuid){
-            players.Remove (uuid);
+        
+        /// <summary>
+        /// Triggered when a player has left the game
+        /// </summary>
+        /// <param name="uuid">UUID of the player</param>
+
+        public void OnPlayerLeave(Guid uuid)
+        {
+            onlinePlayers.Remove(uuid);
         }
 
-        public HashSet<string> getPlayers() { return new HashSet<string>(players.Values); }
+        /// <summary>
+        /// Get a set of online player names
+        /// </summary>
+        /// <returns>Online player names</returns>
+
+        public string[] getOnlinePlayers()
+        {
+            return onlinePlayers.Values.Distinct().ToArray();
+        }
     }
 }
