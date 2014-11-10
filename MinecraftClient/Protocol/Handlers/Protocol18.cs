@@ -141,8 +141,28 @@ namespace MinecraftClient.Protocol.Handlers
                         SendPacket(0x00, getVarInt(readNextVarInt(ref packetData)));
                         break;
                     case 0x02:
-                        handler.OnTextReceived(ChatParser.ParseText(readNextString(ref packetData)));
+						handler.OnTextReceived(ChatParser.ParseText(readNextString(ref packetData)));
                         break;
+					case 0x0C: //Entity Look and Relative Move
+						//ConsoleIO.WriteLineFormatted("§8 0x0C entity:" + readNextVarInt(ref packetData) + " has come in to sight");
+						break;
+					case 0x38: // update player list
+						int action = readNextVarInt (ref packetData);
+						int numActions = readNextVarInt (ref packetData);
+						string uuid = readNextUUID (ref packetData);
+						switch (action) {
+							case 0x00:
+								string name = readNextString (ref packetData);
+								handler.addPlayer (uuid, name);
+								break;
+							case 0x04:
+								handler.removePlayer (uuid);
+								break;
+							default:
+								//do nothing
+								break;
+						}
+						break;
                     case 0x3A:
                         int autocomplete_count = readNextVarInt(ref packetData);
                         string tab_list = "";
@@ -255,6 +275,17 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else return "";
         }
+
+		/// <summary>
+		/// Read a uuid from a cache of bytes and remove it from the cache
+		/// </summary>
+		/// <param name="cache">Cache of bytes to read from</param>
+		/// <returns>The uuid as a string</returns>
+
+		private string readNextUUID(ref byte[] cache)
+		{
+			return BitConverter.ToString(readData (16, ref cache)).Replace ("-", string.Empty).ToLower();
+		}
 
         /// <summary>
         /// Read a byte array from a cache of bytes and remove it from the cache

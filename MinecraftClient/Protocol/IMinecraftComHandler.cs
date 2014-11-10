@@ -22,6 +22,10 @@ namespace MinecraftClient.Protocol
         string getUserUUID();
         string getSessionID();
 
+		void addPlayer(string uuid, string name);
+		void removePlayer(string uuid);
+		HashSet<string> getPlayers();
+
         /// <summary>
         /// This method is called when the protocol handler receives a chat message
         /// </summary>
