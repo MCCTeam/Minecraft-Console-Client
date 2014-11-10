@@ -33,7 +33,7 @@ namespace MinecraftClient
         private string uuid;
         private string sessionid;
 
-		public Dictionary<string, string> players;
+        public Dictionary<string, string> players;
 
         public int getServerPort() { return port; }
         public string getServerHost() { return host; }
@@ -58,7 +58,7 @@ namespace MinecraftClient
         public McTcpClient(string username, string uuid, string sessionID, int protocolversion, string server_ip, ushort port)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, false, "");
-			players = new Dictionary<string, string>();
+            players = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -391,17 +391,18 @@ namespace MinecraftClient
             else return handler.SendChatMessage(text);
         }
 
-		/// <summary>
-		/// Display a list of players
-		/// </summary>
-		/// <returns>True if the players can be listed</returns>
-		public bool ListPlayers()
-		{
-			ConsoleIO.WriteLine ("Player List");
-			foreach (string player in players.Values)
-				ConsoleIO.WriteLine (player); 
-			return true;
-		}
+        /// <summary>
+        /// Display a list of players
+        /// </summary>
+        /// <returns>True if the players can be listed</returns>
+
+        public bool ListPlayers()
+        {
+            ConsoleIO.WriteLine ("Player List");
+            foreach (string player in players.Values)
+                ConsoleIO.WriteLine (player); 
+            return true;
+        }
 
         /// <summary>
         /// Allow to respawn after death
@@ -409,17 +410,17 @@ namespace MinecraftClient
         /// <returns>True if packet successfully sent</returns>
 
         public bool SendRespawnPacket()
-		{
-			return handler.SendRespawnPacket ();
-		}
+        {
+            return handler.SendRespawnPacket ();
+        }
 
-		public void addPlayer(string uuid, string name) {
-			players[uuid] = name;
-		}
-		public void removePlayer(string uuid){
-			players.Remove (uuid);
-		}
+        public void addPlayer(string uuid, string name) {
+            players[uuid] = name;
+        }
+        public void removePlayer(string uuid){
+            players.Remove (uuid);
+        }
 
-		public HashSet<string> getPlayers() { return new HashSet<string>(players.Values); }
-	}
+        public HashSet<string> getPlayers() { return new HashSet<string>(players.Values); }
+    }
 }
