@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using MinecraftClient.Crypto;
 using MinecraftClient.Proxy;
+using System.Security.Cryptography;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -157,7 +158,11 @@ namespace MinecraftClient.Protocol.Handlers
                     if (readNextInt() == 2022) { handler.OnTextReceived("You are dead. Type /reco to respawn & reconnect."); }
                     if (protocolversion >= 72) { readData(4); } else readData(1);
                     break;
-                case 0xC9: readNextString(); readData(3); break;
+                case 0xC9:
+                    string name = readNextString(); bool online = readNextByte() != 0x00; readData(2);
+                    Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
+                    if (online) { handler.OnPlayerJoin(FakeUUID, name); } else { handler.OnPlayerLeave(FakeUUID); }
+                    break;
                 case 0xCA: if (protocolversion >= 72) { readData(9); } else readData(3); break;
                 case 0xCB: autocomplete_result = readNextString(); autocomplete_received = true; break;
                 case 0xCC: readNextString(); readData(4); break;
