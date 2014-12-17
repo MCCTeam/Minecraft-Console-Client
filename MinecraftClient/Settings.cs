@@ -20,7 +20,7 @@ namespace MinecraftClient
         public static string Username = "";
         public static string Password = "";
         public static string ServerIP = "";
-        public static short ServerPort = 25565;
+        public static ushort ServerPort = 25565;
         public static string ServerVersion  = "";
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
@@ -90,7 +90,7 @@ namespace MinecraftClient
         //Custom app variables and Minecraft accounts
         private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
         private static Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
-        private static Dictionary<string, KeyValuePair<string, short>> Servers = new Dictionary<string, KeyValuePair<string, short>>();
+        private static Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
         private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
 
@@ -186,7 +186,7 @@ namespace MinecraftClient
                                                     {
                                                         //Backup current server info
                                                         string server_host_temp = ServerIP;
-                                                        short server_port_temp = ServerPort;
+                                                        ushort server_port_temp = ServerPort;
 
                                                         foreach (string server_line in File.ReadAllLines(argValue))
                                                         {
@@ -198,7 +198,7 @@ namespace MinecraftClient
                                                                 && !server_data[0].Contains('.')
                                                                 && setServerIP(server_data[1]))
                                                                 Servers[server_data[0]]
-                                                                    = new KeyValuePair<string, short>(ServerIP, ServerPort);
+                                                                    = new KeyValuePair<string, ushort>(ServerIP, ServerPort);
                                                         }
                                                         
                                                         //Restore current server info
@@ -432,13 +432,14 @@ namespace MinecraftClient
             server = server.ToLower();
             string[] sip = server.Split(':');
             string host = sip[0];
-            short port = 25565;
+            ushort port = 25565;
             
             if (sip.Length > 1)
             {
                 try
                 {
-                    port = Convert.ToInt16(sip[1]);
+                    port = Convert.ToUInt16(sip[1]);
+
                 }
                 catch (FormatException) { return false; }
             }
