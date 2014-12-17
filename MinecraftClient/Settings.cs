@@ -439,7 +439,6 @@ namespace MinecraftClient
                 try
                 {
                     port = Convert.ToUInt16(sip[1]);
-
                 }
                 catch (FormatException) { return false; }
             }
