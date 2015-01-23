@@ -126,7 +126,9 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        foreach (ChatBot bot in scripts_on_hold) { bots.Add(bot); }
+                        foreach (ChatBot bot in scripts_on_hold)
+                            bot.SetHandler(this);
+                        bots.AddRange(scripts_on_hold);
                         scripts_on_hold.Clear();
                         
                         Console.WriteLine("Server was successfully joined.\nType '"
