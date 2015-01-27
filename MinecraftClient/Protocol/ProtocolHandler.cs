@@ -230,30 +230,37 @@ namespace MinecraftClient.Protocol
 
         private static int doHTTPSPost(string host, string endpoint, string request, ref string result)
         {
-            TcpClient client = ProxyHandler.newTcpClient(host, 443);
-            SslStream stream = new SslStream(client.GetStream());
-            stream.AuthenticateAsClient(host);
-
-            List<String> http_request = new List<string>();
-            http_request.Add("POST " + endpoint + " HTTP/1.1");
-            http_request.Add("Host: " + host);
-            http_request.Add("User-Agent: MCC/" + Program.Version);
-            http_request.Add("Content-Type: application/json");
-            http_request.Add("Content-Length: " + Encoding.ASCII.GetBytes(request).Length);
-            http_request.Add("Connection: close");
-            http_request.Add("");
-            http_request.Add(request);
-
-            stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", http_request.ToArray())));
-            System.IO.StreamReader sr = new System.IO.StreamReader(stream);
-            string raw_result = sr.ReadToEnd();
-
-            if (raw_result.StartsWith("HTTP/1.1"))
+            string postResult = null;
+            int statusCode = 520;
+            AutoTimeout.Perform(() =>
             {
-                result = raw_result.Substring(raw_result.IndexOf("\r\n\r\n") + 4);
-                return Settings.str2int(raw_result.Split(' ')[1]);
-            }
-            else return 520; //Web server is returning an unknown error
+                TcpClient client = ProxyHandler.newTcpClient(host, 443);
+                SslStream stream = new SslStream(client.GetStream());
+                stream.AuthenticateAsClient(host);
+
+                List<String> http_request = new List<string>();
+                http_request.Add("POST " + endpoint + " HTTP/1.1");
+                http_request.Add("Host: " + host);
+                http_request.Add("User-Agent: MCC/" + Program.Version);
+                http_request.Add("Content-Type: application/json");
+                http_request.Add("Content-Length: " + Encoding.ASCII.GetBytes(request).Length);
+                http_request.Add("Connection: close");
+                http_request.Add("");
+                http_request.Add(request);
+
+                stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", http_request.ToArray())));
+                System.IO.StreamReader sr = new System.IO.StreamReader(stream);
+                string raw_result = sr.ReadToEnd();
+
+                if (raw_result.StartsWith("HTTP/1.1"))
+                {
+                    postResult = raw_result.Substring(raw_result.IndexOf("\r\n\r\n") + 4);
+                    statusCode = Settings.str2int(raw_result.Split(' ')[1]);
+                }
+                else statusCode = 520; //Web server is returning an unknown error
+            }, 15000);
+            result = postResult;
+            return statusCode;
         }
 
         /// <summary>
