@@ -15,7 +15,7 @@ namespace MinecraftClient.ChatBots
         {
             text = getVerbatim(text);
             string command = "", sender = "";
-            if (isPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower().Replace(" ","")))
+            if (isPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower().Trim()))
             {
                 string response = "";
                 performInternalCommand(command, ref response);
@@ -26,7 +26,7 @@ namespace MinecraftClient.ChatBots
             }
             else if (Settings.RemoteCtrl_AutoTpaccept
                 && isTeleportRequest(text, ref sender)
-                && (Settings.RemoteCtrl_AutoTpaccept_Everyone || Settings.Bots_Owners.Contains(sender.ToLower().Replace(" ",""))))
+                && (Settings.RemoteCtrl_AutoTpaccept_Everyone || Settings.Bots_Owners.Contains(sender.ToLower().Trim())))
             {
                 SendText("/tpaccept");
             }
