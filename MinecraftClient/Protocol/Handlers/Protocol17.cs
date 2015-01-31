@@ -599,15 +599,8 @@ namespace MinecraftClient.Protocol.Handlers
                             version = (tmp_name.Length == 2) ? tmp_name[1].Split('"')[0] : tmp_name[2].Split('"')[0];
                             
                             //Automatic fix for BungeeCord 1.8 not properly reporting protocol version
-                            if (protocolversion == 0 && version.Split(' ').Contains("1.8"))
+                            if (protocolversion < 47 && version.Split(' ').Contains("1.8"))
                                 protocolversion = ProtocolHandler.MCVer2ProtocolVersion("1.8.0");
-
-                            if (result.Contains("modinfo\":"))
-                            {
-                                //Server is running Forge (which is not supported)
-                                version = "Forge " + version;
-                                protocolversion = 0;
-                            }
 
                             ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + ").");
                             return true;

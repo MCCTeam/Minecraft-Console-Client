@@ -60,7 +60,7 @@ In scripts and remote control, no slash is needed to perform the command.
  - respawn : Use this to respawn if you are dead (like clicking "respawn" ingame)
  - log <text> : display some text in the console (useful for scripts)
  - set varname=value : set a value which can be used as %varname% in further commands
- - wait <time> : wait <time> : wait X ticks (10 ticks = ~1 second. Only for scripts)
+ - wait <time> : wait X ticks (10 ticks = ~1 second. Only for scripts)
  - help : show command help. Tip: Use "/send /help" for server help
 
 [account] is an account alias defined in accounts file, read more below.
@@ -169,7 +169,7 @@ Auto-accept can be disabled or extended to requests from anyone in remote contro
 =========================
 
 Even if everything should work, I am not responsible of any damage this app could cause to your computer or your server.
-This app does not steal your  password. If you don't trust it, don't use it or check & compile the source code.
+This app does not steal your password. If you don't trust it, don't use it or check & compile the source code.
 
 Also, remember that when you connect to a server with this program, you will appear where you left the last time.
 This means that you can die if you log in in an unsafe place on a survival server!
@@ -179,5 +179,5 @@ You can find more info at:
 http://www.minecraftforum.net/topic/1314800-/
 
 +--------------------+
-| © 2012-2014 ORelio |
+| © 2012-2015 ORelio |
 +--------------------+
