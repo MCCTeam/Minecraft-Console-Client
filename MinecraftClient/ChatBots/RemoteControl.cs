@@ -18,7 +18,11 @@ namespace MinecraftClient.ChatBots
             if (isPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower().Trim()))
             {
                 string response = "";
-                performInternalCommand(command, ref response);
+                if(command.StartsWith(Settings.internalCmdChar.ToString()))
+                    performInternalCommand(command.Substring(1), ref response);
+                else
+                    SendText(command);
+                    
                 if (response.Length > 0)
                 {
                     SendPrivateMessage(sender, response);
