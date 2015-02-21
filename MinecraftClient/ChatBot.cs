@@ -203,6 +203,16 @@ namespace MinecraftClient
                     if (sender[0] == '~') { sender = sender.Substring(1); }
                     return isValidName(sender);
                 }
+                
+                //Detect HeroChat PMsend
+                //From Someone: message
+
+                else if (text.StartsWith("From"))
+                {
+                    sender = tmp[1].ToString().Remove(tmp[1].ToString().Length-1);
+                    message = text.Substring(tmp[0].Length+ 1 + tmp[1].Length + 1);
+                    return isValidName(sender);
+                }
 
                 else return false;
             }
