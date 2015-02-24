@@ -161,6 +161,7 @@ When the remote control bot is enabled, you can send commands to your bot using 
 Don't forget to add your username in botowners INI setting if you want it to obey.
 To perform a command simply do the following: /tell <yourbot> <thecommand>
 Where <thecommand> is an internal command as described in "Internal commands" section.
+You can remotely send chat messages or commands using /tell <yourbot> send <thetext>
 Remote control system can auto-accept /tpa and /tpahere requests from the bot owners.
 Auto-accept can be disabled or extended to requests from anyone in remote control configuration.
 
@@ -179,5 +180,5 @@ You can find more info at:
 http://www.minecraftforum.net/topic/1314800-/
 
 +--------------------+
-| © 2012-2015 ORelio |
+| Â© 2012-2015 ORelio |
 +--------------------+
