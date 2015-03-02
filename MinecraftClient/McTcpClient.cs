@@ -283,8 +283,11 @@ namespace MinecraftClient
                 if (bot is ChatBots.Script)
                     scripts_on_hold.Add((ChatBots.Script)bot);
 
-            handler.Disconnect();
-            handler.Dispose();
+            if (handler != null)
+            {
+                handler.Disconnect();
+                handler.Dispose();
+            }
 
             if (cmdprompt != null)
                 cmdprompt.Abort();
