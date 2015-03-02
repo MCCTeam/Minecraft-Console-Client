@@ -223,6 +223,15 @@ namespace MinecraftClient
                     message = text.Substring(name_end + 2);
                     return isValidName(sender);
                 }
+                //Detect Essentials Pay message
+                //${amount} has been received from {user}.
+                else if (text.StartsWith("$"))
+                {
+                    sender = tmp[4].ToString().Remove(tmp[4].ToString().Length - 1);
+                    message = tmp[0].ToString();
+                    return isValidName(sender);
+                }
+
 
                 else return false;
             }
