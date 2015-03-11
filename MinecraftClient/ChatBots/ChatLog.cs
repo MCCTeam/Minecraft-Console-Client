@@ -92,7 +92,9 @@ namespace MinecraftClient.ChatBots
             if (dateandtime)
                 tosave = getTimestamp() + ' ' + tosave;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(logfile));
+            string directory = Path.GetDirectoryName(logfile);
+            if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
             FileStream stream = new FileStream(logfile, FileMode.OpenOrCreate);
             StreamWriter writer = new StreamWriter(stream);
             stream.Seek(0, SeekOrigin.End);

@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using MinecraftClient.Crypto;
 using MinecraftClient.Proxy;
+using System.Security.Cryptography;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -96,6 +97,17 @@ namespace MinecraftClient.Protocol.Handlers
                         case 0x02:
                             handler.OnTextReceived(ChatParser.ParseText(readNextString()));
                             break;
+                        case 0x38:
+                            string name = readNextString();
+                            bool online = readNextBool();
+                            short ping = readNextShort();
+                            Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
+                            if (online)
+                            {
+                                handler.OnPlayerJoin(FakeUUID, name);
+                            }
+                            else handler.OnPlayerLeave(FakeUUID);
+                            break;
                         case 0x3A:
                             int autocomplete_count = readNextVarInt();
                             string tab_list = "";
@@ -184,6 +196,44 @@ namespace MinecraftClient.Protocol.Handlers
                 return Encoding.UTF8.GetString(cache);
             }
             else return "";
+        }
+
+        /// <summary>
+        /// Read a uuid from the network
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        /// <returns>The uuid</returns>
+
+        private Guid readNextUUID()
+        {
+            byte[] cache = new byte[16];
+            Receive(cache, 0, 16, SocketFlags.None);
+            return new Guid(cache);
+        }
+
+        /// <summary>
+        /// Read a short from the network
+        /// </summary>
+        /// <returns></returns>
+
+        private short readNextShort()
+        {
+            byte[] tmp = new byte[2];
+            Receive(tmp, 0, 2, SocketFlags.None);
+            Array.Reverse(tmp);
+            return BitConverter.ToInt16(tmp, 0);
+        }
+
+        /// <summary>
+        /// Read a boolean from the network
+        /// </summary>
+        /// <returns></returns>
+
+        private bool readNextBool()
+        {
+            byte[] tmp = new byte[1];
+            Receive(tmp, 0, 1, SocketFlags.None);
+            return tmp[0] != 0x00;
         }
 
         /// <summary>
@@ -545,14 +595,13 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             protocolversion = atoi(tmp_ver[1]);
 
-                            // Handle if "name" exists twice, like when connecting to a server with another user logged in.
+                            //Handle if "name" exists twice, eg when connecting to a server with another user logged in.
                             version = (tmp_name.Length == 2) ? tmp_name[1].Split('"')[0] : tmp_name[2].Split('"')[0];
-                            if (result.Contains("modinfo\":"))
-                            {
-                                //Server is running Forge (which is not supported)
-                                version = "Forge " + version;
-                                protocolversion = 0;
-                            }
+                            
+                            //Automatic fix for BungeeCord 1.8 not properly reporting protocol version
+                            if (protocolversion < 47 && version.Split(' ').Contains("1.8"))
+                                protocolversion = ProtocolHandler.MCVer2ProtocolVersion("1.8.0");
+
                             ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + ").");
                             return true;
                         }

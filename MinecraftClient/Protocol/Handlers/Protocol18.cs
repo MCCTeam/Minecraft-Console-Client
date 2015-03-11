@@ -137,13 +137,31 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x00:
+                    case 0x00: //Keep-Alive
                         SendPacket(0x00, getVarInt(readNextVarInt(ref packetData)));
                         break;
-                    case 0x02:
+                    case 0x02: //Chat message
                         handler.OnTextReceived(ChatParser.ParseText(readNextString(ref packetData)));
                         break;
-                    case 0x3A:
+                    case 0x38: //Player List update
+                        int action = readNextVarInt(ref packetData);
+                        int numActions = readNextVarInt(ref packetData);
+                        Guid uuid = readNextUUID(ref packetData);
+                        switch (action)
+                        {
+                            case 0x00: //Player Join
+                                string name = readNextString(ref packetData);
+                                handler.OnPlayerJoin(uuid, name);
+                                break;
+                            case 0x04: //Player Leave
+                                handler.OnPlayerLeave(uuid);
+                                break;
+                            default:
+                                //Unknown player list item type
+                                break;
+                        }
+                        break;
+                    case 0x3A: //Tab-Complete Result
                         int autocomplete_count = readNextVarInt(ref packetData);
                         string tab_list = "";
                         for (int i = 0; i < autocomplete_count; i++)
@@ -157,10 +175,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (tab_list.Length > 0)
                             ConsoleIO.WriteLineFormatted("§8" + tab_list, false);
                         break;
-                    case 0x40:
+                    case 0x40: //Kick Packet
                         handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(readNextString(ref packetData)));
                         return false;
-                    case 0x46:
+                    case 0x46: //Network Compression Treshold Info
                         compression_treshold = readNextVarInt(ref packetData);
                         break;
                     default:
@@ -254,6 +272,17 @@ namespace MinecraftClient.Protocol.Handlers
                 return Encoding.UTF8.GetString(readData(length, ref cache));
             }
             else return "";
+        }
+
+        /// <summary>
+        /// Read a uuid from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        /// <returns>The uuid</returns>
+
+        private Guid readNextUUID(ref byte[] cache)
+        {
+            return new Guid(readData(16, ref cache));
         }
 
         /// <summary>
@@ -623,66 +652,6 @@ namespace MinecraftClient.Protocol.Handlers
             int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
             while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
             return autocomplete_result;
-        }
-
-        /// <summary>
-        /// Ping a Minecraft server to get information about the server
-        /// </summary>
-        /// <returns>True if ping was successful</returns>
-
-        public static bool doPing(string host, int port, ref int protocolversion)
-        {
-            string version = "";
-            TcpClient tcp = ProxyHandler.newTcpClient(host, port);
-            tcp.ReceiveBufferSize = 1024 * 1024;
-
-            byte[] packet_id = getVarInt(0);
-            byte[] protocol_version = getVarInt(4);
-            byte[] server_adress_val = Encoding.UTF8.GetBytes(host);
-            byte[] server_adress_len = getVarInt(server_adress_val.Length);
-            byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
-            byte[] next_state = getVarInt(1);
-            byte[] packet = concatBytes(packet_id, protocol_version, server_adress_len, server_adress_val, server_port, next_state);
-            byte[] tosend = concatBytes(getVarInt(packet.Length), packet);
-
-            tcp.Client.Send(tosend, SocketFlags.None);
-
-            byte[] status_request = getVarInt(0);
-            byte[] request_packet = concatBytes(getVarInt(status_request.Length), status_request);
-
-            tcp.Client.Send(request_packet, SocketFlags.None);
-
-            int packetID = -1;
-            byte[] packetData = new byte[] { };
-            Protocol18Handler ComTmp = new Protocol18Handler(tcp);
-            ComTmp.readNextPacket(ref packetID, ref packetData);
-            if (packetData.Length > 0) //Verify Response length
-            {
-                if (packetID == 0x00) //Read Packet ID
-                {
-                    string result = ComTmp.readNextString(ref packetData); //Get the Json data
-                    if (result[0] == '{' && result.Contains("protocol\":") && result.Contains("name\":\""))
-                    {
-                        string[] tmp_ver = result.Split(new string[] { "protocol\":" }, StringSplitOptions.None);
-                        string[] tmp_name = result.Split(new string[] { "name\":\"" }, StringSplitOptions.None);
-
-                        if (tmp_ver.Length >= 2 && tmp_name.Length >= 2)
-                        {
-                            protocolversion = atoi(tmp_ver[1]);
-                            version = tmp_name[1].Split('"')[0];
-                            if (result.Contains("modinfo\":"))
-                            {
-                                //Server is running Forge (which is not supported)
-                                version = "Forge " + version;
-                                protocolversion = 0;
-                            }
-                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + ").");
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
         }
     }
 }

@@ -86,21 +86,24 @@ namespace MinecraftClientGUI
                     while (line.Trim() == "")
                     {
                         line = Client.StandardOutput.ReadLine() + Client.MainWindowTitle;
-                        if (line == "Server was successfuly joined.") { disconnected = false; }
-                        if (line == "You have left the server.") { disconnected = true; }
-                        if (line[0] == (char)0x00)
+                        if (line.Length > 0)
                         {
-                            //App message from the console
-                            string[] command = line.Substring(1).Split((char)0x00);
-                            switch (command[0].ToLower())
+                            if (line == "Server was successfuly joined.") { disconnected = false; }
+                            if (line == "You have left the server.") { disconnected = true; }
+                            if (line[0] == (char)0x00)
                             {
-                                case "autocomplete":
-                                    if (command.Length > 1) { tabAutoCompleteBuffer.AddLast(command[1]); }
-                                    else tabAutoCompleteBuffer.AddLast("");
-                                    break;
+                                //App message from the console
+                                string[] command = line.Substring(1).Split((char)0x00);
+                                switch (command[0].ToLower())
+                                {
+                                    case "autocomplete":
+                                        if (command.Length > 1) { tabAutoCompleteBuffer.AddLast(command[1]); }
+                                        else tabAutoCompleteBuffer.AddLast("");
+                                        break;
+                                }
                             }
+                            else OutputBuffer.AddLast(line);
                         }
-                        else OutputBuffer.AddLast(line);
                     }
                 }
                 catch (NullReferenceException) { break; }

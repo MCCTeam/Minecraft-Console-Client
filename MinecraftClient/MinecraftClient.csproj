@@ -71,6 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoTimeout.cs" />
     <Compile Include="ChatBots\Alerts.cs" />
     <Compile Include="ChatBots\AntiAFK.cs" />
     <Compile Include="ChatBots\AutoRelog.cs" />
@@ -131,6 +132,7 @@
     <Compile Include="Proxy\Handlers\Socks5ProxyClient.cs" />
     <Compile Include="Proxy\Handlers\Utils.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Commands\List.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

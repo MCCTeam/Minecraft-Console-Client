@@ -21,12 +21,28 @@ namespace MinecraftClient.Protocol
         string getUsername();
         string getUserUUID();
         string getSessionID();
+        string[] getOnlinePlayers();
 
         /// <summary>
         /// This method is called when the protocol handler receives a chat message
         /// </summary>
 
         void OnTextReceived(string text);
+
+        /// <summary>
+        /// This method is called when a new player joins the game
+        /// </summary>
+        /// <param name="uuid">UUID of the player</param>
+        /// <param name="name">Name of the player</param>
+
+        void OnPlayerJoin(Guid uuid, string name);
+
+        /// <summary>
+        /// This method is called when a player has left the game
+        /// </summary>
+        /// <param name="uuid">UUID of the player</param>
+
+        void OnPlayerLeave(Guid uuid);
 
         /// <summary>
         /// This method is called when the connection has been lost

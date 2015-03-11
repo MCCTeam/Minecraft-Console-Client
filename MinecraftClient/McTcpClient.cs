@@ -20,6 +20,7 @@ namespace MinecraftClient
         private static List<string> cmd_names = new List<string>();
         private static Dictionary<string, Command> cmds = new Dictionary<string, Command>();
         private List<ChatBot> bots = new List<ChatBot>();
+        private Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid,string>();
         private static List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
@@ -53,7 +54,7 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
 
-        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, string server_ip, short port)
+        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, string server_ip, ushort port)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, false, "");
         }
@@ -69,7 +70,7 @@ namespace MinecraftClient
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
 
-        public McTcpClient(string username, string uuid, string sessionID, string server_ip, short port, int protocolversion, string command)
+        public McTcpClient(string username, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, string command)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, true, command);
         }
@@ -86,7 +87,7 @@ namespace MinecraftClient
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
 
-        private void StartClient(string user, string uuid, string sessionID, string server_ip, short port, int protocolversion, bool singlecommand, string command)
+        private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, bool singlecommand, string command)
         {
             this.sessionid = sessionID;
             this.uuid = uuid;
@@ -125,7 +126,9 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        foreach (ChatBot bot in scripts_on_hold) { bots.Add(bot); }
+                        foreach (ChatBot bot in scripts_on_hold)
+                            bot.SetHandler(this);
+                        bots.AddRange(scripts_on_hold);
                         scripts_on_hold.Clear();
                         
                         Console.WriteLine("Server was successfully joined.\nType '"
@@ -280,8 +283,11 @@ namespace MinecraftClient
                 if (bot is ChatBots.Script)
                     scripts_on_hold.Add((ChatBots.Script)bot);
 
-            handler.Disconnect();
-            handler.Dispose();
+            if (handler != null)
+            {
+                handler.Disconnect();
+                handler.Dispose();
+            }
 
             if (cmdprompt != null)
                 cmdprompt.Abort();
@@ -396,6 +402,37 @@ namespace MinecraftClient
         public bool SendRespawnPacket()
         {
             return handler.SendRespawnPacket();
+        }
+
+        /// <summary>
+        /// Triggered when a new player joins the game
+        /// </summary>
+        /// <param name="uuid">UUID of the player</param>
+        /// <param name="name">Name of the player</param>
+
+        public void OnPlayerJoin(Guid uuid, string name)
+        {
+            onlinePlayers[uuid] = name;
+        }
+        
+        /// <summary>
+        /// Triggered when a player has left the game
+        /// </summary>
+        /// <param name="uuid">UUID of the player</param>
+
+        public void OnPlayerLeave(Guid uuid)
+        {
+            onlinePlayers.Remove(uuid);
+        }
+
+        /// <summary>
+        /// Get a set of online player names
+        /// </summary>
+        /// <returns>Online player names</returns>
+
+        public string[] getOnlinePlayers()
+        {
+            return onlinePlayers.Values.Distinct().ToArray();
         }
     }
 }

@@ -204,6 +204,26 @@ namespace MinecraftClient
                     return isValidName(sender);
                 }
 
+                //Detect HeroChat PMsend
+                //From Someone: message
+                else if (text.StartsWith("From "))
+                {
+                    sender = text.Substring(5).Split(':')[0];
+                    message = text.Substring(text.IndexOf(':') + 2);
+                    return isValidName(sender);
+                }
+
+                //Detect HeroChat Messages
+                //[Channel] [Rank] User: Message
+                else if (text.StartsWith("[") && text.Contains(':') && tmp.Length > 2)
+                {
+                    int name_end = text.IndexOf(':');
+                    int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
+                    sender = text.Substring(name_start, name_end - name_start);
+                    message = text.Substring(name_end + 2);
+                    return isValidName(sender);
+                }
+
                 else return false;
             }
             catch (IndexOutOfRangeException) { return false; }
