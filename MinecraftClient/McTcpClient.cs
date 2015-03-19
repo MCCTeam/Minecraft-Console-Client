@@ -20,7 +20,7 @@ namespace MinecraftClient
         private static List<string> cmd_names = new List<string>();
         private static Dictionary<string, Command> cmds = new Dictionary<string, Command>();
         private List<ChatBot> bots = new List<ChatBot>();
-        private Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid,string>();
+        private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid,string>();
         private static List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
@@ -412,7 +412,10 @@ namespace MinecraftClient
 
         public void OnPlayerJoin(Guid uuid, string name)
         {
-            onlinePlayers[uuid] = name;
+            lock (onlinePlayers)
+            {
+                onlinePlayers[uuid] = name;
+            }
         }
         
         /// <summary>
@@ -422,7 +425,10 @@ namespace MinecraftClient
 
         public void OnPlayerLeave(Guid uuid)
         {
-            onlinePlayers.Remove(uuid);
+            lock (onlinePlayers)
+            {
+                onlinePlayers.Remove(uuid);
+            }
         }
 
         /// <summary>
@@ -432,7 +438,10 @@ namespace MinecraftClient
 
         public string[] getOnlinePlayers()
         {
-            return onlinePlayers.Values.Distinct().ToArray();
+            lock (onlinePlayers)
+            {
+                return onlinePlayers.Values.Distinct().ToArray();
+            }
         }
     }
 }
