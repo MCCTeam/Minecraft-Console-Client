@@ -305,8 +305,21 @@ namespace MinecraftClient
         public void OnTextReceived(string text)
         {
             ConsoleIO.WriteLineFormatted(text, false);
-            foreach (ChatBot bot in new List<ChatBot>(bots))
-                bot.GetText(text);
+            for (int i = 0; i < bots.Count; i++)
+            {
+                try
+                {
+                    bots[i].GetText(text);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLineFormatted("§8GetText: Got error from " + bots[i].ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
         }
 
         /// <summary>
@@ -357,7 +370,7 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLineFormatted("§8Got error from " + bots[i].ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLineFormatted("§8Update: Got error from " + bots[i].ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
