@@ -20,6 +20,7 @@ namespace MinecraftClient
         public static string[] startupargs;
         public const string Version = "1.8.2";
         private static Thread offlinePrompt = null;
+        private static bool useMcVersionOnce = false;
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -148,11 +149,18 @@ namespace MinecraftClient
                 if (Settings.ServerVersion != "" && Settings.ServerVersion.ToLower() != "auto")
                 {
                     protocolversion = Protocol.ProtocolHandler.MCVer2ProtocolVersion(Settings.ServerVersion);
+
                     if (protocolversion != 0)
                     {
                         ConsoleIO.WriteLineFormatted("§8Using Minecraft version " + Settings.ServerVersion + " (protocol v" + protocolversion + ')');
                     }
                     else ConsoleIO.WriteLineFormatted("§8Unknown or not supported MC version '" + Settings.ServerVersion + "'.\nSwitching to autodetection mode.");
+
+                    if (useMcVersionOnce)
+                    {
+                        useMcVersionOnce = false;
+                        Settings.ServerVersion = "";
+                    }
                 }
 
                 if (protocolversion == 0)
@@ -166,7 +174,18 @@ namespace MinecraftClient
                             ChatBots.AutoRelog bot = new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries);
                             if (!bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Failed to ping this IP.")) { OfflineCommandPrompt(); }
                         }
-                        else OfflineCommandPrompt();
+                        else
+                        {
+                            if (Settings.interactiveMode)
+                            {
+                                if (MinecraftVersionPrompt())
+                                {
+                                    Restart();
+                                    return;
+                                }
+                                OfflineCommandPrompt();
+                            }
+                        }
                         return;
                     }
                 }
@@ -191,7 +210,11 @@ namespace MinecraftClient
                 else
                 {
                     Console.WriteLine("Failed to determine server version.");
-                    OfflineCommandPrompt();
+                    if (Settings.interactiveMode && MinecraftVersionPrompt())
+                    {
+                        Restart();
+                        return;
+                    }
                 }
             }
             else
@@ -256,7 +279,7 @@ namespace MinecraftClient
 
         public static void OfflineCommandPrompt()
         {
-            if (!Settings.exitOnFailure && offlinePrompt == null)
+            if (Settings.interactiveMode && offlinePrompt == null)
             {
                 offlinePrompt = new Thread(new ThreadStart(delegate
                 {
@@ -269,36 +292,58 @@ namespace MinecraftClient
                         command = Console.ReadLine().Trim();
                         if (command.Length > 0)
                         {
-                            if (Settings.internalCmdChar != ' ' && command[0] == Settings.internalCmdChar)
-                            {
-                                string message = "";
+                            string message = "";
+
+                            if (Settings.internalCmdChar != ' '
+                                && command[0] == Settings.internalCmdChar)
                                 command = command.Substring(1);
-                                if (command.StartsWith("reco"))
-                                {
-                                    message = new Commands.Reco().Run(null, Settings.expandVars(command));
-                                }
-                                else if (command.StartsWith("connect"))
-                                {
-                                    message = new Commands.Connect().Run(null, Settings.expandVars(command));
-                                }
-                                else if (command.StartsWith("exit") || command.StartsWith("quit"))
-                                {
-                                    message = new Commands.Exit().Run(null, Settings.expandVars(command));
-                                }
-                                else if (command.StartsWith("help"))
-                                {
-                                    ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Reco().CMDDesc);
-                                    ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Connect().CMDDesc);
-                                }
-                                else ConsoleIO.WriteLineFormatted("§8Unknown command '" + command.Split(' ')[0] + "'.");
-                                if (message != "") { ConsoleIO.WriteLineFormatted("§8MCC: " + message); }
+                            
+                            if (command.StartsWith("reco"))
+                            {
+                                message = new Commands.Reco().Run(null, Settings.expandVars(command));
                             }
-                            else ConsoleIO.WriteLineFormatted("§8Please type a command or press Enter to exit.");
+                            else if (command.StartsWith("connect"))
+                            {
+                                message = new Commands.Connect().Run(null, Settings.expandVars(command));
+                            }
+                            else if (command.StartsWith("exit") || command.StartsWith("quit"))
+                            {
+                                message = new Commands.Exit().Run(null, Settings.expandVars(command));
+                            }
+                            else if (command.StartsWith("help"))
+                            {
+                                ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Reco().CMDDesc);
+                                ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Connect().CMDDesc);
+                            }
+                            else ConsoleIO.WriteLineFormatted("§8Unknown command '" + command.Split(' ')[0] + "'.");
+
+                            if (message != "")
+                                ConsoleIO.WriteLineFormatted("§8MCC: " + message);
                         }
                     }
                 }));
                 offlinePrompt.Start();
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+
+        public static bool MinecraftVersionPrompt()
+        {
+            if (Settings.interactiveMode)
+            {
+                Console.Write("Server version : ");
+                Settings.ServerVersion = Console.ReadLine();
+                if (Settings.ServerVersion != "")
+                {
+                    useMcVersionOnce = true;
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>

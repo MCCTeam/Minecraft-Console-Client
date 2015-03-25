@@ -124,7 +124,7 @@ namespace MinecraftClient.Protocol
                 }
                 catch
                 {
-                    return -1;
+                    return 0;
                 }
             }
         }

@@ -40,7 +40,7 @@ namespace MinecraftClient
         public static List<string> Bots_Owners = new List<string>();
         public static string Language = "en_GB";
         public static bool chatTimeStamps = false;
-        public static bool exitOnFailure = false;
+        public static bool interactiveMode = true;
         public static char internalCmdChar = '/';
         public static bool playerHeadAsIcon = false;
         public static string chatbotLogFile = "";
@@ -148,7 +148,7 @@ namespace MinecraftClient
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
                                                 case "timestamps": chatTimeStamps = str2bool(argValue); break;
-                                                case "exitonfailure": exitOnFailure = str2bool(argValue); break;
+                                                case "exitonfailure": interactiveMode = !str2bool(argValue); break;
                                                 case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
                                                 case "chatbotlogfile": chatbotLogFile = argValue; break;
                                                 case "mcversion": ServerVersion = argValue; break;

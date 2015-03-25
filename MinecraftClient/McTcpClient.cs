@@ -149,7 +149,10 @@ namespace MinecraftClient
                     ChatBot.LogToConsole("Waiting 5 seconds (" + AttemptsLeft + " attempts left)...");
                     Thread.Sleep(5000); AttemptsLeft--; Program.Restart();
                 }
-                else if (!singlecommand) { Console.ReadLine(); }
+                else if (!singlecommand && Settings.interactiveMode)
+                {
+                    Program.OfflineCommandPrompt();
+                }
             }
         }
 
