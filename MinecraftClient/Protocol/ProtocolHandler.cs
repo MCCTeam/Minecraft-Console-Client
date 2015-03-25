@@ -260,7 +260,7 @@ namespace MinecraftClient.Protocol
                     statusCode = Settings.str2int(raw_result.Split(' ')[1]);
                 }
                 else statusCode = 520; //Web server is returning an unknown error
-            }, 15000);
+            }, 30000);
             result = postResult;
             return statusCode;
         }
