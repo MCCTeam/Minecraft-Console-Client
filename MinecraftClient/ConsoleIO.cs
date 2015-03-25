@@ -193,8 +193,6 @@ namespace MinecraftClient
             writing_lock = true;
             if (reading)
             {
-                ConsoleColor fore = Console.ForegroundColor;
-                ConsoleColor back = Console.BackgroundColor;
                 string buf = buffer;
                 string buf2 = buffer2;
                 ClearLineAndBuffer();
@@ -208,8 +206,6 @@ namespace MinecraftClient
                 }
                 else Console.Write("\b \b");
                 Console.Write(text);
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.BackgroundColor = ConsoleColor.Black;
                 buffer = buf;
                 buffer2 = buf2;
                 Console.Write(">" + buffer);
@@ -218,8 +214,6 @@ namespace MinecraftClient
                     Console.Write(buffer2 + " \b");
                     for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
                 }
-                Console.ForegroundColor = fore;
-                Console.BackgroundColor = back;
             }
             else Console.Write(text);
             writing_lock = false;

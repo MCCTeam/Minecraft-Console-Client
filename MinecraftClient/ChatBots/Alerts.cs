@@ -67,9 +67,12 @@ namespace MinecraftClient.ChatBots
                     if (ConsoleIO.basicIO) //Using a GUI? Pass text as is.
                         ConsoleIO.WriteLine(text.Replace(alert, "§c" + alert + "§r"));
 
-                    else //Using Consome Prompt : Print text with alert highlighted
+                    else //Using Console Prompt : Print text with alert highlighted
                     {
                         string[] splitted = text.Split(new string[] { alert }, StringSplitOptions.None);
+
+                        ConsoleColor fore = Console.ForegroundColor;
+                        ConsoleColor back = Console.BackgroundColor;
 
                         if (splitted.Length > 0)
                         {
@@ -89,8 +92,8 @@ namespace MinecraftClient.ChatBots
                             }
                         }
 
-                        Console.BackgroundColor = ConsoleColor.Black;
-                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.BackgroundColor = back;
+                        Console.ForegroundColor = fore;
                         ConsoleIO.Write('\n');
                     }
                 }
