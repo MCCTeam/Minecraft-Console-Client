@@ -342,7 +342,7 @@ namespace MinecraftClient
                 + "\r\n"
                 + "language=en_GB\r\n"
                 + "botowners=Player1,Player2,Player3\r\n"
-                + "consoletitle=%username% - Minecraft Console Client\r\n"
+                + "consoletitle=%username%@%serverip% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
