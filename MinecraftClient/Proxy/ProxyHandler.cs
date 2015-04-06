@@ -57,11 +57,15 @@ namespace MinecraftClient.Proxy
                 }
                 else return new TcpClient(host, port);
             }
-            catch (ProxyException e)
+            catch (Exception e)
             {
-                ConsoleIO.WriteLineFormatted("§8" + e.Message);
-                proxy = null;
-                return null;
+                if (e is ProxyException || e is SocketException)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + e.Message);
+                    proxy = null;
+                    return null;
+                }
+                else throw;   
             }
         }
     }

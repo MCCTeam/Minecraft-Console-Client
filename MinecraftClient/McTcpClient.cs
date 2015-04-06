@@ -89,6 +89,7 @@ namespace MinecraftClient
 
         private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, bool singlecommand, string command)
         {
+            bool retry = false;
             this.sessionid = sessionID;
             this.uuid = uuid;
             this.username = user;
@@ -113,37 +114,51 @@ namespace MinecraftClient
                 client.ReceiveBufferSize = 1024 * 1024;
                 handler = Protocol.ProtocolHandler.getProtocolHandler(client, protocolversion, this);
                 Console.WriteLine("Version is supported.\nLogging in...");
-                
-                if (handler.Login())
+
+                try
                 {
-                    if (singlecommand)
+                    if (handler.Login())
                     {
-                        handler.SendChatMessage(command);
-                        ConsoleIO.WriteLineFormatted("§7Command §8" + command + "§7 sent.");
-                        Thread.Sleep(5000);
-                        handler.Disconnect();
-                        Thread.Sleep(1000);
+                        if (singlecommand)
+                        {
+                            handler.SendChatMessage(command);
+                            ConsoleIO.WriteLineFormatted("§7Command §8" + command + "§7 sent.");
+                            Thread.Sleep(5000);
+                            handler.Disconnect();
+                            Thread.Sleep(1000);
+                        }
+                        else
+                        {
+                            foreach (ChatBot bot in scripts_on_hold)
+                                bot.SetHandler(this);
+                            bots.AddRange(scripts_on_hold);
+                            scripts_on_hold.Clear();
+
+                            Console.WriteLine("Server was successfully joined.\nType '"
+                                + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)
+                                + "quit' to leave the server.");
+
+                            cmdprompt = new Thread(new ThreadStart(CommandPrompt));
+                            cmdprompt.Name = "MCC Command prompt";
+                            cmdprompt.Start();
+                        }
                     }
-                    else
-                    {
-                        foreach (ChatBot bot in scripts_on_hold)
-                            bot.SetHandler(this);
-                        bots.AddRange(scripts_on_hold);
-                        scripts_on_hold.Clear();
-                        
-                        Console.WriteLine("Server was successfully joined.\nType '"
-                            + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)
-                            + "quit' to leave the server.");
-                        
-                        cmdprompt = new Thread(new ThreadStart(CommandPrompt));
-                        cmdprompt.Name = "MCC Command prompt";
-                        cmdprompt.Start();
-                    }
+                }
+                catch (Exception e)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + e.Message);
+                    Console.WriteLine("Failed to join this server.");
+                    retry = true;
                 }
             }
             catch (SocketException)
             {
                 Console.WriteLine("Failed to connect to this IP.");
+                retry = true;
+            }
+
+            if (retry)
+            {
                 if (AttemptsLeft > 0)
                 {
                     ChatBot.LogToConsole("Waiting 5 seconds (" + AttemptsLeft + " attempts left)...");
@@ -428,6 +443,10 @@ namespace MinecraftClient
 
         public void OnPlayerJoin(Guid uuid, string name)
         {
+            //Ignore TabListPlus placeholders
+            if (name.StartsWith("0000tab#"))
+                return;
+
             lock (onlinePlayers)
             {
                 onlinePlayers[uuid] = name;

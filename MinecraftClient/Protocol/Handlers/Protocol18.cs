@@ -458,7 +458,7 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] server_adress_len = getVarInt(server_adress_val.Length);
             byte[] server_port = BitConverter.GetBytes((ushort)handler.getServerPort()); Array.Reverse(server_port);
             byte[] next_state = getVarInt(2);
-            byte[] handshake_packet = concatBytes( protocol_version, server_adress_len, server_adress_val, server_port, next_state);
+            byte[] handshake_packet = concatBytes(protocol_version, server_adress_len, server_adress_val, server_port, next_state);
 
             SendPacket(0x00, handshake_packet);
 
