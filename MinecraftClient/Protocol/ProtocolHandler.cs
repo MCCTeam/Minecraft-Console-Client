@@ -25,25 +25,31 @@ namespace MinecraftClient.Protocol
 
         public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion)
         {
-            try
+            bool success = false;
+            int protocolversionTmp = 0;
+            if (AutoTimeout.Perform(() =>
             {
-                if (Protocol16Handler.doPing(serverIP, serverPort, ref protocolversion))
+                try
                 {
-                    return true;
+                    if (Protocol16Handler.doPing(serverIP, serverPort, ref protocolversionTmp)
+                        || Protocol17Handler.doPing(serverIP, serverPort, ref protocolversionTmp))
+                    {
+                        success = true;
+                    }
+                    else ConsoleIO.WriteLineFormatted("§8Unexpected answer from the server (is that a Minecraft server ?)");
                 }
-                else if (Protocol17Handler.doPing(serverIP, serverPort, ref protocolversion))
+                catch
                 {
-                    return true;
+                    ConsoleIO.WriteLineFormatted("§8An error occured while attempting to connect to this IP.");
                 }
-                else
-                {
-                    ConsoleIO.WriteLineFormatted("§8Unexpected answer from the server (is that a Minecraft server ?)");
-                    return false;
-                }
+            }, TimeSpan.FromSeconds(30)))
+            {
+                protocolversion = protocolversionTmp;
+                return success;
             }
-            catch
+            else
             {
-                ConsoleIO.WriteLineFormatted("§8An error occured while attempting to connect to this IP.");
+                ConsoleIO.WriteLineFormatted("§8A timeout occured while attempting to connect to this IP.");
                 return false;
             }
         }
@@ -260,7 +266,7 @@ namespace MinecraftClient.Protocol
                     statusCode = Settings.str2int(raw_result.Split(' ')[1]);
                 }
                 else statusCode = 520; //Web server is returning an unknown error
-            }, 30000);
+            }, TimeSpan.FromSeconds(30));
             result = postResult;
             return statusCode;
         }

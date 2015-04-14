@@ -327,9 +327,9 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// 
+        /// Ask for server version when failed to ping server and/or determinate serveur version
         /// </summary>
-        /// <returns></returns>
+        /// <returns>TRUE if a Minecraft version has been read from prompt</returns>
 
         public static bool MinecraftVersionPrompt()
         {
