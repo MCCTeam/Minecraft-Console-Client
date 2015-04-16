@@ -209,7 +209,9 @@ namespace MinecraftClient
                 else Console.Write("\b \b");
                 Console.Write(text);
                 Console.ForegroundColor = ConsoleColor.Gray;
-                Console.BackgroundColor = ConsoleColor.Black;
+                if(!Settings.useDefaultBackground) {
+                    Console.BackgroundColor = ConsoleColor.Black;
+                }   
                 buffer = buf;
                 buffer2 = buf2;
                 Console.Write(">" + buffer);
@@ -219,7 +221,9 @@ namespace MinecraftClient
                     for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
                 }
                 Console.ForegroundColor = fore;
-                Console.BackgroundColor = back;
+                if(!Settings.useDefaultBackground) {
+                    Console.BackgroundColor = back;
+                }
             }
             else Console.Write(text);
             writing_lock = false;

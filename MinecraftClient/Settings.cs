@@ -44,6 +44,7 @@ namespace MinecraftClient
         public static char internalCmdChar = '/';
         public static bool playerHeadAsIcon = false;
         public static string chatbotLogFile = "";
+        public static bool useDefaultBackground = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -152,6 +153,7 @@ namespace MinecraftClient
                                                 case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
                                                 case "chatbotlogfile": chatbotLogFile = argValue; break;
                                                 case "mcversion": ServerVersion = argValue; break;
+                                                case "defaultbackground": useDefaultBackground = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -351,6 +353,7 @@ namespace MinecraftClient
                 + "playerheadicon=true\r\n"
                 + "exitonfailure=false\r\n"
                 + "timestamps=false\r\n"
+                + "defaultbackground=false\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
                 + "#yourvar=yourvalue\r\n"

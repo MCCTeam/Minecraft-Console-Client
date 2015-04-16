@@ -88,8 +88,14 @@ namespace MinecraftClient.ChatBots
                                 ConsoleIO.Write(splitted[i]);
                             }
                         }
-
-                        Console.BackgroundColor = ConsoleColor.Black;
+                        if(!Settings.useDefaultBackground)
+                        {
+                            Console.BackgroundColor = ConsoleColor.Black;
+                        }
+                        else 
+                        {
+                            Console.ResetColor();
+                        }                        
                         Console.ForegroundColor = ConsoleColor.Gray;
                         ConsoleIO.Write('\n');
                     }
