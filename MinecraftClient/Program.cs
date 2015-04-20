@@ -169,24 +169,8 @@ namespace MinecraftClient
                     if (!ProtocolHandler.GetServerInfo(Settings.ServerIP, Settings.ServerPort, ref protocolversion))
                     {
                         Console.WriteLine("Failed to ping this IP.");
-                        if (Settings.AutoRelog_Enabled)
-                        {
-                            ChatBots.AutoRelog bot = new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries);
-                            if (!bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Failed to ping this IP.")) { OfflineCommandPrompt(); }
-                        }
-                        else
-                        {
-                            if (Settings.interactiveMode)
-                            {
-                                if (MinecraftVersionPrompt())
-                                {
-                                    Restart();
-                                    return;
-                                }
-                                OfflineCommandPrompt();
-                            }
-                        }
-                        return;
+                        if (!ChatBots.AutoRelog.OnDisconnectStatic(ChatBot.DisconnectReason.ConnectionLost, "Failed to ping this IP."))
+                            HandleServerVersionFailure();
                     }
                 }
 
@@ -204,42 +188,40 @@ namespace MinecraftClient
                     catch (NotSupportedException)
                     {
                         Console.WriteLine("Cannot connect to the server : This version is not supported !");
-                        OfflineCommandPrompt();
+                        HandleServerVersionFailure();
                     }
                 }
                 else
                 {
                     Console.WriteLine("Failed to determine server version.");
-                    if (Settings.interactiveMode && MinecraftVersionPrompt())
-                    {
-                        Restart();
-                        return;
-                    }
+                    HandleServerVersionFailure();
                 }
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
-                Console.Write("Connection failed : ");
+                string failureMessage = "Minecraft Login failed : ";
                 switch (result)
                 {
-                    case ProtocolHandler.LoginResult.AccountMigrated: Console.WriteLine("Account migrated, use e-mail as username."); break;
-                    case ProtocolHandler.LoginResult.ServiceUnavailable: Console.WriteLine("Login servers are unavailable. Please try again later."); break;
-                    case ProtocolHandler.LoginResult.WrongPassword: Console.WriteLine("Incorrect password."); break;
-                    case ProtocolHandler.LoginResult.NotPremium: Console.WriteLine("User not premium."); break;
-                    case ProtocolHandler.LoginResult.OtherError: Console.WriteLine("Network error."); break;
-                    case ProtocolHandler.LoginResult.SSLError: Console.WriteLine("SSL Error.");
-                        if (isUsingMono)
-                        {
-                            ConsoleIO.WriteLineFormatted("§8It appears that you are using Mono to run this program."
-                                + '\n' + "The first time, you have to import HTTPS certificates using:"
-                                + '\n' + "mozroots --import --ask-remove");
-                            return;
-                        }
-                        break;
+                    case ProtocolHandler.LoginResult.AccountMigrated: failureMessage += "Account migrated, use e-mail as username."; break;
+                    case ProtocolHandler.LoginResult.ServiceUnavailable: failureMessage += "Login servers are unavailable. Please try again later."; break;
+                    case ProtocolHandler.LoginResult.WrongPassword: failureMessage += "Incorrect password."; break;
+                    case ProtocolHandler.LoginResult.NotPremium: failureMessage += "User not premium."; break;
+                    case ProtocolHandler.LoginResult.OtherError: failureMessage += "Network error."; break;
+                    case ProtocolHandler.LoginResult.SSLError: failureMessage += "SSL Error."; break;
+                    default: failureMessage += "Unknown Error."; break;
+                }
+                Console.WriteLine(failureMessage);
+                if (result == ProtocolHandler.LoginResult.SSLError && isUsingMono)
+                {
+                    ConsoleIO.WriteLineFormatted("§8It appears that you are using Mono to run this program."
+                        + '\n' + "The first time, you have to import HTTPS certificates using:"
+                        + '\n' + "mozroots --import --ask-remove");
+                    return;
                 }
                 while (Console.KeyAvailable) { Console.ReadKey(false); }
-                if (Settings.SingleCommand == "") { OfflineCommandPrompt(); }
+                if (!ChatBots.AutoRelog.OnDisconnectStatic(ChatBot.DisconnectReason.LoginRejected, failureMessage))
+                    HandleOfflineMode();
             }
         }
 
@@ -274,10 +256,10 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Pause the program, usually when an error or a kick occured, letting the user press Enter to quit OR type /reconnect
+        /// Pause the program, usually when an error or a kick occured, letting the user typing commands to reconnect to a server
         /// </summary>
 
-        public static void OfflineCommandPrompt()
+        public static void HandleOfflineMode()
         {
             if (Settings.interactiveMode && offlinePrompt == null)
             {
@@ -331,7 +313,7 @@ namespace MinecraftClient
         /// </summary>
         /// <returns>TRUE if a Minecraft version has been read from prompt</returns>
 
-        public static bool MinecraftVersionPrompt()
+        public static void HandleServerVersionFailure()
         {
             if (Settings.interactiveMode)
             {
@@ -340,10 +322,10 @@ namespace MinecraftClient
                 if (Settings.ServerVersion != "")
                 {
                     useMcVersionOnce = true;
-                    return true;
+                    Restart();
                 }
+                else HandleOfflineMode();
             }
-            return false;
         }
 
         /// <summary>

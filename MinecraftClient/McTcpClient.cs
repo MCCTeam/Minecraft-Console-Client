@@ -151,8 +151,9 @@ namespace MinecraftClient
                     retry = true;
                 }
             }
-            catch (SocketException)
+            catch (SocketException e)
             {
+                ConsoleIO.WriteLineFormatted("§8" + e.Message);
                 Console.WriteLine("Failed to connect to this IP.");
                 retry = true;
             }
@@ -166,7 +167,7 @@ namespace MinecraftClient
                 }
                 else if (!singlecommand && Settings.interactiveMode)
                 {
-                    Program.OfflineCommandPrompt();
+                    Program.HandleOfflineMode();
                 }
             }
         }
@@ -369,7 +370,8 @@ namespace MinecraftClient
             foreach (ChatBot bot in bots)
                 will_restart |= bot.OnDisconnect(reason, message);
 
-            if (!will_restart) { Program.OfflineCommandPrompt(); }
+            if (!will_restart)
+                Program.HandleOfflineMode();
         }
 
         /// <summary>

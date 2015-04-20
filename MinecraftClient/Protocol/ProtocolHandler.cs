@@ -38,9 +38,9 @@ namespace MinecraftClient.Protocol
                     }
                     else ConsoleIO.WriteLineFormatted("§8Unexpected answer from the server (is that a Minecraft server ?)");
                 }
-                catch
+                catch (Exception e)
                 {
-                    ConsoleIO.WriteLineFormatted("§8An error occured while attempting to connect to this IP.");
+                    ConsoleIO.WriteLineFormatted("§8" + e.Message);
                 }
             }, TimeSpan.FromSeconds(30)))
             {
