@@ -167,7 +167,10 @@ namespace MinecraftClient
                 {
                     Console.WriteLine("Retrieving Server Info...");
                     if (!ProtocolHandler.GetServerInfo(Settings.ServerIP, Settings.ServerPort, ref protocolversion))
+                    {
                         HandleFailure("Failed to ping this IP.", true, ChatBots.AutoRelog.DisconnectReason.ConnectionLost);
+                        return;
+                    }
                 }
 
                 if (protocolversion != 0)
@@ -210,7 +213,6 @@ namespace MinecraftClient
                         + '\n' + "mozroots --import --ask-remove");
                     return;
                 }
-                while (Console.KeyAvailable) { Console.ReadKey(false); }
                 HandleFailure(failureMessage, false, ChatBot.DisconnectReason.LoginRejected);
             }
         }
@@ -258,6 +260,8 @@ namespace MinecraftClient
             if (!String.IsNullOrEmpty(errorMessage))
             {
                 ConsoleIO.Reset();
+                while (Console.KeyAvailable)
+                    Console.ReadKey(true);
                 Console.WriteLine(errorMessage);
 
                 if (disconnectReason.HasValue)
