@@ -167,7 +167,7 @@ namespace MinecraftClient
                 }
                 else if (!singlecommand && Settings.interactiveMode)
                 {
-                    Program.HandleOfflineMode();
+                    Program.HandleFailure();
                 }
             }
         }
@@ -371,7 +371,7 @@ namespace MinecraftClient
                 will_restart |= bot.OnDisconnect(reason, message);
 
             if (!will_restart)
-                Program.HandleOfflineMode();
+                Program.HandleFailure();
         }
 
         /// <summary>

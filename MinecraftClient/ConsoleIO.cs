@@ -14,7 +14,7 @@ namespace MinecraftClient
 
     public static class ConsoleIO
     {
-        public static void Reset() { if (reading) { reading = false; Console.Write("\b \b"); } }
+        public static void Reset() { if (reading) { ClearLineAndBuffer(); reading = false; Console.Write("\b \b"); } }
         public static void SetAutoCompleteEngine(IAutoComplete engine) { autocomplete_engine = engine; }
         public static bool basicIO = false;
         private static IAutoComplete autocomplete_engine;
