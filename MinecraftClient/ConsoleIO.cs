@@ -110,87 +110,87 @@ namespace MinecraftClient
                 k = Console.ReadKey(true);
                 lock (io_lock)
                 {
-                if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
-                {
-                    string clip = ReadClipboard();
-                    foreach (char c in clip)
-                        AddChar(c);
-                }
-                else
-                {
-                    switch (k.Key)
+                    if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
                     {
-                        case ConsoleKey.Escape:
-                            ClearLineAndBuffer();
-                            break;
-                        case ConsoleKey.Backspace:
-                            RemoveOneChar();
-                            break;
-                        case ConsoleKey.Enter:
-                            Console.Write('\n');
-                            break;
-                        case ConsoleKey.LeftArrow:
-                            GoLeft();
-                            break;
-                        case ConsoleKey.RightArrow:
-                            GoRight();
-                            break;
-                        case ConsoleKey.Home:
-                            while (buffer.Length > 0) { GoLeft(); }
-                            break;
-                        case ConsoleKey.End:
-                            while (buffer2.Length > 0) { GoRight(); }
-                            break;
-                        case ConsoleKey.Delete:
-                            if (buffer2.Length > 0)
-                            {
-                                GoRight();
+                        string clip = ReadClipboard();
+                        foreach (char c in clip)
+                            AddChar(c);
+                    }
+                    else
+                    {
+                        switch (k.Key)
+                        {
+                            case ConsoleKey.Escape:
+                                ClearLineAndBuffer();
+                                break;
+                            case ConsoleKey.Backspace:
                                 RemoveOneChar();
-                            }
-                            break;
-                        case ConsoleKey.Oem6:
-                            break;
-                        case ConsoleKey.DownArrow:
-                            if (previous.Count > 0)
-                            {
-                                ClearLineAndBuffer();
-                                buffer = previous.First.Value;
-                                previous.AddLast(buffer);
-                                previous.RemoveFirst();
-                                Console.Write(buffer);
-                            }
-                            break;
-                        case ConsoleKey.UpArrow:
-                            if (previous.Count > 0)
-                            {
-                                ClearLineAndBuffer();
-                                buffer = previous.Last.Value;
-                                previous.AddFirst(buffer);
-                                previous.RemoveLast();
-                                Console.Write(buffer);
-                            }
-                            break;
-                        case ConsoleKey.Tab:
-                            if (autocomplete_engine != null && buffer.Length > 0)
-                            {
-                                string[] tmp = buffer.Split(' ');
-                                if (tmp.Length > 0)
+                                break;
+                            case ConsoleKey.Enter:
+                                Console.Write('\n');
+                                break;
+                            case ConsoleKey.LeftArrow:
+                                GoLeft();
+                                break;
+                            case ConsoleKey.RightArrow:
+                                GoRight();
+                                break;
+                            case ConsoleKey.Home:
+                                while (buffer.Length > 0) { GoLeft(); }
+                                break;
+                            case ConsoleKey.End:
+                                while (buffer2.Length > 0) { GoRight(); }
+                                break;
+                            case ConsoleKey.Delete:
+                                if (buffer2.Length > 0)
                                 {
-                                    string word_tocomplete = tmp[tmp.Length - 1];
-                                    string word_autocomplete = autocomplete_engine.AutoComplete(buffer);
-                                    if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
+                                    GoRight();
+                                    RemoveOneChar();
+                                }
+                                break;
+                            case ConsoleKey.Oem6:
+                                break;
+                            case ConsoleKey.DownArrow:
+                                if (previous.Count > 0)
+                                {
+                                    ClearLineAndBuffer();
+                                    buffer = previous.First.Value;
+                                    previous.AddLast(buffer);
+                                    previous.RemoveFirst();
+                                    Console.Write(buffer);
+                                }
+                                break;
+                            case ConsoleKey.UpArrow:
+                                if (previous.Count > 0)
+                                {
+                                    ClearLineAndBuffer();
+                                    buffer = previous.Last.Value;
+                                    previous.AddFirst(buffer);
+                                    previous.RemoveLast();
+                                    Console.Write(buffer);
+                                }
+                                break;
+                            case ConsoleKey.Tab:
+                                if (autocomplete_engine != null && buffer.Length > 0)
+                                {
+                                    string[] tmp = buffer.Split(' ');
+                                    if (tmp.Length > 0)
                                     {
-                                        while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
-                                        foreach (char c in word_autocomplete) { AddChar(c); }
+                                        string word_tocomplete = tmp[tmp.Length - 1];
+                                        string word_autocomplete = autocomplete_engine.AutoComplete(buffer);
+                                        if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
+                                        {
+                                            while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
+                                            foreach (char c in word_autocomplete) { AddChar(c); }
+                                        }
                                     }
                                 }
-                            }
-                            break;
-                        default:
-                            if (k.KeyChar != 0)
-                                AddChar(k.KeyChar);
-                            break;
-                    }
+                                break;
+                            default:
+                                if (k.KeyChar != 0)
+                                    AddChar(k.KeyChar);
+                                break;
+                        }
                     }
                 }
             }
@@ -213,40 +213,40 @@ namespace MinecraftClient
             {
                 lock (io_lock)
                 {
-            if (reading)
-            {
-                try
-                {
-                    string buf = buffer;
-                    string buf2 = buffer2;
-                    ClearLineAndBuffer();
-                    if (Console.CursorLeft == 0)
+                    if (reading)
                     {
-                        Console.CursorLeft = Console.BufferWidth - 1;
-                        Console.CursorTop--;
-                        Console.Write(' ');
-                        Console.CursorLeft = Console.BufferWidth - 1;
-                        Console.CursorTop--;
+                        try
+                        {
+                            string buf = buffer;
+                            string buf2 = buffer2;
+                            ClearLineAndBuffer();
+                            if (Console.CursorLeft == 0)
+                            {
+                                Console.CursorLeft = Console.BufferWidth - 1;
+                                Console.CursorTop--;
+                                Console.Write(' ');
+                                Console.CursorLeft = Console.BufferWidth - 1;
+                                Console.CursorTop--;
+                            }
+                            else Console.Write("\b \b");
+                            Console.Write(text);
+                            buffer = buf;
+                            buffer2 = buf2;
+                            Console.Write(">" + buffer);
+                            if (buffer2.Length > 0)
+                            {
+                                Console.Write(buffer2 + " \b");
+                                for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
+                            }
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            //Console resized: Try again
+                            Console.Write('\n');
+                            Write(text);
+                        }
                     }
-                    else Console.Write("\b \b");
-                    Console.Write(text);
-                    buffer = buf;
-                    buffer2 = buf2;
-                    Console.Write(">" + buffer);
-                    if (buffer2.Length > 0)
-                    {
-                        Console.Write(buffer2 + " \b");
-                        for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
-                    }
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    //Console resized: Try again
-                    Console.Write('\n');
-                    Write(text);
-                }
-            }
-            else Console.Write(text);
+                    else Console.Write(text);
                 }
             }
             else Console.Write(text);
