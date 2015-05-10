@@ -14,16 +14,30 @@ namespace MinecraftClient
 
     public static class ConsoleIO
     {
-        public static void Reset() { if (reading) { ClearLineAndBuffer(); reading = false; Console.Write("\b \b"); } }
-        public static void SetAutoCompleteEngine(IAutoComplete engine) { autocomplete_engine = engine; }
         public static bool basicIO = false;
         private static IAutoComplete autocomplete_engine;
         private static LinkedList<string> previous = new LinkedList<string>();
         private static string buffer = "";
         private static string buffer2 = "";
         private static bool reading = false;
-        private static bool reading_lock = false;
-        private static bool writing_lock = false;
+        private static object io_lock = new object();
+
+        /// <summary>
+        /// Reset the IO mechanism & clear all buffers
+        /// </summary>
+
+        public static void Reset()
+        {
+            lock (io_lock)
+            {
+                if (reading)
+                {
+                    ClearLineAndBuffer();
+                    reading = false;
+                    Console.Write("\b \b");
+                }
+            }
+        }
 
         /// <summary>
         /// Read a password from the standard input
@@ -82,16 +96,20 @@ namespace MinecraftClient
         {
             if (basicIO) { return Console.ReadLine(); }
             ConsoleKeyInfo k = new ConsoleKeyInfo();
-            Console.Write('>');
-            reading = true;
-            buffer = "";
-            buffer2 = "";
+
+            lock (io_lock)
+            {
+                Console.Write('>');
+                reading = true;
+                buffer = "";
+                buffer2 = "";
+            }
 
             while (k.Key != ConsoleKey.Enter)
             {
                 k = Console.ReadKey(true);
-                while (writing_lock) { }
-                reading_lock = true;
+                lock (io_lock)
+                {
                 if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
                 {
                     string clip = ReadClipboard();
@@ -173,13 +191,16 @@ namespace MinecraftClient
                                 AddChar(k.KeyChar);
                             break;
                     }
+                    }
                 }
-                reading_lock = false;
             }
-            while (writing_lock) { }
-            reading = false;
-            previous.AddLast(buffer + buffer2);
-            return buffer + buffer2;
+
+            lock (io_lock)
+            {
+                reading = false;
+                previous.AddLast(buffer + buffer2);
+                return buffer + buffer2;
+            }
         }
         
         /// <summary>
@@ -188,9 +209,10 @@ namespace MinecraftClient
 
         public static void Write(string text)
         {
-            if (basicIO) { Console.Write(text); return; }
-            while (reading_lock) { }
-            writing_lock = true;
+            if (!basicIO)
+            {
+                lock (io_lock)
+                {
             if (reading)
             {
                 try
@@ -221,12 +243,13 @@ namespace MinecraftClient
                 {
                     //Console resized: Try again
                     Console.Write('\n');
-                    writing_lock = false;
                     Write(text);
                 }
             }
             else Console.Write(text);
-            writing_lock = false;
+                }
+            }
+            else Console.Write(text);
         }
 
         /// <summary>
@@ -289,7 +312,7 @@ namespace MinecraftClient
                             case 'd': Console.ForegroundColor = ConsoleColor.Magenta; break;
                             case 'e': Console.ForegroundColor = ConsoleColor.Yellow; break;
                             case 'f': Console.ForegroundColor = ConsoleColor.White; break;
-                            case 'r': Console.ForegroundColor = ConsoleColor.White; break;
+                            case 'r': Console.ForegroundColor = ConsoleColor.Gray; break;
                         }
 
                         if (subs[i].Length > 1)
@@ -385,6 +408,18 @@ namespace MinecraftClient
             staThread.Start();
             staThread.Join();
             return clipdata;
+        }
+        #endregion
+
+        #region AutoComplete API
+        /// <summary>
+        /// Set an auto-completion engine for TAB autocompletion
+        /// </summary>
+        /// <param name="engine">Engine implementing the IAutoComplete interface</param>
+        
+        public static void SetAutoCompleteEngine(IAutoComplete engine)
+        {
+            autocomplete_engine = engine;
         }
         #endregion
     }
