@@ -17,13 +17,13 @@ namespace MinecraftClient
         public static bool basicIO = false;
         private static IAutoComplete autocomplete_engine;
         private static LinkedList<string> previous = new LinkedList<string>();
+        private static readonly object io_lock = new object();
+        private static bool reading = false;
         private static string buffer = "";
         private static string buffer2 = "";
-        private static bool reading = false;
-        private static object io_lock = new object();
 
         /// <summary>
-        /// Reset the IO mechanism & clear all buffers
+        /// Reset the IO mechanism and clear all buffers
         /// </summary>
 
         public static void Reset()

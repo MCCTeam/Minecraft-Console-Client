@@ -117,6 +117,7 @@ namespace MinecraftClient.Protocol
                     case "1.8.1":
                     case "1.8.2":
                     case "1.8.3":
+                    case "1.8.4":
                         return 47;
                     default:
                         return 0;
