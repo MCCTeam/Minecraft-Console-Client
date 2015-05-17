@@ -169,25 +169,43 @@ namespace MinecraftClient.Protocol.Handlers
             if (!init) { InitRules(); init = true; }
             if (TranslationRules.ContainsKey(rulename))
             {
-                if ((TranslationRules[rulename].IndexOf("%1$s") >= 0 && TranslationRules[rulename].IndexOf("%2$s") >= 0)
-                    && (TranslationRules[rulename].IndexOf("%1$s") > TranslationRules[rulename].IndexOf("%2$s")))
+                int using_idx = 0;
+                string rule = TranslationRules[rulename];
+                StringBuilder result = new StringBuilder();
+                for (int i = 0; i < rule.Length; i++)
                 {
-                    while (using_data.Count < 2) { using_data.Add(""); }
-                    string tmp = using_data[0];
-                    using_data[0] = using_data[1];
-                    using_data[1] = tmp;
+                    if (rule[i] == '%' && i + 1 < rule.Length)
+                    {
+                        //Using string or int with %s or %d
+                        if (rule[i + 1] == 's' || rule[i + 1] == 'd')
+                        {
+                            if (using_data.Count > using_idx)
+                            {
+                                result.Append(using_data[using_idx]);
+                                using_idx++;
+                                i += 1;
+                                continue;
+                            }
+                        }
+
+                        //Using specified string or int with %1$s, %2$s...
+                        else if (char.IsDigit(rule[i + 1])
+                            && i + 3 < rule.Length && rule[i + 2] == '$'
+                            && (rule[i + 3] == 's' || rule[i + 3] == 'd'))
+                        {
+                            int specified_idx = rule[i + 1] - '1';
+                            if (using_data.Count > specified_idx)
+                            {
+                                result.Append(using_data[specified_idx]);
+                                using_idx++;
+                                i += 3;
+                                continue;
+                            }
+                        }
+                    }
+                    result.Append(rule[i]);
                 }
-                string[] syntax = TranslationRules[rulename].Split(new string[] { "%s", "%d", "%1$s", "%2$s" }, StringSplitOptions.None);
-                while (using_data.Count < syntax.Length - 1) { using_data.Add(""); }
-                string[] using_array = using_data.ToArray();
-                string translated = "";
-                for (int i = 0; i < syntax.Length - 1; i++)
-                {
-                    translated += syntax[i];
-                    translated += using_array[i];
-                }
-                translated += syntax[syntax.Length - 1];
-                return translated;
+                return result.ToString();
             }
             else return "[" + rulename + "] " + String.Join(" ", using_data);
         }

@@ -321,9 +321,9 @@ namespace MinecraftClient
                         }
                     }
                 }
+                Console.ForegroundColor = ConsoleColor.Gray;
                 ConsoleIO.Write('\n');
             }
-            Console.ForegroundColor = ConsoleColor.Gray;
         }
 
         #region Subfunctions
