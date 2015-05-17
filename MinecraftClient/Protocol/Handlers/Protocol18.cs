@@ -282,7 +282,14 @@ namespace MinecraftClient.Protocol.Handlers
 
         private Guid readNextUUID(ref byte[] cache)
         {
-            return new Guid(readData(16, ref cache));
+            try
+            {
+                return new Guid(readData(16, ref cache));
+            }
+            catch (ArgumentException)
+            {
+                return Guid.Empty;
+            }
         }
 
         /// <summary>
