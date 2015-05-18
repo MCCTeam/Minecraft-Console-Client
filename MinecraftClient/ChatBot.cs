@@ -14,12 +14,12 @@ namespace MinecraftClient
     /// Once your bot is created, read the explanations below to start using it in the MinecraftClient app.
     ///
     /// Pieces of code to add in other parts of the program for your bot. Line numbers are approximative.
-    /// McTcpClient:110 | if (Settings.YourBot_Enabled) { handler.BotLoad(new ChatBots.YourBot()); }
     /// Settings.cs:73  | public static bool YourBot_Enabled = false;
     /// Settings.cs:74  | private enum ParseMode { /* [...] */, YourBot };
     /// Settings.cs:106 | case "yourbot": pMode = ParseMode.YourBot; break;
     /// Settings.cs:197 | case ParseMode.YourBot: switch (argName.ToLower()) { case "enabled": YourBot_Enabled = str2bool(argValue); break; } break;
     /// Settings.cs:267 | + "[YourBot]\r\n" + "enabled=false\r\n"
+    /// McTcpClient:110 | if (Settings.YourBot_Enabled) { handler.BotLoad(new ChatBots.YourBot()); }
     /// Here your are. Now you will have a setting in MinecraftClient.ini for enabling your brand new bot.
     /// Delete MinecraftClient.ini to re-generate it or add the lines [YourBot] and enabled=true to the existing one.
     ///
@@ -213,17 +213,6 @@ namespace MinecraftClient
                     return isValidName(sender);
                 }
 
-                //Detect HeroChat Messages
-                //[Channel] [Rank] User: Message
-                else if (text.StartsWith("[") && text.Contains(':') && tmp.Length > 2)
-                {
-                    int name_end = text.IndexOf(':');
-                    int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
-                    sender = text.Substring(name_start, name_end - name_start);
-                    message = text.Substring(name_end + 2);
-                    return isValidName(sender);
-                }
-
                 else return false;
             }
             catch (IndexOutOfRangeException) { return false; }
@@ -239,31 +228,46 @@ namespace MinecraftClient
 
         protected static bool isChatMessage(string text, ref string message, ref string sender)
         {
-            //Detect chat messages
-            //<Someone> message
-            //<*Faction Someone> message
-            //<*Faction Someone>: message
-            //<*Faction ~Nicknamed>: message
+            
             text = getVerbatim(text);
-            if (text == "") { return false; }
-            if (text[0] == '<')
+            string[] tmp = text.Split(' ');
+            if (text.Length > 0)
             {
-                try
+                //Detect vanilla/factions Messages
+                //<Someone> message
+                //<*Faction Someone> message
+                //<*Faction Someone>: message
+                //<*Faction ~Nicknamed>: message
+                if (text[0] == '<')
                 {
-                    text = text.Substring(1);
-                    string[] tmp = text.Split('>');
-                    sender = tmp[0];
-                    message = text.Substring(sender.Length + 2);
-                    if (message.Length > 1 && message[0] == ' ')
-                    { message = message.Substring(1); }
-                    tmp = sender.Split(' ');
-                    sender = tmp[tmp.Length - 1];
-                    if (sender[0] == '~') { sender = sender.Substring(1); }
+                    try
+                    {
+                        text = text.Substring(1);
+                        string[] tmp2 = text.Split('>');
+                        sender = tmp2[0];
+                        message = text.Substring(sender.Length + 2);
+                        if (message.Length > 1 && message[0] == ' ')
+                        { message = message.Substring(1); }
+                        tmp2 = sender.Split(' ');
+                        sender = tmp2[tmp2.Length - 1];
+                        if (sender[0] == '~') { sender = sender.Substring(1); }
+                        return isValidName(sender);
+                    }
+                    catch (IndexOutOfRangeException) { return false; }
+                }
+
+                //Detect HeroChat Messages
+                //[Channel] [Rank] User: Message
+                else if (text[0] == '[' && text.Contains(':') && tmp.Length > 2)
+                {
+                    int name_end = text.IndexOf(':');
+                    int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
+                    sender = text.Substring(name_start, name_end - name_start);
+                    message = text.Substring(name_end + 2);
                     return isValidName(sender);
                 }
-                catch (IndexOutOfRangeException) { return false; }
             }
-            else return false;
+            return false;
         }
 
         /// <summary>
@@ -311,18 +315,11 @@ namespace MinecraftClient
 
         /// <summary>
         /// Disconnect from the server and restart the program
-        /// It will unload & reload all the bots and then reconnect to the server
-        /// </summary>
-
-        protected void ReconnectToTheServer() { ReconnectToTheServer(3); }
-
-        /// <summary>
-        /// Disconnect from the server and restart the program
-        /// It will unload & reload all the bots and then reconnect to the server
+        /// It will unload and reload all the bots and then reconnect to the server
         /// </summary>
         /// <param name="attempts">If connection fails, the client will make X extra attempts</param>
 
-        protected void ReconnectToTheServer(int ExtraAttempts)
+        protected void ReconnectToTheServer(int ExtraAttempts = 3)
         {
             McTcpClient.AttemptsLeft = ExtraAttempts;
             Program.Restart();
@@ -369,22 +366,19 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Get a D-M-Y h:m:s timestamp representing the current system date and time
+        /// Get a Y-M-D h:m:s timestamp representing the current system date and time
         /// </summary>
 
         protected static string getTimestamp()
         {
             DateTime time = DateTime.Now;
-
-            string D = time.Day.ToString("00");
-            string M = time.Month.ToString("00");
-            string Y = time.Year.ToString("0000");
-
-            string h = time.Hour.ToString("00");
-            string m = time.Minute.ToString("00");
-            string s = time.Second.ToString("00");
-
-            return "" + D + '-' + M + '-' + Y + ' ' + h + ':' + m + ':' + s;
+            return String.Format("{0}-{1}-{2} {3}:{4}:{5}",
+                time.Year.ToString("0000"),
+                time.Month.ToString("00"),
+                time.Day.ToString("00"),
+                time.Hour.ToString("00"),
+                time.Minute.ToString("00"),
+                time.Second.ToString("00"));
         }
     }
 }
