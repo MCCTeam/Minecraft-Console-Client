@@ -90,6 +90,7 @@ namespace MinecraftClient
 
         //Auto Respond
         public static bool Respond_Enabled = false;
+        public static bool Respond_IgnoreUserName = true;
         public static string Respond_MatchesFile = "detect.txt";
         public static string Respond_RespondFile = "respond.txt";
 
@@ -319,6 +320,7 @@ namespace MinecraftClient
                                             switch (argName.ToLower())
                                             {
                                                 case "enabled": Respond_Enabled = str2bool(argValue); break;
+                                                case "ignoreusername": Respond_IgnoreUserName = str2bool(argValue); break;
                                                 case "matchfile": Respond_MatchesFile = argValue; break;
                                                 case "respondfile": Respond_RespondFile = argValue; break;
                                             }
@@ -421,6 +423,7 @@ namespace MinecraftClient
                 + "\r\n"
                 + "[Auto Respond]\r\n"
                 + "enabled=false\r\n"
+                + "ignoreusernames=true\r\n"
                 + "matchfile=detect.txt\r\n"
                 + "respondfile=respond.txt\r\n"
                 + "#To use the bot, place the text to detect in the matchfile file and the text to respond with in the respondfile\r\n"
