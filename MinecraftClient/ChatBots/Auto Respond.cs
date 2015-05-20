@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient.ChatBots
 {
@@ -41,16 +42,32 @@ namespace MinecraftClient.ChatBots
         {
             //Remove colour codes
             text = getVerbatim(text).ToLower();
-            //Check text to see if bot should respond
-            foreach (string alert in respondon.Where(alert => text.Contains(alert)))
+
+            //Check is the message is from the bot
+            if (text.Contains("<" + Settings.Username.ToLower() + ">"))
             {
-                //Find what to respond with
-                for (int x = 0; x < respondon.Length; x++)
+                //Message is from the bot, ignore the message.
+            }
+            else
+            {
+                //Check if user names should be ignored
+                Regex regex = new Regex(@"\<[^\)]+\>");
+                if (Settings.Respond_IgnoreUserName)
                 {
-                    if (respondon[x].ToString().Contains(alert))
+                    ConsoleIO.WriteLine(text);
+                    text = regex.Replace(text, "");
+
+                }
+                //Check text to see if bot should respond
+                foreach (string alert in respondon.Where(alert => text.Contains(alert)))
+                {
+                    //Find what to respond with
+                    for (int x = 0; x < respondon.Length; x++)
                     {
-                        //Respond
-                        SendText(torespond[x].ToString());
+                        if (respondon[x].ToString().Contains(alert))
+                        {
+                            SendText(torespond[x]);
+                        }
                     }
                 }
             }
