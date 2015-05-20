@@ -54,7 +54,6 @@ namespace MinecraftClient.ChatBots
                 Regex regex = new Regex(@"\<[^\)]+\>");
                 if (Settings.Respond_IgnoreUserName)
                 {
-                    ConsoleIO.WriteLine(text);
                     text = regex.Replace(text, "");
 
                 }
