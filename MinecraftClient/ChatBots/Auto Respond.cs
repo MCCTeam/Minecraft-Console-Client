@@ -55,7 +55,6 @@ namespace MinecraftClient.ChatBots
                 if (Settings.Respond_IgnoreUserName)
                 {
                     text = regex.Replace(text, "");
-
                 }
                 //Check text to see if bot should respond
                 foreach (string alert in respondon.Where(alert => text.Contains(alert)))
