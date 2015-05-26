@@ -20,7 +20,7 @@ namespace MinecraftClient
         private static List<string> cmd_names = new List<string>();
         private static Dictionary<string, Command> cmds = new Dictionary<string, Command>();
         private List<ChatBot> bots = new List<ChatBot>();
-        private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid,string>();
+        private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
         private static List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
@@ -39,7 +39,7 @@ namespace MinecraftClient
         public string getUsername() { return username; }
         public string getUserUUID() { return uuid; }
         public string getSessionID() { return sessionid; }
-        
+
         TcpClient client;
         IMinecraftCom handler;
         Thread cmdprompt;
@@ -106,6 +106,7 @@ namespace MinecraftClient
                 if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
                 if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.expandVars(Settings.ScriptScheduler_TasksFile))); }
                 if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
+                if (Settings.Respond_Enabled) { BotLoad(new ChatBots.Auto_Respond()); }
             }
 
             try
@@ -456,7 +457,7 @@ namespace MinecraftClient
                 onlinePlayers[uuid] = name;
             }
         }
-        
+
         /// <summary>
         /// Triggered when a player has left the game
         /// </summary>

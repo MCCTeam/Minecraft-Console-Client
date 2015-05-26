@@ -21,7 +21,7 @@ namespace MinecraftClient
         public static string Password = "";
         public static string ServerIP = "";
         public static ushort ServerPort = 25565;
-        public static string ServerVersion  = "";
+        public static string ServerVersion = "";
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
 
@@ -89,12 +89,17 @@ namespace MinecraftClient
         public static bool RemoteCtrl_AutoTpaccept = true;
         public static bool RemoteCtrl_AutoTpaccept_Everyone = false;
 
+        //Auto Respond
+        public static bool Respond_Enabled = false;
+        public static string Respond_MatchesFile = "detect.txt";
+        public static string Respond_RespondFile = "respond.txt";
+
         //Custom app variables and Minecraft accounts
         private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
         private static Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
+        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, Auto_Respond };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -128,6 +133,7 @@ namespace MinecraftClient
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     case "proxy": pMode = ParseMode.Proxy; break;
                                     case "appvars": pMode = ParseMode.AppVars; break;
+                                    case "auto respond": pMode = ParseMode.Auto_Respond; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -203,7 +209,7 @@ namespace MinecraftClient
                                                                 Servers[server_data[0]]
                                                                     = new KeyValuePair<string, ushort>(ServerIP, ServerPort);
                                                         }
-                                                        
+
                                                         //Restore current server info
                                                         ServerIP = server_host_temp;
                                                         ServerPort = server_port_temp;
@@ -286,7 +292,7 @@ namespace MinecraftClient
                                                     argValue = argValue.ToLower();
                                                     if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
                                                     else if (argValue == "socks4") { proxyType = Proxy.ProxyHandler.Type.SOCKS4; }
-                                                    else if (argValue == "socks4a"){ proxyType = Proxy.ProxyHandler.Type.SOCKS4a;}
+                                                    else if (argValue == "socks4a") { proxyType = Proxy.ProxyHandler.Type.SOCKS4a; }
                                                     else if (argValue == "socks5") { proxyType = Proxy.ProxyHandler.Type.SOCKS5; }
                                                     break;
                                                 case "server":
@@ -309,6 +315,15 @@ namespace MinecraftClient
 
                                         case ParseMode.AppVars:
                                             setVar(argName, argValue);
+                                            break;
+
+                                        case ParseMode.Auto_Respond:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": Respond_Enabled = str2bool(argValue); break;
+                                                case "matchfile": Respond_MatchesFile = argValue; break;
+                                                case "respondfile": Respond_RespondFile = argValue; break;
+                                            }
                                             break;
                                     }
                                 }
@@ -405,7 +420,14 @@ namespace MinecraftClient
                 + "[RemoteControl]\r\n"
                 + "enabled=false\r\n"
                 + "autotpaccept=true\r\n"
-                + "tpaccepteveryone=false\r\n", Encoding.UTF8);
+                + "tpaccepteveryone=false\r\n"
+                + "\r\n"
+                + "[Auto Respond]\r\n"
+                + "enabled=false\r\n"
+                + "matchfile=detect.txt\r\n"
+                + "respondfile=respond.txt\r\n"
+                + "#To use the bot, place the text to detect in the matchfile file and the text to respond with in the respondfile\r\n"
+                + "#Each line in each file is relevant to the same line in the other document, for example if the bot detects the text in line 1 of the first file, it will respond with line 1 of the second file.\r\n", Encoding.UTF8);
         }
 
         public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }
@@ -439,7 +461,7 @@ namespace MinecraftClient
             string[] sip = server.Split(':');
             string host = sip[0];
             ushort port = 25565;
-            
+
             if (sip.Length > 1)
             {
                 try
@@ -461,7 +483,7 @@ namespace MinecraftClient
                 ServerPort = Servers[server].Value;
                 return true;
             }
-            
+
             return false;
         }
 
