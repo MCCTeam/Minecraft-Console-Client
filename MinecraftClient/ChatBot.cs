@@ -380,5 +380,29 @@ namespace MinecraftClient
                 time.Minute.ToString("00"),
                 time.Second.ToString("00"));
         }
+
+        /// <summary>
+        /// Load entries from a file as a string array, removing duplicates and empty lines
+        /// </summary>
+        /// <param name="file">File to load</param>
+        /// <returns>The string array or an empty array if failed to load the file</returns>
+        
+        protected static string[] LoadDistinctEntriesFromFile(string file)
+        {
+            if (File.Exists(file))
+            {
+                //Read all lines from file, remove lines with no text, convert to lowercase,
+                //remove duplicate entries, convert to a string array, and return the result.
+                return File.ReadAllLines(file)
+                        .Where(line => !String.IsNullOrWhiteSpace(line))
+                        .Select(line => line.ToLower())
+                        .Distinct().ToArray();
+            }
+            else
+            {
+                LogToConsole("File not found: " + Settings.Alerts_MatchesFile);
+                return new string[0];
+            }
+        }
     }
 }

@@ -15,35 +15,12 @@ namespace MinecraftClient.ChatBots
         private string[] excludelist = new string[0];
 
         /// <summary>
-        /// Import alerts from the specified file
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        private static string[] FromFile(string file)
-        {
-            if (File.Exists(file))
-            {
-                //Read all lines from file, remove lines with no text, convert to lowercase,
-                //remove duplicate entries, convert to a string array, and return the result.
-                return File.ReadAllLines(file)
-                        .Where(line => !String.IsNullOrWhiteSpace(line))
-                        .Select(line => line.ToLower())
-                        .Distinct().ToArray();
-            }
-            else
-            {
-                LogToConsole("File not found: " + Settings.Alerts_MatchesFile);
-                return new string[0];
-            }
-        }
-
-        /// <summary>
         /// Intitialize the Alerts bot
         /// </summary>
         public override void Initialize()
         {
-            dictionary = FromFile(Settings.Alerts_MatchesFile);
-            excludelist = FromFile(Settings.Alerts_ExcludesFile);
+            dictionary = LoadDistinctEntriesFromFile(Settings.Alerts_MatchesFile);
+            excludelist = LoadDistinctEntriesFromFile(Settings.Alerts_ExcludesFile);
         }
 
         /// <summary>
