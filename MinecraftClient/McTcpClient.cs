@@ -420,6 +420,8 @@ namespace MinecraftClient
                     {
                         handler.SendChatMessage(text.Substring(0, 100));
                         text = text.Substring(100, text.Length - 100);
+                        if (Settings.splitMessageDelay.TotalSeconds > 0)
+                            Thread.Sleep(Settings.splitMessageDelay);
                     }
                     return handler.SendChatMessage(text);
                 }

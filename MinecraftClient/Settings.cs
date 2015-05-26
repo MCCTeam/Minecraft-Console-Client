@@ -37,6 +37,7 @@ namespace MinecraftClient
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\9e\9e2fdc43fc1c7024ff5922b998fadb2971a64ee0"; //MC 1.7.4 en_GB.lang
         public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.7.4.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
+        public static TimeSpan splitMessageDelay = TimeSpan.FromSeconds(2);
         public static List<string> Bots_Owners = new List<string>();
         public static string Language = "en_GB";
         public static bool chatTimeStamps = false;
@@ -152,6 +153,7 @@ namespace MinecraftClient
                                                 case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
                                                 case "chatbotlogfile": chatbotLogFile = argValue; break;
                                                 case "mcversion": ServerVersion = argValue; break;
+                                                case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -344,6 +346,7 @@ namespace MinecraftClient
                 + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username%@%serverip% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
+                + "splitmessagedelay=2 #seconds between each part of a long message\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
                 + "accountlist=accounts.txt\r\n"
