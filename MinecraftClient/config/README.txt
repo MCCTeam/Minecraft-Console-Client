@@ -15,6 +15,7 @@ in a fast and easy way without having to open the main Minecraft game.
 First, extract the archive if not already extracted.
 On Windows, simply open MinecraftClient.exe by double-clicking on it.
 On Mac or Linux, open a terminal in this folder and run "mono MinecraftClient.exe".
+If you cannot authenticate on Mono, you'll need to run "mozroots --import --ask-remove" once.
 
 ===========================================
  Using Configuration files & Enabling bots
