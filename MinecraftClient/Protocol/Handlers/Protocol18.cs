@@ -146,19 +146,22 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x38: //Player List update
                         int action = readNextVarInt(ref packetData);
                         int numActions = readNextVarInt(ref packetData);
-                        Guid uuid = readNextUUID(ref packetData);
-                        switch (action)
+                        for (int i = 0; i < numActions; i++)
                         {
-                            case 0x00: //Player Join
-                                string name = readNextString(ref packetData);
-                                handler.OnPlayerJoin(uuid, name);
-                                break;
-                            case 0x04: //Player Leave
-                                handler.OnPlayerLeave(uuid);
-                                break;
-                            default:
-                                //Unknown player list item type
-                                break;
+                            Guid uuid = readNextUUID(ref packetData);
+                            switch (action)
+                            {
+                                case 0x00: //Player Join
+                                    string name = readNextString(ref packetData);
+                                    handler.OnPlayerJoin(uuid, name);
+                                    break;
+                                case 0x04: //Player Leave
+                                    handler.OnPlayerLeave(uuid);
+                                    break;
+                                default:
+                                    //Unknown player list item type
+                                    break;
+                            }
                         }
                         break;
                     case 0x3A: //Tab-Complete Result
@@ -282,14 +285,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private Guid readNextUUID(ref byte[] cache)
         {
-            try
-            {
-                return new Guid(readData(16, ref cache));
-            }
-            catch (ArgumentException)
-            {
-                return Guid.Empty;
-            }
+            return new Guid(readData(16, ref cache));
         }
 
         /// <summary>
