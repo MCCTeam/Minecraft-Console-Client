@@ -90,16 +90,15 @@ namespace MinecraftClient
         public static bool RemoteCtrl_AutoTpaccept_Everyone = false;
 
         //Auto Respond
-        public static bool Respond_Enabled = false;
-        public static string Respond_MatchesFile = "detect.txt";
-        public static string Respond_RespondFile = "respond.txt";
+        public static bool AutoRespond_Enabled = false;
+        public static string AutoRespond_Matches = "matches.ini";
 
         //Custom app variables and Minecraft accounts
         private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
         private static Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, Auto_Respond };
+        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, AutoRespond };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -133,7 +132,7 @@ namespace MinecraftClient
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     case "proxy": pMode = ParseMode.Proxy; break;
                                     case "appvars": pMode = ParseMode.AppVars; break;
-                                    case "auto respond": pMode = ParseMode.Auto_Respond; break;
+                                    case "autorespond": pMode = ParseMode.AutoRespond; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -317,12 +316,11 @@ namespace MinecraftClient
                                             setVar(argName, argValue);
                                             break;
 
-                                        case ParseMode.Auto_Respond:
+                                        case ParseMode.AutoRespond:
                                             switch (argName.ToLower())
                                             {
-                                                case "enabled": Respond_Enabled = str2bool(argValue); break;
-                                                case "matchfile": Respond_MatchesFile = argValue; break;
-                                                case "respondfile": Respond_RespondFile = argValue; break;
+                                                case "enabled": AutoRespond_Enabled = str2bool(argValue); break;
+                                                case "matchesfile": AutoRespond_Matches = argValue; break;
                                             }
                                             break;
                                     }
@@ -422,12 +420,9 @@ namespace MinecraftClient
                 + "autotpaccept=true\r\n"
                 + "tpaccepteveryone=false\r\n"
                 + "\r\n"
-                + "[Auto Respond]\r\n"
+                + "[AutoRespond]\r\n"
                 + "enabled=false\r\n"
-                + "matchfile=detect.txt\r\n"
-                + "respondfile=respond.txt\r\n"
-                + "#To use the bot, place the text to detect in the matchfile file and the text to respond with in the respondfile\r\n"
-                + "#Each line in each file is relevant to the same line in the other document, for example if the bot detects the text in line 1 of the first file, it will respond with line 1 of the second file.\r\n", Encoding.UTF8);
+                + "matchesfile=matches.ini\r\n", Encoding.UTF8);
         }
 
         public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }

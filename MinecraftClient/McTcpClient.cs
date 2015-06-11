@@ -106,7 +106,7 @@ namespace MinecraftClient
                 if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
                 if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.expandVars(Settings.ScriptScheduler_TasksFile))); }
                 if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
-                if (Settings.Respond_Enabled) { BotLoad(new ChatBots.AutoRespond()); }
+                if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
             }
 
             try
