@@ -508,18 +508,12 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Disconnect from the server
         /// </summary>
-        /// <param name="message">Optional disconnect reason</param>
 
         public void Disconnect()
         {
             try
             {
-                byte[] packet_id = getVarInt(0x40);
-                byte[] message_val = Encoding.UTF8.GetBytes("\"disconnect.quitting\"");
-                byte[] message_len = getVarInt(message_val.Length);
-                byte[] disconnect_packet = concatBytes(packet_id, message_len, message_val);
-                byte[] disconnect_packet_tosend = concatBytes(getVarInt(disconnect_packet.Length), disconnect_packet);
-                Send(disconnect_packet_tosend);
+                c.Close();
             }
             catch (SocketException) { }
             catch (System.IO.IOException) { }
