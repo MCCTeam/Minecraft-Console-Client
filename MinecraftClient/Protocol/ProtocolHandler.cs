@@ -36,7 +36,7 @@ namespace MinecraftClient.Protocol
                     {
                         success = true;
                     }
-                    else ConsoleIO.WriteLineFormatted("§8Unexpected answer from the server (is that a Minecraft server ?)");
+                    else ConsoleIO.WriteLineFormatted("§8Unexpected response from the server (is that a Minecraft server?)");
                 }
                 catch (Exception e)
                 {
@@ -118,6 +118,9 @@ namespace MinecraftClient.Protocol
                     case "1.8.2":
                     case "1.8.3":
                     case "1.8.4":
+                    case "1.8.5":
+                    case "1.8.6":
+                    case "1.8.7":
                         return 47;
                     default:
                         return 0;

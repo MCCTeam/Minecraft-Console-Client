@@ -670,7 +670,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 string version = "";
                 TcpClient tcp = ProxyHandler.newTcpClient(host, port);
-                tcp.ReceiveTimeout = 5000; //MC 1.7.2+ SpigotMC servers won't answer, so we need a reasonable timeout.
+                tcp.ReceiveTimeout = 5000; //MC 1.7.2+ SpigotMC servers won't respond, so we need a reasonable timeout.
                 byte[] ping = new byte[2] { 0xfe, 0x01 };
                 tcp.Client.Send(ping, SocketFlags.None);
 
