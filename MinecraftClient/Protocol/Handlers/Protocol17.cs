@@ -45,19 +45,11 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void Updater()
         {
-            int keep_alive_interval = 100;
-            int keep_alive_timer = 100;
             try
             {
                 do
                 {
                     Thread.Sleep(100);
-                    keep_alive_timer--;
-                    if (keep_alive_timer <= 0)
-                    {
-                        Send(getPaddingPacket());
-                        keep_alive_timer = keep_alive_interval;
-                    }
                 }
                 while (Update());
             }
@@ -431,7 +423,7 @@ namespace MinecraftClient.Protocol.Handlers
             Send(encryption_response_tosend);
 
             //Start client-side encryption
-            s = CryptoHandler.getAesStream(c.GetStream(), secretKey, this);
+            s = CryptoHandler.getAesStream(c.GetStream(), secretKey);
             encrypted = true;
 
             //Read and skip the next packet
@@ -442,24 +434,6 @@ namespace MinecraftClient.Protocol.Handlers
             else readData(received_packet_size - getVarInt(received_packet_id).Length);
             if (encryption_success) { StartUpdating(); }
             return encryption_success;
-        }
-
-        /// <summary>
-        /// Useless padding packet for solving Mono issue.
-        /// </summary>
-        /// <returns>The padding packet</returns>
-
-        public byte[] getPaddingPacket()
-        {
-            //Will generate a 15-bytes long padding packet
-            byte[] id = getVarInt(0x17); //Plugin Message
-            byte[] channel_name = Encoding.UTF8.GetBytes("MCC|Pad");
-            byte[] channel_name_len = getVarInt(channel_name.Length);
-            byte[] data = new byte[] { 0x00, 0x00, 0x00 };
-            byte[] data_len = BitConverter.GetBytes((short)data.Length); Array.Reverse(data_len);
-            byte[] packet_data = concatBytes(id, channel_name_len, channel_name, data_len, data);
-            byte[] packet_length = getVarInt(packet_data.Length);
-            return concatBytes(packet_length, packet_data);
         }
 
         /// <summary>

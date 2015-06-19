@@ -42,19 +42,11 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void Updater()
         {
-            int keep_alive_interval = 100;
-            int keep_alive_timer = 100;
             try
             {
                 do
                 {
                     Thread.Sleep(100);
-                    keep_alive_timer--;
-                    if (keep_alive_timer <= 0)
-                    {
-                        Send(getPaddingPacket());
-                        keep_alive_timer = keep_alive_interval;
-                    }
                 }
                 while (Update());
             }
@@ -504,7 +496,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (pid[0] == 0xFC)
             {
                 readData(4);
-                s = CryptoHandler.getAesStream(c.GetStream(), secretKey, this);
+                s = CryptoHandler.getAesStream(c.GetStream(), secretKey);
                 encrypted = true;
                 return true;
             }
@@ -650,18 +642,6 @@ namespace MinecraftClient.Protocol.Handlers
             foreach (byte[] array in bytes)
                 result.AddRange(array);
             return result.ToArray();
-        }
-
-        public byte[] getPaddingPacket()
-        {
-            //Will generate a 15-bytes long padding packet
-            byte[] id = new byte[1] { 0xFA }; //Plugin Message
-            byte[] channel_name = Encoding.BigEndianUnicode.GetBytes("MCC|");
-            byte[] channel_name_len = BitConverter.GetBytes((short)channel_name.Length); Array.Reverse(channel_name_len);
-            byte[] data = new byte[] { 0x00, 0x00 };
-            byte[] data_len = BitConverter.GetBytes((short)data.Length); Array.Reverse(data_len);
-            byte[] packet_data = concatBytes(id, channel_name_len, channel_name, data_len, data);
-            return packet_data;
         }
 
         public static bool doPing(string host, int port, ref int protocolversion)

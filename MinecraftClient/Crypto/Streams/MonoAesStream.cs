@@ -19,15 +19,13 @@ namespace MinecraftClient.Crypto.Streams
 
     public class MonoAesStream : Stream, IAesStream
     {
-        IPaddingProvider pad;
         CipherStream cstream;
-        public MonoAesStream(System.IO.Stream stream, byte[] key, IPaddingProvider provider)
+        public MonoAesStream(System.IO.Stream stream, byte[] key)
         {
             BaseStream = stream;
             BufferedBlockCipher enc = GenerateAES(key, true);
             BufferedBlockCipher dec = GenerateAES(key, false);
             cstream = new CipherStream(stream, dec, enc);
-            pad = provider;
         }
         public System.IO.Stream BaseStream { get; set; }
 
