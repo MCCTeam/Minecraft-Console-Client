@@ -580,18 +580,21 @@ namespace MinecraftClient.Protocol.Handlers
                 if (ComTmp.readNextVarInt() == 0x00) //Read Packet ID
                 {
                     string result = ComTmp.readNextString(); //Get the Json data
-                    if (result[0] == '{' && result.Contains("protocol\":") && result.Contains("name\":\""))
+                    if (!String.IsNullOrEmpty(result) && result.StartsWith("{") && result.EndsWith("}"))
                     {
-                        string[] tmp_ver = result.Split(new string[] { "protocol\":" }, StringSplitOptions.None);
-                        string[] tmp_name = result.Split(new string[] { "name\":\"" }, StringSplitOptions.None);
-
-                        if (tmp_ver.Length >= 2 && tmp_name.Length >= 2)
+                        Json.JSONData jsonData = Json.ParseJson(result);
+                        if (jsonData.Type == Json.JSONData.DataType.Object && jsonData.Properties.ContainsKey("version"))
                         {
-                            protocolversion = atoi(tmp_ver[1]);
+                            jsonData = jsonData.Properties["version"];
 
-                            //Handle if "name" exists twice, eg when connecting to a server with another user logged in.
-                            version = (tmp_name.Length == 2) ? tmp_name[1].Split('"')[0] : tmp_name[2].Split('"')[0];
-                            
+                            //Retrieve display name of the Minecraft version
+                            if (jsonData.Properties.ContainsKey("name"))
+                                version = jsonData.Properties["name"].StringValue;
+
+                            //Retrieve protocol version number for handling this server
+                            if (jsonData.Properties.ContainsKey("protocol"))
+                                protocolversion = atoi(jsonData.Properties["protocol"].StringValue);
+
                             //Automatic fix for BungeeCord 1.8 not properly reporting protocol version
                             if (protocolversion < 47 && version.Split(' ').Contains("1.8"))
                                 protocolversion = ProtocolHandler.MCVer2ProtocolVersion("1.8.0");
