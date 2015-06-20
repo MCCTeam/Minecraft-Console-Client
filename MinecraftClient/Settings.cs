@@ -149,7 +149,7 @@ namespace MinecraftClient
                                             {
                                                 case "login": Login = argValue; break;
                                                 case "password": Password = argValue; break;
-                                                case "serverip": setServerIP(argValue); break;
+                                                case "serverip": SetServerIP(argValue); break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
@@ -204,7 +204,7 @@ namespace MinecraftClient
                                                             if (server_data.Length == 2
                                                                 && server_data[0] != "localhost"
                                                                 && !server_data[0].Contains('.')
-                                                                && setServerIP(server_data[1]))
+                                                                && SetServerIP(server_data[1]))
                                                                 Servers[server_data[0]]
                                                                     = new KeyValuePair<string, ushort>(ServerIP, ServerPort);
                                                         }
@@ -313,7 +313,7 @@ namespace MinecraftClient
                                             break;
 
                                         case ParseMode.AppVars:
-                                            setVar(argName, argValue);
+                                            SetVar(argName, argValue);
                                             break;
 
                                         case ParseMode.AutoRespond:
@@ -433,7 +433,7 @@ namespace MinecraftClient
         /// </summary>
         /// <returns>True if the account was found and loaded</returns>
 
-        public static bool setAccount(string accountAlias)
+        public static bool SetAccount(string accountAlias)
         {
             accountAlias = accountAlias.ToLower();
             if (Accounts.ContainsKey(accountAlias))
@@ -450,7 +450,7 @@ namespace MinecraftClient
         /// </summary>
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
 
-        public static bool setServerIP(string server)
+        public static bool SetServerIP(string server)
         {
             server = server.ToLower();
             string[] sip = server.Split(':');
@@ -489,7 +489,7 @@ namespace MinecraftClient
         /// <param name="varData">Value of the variable</param>
         /// <returns>True if the parameters were valid</returns>
 
-        public static bool setVar(string varName, string varData)
+        public static bool SetVar(string varName, string varData)
         {
             varName = new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
             if (varName.Length > 0)
@@ -501,12 +501,25 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get a custom %variable% or null if the variable does not exist
+        /// </summary>
+        /// <param name="varName">Variable name</param>
+        /// <returns>The value or null if the variable does not exists</returns>
+
+        public static string GetVar(string varName)
+        {
+            if (AppVars.ContainsKey(varName))
+                return AppVars[varName];
+            return null;
+        }
+
+        /// <summary>
         /// Replace %variables% with their value
         /// </summary>
         /// <param name="str">String to parse</param>
         /// <returns>Modifier string</returns>
 
-        public static string expandVars(string str)
+        public static string ExpandVars(string str)
         {
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < str.Length; i++)

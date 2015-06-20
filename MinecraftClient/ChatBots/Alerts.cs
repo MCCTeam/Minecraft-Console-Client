@@ -30,7 +30,7 @@ namespace MinecraftClient.ChatBots
         public override void GetText(string text)
         {
             //Remove color codes and convert to lowercase
-            text = getVerbatim(text).ToLower();
+            text = GetVerbatim(text).ToLower();
 
             //Proceed only if no exclusions are found in text
             if (!excludelist.Any(exclusion => text.Contains(exclusion)))

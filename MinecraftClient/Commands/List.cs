@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
 
         public override string Run(McTcpClient handler, string command)
         {
-            return "PlayerList: " + String.Join(", ", handler.getOnlinePlayers());
+            return "PlayerList: " + String.Join(", ", handler.GetOnlinePlayers());
         }
     }
 }

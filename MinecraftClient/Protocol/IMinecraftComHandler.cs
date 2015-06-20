@@ -16,12 +16,12 @@ namespace MinecraftClient.Protocol
         /* The MinecraftCom Hanler must
          * provide these getters */
 
-        int getServerPort();
-        string getServerHost();
-        string getUsername();
-        string getUserUUID();
-        string getSessionID();
-        string[] getOnlinePlayers();
+        int GetServerPort();
+        string GetServerHost();
+        string GetUsername();
+        string GetUserUUID();
+        string GetSessionID();
+        string[] GetOnlinePlayers();
 
         /// <summary>
         /// This method is called when the protocol handler receives a chat message

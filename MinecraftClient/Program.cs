@@ -63,7 +63,7 @@ namespace MinecraftClient
                     Settings.Password = args[1];
                     if (args.Length >= 3)
                     {
-                        Settings.setServerIP(args[2]);
+                        Settings.SetServerIP(args[2]);
 
                         //Single command?
                         if (args.Length >= 4)
@@ -77,7 +77,7 @@ namespace MinecraftClient
             if (Settings.ConsoleTitle != "")
             {
                 Settings.Username = "New Window";
-                Console.Title = Settings.expandVars(Settings.ConsoleTitle);
+                Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
             }
 
             //Asking the user to type in missing data such as Username and Password
@@ -130,7 +130,7 @@ namespace MinecraftClient
             if (result == ProtocolHandler.LoginResult.Success)
             {
                 if (Settings.ConsoleTitle != "")
-                    Console.Title = Settings.expandVars(Settings.ConsoleTitle);
+                    Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
                 
                 if (Settings.playerHeadAsIcon)
                     ConsoleIcon.setPlayerIconAsync(Settings.Username);
@@ -140,7 +140,7 @@ namespace MinecraftClient
                 if (Settings.ServerIP == "")
                 {
                     Console.Write("Server IP : ");
-                    Settings.setServerIP(Console.ReadLine());
+                    Settings.SetServerIP(Console.ReadLine());
                 }
 
                 //Get server version
@@ -186,7 +186,7 @@ namespace MinecraftClient
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")
-                            Console.Title = Settings.expandVars(Settings.ConsoleTitle);
+                            Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
                     }
                     catch (NotSupportedException) { HandleFailure("Cannot connect to the server : This version is not supported !", true); }
                 }
@@ -306,15 +306,15 @@ namespace MinecraftClient
 
                                 if (command.StartsWith("reco"))
                                 {
-                                    message = new Commands.Reco().Run(null, Settings.expandVars(command));
+                                    message = new Commands.Reco().Run(null, Settings.ExpandVars(command));
                                 }
                                 else if (command.StartsWith("connect"))
                                 {
-                                    message = new Commands.Connect().Run(null, Settings.expandVars(command));
+                                    message = new Commands.Connect().Run(null, Settings.ExpandVars(command));
                                 }
                                 else if (command.StartsWith("exit") || command.StartsWith("quit"))
                                 {
-                                    message = new Commands.Exit().Run(null, Settings.expandVars(command));
+                                    message = new Commands.Exit().Run(null, Settings.ExpandVars(command));
                                 }
                                 else if (command.StartsWith("help"))
                                 {

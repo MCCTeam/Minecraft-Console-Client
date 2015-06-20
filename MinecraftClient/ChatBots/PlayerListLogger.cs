@@ -46,7 +46,7 @@ namespace MinecraftClient.ChatBots
                 LogToConsole("Saving Player List");
                 DateTime now = DateTime.Now;
                 string TimeStamp = "[" + now.Year + '/' + now.Month + '/' + now.Day + ' ' + now.Hour + ':' + now.Minute + ']';
-                System.IO.File.AppendAllText(file, TimeStamp + "\n" + getVerbatim(text) + "\n\n");
+                System.IO.File.AppendAllText(file, TimeStamp + "\n" + GetVerbatim(text) + "\n\n");
             }
         }
     }

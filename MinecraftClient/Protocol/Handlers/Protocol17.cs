@@ -349,16 +349,16 @@ namespace MinecraftClient.Protocol.Handlers
         {
             byte[] packet_id = getVarInt(0);
             byte[] protocol_version = getVarInt(protocolversion);
-            byte[] server_adress_val = Encoding.UTF8.GetBytes(handler.getServerHost());
+            byte[] server_adress_val = Encoding.UTF8.GetBytes(handler.GetServerHost());
             byte[] server_adress_len = getVarInt(server_adress_val.Length);
-            byte[] server_port = BitConverter.GetBytes((ushort)handler.getServerPort()); Array.Reverse(server_port);
+            byte[] server_port = BitConverter.GetBytes((ushort)handler.GetServerPort()); Array.Reverse(server_port);
             byte[] next_state = getVarInt(2);
             byte[] handshake_packet = concatBytes(packet_id, protocol_version, server_adress_len, server_adress_val, server_port, next_state);
             byte[] handshake_packet_tosend = concatBytes(getVarInt(handshake_packet.Length), handshake_packet);
 
             Send(handshake_packet_tosend);
 
-            byte[] username_val = Encoding.UTF8.GetBytes(handler.getUsername());
+            byte[] username_val = Encoding.UTF8.GetBytes(handler.GetUsername());
             byte[] username_len = getVarInt(username_val.Length);
             byte[] login_packet = concatBytes(packet_id, username_len, username_val);
             byte[] login_packet_tosend = concatBytes(getVarInt(login_packet.Length), login_packet);
@@ -377,7 +377,7 @@ namespace MinecraftClient.Protocol.Handlers
                 string serverID = readNextString();
                 byte[] Serverkey = readNextByteArray();
                 byte[] token = readNextByteArray();
-                return StartEncryption(handler.getUserUUID(), handler.getSessionID(), token, serverID, Serverkey);
+                return StartEncryption(handler.GetUserUUID(), handler.GetSessionID(), token, serverID, Serverkey);
             }
             else if (pid == 0x02) //Login successful
             {

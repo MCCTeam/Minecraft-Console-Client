@@ -52,9 +52,9 @@ namespace MinecraftClient.ChatBots
         {
             string message = "";
             string username = "";
-            text = getVerbatim(text);
+            text = GetVerbatim(text);
 
-            if (isPrivateMessage(text, ref message, ref username))
+            if (IsPrivateMessage(text, ref message, ref username))
             {
                 if (Settings.Bots_Owners.Contains(username.ToLower()))
                 {
@@ -73,7 +73,7 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                if (running && isChatMessage(text, ref message, ref username))
+                if (running && IsChatMessage(text, ref message, ref username))
                 {
                     if (message.Length == 1)
                     {

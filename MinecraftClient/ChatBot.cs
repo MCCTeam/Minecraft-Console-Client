@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Threading;
 
 namespace MinecraftClient
 {
@@ -33,8 +34,11 @@ namespace MinecraftClient
         public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost };
 
         //Will be automatically set on bot loading, don't worry about this
-        public void SetHandler(McTcpClient handler) { this.handler = handler; }
-        private McTcpClient handler;
+        public void SetHandler(McTcpClient handler) { this._handler = handler; }
+        public void SetMaster(ChatBot master) { this.master = master; }
+        private McTcpClient Handler { get { return master != null ? master.Handler : _handler; } }
+        private McTcpClient _handler = null;
+        private ChatBot master = null;
 
         /* ================================================== */
         /*   Main methods to override for creating your bot   */
@@ -80,10 +84,12 @@ namespace MinecraftClient
         /// <param name="text">Text to send to the server</param>
         /// <returns>True if the text was sent with no error</returns>
 
-        protected bool SendText(string text)
+        protected bool SendText(object text)
         {
             LogToConsole("Sending '" + text + "'");
-            return handler.SendText(text);
+            bool result = Handler.SendText(text is string ? (string)text : text.ToString());
+            Thread.Sleep(1000);
+            return result;
         }
 
         /// <summary>
@@ -92,10 +98,10 @@ namespace MinecraftClient
         /// <param name="command">The command to process</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
 
-        protected bool performInternalCommand(string command)
+        protected bool PerformInternalCommand(string command)
         {
             string temp = "";
-            return handler.performInternalCommand(command, ref temp);
+            return Handler.PerformInternalCommand(command, ref temp);
         }
 
         /// <summary>
@@ -105,16 +111,16 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
 
-        protected bool performInternalCommand(string command, ref string response_msg)
+        protected bool PerformInternalCommand(string command, ref string response_msg)
         {
-            return handler.performInternalCommand(command, ref response_msg);
+            return Handler.PerformInternalCommand(command, ref response_msg);
         }
 
         /// <summary>
         /// Remove color codes ("§c") from a text message received from the server
         /// </summary>
 
-        protected static string getVerbatim(string text)
+        protected static string GetVerbatim(string text)
         {
             if ( String.IsNullOrEmpty(text) )
                 return String.Empty;
@@ -135,7 +141,7 @@ namespace MinecraftClient
         /// Verify that a string contains only a-z A-Z 0-9 and _ characters.
         /// </summary>
 
-        protected static bool isValidName(string username)
+        protected static bool IsValidName(string username)
         {
             if ( String.IsNullOrEmpty(username) )
                 return false;
@@ -158,9 +164,9 @@ namespace MinecraftClient
         /// <param name="sender">if it's a private message, this will contain the player name that sends the message</param>
         /// <returns>Returns true if the text is a private message</returns>
 
-        protected static bool isPrivateMessage(string text, ref string message, ref string sender)
+        protected static bool IsPrivateMessage(string text, ref string message, ref string sender)
         {
-            text = getVerbatim(text);
+            text = GetVerbatim(text);
             if (text == "") { return false; }
             string[] tmp = text.Split(' ');
 
@@ -177,7 +183,7 @@ namespace MinecraftClient
                     }
                     else message = text.Substring(tmp[0].Length + 10); //MC 1.5
                     sender = tmp[0];
-                    return isValidName(sender);
+                    return IsValidName(sender);
                 }
 
                 //Detect Essentials (Bukkit) /m messages
@@ -189,7 +195,7 @@ namespace MinecraftClient
                     message = text.Substring(tmp[0].Length + 4 + tmp[2].Length + 1);
                     sender = tmp[0].Substring(1);
                     if (sender[0] == '~') { sender = sender.Substring(1); }
-                    return isValidName(sender);
+                    return IsValidName(sender);
                 }
 
                 //Detect Essentials (Bukkit) /me messages with some custom rank
@@ -201,7 +207,7 @@ namespace MinecraftClient
                     message = text.Substring(tmp[0].Length + 1 + tmp[1].Length + 4 + tmp[2].Length + 1);
                     sender = tmp[0].Substring(1);
                     if (sender[0] == '~') { sender = sender.Substring(1); }
-                    return isValidName(sender);
+                    return IsValidName(sender);
                 }
 
                 //Detect HeroChat PMsend
@@ -210,7 +216,7 @@ namespace MinecraftClient
                 {
                     sender = text.Substring(5).Split(':')[0];
                     message = text.Substring(text.IndexOf(':') + 2);
-                    return isValidName(sender);
+                    return IsValidName(sender);
                 }
 
                 else return false;
@@ -226,10 +232,10 @@ namespace MinecraftClient
         /// <param name="sender">if it's message, this will contain the player name that sends the message</param>
         /// <returns>Returns true if the text is a chat message</returns>
 
-        protected static bool isChatMessage(string text, ref string message, ref string sender)
+        protected static bool IsChatMessage(string text, ref string message, ref string sender)
         {
             
-            text = getVerbatim(text);
+            text = GetVerbatim(text);
             string[] tmp = text.Split(' ');
             if (text.Length > 0)
             {
@@ -251,7 +257,7 @@ namespace MinecraftClient
                         tmp2 = sender.Split(' ');
                         sender = tmp2[tmp2.Length - 1];
                         if (sender[0] == '~') { sender = sender.Substring(1); }
-                        return isValidName(sender);
+                        return IsValidName(sender);
                     }
                     catch (IndexOutOfRangeException) { return false; }
                 }
@@ -264,7 +270,7 @@ namespace MinecraftClient
                     int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
                     sender = text.Substring(name_start, name_end - name_start);
                     message = text.Substring(name_end + 2);
-                    return isValidName(sender);
+                    return IsValidName(sender);
                 }
             }
             return false;
@@ -277,14 +283,14 @@ namespace MinecraftClient
         /// <param name="sender">Will contain the sender's username, if it's a teleport request</param>
         /// <returns>Returns true if the text is a teleport request</returns>
 
-        protected static bool isTeleportRequest(string text, ref string sender)
+        protected static bool IsTeleportRequest(string text, ref string sender)
         {
-            text = getVerbatim(text);
+            text = GetVerbatim(text);
             sender = text.Split(' ')[0];
             if (text.EndsWith("has requested to teleport to you.")
              || text.EndsWith("has requested that you teleport to them."))
             {
-                return isValidName(sender);
+                return IsValidName(sender);
             }
             else return false;
         }
@@ -294,10 +300,10 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="text">Log text to write</param>
 
-        public static void LogToConsole(string text)
+        public static void LogToConsole(object text)
         {
             ConsoleIO.WriteLineFormatted("§8[BOT] " + text);
-            string logfile = Settings.expandVars(Settings.chatbotLogFile);
+            string logfile = Settings.ExpandVars(Settings.chatbotLogFile);
 
             if (!String.IsNullOrEmpty(logfile))
             {
@@ -309,7 +315,7 @@ namespace MinecraftClient
                     catch { return; /* Invalid file name or access denied */ }
                 }
 
-                File.AppendAllLines(logfile, new string[] { getTimestamp() + ' ' + text });
+                File.AppendAllLines(logfile, new string[] { GetTimestamp() + ' ' + text });
             }
         }
 
@@ -340,7 +346,7 @@ namespace MinecraftClient
 
         protected void UnloadBot()
         {
-            handler.BotUnLoad(this);
+            Handler.BotUnLoad(this);
         }
 
         /// <summary>
@@ -362,14 +368,14 @@ namespace MinecraftClient
 
         protected void RunScript(string filename, string playername = "")
         {
-            handler.BotLoad(new ChatBots.Script(filename, playername));
+            Handler.BotLoad(new ChatBots.Script(filename, playername));
         }
 
         /// <summary>
         /// Get a Y-M-D h:m:s timestamp representing the current system date and time
         /// </summary>
 
-        protected static string getTimestamp()
+        protected static string GetTimestamp()
         {
             DateTime time = DateTime.Now;
             return String.Format("{0}-{1}-{2} {3}:{4}:{5}",
@@ -403,6 +409,60 @@ namespace MinecraftClient
                 LogToConsole("File not found: " + Settings.Alerts_MatchesFile);
                 return new string[0];
             }
+        }
+
+        /// <summary>
+        /// Set a custom %variable% which will be available through expandVars()
+        /// </summary>
+        /// <param name="varName">Name of the variable</param>
+        /// <param name="varData">Value of the variable</param>
+        /// <returns>True if the parameters were valid</returns>
+
+        protected static bool SetVar(string varName, object varData)
+        {
+            return Settings.SetVar(varName, varData.ToString());
+        }
+
+        /// <summary>
+        /// Get a custom %variable% or null if the variable does not exist
+        /// </summary>
+        /// <param name="varName">Variable name</param>
+        /// <returns>The value or null if the variable does not exists</returns>
+
+        protected static string GetVar(string varName)
+        {
+            return Settings.GetVar(varName);
+        }
+
+        /// <summary>
+        /// Get a custom %variable% as an Integer or null if the variable does not exist
+        /// </summary>
+        /// <param name="varName">Variable name</param>
+        /// <returns>The value or null if the variable does not exists</returns>
+
+        protected static int GetVarAsInt(string varName)
+        {
+            return Settings.str2int(Settings.GetVar(varName));
+        }
+
+        /// <summary>
+        /// Load login/password using an account alias
+        /// </summary>
+        /// <returns>True if the account was found and loaded</returns>
+
+        protected static bool SetAccount(string accountAlias)
+        {
+            return Settings.SetAccount(accountAlias);
+        }
+
+        /// <summary>
+        /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
+        /// </summary>
+        /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
+
+        protected static bool SetServerIP(string server)
+        {
+            return Settings.SetServerIP(server);
         }
     }
 }

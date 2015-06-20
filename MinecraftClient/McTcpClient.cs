@@ -34,11 +34,11 @@ namespace MinecraftClient
         private string uuid;
         private string sessionid;
 
-        public int getServerPort() { return port; }
-        public string getServerHost() { return host; }
-        public string getUsername() { return username; }
-        public string getUserUUID() { return uuid; }
-        public string getSessionID() { return sessionid; }
+        public int GetServerPort() { return port; }
+        public string GetServerHost() { return host; }
+        public string GetUsername() { return username; }
+        public string GetUserUUID() { return uuid; }
+        public string GetSessionID() { return sessionid; }
 
         TcpClient client;
         IMinecraftCom handler;
@@ -101,10 +101,10 @@ namespace MinecraftClient
                 if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
                 if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
                 if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
-                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.expandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.expandVars(Settings.PlayerLog_File))); }
+                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
                 if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
-                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.expandVars(Settings.ScriptScheduler_TasksFile))); }
+                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
                 if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
                 if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
             }
@@ -209,7 +209,7 @@ namespace MinecraftClient
                             {
                                 string response_msg = "";
                                 string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
-                                if (!performInternalCommand(Settings.expandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
+                                if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
                                 {
                                     SendText(text);
                                 }
@@ -234,7 +234,7 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
 
-        public bool performInternalCommand(string command, ref string response_msg)
+        public bool PerformInternalCommand(string command, ref string response_msg)
         {
             /* Load commands from the 'Commands' namespace */
 
@@ -314,7 +314,8 @@ namespace MinecraftClient
 
             Thread.Sleep(1000);
 
-            if (client != null) { client.Close(); }
+            if (client != null)
+                client.Close();
         }
 
         /// <summary>
@@ -476,7 +477,7 @@ namespace MinecraftClient
         /// </summary>
         /// <returns>Online player names</returns>
 
-        public string[] getOnlinePlayers()
+        public string[] GetOnlinePlayers()
         {
             lock (onlinePlayers)
             {

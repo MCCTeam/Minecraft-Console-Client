@@ -47,7 +47,7 @@ namespace MinecraftClient.ChatBots
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
         {
-            message = getVerbatim(message);
+            message = GetVerbatim(message);
             string comp = message.ToLower();
             foreach (string msg in dictionary)
             {

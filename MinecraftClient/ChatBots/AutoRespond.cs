@@ -182,14 +182,14 @@ namespace MinecraftClient.ChatBots
         public override void GetText(string text)
         {
             //Remove colour codes
-            text = getVerbatim(text).ToLower();
+            text = GetVerbatim(text).ToLower();
 
             //Check if this is a valid message
             string sender = "", message = "";
-            bool chatMessage = isChatMessage(text, ref message, ref sender);
+            bool chatMessage = IsChatMessage(text, ref message, ref sender);
             bool privateMessage = false;
             if (!chatMessage)
-                privateMessage = isPrivateMessage(text, ref message, ref sender);
+                privateMessage = IsPrivateMessage(text, ref message, ref sender);
 
             //Process only chat messages sent by another user
             if ((chatMessage || privateMessage) && sender != Settings.Username)
@@ -201,7 +201,7 @@ namespace MinecraftClient.ChatBots
                     {
                         string response = null;
                         LogToConsole(header + toPerform);
-                        performInternalCommand(toPerform, ref response);
+                        PerformInternalCommand(toPerform, ref response);
                         if (!String.IsNullOrEmpty(response))
                             LogToConsole(header + response);
                     }
