@@ -94,9 +94,9 @@ namespace MinecraftClient
         public static string AutoRespond_Matches = "matches.ini";
 
         //Custom app variables and Minecraft accounts
-        private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
-        private static Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
-        private static Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
+        private static readonly Dictionary<string, string> AppVars = new Dictionary<string, string>();
+        private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
+        private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
         private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, AutoRespond };
 
@@ -491,13 +491,16 @@ namespace MinecraftClient
 
         public static bool SetVar(string varName, string varData)
         {
-            varName = new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
-            if (varName.Length > 0)
+            lock (AppVars)
             {
-                AppVars[varName] = varData;
-                return true;
+                varName = new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
+                if (varName.Length > 0)
+                {
+                    AppVars[varName] = varData;
+                    return true;
+                }
+                else return false;
             }
-            else return false;
         }
 
         /// <summary>

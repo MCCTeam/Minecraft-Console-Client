@@ -97,7 +97,7 @@ namespace MinecraftClient.ChatBots
                     tpause = new ManualResetEvent(false);
                     thread = new Thread(() =>
                     {
-                        if (!RunCSharpScript(String.Join("\n", lines), file, tpause) && owner != null)
+                        if (!RunCSharpScript() && owner != null)
                             SendPrivateMessage(owner, "Script '" + file + "' failed to run.");
                     });
                     thread.Start();
@@ -160,16 +160,37 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private bool RunCSharpScript(string script, string filename = "C# Script", ManualResetEvent tpause = null)
+        private bool RunCSharpScript()
         {
             //Script compatibility check for handling future versions differently
-            if (!script.ToLower().StartsWith("//mccscript 1.0"))
+            if (lines.Length < 1 || lines[0] != "//MCCScript 1.0")
             {
-                ConsoleIO.WriteLineFormatted("§8Script file '" + filename + "' does not start with a valid //MCCScript comment.");
+                LogToConsole("Script file '" + file + "' does not start with a valid //MCCScript identifier.");
                 return false;
             }
 
-            //Create a simple ChatBot class from the given script, allowing access to ChatBot API
+            //Process different sections of the script file
+            bool scriptMain = true;
+            List<string> script = new List<string>();
+            List<string> extensions = new List<string>();
+            foreach (string line in lines)
+            {
+                if (line.StartsWith("//MCCScript"))
+                {
+                    if (line.EndsWith("Extensions"))
+                        scriptMain = false;
+                }
+                else if (scriptMain)
+                {
+                    script.Add(line);
+                    //Add breakpoints for step-by-step execution of the script
+                    if (tpause != null && line.Trim().EndsWith(";"))
+                        script.Add("tpause.WaitOne();");
+                }
+                else extensions.Add(line);
+            }
+
+            //Generate a ChatBot class, allowing access to the ChatBot API
             string code = String.Join("\n", new string[]
             {
                 "using System;",
@@ -178,12 +199,12 @@ namespace MinecraftClient.ChatBots
                 "using MinecraftClient;",
                 "namespace ScriptLoader {",
                 "public class Script : ChatBot {",
-                "public void Run(ChatBot master, ManualResetEvent tpause) {",
+                "public void __run(ChatBot master, ManualResetEvent tpause) {",
                 "SetMaster(master);",
-                    tpause != null
-                        ? script.Replace(";\n", ";\ntpause.WaitOne();\n")
-                        : script,
-                "}}}",
+                    String.Join("\n", script),
+                "}",
+                    String.Join("\n", extensions),
+                "}}",
             });
 
             //Compile the C# class in memory using all the currently loaded assemblies
@@ -202,16 +223,16 @@ namespace MinecraftClient.ChatBots
             //Process compile warnings and errors
             if (result.Errors.Count > 0)
             {
-                ConsoleIO.WriteLineFormatted("§8Error loading '" + filename + "':\n" + result.Errors[0].ErrorText);
+                LogToConsole("Error loading '" + file + "':\n" + result.Errors[0].ErrorText);
                 return false;
             }
 
             //Run the compiled script with exception handling
             object compiledScript = result.CompiledAssembly.CreateInstance("ScriptLoader.Script");
-            try { compiledScript.GetType().GetMethod("Run").Invoke(compiledScript, new object[] { this, tpause }); }
+            try { compiledScript.GetType().GetMethod("__run").Invoke(compiledScript, new object[] { this, tpause }); }
             catch (Exception e)
             {
-                ConsoleIO.WriteLineFormatted("§8Runtime error for '" + filename + "':\n" + e);
+                LogToConsole("Runtime error for '" + file + "':\n" + e);
                 return false;
             }
 

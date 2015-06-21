@@ -33,9 +33,10 @@ namespace MinecraftClient
     {
         public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost };
 
-        //Will be automatically set on bot loading, don't worry about this
+        //Handler will be automatically set on bot loading, don't worry about this
         public void SetHandler(McTcpClient handler) { this._handler = handler; }
-        public void SetMaster(ChatBot master) { this.master = master; }
+        protected void SetMaster(ChatBot master) { this.master = master; }
+        protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
         private McTcpClient Handler { get { return master != null ? master.Handler : _handler; } }
         private McTcpClient _handler = null;
         private ChatBot master = null;

@@ -6,10 +6,9 @@
 
 for (int i = 0; i < 5; i++)
 {
-    int count = GetVarAsInt("test");
-    count++;
+    int count = GetVarAsInt("test") + 1;
     SetVar("test", count);
     SendText("Hello World no. " + count);
-    PerformInternalCommand("log Sleeping for 5 seconds...");
+    LogToConsole("Sleeping for 5 seconds...");
     Thread.Sleep(5000);
 }
