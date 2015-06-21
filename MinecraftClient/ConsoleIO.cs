@@ -326,6 +326,16 @@ namespace MinecraftClient
             }
         }
 
+        /// <summary>
+        /// Write a Minecraft Console Client Log line
+        /// </summary>
+        /// <param name="text">Text of the log line</param>
+
+        public static void WriteLogLine(string text)
+        {
+            WriteLineFormatted("§8[MCC] " + text);
+        }
+
         #region Subfunctions
         private static void ClearLineAndBuffer()
         {

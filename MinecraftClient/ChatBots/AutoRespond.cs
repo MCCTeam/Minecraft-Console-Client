@@ -12,7 +12,6 @@ namespace MinecraftClient.ChatBots
     {
         private string matchesFile;
         private List<RespondRule> respondRules;
-        private static string header = "[AutoRespond] ";
 
         /// <summary>
         /// Create a new AutoRespond bot
@@ -84,7 +83,7 @@ namespace MinecraftClient.ChatBots
                 }
                 else if (!String.IsNullOrEmpty(match))
                 {
-                    if (message.Contains(match))
+                    if (message.ToLower().Contains(match.ToLower()))
                     {
                         return (privateMsg
                                 ? actionPrivate
@@ -137,7 +136,7 @@ namespace MinecraftClient.ChatBots
                                     case "regex": matchRegex = new Regex(argValue); break;
                                     case "match": matchString = argValue; break;
                                     case "action": matchAction = argValue; break;
-                                    case "actionprivate": matchAction = argValue; break;
+                                    case "actionprivate": matchActionPrivate = argValue; break;
                                 }
                             }
                         }
@@ -182,7 +181,7 @@ namespace MinecraftClient.ChatBots
         public override void GetText(string text)
         {
             //Remove colour codes
-            text = GetVerbatim(text).ToLower();
+            text = GetVerbatim(text);
 
             //Check if this is a valid message
             string sender = "", message = "";
@@ -200,10 +199,10 @@ namespace MinecraftClient.ChatBots
                     if (toPerform != null)
                     {
                         string response = null;
-                        LogToConsole(header + toPerform);
+                        LogToConsole(toPerform);
                         PerformInternalCommand(toPerform, ref response);
                         if (!String.IsNullOrEmpty(response))
-                            LogToConsole(header + response);
+                            LogToConsole(response);
                     }
                 }
             }

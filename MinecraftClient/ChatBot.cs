@@ -296,13 +296,13 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Writes some text in the console. Nothing will be sent to the server.
+        /// Write some text in the console. Nothing will be sent to the server.
         /// </summary>
         /// <param name="text">Log text to write</param>
 
-        public static void LogToConsole(object text)
+        public void LogToConsole(object text)
         {
-            ConsoleIO.WriteLineFormatted("§8[BOT] " + text);
+            ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", this.GetType().Name, text));
             string logfile = Settings.ExpandVars(Settings.chatbotLogFile);
 
             if (!String.IsNullOrEmpty(logfile))
@@ -393,7 +393,7 @@ namespace MinecraftClient
         /// <param name="file">File to load</param>
         /// <returns>The string array or an empty array if failed to load the file</returns>
         
-        protected static string[] LoadDistinctEntriesFromFile(string file)
+        protected string[] LoadDistinctEntriesFromFile(string file)
         {
             if (File.Exists(file))
             {

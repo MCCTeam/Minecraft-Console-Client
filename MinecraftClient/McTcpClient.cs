@@ -163,7 +163,7 @@ namespace MinecraftClient
             {
                 if (AttemptsLeft > 0)
                 {
-                    ChatBot.LogToConsole("Waiting 5 seconds (" + AttemptsLeft + " attempts left)...");
+                    ConsoleIO.WriteLogLine("Waiting 5 seconds (" + AttemptsLeft + " attempts left)...");
                     Thread.Sleep(5000); AttemptsLeft--; Program.Restart();
                 }
                 else if (!singlecommand && Settings.interactiveMode)
