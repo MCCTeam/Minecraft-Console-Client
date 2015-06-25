@@ -16,6 +16,7 @@ namespace MinecraftClient.ChatBots
     {
         private string file;
         private string[] lines = new string[0];
+        private string[] args = new string[0];
         private int sleepticks = 10;
         private int nextline = 0;
         private string owner;
@@ -25,7 +26,7 @@ namespace MinecraftClient.ChatBots
 
         public Script(string filename)
         {
-            file = filename;
+            ParseArguments(filename);
         }
 
         public Script(string filename, string ownername)
@@ -35,7 +36,52 @@ namespace MinecraftClient.ChatBots
                 owner = ownername;
         }
 
-        public static bool lookForScript(ref string filename)
+        private void ParseArguments(string argstr)
+        {
+            List<string> args = new List<string>();
+            StringBuilder str = new StringBuilder();
+
+            bool escape = false;
+            bool quotes = false;
+
+            foreach (char c in argstr)
+            {
+                if (escape)
+                {
+                    if (c != '"')
+                        str.Append('\\');
+                    str.Append(c);
+                    escape = false;
+                }
+                else
+                {
+                    if (c == '\\')
+                        escape = true;
+                    else if (c == '"')
+                        quotes = !quotes;
+                    else if (c == ' ' && !quotes)
+                    {
+                        if (str.Length > 0)
+                            args.Add(str.ToString());
+                        str.Clear();
+                    }
+                    else str.Append(c);
+                }
+            }
+
+            if (str.Length > 0)
+                args.Add(str.ToString());
+
+            if (args.Count > 0)
+            {
+                file = args[0];
+                args.RemoveAt(0);
+                this.args = args.ToArray();
+            }
+            else file = "";
+        }
+
+        public static bool LookForScript(ref string filename)
         {
             //Automatically look in subfolders and try to add ".txt" file extension
             char dir_slash = Program.isUsingMono ? '/' : '\\';
@@ -67,7 +113,7 @@ namespace MinecraftClient.ChatBots
         public override void Initialize()
         {
             //Load the given file from the startup parameters
-            if (lookForScript(ref file))
+            if (LookForScript(ref file))
             {
                 lines = System.IO.File.ReadAllLines(file);
                 csharp = file.EndsWith(".cs");
@@ -199,7 +245,7 @@ namespace MinecraftClient.ChatBots
                 "using MinecraftClient;",
                 "namespace ScriptLoader {",
                 "public class Script : ChatBot {",
-                "public void __run(ChatBot master, ManualResetEvent tpause) {",
+                "public void __run(ChatBot master, ManualResetEvent tpause, string[] args) {",
                 "SetMaster(master);",
                     String.Join("\n", script),
                 "}",
@@ -229,7 +275,7 @@ namespace MinecraftClient.ChatBots
 
             //Run the compiled script with exception handling
             object compiledScript = result.CompiledAssembly.CreateInstance("ScriptLoader.Script");
-            try { compiledScript.GetType().GetMethod("__run").Invoke(compiledScript, new object[] { this, tpause }); }
+            try { compiledScript.GetType().GetMethod("__run").Invoke(compiledScript, new object[] { this, tpause, args }); }
             catch (Exception e)
             {
                 LogToConsole("Runtime error for '" + file + "':\n" + e);
