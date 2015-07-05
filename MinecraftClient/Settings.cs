@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
@@ -446,16 +448,32 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
+        /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple, server alias or "serverhostname:port" couple by resolving DNS.
         /// </summary>
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
 
         public static bool SetServerIP(string server)
         {
             server = server.ToLower();
+            server = server == "" ? "localhost" : server;
+
             string[] sip = server.Split(':');
             string host = sip[0];
             ushort port = 25565;
+
+            var ip = new Regex(@"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b");
+            if (!ip.IsMatch(host) && host != "localhost")
+            {
+                ConsoleIO.WriteLine(String.Format("Resolving host {0} ...", host));
+                var dhost = Dns.GetHostEntry(host).AddressList;
+
+                foreach (var a in dhost)
+                {
+                    ConsoleIO.WriteLine(String.Format("{0} = {1}", host, a.ToString()));
+                }
+                var resip = dhost.First().ToString(); //ConsoleIO.WriteLine(String.Format("{0} = {1}", host, resip));
+                host = resip;
+            }
 
             if (sip.Length > 1)
             {
@@ -466,7 +484,7 @@ namespace MinecraftClient
                 catch (FormatException) { return false; }
             }
 
-            if (host == "localhost" || host.Contains('.'))
+            if (host == "localhost" || host.Contains('.')) //can you explain the ".", is it a linux thing?
             {
                 ServerIP = host;
                 ServerPort = port;
