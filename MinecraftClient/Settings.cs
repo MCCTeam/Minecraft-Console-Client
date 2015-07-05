@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
@@ -446,13 +448,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
+        /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple, server alias or "serverhostname:port" couple by resolving DNS.
         /// </summary>
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
 
         public static bool SetServerIP(string server)
         {
             server = server.ToLower();
+            server = server == "" ? "localhost" : server;
+
             string[] sip = server.Split(':');
             string host = sip[0];
             ushort port = 25565;
@@ -466,19 +470,34 @@ namespace MinecraftClient
                 catch (FormatException) { return false; }
             }
 
-            if (host == "localhost" || host.Contains('.'))
-            {
-                ServerIP = host;
-                ServerPort = port;
-                return true;
-            }
-            else if (Servers.ContainsKey(server))
+            if (Servers.ContainsKey(server))
             {
                 ServerIP = Servers[server].Key;
                 ServerPort = Servers[server].Value;
                 return true;
             }
+            
+            var ip = new Regex(@"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b");
+            if (!ip.IsMatch(host) && host != "localhost")
+            {
+                ConsoleIO.WriteLine(String.Format("Resolving host {0} ...", host));
+                var dhost = Dns.GetHostEntry(host).AddressList;
 
+                foreach (var a in dhost)
+                {
+                    ConsoleIO.WriteLine(String.Format("{0} = {1}", host, a.ToString()));
+                }
+                var resip = dhost.First().ToString();
+                host = resip;
+            }
+
+           if (host == "localhost" || ip.IsMatch(host))
+            {
+                ServerIP = host;
+                ServerPort = port;
+                return true;
+            }
+            
             return false;
         }
 
