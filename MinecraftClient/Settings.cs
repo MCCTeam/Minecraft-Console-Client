@@ -468,12 +468,14 @@ namespace MinecraftClient
 
             if (host == "localhost" || host.Contains('.'))
             {
+                //Server IP (IP or domain names contains at least a dot)
                 ServerIP = host;
                 ServerPort = port;
                 return true;
             }
             else if (Servers.ContainsKey(server))
             {
+                //Server Alias (if no dot then treat the server as an alias)
                 ServerIP = Servers[server].Key;
                 ServerPort = Servers[server].Value;
                 return true;
