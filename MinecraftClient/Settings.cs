@@ -461,6 +461,22 @@ namespace MinecraftClient
             string host = sip[0];
             ushort port = 25565;
 
+            if (sip.Length > 1)
+            {
+                try
+                {
+                    port = Convert.ToUInt16(sip[1]);
+                }
+                catch (FormatException) { return false; }
+            }
+
+            if (Servers.ContainsKey(server))
+            {
+                ServerIP = Servers[server].Key;
+                ServerPort = Servers[server].Value;
+                return true;
+            }
+            
             var ip = new Regex(@"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b");
             if (!ip.IsMatch(host) && host != "localhost")
             {
@@ -471,32 +487,17 @@ namespace MinecraftClient
                 {
                     ConsoleIO.WriteLine(String.Format("{0} = {1}", host, a.ToString()));
                 }
-                var resip = dhost.First().ToString(); //ConsoleIO.WriteLine(String.Format("{0} = {1}", host, resip));
+                var resip = dhost.First().ToString();
                 host = resip;
             }
 
-            if (sip.Length > 1)
-            {
-                try
-                {
-                    port = Convert.ToUInt16(sip[1]);
-                }
-                catch (FormatException) { return false; }
-            }
-
-            if (host == "localhost" || host.Contains('.')) //can you explain the ".", is it a linux thing?
+           if (host == "localhost" || ip.IsMatch(host))
             {
                 ServerIP = host;
                 ServerPort = port;
                 return true;
             }
-            else if (Servers.ContainsKey(server))
-            {
-                ServerIP = Servers[server].Key;
-                ServerPort = Servers[server].Value;
-                return true;
-            }
-
+            
             return false;
         }
 
