@@ -90,9 +90,11 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnTextReceived(ChatParser.ParseText(readNextString()));
                             break;
                         case 0x38:
-                            string name = readNextString();
+                            int name_len = readNextVarInt();
+                            string name = readNextString(name_len);
                             bool online = readNextBool();
                             short ping = readNextShort();
+                            readData(size - getVarInt(id).Length - getVarInt(name.Length).Length - name_len - 3); //Skip extradata
                             Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
                             if (online)
                             {
@@ -176,11 +178,13 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read a string from the network
         /// </summary>
+        /// <param name="length">String length</param>
         /// <returns>The string</returns>
 
-        private string readNextString()
+        private string readNextString(int length = -1)
         {
-            int length = readNextVarInt();
+            if (length < 0)
+                length = readNextVarInt();
             if (length > 0)
             {
                 byte[] cache = new byte[length];
