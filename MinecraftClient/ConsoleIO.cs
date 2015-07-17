@@ -70,7 +70,6 @@ namespace MinecraftClient
                     case ConsoleKey.Home:
                     case ConsoleKey.End:
                     case ConsoleKey.Delete:
-                    case ConsoleKey.Oem6:
                     case ConsoleKey.DownArrow:
                     case ConsoleKey.UpArrow:
                     case ConsoleKey.Tab:
