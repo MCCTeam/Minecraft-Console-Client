@@ -175,9 +175,8 @@ namespace MinecraftClient
                                     string[] tmp = buffer.Split(' ');
                                     if (tmp.Length > 0)
                                     {
-                                        string word_tocomplete = tmp[tmp.Length - 1];
                                         string word_autocomplete = autocomplete_engine.AutoComplete(buffer);
-                                        if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
+                                        if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != buffer)
                                         {
                                             while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
                                             foreach (char c in word_autocomplete) { AddChar(c); }
