@@ -172,15 +172,11 @@ namespace MinecraftClient
                             case ConsoleKey.Tab:
                                 if (autocomplete_engine != null && buffer.Length > 0)
                                 {
-                                    string[] tmp = buffer.Split(' ');
-                                    if (tmp.Length > 0)
+                                    string word_autocomplete = autocomplete_engine.AutoComplete(buffer);
+                                    if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != buffer)
                                     {
-                                        string word_autocomplete = autocomplete_engine.AutoComplete(buffer);
-                                        if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != buffer)
-                                        {
-                                            while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
-                                            foreach (char c in word_autocomplete) { AddChar(c); }
-                                        }
+                                        while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
+                                        foreach (char c in word_autocomplete) { AddChar(c); }
                                     }
                                 }
                                 break;
