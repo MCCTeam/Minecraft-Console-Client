@@ -441,15 +441,11 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] token = readNextByteArray();
 
                 if (serverID == "-")
-                {
                     ConsoleIO.WriteLineFormatted("§8Server is in offline mode.");
-                    return true; //No need to check session or start encryption
-                }
                 else
-                {
                     ConsoleIO.WriteLineFormatted("§8Handshake successful. (Server ID: " + serverID + ')');
-                    return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey);
-                }
+
+                return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey);
             }
             else return false;
         }
