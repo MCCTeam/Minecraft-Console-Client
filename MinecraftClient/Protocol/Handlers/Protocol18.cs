@@ -120,13 +120,6 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool handlePacket(int packetID, byte[] packetData)
         {
-            if (new[] { 0x00, 0x02, 0x38, 0x3A, 0x40 }.Contains(packetID))
-                ConsoleIO.WriteLineFormatted("§aP 0x" + packetID.ToString("x2")); //Process
-            else if (packetID <= 64)
-                ConsoleIO.WriteLineFormatted("§fS 0x" + packetID.ToString("x2")); //Skip
-            else
-                ConsoleIO.WriteLineFormatted("§c? 0x" + packetID.ToString("x2")); //Invalid
-
             if (login_phase)
             {
                 switch (packetID) //Packet IDs are different while logging in

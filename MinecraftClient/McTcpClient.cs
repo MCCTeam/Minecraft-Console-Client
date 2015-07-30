@@ -224,6 +224,7 @@ namespace MinecraftClient
                 }
             }
             catch (IOException) { }
+            catch (NullReferenceException) { }
         }
 
         /// <summary>
