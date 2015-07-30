@@ -135,7 +135,6 @@
     <Compile Include="Protocol\Handlers\Protocol16.cs" />
     <Compile Include="Protocol\IMinecraftCom.cs" />
     <Compile Include="Protocol\IMinecraftComHandler.cs" />
-    <Compile Include="Protocol\Handlers\Protocol17.cs" />
     <Compile Include="Protocol\ProtocolHandler.cs" />
     <Compile Include="Proxy\ProxyHandler.cs" />
     <Compile Include="Proxy\Handlers\EventArgs\CreateConnectionAsyncCompletedEventArgs.cs" />

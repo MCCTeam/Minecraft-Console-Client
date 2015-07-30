@@ -32,7 +32,7 @@ namespace MinecraftClient.Protocol
                 try
                 {
                     if (Protocol16Handler.doPing(serverIP, serverPort, ref protocolversionTmp)
-                        || Protocol17Handler.doPing(serverIP, serverPort, ref protocolversionTmp))
+                        || Protocol18Handler.doPing(serverIP, serverPort, ref protocolversionTmp))
                     {
                         success = true;
                     }
@@ -67,10 +67,7 @@ namespace MinecraftClient.Protocol
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
             if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
                 return new Protocol16Handler(Client, ProtocolVersion, Handler);
-            int[] supportedVersions_Protocol17 = { 4, 5 };
-            if (Array.IndexOf(supportedVersions_Protocol17, ProtocolVersion) > -1)
-                return new Protocol17Handler(Client, ProtocolVersion, Handler);
-            int[] supportedVersions_Protocol18 = { 47 };
+            int[] supportedVersions_Protocol18 = { 4, 5, 47 };
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
                 return new Protocol18Handler(Client, ProtocolVersion, Handler);
             throw new NotSupportedException("The protocol version no." + ProtocolVersion + " is not supported.");

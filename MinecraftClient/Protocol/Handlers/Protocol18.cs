@@ -6,24 +6,28 @@ using System.Net.Sockets;
 using System.Threading;
 using MinecraftClient.Crypto;
 using MinecraftClient.Proxy;
+using System.Security.Cryptography;
 
 namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
-    /// Implementation for Minecraft 1.8.X Protocol
+    /// Implementation for Minecraft 1.7.X and 1.8.X Protocols
     /// </summary>
 
     class Protocol18Handler : IMinecraftCom
     {
-        IMinecraftComHandler handler;
+        private const int MC18Version = 47;
+        
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
         private string autocomplete_result = "";
         private bool login_phase = true;
         private bool encrypted = false;
         private int protocolversion;
-        private Thread netRead;
-        Crypto.IAesStream s;
+
+        IMinecraftComHandler handler;
+        Thread netRead;
+        IAesStream s;
         TcpClient c;
 
         public Protocol18Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
@@ -95,7 +99,9 @@ namespace MinecraftClient.Protocol.Handlers
             int size = readNextVarIntRAW(); //Packet size
             packetData = readDataRAW(size); //Packet contents
 
-            if (compression_treshold > 0) //Handle packet decompression
+            //Handle packet decompression
+            if (protocolversion >= MC18Version
+                && compression_treshold > 0)
             {
                 int size_uncompressed = readNextVarInt(ref packetData);
                 if (size_uncompressed != 0) // != 0 means compressed, let's decompress
@@ -114,12 +120,20 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool handlePacket(int packetID, byte[] packetData)
         {
+            if (new[] { 0x00, 0x02, 0x38, 0x3A, 0x40 }.Contains(packetID))
+                ConsoleIO.WriteLineFormatted("§aP 0x" + packetID.ToString("x2")); //Process
+            else if (packetID <= 64)
+                ConsoleIO.WriteLineFormatted("§fS 0x" + packetID.ToString("x2")); //Skip
+            else
+                ConsoleIO.WriteLineFormatted("§c? 0x" + packetID.ToString("x2")); //Invalid
+
             if (login_phase)
             {
                 switch (packetID) //Packet IDs are different while logging in
                 {
                     case 0x03:
-                        compression_treshold = readNextVarInt(ref packetData);
+                        if (protocolversion >= MC18Version)
+                            compression_treshold = readNextVarInt(ref packetData);
                         break;
                     default:
                         return false; //Ignored packet
@@ -130,30 +144,43 @@ namespace MinecraftClient.Protocol.Handlers
                 switch (packetID)
                 {
                     case 0x00: //Keep-Alive
-                        SendPacket(0x00, getVarInt(readNextVarInt(ref packetData)));
+                        SendPacket(0x00, packetData);
                         break;
                     case 0x02: //Chat message
                         handler.OnTextReceived(ChatParser.ParseText(readNextString(ref packetData)));
                         break;
                     case 0x38: //Player List update
-                        int action = readNextVarInt(ref packetData);
-                        int numActions = readNextVarInt(ref packetData);
-                        for (int i = 0; i < numActions; i++)
+                        if (protocolversion >= MC18Version)
                         {
-                            Guid uuid = readNextUUID(ref packetData);
-                            switch (action)
+                            int action = readNextVarInt(ref packetData);
+                            int numActions = readNextVarInt(ref packetData);
+                            for (int i = 0; i < numActions; i++)
                             {
-                                case 0x00: //Player Join
-                                    string name = readNextString(ref packetData);
-                                    handler.OnPlayerJoin(uuid, name);
-                                    break;
-                                case 0x04: //Player Leave
-                                    handler.OnPlayerLeave(uuid);
-                                    break;
-                                default:
-                                    //Unknown player list item type
-                                    break;
+                                Guid uuid = readNextUUID(ref packetData);
+                                switch (action)
+                                {
+                                    case 0x00: //Player Join
+                                        string name = readNextString(ref packetData);
+                                        handler.OnPlayerJoin(uuid, name);
+                                        break;
+                                    case 0x04: //Player Leave
+                                        handler.OnPlayerLeave(uuid);
+                                        break;
+                                    default:
+                                        //Unknown player list item type
+                                        break;
+                                }
                             }
+                        }
+                        else //MC 1.7.X does not provide UUID in tab-list updates
+                        {
+                            string name = readNextString(ref packetData);
+                            bool online = readNextBool(ref packetData);
+                            short ping = readNextShort(ref packetData);
+                            Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
+                            if (online)
+                                handler.OnPlayerJoin(FakeUUID, name);
+                            else handler.OnPlayerLeave(FakeUUID);
                         }
                         break;
                     case 0x3A: //Tab-Complete Result
@@ -174,7 +201,8 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(readNextString(ref packetData)));
                         return false;
                     case 0x46: //Network Compression Treshold Info
-                        compression_treshold = readNextVarInt(ref packetData);
+                        if (protocolversion >= MC18Version)
+                            compression_treshold = readNextVarInt(ref packetData);
                         break;
                     default:
                         return false; //Ignored packet
@@ -239,18 +267,11 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The data read from the cache as an array</returns>
 
-        private byte[] readData(int offset, ref byte[] cache)
+        private static byte[] readData(int offset, ref byte[] cache)
         {
-            List<byte> read = new List<byte>();
-            List<byte> list = new List<byte>(cache);
-            while (offset > 0 && list.Count > 0)
-            {
-                read.Add(list[0]);
-                list.RemoveAt(0);
-                offset--;
-            }
-            cache = list.ToArray();
-            return read.ToArray();
+            byte[] result = cache.Take(offset).ToArray();
+            cache = cache.Skip(offset).ToArray();
+            return result;
         }
 
         /// <summary>
@@ -259,7 +280,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The string</returns>
 
-        private string readNextString(ref byte[] cache)
+        private static string readNextString(ref byte[] cache)
         {
             int length = readNextVarInt(ref cache);
             if (length > 0)
@@ -270,12 +291,34 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a boolean from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The boolean value</returns>
+
+        private static bool readNextBool(ref byte[] cache)
+        {
+            return readData(1, ref cache)[0] != 0x00;
+        }
+
+        /// <summary>
+        /// Read a short integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The short integer value</returns>
+
+        private static short readNextShort(ref byte[] cache)
+        {
+            byte[] rawValue = readData(2, ref cache);
+            Array.Reverse(rawValue); //Endianness
+            return BitConverter.ToInt16(rawValue, 0);
+        }
+
+        /// <summary>
         /// Read a uuid from a cache of bytes and remove it from the cache
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The uuid</returns>
 
-        private Guid readNextUUID(ref byte[] cache)
+        private static Guid readNextUUID(ref byte[] cache)
         {
             return new Guid(readData(16, ref cache));
         }
@@ -288,7 +331,9 @@ namespace MinecraftClient.Protocol.Handlers
 
         private byte[] readNextByteArray(ref byte[] cache)
         {
-            int len = readNextVarInt(ref cache);
+            int len = protocolversion >= MC18Version
+                ? readNextVarInt(ref cache)
+                : readNextShort(ref cache);
             return readData(len, ref cache);
         }
 
@@ -320,7 +365,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The integer</returns>
 
-        private int readNextVarInt(ref byte[] cache)
+        private static int readNextVarInt(ref byte[] cache)
         {
             int i = 0;
             int j = 0;
@@ -353,6 +398,23 @@ namespace MinecraftClient.Protocol.Handlers
             }
             bytes.Add((byte)paramInt);
             return bytes.ToArray();
+        }
+
+        /// <summary>
+        /// Get byte array with length information prepended to it
+        /// </summary>
+        /// <param name="array">Array to process</param>
+        /// <returns>Array ready to send</returns>
+
+        private byte[] getArray(byte[] array)
+        {
+            if (protocolversion < MC18Version)
+            {
+                byte[] length = BitConverter.GetBytes((short)array.Length);
+                Array.Reverse(length);
+                return concatBytes(length, array);
+            }
+            else return concatBytes(getVarInt(array.Length), array);
         }
 
         /// <summary>
@@ -514,13 +576,11 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             //Encrypt the data
-            byte[] key_enc = RSAService.Encrypt(secretKey, false);
-            byte[] token_enc = RSAService.Encrypt(token, false);
-            byte[] key_len = getVarInt(key_enc.Length);
-            byte[] token_len = getVarInt(token_enc.Length);
+            byte[] key_enc = getArray(RSAService.Encrypt(secretKey, false));
+            byte[] token_enc = getArray(RSAService.Encrypt(token, false));
 
             //Encryption Response packet
-            SendPacket(0x01, concatBytes(key_len, key_enc, token_len, token_enc));
+            SendPacket(0x01, concatBytes(key_enc, token_enc));
 
             //Start client-side encryption
             s = CryptoHandler.getAesStream(c.GetStream(), secretKey);
@@ -614,8 +674,10 @@ namespace MinecraftClient.Protocol.Handlers
 
             byte[] tocomplete_val = Encoding.UTF8.GetBytes(BehindCursor);
             byte[] tocomplete_len = getVarInt(tocomplete_val.Length);
-            byte[] has_position = new byte[] { 0x00 }; //false, no position sent
-            byte[] tabcomplete_packet = concatBytes(tocomplete_len, tocomplete_val, has_position);
+            byte[] has_position = new byte[] { 0x00 };
+            byte[] tabcomplete_packet = protocolversion >= MC18Version
+                ? concatBytes(tocomplete_len, tocomplete_val, has_position)
+                : concatBytes(tocomplete_len, tocomplete_val);
 
             autocomplete_received = false;
             autocomplete_result = BehindCursor;
@@ -624,6 +686,69 @@ namespace MinecraftClient.Protocol.Handlers
             int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
             while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
             return autocomplete_result;
+        }
+
+        /// <summary>
+        /// Ping a Minecraft server to get information about the server
+        /// </summary>
+        /// <returns>True if ping was successful</returns>
+
+        public static bool doPing(string host, int port, ref int protocolversion)
+        {
+            string version = "";
+            TcpClient tcp = ProxyHandler.newTcpClient(host, port);
+            tcp.ReceiveBufferSize = 1024 * 1024;
+
+            byte[] packet_id = getVarInt(0);
+            byte[] protocol_version = getVarInt(4);
+            byte[] server_adress_val = Encoding.UTF8.GetBytes(host);
+            byte[] server_adress_len = getVarInt(server_adress_val.Length);
+            byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
+            byte[] next_state = getVarInt(1);
+            byte[] packet = concatBytes(packet_id, protocol_version, server_adress_len, server_adress_val, server_port, next_state);
+            byte[] tosend = concatBytes(getVarInt(packet.Length), packet);
+
+            tcp.Client.Send(tosend, SocketFlags.None);
+
+            byte[] status_request = getVarInt(0);
+            byte[] request_packet = concatBytes(getVarInt(status_request.Length), status_request);
+
+            tcp.Client.Send(request_packet, SocketFlags.None);
+
+            Protocol18Handler ComTmp = new Protocol18Handler(tcp);
+            int packetLength = ComTmp.readNextVarIntRAW();
+            if (packetLength > 0) //Read Response length
+            {
+                byte[] packetData = ComTmp.readDataRAW(packetLength);
+                if (readNextVarInt(ref packetData) == 0x00) //Read Packet ID
+                {
+                    string result = readNextString(ref packetData); //Get the Json data
+                    if (!String.IsNullOrEmpty(result) && result.StartsWith("{") && result.EndsWith("}"))
+                    {
+                        Json.JSONData jsonData = Json.ParseJson(result);
+                        if (jsonData.Type == Json.JSONData.DataType.Object && jsonData.Properties.ContainsKey("version"))
+                        {
+                            jsonData = jsonData.Properties["version"];
+
+                            //Retrieve display name of the Minecraft version
+                            if (jsonData.Properties.ContainsKey("name"))
+                                version = jsonData.Properties["name"].StringValue;
+
+                            //Retrieve protocol version number for handling this server
+                            if (jsonData.Properties.ContainsKey("protocol"))
+                                protocolversion = atoi(jsonData.Properties["protocol"].StringValue);
+
+                            //Automatic fix for BungeeCord 1.8 reporting itself as 1.7...
+                            if (protocolversion < 47 && version.Split(' ').Contains("1.8"))
+                                protocolversion = ProtocolHandler.MCVer2ProtocolVersion("1.8.0");
+
+                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + ").");
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
     }
 }
