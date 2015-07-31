@@ -199,11 +199,24 @@ namespace MinecraftClient
                     return IsValidName(sender);
                 }
 
+                //Detect Essentials (Bukkit) /me messages with some custom prefix
+                //[Prefix] [Someone -> me] message
+                //[Prefix] [~Someone -> me] message
+                else if (text[0] == '[' && tmp[0][tmp[0].Length - 1] == ']'
+                        && tmp[1][0] == '[' && tmp.Length > 4 && tmp[2] == "->"
+                        && (tmp[3] == "me]" || tmp[3] == "moi]"))
+                {
+                    message = text.Substring(tmp[0].Length + 1 + tmp[1].Length + 4 + tmp[3].Length + 1);
+                    sender = tmp[1].Substring(1);
+                    if (sender[0] == '~') { sender = sender.Substring(1); }
+                    return IsValidName(sender);
+                }
+
                 //Detect Essentials (Bukkit) /me messages with some custom rank
                 //[Someone [rank] -> me] message
                 //[~Someone [rank] -> me] message
                 else if (text[0] == '[' && tmp.Length > 3 && tmp[2] == "->"
-                        && (tmp[3] == "me]" || tmp[3] == "moi]")) //'me' is replaced by 'moi' in french servers
+                        && (tmp[3] == "me]" || tmp[3] == "moi]"))
                 {
                     message = text.Substring(tmp[0].Length + 1 + tmp[1].Length + 4 + tmp[2].Length + 1);
                     sender = tmp[0].Substring(1);
@@ -273,6 +286,29 @@ namespace MinecraftClient
                     message = text.Substring(name_end + 2);
                     return IsValidName(sender);
                 }
+
+                //Detect (Unknown Plugin) Messages
+                //**Faction<Rank> User : Message
+                else if (text[0] == '*'
+                    && text.Length > 1
+                    && text[1] != ' '
+                    && text.Contains('<') && text.Contains('>')
+                    && text.Contains(' ') && text.Contains(':')
+                    && text.IndexOf('*') < text.IndexOf('<')
+                    && text.IndexOf('<') < text.IndexOf('>')
+                    && text.IndexOf('>') < text.IndexOf(' ')
+                    && text.IndexOf(' ') < text.IndexOf(':'))
+                {
+                    string prefix = tmp[0];
+                    string user = tmp[1];
+                    string semicolon = tmp[2];
+                    if (prefix.All(c => char.IsLetterOrDigit(c) || new char[] { '*', '<', '>', '_' }.Contains(c))
+                        && semicolon == ":")
+                    {
+                        message = text.Substring(prefix.Length + user.Length + 4);
+                        return IsValidName(user);
+                    }
+                }
             }
             return false;
         }
@@ -287,10 +323,21 @@ namespace MinecraftClient
         protected static bool IsTeleportRequest(string text, ref string sender)
         {
             text = GetVerbatim(text);
-            sender = text.Split(' ')[0];
+            string[] tmp = text.Split(' ');
             if (text.EndsWith("has requested to teleport to you.")
              || text.EndsWith("has requested that you teleport to them."))
             {
+                //<Rank> Username has requested...
+                //[Rank] Username has requested...
+                if (((tmp[0].StartsWith("<") && tmp[0].EndsWith(">"))
+                    || (tmp[0].StartsWith("[") && tmp[0].EndsWith("]")))
+                    && tmp.Length > 1)
+                    sender = tmp[1];
+
+                //Username has requested...
+                else sender = tmp[0];
+
+                //Final check on username validity
                 return IsValidName(sender);
             }
             else return false;
