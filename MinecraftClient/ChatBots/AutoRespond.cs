@@ -12,6 +12,7 @@ namespace MinecraftClient.ChatBots
     {
         private string matchesFile;
         private List<RespondRule> respondRules;
+        private enum MessageType { Public, Private, Other };
 
         /// <summary>
         /// Create a new AutoRespond bot
@@ -31,6 +32,7 @@ namespace MinecraftClient.ChatBots
             private string match;
             private string actionPublic;
             private string actionPrivate;
+            private string actionOther;
 
             /// <summary>
             /// Create a respond rule from a regex and a reponse message or command
@@ -38,12 +40,14 @@ namespace MinecraftClient.ChatBots
             /// <param name="regex">Regex</param>
             /// <param name="actionPublic">Internal command to run for public messages</param>
             /// <param name="actionPrivate">Internal command to run for private messages</param>
-            public RespondRule(Regex regex, string actionPublic, string actionPrivate)
+            /// <param name="actionOther">Internal command to run for any other messages</param>
+            public RespondRule(Regex regex, string actionPublic, string actionPrivate, string actionOther)
             {
                 this.regex = regex;
                 this.match = null;
                 this.actionPublic = actionPublic;
                 this.actionPrivate = actionPrivate;
+                this.actionOther = actionOther;
             }
 
             /// <summary>
@@ -52,12 +56,13 @@ namespace MinecraftClient.ChatBots
             /// <param name="match">Match string</param>
             /// <param name="actionPublic">Internal command to run for public messages</param>
             /// <param name="actionPrivate">Internal command to run for private messages</param>
-            public RespondRule(string match, string actionPublic, string actionPrivate)
+            public RespondRule(string match, string actionPublic, string actionPrivate, string actionOther)
             {
                 this.regex = null;
                 this.match = match;
                 this.actionPublic = actionPublic;
                 this.actionPrivate = actionPrivate;
+                this.actionOther = actionOther;
             }
 
             /// <summary>
@@ -65,16 +70,27 @@ namespace MinecraftClient.ChatBots
             /// </summary>
             /// <param name="username">Player who have sent the message</param>
             /// <param name="message">Message to match against the regex or match string</param>
-            /// <param name="privateMsg">True if the provided message was sent privately eg with /tell</param>
+            /// <param name="msgType">Type of the message public/private message, or other message</param>
             /// <returns>Internal command to run as a response to this user, or null if no match has been detected</returns>
-            public string Match(string username, string message, bool privateMsg)
+            public string Match(string username, string message, MessageType msgType)
             {
+                string toSend = null;
+
+                switch (msgType)
+                {
+                    case MessageType.Public: toSend = actionPublic; break;
+                    case MessageType.Private: toSend = actionPrivate; break;
+                    case MessageType.Other: toSend = actionOther; break;
+                }
+
+                if (String.IsNullOrEmpty(toSend))
+                    return null;
+
                 if (regex != null)
                 {
                     if (regex.IsMatch(message))
                     {
                         Match regexMatch = regex.Match(message);
-                        string toSend = privateMsg ? actionPrivate : actionPublic;
                         for (int i = regexMatch.Groups.Count - 1; i >= 1; i--)
                             toSend = toSend.Replace("$" + i, regexMatch.Groups[i].Value);
                         toSend = toSend.Replace("$u", username);
@@ -85,11 +101,10 @@ namespace MinecraftClient.ChatBots
                 {
                     if (message.ToLower().Contains(match.ToLower()))
                     {
-                        return (privateMsg
-                                ? actionPrivate
-                                : actionPublic).Replace("$u", username);
+                        return toSend.Replace("$u", username);
                     }
                 }
+
                 return null;
             }
         }
@@ -105,6 +120,7 @@ namespace MinecraftClient.ChatBots
                 string matchString = null;
                 string matchAction = null;
                 string matchActionPrivate = null;
+                string matchActionOther = null;
                 respondRules = new List<RespondRule>();
 
                 foreach (string lineRAW in File.ReadAllLines(matchesFile))
@@ -117,11 +133,12 @@ namespace MinecraftClient.ChatBots
                             switch (line.Substring(1, line.Length - 2).ToLower())
                             {
                                 case "match":
-                                    CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate);
+                                    CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther);
                                     matchRegex = null;
                                     matchString = null;
                                     matchAction = null;
                                     matchActionPrivate = null;
+                                    matchActionOther = null;
                                     break;
                             }
                         }
@@ -137,12 +154,13 @@ namespace MinecraftClient.ChatBots
                                     case "match": matchString = argValue; break;
                                     case "action": matchAction = argValue; break;
                                     case "actionprivate": matchActionPrivate = argValue; break;
+                                    case "actionother": matchActionOther = argValue; break;
                                 }
                             }
                         }
                     }
                 }
-                CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate);
+                CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther);
             }
             else
             {
@@ -158,22 +176,17 @@ namespace MinecraftClient.ChatBots
         /// <param name="matchString">Matching string</param>
         /// <param name="matchAction">Action if the matching message is public</param>
         /// <param name="matchActionPrivate">Action if the matching message is private</param>
-        private void CheckAddMatch(Regex matchRegex, string matchString, string matchAction, string matchActionPrivate)
+        private void CheckAddMatch(Regex matchRegex, string matchString, string matchAction, string matchActionPrivate, string matchActionOther)
         {
-            if (matchAction != null || matchActionPrivate != null)
+            if (matchAction != null || matchActionPrivate != null || matchActionOther != null)
             {
-                if (matchActionPrivate == null)
-                {
-                    matchActionPrivate = matchAction;
-                }
-
                 if (matchRegex != null)
                 {
-                    respondRules.Add(new RespondRule(matchRegex, matchAction, matchActionPrivate));
+                    respondRules.Add(new RespondRule(matchRegex, matchAction, matchActionPrivate, matchActionOther));
                 }
                 else if (matchString != null)
                 {
-                    respondRules.Add(new RespondRule(matchString, matchAction, matchActionPrivate));
+                    respondRules.Add(new RespondRule(matchString, matchAction, matchActionPrivate, matchActionOther));
                 }
             }
         }
@@ -183,20 +196,21 @@ namespace MinecraftClient.ChatBots
             //Remove colour codes
             text = GetVerbatim(text);
 
-            //Check if this is a valid message
+            //Get Message type
             string sender = "", message = "";
-            bool chatMessage = IsChatMessage(text, ref message, ref sender);
-            bool privateMessage = false;
-            if (!chatMessage)
-                privateMessage = IsPrivateMessage(text, ref message, ref sender);
+            MessageType msgType = MessageType.Other;
+            if (IsChatMessage(text, ref message, ref sender))
+                msgType = MessageType.Public;
+            else if (IsPrivateMessage(text, ref message, ref sender))
+                msgType = MessageType.Private;
 
-            //Process only chat messages sent by another user
-            if ((chatMessage || privateMessage) && sender != Settings.Username)
+            //Do not process messages sent by the bot itself
+            if (msgType == MessageType.Other || sender != Settings.Username)
             {
                 foreach (RespondRule rule in respondRules)
                 {
-                    string toPerform = rule.Match(sender, message, privateMessage);
-                    if (toPerform != null)
+                    string toPerform = rule.Match(sender, message, msgType);
+                    if (!String.IsNullOrEmpty(toPerform))
                     {
                         string response = null;
                         LogToConsole(toPerform);
