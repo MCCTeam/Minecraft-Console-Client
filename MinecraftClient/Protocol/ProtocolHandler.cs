@@ -285,16 +285,18 @@ namespace MinecraftClient.Protocol
             StringBuilder result = new StringBuilder();
             foreach (char c in text)
             {
-                if (char.IsLetterOrDigit(c))
+                if ((c >= '0' && c <= '9') ||
+                    (c >= 'a' && c <= 'z') ||
+                    (c >= 'A' && c <= 'Z'))
                 {
                     result.Append(c);
                 }
                 else
                 {
-                    result.Append("\\u");
-                    result.Append(((int)c).ToString("x4"));
+                    result.AppendFormat(@"\u{0:x4}", (int)c);
                 }
             }
+
             return result.ToString();
         }
     }
