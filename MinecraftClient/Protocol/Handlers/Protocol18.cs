@@ -200,7 +200,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x48: //Resource Pack Send
                         string url = readNextString(ref packetData);
                         string hash = readNextString(ref packetData);
-                        //Send back a "successfully loaded" response for plugins making use of resource pack mandatory
+                        //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
+                        SendPacket(0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(3)));
                         SendPacket(0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(0)));
                         break;
                     default:
