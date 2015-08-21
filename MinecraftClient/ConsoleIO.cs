@@ -45,22 +45,18 @@ namespace MinecraftClient
 
         public static string ReadPassword()
         {
-            string password = "";
-            ConsoleKeyInfo k = new ConsoleKeyInfo();
-            while (k.Key != ConsoleKey.Enter)
+            StringBuilder password = new StringBuilder();
+
+            ConsoleKeyInfo k;
+            while ((k = Console.ReadKey(true)).Key != ConsoleKey.Enter)
             {
-                k = Console.ReadKey(true);
                 switch (k.Key)
                 {
-                    case ConsoleKey.Enter:
-                        Console.Write('\n');
-                        return password;
-
                     case ConsoleKey.Backspace:
                         if (password.Length > 0)
                         {
                             Console.Write("\b \b");
-                            password = password.Substring(0, password.Length - 1);
+                            password.Remove(password.Length - 1, 1);
                         }
                         break;
 
@@ -79,12 +75,14 @@ namespace MinecraftClient
                         if (k.KeyChar != 0)
                         {
                             Console.Write('*');
-                            password += k.KeyChar;
+                            password.Append(k.KeyChar);
                         }
                         break;
                 }
             }
-            return password;
+
+            Console.WriteLine();
+            return password.ToString();
         }
 
         /// <summary>
