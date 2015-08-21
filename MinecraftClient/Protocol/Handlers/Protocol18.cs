@@ -738,7 +738,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 protocolversion = atoi(jsonData.Properties["protocol"].StringValue);
 
                             //Automatic fix for BungeeCord 1.8 reporting itself as 1.7...
-                            if (protocolversion < 47 && version.Split(' ').Contains("1.8"))
+                            if (protocolversion < 47 && version.Split(' ', '/').Contains("1.8"))
                                 protocolversion = ProtocolHandler.MCVer2ProtocolVersion("1.8.0");
 
                             ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + ").");
