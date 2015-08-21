@@ -197,6 +197,12 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion >= MC18Version)
                             compression_treshold = readNextVarInt(ref packetData);
                         break;
+                    case 0x48: //Resource Pack Send
+                        string url = readNextString(ref packetData);
+                        string hash = readNextString(ref packetData);
+                        //Send back a "successfully loaded" response for plugins making use of resource pack mandatory
+                        SendPacket(0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(0)));
+                        break;
                     default:
                         return false; //Ignored packet
                 }
