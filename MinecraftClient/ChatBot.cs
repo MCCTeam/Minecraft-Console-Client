@@ -85,12 +85,10 @@ namespace MinecraftClient
         /// <param name="text">Text to send to the server</param>
         /// <returns>True if the text was sent with no error</returns>
 
-        protected bool SendText(object text)
+        protected bool SendText(string text)
         {
             LogToConsole("Sending '" + text + "'");
-            bool result = Handler.SendText(text is string ? (string)text : text.ToString());
-            Thread.Sleep(1000);
-            return result;
+            return Handler.SendText(text);
         }
 
         /// <summary>
@@ -348,7 +346,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="text">Log text to write</param>
 
-        public void LogToConsole(object text)
+        protected void LogToConsole(object text)
         {
             ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", this.GetType().Name, text));
             string logfile = Settings.ExpandVars(Settings.chatbotLogFile);
@@ -457,60 +455,6 @@ namespace MinecraftClient
                 LogToConsole("File not found: " + Settings.Alerts_MatchesFile);
                 return new string[0];
             }
-        }
-
-        /// <summary>
-        /// Set a custom %variable% which will be available through expandVars()
-        /// </summary>
-        /// <param name="varName">Name of the variable</param>
-        /// <param name="varData">Value of the variable</param>
-        /// <returns>True if the parameters were valid</returns>
-
-        protected static bool SetVar(string varName, object varData)
-        {
-            return Settings.SetVar(varName, varData.ToString());
-        }
-
-        /// <summary>
-        /// Get a custom %variable% or null if the variable does not exist
-        /// </summary>
-        /// <param name="varName">Variable name</param>
-        /// <returns>The value or null if the variable does not exists</returns>
-
-        protected static string GetVar(string varName)
-        {
-            return Settings.GetVar(varName);
-        }
-
-        /// <summary>
-        /// Get a custom %variable% as an Integer or null if the variable does not exist
-        /// </summary>
-        /// <param name="varName">Variable name</param>
-        /// <returns>The value or null if the variable does not exists</returns>
-
-        protected static int GetVarAsInt(string varName)
-        {
-            return Settings.str2int(Settings.GetVar(varName));
-        }
-
-        /// <summary>
-        /// Load login/password using an account alias
-        /// </summary>
-        /// <returns>True if the account was found and loaded</returns>
-
-        protected static bool SetAccount(string accountAlias)
-        {
-            return Settings.SetAccount(accountAlias);
-        }
-
-        /// <summary>
-        /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
-        /// </summary>
-        /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
-
-        protected static bool SetServerIP(string server)
-        {
-            return Settings.SetServerIP(server);
         }
     }
 }

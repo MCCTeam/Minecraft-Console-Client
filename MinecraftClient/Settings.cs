@@ -45,6 +45,7 @@ namespace MinecraftClient
         public static char internalCmdChar = '/';
         public static bool playerHeadAsIcon = false;
         public static string chatbotLogFile = "";
+        public static bool CacheScripts = true;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -94,7 +95,7 @@ namespace MinecraftClient
         public static string AutoRespond_Matches = "matches.ini";
 
         //Custom app variables and Minecraft accounts
-        private static readonly Dictionary<string, string> AppVars = new Dictionary<string, string>();
+        private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
@@ -159,6 +160,7 @@ namespace MinecraftClient
                                                 case "chatbotlogfile": chatbotLogFile = argValue; break;
                                                 case "mcversion": ServerVersion = argValue; break;
                                                 case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
+                                                case "scriptcache": CacheScripts = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -366,6 +368,7 @@ namespace MinecraftClient
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"
                 + "exitonfailure=false\r\n"
+                + "scriptcache=true\r\n"
                 + "timestamps=false\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
@@ -491,7 +494,7 @@ namespace MinecraftClient
         /// <param name="varData">Value of the variable</param>
         /// <returns>True if the parameters were valid</returns>
 
-        public static bool SetVar(string varName, string varData)
+        public static bool SetVar(string varName, object varData)
         {
             lock (AppVars)
             {
@@ -511,7 +514,7 @@ namespace MinecraftClient
         /// <param name="varName">Variable name</param>
         /// <returns>The value or null if the variable does not exists</returns>
 
-        public static string GetVar(string varName)
+        public static object GetVar(string varName)
         {
             if (AppVars.ContainsKey(varName))
                 return AppVars[varName];
@@ -559,7 +562,7 @@ namespace MinecraftClient
                             default:
                                 if (AppVars.ContainsKey(varname_lower))
                                 {
-                                    result.Append(AppVars[varname_lower]);
+                                    result.Append(AppVars[varname_lower].ToString());
                                 }
                                 else result.Append("%" + varname + '%');
                                 break;

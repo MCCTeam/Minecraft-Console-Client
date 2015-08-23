@@ -9,8 +9,8 @@ if (args.Length > 0)
    
 for (int i = 0; i < 5; i++)
 {
-    int count = GetVarAsInt("test") + 1;
-    SetVar("test", count);
+    int count = MCC.GetVarAsInt("test") + 1;
+    MCC.SetVar("test", count);
     SendHelloWorld(count, text);
     SleepBetweenSends();
 }
@@ -21,15 +21,11 @@ for (int i = 0; i < 5; i++)
 
 void SendHelloWorld(int count, string text)
 {
-    /* Warning: Do not make more than one server-related call into a method
-     * defined as a script extension eg SendText or switching servers,
-     * as execution flow is not managed in the Extensions section */
-
-    SendText("Hello World no. " + count + ": " + text);
+    MCC.SendText("Hello World no. " + count + ": " + text);
 }
 
 void SleepBetweenSends()
 {
-    LogToConsole("Sleeping for 5 seconds...");
+    MCC.LogToConsole("Sleeping for 5 seconds...");
     Thread.Sleep(5000);
 }

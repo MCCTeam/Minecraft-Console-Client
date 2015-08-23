@@ -113,6 +113,7 @@
     <Compile Include="Crypto\Streams\MonoAesStream.cs" />
     <Compile Include="Crypto\Streams\RegularAesStream.cs" />
     <Compile Include="Crypto\CryptoHandler.cs" />
+    <Compile Include="CSharpRunner.cs" />
     <Compile Include="Protocol\Handlers\Compression\CRC32.cs" />
     <Compile Include="Protocol\Handlers\Compression\Deflate.cs" />
     <Compile Include="Protocol\Handlers\Compression\GZipStream.cs" />

@@ -3,7 +3,7 @@
 /* This is a sample script that will load a ChatBot into Minecraft Console Client
  * Simply execute the script once with /script or the script scheduler to load the bot */
 
-LoadBot(new ExampleBot());
+MCC.LoadBot(new ExampleBot());
 
 //MCCScript Extensions
 

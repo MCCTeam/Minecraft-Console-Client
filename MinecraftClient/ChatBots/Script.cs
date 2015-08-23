@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
+using System.Reflection;
 
 namespace MinecraftClient.ChatBots
 {
@@ -143,8 +144,18 @@ namespace MinecraftClient.ChatBots
                     tpause = new ManualResetEvent(false);
                     thread = new Thread(() =>
                     {
-                        if (!RunCSharpScript() && owner != null)
-                            SendPrivateMessage(owner, "Script '" + file + "' failed to run.");
+                        try
+                        {
+                            CSharpRunner.Run(this, tpause, lines, args);
+                        }
+                        catch (CSharpException e)
+                        {
+                            string errorMessage = "Script '" + file + "' failed to run (" + e.ExceptionType + ").";
+                            LogToConsole(errorMessage);
+                            if (owner != null)
+                                SendPrivateMessage(owner, errorMessage);
+                            LogToConsole(e.InnerException);
+                        }
                     });
                     thread.Start();
                 }
@@ -154,7 +165,7 @@ namespace MinecraftClient.ChatBots
                 {
                     tpause.Set();
                     tpause.Reset();
-                    if (thread.Join(100))
+                    if (!thread.IsAlive)
                         UnloadBot();
                 }
             }
@@ -204,85 +215,6 @@ namespace MinecraftClient.ChatBots
                     }
                 }
             }
-        }
-
-        private bool RunCSharpScript()
-        {
-            //Script compatibility check for handling future versions differently
-            if (lines.Length < 1 || lines[0] != "//MCCScript 1.0")
-            {
-                LogToConsole("Script file '" + file + "' does not start with a valid //MCCScript identifier.");
-                return false;
-            }
-
-            //Process different sections of the script file
-            bool scriptMain = true;
-            List<string> script = new List<string>();
-            List<string> extensions = new List<string>();
-            foreach (string line in lines)
-            {
-                if (line.StartsWith("//MCCScript"))
-                {
-                    if (line.EndsWith("Extensions"))
-                        scriptMain = false;
-                }
-                else if (scriptMain)
-                {
-                    script.Add(line);
-                    //Add breakpoints for step-by-step execution of the script
-                    if (tpause != null && line.Trim().EndsWith(";"))
-                        script.Add("tpause.WaitOne();");
-                }
-                else extensions.Add(line);
-            }
-
-            //Generate a ChatBot class, allowing access to the ChatBot API
-            string code = String.Join("\n", new string[]
-            {
-                "using System;",
-                "using System.IO;",
-                "using System.Threading;",
-                "using MinecraftClient;",
-                "namespace ScriptLoader {",
-                "public class Script : ChatBot {",
-                "public void __run(ChatBot master, ManualResetEvent tpause, string[] args) {",
-                "SetMaster(master);",
-                    String.Join("\n", script),
-                "}",
-                    String.Join("\n", extensions),
-                "}}",
-            });
-
-            //Compile the C# class in memory using all the currently loaded assemblies
-            CSharpCodeProvider compiler = new CSharpCodeProvider();
-            CompilerParameters parameters = new CompilerParameters();
-            parameters.ReferencedAssemblies
-                .AddRange(AppDomain.CurrentDomain
-                        .GetAssemblies()
-                        .Where(a => !a.IsDynamic)
-                        .Select(a => a.Location).ToArray());
-            parameters.CompilerOptions = "/t:library";
-            parameters.GenerateInMemory = true;
-            CompilerResults result
-                = compiler.CompileAssemblyFromSource(parameters, code);
-
-            //Process compile warnings and errors
-            if (result.Errors.Count > 0)
-            {
-                LogToConsole("Error loading '" + file + "':\n" + result.Errors[0].ErrorText);
-                return false;
-            }
-
-            //Run the compiled script with exception handling
-            object compiledScript = result.CompiledAssembly.CreateInstance("ScriptLoader.Script");
-            try { compiledScript.GetType().GetMethod("__run").Invoke(compiledScript, new object[] { this, tpause, args }); }
-            catch (Exception e)
-            {
-                LogToConsole("Runtime error for '" + file + "':\n" + e);
-                return false;
-            }
-
-            return true;
         }
     }
 }
