@@ -139,6 +139,9 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x00: //Keep-Alive
                         SendPacket(0x00, packetData);
                         break;
+                    case 0x01: //Join game
+                        SendBrandInfo();
+                        break;
                     case 0x02: //Chat message
                         handler.OnTextReceived(ChatParser.ParseText(readNextString(ref packetData)));
                         break;
@@ -605,6 +608,20 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else handlePacket(packetID, packetData);
             }
+        }
+
+        /// <summary>
+        /// Sends information about the client version.
+        /// </summary>
+
+        private void SendBrandInfo()
+        {
+            byte[] channel = Encoding.UTF8.GetBytes("MC|Brand");
+            byte[] channelLen = getVarInt(channel.Length);
+            byte[] brand = Encoding.UTF8.GetBytes("Minecraft Console Client v" + Program.Version);
+            byte[] brandLen = getVarInt(brand.Length);
+
+            SendPacket(0x17, concatBytes(channelLen, channel, brandLen, brand));
         }
 
         /// <summary>
