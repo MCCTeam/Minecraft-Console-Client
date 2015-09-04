@@ -46,6 +46,7 @@ namespace MinecraftClient
         public static bool playerHeadAsIcon = false;
         public static string chatbotLogFile = "";
         public static bool CacheScripts = true;
+        public static bool SendBrandInfoEnabled = true;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -93,6 +94,7 @@ namespace MinecraftClient
         //Chat Message Enabled / Disabled.
         public static bool Hero_Chat_Messages_Enabled = true;
         public static bool Unknown_Chat_Plugin_Messages_One_Enabled = true;
+        public static bool Vanilla_And_Factions_Messages_Enabled = true;
 
         //Auto Respond
         public static bool AutoRespond_Enabled = false;
@@ -138,6 +140,7 @@ namespace MinecraftClient
                                     case "proxy": pMode = ParseMode.Proxy; break;
                                     case "appvars": pMode = ParseMode.AppVars; break;
                                     case "autorespond": pMode = ParseMode.AutoRespond; break;
+                                    case "chatbotmessages": pMode = ParseMode.ChatBotMessages; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -165,6 +168,7 @@ namespace MinecraftClient
                                                 case "mcversion": ServerVersion = argValue; break;
                                                 case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
+                                                case "sendbrandinfo": SendBrandInfoEnabled = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -295,7 +299,8 @@ namespace MinecraftClient
                                             {
                                                 case "herochatmessagesenabled": Hero_Chat_Messages_Enabled = str2bool(argValue); break;
                                                 case "unknownchatpluginmessagesone": Unknown_Chat_Plugin_Messages_One_Enabled = str2bool(argValue); break;
-                                                
+                                                case "vanillaandfactionsmessages": Vanilla_And_Factions_Messages_Enabled = str2bool(argValue); break;
+
                                             }
                                             break;
 
@@ -384,6 +389,7 @@ namespace MinecraftClient
                 + "exitonfailure=false\r\n"
                 + "scriptcache=true\r\n"
                 + "timestamps=false\r\n"
+                + "sendbrandinfo=true\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
                 + "#yourvar=yourvalue\r\n"
@@ -438,6 +444,7 @@ namespace MinecraftClient
                 + "tpaccepteveryone=false\r\n"
                 + "\r\n"
                 + "[ChatBotMessages]\r\n"
+                + "vanillaandfactionsmessages=true # Chat Formats \"<User> Message\" \"<*Faction User>: Message\" \r\n"
                 + "herochatmessagesenabled=true # Chat Format is \"[Channel][Rank] User: Message\"\r\n"
                 + "unknownchatpluginmessagesone=true # Chat Format is \"**Faction<Rank> User : Message\"\r\n"
                 + "\r\n"
