@@ -89,7 +89,7 @@ namespace MinecraftClient
         public static bool RemoteCtrl_Enabled = false;
         public static bool RemoteCtrl_AutoTpaccept = true;
         public static bool RemoteCtrl_AutoTpaccept_Everyone = false;
-        public static bool Hero_Chat_Messages_Enabled = false;
+        public static bool Hero_Chat_Messages_Enabled = true;
 
         //Auto Respond
         public static bool AutoRespond_Enabled = false;
@@ -424,7 +424,7 @@ namespace MinecraftClient
                 + "enabled=false\r\n"
                 + "autotpaccept=true\r\n"
                 + "tpaccepteveryone=false\r\n"
-                + "herochatmessagesenabled=false\r\n"
+                + "herochatmessagesenabled=true\r\n"
                 + "\r\n"
                 + "[AutoRespond]\r\n"
                 + "enabled=false\r\n"
