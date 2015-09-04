@@ -306,7 +306,8 @@ namespace MinecraftClient
                     && text.IndexOf('*') < text.IndexOf('<')
                     && text.IndexOf('<') < text.IndexOf('>')
                     && text.IndexOf('>') < text.IndexOf(' ')
-                    && text.IndexOf(' ') < text.IndexOf(':'))
+                    && text.IndexOf(' ') < text.IndexOf(':')
+                    && Settings.Unknown_Chat_Plugin_Messages_One_Enabled.Equals(true))
                 {
                     string prefix = tmp[0];
                     string user = tmp[1];
