@@ -140,7 +140,10 @@ namespace MinecraftClient.Protocol.Handlers
                         SendPacket(0x00, packetData);
                         break;
                     case 0x01: //Join game
-                        SendBrandInfo();
+                        if (Settings.SendBrandInfoEnabled.Equals(true))
+                        {
+                            SendBrandInfo();
+                        }
                         break;
                     case 0x02: //Chat message
                         handler.OnTextReceived(ChatParser.ParseText(readNextString(ref packetData)));
