@@ -197,6 +197,17 @@ namespace MinecraftClient
                     return IsValidName(sender);
                 }
 
+                //Detect Modified server messages. /m
+                //[Someone @ me] message
+                else if (text[0] == '[' && tmp.Length > 3 && tmp[1] == "@"
+                        && (tmp[2] == "me]" || tmp[2] == "moi]")) //'me' is replaced by 'moi' in french servers
+                {
+                    message = text.Substring(tmp[0].Length + 4 + tmp[2].Length + 0);
+                    sender = tmp[0].Substring(1);
+                    if (sender[0] == '~') { sender = sender.Substring(1); }
+                    return IsValidName(sender);
+                }
+
                 //Detect Essentials (Bukkit) /me messages with some custom prefix
                 //[Prefix] [Someone -> me] message
                 //[Prefix] [~Someone -> me] message
@@ -230,7 +241,6 @@ namespace MinecraftClient
                     message = text.Substring(text.IndexOf(':') + 2);
                     return IsValidName(sender);
                 }
-
                 else return false;
             }
             catch (IndexOutOfRangeException) { return false; }
@@ -275,8 +285,9 @@ namespace MinecraftClient
                 }
 
                 //Detect HeroChat Messages
+                //Public chat messages
                 //[Channel] [Rank] User: Message
-                else if (text[0] == '[' && text.Contains(':') && tmp.Length > 2)
+                else if (text[0] == '[' && text.Contains(':') && tmp.Length > 2 && Settings.Hero_Chat_Messages_Enabled.Equals(true))
                 {
                     int name_end = text.IndexOf(':');
                     int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
@@ -295,7 +306,8 @@ namespace MinecraftClient
                     && text.IndexOf('*') < text.IndexOf('<')
                     && text.IndexOf('<') < text.IndexOf('>')
                     && text.IndexOf('>') < text.IndexOf(' ')
-                    && text.IndexOf(' ') < text.IndexOf(':'))
+                    && text.IndexOf(' ') < text.IndexOf(':')
+                    && Settings.Unknown_Chat_Plugin_Messages_One_Enabled.Equals(true))
                 {
                     string prefix = tmp[0];
                     string user = tmp[1];

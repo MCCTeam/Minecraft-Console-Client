@@ -90,6 +90,10 @@ namespace MinecraftClient
         public static bool RemoteCtrl_AutoTpaccept = true;
         public static bool RemoteCtrl_AutoTpaccept_Everyone = false;
 
+        //Chat Message Enabled / Disabled.
+        public static bool Hero_Chat_Messages_Enabled = true;
+        public static bool Unknown_Chat_Plugin_Messages_One_Enabled = true;
+
         //Auto Respond
         public static bool AutoRespond_Enabled = false;
         public static string AutoRespond_Matches = "matches.ini";
@@ -99,7 +103,7 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, AutoRespond };
+        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatBotMessages, AutoRespond };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -282,6 +286,16 @@ namespace MinecraftClient
                                                 case "enabled": RemoteCtrl_Enabled = str2bool(argValue); break;
                                                 case "autotpaccept": RemoteCtrl_AutoTpaccept = str2bool(argValue); break;
                                                 case "tpaccepteveryone": RemoteCtrl_AutoTpaccept_Everyone = str2bool(argValue); break;
+                                                case "herochatmessagesenabled": Hero_Chat_Messages_Enabled = str2bool(argValue); break;
+                                            }
+                                            break;
+
+                                        case ParseMode.ChatBotMessages:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "herochatmessagesenabled": Hero_Chat_Messages_Enabled = str2bool(argValue); break;
+                                                case "unknownchatpluginmessagesone": Unknown_Chat_Plugin_Messages_One_Enabled = str2bool(argValue); break;
+                                                
                                             }
                                             break;
 
@@ -422,6 +436,10 @@ namespace MinecraftClient
                 + "enabled=false\r\n"
                 + "autotpaccept=true\r\n"
                 + "tpaccepteveryone=false\r\n"
+                + "\r\n"
+                + "[ChatBotMessages]\r\n"
+                + "herochatmessagesenabled=true # Chat Format is \"[Channel][Rank] User: Message\"\r\n"
+                + "unknownchatpluginmessagesone=true # Chat Format is \"**Faction<Rank> User : Message\"\r\n"
                 + "\r\n"
                 + "[AutoRespond]\r\n"
                 + "enabled=false\r\n"
