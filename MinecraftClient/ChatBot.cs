@@ -241,18 +241,6 @@ namespace MinecraftClient
                     message = text.Substring(text.IndexOf(':') + 2);
                     return IsValidName(sender);
                 }
-
-                //Detect HeroChat Messages
-                //[Channel] [Rank] User: Message
-                else if (text.StartsWith("[") && text.Contains(':') && tmp.Length > 2 && Settings.Hero_Chat_Messages_Enabled.Equals(true))
-                {
-                    int name_end = text.IndexOf(':');
-                    int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
-                    sender = text.Substring(name_start, name_end - name_start);
-                    message = text.Substring(name_end + 2);
-                    return IsValidName(sender);
-                }
-
                 else return false;
             }
             catch (IndexOutOfRangeException) { return false; }
@@ -297,8 +285,9 @@ namespace MinecraftClient
                 }
 
                 //Detect HeroChat Messages
+                //Public chat messages
                 //[Channel] [Rank] User: Message
-                else if (text[0] == '[' && text.Contains(':') && tmp.Length > 2)
+                else if (text[0] == '[' && text.Contains(':') && tmp.Length > 2 && Settings.Hero_Chat_Messages_Enabled.Equals(true))
                 {
                     int name_end = text.IndexOf(':');
                     int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
