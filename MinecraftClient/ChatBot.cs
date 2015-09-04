@@ -266,7 +266,7 @@ namespace MinecraftClient
                 //<*Faction Someone> message
                 //<*Faction Someone>: message
                 //<*Faction ~Nicknamed>: message
-                if (text[0] == '<')
+                if (text[0] == '<' && Settings.Vanilla_And_Factions_Messages_Enabled.Equals(true))
                 {
                     try
                     {
