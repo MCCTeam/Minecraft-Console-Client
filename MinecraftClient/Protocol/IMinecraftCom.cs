@@ -43,5 +43,13 @@ namespace MinecraftClient.Protocol
         /// <returns>True if packet successfully sent</returns>
 
         bool SendRespawnPacket();
+
+        /// <summary>
+        /// Tell the server what client is being used to connect to the server
+        /// </summary>
+        /// <param name="brandInfo">Client string describing the client</param>
+        /// <returns>True if brand info was successfully sent</returns>
+
+        bool SendBrandInfo(string brandInfo);
     }
 }

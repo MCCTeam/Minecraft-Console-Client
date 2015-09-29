@@ -610,6 +610,11 @@ namespace MinecraftClient.Protocol.Handlers
             catch (SocketException) { return false; }
         }
 
+        public bool SendBrandInfo(string brandInfo)
+        {
+            return false; //Only supported since MC 1.7
+        }
+
         public string AutoComplete(string BehindCursor)
         {
             if (String.IsNullOrEmpty(BehindCursor))

@@ -139,12 +139,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x00: //Keep-Alive
                         SendPacket(0x00, packetData);
                         break;
-                    case 0x01: //Join game
-                        if (Settings.SendBrandInfoEnabled.Equals(true))
-                        {
-                            SendBrandInfo();
-                        }
-                        break;
                     case 0x02: //Chat message
                         handler.OnTextReceived(ChatParser.ParseText(readNextString(ref packetData)));
                         break;
@@ -614,20 +608,6 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Sends information about the client version.
-        /// </summary>
-
-        private void SendBrandInfo()
-        {
-            byte[] channel = Encoding.UTF8.GetBytes("MC|Brand");
-            byte[] channelLen = getVarInt(channel.Length);
-            byte[] brand = Encoding.UTF8.GetBytes("Minecraft Console Client v" + Program.Version);
-            byte[] brandLen = getVarInt(brand.Length);
-
-            SendPacket(0x17, concatBytes(channelLen, channel, brandLen, brand));
-        }
-
-        /// <summary>
         /// Send a chat message to the server
         /// </summary>
         /// <param name="message">Message</param>
@@ -663,6 +643,29 @@ namespace MinecraftClient.Protocol.Handlers
                 return true;
             }
             catch (SocketException) { return false; }
+        }
+
+        /// <summary>
+        /// Tell the server what client is being used to connect to the server
+        /// </summary>
+        /// <param name="brandInfo">Client string describing the client</param>
+        /// <returns>True if brand info was successfully sent</returns>
+
+        public bool SendBrandInfo(string brandInfo)
+        {
+            if (String.IsNullOrEmpty(brandInfo))
+                return false;
+            try
+            {
+                byte[] channel = Encoding.UTF8.GetBytes("MC|Brand");
+                byte[] channelLen = getVarInt(channel.Length);
+                byte[] brand = Encoding.UTF8.GetBytes(brandInfo);
+                byte[] brandLen = getVarInt(brand.Length);
+                SendPacket(0x17, concatBytes(channelLen, channel, brandLen, brand));
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
         }
 
         /// <summary>

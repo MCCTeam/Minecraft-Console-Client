@@ -13,6 +13,9 @@ namespace MinecraftClient
 
     public static class Settings
     {
+        //Minecraft Console Client client information used for BrandInfo setting
+        private const string MCCBrandInfo = "Minecraft-Console-Client/" + Program.Version;
+
         //Main Settings.
         //Login: Username or email adress used as login for Minecraft/Mojang account
         //Username: The actual username of the user, obtained after login to the account
@@ -46,7 +49,7 @@ namespace MinecraftClient
         public static bool playerHeadAsIcon = false;
         public static string chatbotLogFile = "";
         public static bool CacheScripts = true;
-        public static bool SendBrandInfoEnabled = true;
+        public static string BrandInfo = MCCBrandInfo;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -168,7 +171,6 @@ namespace MinecraftClient
                                                 case "mcversion": ServerVersion = argValue; break;
                                                 case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
-                                                case "sendbrandinfo": SendBrandInfoEnabled = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -222,6 +224,15 @@ namespace MinecraftClient
                                                         //Restore current server info
                                                         ServerIP = server_host_temp;
                                                         ServerPort = server_port_temp;
+                                                    }
+                                                    break;
+
+                                                case "brandinfo":
+                                                    switch (argValue.Trim().ToLower())
+                                                    {
+                                                        case "mcc": BrandInfo = MCCBrandInfo; break;
+                                                        case "vanilla": BrandInfo = "vanilla"; break;
+                                                        default: BrandInfo = null; break;
                                                     }
                                                     break;
                                             }
@@ -382,6 +393,7 @@ namespace MinecraftClient
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
                 + "splitmessagedelay=2 #seconds between each part of a long message\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
+                + "brandinfo=mcc #use 'mcc','vanilla', or 'none'\r\n"
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
@@ -389,7 +401,6 @@ namespace MinecraftClient
                 + "exitonfailure=false\r\n"
                 + "scriptcache=true\r\n"
                 + "timestamps=false\r\n"
-                + "sendbrandinfo=true\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
                 + "#yourvar=yourvalue\r\n"

@@ -120,6 +120,9 @@ namespace MinecraftClient
                 {
                     if (handler.Login())
                     {
+                        if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
+                            handler.SendBrandInfo(Settings.BrandInfo.Trim());
+
                         if (singlecommand)
                         {
                             handler.SendChatMessage(command);
