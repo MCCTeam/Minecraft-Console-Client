@@ -140,7 +140,17 @@ namespace MinecraftClient.Protocol.Handlers
                         SendPacket(0x00, packetData);
                         break;
                     case 0x02: //Chat message
-                        handler.OnTextReceived(ChatParser.ParseText(readNextString(ref packetData)));
+                        string message = readNextString(ref packetData);
+                        try
+                        {
+                            //Hide system messages or xp bar messages?
+                            byte messageType = readData(1, ref packetData)[0];
+                            if ((messageType == 1 && !Settings.DisplaySystemMessages)
+                                || (messageType == 2 && !Settings.DisplayXPBarMessages))
+                                break;
+                        }
+                        catch (IndexOutOfRangeException) { /* No message type */ }
+                        handler.OnTextReceived(ChatParser.ParseText(message));
                         break;
                     case 0x38: //Player List update
                         if (protocolversion >= MC18Version)

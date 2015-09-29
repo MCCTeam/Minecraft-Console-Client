@@ -50,6 +50,8 @@ namespace MinecraftClient
         public static string chatbotLogFile = "";
         public static bool CacheScripts = true;
         public static string BrandInfo = MCCBrandInfo;
+        public static bool DisplaySystemMessages = true;
+        public static bool DisplayXPBarMessages = true;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -171,6 +173,8 @@ namespace MinecraftClient
                                                 case "mcversion": ServerVersion = argValue; break;
                                                 case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
+                                                case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
+                                                case "showxpbarmessages": DisplaySystemMessages = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -395,6 +399,8 @@ namespace MinecraftClient
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "brandinfo=mcc #use 'mcc','vanilla', or 'none'\r\n"
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
+                + "showsystemmessages=true #system messages for server ops\r\n"
+                + "showxpbarmessages=true #messages displayed above xp bar\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"
