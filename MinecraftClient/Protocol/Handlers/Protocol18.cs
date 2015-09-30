@@ -139,6 +139,9 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x00: //Keep-Alive
                         SendPacket(0x00, packetData);
                         break;
+                    case 0x01: //Join game
+                        handler.OnGameJoined();
+                        break;
                     case 0x02: //Chat message
                         string message = readNextString(ref packetData);
                         try

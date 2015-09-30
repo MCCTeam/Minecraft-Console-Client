@@ -24,6 +24,12 @@ namespace MinecraftClient.Protocol
         string[] GetOnlinePlayers();
 
         /// <summary>
+        /// Called when a server was successfully joined
+        /// </summary>
+
+        void OnGameJoined();
+
+        /// <summary>
         /// This method is called when the protocol handler receives a chat message
         /// </summary>
 

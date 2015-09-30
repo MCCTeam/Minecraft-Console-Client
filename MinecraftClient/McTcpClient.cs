@@ -120,9 +120,6 @@ namespace MinecraftClient
                 {
                     if (handler.Login())
                     {
-                        if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
-                            handler.SendBrandInfo(Settings.BrandInfo.Trim());
-
                         if (singlecommand)
                         {
                             handler.SendChatMessage(command);
@@ -320,6 +317,16 @@ namespace MinecraftClient
 
             if (client != null)
                 client.Close();
+        }
+
+        /// <summary>
+        /// Called when a server was successfully joined
+        /// </summary>
+
+        public void OnGameJoined()
+        {
+            if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
+                handler.SendBrandInfo(Settings.BrandInfo.Trim());
         }
 
         /// <summary>
