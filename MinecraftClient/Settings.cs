@@ -174,7 +174,7 @@ namespace MinecraftClient
                                                 case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
                                                 case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
-                                                case "showxpbarmessages": DisplaySystemMessages = str2bool(argValue); break;
+                                                case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
