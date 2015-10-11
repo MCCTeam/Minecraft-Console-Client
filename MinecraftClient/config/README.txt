@@ -1,4 +1,4 @@
-==================================================================
+﻿==================================================================
  Minecraft Client v1.8.2 for Minecraft 1.4.6 to 1.8.3 - By ORelio
 ==================================================================
 
@@ -165,6 +165,14 @@ Where <thecommand> is an internal command as described in "Internal commands" se
 You can remotely send chat messages or commands using /tell <yourbot> send <thetext>
 Remote control system can auto-accept /tpa and /tpahere requests from the bot owners.
 Auto-accept can be disabled or extended to requests from anyone in remote control configuration.
+
+===============================
+ Using the AutoRespond feature
+===============================
+
+The AutoRespond bot allows you to automatically react on specific chat messages or server announcements.
+You can use either a string to detect in chat messages, or an advanced regular expression.
+For more information about how to define match rules, please refer to sample-matches.ini
 
 =========================
  Disclaimer & Last words
