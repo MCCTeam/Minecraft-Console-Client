@@ -203,6 +203,7 @@ namespace MinecraftClient.ChatBots
                 msgType = MessageType.Public;
             else if (IsPrivateMessage(text, ref message, ref sender))
                 msgType = MessageType.Private;
+            else message = text;
 
             //Do not process messages sent by the bot itself
             if (msgType == MessageType.Other || sender != Settings.Username)
