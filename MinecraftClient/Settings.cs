@@ -32,6 +32,7 @@ namespace MinecraftClient
         public static Proxy.ProxyHandler.Type proxyType = Proxy.ProxyHandler.Type.HTTP;
         public static string ProxyUsername = "";
         public static string ProxyPassword = "";
+        public static bool LoginOnlyProxy = false;
 
         //Other Settings
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\9e\9e2fdc43fc1c7024ff5922b998fadb2971a64ee0"; //MC 1.7.4 en_GB.lang
@@ -290,7 +291,6 @@ namespace MinecraftClient
                                                 case "enabled": RemoteCtrl_Enabled = str2bool(argValue); break;
                                                 case "autotpaccept": RemoteCtrl_AutoTpaccept = str2bool(argValue); break;
                                                 case "tpaccepteveryone": RemoteCtrl_AutoTpaccept_Everyone = str2bool(argValue); break;
-                                                case "herochatmessagesenabled": Hero_Chat_Messages_Enabled = str2bool(argValue); break;
                                             }
                                             break;
 
@@ -308,6 +308,7 @@ namespace MinecraftClient
                                             switch (argName.ToLower())
                                             {
                                                 case "enabled": ProxyEnabled = str2bool(argValue); break;
+                                                case "loginonlyproxy": LoginOnlyProxy = str2bool(argValue); break;
                                                 case "type":
                                                     argValue = argValue.ToLower();
                                                     if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
@@ -402,6 +403,7 @@ namespace MinecraftClient
                 + "server=0.0.0.0:0000\r\n"
                 + "username=\r\n"
                 + "password=\r\n"
+                + "loginonlyproxy=false # Change this to \"true\" if you only want to use a proxy for login."
                 + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"
