@@ -111,7 +111,7 @@ namespace MinecraftClient
 
             try
             {
-                if (Settings.LoginOnlyProxy = true)
+                if (Settings.OnlyForLogin)
                 {
                     client = new TcpClient(host, port);
                 }
