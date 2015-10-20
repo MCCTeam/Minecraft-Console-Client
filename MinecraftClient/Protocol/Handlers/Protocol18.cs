@@ -85,6 +85,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             catch (SocketException) { return false; }
+            catch (NullReferenceException) { return false; }
             return true;
         }
 

@@ -338,15 +338,21 @@ namespace MinecraftClient
         {
             if (buffer.Length > 0)
             {
-                if (Console.CursorLeft == 0)
+                try
                 {
-                    Console.CursorLeft = Console.BufferWidth - 1;
-                    Console.CursorTop--;
-                    Console.Write(' ');
-                    Console.CursorLeft = Console.BufferWidth - 1;
-                    Console.CursorTop--;
+                    if (Console.CursorLeft == 0)
+                    {
+                        Console.CursorLeft = Console.BufferWidth - 1;
+                        if (Console.CursorTop > 0)
+                            Console.CursorTop--;
+                        Console.Write(' ');
+                        Console.CursorLeft = Console.BufferWidth - 1;
+                        if (Console.CursorTop > 0)
+                            Console.CursorTop--;
+                    }
+                    else Console.Write("\b \b");
                 }
-                else Console.Write("\b \b");
+                catch (ArgumentOutOfRangeException) { /* Console was resized!? */ }
                 buffer = buffer.Substring(0, buffer.Length - 1);
 
                 if (buffer2.Length > 0)
@@ -358,12 +364,17 @@ namespace MinecraftClient
         }
         private static void GoBack()
         {
-            if (Console.CursorLeft == 0)
+            try
             {
-                Console.CursorLeft = Console.BufferWidth - 1;
-                Console.CursorTop--;
+                if (Console.CursorLeft == 0)
+                {
+                    Console.CursorLeft = Console.BufferWidth - 1;
+                    if (Console.CursorTop > 0)
+                        Console.CursorTop--;
+                }
+                else Console.Write('\b');
             }
-            else Console.Write('\b');
+            catch (ArgumentOutOfRangeException) { /* Console was resized!? */ }
         }
         private static void GoLeft()
         {
