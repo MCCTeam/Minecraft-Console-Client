@@ -244,7 +244,7 @@ namespace MinecraftClient.Protocol
             int statusCode = 520;
             AutoTimeout.Perform(() =>
             {
-                TcpClient client = ProxyHandler.newTcpClient(host, 443);
+                TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
                 SslStream stream = new SslStream(client.GetStream());
                 stream.AuthenticateAsClient(host);
 

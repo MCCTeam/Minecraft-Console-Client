@@ -29,13 +29,13 @@ namespace MinecraftClient
         public static string ConsoleTitle = "";
 
         //Proxy Settings
-        public static bool ProxyEnabled = false;
+        public static bool ProxyEnabledLogin = false;
+        public static bool ProxyEnabledIngame = false;
         public static string ProxyHost = "";
         public static int ProxyPort = 0;
         public static Proxy.ProxyHandler.Type proxyType = Proxy.ProxyHandler.Type.HTTP;
         public static string ProxyUsername = "";
         public static string ProxyPassword = "";
-        public static bool OnlyForLogin = false;
 
         //Other Settings
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\9e\9e2fdc43fc1c7024ff5922b998fadb2971a64ee0"; //MC 1.7.4 en_GB.lang
@@ -322,8 +322,11 @@ namespace MinecraftClient
                                         case ParseMode.Proxy:
                                             switch (argName.ToLower())
                                             {
-                                                case "enabled": ProxyEnabled = str2bool(argValue); break;
-                                                case "onlyforlogin": OnlyForLogin = str2bool(argValue); break;
+                                                case "enabled":
+                                                    ProxyEnabledLogin = ProxyEnabledIngame = str2bool(argValue);
+                                                    if (argValue.Trim().ToLower() == "login")
+                                                        ProxyEnabledLogin = true;
+                                                    break;
                                                 case "type":
                                                     argValue = argValue.ToLower();
                                                     if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
@@ -415,12 +418,11 @@ namespace MinecraftClient
                 + "#%username% and %serverip% are reserved variables.\r\n"
                 + "\r\n"
                 + "[Proxy]\r\n"
-                + "enabled=false\r\n"
+                + "enabled=false #use 'false', 'true', or 'login' for login only\r\n"
                 + "type=HTTP #Supported types: HTTP, SOCKS4, SOCKS4a, SOCKS5\r\n"
                 + "server=0.0.0.0:0000\r\n"
                 + "username=\r\n"
                 + "password=\r\n"
-                + "onlyforlogin=false # Change this to \"true\" if you only want to use a proxy for login."
                 + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"
