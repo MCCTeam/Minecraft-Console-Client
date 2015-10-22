@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
@@ -142,11 +143,11 @@ namespace MinecraftClient
 
         protected static bool IsValidName(string username)
         {
-            if ( String.IsNullOrEmpty(username) )
+            if (String.IsNullOrEmpty(username))
                 return false;
 
-            foreach ( char c in username )
-                if ( !((c >= 'a' && c <= 'z')
+            foreach (char c in username)
+                if (!((c >= 'a' && c <= 'z')
                         || (c >= 'A' && c <= 'Z')
                         || (c >= '0' && c <= '9')
                         || c == '_') )
@@ -165,85 +166,105 @@ namespace MinecraftClient
 
         protected static bool IsPrivateMessage(string text, ref string message, ref string sender)
         {
+            if (String.IsNullOrEmpty(text))
+                return false;
+
             text = GetVerbatim(text);
-            if (text == "") { return false; }
-            string[] tmp = text.Split(' ');
 
-            try
+            //Built-in detection routine for private messages
+            if (Settings.ChatFormat_Builtins)
             {
-                //Detect vanilla /tell messages
-                //Someone whispers message (MC 1.5)
-                //Someone whispers to you: message (MC 1.7)
-                if (tmp.Length > 2 && tmp[1] == "whispers")
+                string[] tmp = text.Split(' ');
+                try
                 {
-                    if (tmp.Length > 4 && tmp[2] == "to" && tmp[3] == "you:")
+                    //Detect vanilla /tell messages
+                    //Someone whispers message (MC 1.5)
+                    //Someone whispers to you: message (MC 1.7)
+                    if (tmp.Length > 2 && tmp[1] == "whispers")
                     {
-                        message = text.Substring(tmp[0].Length + 18); //MC 1.7
+                        if (tmp.Length > 4 && tmp[2] == "to" && tmp[3] == "you:")
+                        {
+                            message = text.Substring(tmp[0].Length + 18); //MC 1.7
+                        }
+                        else message = text.Substring(tmp[0].Length + 10); //MC 1.5
+                        sender = tmp[0];
+                        return IsValidName(sender);
                     }
-                    else message = text.Substring(tmp[0].Length + 10); //MC 1.5
-                    sender = tmp[0];
-                    return IsValidName(sender);
-                }
 
-                //Detect Essentials (Bukkit) /m messages
-                //[Someone -> me] message
-                //[~Someone -> me] message
-                else if (text[0] == '[' && tmp.Length > 3 && tmp[1] == "->"
-                        && (tmp[2] == "me]" || tmp[2] == "moi]")) //'me' is replaced by 'moi' in french servers
-                {
-                    message = text.Substring(tmp[0].Length + 4 + tmp[2].Length + 1);
-                    sender = tmp[0].Substring(1);
-                    if (sender[0] == '~') { sender = sender.Substring(1); }
-                    return IsValidName(sender);
-                }
+                    //Detect Essentials (Bukkit) /m messages
+                    //[Someone -> me] message
+                    //[~Someone -> me] message
+                    else if (text[0] == '[' && tmp.Length > 3 && tmp[1] == "->"
+                            && (tmp[2] == "me]" || tmp[2] == "moi]")) //'me' is replaced by 'moi' in french servers
+                    {
+                        message = text.Substring(tmp[0].Length + 4 + tmp[2].Length + 1);
+                        sender = tmp[0].Substring(1);
+                        if (sender[0] == '~') { sender = sender.Substring(1); }
+                        return IsValidName(sender);
+                    }
 
-                //Detect Modified server messages. /m
-                //[Someone @ me] message
-                else if (text[0] == '[' && tmp.Length > 3 && tmp[1] == "@"
-                        && (tmp[2] == "me]" || tmp[2] == "moi]")) //'me' is replaced by 'moi' in french servers
-                {
-                    message = text.Substring(tmp[0].Length + 4 + tmp[2].Length + 0);
-                    sender = tmp[0].Substring(1);
-                    if (sender[0] == '~') { sender = sender.Substring(1); }
-                    return IsValidName(sender);
-                }
+                    //Detect Modified server messages. /m
+                    //[Someone @ me] message
+                    else if (text[0] == '[' && tmp.Length > 3 && tmp[1] == "@"
+                            && (tmp[2] == "me]" || tmp[2] == "moi]")) //'me' is replaced by 'moi' in french servers
+                    {
+                        message = text.Substring(tmp[0].Length + 4 + tmp[2].Length + 0);
+                        sender = tmp[0].Substring(1);
+                        if (sender[0] == '~') { sender = sender.Substring(1); }
+                        return IsValidName(sender);
+                    }
 
-                //Detect Essentials (Bukkit) /me messages with some custom prefix
-                //[Prefix] [Someone -> me] message
-                //[Prefix] [~Someone -> me] message
-                else if (text[0] == '[' && tmp[0][tmp[0].Length - 1] == ']'
-                        && tmp[1][0] == '[' && tmp.Length > 4 && tmp[2] == "->"
-                        && (tmp[3] == "me]" || tmp[3] == "moi]"))
-                {
-                    message = text.Substring(tmp[0].Length + 1 + tmp[1].Length + 4 + tmp[3].Length + 1);
-                    sender = tmp[1].Substring(1);
-                    if (sender[0] == '~') { sender = sender.Substring(1); }
-                    return IsValidName(sender);
-                }
+                    //Detect Essentials (Bukkit) /me messages with some custom prefix
+                    //[Prefix] [Someone -> me] message
+                    //[Prefix] [~Someone -> me] message
+                    else if (text[0] == '[' && tmp[0][tmp[0].Length - 1] == ']'
+                            && tmp[1][0] == '[' && tmp.Length > 4 && tmp[2] == "->"
+                            && (tmp[3] == "me]" || tmp[3] == "moi]"))
+                    {
+                        message = text.Substring(tmp[0].Length + 1 + tmp[1].Length + 4 + tmp[3].Length + 1);
+                        sender = tmp[1].Substring(1);
+                        if (sender[0] == '~') { sender = sender.Substring(1); }
+                        return IsValidName(sender);
+                    }
 
-                //Detect Essentials (Bukkit) /me messages with some custom rank
-                //[Someone [rank] -> me] message
-                //[~Someone [rank] -> me] message
-                else if (text[0] == '[' && tmp.Length > 3 && tmp[2] == "->"
-                        && (tmp[3] == "me]" || tmp[3] == "moi]"))
-                {
-                    message = text.Substring(tmp[0].Length + 1 + tmp[1].Length + 4 + tmp[2].Length + 1);
-                    sender = tmp[0].Substring(1);
-                    if (sender[0] == '~') { sender = sender.Substring(1); }
-                    return IsValidName(sender);
-                }
+                    //Detect Essentials (Bukkit) /me messages with some custom rank
+                    //[Someone [rank] -> me] message
+                    //[~Someone [rank] -> me] message
+                    else if (text[0] == '[' && tmp.Length > 3 && tmp[2] == "->"
+                            && (tmp[3] == "me]" || tmp[3] == "moi]"))
+                    {
+                        message = text.Substring(tmp[0].Length + 1 + tmp[1].Length + 4 + tmp[2].Length + 1);
+                        sender = tmp[0].Substring(1);
+                        if (sender[0] == '~') { sender = sender.Substring(1); }
+                        return IsValidName(sender);
+                    }
 
-                //Detect HeroChat PMsend
-                //From Someone: message
-                else if (text.StartsWith("From "))
-                {
-                    sender = text.Substring(5).Split(':')[0];
-                    message = text.Substring(text.IndexOf(':') + 2);
-                    return IsValidName(sender);
+                    //Detect HeroChat PMsend
+                    //From Someone: message
+                    else if (text.StartsWith("From "))
+                    {
+                        sender = text.Substring(5).Split(':')[0];
+                        message = text.Substring(text.IndexOf(':') + 2);
+                        return IsValidName(sender);
+                    }
+                    else return false;
                 }
-                else return false;
+                catch (IndexOutOfRangeException) { /* Not an expected chat format */ }
             }
-            catch (IndexOutOfRangeException) { return false; }
+
+            //User-defined regex for private chat messages
+            if (Settings.ChatFormat_Private != null)
+            {
+                Match regexMatch = Settings.ChatFormat_Private.Match(text);
+                if (regexMatch.Success && regexMatch.Groups.Count >= 3)
+                {
+                    sender = regexMatch.Groups[1].Value;
+                    message = regexMatch.Groups[2].Value;
+                    return IsValidName(sender);
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -256,17 +277,22 @@ namespace MinecraftClient
 
         protected static bool IsChatMessage(string text, ref string message, ref string sender)
         {
-            
+            if (String.IsNullOrEmpty(text))
+                return false;
+
             text = GetVerbatim(text);
-            string[] tmp = text.Split(' ');
-            if (text.Length > 0)
+            
+            //Built-in detection routine for public messages
+            if (Settings.ChatFormat_Builtins)
             {
+                string[] tmp = text.Split(' ');
+
                 //Detect vanilla/factions Messages
                 //<Someone> message
                 //<*Faction Someone> message
                 //<*Faction Someone>: message
                 //<*Faction ~Nicknamed>: message
-                if (text[0] == '<' && Settings.Vanilla_And_Factions_Messages_Enabled.Equals(true))
+                if (text[0] == '<')
                 {
                     try
                     {
@@ -287,7 +313,7 @@ namespace MinecraftClient
                 //Detect HeroChat Messages
                 //Public chat messages
                 //[Channel] [Rank] User: Message
-                else if (text[0] == '[' && text.Contains(':') && tmp.Length > 2 && Settings.Hero_Chat_Messages_Enabled.Equals(true))
+                else if (text[0] == '[' && text.Contains(':') && tmp.Length > 2)
                 {
                     int name_end = text.IndexOf(':');
                     int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
@@ -306,8 +332,7 @@ namespace MinecraftClient
                     && text.IndexOf('*') < text.IndexOf('<')
                     && text.IndexOf('<') < text.IndexOf('>')
                     && text.IndexOf('>') < text.IndexOf(' ')
-                    && text.IndexOf(' ') < text.IndexOf(':')
-                    && Settings.Unknown_Chat_Plugin_Messages_One_Enabled.Equals(true))
+                    && text.IndexOf(' ') < text.IndexOf(':'))
                 {
                     string prefix = tmp[0];
                     string user = tmp[1];
@@ -320,6 +345,19 @@ namespace MinecraftClient
                     }
                 }
             }
+
+            //User-defined regex for public chat messages
+            if (Settings.ChatFormat_Public != null)
+            {
+                Match regexMatch = Settings.ChatFormat_Public.Match(text);
+                if (regexMatch.Success && regexMatch.Groups.Count >= 3)
+                {
+                    sender = regexMatch.Groups[1].Value;
+                    message = regexMatch.Groups[2].Value;
+                    return IsValidName(sender);
+                }
+            }
+
             return false;
         }
 
@@ -332,25 +370,52 @@ namespace MinecraftClient
 
         protected static bool IsTeleportRequest(string text, ref string sender)
         {
+            if (String.IsNullOrEmpty(text))
+                return false;
+
             text = GetVerbatim(text);
-            string[] tmp = text.Split(' ');
-            if (text.EndsWith("has requested to teleport to you.")
-             || text.EndsWith("has requested that you teleport to them."))
+
+            //Built-in detection routine for teleport requests
+            if (Settings.ChatFormat_Builtins)
             {
-                //<Rank> Username has requested...
-                //[Rank] Username has requested...
-                if (((tmp[0].StartsWith("<") && tmp[0].EndsWith(">"))
-                    || (tmp[0].StartsWith("[") && tmp[0].EndsWith("]")))
-                    && tmp.Length > 1)
-                    sender = tmp[1];
+                string[] tmp = text.Split(' ');
 
-                //Username has requested...
-                else sender = tmp[0];
+                //Detect Essentials teleport requests, prossibly with
+                //nicknamed names or other modifications such as HeroChat
+                if (text.EndsWith("has requested to teleport to you.")
+                    || text.EndsWith("has requested that you teleport to them."))
+                {
+                    //<Rank> Username has requested...
+                    //[Rank] Username has requested...
+                    if (((tmp[0].StartsWith("<") && tmp[0].EndsWith(">"))
+                        || (tmp[0].StartsWith("[") && tmp[0].EndsWith("]")))
+                        && tmp.Length > 1)
+                        sender = tmp[1];
 
-                //Final check on username validity
-                return IsValidName(sender);
+                    //Username has requested...
+                    else sender = tmp[0];
+
+                    //~Username has requested...
+                    if (sender.Length > 1 && sender[0] == '~')
+                        sender = sender.Substring(1);
+
+                    //Final check on username validity
+                    return IsValidName(sender);
+                }
             }
-            else return false;
+
+            //User-defined regex for teleport requests
+            if (Settings.ChatFormat_TeleportRequest != null)
+            {
+                Match regexMatch = Settings.ChatFormat_TeleportRequest.Match(text);
+                if (regexMatch.Success && regexMatch.Groups.Count >= 2)
+                {
+                    sender = regexMatch.Groups[1].Value;
+                    return IsValidName(sender);
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -119,6 +119,15 @@ These files describe how some messages should be printed depending on your prefe
 The client will automatically load en_GB.lang from your Minecraft folder if Minecraft is installed on your
 computer, or download it from Mojang's servers. You may choose another language in the config file.
 
+=========================
+ Detecting chat messages
+=========================
+
+Minecraft Console Client can parse messages from the server in order to detect private and public messages.
+This is useful for reacting to messages eg when using the AutoRespond, Hangman game, or RemoteControl bots.
+However, for unusual chat formats, so you may need to tinker with the ChatFormat section of the config file.
+Building regular expressions can be a bit tricky, so you might want to try them out eg on regex101.com
+
 ======================
  Using the Alerts bot
 ======================

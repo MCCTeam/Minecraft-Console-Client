@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
@@ -97,10 +98,11 @@ namespace MinecraftClient
         public static bool RemoteCtrl_AutoTpaccept = true;
         public static bool RemoteCtrl_AutoTpaccept_Everyone = false;
 
-        //Chat Message Enabled / Disabled.
-        public static bool Hero_Chat_Messages_Enabled = true;
-        public static bool Unknown_Chat_Plugin_Messages_One_Enabled = true;
-        public static bool Vanilla_And_Factions_Messages_Enabled = true;
+        //Chat Message Parsing
+        public static bool ChatFormat_Builtins = true;
+        public static Regex ChatFormat_Public = null;
+        public static Regex ChatFormat_Private = null;
+        public static Regex ChatFormat_TeleportRequest = null;
 
         //Auto Respond
         public static bool AutoRespond_Enabled = false;
@@ -111,7 +113,7 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatBotMessages, AutoRespond };
+        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -146,7 +148,7 @@ namespace MinecraftClient
                                     case "proxy": pMode = ParseMode.Proxy; break;
                                     case "appvars": pMode = ParseMode.AppVars; break;
                                     case "autorespond": pMode = ParseMode.AutoRespond; break;
-                                    case "chatbotmessages": pMode = ParseMode.ChatBotMessages; break;
+                                    case "chatformat": pMode = ParseMode.ChatFormat; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -309,13 +311,13 @@ namespace MinecraftClient
                                             }
                                             break;
 
-                                        case ParseMode.ChatBotMessages:
+                                        case ParseMode.ChatFormat:
                                             switch (argName.ToLower())
                                             {
-                                                case "herochatmessagesenabled": Hero_Chat_Messages_Enabled = str2bool(argValue); break;
-                                                case "unknownchatpluginmessagesone": Unknown_Chat_Plugin_Messages_One_Enabled = str2bool(argValue); break;
-                                                case "vanillaandfactionsmessages": Vanilla_And_Factions_Messages_Enabled = str2bool(argValue); break;
-
+                                                case "builtins": ChatFormat_Builtins = str2bool(argValue); break;
+                                                case "public": ChatFormat_Public = new Regex(argValue); break;
+                                                case "private": ChatFormat_Private = new Regex(argValue); break;
+                                                case "tprequest": ChatFormat_TeleportRequest = new Regex(argValue); break;
                                             }
                                             break;
 
@@ -424,6 +426,12 @@ namespace MinecraftClient
                 + "username=\r\n"
                 + "password=\r\n"
                 + "\r\n"
+                + "[ChatFormat]\r\n"
+                + "builtins=true #support for handling vanilla and common message formats\r\n"
+                + "#public=^<([a-zA-Z0-9_]+)> (.+)$ #uncomment and adapt if necessary\r\n"
+                + "#private=^([a-zA-Z0-9_]+) whispers to you: (.+)$ #vanilla example\r\n"
+                + "#tprequest=^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\\.$\r\n"
+                + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"
                 + "[Alerts]\r\n"
@@ -464,18 +472,39 @@ namespace MinecraftClient
                 + "autotpaccept=true\r\n"
                 + "tpaccepteveryone=false\r\n"
                 + "\r\n"
-                + "[ChatBotMessages]\r\n"
-                + "vanillaandfactionsmessages=true # Chat Formats \"<User> Message\" \"<*Faction User>: Message\" \r\n"
-                + "herochatmessagesenabled=true # Chat Format is \"[Channel][Rank] User: Message\"\r\n"
-                + "unknownchatpluginmessagesone=true # Chat Format is \"**Faction<Rank> User : Message\"\r\n"
-                + "\r\n"
                 + "[AutoRespond]\r\n"
                 + "enabled=false\r\n"
                 + "matchesfile=matches.ini\r\n", Encoding.UTF8);
         }
 
-        public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }
-        public static bool str2bool(string str) { return str == "true" || str == "1"; }
+        /// <summary>
+        /// Convert the specified string to an integer, defaulting to zero if invalid argument
+        /// </summary>
+        /// <param name="str">String to parse as an integer</param>
+        /// <returns>Integer value</returns>
+        
+        public static int str2int(string str)
+        {
+            try
+            {
+                return Convert.ToInt32(str);
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// Convert the specified string to a boolean value, defaulting to false if invalid argument
+        /// </summary>
+        /// <param name="str">String to parse as a boolean</param>
+        /// <returns>Boolean value</returns>
+        
+        public static bool str2bool(string str)
+        {
+            if (String.IsNullOrEmpty(str))
+                return false;
+            str = str.Trim().ToLowerInvariant();
+            return str == "true" || str == "1";
+        }
 
         /// <summary>
         /// Load login/password using an account alias
