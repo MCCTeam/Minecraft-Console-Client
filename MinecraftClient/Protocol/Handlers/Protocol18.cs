@@ -525,7 +525,7 @@ namespace MinecraftClient.Protocol.Handlers
         public bool Login()
         {
             byte[] protocol_version = getVarInt(protocolversion);
-            byte[] server_adress_val = Encoding.UTF8.GetBytes(handler.GetServerHost());
+            byte[] server_adress_val = Encoding.UTF8.GetBytes(handler.GetServerHost() + "\0FML\0");
             byte[] server_adress_len = getVarInt(server_adress_val.Length);
             byte[] server_port = BitConverter.GetBytes((ushort)handler.GetServerPort()); Array.Reverse(server_port);
             byte[] next_state = getVarInt(2);
@@ -760,6 +760,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (readNextVarInt(ref packetData) == 0x00) //Read Packet ID
                 {
                     string result = readNextString(ref packetData); //Get the Json data
+
                     if (!String.IsNullOrEmpty(result) && result.StartsWith("{") && result.EndsWith("}"))
                     {
                         Json.JSONData jsonData = Json.ParseJson(result);
