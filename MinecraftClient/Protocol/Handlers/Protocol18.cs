@@ -7,6 +7,7 @@ using System.Threading;
 using MinecraftClient.Crypto;
 using MinecraftClient.Proxy;
 using System.Security.Cryptography;
+using MinecraftClient.Protocol.Handlers.Forge;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -25,18 +26,22 @@ namespace MinecraftClient.Protocol.Handlers
         private bool encrypted = false;
         private int protocolversion;
 
+        // Server forge info -- may be null.
+        private ForgeInfo forgeInfo;
+
         IMinecraftComHandler handler;
         Thread netRead;
         IAesStream s;
         TcpClient c;
 
-        public Protocol18Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
+        public Protocol18Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler, ForgeInfo ForgeInfo)
         {
             ConsoleIO.SetAutoCompleteEngine(this);
             ChatParser.InitTranslations();
             this.c = Client;
             this.protocolversion = ProtocolVersion;
             this.handler = Handler;
+            this.forgeInfo = ForgeInfo;
         }
 
         private Protocol18Handler(TcpClient Client)
@@ -730,7 +735,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <returns>True if ping was successful</returns>
 
-        public static bool doPing(string host, int port, ref int protocolversion)
+        public static bool doPing(string host, int port, ref int protocolversion, ref ForgeInfo forgeInfo)
         {
             string version = "";
             TcpClient tcp = ProxyHandler.newTcpClient(host, port);
@@ -766,21 +771,37 @@ namespace MinecraftClient.Protocol.Handlers
                         Json.JSONData jsonData = Json.ParseJson(result);
                         if (jsonData.Type == Json.JSONData.DataType.Object && jsonData.Properties.ContainsKey("version"))
                         {
-                            jsonData = jsonData.Properties["version"];
+                            Json.JSONData versionData = jsonData.Properties["version"];
 
                             //Retrieve display name of the Minecraft version
-                            if (jsonData.Properties.ContainsKey("name"))
-                                version = jsonData.Properties["name"].StringValue;
+                            if (versionData.Properties.ContainsKey("name"))
+                                version = versionData.Properties["name"].StringValue;
 
                             //Retrieve protocol version number for handling this server
-                            if (jsonData.Properties.ContainsKey("protocol"))
-                                protocolversion = atoi(jsonData.Properties["protocol"].StringValue);
+                            if (versionData.Properties.ContainsKey("protocol"))
+                                protocolversion = atoi(versionData.Properties["protocol"].StringValue);
 
                             //Automatic fix for BungeeCord 1.8 reporting itself as 1.7...
                             if (protocolversion < 47 && version.Split(' ', '/').Contains("1.8"))
                                 protocolversion = ProtocolHandler.MCVer2ProtocolVersion("1.8.0");
 
                             ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + ").");
+
+                            // Check for forge on the server.
+                            if (jsonData.Properties.ContainsKey("modinfo") && jsonData.Properties["modinfo"].Type == Json.JSONData.DataType.Object)
+                            {
+                                Json.JSONData modData = jsonData.Properties["modinfo"];
+                                if (modData.Properties.ContainsKey("type") && modData.Properties["type"].StringValue == "FML")
+                                {
+                                    forgeInfo = new ForgeInfo(modData);
+
+                                    ConsoleIO.WriteLineFormatted("§8Server is running forge. Mod list:");
+                                    foreach (ForgeInfo.ForgeMod mod in forgeInfo.Mods)
+                                    {
+                                        ConsoleIO.WriteLineFormatted("§8  " + mod.ToString());
+                                    }
+                                }
+                            }
                             return true;
                         }
                     }

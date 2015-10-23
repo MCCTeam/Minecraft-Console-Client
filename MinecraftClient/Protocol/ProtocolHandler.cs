@@ -6,6 +6,7 @@ using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Proxy;
 using System.Net.Sockets;
 using System.Net.Security;
+using MinecraftClient.Protocol.Handlers.Forge;
 
 namespace MinecraftClient.Protocol
 {
@@ -23,16 +24,17 @@ namespace MinecraftClient.Protocol
         /// <param name="protocolversion">Will contain protocol version, if ping successful</param>
         /// <returns>TRUE if ping was successful</returns>
 
-        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion)
+        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion, ref ForgeInfo forgeInfo)
         {
             bool success = false;
             int protocolversionTmp = 0;
+            ForgeInfo forgeInfoTmp = null;
             if (AutoTimeout.Perform(() =>
             {
                 try
                 {
                     if (Protocol16Handler.doPing(serverIP, serverPort, ref protocolversionTmp)
-                        || Protocol18Handler.doPing(serverIP, serverPort, ref protocolversionTmp))
+                        || Protocol18Handler.doPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp))
                     {
                         success = true;
                     }
@@ -40,11 +42,12 @@ namespace MinecraftClient.Protocol
                 }
                 catch (Exception e)
                 {
-                    ConsoleIO.WriteLineFormatted("§8" + e.Message);
+                    ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
             }, TimeSpan.FromSeconds(30)))
             {
                 protocolversion = protocolversionTmp;
+                forgeInfo = forgeInfoTmp;
                 return success;
             }
             else
@@ -62,14 +65,14 @@ namespace MinecraftClient.Protocol
         /// <param name="Handler">Handler with the appropriate callbacks</param>
         /// <returns></returns>
 
-        public static IMinecraftCom getProtocolHandler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
+        public static IMinecraftCom getProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo forgeInfo, IMinecraftComHandler Handler)
         {
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
             if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
                 return new Protocol16Handler(Client, ProtocolVersion, Handler);
             int[] supportedVersions_Protocol18 = { 4, 5, 47 };
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
-                return new Protocol18Handler(Client, ProtocolVersion, Handler);
+                return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
             throw new NotSupportedException("The protocol version no." + ProtocolVersion + " is not supported.");
         }
 
