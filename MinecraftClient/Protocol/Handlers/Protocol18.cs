@@ -141,54 +141,6 @@ namespace MinecraftClient.Protocol.Handlers
             }
             // Regular in-game packets
 
-            if (forgeInfo != null && fmlHandshakeState != FMLHandshakeClientState.DONE) //Check forge login
-            {
-                switch (fmlHandshakeState)
-                {
-                    case FMLHandshakeClientState.START:
-                        if (packetID != 0x3F)
-                            break;
-
-                        String channel = readNextString(ref packetData);
-
-                        if (channel != "FML|HS")
-                            break;
-
-                        FMLHandshakeDiscriminator discriminator = (FMLHandshakeDiscriminator)readNextByte(ref packetData);
-                        if (discriminator != FMLHandshakeDiscriminator.ServerHello)
-                            return false;
-
-                        // Send the plugin channel registration.
-                        // REGISTER is somewhat special in that it doesn't actually include length information,
-                        // and is also \0-separated.
-                        // Also, yes, "FML" is there twice.  Don't ask me why, but that's the way forge does it.
-                        string[] channels = { "FML|HS", "FML", "FML|MP", "FML", "FORGE" };
-                        SendPluginChannelPacket("REGISTER", Encoding.UTF8.GetBytes(string.Join("\0", channels)));
-
-                        byte fmlProtocolVersion = readNextByte(ref packetData);
-                        // There's another value afterwards for the dimension, but we don't need it.
-
-                        ConsoleIO.WriteLineFormatted("§8Forge protocol version : " + fmlProtocolVersion);
-
-                        // Tell the server we're running the same version.
-                        SendForgeHandshakePacket(FMLHandshakeDiscriminator.ClientHello, new byte[] { fmlProtocolVersion });
-
-                        // Then tell the server that we're running the same mods.
-                        ConsoleIO.WriteLineFormatted("§8Sending falsified mod list to server...");
-                        byte[][] mods = new byte[forgeInfo.Mods.Count][];
-                        for (int i = 0; i < forgeInfo.Mods.Count; i++)
-                        {
-                            ForgeInfo.ForgeMod mod = forgeInfo.Mods[i];
-                            mods[i] = concatBytes(getString(mod.ModID), getString(mod.Version));
-                        }
-                        SendForgeHandshakePacket(FMLHandshakeDiscriminator.ModList, concatBytes(getVarInt(forgeInfo.Mods.Count), concatBytes(mods)));
-
-                        fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERDATA;
-
-                        return true;
-                }
-            }
-
             switch (packetID)
             {
                 case 0x00: //Keep-Alive
@@ -260,16 +212,57 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 0x3F: //Plugin message.
                     String channel = readNextString(ref packetData);
-                    if (channel == "FML|HS")
+                    if (forgeInfo != null)
                     {
-                        FMLHandshakeDiscriminator discriminator = (FMLHandshakeDiscriminator)readNextByte(ref packetData);
-                        if (discriminator == FMLHandshakeDiscriminator.HandshakeReset)
+                        if (channel == "FML|HS")
                         {
+                            FMLHandshakeDiscriminator discriminator = (FMLHandshakeDiscriminator)readNextByte(ref packetData);
+                            
+                            if (discriminator == FMLHandshakeDiscriminator.HandshakeReset)
+                            {
+                                fmlHandshakeState = FMLHandshakeClientState.START;
+                                return true;
+                            }
 
+                            switch (fmlHandshakeState)
+                            {
+                                case FMLHandshakeClientState.START:
+                                    if (discriminator != FMLHandshakeDiscriminator.ServerHello)
+                                        return false;
+
+                                    // Send the plugin channel registration.
+                                    // REGISTER is somewhat special in that it doesn't actually include length information,
+                                    // and is also \0-separated.
+                                    // Also, yes, "FML" is there twice.  Don't ask me why, but that's the way forge does it.
+                                    string[] channels = { "FML|HS", "FML", "FML|MP", "FML", "FORGE" };
+                                    SendPluginChannelPacket("REGISTER", Encoding.UTF8.GetBytes(string.Join("\0", channels)));
+
+                                    byte fmlProtocolVersion = readNextByte(ref packetData);
+                                    // There's another value afterwards for the dimension, but we don't need it.
+
+                                    ConsoleIO.WriteLineFormatted("§8Forge protocol version : " + fmlProtocolVersion);
+
+                                    // Tell the server we're running the same version.
+                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.ClientHello, new byte[] { fmlProtocolVersion });
+
+                                    // Then tell the server that we're running the same mods.
+                                    ConsoleIO.WriteLineFormatted("§8Sending falsified mod list to server...");
+                                    byte[][] mods = new byte[forgeInfo.Mods.Count][];
+                                    for (int i = 0; i < forgeInfo.Mods.Count; i++)
+                                    {
+                                        ForgeInfo.ForgeMod mod = forgeInfo.Mods[i];
+                                        mods[i] = concatBytes(getString(mod.ModID), getString(mod.Version));
+                                    }
+                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.ModList, 
+                                        concatBytes(getVarInt(forgeInfo.Mods.Count), concatBytes(mods)));
+
+                                    fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERDATA;
+
+                                    return true;
+                            }
                         }
-                        return true;
                     }
-                    break;
+                    return false;
                 case 0x40: //Kick Packet
                     handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(readNextString(ref packetData)));
                     return false;
