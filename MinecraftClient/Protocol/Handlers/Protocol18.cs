@@ -18,7 +18,7 @@ namespace MinecraftClient.Protocol.Handlers
     class Protocol18Handler : IMinecraftCom
     {
         private const int MC18Version = 47;
-        
+
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
         private string autocomplete_result = "";
@@ -28,6 +28,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         // Server forge info -- may be null.
         private ForgeInfo forgeInfo;
+        private FMLHandshakeClientState fmlHandshakeState = FMLHandshakeClientState.START;
 
         IMinecraftComHandler handler;
         Thread netRead;
@@ -138,94 +139,153 @@ namespace MinecraftClient.Protocol.Handlers
                         return false; //Ignored packet
                 }
             }
-            else //Regular in-game packets
+            // Regular in-game packets
+
+            if (forgeInfo != null && fmlHandshakeState != FMLHandshakeClientState.DONE) //Check forge login
             {
-                switch (packetID)
+                switch (fmlHandshakeState)
                 {
-                    case 0x00: //Keep-Alive
-                        SendPacket(0x00, packetData);
-                        break;
-                    case 0x01: //Join game
-                        handler.OnGameJoined();
-                        break;
-                    case 0x02: //Chat message
-                        string message = readNextString(ref packetData);
-                        try
+                    case FMLHandshakeClientState.START:
+                        if (packetID != 0x3F)
+                            break;
+
+                        String channel = readNextString(ref packetData);
+
+                        if (channel != "FML|HS")
+                            break;
+
+                        FMLHandshakeDiscriminator discriminator = (FMLHandshakeDiscriminator)readNextByte(ref packetData);
+                        if (discriminator != FMLHandshakeDiscriminator.ServerHello)
+                            return false;
+
+                        // Send the plugin channel registration.
+                        // REGISTER is somewhat special in that it doesn't actually include length information,
+                        // and is also \0-separated.
+                        // Also, yes, "FML" is there twice.  Don't ask me why, but that's the way forge does it.
+                        string[] channels = { "FML|HS", "FML", "FML|MP", "FML", "FORGE" };
+                        SendPluginChannelPacket("REGISTER", Encoding.UTF8.GetBytes(string.Join("\0", channels)));
+
+                        byte fmlProtocolVersion = readNextByte(ref packetData);
+                        // There's another value afterwards for the dimension, but we don't need it.
+
+                        ConsoleIO.WriteLineFormatted("§8Forge protocol version : " + fmlProtocolVersion);
+
+                        // Tell the server we're running the same version.
+                        SendForgeHandshakePacket(FMLHandshakeDiscriminator.ClientHello, new byte[] { fmlProtocolVersion });
+
+                        // Then tell the server that we're running the same mods.
+                        ConsoleIO.WriteLineFormatted("§8Sending falsified mod list to server...");
+                        byte[][] mods = new byte[forgeInfo.Mods.Count][];
+                        for (int i = 0; i < forgeInfo.Mods.Count; i++)
                         {
-                            //Hide system messages or xp bar messages?
-                            byte messageType = readData(1, ref packetData)[0];
-                            if ((messageType == 1 && !Settings.DisplaySystemMessages)
-                                || (messageType == 2 && !Settings.DisplayXPBarMessages))
-                                break;
+                            ForgeInfo.ForgeMod mod = forgeInfo.Mods[i];
+                            mods[i] = concatBytes(getString(mod.ModID), getString(mod.Version));
                         }
-                        catch (IndexOutOfRangeException) { /* No message type */ }
-                        handler.OnTextReceived(ChatParser.ParseText(message));
-                        break;
-                    case 0x38: //Player List update
-                        if (protocolversion >= MC18Version)
+                        SendForgeHandshakePacket(FMLHandshakeDiscriminator.ModList, concatBytes(getVarInt(forgeInfo.Mods.Count), concatBytes(mods)));
+
+                        fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERDATA;
+
+                        return true;
+                }
+            }
+
+            switch (packetID)
+            {
+                case 0x00: //Keep-Alive
+                    SendPacket(0x00, packetData);
+                    break;
+                case 0x01: //Join game
+                    handler.OnGameJoined();
+                    break;
+                case 0x02: //Chat message
+                    string message = readNextString(ref packetData);
+                    try
+                    {
+                        //Hide system messages or xp bar messages?
+                        byte messageType = readData(1, ref packetData)[0];
+                        if ((messageType == 1 && !Settings.DisplaySystemMessages)
+                            || (messageType == 2 && !Settings.DisplayXPBarMessages))
+                            break;
+                    }
+                    catch (IndexOutOfRangeException) { /* No message type */ }
+                    handler.OnTextReceived(ChatParser.ParseText(message));
+                    break;
+                case 0x38: //Player List update
+                    if (protocolversion >= MC18Version)
+                    {
+                        int action = readNextVarInt(ref packetData);
+                        int numActions = readNextVarInt(ref packetData);
+                        for (int i = 0; i < numActions; i++)
                         {
-                            int action = readNextVarInt(ref packetData);
-                            int numActions = readNextVarInt(ref packetData);
-                            for (int i = 0; i < numActions; i++)
+                            Guid uuid = readNextUUID(ref packetData);
+                            switch (action)
                             {
-                                Guid uuid = readNextUUID(ref packetData);
-                                switch (action)
-                                {
-                                    case 0x00: //Player Join
-                                        string name = readNextString(ref packetData);
-                                        handler.OnPlayerJoin(uuid, name);
-                                        break;
-                                    case 0x04: //Player Leave
-                                        handler.OnPlayerLeave(uuid);
-                                        break;
-                                    default:
-                                        //Unknown player list item type
-                                        break;
-                                }
+                                case 0x00: //Player Join
+                                    string name = readNextString(ref packetData);
+                                    handler.OnPlayerJoin(uuid, name);
+                                    break;
+                                case 0x04: //Player Leave
+                                    handler.OnPlayerLeave(uuid);
+                                    break;
+                                default:
+                                    //Unknown player list item type
+                                    break;
                             }
                         }
-                        else //MC 1.7.X does not provide UUID in tab-list updates
+                    }
+                    else //MC 1.7.X does not provide UUID in tab-list updates
+                    {
+                        string name = readNextString(ref packetData);
+                        bool online = readNextBool(ref packetData);
+                        short ping = readNextShort(ref packetData);
+                        Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
+                        if (online)
+                            handler.OnPlayerJoin(FakeUUID, name);
+                        else handler.OnPlayerLeave(FakeUUID);
+                    }
+                    break;
+                case 0x3A: //Tab-Complete Result
+                    int autocomplete_count = readNextVarInt(ref packetData);
+                    string tab_list = "";
+                    for (int i = 0; i < autocomplete_count; i++)
+                    {
+                        autocomplete_result = readNextString(ref packetData);
+                        if (autocomplete_result != "")
+                            tab_list = tab_list + autocomplete_result + " ";
+                    }
+                    autocomplete_received = true;
+                    tab_list = tab_list.Trim();
+                    if (tab_list.Length > 0)
+                        ConsoleIO.WriteLineFormatted("§8" + tab_list, false);
+                    break;
+                case 0x3F: //Plugin message.
+                    String channel = readNextString(ref packetData);
+                    if (channel == "FML|HS")
+                    {
+                        FMLHandshakeDiscriminator discriminator = (FMLHandshakeDiscriminator)readNextByte(ref packetData);
+                        if (discriminator == FMLHandshakeDiscriminator.HandshakeReset)
                         {
-                            string name = readNextString(ref packetData);
-                            bool online = readNextBool(ref packetData);
-                            short ping = readNextShort(ref packetData);
-                            Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
-                            if (online)
-                                handler.OnPlayerJoin(FakeUUID, name);
-                            else handler.OnPlayerLeave(FakeUUID);
+
                         }
-                        break;
-                    case 0x3A: //Tab-Complete Result
-                        int autocomplete_count = readNextVarInt(ref packetData);
-                        string tab_list = "";
-                        for (int i = 0; i < autocomplete_count; i++)
-                        {
-                            autocomplete_result = readNextString(ref packetData);
-                            if (autocomplete_result != "")
-                                tab_list = tab_list + autocomplete_result + " ";
-                        }
-                        autocomplete_received = true;
-                        tab_list = tab_list.Trim();
-                        if (tab_list.Length > 0)
-                            ConsoleIO.WriteLineFormatted("§8" + tab_list, false);
-                        break;
-                    case 0x40: //Kick Packet
-                        handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(readNextString(ref packetData)));
-                        return false;
-                    case 0x46: //Network Compression Treshold Info
-                        if (protocolversion >= MC18Version)
-                            compression_treshold = readNextVarInt(ref packetData);
-                        break;
-                    case 0x48: //Resource Pack Send
-                        string url = readNextString(ref packetData);
-                        string hash = readNextString(ref packetData);
-                        //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
-                        SendPacket(0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(3)));
-                        SendPacket(0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(0)));
-                        break;
-                    default:
-                        return false; //Ignored packet
-                }
+                        return true;
+                    }
+                    break;
+                case 0x40: //Kick Packet
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(readNextString(ref packetData)));
+                    return false;
+                case 0x46: //Network Compression Treshold Info
+                    if (protocolversion >= MC18Version)
+                        compression_treshold = readNextVarInt(ref packetData);
+                    break;
+                case 0x48: //Resource Pack Send
+                    string url = readNextString(ref packetData);
+                    string hash = readNextString(ref packetData);
+                    //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
+                    SendPacket(0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(3)));
+                    SendPacket(0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(0)));
+                    break;
+                default:
+                    return false; //Ignored packet
             }
             return true; //Packet processed
         }
@@ -263,7 +323,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="offset">Amount of bytes to read</param>
         /// <returns>The data read from the network as an array</returns>
-        
+
         private byte[] readDataRAW(int offset)
         {
             if (offset > 0)
@@ -278,7 +338,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             return new byte[] { };
         }
-        
+
         /// <summary>
         /// Read some data from a cache of bytes and remove it from the cache
         /// </summary>
@@ -377,7 +437,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             return i;
         }
-        
+
         /// <summary>
         /// Read an integer from a cache of bytes and remove it from the cache
         /// </summary>
@@ -399,6 +459,16 @@ namespace MinecraftClient.Protocol.Handlers
                 if ((k & 0x80) != 128) break;
             }
             return i;
+        }
+
+        /// <summary>
+        /// Read a single byte from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The byte that was read</returns>
+
+        private static byte readNextByte(ref byte[] cache)
+        {
+            return readData(1, ref cache)[0];
         }
 
         /// <summary>
@@ -434,6 +504,19 @@ namespace MinecraftClient.Protocol.Handlers
                 return concatBytes(length, array);
             }
             else return concatBytes(getVarInt(array.Length), array);
+        }
+
+        /// <summary>
+        /// Get a byte array from the given string for sending over the network, with length information prepended.
+        /// </summary>
+        /// <param name="array">String to process</param>
+        /// <returns>Array ready to send</returns>
+
+        private byte[] getString(string text)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+
+            return concatBytes(getVarInt(bytes.Length), bytes);
         }
 
         /// <summary>
@@ -479,6 +562,28 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Send a forge plugin channel packet ("FML|HS").  Compression and encryption will be handled automatically
+        /// </summary>
+        /// <param name="discriminator">Discriminator to use.</param>
+        /// <param name="data">packet Data</param>
+
+        private void SendForgeHandshakePacket(FMLHandshakeDiscriminator discriminator, byte[] data)
+        {
+            SendPluginChannelPacket("FML|HS", concatBytes(new byte[] { (byte)discriminator }, data));
+        }
+
+        /// <summary>
+        /// Send a plugin channel packet (0x3F) to the server, compression and encryption will be handled automatically
+        /// </summary>
+        /// <param name="channel">Channel to send packet on</param>
+        /// <param name="data">packet Data</param>
+
+        private void SendPluginChannelPacket(string channel, byte[] data)
+        {
+            SendPacket(0x17, concatBytes(getString(channel), data));
+        }
+
+        /// <summary>
         /// Send a packet to the server, compression and encryption will be handled automatically
         /// </summary>
         /// <param name="packetID">packet ID</param>
@@ -505,7 +610,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
 
-            SendRAW(concatBytes(getVarInt(the_packet.Length), the_packet)); 
+            SendRAW(concatBytes(getVarInt(the_packet.Length), the_packet));
         }
 
         /// <summary>
