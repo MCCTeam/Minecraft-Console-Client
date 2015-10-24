@@ -259,6 +259,61 @@ namespace MinecraftClient.Protocol.Handlers
                                     fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERDATA;
 
                                     return true;
+                                case FMLHandshakeClientState.WAITINGSERVERDATA:
+                                    if (discriminator != FMLHandshakeDiscriminator.ModList)
+                                        return false;
+
+                                    ConsoleIO.WriteLineFormatted("§8Accepting server mod list...");
+                                    // Tell the server that yes, we are OK with the mods it has
+                                    // even though we don't actually care what mods it has.
+                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
+                                        new byte[] { (byte)FMLHandshakeClientState.WAITINGSERVERDATA });
+
+                                    fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERCOMPLETE;
+                                    return false;
+                                case FMLHandshakeClientState.WAITINGSERVERCOMPLETE:
+                                    // The server now will tell us a bunch of registry information.
+                                    // We need to read it all, though, until it says that there is no more.
+                                    if (discriminator != FMLHandshakeDiscriminator.RegistryData)
+                                        return false;
+
+                                    bool hasNextRegistry = readNextBool(ref packetData);
+                                    string registryName = readNextString(ref packetData);
+                                    int registrySize = readNextVarInt(ref packetData);
+
+                                    ConsoleIO.WriteLineFormatted("§8Received registry " + registryName +
+                                        " with " + registrySize + " entries");
+
+                                    if (!hasNextRegistry)
+                                    {
+                                        fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
+                                    }
+
+                                    return false;
+                                case FMLHandshakeClientState.PENDINGCOMPLETE:
+                                    // The server will ask us to accept the registries.
+                                    // Just say yes.
+                                    if (discriminator != FMLHandshakeDiscriminator.HandshakeAck)
+                                        return false;
+
+                                    ConsoleIO.WriteLineFormatted("§8Accepting server registries...");
+
+                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
+                                        new byte[] { (byte)FMLHandshakeClientState.PENDINGCOMPLETE });
+                                    fmlHandshakeState = FMLHandshakeClientState.COMPLETE;
+
+                                    return true;
+                                case FMLHandshakeClientState.COMPLETE:
+                                    // One final "OK".  On the actual forge source, a packet is sent from
+                                    // the client to the client saying that the connection was complete, but
+                                    // we don't need to do that.
+
+                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
+                                        new byte[] { (byte)FMLHandshakeClientState.COMPLETE });
+                                    ConsoleIO.WriteLine("Forge server connection complete!");
+
+                                    fmlHandshakeState = FMLHandshakeClientState.DONE;
+                                    return true;
                             }
                         }
                     }
