@@ -212,6 +212,12 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 0x3F: //Plugin message.
                     String channel = readNextString(ref packetData);
+                    if (protocolversion < MC18Version)
+                    {
+                        // 1.7 and lower prefix plugin channel packets with the length.
+                        // We can skip it, though.
+                        readNextShort(ref packetData);
+                    }
                     if (forgeInfo != null)
                     {
                         if (channel == "FML|HS")
@@ -277,16 +283,32 @@ namespace MinecraftClient.Protocol.Handlers
                                     if (discriminator != FMLHandshakeDiscriminator.RegistryData)
                                         return false;
 
-                                    bool hasNextRegistry = readNextBool(ref packetData);
-                                    string registryName = readNextString(ref packetData);
-                                    int registrySize = readNextVarInt(ref packetData);
-
-                                    ConsoleIO.WriteLineFormatted("§8Received registry " + registryName +
-                                        " with " + registrySize + " entries");
-
-                                    if (!hasNextRegistry)
+                                    if (protocolversion < MC18Version)
                                     {
+                                        // 1.7.10 and below have one registry
+                                        // with blocks and items.
+                                        int registrySize = readNextVarInt(ref packetData);
+
+                                        ConsoleIO.WriteLineFormatted("§8Received registry " +
+                                            "with " + registrySize + " entries");
+
                                         fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
+                                    }
+                                    else
+                                    {
+                                        // 1.8+ has more than one registry.
+
+                                        bool hasNextRegistry = readNextBool(ref packetData);
+                                        string registryName = readNextString(ref packetData);
+                                        int registrySize = readNextVarInt(ref packetData);
+
+                                        ConsoleIO.WriteLineFormatted("§8Received registry " + registryName +
+                                            " with " + registrySize + " entries");
+
+                                        if (!hasNextRegistry)
+                                        {
+                                            fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
+                                        }
                                     }
 
                                     return false;
@@ -628,7 +650,19 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void SendPluginChannelPacket(string channel, byte[] data)
         {
-            SendPacket(0x17, concatBytes(getString(channel), data));
+            // In 1.7, length needs to be included.
+            // In 1.8, it must not be.
+            if (protocolversion < MC18Version)
+            {
+                byte[] length = BitConverter.GetBytes((short)data.Length);
+                Array.Reverse(length);
+
+                SendPacket(0x17, concatBytes(getString(channel), length, data));
+            }
+            else
+            {
+                SendPacket(0x17, concatBytes(getString(channel), data));
+            }
         }
 
         /// <summary>
@@ -829,11 +863,7 @@ namespace MinecraftClient.Protocol.Handlers
                 return false;
             try
             {
-                byte[] channel = Encoding.UTF8.GetBytes("MC|Brand");
-                byte[] channelLen = getVarInt(channel.Length);
-                byte[] brand = Encoding.UTF8.GetBytes(brandInfo);
-                byte[] brandLen = getVarInt(brand.Length);
-                SendPacket(0x17, concatBytes(channelLen, channel, brandLen, brand));
+                SendPluginChannelPacket("MC|Brand", getString(brandInfo));
                 return true;
             }
             catch (SocketException) { return false; }
