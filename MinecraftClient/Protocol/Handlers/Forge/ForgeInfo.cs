@@ -38,7 +38,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         /// <param name="data">The modinfo JSON tag.</param>
         internal ForgeInfo(Json.JSONData data)
         {
-            // Example ModInfo (with spacing): 
+            // Example ModInfo (with spacing):
 
             // "modinfo": {
             //     "type": "FML",

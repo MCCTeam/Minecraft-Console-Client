@@ -223,7 +223,7 @@ namespace MinecraftClient.Protocol.Handlers
                         if (channel == "FML|HS")
                         {
                             FMLHandshakeDiscriminator discriminator = (FMLHandshakeDiscriminator)readNextByte(ref packetData);
-                            
+
                             if (discriminator == FMLHandshakeDiscriminator.HandshakeReset)
                             {
                                 fmlHandshakeState = FMLHandshakeClientState.START;
@@ -259,7 +259,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         ForgeInfo.ForgeMod mod = forgeInfo.Mods[i];
                                         mods[i] = concatBytes(getString(mod.ModID), getString(mod.Version));
                                     }
-                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.ModList, 
+                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.ModList,
                                         concatBytes(getVarInt(forgeInfo.Mods.Count), concatBytes(mods)));
 
                                     fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERDATA;
@@ -694,7 +694,7 @@ namespace MinecraftClient.Protocol.Handlers
         public bool Login()
         {
             byte[] protocol_version = getVarInt(protocolversion);
-            byte[] server_adress_val = Encoding.UTF8.GetBytes(handler.GetServerHost() + "\0FML\0");
+            byte[] server_adress_val = Encoding.UTF8.GetBytes(handler.GetServerHost() + (forgeInfo != null ? "\0FML\0" : ""));
             byte[] server_adress_len = getVarInt(server_adress_val.Length);
             byte[] server_port = BitConverter.GetBytes((ushort)handler.GetServerPort()); Array.Reverse(server_port);
             byte[] next_state = getVarInt(2);
