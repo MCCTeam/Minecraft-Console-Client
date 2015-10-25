@@ -51,5 +51,16 @@ namespace MinecraftClient.Protocol
         /// <returns>True if brand info was successfully sent</returns>
 
         bool SendBrandInfo(string brandInfo);
+
+        /// <summary>
+        /// Send a plugin channel packet to the server.
+        ///
+        /// http://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/
+        /// </summary>
+        /// <param name="channel">Channel to send packet on</param>
+        /// <param name="data">packet Data</param>
+        /// <returns>True if message was successfully sent</returns>
+
+        bool SendPluginChannelPacket(string channel, byte[] data);
     }
 }

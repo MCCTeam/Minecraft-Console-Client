@@ -643,29 +643,6 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Send a plugin channel packet (0x3F) to the server, compression and encryption will be handled automatically
-        /// </summary>
-        /// <param name="channel">Channel to send packet on</param>
-        /// <param name="data">packet Data</param>
-
-        private void SendPluginChannelPacket(string channel, byte[] data)
-        {
-            // In 1.7, length needs to be included.
-            // In 1.8, it must not be.
-            if (protocolversion < MC18Version)
-            {
-                byte[] length = BitConverter.GetBytes((short)data.Length);
-                Array.Reverse(length);
-
-                SendPacket(0x17, concatBytes(getString(channel), length, data));
-            }
-            else
-            {
-                SendPacket(0x17, concatBytes(getString(channel), data));
-            }
-        }
-
-        /// <summary>
         /// Send a packet to the server, compression and encryption will be handled automatically
         /// </summary>
         /// <param name="packetID">packet ID</param>
@@ -861,9 +838,34 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (String.IsNullOrEmpty(brandInfo))
                 return false;
+
+            return SendPluginChannelPacket("MC|Brand", getString(brandInfo));
+        }
+
+        /// <summary>
+        /// Send a plugin channel packet (0x17) to the server, compression and encryption will be handled automatically
+        /// </summary>
+        /// <param name="channel">Channel to send packet on</param>
+        /// <param name="data">packet Data</param>
+
+        public bool SendPluginChannelPacket(string channel, byte[] data)
+        {
             try
             {
-                SendPluginChannelPacket("MC|Brand", getString(brandInfo));
+                // In 1.7, length needs to be included.
+                // In 1.8, it must not be.
+                if (protocolversion < MC18Version)
+                {
+                    byte[] length = BitConverter.GetBytes((short)data.Length);
+                    Array.Reverse(length);
+
+                    SendPacket(0x17, concatBytes(getString(channel), length, data));
+                }
+                else
+                {
+                    SendPacket(0x17, concatBytes(getString(channel), data));
+                }
+
                 return true;
             }
             catch (SocketException) { return false; }
