@@ -772,11 +772,47 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     ConsoleIO.WriteLineFormatted("§8Server is in offline mode.");
                     login_phase = false;
+
+                    if (forgeInfo != null) {
+                        // Do the forge handshake.
+                        if (!CompleteForgeHandshake())
+                        {
+                            return false;
+                        }
+                    }
+
                     StartUpdating();
                     return true; //No need to check session or start encryption
                 }
                 else handlePacket(packetID, packetData);
             }
+        }
+
+        /// <summary>
+        /// Completes the Minecraft Forge handshake.
+        /// </summary>
+        /// <returns>Whether the handshake was successful.</returns>
+        private bool CompleteForgeHandshake()
+        {
+            int packetID = -1;
+            byte[] packetData = new byte[0];
+
+            while (fmlHandshakeState != FMLHandshakeClientState.DONE)
+            {
+                readNextPacket(ref packetID, ref packetData);
+
+                if (packetID == 0x40) // Disconect
+                {
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, ChatParser.ParseText(readNextString(ref packetData)));
+                    return false;
+                }
+                else
+                {
+                    handlePacket(packetID, packetData);
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -826,6 +862,16 @@ namespace MinecraftClient.Protocol.Handlers
                 else if (packetID == 0x02) //Login successful
                 {
                     login_phase = false;
+
+                    if (forgeInfo != null)
+                    {
+                        // Do the forge handshake.
+                        if (!CompleteForgeHandshake())
+                        {
+                            return false;
+                        }
+                    }
+
                     StartUpdating();
                     return true;
                 }
