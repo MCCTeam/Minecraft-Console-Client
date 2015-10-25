@@ -214,9 +214,17 @@ namespace MinecraftClient.Protocol.Handlers
                     String channel = readNextString(ref packetData);
                     if (protocolversion < MC18Version)
                     {
-                        // 1.7 and lower prefix plugin channel packets with the length.
-                        // We can skip it, though.
-                        readNextShort(ref packetData);
+                        if (forgeInfo == null)
+                        {
+                            // 1.7 and lower prefix plugin channel packets with the length.
+                            // We can skip it, though.
+                            readNextShort(ref packetData);
+                        }
+                        else
+                        {
+                            // Forge does something even weirder with the length.
+                            readNextVarShort(ref packetData);
+                        }
                     }
                     if (forgeInfo != null)
                     {
@@ -269,9 +277,12 @@ namespace MinecraftClient.Protocol.Handlers
                                     if (discriminator != FMLHandshakeDiscriminator.ModList)
                                         return false;
 
+                                    Thread.Sleep(2000);
+
                                     ConsoleIO.WriteLineFormatted("§8Accepting server mod list...");
                                     // Tell the server that yes, we are OK with the mods it has
                                     // even though we don't actually care what mods it has.
+
                                     SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
                                         new byte[] { (byte)FMLHandshakeClientState.WAITINGSERVERDATA });
 
@@ -462,6 +473,18 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read an unsigned short integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The unsigned short integer value</returns>
+
+        private static ushort readNextUShort(ref byte[] cache)
+        {
+            byte[] rawValue = readData(2, ref cache);
+            Array.Reverse(rawValue); //Endianness
+            return BitConverter.ToUInt16(rawValue, 0);
+        }
+
+        /// <summary>
         /// Read a uuid from a cache of bytes and remove it from the cache
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
@@ -529,6 +552,26 @@ namespace MinecraftClient.Protocol.Handlers
                 if ((k & 0x80) != 128) break;
             }
             return i;
+        }
+
+        /// <summary>
+        /// Read an "extended short", which is actually an int of some kind, from the cache of bytes.
+        /// This is only done with forge.  It looks like it's a normal short, except that if the high
+        /// bit is set, it has an extra byte.
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        /// <returns>The int</returns>
+
+        private static int readNextVarShort(ref byte[] cache)
+        {
+            ushort low = readNextUShort(ref cache);
+            byte high = 0;
+            if ((low & 0x8000) != 0)
+            {
+                low &= 0x7FFF;
+                high = readNextByte(ref cache);
+            }
+            return ((high & 0xFF) << 15) | low;
         }
 
         /// <summary>
