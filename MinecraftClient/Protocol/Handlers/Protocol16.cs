@@ -615,6 +615,31 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Only supported since MC 1.7
         }
 
+        /// <summary>
+        /// Send a plugin channel packet to the server.
+        /// </summary>
+        /// <param name="channel">Channel to send packet on</param>
+        /// <param name="data">packet Data</param>
+
+        public bool SendPluginChannelPacket(string channel, byte[] data)
+        {
+            try {
+                byte[] channelLength = BitConverter.GetBytes((short)channel.Length);
+                Array.Reverse(channelLength);
+
+                byte[] channelData = Encoding.BigEndianUnicode.GetBytes(channel);
+
+                byte[] dataLength = BitConverter.GetBytes((short)data.Length);
+                Array.Reverse(dataLength);
+
+                Send(concatBytes(new byte[] { 0xFA }, channelLength, channelData, dataLength, data));
+
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+        }
+
         public string AutoComplete(string BehindCursor)
         {
             if (String.IsNullOrEmpty(BehindCursor))

@@ -114,6 +114,9 @@
     <Compile Include="Crypto\Streams\RegularAesStream.cs" />
     <Compile Include="Crypto\CryptoHandler.cs" />
     <Compile Include="CSharpRunner.cs" />
+    <Compile Include="Protocol\Handlers\Forge\FMLHandshakeClientState.cs" />
+    <Compile Include="Protocol\Handlers\Forge\FMLHandshakeDiscriminator.cs" />
+    <Compile Include="Protocol\Handlers\Forge\ForgeInfo.cs" />
     <Compile Include="Protocol\Handlers\Compression\CRC32.cs" />
     <Compile Include="Protocol\Handlers\Compression\Deflate.cs" />
     <Compile Include="Protocol\Handlers\Compression\GZipStream.cs" />

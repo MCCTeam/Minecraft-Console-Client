@@ -5,6 +5,7 @@ using System.Text;
 using MinecraftClient.Protocol;
 using System.Reflection;
 using System.Threading;
+using MinecraftClient.Protocol.Handlers.Forge;
 
 namespace MinecraftClient
 {
@@ -145,6 +146,7 @@ namespace MinecraftClient
 
                 //Get server version
                 int protocolversion = 0;
+                ForgeInfo forgeInfo = null;
 
                 if (Settings.ServerVersion != "" && Settings.ServerVersion.ToLower() != "auto")
                 {
@@ -166,7 +168,7 @@ namespace MinecraftClient
                 if (protocolversion == 0)
                 {
                     Console.WriteLine("Retrieving Server Info...");
-                    if (!ProtocolHandler.GetServerInfo(Settings.ServerIP, Settings.ServerPort, ref protocolversion))
+                    if (!ProtocolHandler.GetServerInfo(Settings.ServerIP, Settings.ServerPort, ref protocolversion, ref forgeInfo))
                     {
                         HandleFailure("Failed to ping this IP.", true, ChatBots.AutoRelog.DisconnectReason.ConnectionLost);
                         return;
@@ -180,9 +182,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, Settings.ServerPort, protocolversion, Settings.SingleCommand);
+                            Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
                         }
-                        else Client = new McTcpClient(Settings.Username, UUID, sessionID, protocolversion, Settings.ServerIP, Settings.ServerPort);
+                        else Client = new McTcpClient(Settings.Username, UUID, sessionID, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")
