@@ -307,7 +307,7 @@ namespace MinecraftClient
                         if (sender[0] == '~') { sender = sender.Substring(1); }
                         return IsValidName(sender);
                     }
-                    catch (IndexOutOfRangeException) { return false; }
+                    catch (IndexOutOfRangeException) { /* Not a vanilla/faction message */ }
                 }
 
                 //Detect HeroChat Messages
@@ -315,11 +315,15 @@ namespace MinecraftClient
                 //[Channel] [Rank] User: Message
                 else if (text[0] == '[' && text.Contains(':') && tmp.Length > 2)
                 {
-                    int name_end = text.IndexOf(':');
-                    int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
-                    sender = text.Substring(name_start, name_end - name_start);
-                    message = text.Substring(name_end + 2);
-                    return IsValidName(sender);
+                    try
+                    {
+                        int name_end = text.IndexOf(':');
+                        int name_start = text.Substring(0, name_end).LastIndexOf(']') + 2;
+                        sender = text.Substring(name_start, name_end - name_start);
+                        message = text.Substring(name_end + 2);
+                        return IsValidName(sender);
+                    }
+                    catch (IndexOutOfRangeException) { /* Not a herochat message */ }
                 }
 
                 //Detect (Unknown Plugin) Messages
@@ -334,15 +338,19 @@ namespace MinecraftClient
                     && text.IndexOf('>') < text.IndexOf(' ')
                     && text.IndexOf(' ') < text.IndexOf(':'))
                 {
-                    string prefix = tmp[0];
-                    string user = tmp[1];
-                    string semicolon = tmp[2];
-                    if (prefix.All(c => char.IsLetterOrDigit(c) || new char[] { '*', '<', '>', '_' }.Contains(c))
-                        && semicolon == ":")
+                    try
                     {
-                        message = text.Substring(prefix.Length + user.Length + 4);
-                        return IsValidName(user);
+                        string prefix = tmp[0];
+                        string user = tmp[1];
+                        string semicolon = tmp[2];
+                        if (prefix.All(c => char.IsLetterOrDigit(c) || new char[] { '*', '<', '>', '_' }.Contains(c))
+                            && semicolon == ":")
+                        {
+                            message = text.Substring(prefix.Length + user.Length + 4);
+                            return IsValidName(user);
+                        }
                     }
+                    catch (IndexOutOfRangeException) { /* Not a <unknown plugin> message */ }
                 }
             }
 
