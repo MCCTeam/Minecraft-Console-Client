@@ -175,6 +175,11 @@ namespace MinecraftClient
                     }
                 }
 
+                if (forgeInfo != null && !forgeInfo.Mods.Any())
+                {
+                    forgeInfo = null;
+                }
+
                 if (protocolversion != 0)
                 {
                     try
