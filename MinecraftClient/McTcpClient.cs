@@ -9,6 +9,7 @@ using System.Net;
 using MinecraftClient.Protocol;
 using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient
 {
@@ -18,16 +19,20 @@ namespace MinecraftClient
 
     public class McTcpClient : IMinecraftComHandler
     {
-        private static List<string> cmd_names = new List<string>();
-        private static Dictionary<string, Command> cmds = new Dictionary<string, Command>();
-        private List<ChatBot> bots = new List<ChatBot>();
+        public static int ReconnectionAttemptsLeft = 0;
+
+        private static readonly List<string> cmd_names = new List<string>();
+        private static readonly Dictionary<string, Command> cmds = new Dictionary<string, Command>();
         private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
-        private static List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
+
+        private readonly List<ChatBot> bots = new List<ChatBot>();
+        private static readonly List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
         public void BotClear() { bots.Clear(); }
 
-        public static int AttemptsLeft = 0;
+        private Location location;
+        private int updateTicks = 0;
 
         private string host;
         private int port;
@@ -40,6 +45,7 @@ namespace MinecraftClient
         public string GetUsername() { return username; }
         public string GetUserUUID() { return uuid; }
         public string GetSessionID() { return sessionid; }
+        public Location GetCurrentLocation() { return location; }
 
         TcpClient client;
         IMinecraftCom handler;
@@ -162,10 +168,10 @@ namespace MinecraftClient
 
             if (retry)
             {
-                if (AttemptsLeft > 0)
+                if (ReconnectionAttemptsLeft > 0)
                 {
-                    ConsoleIO.WriteLogLine("Waiting 5 seconds (" + AttemptsLeft + " attempts left)...");
-                    Thread.Sleep(5000); AttemptsLeft--; Program.Restart();
+                    ConsoleIO.WriteLogLine("Waiting 5 seconds (" + ReconnectionAttemptsLeft + " attempts left)...");
+                    Thread.Sleep(5000); ReconnectionAttemptsLeft--; Program.Restart();
                 }
                 else if (!singlecommand && Settings.interactiveMode)
                 {
@@ -331,6 +337,34 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
+        /// </summary>
+        /// <param name="location">The new location</param>
+        /// <param name="relative">If true, the location is relative to the current location</param>
+
+        public void UpdateLocation(Location location, bool relative)
+        {
+            if (relative)
+            {
+                this.location += location;
+            }
+            else this.location = location;
+        }
+
+        /// <summary>
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
+        /// </summary>
+        /// <param name="location">The new location</param>
+        /// <param name="relative">If true, the location is relative to the current location</param>
+
+        public void UpdateLocation(Location location)
+        {
+            UpdateLocation(location, false);
+        }
+
+        /// <summary>
         /// Received some text from the server
         /// </summary>
         /// <param name="text">Text received</param>
@@ -408,6 +442,16 @@ namespace MinecraftClient
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
+            }
+
+            if (Settings.TerrainAndMovements)
+            {
+                if (updateTicks >= 10)
+                {
+                    handler.SendLocationUpdate(location, true); //TODO handle onGround once terrain data is available
+                    updateTicks = 0;
+                }
+                updateTicks++;
             }
         }
 

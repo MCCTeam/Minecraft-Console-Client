@@ -19,7 +19,11 @@ namespace MinecraftClient
     {
         private static McTcpClient Client;
         public static string[] startupargs;
+
         public const string Version = "1.8.2";
+        public const string MCLowestVersion = "1.4.6";
+        public const string MCHighestVersion = "1.8.8";
+
         private static Thread offlinePrompt = null;
         private static bool useMcVersionOnce = false;
 
@@ -29,7 +33,7 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC 1.4.6 to 1.8.8 - v" + Version + " - By ORelio & Contributors");
+            Console.WriteLine("Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors", MCLowestVersion, MCHighestVersion, Version);
 
             //Basic Input/Output ?
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
@@ -137,6 +141,8 @@ namespace MinecraftClient
                     ConsoleIcon.setPlayerIconAsync(Settings.Username);
                 
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
+
+                //ProtocolHandler.RealmsListWorlds(Settings.Username, UUID, sessionID); //TODO REMOVE
                 
                 if (Settings.ServerIP == "")
                 {

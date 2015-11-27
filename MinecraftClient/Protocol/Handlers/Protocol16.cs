@@ -7,6 +7,7 @@ using System.Threading;
 using MinecraftClient.Crypto;
 using MinecraftClient.Proxy;
 using System.Security.Cryptography;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -613,6 +614,11 @@ namespace MinecraftClient.Protocol.Handlers
         public bool SendBrandInfo(string brandInfo)
         {
             return false; //Only supported since MC 1.7
+        }
+
+        public bool SendLocationUpdate(Location location, bool onGround)
+        {
+            return false; //Currently not implemented
         }
 
         /// <summary>

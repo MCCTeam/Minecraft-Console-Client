@@ -54,6 +54,7 @@ namespace MinecraftClient
         public static string BrandInfo = MCCBrandInfo;
         public static bool DisplaySystemMessages = true;
         public static bool DisplayXPBarMessages = true;
+        public static bool TerrainAndMovements = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -178,6 +179,7 @@ namespace MinecraftClient
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
                                                 case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
                                                 case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
+                                                case "handleterrainandmovements": TerrainAndMovements = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -407,6 +409,7 @@ namespace MinecraftClient
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
                 + "showsystemmessages=true #system messages for server ops\r\n"
                 + "showxpbarmessages=true #messages displayed above xp bar\r\n"
+                + "handleterrainandmovements=false #requires more ram and cpu\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"

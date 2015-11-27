@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MinecraftClient.Crypto;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Protocol
 {
@@ -45,7 +46,7 @@ namespace MinecraftClient.Protocol
         bool SendRespawnPacket();
 
         /// <summary>
-        /// Tell the server what client is being used to connect to the server
+        /// Inform the server of the client being used to connect
         /// </summary>
         /// <param name="brandInfo">Client string describing the client</param>
         /// <returns>True if brand info was successfully sent</returns>
@@ -53,10 +54,17 @@ namespace MinecraftClient.Protocol
         bool SendBrandInfo(string brandInfo);
 
         /// <summary>
-        /// Send a plugin channel packet to the server.
-        ///
-        /// http://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/
+        /// Send a location update telling that we moved to that location
         /// </summary>
+        /// <param name="location">The new location</param>
+        /// <returns>True if packet was successfully sent</returns>
+
+        bool SendLocationUpdate(Location location, bool onGround);
+
+        /// <summary>
+        /// Send a plugin channel packet to the server.
+        /// </summary>
+        /// <see href="http://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/" />
         /// <param name="channel">Channel to send packet on</param>
         /// <param name="data">packet Data</param>
         /// <returns>True if message was successfully sent</returns>

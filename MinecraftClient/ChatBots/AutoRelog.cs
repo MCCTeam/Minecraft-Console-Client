@@ -25,14 +25,14 @@ namespace MinecraftClient.ChatBots
         {
             attempts = retries;
             if (attempts == -1) { attempts = int.MaxValue; }
-            McTcpClient.AttemptsLeft = attempts;
+            McTcpClient.ReconnectionAttemptsLeft = attempts;
             delay = DelayBeforeRelog;
             if (delay < 1) { delay = 1; }
         }
 
         public override void Initialize()
         {
-            McTcpClient.AttemptsLeft = attempts;
+            McTcpClient.ReconnectionAttemptsLeft = attempts;
             if (System.IO.File.Exists(Settings.AutoRelog_KickMessagesFile))
             {
                 dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile);
@@ -55,7 +55,7 @@ namespace MinecraftClient.ChatBots
                 {
                     LogToConsole("Waiting " + delay + " seconds before reconnecting...");
                     System.Threading.Thread.Sleep(delay * 1000);
-                    McTcpClient.AttemptsLeft = attempts;
+                    McTcpClient.ReconnectionAttemptsLeft = attempts;
                     ReconnectToTheServer();
                     return true;
                 }

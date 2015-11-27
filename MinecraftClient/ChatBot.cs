@@ -458,7 +458,7 @@ namespace MinecraftClient
 
         protected void ReconnectToTheServer(int ExtraAttempts = 3)
         {
-            McTcpClient.AttemptsLeft = ExtraAttempts;
+            McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart();
         }
 

@@ -8,6 +8,7 @@ using MinecraftClient.Crypto;
 using MinecraftClient.Proxy;
 using System.Security.Cryptography;
 using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -161,6 +162,23 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                     catch (IndexOutOfRangeException) { /* No message type */ }
                     handler.OnTextReceived(ChatParser.ParseText(message));
+                    break;
+                case 0x08:
+                    if (Settings.TerrainAndMovements)
+                    {
+                        double x = readNextDouble(ref packetData);
+                        double y = readNextDouble(ref packetData);
+                        double z = readNextDouble(ref packetData);
+
+                        byte locMask = readNextByte(ref packetData);
+                        Location location = handler.GetCurrentLocation();
+
+                        location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
+                        location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
+                        location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
+
+                        handler.UpdateLocation(location);
+                    }
                     break;
                 case 0x38: //Player List update
                     if (protocolversion >= MC18Version)
@@ -510,6 +528,18 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a double from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The double value</returns>
+
+        private static double readNextDouble(ref byte[] cache)
+        {
+            byte[] rawValue = readData(8, ref cache);
+            Array.Reverse(rawValue); //Endianness
+            return BitConverter.ToDouble(rawValue, 0);
+        }
+
+        /// <summary>
         /// Read an integer from the network
         /// </summary>
         /// <returns>The integer</returns>
@@ -600,6 +630,19 @@ namespace MinecraftClient.Protocol.Handlers
             }
             bytes.Add((byte)paramInt);
             return bytes.ToArray();
+        }
+
+        /// <summary>
+        /// Get byte array representing a double
+        /// </summary>
+        /// <param name="array">Array to process</param>
+        /// <returns>Array ready to send</returns>
+
+        private byte[] getDouble(double number)
+        {
+            byte[] theDouble = BitConverter.GetBytes(number);
+            Array.Reverse(theDouble); //Endianness
+            return theDouble;
         }
 
         /// <summary>
@@ -929,6 +972,29 @@ namespace MinecraftClient.Protocol.Handlers
                 return false;
 
             return SendPluginChannelPacket("MC|Brand", getString(brandInfo));
+        }
+
+        /// <summary>
+        /// Send a location update to the server
+        /// </summary>
+        /// <param name="location">The new location of the player</param>
+        /// <param name="onGround">True if the player is on the ground</param>
+        /// <returns>True if the location update was successfully sent</returns>
+
+        public bool SendLocationUpdate(Location location, bool onGround)
+        {
+            if (Settings.TerrainAndMovements)
+            {
+                try
+                {
+                    SendPacket(0x04, concatBytes(
+                        getDouble(location.X), getDouble(location.X), getDouble(location.X),
+                        new byte[] { onGround ? (byte)1 : (byte)0 }));
+                    return true;
+                }
+                catch (SocketException) { return false; }
+            }
+            else return false;
         }
 
         /// <summary>
