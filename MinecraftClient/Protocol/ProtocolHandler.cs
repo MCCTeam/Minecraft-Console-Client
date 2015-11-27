@@ -231,9 +231,40 @@ namespace MinecraftClient.Protocol
             catch { return false; }
         }
 
+        public static void RealmsListWorlds(string username, string uuid, string accesstoken)
+        {
+            string result = "";
+            string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
+            doHTTPSGet("mcoapi.minecraft.net", "/worlds", cookies, ref result);
+            Console.WriteLine(result);
+        }
+
         /// <summary>
-        /// Manual HTTPS request since we must directly use a TcpClient because of the proxy.
-        /// This method connects to the server, enables SSL, do the request and read the response.
+        /// Make a HTTPS GET request to the specified endpoint of the Mojang API
+        /// </summary>
+        /// <param name="host">Host to connect to</param>
+        /// <param name="endpoint">Endpoint for making the request</param>
+        /// <param name="cookies">Cookies for making the request</param>
+        /// <param name="result">Request result</param>
+        /// <returns>HTTP Status code</returns>
+
+        private static int doHTTPSGet(string host, string endpoint, string cookies, ref string result)
+        {
+            List<String> http_request = new List<string>();
+            http_request.Add("GET " + endpoint + " HTTP/1.1");
+            http_request.Add("Cookie: " + cookies);
+            http_request.Add("Cache-Control: no-cache");
+            http_request.Add("Pragma: no-cache");
+            http_request.Add("Host: " + host);
+            http_request.Add("User-Agent: Java/1.6.0_27");
+            http_request.Add("Accept-Charset: ISO-8859-1,UTF-8;q=0.7,*;q=0.7");
+            http_request.Add("Connection: close");
+            http_request.Add("");
+            return doHTTPSRequest(http_request, host, ref result);
+        }
+
+        /// <summary>
+        /// Make a HTTPS POST request to the specified endpoint of the Mojang API
         /// </summary>
         /// <param name="host">Host to connect to</param>
         /// <param name="endpoint">Endpoint for making the request</param>
@@ -243,6 +274,29 @@ namespace MinecraftClient.Protocol
 
         private static int doHTTPSPost(string host, string endpoint, string request, ref string result)
         {
+            List<String> http_request = new List<string>();
+            http_request.Add("POST " + endpoint + " HTTP/1.1");
+            http_request.Add("Host: " + host);
+            http_request.Add("User-Agent: MCC/" + Program.Version);
+            http_request.Add("Content-Type: application/json");
+            http_request.Add("Content-Length: " + Encoding.ASCII.GetBytes(request).Length);
+            http_request.Add("Connection: close");
+            http_request.Add("");
+            http_request.Add(request);
+            return doHTTPSRequest(http_request, host, ref result);
+        }
+
+        /// <summary>
+        /// Manual HTTPS request since we must directly use a TcpClient because of the proxy.
+        /// This method connects to the server, enables SSL, do the request and read the response.
+        /// </summary>
+        /// <param name="headers">Request headers and optional body (POST)</param>
+        /// <param name="host">Host to connect to</param>
+        /// <param name="result">Request result</param>
+        /// <returns>HTTP Status code</returns>
+
+        private static int doHTTPSRequest(List<string> headers, string host, ref string result)
+        {
             string postResult = null;
             int statusCode = 520;
             AutoTimeout.Perform(() =>
@@ -250,21 +304,9 @@ namespace MinecraftClient.Protocol
                 TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
                 SslStream stream = new SslStream(client.GetStream());
                 stream.AuthenticateAsClient(host);
-
-                List<String> http_request = new List<string>();
-                http_request.Add("POST " + endpoint + " HTTP/1.1");
-                http_request.Add("Host: " + host);
-                http_request.Add("User-Agent: MCC/" + Program.Version);
-                http_request.Add("Content-Type: application/json");
-                http_request.Add("Content-Length: " + Encoding.ASCII.GetBytes(request).Length);
-                http_request.Add("Connection: close");
-                http_request.Add("");
-                http_request.Add(request);
-
-                stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", http_request.ToArray())));
+                stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())));
                 System.IO.StreamReader sr = new System.IO.StreamReader(stream);
                 string raw_result = sr.ReadToEnd();
-
                 if (raw_result.StartsWith("HTTP/1.1"))
                 {
                     postResult = raw_result.Substring(raw_result.IndexOf("\r\n\r\n") + 4);

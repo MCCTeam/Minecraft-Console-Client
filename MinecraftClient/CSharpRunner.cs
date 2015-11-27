@@ -210,7 +210,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="text">Text to send to the server</param>
         /// <returns>True if the text was sent with no error</returns>
-        new public bool SendText(object text)
+        public bool SendText(object text)
         {
             bool result = base.SendText(text is string ? (string)text : text.ToString());
             tickHandler.WaitOne();
