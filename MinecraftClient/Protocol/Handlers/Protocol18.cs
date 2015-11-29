@@ -988,7 +988,7 @@ namespace MinecraftClient.Protocol.Handlers
                 try
                 {
                     SendPacket(0x04, concatBytes(
-                        getDouble(location.X), getDouble(location.X), getDouble(location.X),
+                        getDouble(location.X), getDouble(location.Y), getDouble(location.Z),
                         new byte[] { onGround ? (byte)1 : (byte)0 }));
                     return true;
                 }
