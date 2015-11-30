@@ -24,6 +24,7 @@ namespace MinecraftClient.Protocol
         string GetSessionID();
         string[] GetOnlinePlayers();
         Location GetCurrentLocation();
+        World GetWorld();
 
         /// <summary>
         /// Called when a server was successfully joined

@@ -47,6 +47,72 @@ namespace MinecraftClient.Mapping
         }
 
         /// <summary>
+        /// The X index of the corresponding chunk in the world
+        /// </summary>
+        public int ChunkX
+        {
+            get
+            {
+                return ((int)X) / Chunk.SizeX;
+            }
+        }
+
+        /// <summary>
+        /// The Y index of the corresponding chunk in the world
+        /// </summary>
+        public int ChunkY
+        {
+            get
+            {
+                return ((int)Y) / Chunk.SizeY;
+            }
+        }
+
+        /// <summary>
+        /// The Z index of the corresponding chunk in the world
+        /// </summary>
+        public int ChunkZ
+        {
+            get
+            {
+                return ((int)Z) / Chunk.SizeY;
+            }
+        }
+
+        /// <summary>
+        /// The X index of the corresponding block in the corresponding chunk of the world
+        /// </summary>
+        public int ChunkBlockX
+        {
+            get
+            {
+                return ((int)X) % Chunk.SizeX;
+            }
+        }
+
+        /// <summary>
+        /// The Y index of the corresponding block in the corresponding chunk of the world
+        /// </summary>
+        public int ChunkBlockY
+        {
+            get
+            {
+                return ((int)Y) % Chunk.SizeY;
+            }
+        }
+
+        /// <summary>
+        /// The Z index of the corresponding block in the corresponding chunk of the world
+        /// </summary>
+        public int ChunkBlockZ
+        {
+            get
+            {
+                return ((int)Z) % Chunk.SizeZ;
+            }
+        }
+
+        /// <summary>
         /// Compare two locations. Locations are equals if the integer part of their coordinates are equals.
         /// </summary>
         /// <param name="obj">Object to compare to</param>
@@ -154,6 +220,15 @@ namespace MinecraftClient.Mapping
             return (((int)X) & ~((~0) << 13)) << 19
                  | (((int)Y) & ~((~0) << 13)) << 13
                  | (((int)Z) & ~((~0) << 06)) << 00;
+        }
+
+        /// <summary>
+        /// Convert the location into a string representation
+        /// </summary>
+        /// <returns>String representation of the location</returns>
+        public override string ToString()
+        {
+            return String.Format("X:{0} Y:{1} Z:{2}", X, Y, Z);
         }
     }
 }

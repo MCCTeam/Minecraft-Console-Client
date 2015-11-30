@@ -409,7 +409,7 @@ namespace MinecraftClient
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
                 + "showsystemmessages=true #system messages for server ops\r\n"
                 + "showxpbarmessages=true #messages displayed above xp bar\r\n"
-                + "handleterrainandmovements=false #requires more ram and cpu\r\n"
+                + "handleterrainandmovements=false #requires quite more ram\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"

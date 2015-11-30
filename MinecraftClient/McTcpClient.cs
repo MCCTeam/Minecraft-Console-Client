@@ -31,6 +31,8 @@ namespace MinecraftClient
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
         public void BotClear() { bots.Clear(); }
 
+        private object locationLock = new object();
+        private World world = new World();
         private Location location;
         private int updateTicks = 0;
 
@@ -46,6 +48,7 @@ namespace MinecraftClient
         public string GetUserUUID() { return uuid; }
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
+        public World GetWorld() { return world; }
 
         TcpClient client;
         IMinecraftCom handler;
@@ -345,11 +348,14 @@ namespace MinecraftClient
 
         public void UpdateLocation(Location location, bool relative)
         {
-            if (relative)
+            lock (locationLock)
             {
-                this.location += location;
+                if (relative)
+                {
+                    this.location += location;
+                }
+                else this.location = location;
             }
-            else this.location = location;
         }
 
         /// <summary>
@@ -448,7 +454,14 @@ namespace MinecraftClient
             {
                 if (updateTicks >= 10)
                 {
-                    handler.SendLocationUpdate(location, true); //TODO handle onGround once terrain data is available
+                    lock (locationLock)
+                    {
+                        Location belowMe = location + new Location(0, -1, 0);
+                        Block blockBelowMe = world.GetBlock(belowMe);
+                        handler.SendLocationUpdate(location, blockBelowMe.Solid);
+                        if (!blockBelowMe.Solid)
+                            location = belowMe;
+                    }
                     updateTicks = 0;
                 }
                 updateTicks++;
