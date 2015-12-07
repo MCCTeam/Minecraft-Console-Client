@@ -209,7 +209,7 @@ namespace MinecraftClient.Protocol.Handlers
                             int blockZ = locationXZ & 0x0F;
                             int blockY = (ushort)readNextByte(packetData);
                             Block block = new Block((ushort)readNextVarInt(packetData));
-                            handler.GetWorld().SetBlock(new Location(blockX + chunkX * Chunk.SizeX, blockY, blockZ + chunkZ * Chunk.SizeZ), block);
+                            handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
                         }
                     }
                     break;
@@ -653,16 +653,9 @@ namespace MinecraftClient.Protocol.Handlers
         private static ushort[] readNextUShortsLittleEndian(int amount, List<byte> cache)
         {
             byte[] rawValues = readData(2 * amount, cache);
-            byte[] rawValue = new byte[2];
             ushort[] result = new ushort[amount];
-
             for (int i = 0; i < amount; i++)
-            {
-                rawValue[0] = rawValues[i * 2];
-                rawValue[1] = rawValues[i * 2 + 1];
-                result[i] = BitConverter.ToUInt16(rawValue, 0);
-            }
-
+                result[i] = BitConverter.ToUInt16(rawValues, i * 2);
             return result;
         }
 

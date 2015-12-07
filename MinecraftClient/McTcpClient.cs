@@ -456,11 +456,15 @@ namespace MinecraftClient
                 {
                     lock (locationLock)
                     {
-                        Location belowMe = location + new Location(0, -1, 0);
-                        Block blockBelowMe = world.GetBlock(belowMe);
-                        handler.SendLocationUpdate(location, blockBelowMe.Solid);
-                        if (!blockBelowMe.Solid)
-                            location = belowMe;
+                        Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
+                        Location belowFoots = location + new Location(0, -1, 0);
+                        Block blockOnFoots = world.GetBlock(onFoots);
+                        Block blockBelowFoots = world.GetBlock(belowFoots);
+                        handler.SendLocationUpdate(location, blockBelowFoots.Solid);
+                        if (!blockBelowFoots.Solid)
+                            location = belowFoots;
+                        else if (!blockOnFoots.Solid)
+                            location = onFoots;
                     }
                     updateTicks = 0;
                 }

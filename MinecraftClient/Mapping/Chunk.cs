@@ -57,7 +57,7 @@ namespace MinecraftClient.Mapping
         /// <returns>The block</returns>
         public Block GetBlock(Location location)
         {
-            return this[((int)location.X) % Chunk.SizeX, ((int)location.Y) % Chunk.SizeY, ((int)location.Z) % Chunk.SizeZ];
+            return this[location.ChunkBlockX, location.ChunkBlockY, location.ChunkBlockZ];
         }
     }
 }

@@ -47,13 +47,28 @@ namespace MinecraftClient.Mapping
         }
 
         /// <summary>
+        /// Create a new location
+        /// </summary>
+        /// <param name="chunkX">Location of the chunk into the world</param>
+        /// <param name="chunkZ">Location of the chunk into the world</param>
+        /// <param name="blockX">Location of the block into the chunk</param>
+        /// <param name="blockY">Location of the block into the world</param>
+        /// <param name="blockZ">Location of the block into the chunk</param>
+        public Location(int chunkX, int chunkZ, int blockX, int blockY, int blockZ)
+        {
+            X = chunkX * Chunk.SizeX + blockX;
+            Y = blockY;
+            Z = chunkZ * Chunk.SizeZ + blockZ;
+        }
+
+        /// <summary>
         /// The X index of the corresponding chunk in the world
         /// </summary>
         public int ChunkX
         {
             get
             {
-                return ((int)X) / Chunk.SizeX;
+                return (int)Math.Floor(X / Chunk.SizeX);
             }
         }
 
@@ -64,7 +79,7 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                return ((int)Y) / Chunk.SizeY;
+                return (int)Math.Floor(Y / Chunk.SizeY);
             }
         }
 
@@ -75,7 +90,7 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                return ((int)Z) / Chunk.SizeY;
+                return (int)Math.Floor(Z / Chunk.SizeZ);
             }
         }
 
@@ -86,7 +101,7 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                return ((int)X) % Chunk.SizeX;
+                return ((int)Math.Floor(X) % Chunk.SizeX + Chunk.SizeX) % Chunk.SizeX;
             }
         }
 
@@ -97,7 +112,7 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                return ((int)Y) % Chunk.SizeY;
+                return ((int)Math.Floor(Y) % Chunk.SizeY + Chunk.SizeY) % Chunk.SizeY;
             }
         }
 
@@ -108,7 +123,7 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                return ((int)Z) % Chunk.SizeZ;
+                return ((int)Math.Floor(Z) % Chunk.SizeZ + Chunk.SizeZ) % Chunk.SizeZ;
             }
         }
 
@@ -153,7 +168,16 @@ namespace MinecraftClient.Mapping
 
         public static Location FromLongRepresentation(ulong location)
         {
-            return new Location(location >> 38, (location >> 26) & 0xFFF, location << 38 >> 38);
+            int x = (int)(location >> 38);
+            int y = (int)((location >> 26) & 0xFFF);
+            int z = (int)(location << 38 >> 38);
+            if (x >= 33554432)
+                x -= 67108864;
+            if (y >= 2048)
+                y -= 4096;
+            if (z >= 33554432)
+                z -= 67108864;
+            return new Location(x, y, z);
         }
 
         /// <summary>
