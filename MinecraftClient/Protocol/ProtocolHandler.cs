@@ -42,7 +42,7 @@ namespace MinecraftClient.Protocol
                 }
                 catch (Exception e)
                 {
-                    ConsoleIO.WriteLineFormatted("§8" + e.ToString());
+                    ConsoleIO.WriteLineFormatted(String.Format("§8{0}: {1}", e.GetType().FullName, e.Message));
                 }
             }, TimeSpan.FromSeconds(30)))
             {

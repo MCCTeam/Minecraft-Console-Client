@@ -34,7 +34,6 @@ namespace MinecraftClient
         private object locationLock = new object();
         private World world = new World();
         private Location location;
-        private int updateTicks = 0;
 
         private string host;
         private int port;
@@ -452,23 +451,18 @@ namespace MinecraftClient
 
             if (Settings.TerrainAndMovements)
             {
-                if (updateTicks >= 10)
+                lock (locationLock)
                 {
-                    lock (locationLock)
-                    {
-                        Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
-                        Location belowFoots = location + new Location(0, -1, 0);
-                        Block blockOnFoots = world.GetBlock(onFoots);
-                        Block blockBelowFoots = world.GetBlock(belowFoots);
-                        handler.SendLocationUpdate(location, blockBelowFoots.Solid);
-                        if (!blockBelowFoots.Solid)
-                            location = belowFoots;
-                        else if (!blockOnFoots.Solid)
-                            location = onFoots;
-                    }
-                    updateTicks = 0;
+                    Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
+                    Location belowFoots = location + new Location(0, -1, 0);
+                    Block blockOnFoots = world.GetBlock(onFoots);
+                    Block blockBelowFoots = world.GetBlock(belowFoots);
+                    handler.SendLocationUpdate(location, blockBelowFoots.Type.IsSolid());
+                    if (!blockBelowFoots.Type.IsSolid())
+                        location = belowFoots;
+                    else if (!blockOnFoots.Type.IsSolid())
+                        location = onFoots;
                 }
-                updateTicks++;
             }
         }
 

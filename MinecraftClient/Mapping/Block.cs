@@ -46,13 +46,13 @@ namespace MinecraftClient.Mapping
         }
 
         /// <summary>
-        /// Check if the block can be passed through or not
+        /// Material of the block
         /// </summary>
-        public bool Solid
+        public Material Type
         {
             get
             {
-                return BlockId != 0;
+                return (Material)BlockId;
             }
         }
 
@@ -71,22 +71,18 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Get a block of the specified type and metadata
         /// </summary>
-        /// <param name="typeAndMeta"></param>
+        /// <param name="typeAndMeta">Type and metadata packed in the same value</param>
         public Block(ushort typeAndMeta)
         {
             this.blockIdAndMeta = typeAndMeta;
         }
 
         /// <summary>
-        /// Represents an empty block
+        /// Get a block of the specified type and metadata
         /// </summary>
-        public static Block Air
-        {
-            get
-            {
-                return new Block(0);
-            }
-        }
+        /// <param name="type">Block type</param>
+        public Block(Material type, byte metadata = 0)
+            : this((short)type, metadata) { }
 
         /// <summary>
         /// String representation of the block

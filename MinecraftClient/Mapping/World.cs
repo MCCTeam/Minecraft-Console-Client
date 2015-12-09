@@ -80,7 +80,7 @@ namespace MinecraftClient.Mapping
                 if (chunk != null)
                     return chunk.GetBlock(location);
             }
-            return Block.Air;
+            return new Block(Material.Air);
         }
 
         /// <summary>

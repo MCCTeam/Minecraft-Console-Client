@@ -117,6 +117,7 @@
     <Compile Include="Mapping\Block.cs" />
     <Compile Include="Mapping\Chunk.cs" />
     <Compile Include="Mapping\ChunkColumn.cs" />
+    <Compile Include="Mapping\Material.cs" />
     <Compile Include="Mapping\World.cs" />
     <Compile Include="Protocol\Handlers\Forge\FMLHandshakeClientState.cs" />
     <Compile Include="Protocol\Handlers\Forge\FMLHandshakeDiscriminator.cs" />
