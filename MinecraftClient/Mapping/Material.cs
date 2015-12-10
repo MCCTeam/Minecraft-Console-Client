@@ -335,8 +335,8 @@
             {
                 case Material.Fire:
                 case Material.Cactus:
+                case Material.Lava:
                 case Material.StationaryLava:
-                case Material.StationaryWater:
                     return true;
                 default:
                     return false;
