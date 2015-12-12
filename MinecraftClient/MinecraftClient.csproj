@@ -86,6 +86,7 @@
     <Compile Include="ChatBot.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Commands\Connect.cs" />
+    <Compile Include="Commands\Move.cs" />
     <Compile Include="Commands\Exit.cs" />
     <Compile Include="Commands\Log.cs" />
     <Compile Include="Commands\Reco.cs" />
@@ -117,7 +118,9 @@
     <Compile Include="Mapping\Block.cs" />
     <Compile Include="Mapping\Chunk.cs" />
     <Compile Include="Mapping\ChunkColumn.cs" />
+    <Compile Include="Mapping\Direction.cs" />
     <Compile Include="Mapping\Material.cs" />
+    <Compile Include="Mapping\Movement.cs" />
     <Compile Include="Mapping\World.cs" />
     <Compile Include="Protocol\Handlers\Forge\FMLHandshakeClientState.cs" />
     <Compile Include="Protocol\Handlers\Forge\FMLHandshakeDiscriminator.cs" />

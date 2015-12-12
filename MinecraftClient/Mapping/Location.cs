@@ -128,6 +128,28 @@ namespace MinecraftClient.Mapping
         }
 
         /// <summary>
+        /// Get a squared distance to the specified location
+        /// </summary>
+        /// <param name="location">Other location for computing distance</param>
+        /// <returns>Distance to the specified location, without using a square root</returns>
+        public double DistanceSquared(Location location)
+        {
+            return ((X - location.X) * (X - location.X))
+                 + ((Y - location.Y) * (Y - location.Y))
+                 + ((Z - location.Z) * (Z - location.Z));
+        }
+
+        /// <summary>
+        /// Get exact distance to the specified location
+        /// </summary>
+        /// <param name="location">Other location for computing distance</param>
+        /// <returns>Distance to the specified location, with square root so lower performances</returns>
+        public double Distance(Location location)
+        {
+            return Math.Sqrt(DistanceSquared(location));
+        }
+
+        /// <summary>
         /// Compare two locations. Locations are equals if the integer part of their coordinates are equals.
         /// </summary>
         /// <param name="obj">Object to compare to</param>
@@ -156,7 +178,7 @@ namespace MinecraftClient.Mapping
         /// </remarks>
         /// <returns>Location representation as ulong</returns>
 
-        public ulong GetLongRepresentation()
+        public ulong GetLong()
         {
             return ((((ulong)X) & 0x3FFFFFF) << 38) | ((((ulong)Y) & 0xFFF) << 26) | (((ulong)Z) & 0x3FFFFFF);
         }
@@ -166,7 +188,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <returns>Location represented by the ulong</returns>
 
-        public static Location FromLongRepresentation(ulong location)
+        public static Location FromLong(ulong location)
         {
             int x = (int)(location >> 38);
             int y = (int)((location >> 26) & 0xFFF);
@@ -186,7 +208,7 @@ namespace MinecraftClient.Mapping
         /// <param name="loc1">First location to compare</param>
         /// <param name="loc2">Second location to compare</param>
         /// <returns>TRUE if the locations are equals</returns>
-        public static bool operator == (Location loc1, Location loc2)
+        public static bool operator ==(Location loc1, Location loc2)
         {
             if (loc1 == null && loc2 == null)
                 return true;
@@ -201,7 +223,7 @@ namespace MinecraftClient.Mapping
         /// <param name="loc1">First location to compare</param>
         /// <param name="loc2">Second location to compare</param>
         /// <returns>TRUE if the locations are equals</returns>
-        public static bool operator != (Location loc1, Location loc2)
+        public static bool operator !=(Location loc1, Location loc2)
         {
             if (loc1 == null && loc2 == null)
                 return true;
@@ -219,13 +241,64 @@ namespace MinecraftClient.Mapping
         /// <param name="loc1">First location to sum</param>
         /// <param name="loc2">Second location to sum</param>
         /// <returns>Sum of the two locations</returns>
-        public static Location operator + (Location loc1, Location loc2)
+        public static Location operator +(Location loc1, Location loc2)
         {
             return new Location
             (
                 loc1.X + loc2.X,
                 loc1.Y + loc2.Y,
                 loc1.Z + loc2.Z
+            );
+        }
+
+        /// <summary>
+        /// Substract a location to another
+        /// </summary>
+        /// <exception cref="NullReferenceException">
+        /// Thrown if one of the provided location is null
+        /// </exception>
+        /// <param name="loc1">First location</param>
+        /// <param name="loc2">Location to substract to the first one</param>
+        /// <returns>Sum of the two locations</returns>
+        public static Location operator -(Location loc1, Location loc2)
+        {
+            return new Location
+            (
+                loc1.X - loc2.X,
+                loc1.Y - loc2.Y,
+                loc1.Z - loc2.Z
+            );
+        }
+
+        /// <summary>
+        /// Multiply a location by a scalar value
+        /// </summary>
+        /// <param name="loc">Location to multiply</param>
+        /// <param name="val">Scalar value</param>
+        /// <returns>Product of the location and the scalar value</returns>
+        public static Location operator *(Location loc, double val)
+        {
+            return new Location
+            (
+                loc.X * val,
+                loc.Y * val,
+                loc.Z * val
+            );
+        }
+
+        /// <summary>
+        /// Divide a location by a scalar value
+        /// </summary>
+        /// <param name="loc">Location to divide</param>
+        /// <param name="val">Scalar value</param>
+        /// <returns>Result of the division</returns>
+        public static Location operator /(Location loc, double val)
+        {
+            return new Location
+            (
+                loc.X / val,
+                loc.Y / val,
+                loc.Z / val
             );
         }
 

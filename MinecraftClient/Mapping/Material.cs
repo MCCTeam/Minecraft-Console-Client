@@ -342,5 +342,24 @@
                     return false;
             }
         }
+
+        /// <summary>
+        /// Check if the provided material is a liquid a player can swim into
+        /// </summary>
+        /// <param name="m">Material to test</param>
+        /// <returns>True if the material is a liquid</returns>
+        public static bool IsLiquid(this Material m)
+        {
+            switch (m)
+            {
+                case Material.Water:
+                case Material.StationaryWater:
+                case Material.Lava:
+                case Material.StationaryLava:
+                    return true;
+                default:
+                    return false;
+            }
+        }
     }
 }

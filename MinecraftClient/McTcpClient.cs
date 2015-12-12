@@ -33,6 +33,8 @@ namespace MinecraftClient
 
         private object locationLock = new object();
         private World world = new World();
+        private Queue<Location> steps;
+        private Queue<Location> path;
         private Location location;
 
         private string host;
@@ -370,6 +372,23 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Move to the specified location
+        /// </summary>
+        /// <param name="location">Location to reach</param>
+        /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
+        /// <returns>True if a path has been found</returns>
+        public bool MoveTo(Location location, bool allowUnsafe = false)
+        {
+            lock (locationLock)
+            {
+                if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
+                    path = new Queue<Location>(new[] { location });
+                else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
+                return path != null;
+            }
+        }
+
+        /// <summary>
         /// Received some text from the server
         /// </summary>
         /// <param name="text">Text received</param>
@@ -453,15 +472,15 @@ namespace MinecraftClient
             {
                 lock (locationLock)
                 {
-                    Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
-                    Location belowFoots = location + new Location(0, -1, 0);
-                    Block blockOnFoots = world.GetBlock(onFoots);
-                    Block blockBelowFoots = world.GetBlock(belowFoots);
-                    handler.SendLocationUpdate(location, blockBelowFoots.Type.IsSolid());
-                    if (!blockBelowFoots.Type.IsSolid())
-                        location = belowFoots;
-                    else if (!blockOnFoots.Type.IsSolid())
-                        location = onFoots;
+                    for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    {
+                        if (steps != null && steps.Count > 0)
+                            location = steps.Dequeue();
+                        else if (path != null && path.Count > 0)
+                            steps = Movement.Move2Steps(location, path.Dequeue());
+                        else location = Movement.HandleGravity(world, location);
+                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location));
+                    }
                 }
             }
         }

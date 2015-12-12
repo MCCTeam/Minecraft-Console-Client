@@ -179,7 +179,7 @@ namespace MinecraftClient
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
                                                 case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
                                                 case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
-                                                case "handleterrainandmovements": TerrainAndMovements = str2bool(argValue); break;
+                                                case "terrainandmovements": TerrainAndMovements = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -409,7 +409,7 @@ namespace MinecraftClient
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
                 + "showsystemmessages=true #system messages for server ops\r\n"
                 + "showxpbarmessages=true #messages displayed above xp bar\r\n"
-                + "handleterrainandmovements=false #requires quite more ram\r\n"
+                + "terrainandmovements=false #uses more ram, cpu, bandwidth\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"

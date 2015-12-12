@@ -215,7 +215,7 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case 0x23: //Block Change
                     if (Settings.TerrainAndMovements)
-                        handler.GetWorld().SetBlock(Location.FromLongRepresentation(readNextULong(packetData)), new Block((ushort)readNextVarInt(packetData)));
+                        handler.GetWorld().SetBlock(Location.FromLong(readNextULong(packetData)), new Block((ushort)readNextVarInt(packetData)));
                     break;
                 case 0x26: //Map Chunk Bulk
                     if (Settings.TerrainAndMovements)
