@@ -99,7 +99,7 @@ namespace MinecraftClient.Mapping
         public static Queue<Location> CalculatePath(World world, Location start, Location goal, bool allowUnsafe = false)
         {
             HashSet<Location> ClosedSet = new HashSet<Location>(); // The set of locations already evaluated.
-            HashSet<Location> OpenSet = new HashSet<Location>();  // The set of tentative nodes to be evaluated, initially containing the start node
+            HashSet<Location> OpenSet = new HashSet<Location>(new []{ start });  // The set of tentative nodes to be evaluated, initially containing the start node
             Dictionary<Location, Location> Came_From = new Dictionary<Location, Location>(); // The map of navigated nodes.
 
             Dictionary<Location, int> g_score = new Dictionary<Location, int>(); //:= map with default value of Infinity
@@ -117,13 +117,14 @@ namespace MinecraftClient.Mapping
                     .OrderBy(pair => pair.Value).First().Key;
                 if (current == goal)
                 { //reconstruct_path(Came_From, goal)
-                    Queue<Location> total_path = new Queue<Location>(new Location[] { current });
+                    List<Location> total_path = new List<Location>(new[] { current });
                     while (Came_From.ContainsKey(current))
                     {
                         current = Came_From[current];
-                        total_path.Enqueue(current);
+                        total_path.Add(current);
                     }
-                    return total_path; 
+                    total_path.Reverse();
+                    return new Queue<Location>(total_path);
                 }
                 OpenSet.Remove(current);
                 ClosedSet.Add(current);

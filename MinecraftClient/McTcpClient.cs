@@ -32,6 +32,7 @@ namespace MinecraftClient
         public void BotClear() { bots.Clear(); }
 
         private object locationLock = new object();
+        private bool locationReceived = false;
         private World world = new World();
         private Queue<Location> steps;
         private Queue<Location> path;
@@ -356,6 +357,7 @@ namespace MinecraftClient
                     this.location += location;
                 }
                 else this.location = location;
+                locationReceived = true;
             }
         }
 
@@ -468,7 +470,7 @@ namespace MinecraftClient
                 }
             }
 
-            if (Settings.TerrainAndMovements)
+            if (Settings.TerrainAndMovements && locationReceived)
             {
                 lock (locationLock)
                 {
