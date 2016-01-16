@@ -503,6 +503,18 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get the current Minecraft World
+        /// </summary>
+        /// <returns>Minecraft world or null if associated setting is disabled</returns>
+
+        protected Mapping.World GetWorld()
+        {
+            if (Settings.TerrainAndMovements)
+                return Handler.GetWorld();
+            return null;
+        }
+
+        /// <summary>
         /// Get a Y-M-D h:m:s timestamp representing the current system date and time
         /// </summary>
 

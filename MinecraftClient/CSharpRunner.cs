@@ -74,6 +74,7 @@ namespace MinecraftClient
                         "using System.IO;",
                         "using System.Threading;",
                         "using MinecraftClient;",
+                        "using MinecraftClient.Mapping;",
                         "namespace ScriptLoader {",
                         "public class Script {",
                         "public CSharpAPI MCC;",
