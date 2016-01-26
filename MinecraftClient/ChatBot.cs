@@ -250,6 +250,7 @@ namespace MinecraftClient
                     else return false;
                 }
                 catch (IndexOutOfRangeException) { /* Not an expected chat format */ }
+                catch (ArgumentOutOfRangeException) { /* Same here */ }
             }
 
             //User-defined regex for private chat messages
@@ -308,6 +309,7 @@ namespace MinecraftClient
                         return IsValidName(sender);
                     }
                     catch (IndexOutOfRangeException) { /* Not a vanilla/faction message */ }
+                    catch (ArgumentOutOfRangeException) { /* Same here */ }
                 }
 
                 //Detect HeroChat Messages
@@ -324,6 +326,7 @@ namespace MinecraftClient
                         return IsValidName(sender);
                     }
                     catch (IndexOutOfRangeException) { /* Not a herochat message */ }
+                    catch (ArgumentOutOfRangeException) { /* Same here */ }
                 }
 
                 //Detect (Unknown Plugin) Messages
@@ -351,6 +354,7 @@ namespace MinecraftClient
                         }
                     }
                     catch (IndexOutOfRangeException) { /* Not a <unknown plugin> message */ }
+                    catch (ArgumentOutOfRangeException) { /* Same here */ }
                 }
             }
 
