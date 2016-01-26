@@ -492,7 +492,7 @@ namespace MinecraftClient
 
         protected void SendPrivateMessage(string player, string message)
         {
-            SendText("/tell " + player + ' ' + message);
+            SendText(String.Format("/{0} {1} {2}", Settings.PrivateMsgsCmdName, player, message));
         }
 
         /// <summary>

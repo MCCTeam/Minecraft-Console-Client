@@ -55,6 +55,7 @@ namespace MinecraftClient
         public static bool DisplaySystemMessages = true;
         public static bool DisplayXPBarMessages = true;
         public static bool TerrainAndMovements = false;
+        public static string PrivateMsgsCmdName = "tell";
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -180,6 +181,7 @@ namespace MinecraftClient
                                                 case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
                                                 case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
                                                 case "terrainandmovements": TerrainAndMovements = str2bool(argValue); break;
+                                                case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -407,6 +409,7 @@ namespace MinecraftClient
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "brandinfo=mcc #use 'mcc','vanilla', or 'none'\r\n"
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
+                + "privatemsgscmdname=tell #used by RemoteControl bot\r\n"
                 + "showsystemmessages=true #system messages for server ops\r\n"
                 + "showxpbarmessages=true #messages displayed above xp bar\r\n"
                 + "terrainandmovements=false #uses more ram, cpu, bandwidth\r\n"
