@@ -6,6 +6,7 @@ using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Proxy;
 using System.Net.Sockets;
 using System.Net.Security;
+using MinecraftClient.Protocol.Handlers.Forge;
 
 namespace MinecraftClient.Protocol
 {
@@ -23,27 +24,35 @@ namespace MinecraftClient.Protocol
         /// <param name="protocolversion">Will contain protocol version, if ping successful</param>
         /// <returns>TRUE if ping was successful</returns>
 
-        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion)
+        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion, ref ForgeInfo forgeInfo)
         {
-            try
+            bool success = false;
+            int protocolversionTmp = 0;
+            ForgeInfo forgeInfoTmp = null;
+            if (AutoTimeout.Perform(() =>
             {
-                if (Protocol16Handler.doPing(serverIP, serverPort, ref protocolversion))
+                try
                 {
-                    return true;
+                    if (Protocol16Handler.doPing(serverIP, serverPort, ref protocolversionTmp)
+                        || Protocol18Handler.doPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp))
+                    {
+                        success = true;
+                    }
+                    else ConsoleIO.WriteLineFormatted("§8Unexpected response from the server (is that a Minecraft server?)");
                 }
-                else if (Protocol17Handler.doPing(serverIP, serverPort, ref protocolversion))
+                catch (Exception e)
                 {
-                    return true;
+                    ConsoleIO.WriteLineFormatted(String.Format("§8{0}: {1}", e.GetType().FullName, e.Message));
                 }
-                else
-                {
-                    ConsoleIO.WriteLineFormatted("§8Unexpected answer from the server (is that a Minecraft server ?)");
-                    return false;
-                }
+            }, TimeSpan.FromSeconds(30)))
+            {
+                protocolversion = protocolversionTmp;
+                forgeInfo = forgeInfoTmp;
+                return success;
             }
-            catch
+            else
             {
-                ConsoleIO.WriteLineFormatted("§8An error occured while attempting to connect to this IP.");
+                ConsoleIO.WriteLineFormatted("§8A timeout occured while attempting to connect to this IP.");
                 return false;
             }
         }
@@ -56,17 +65,14 @@ namespace MinecraftClient.Protocol
         /// <param name="Handler">Handler with the appropriate callbacks</param>
         /// <returns></returns>
 
-        public static IMinecraftCom getProtocolHandler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
+        public static IMinecraftCom getProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo forgeInfo, IMinecraftComHandler Handler)
         {
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
             if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
                 return new Protocol16Handler(Client, ProtocolVersion, Handler);
-            int[] supportedVersions_Protocol17 = { 4, 5 };
-            if (Array.IndexOf(supportedVersions_Protocol17, ProtocolVersion) > -1)
-                return new Protocol17Handler(Client, ProtocolVersion, Handler);
-            int[] supportedVersions_Protocol18 = { 47 };
+            int[] supportedVersions_Protocol18 = { 4, 5, 47 };
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
-                return new Protocol18Handler(Client, ProtocolVersion, Handler);
+                return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
             throw new NotSupportedException("The protocol version no." + ProtocolVersion + " is not supported.");
         }
 
@@ -109,6 +115,13 @@ namespace MinecraftClient.Protocol
                         return 5;
                     case "1.8.0":
                     case "1.8.1":
+                    case "1.8.2":
+                    case "1.8.3":
+                    case "1.8.4":
+                    case "1.8.5":
+                    case "1.8.6":
+                    case "1.8.7":
+                    case "1.8.8":
                         return 47;
                     default:
                         return 0;
@@ -122,7 +135,7 @@ namespace MinecraftClient.Protocol
                 }
                 catch
                 {
-                    return -1;
+                    return 0;
                 }
             }
         }
@@ -218,9 +231,40 @@ namespace MinecraftClient.Protocol
             catch { return false; }
         }
 
+        public static void RealmsListWorlds(string username, string uuid, string accesstoken)
+        {
+            string result = "";
+            string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
+            doHTTPSGet("mcoapi.minecraft.net", "/worlds", cookies, ref result);
+            Console.WriteLine(result);
+        }
+
         /// <summary>
-        /// Manual HTTPS request since we must directly use a TcpClient because of the proxy.
-        /// This method connects to the server, enables SSL, do the request and read the response.
+        /// Make a HTTPS GET request to the specified endpoint of the Mojang API
+        /// </summary>
+        /// <param name="host">Host to connect to</param>
+        /// <param name="endpoint">Endpoint for making the request</param>
+        /// <param name="cookies">Cookies for making the request</param>
+        /// <param name="result">Request result</param>
+        /// <returns>HTTP Status code</returns>
+
+        private static int doHTTPSGet(string host, string endpoint, string cookies, ref string result)
+        {
+            List<String> http_request = new List<string>();
+            http_request.Add("GET " + endpoint + " HTTP/1.1");
+            http_request.Add("Cookie: " + cookies);
+            http_request.Add("Cache-Control: no-cache");
+            http_request.Add("Pragma: no-cache");
+            http_request.Add("Host: " + host);
+            http_request.Add("User-Agent: Java/1.6.0_27");
+            http_request.Add("Accept-Charset: ISO-8859-1,UTF-8;q=0.7,*;q=0.7");
+            http_request.Add("Connection: close");
+            http_request.Add("");
+            return doHTTPSRequest(http_request, host, ref result);
+        }
+
+        /// <summary>
+        /// Make a HTTPS POST request to the specified endpoint of the Mojang API
         /// </summary>
         /// <param name="host">Host to connect to</param>
         /// <param name="endpoint">Endpoint for making the request</param>
@@ -230,35 +274,46 @@ namespace MinecraftClient.Protocol
 
         private static int doHTTPSPost(string host, string endpoint, string request, ref string result)
         {
+            List<String> http_request = new List<string>();
+            http_request.Add("POST " + endpoint + " HTTP/1.1");
+            http_request.Add("Host: " + host);
+            http_request.Add("User-Agent: MCC/" + Program.Version);
+            http_request.Add("Content-Type: application/json");
+            http_request.Add("Content-Length: " + Encoding.ASCII.GetBytes(request).Length);
+            http_request.Add("Connection: close");
+            http_request.Add("");
+            http_request.Add(request);
+            return doHTTPSRequest(http_request, host, ref result);
+        }
+
+        /// <summary>
+        /// Manual HTTPS request since we must directly use a TcpClient because of the proxy.
+        /// This method connects to the server, enables SSL, do the request and read the response.
+        /// </summary>
+        /// <param name="headers">Request headers and optional body (POST)</param>
+        /// <param name="host">Host to connect to</param>
+        /// <param name="result">Request result</param>
+        /// <returns>HTTP Status code</returns>
+
+        private static int doHTTPSRequest(List<string> headers, string host, ref string result)
+        {
             string postResult = null;
             int statusCode = 520;
             AutoTimeout.Perform(() =>
             {
-                TcpClient client = ProxyHandler.newTcpClient(host, 443);
+                TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
                 SslStream stream = new SslStream(client.GetStream());
                 stream.AuthenticateAsClient(host);
-
-                List<String> http_request = new List<string>();
-                http_request.Add("POST " + endpoint + " HTTP/1.1");
-                http_request.Add("Host: " + host);
-                http_request.Add("User-Agent: MCC/" + Program.Version);
-                http_request.Add("Content-Type: application/json");
-                http_request.Add("Content-Length: " + Encoding.ASCII.GetBytes(request).Length);
-                http_request.Add("Connection: close");
-                http_request.Add("");
-                http_request.Add(request);
-
-                stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", http_request.ToArray())));
+                stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())));
                 System.IO.StreamReader sr = new System.IO.StreamReader(stream);
                 string raw_result = sr.ReadToEnd();
-
                 if (raw_result.StartsWith("HTTP/1.1"))
                 {
                     postResult = raw_result.Substring(raw_result.IndexOf("\r\n\r\n") + 4);
                     statusCode = Settings.str2int(raw_result.Split(' ')[1]);
                 }
                 else statusCode = 520; //Web server is returning an unknown error
-            }, 15000);
+            }, TimeSpan.FromSeconds(30));
             result = postResult;
             return statusCode;
         }
@@ -275,16 +330,18 @@ namespace MinecraftClient.Protocol
             StringBuilder result = new StringBuilder();
             foreach (char c in text)
             {
-                if (char.IsLetterOrDigit(c))
+                if ((c >= '0' && c <= '9') ||
+                    (c >= 'a' && c <= 'z') ||
+                    (c >= 'A' && c <= 'Z'))
                 {
                     result.Append(c);
                 }
                 else
                 {
-                    result.Append("\\u");
-                    result.Append(((int)c).ToString("x4"));
+                    result.AppendFormat(@"\u{0:x4}", (int)c);
                 }
             }
+
             return result.ToString();
         }
     }

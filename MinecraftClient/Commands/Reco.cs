@@ -15,7 +15,7 @@ namespace MinecraftClient.Commands
             string[] args = getArgs(command);
             if (args.Length > 0)
             {
-                if (!Settings.setAccount(args[0]))
+                if (!Settings.SetAccount(args[0]))
                 {
                     return "Unknown account '" + args[0] + "'.";
                 }

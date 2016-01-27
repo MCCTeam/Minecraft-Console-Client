@@ -1,5 +1,5 @@
-==================================================================
- Minecraft Client v1.8.1 for Minecraft 1.4.6 to 1.8.0 - By ORelio
+﻿==================================================================
+ Minecraft Client v1.8.2 for Minecraft 1.4.6 to 1.8.3 - By ORelio
 ==================================================================
 
 Thanks for dowloading Minecraft Console Client!
@@ -15,6 +15,7 @@ in a fast and easy way without having to open the main Minecraft game.
 First, extract the archive if not already extracted.
 On Windows, simply open MinecraftClient.exe by double-clicking on it.
 On Mac or Linux, open a terminal in this folder and run "mono MinecraftClient.exe".
+If you cannot authenticate on Mono, you'll need to run "mozroots --import --ask-remove" once.
 
 ===========================================
  Using Configuration files & Enabling bots
@@ -118,6 +119,15 @@ These files describe how some messages should be printed depending on your prefe
 The client will automatically load en_GB.lang from your Minecraft folder if Minecraft is installed on your
 computer, or download it from Mojang's servers. You may choose another language in the config file.
 
+=========================
+ Detecting chat messages
+=========================
+
+Minecraft Console Client can parse messages from the server in order to detect private and public messages.
+This is useful for reacting to messages eg when using the AutoRespond, Hangman game, or RemoteControl bots.
+However, for unusual chat formats, so you may need to tinker with the ChatFormat section of the config file.
+Building regular expressions can be a bit tricky, so you might want to try them out eg on regex101.com
+
 ======================
  Using the Alerts bot
 ======================
@@ -164,6 +174,14 @@ Where <thecommand> is an internal command as described in "Internal commands" se
 You can remotely send chat messages or commands using /tell <yourbot> send <thetext>
 Remote control system can auto-accept /tpa and /tpahere requests from the bot owners.
 Auto-accept can be disabled or extended to requests from anyone in remote control configuration.
+
+===============================
+ Using the AutoRespond feature
+===============================
+
+The AutoRespond bot allows you to automatically react on specific chat messages or server announcements.
+You can use either a string to detect in chat messages, or an advanced regular expression.
+For more information about how to define match rules, please refer to sample-matches.ini
 
 =========================
  Disclaimer & Last words

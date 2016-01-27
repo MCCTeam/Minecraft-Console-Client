@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
@@ -13,6 +14,9 @@ namespace MinecraftClient
 
     public static class Settings
     {
+        //Minecraft Console Client client information used for BrandInfo setting
+        private const string MCCBrandInfo = "Minecraft-Console-Client/" + Program.Version;
+
         //Main Settings.
         //Login: Username or email adress used as login for Minecraft/Mojang account
         //Username: The actual username of the user, obtained after login to the account
@@ -21,12 +25,13 @@ namespace MinecraftClient
         public static string Password = "";
         public static string ServerIP = "";
         public static ushort ServerPort = 25565;
-        public static string ServerVersion  = "";
+        public static string ServerVersion = "";
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
 
         //Proxy Settings
-        public static bool ProxyEnabled = false;
+        public static bool ProxyEnabledLogin = false;
+        public static bool ProxyEnabledIngame = false;
         public static string ProxyHost = "";
         public static int ProxyPort = 0;
         public static Proxy.ProxyHandler.Type proxyType = Proxy.ProxyHandler.Type.HTTP;
@@ -37,13 +42,20 @@ namespace MinecraftClient
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\9e\9e2fdc43fc1c7024ff5922b998fadb2971a64ee0"; //MC 1.7.4 en_GB.lang
         public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.7.4.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
+        public static TimeSpan splitMessageDelay = TimeSpan.FromSeconds(2);
         public static List<string> Bots_Owners = new List<string>();
         public static string Language = "en_GB";
         public static bool chatTimeStamps = false;
-        public static bool exitOnFailure = false;
+        public static bool interactiveMode = true;
         public static char internalCmdChar = '/';
         public static bool playerHeadAsIcon = false;
         public static string chatbotLogFile = "";
+        public static bool CacheScripts = true;
+        public static string BrandInfo = MCCBrandInfo;
+        public static bool DisplaySystemMessages = true;
+        public static bool DisplayXPBarMessages = true;
+        public static bool TerrainAndMovements = false;
+        public static string PrivateMsgsCmdName = "tell";
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -88,12 +100,22 @@ namespace MinecraftClient
         public static bool RemoteCtrl_AutoTpaccept = true;
         public static bool RemoteCtrl_AutoTpaccept_Everyone = false;
 
-        //Custom app variables and Minecraft accounts
-        private static Dictionary<string, string> AppVars = new Dictionary<string, string>();
-        private static Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
-        private static Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
+        //Chat Message Parsing
+        public static bool ChatFormat_Builtins = true;
+        public static Regex ChatFormat_Public = null;
+        public static Regex ChatFormat_Private = null;
+        public static Regex ChatFormat_TeleportRequest = null;
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl };
+        //Auto Respond
+        public static bool AutoRespond_Enabled = false;
+        public static string AutoRespond_Matches = "matches.ini";
+
+        //Custom app variables and Minecraft accounts
+        private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
+        private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
+        private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
+
+        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -127,6 +149,8 @@ namespace MinecraftClient
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     case "proxy": pMode = ParseMode.Proxy; break;
                                     case "appvars": pMode = ParseMode.AppVars; break;
+                                    case "autorespond": pMode = ParseMode.AutoRespond; break;
+                                    case "chatformat": pMode = ParseMode.ChatFormat; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -143,15 +167,21 @@ namespace MinecraftClient
                                             {
                                                 case "login": Login = argValue; break;
                                                 case "password": Password = argValue; break;
-                                                case "serverip": setServerIP(argValue); break;
+                                                case "serverip": SetServerIP(argValue); break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
                                                 case "timestamps": chatTimeStamps = str2bool(argValue); break;
-                                                case "exitonfailure": exitOnFailure = str2bool(argValue); break;
+                                                case "exitonfailure": interactiveMode = !str2bool(argValue); break;
                                                 case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
                                                 case "chatbotlogfile": chatbotLogFile = argValue; break;
                                                 case "mcversion": ServerVersion = argValue; break;
+                                                case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
+                                                case "scriptcache": CacheScripts = str2bool(argValue); break;
+                                                case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
+                                                case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
+                                                case "terrainandmovements": TerrainAndMovements = str2bool(argValue); break;
+                                                case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -197,14 +227,23 @@ namespace MinecraftClient
                                                             if (server_data.Length == 2
                                                                 && server_data[0] != "localhost"
                                                                 && !server_data[0].Contains('.')
-                                                                && setServerIP(server_data[1]))
+                                                                && SetServerIP(server_data[1]))
                                                                 Servers[server_data[0]]
                                                                     = new KeyValuePair<string, ushort>(ServerIP, ServerPort);
                                                         }
-                                                        
+
                                                         //Restore current server info
                                                         ServerIP = server_host_temp;
                                                         ServerPort = server_port_temp;
+                                                    }
+                                                    break;
+
+                                                case "brandinfo":
+                                                    switch (argValue.Trim().ToLower())
+                                                    {
+                                                        case "mcc": BrandInfo = MCCBrandInfo; break;
+                                                        case "vanilla": BrandInfo = "vanilla"; break;
+                                                        default: BrandInfo = null; break;
                                                     }
                                                     break;
                                             }
@@ -276,15 +315,29 @@ namespace MinecraftClient
                                             }
                                             break;
 
+                                        case ParseMode.ChatFormat:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "builtins": ChatFormat_Builtins = str2bool(argValue); break;
+                                                case "public": ChatFormat_Public = new Regex(argValue); break;
+                                                case "private": ChatFormat_Private = new Regex(argValue); break;
+                                                case "tprequest": ChatFormat_TeleportRequest = new Regex(argValue); break;
+                                            }
+                                            break;
+
                                         case ParseMode.Proxy:
                                             switch (argName.ToLower())
                                             {
-                                                case "enabled": ProxyEnabled = str2bool(argValue); break;
+                                                case "enabled":
+                                                    ProxyEnabledLogin = ProxyEnabledIngame = str2bool(argValue);
+                                                    if (argValue.Trim().ToLower() == "login")
+                                                        ProxyEnabledLogin = true;
+                                                    break;
                                                 case "type":
                                                     argValue = argValue.ToLower();
                                                     if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
                                                     else if (argValue == "socks4") { proxyType = Proxy.ProxyHandler.Type.SOCKS4; }
-                                                    else if (argValue == "socks4a"){ proxyType = Proxy.ProxyHandler.Type.SOCKS4a;}
+                                                    else if (argValue == "socks4a") { proxyType = Proxy.ProxyHandler.Type.SOCKS4a; }
                                                     else if (argValue == "socks5") { proxyType = Proxy.ProxyHandler.Type.SOCKS5; }
                                                     break;
                                                 case "server":
@@ -306,7 +359,15 @@ namespace MinecraftClient
                                             break;
 
                                         case ParseMode.AppVars:
-                                            setVar(argName, argValue);
+                                            SetVar(argName, argValue);
+                                            break;
+
+                                        case ParseMode.AutoRespond:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": AutoRespond_Enabled = str2bool(argValue); break;
+                                                case "matchesfile": AutoRespond_Matches = argValue; break;
+                                            }
                                             break;
                                     }
                                 }
@@ -342,14 +403,21 @@ namespace MinecraftClient
                 + "\r\n"
                 + "language=en_GB\r\n"
                 + "botowners=Player1,Player2,Player3\r\n"
-                + "consoletitle=%username% - Minecraft Console Client\r\n"
+                + "consoletitle=%username%@%serverip% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
+                + "splitmessagedelay=2 #seconds between each part of a long message\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
+                + "brandinfo=mcc #use 'mcc','vanilla', or 'none'\r\n"
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
+                + "privatemsgscmdname=tell #used by RemoteControl bot\r\n"
+                + "showsystemmessages=true #system messages for server ops\r\n"
+                + "showxpbarmessages=true #messages displayed above xp bar\r\n"
+                + "terrainandmovements=false #uses more ram, cpu, bandwidth\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"
                 + "exitonfailure=false\r\n"
+                + "scriptcache=true\r\n"
                 + "timestamps=false\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
@@ -358,11 +426,17 @@ namespace MinecraftClient
                 + "#%username% and %serverip% are reserved variables.\r\n"
                 + "\r\n"
                 + "[Proxy]\r\n"
-                + "enabled=false\r\n"
+                + "enabled=false #use 'false', 'true', or 'login' for login only\r\n"
                 + "type=HTTP #Supported types: HTTP, SOCKS4, SOCKS4a, SOCKS5\r\n"
                 + "server=0.0.0.0:0000\r\n"
                 + "username=\r\n"
                 + "password=\r\n"
+                + "\r\n"
+                + "[ChatFormat]\r\n"
+                + "builtins=true #support for handling vanilla and common message formats\r\n"
+                + "#public=^<([a-zA-Z0-9_]+)> (.+)$ #uncomment and adapt if necessary\r\n"
+                + "#private=^([a-zA-Z0-9_]+) whispers to you: (.+)$ #vanilla example\r\n"
+                + "#tprequest=^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\\.$\r\n"
                 + "\r\n"
                 + "#Bot Settings\r\n"
                 + "\r\n"
@@ -402,18 +476,48 @@ namespace MinecraftClient
                 + "[RemoteControl]\r\n"
                 + "enabled=false\r\n"
                 + "autotpaccept=true\r\n"
-                + "tpaccepteveryone=false\r\n", Encoding.UTF8);
+                + "tpaccepteveryone=false\r\n"
+                + "\r\n"
+                + "[AutoRespond]\r\n"
+                + "enabled=false\r\n"
+                + "matchesfile=matches.ini\r\n", Encoding.UTF8);
         }
 
-        public static int str2int(string str) { try { return Convert.ToInt32(str); } catch { return 0; } }
-        public static bool str2bool(string str) { return str == "true" || str == "1"; }
+        /// <summary>
+        /// Convert the specified string to an integer, defaulting to zero if invalid argument
+        /// </summary>
+        /// <param name="str">String to parse as an integer</param>
+        /// <returns>Integer value</returns>
+        
+        public static int str2int(string str)
+        {
+            try
+            {
+                return Convert.ToInt32(str);
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// Convert the specified string to a boolean value, defaulting to false if invalid argument
+        /// </summary>
+        /// <param name="str">String to parse as a boolean</param>
+        /// <returns>Boolean value</returns>
+        
+        public static bool str2bool(string str)
+        {
+            if (String.IsNullOrEmpty(str))
+                return false;
+            str = str.Trim().ToLowerInvariant();
+            return str == "true" || str == "1";
+        }
 
         /// <summary>
         /// Load login/password using an account alias
         /// </summary>
         /// <returns>True if the account was found and loaded</returns>
 
-        public static bool setAccount(string accountAlias)
+        public static bool SetAccount(string accountAlias)
         {
             accountAlias = accountAlias.ToLower();
             if (Accounts.ContainsKey(accountAlias))
@@ -430,13 +534,13 @@ namespace MinecraftClient
         /// </summary>
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
 
-        public static bool setServerIP(string server)
+        public static bool SetServerIP(string server)
         {
             server = server.ToLower();
             string[] sip = server.Split(':');
             string host = sip[0];
             ushort port = 25565;
-            
+
             if (sip.Length > 1)
             {
                 try
@@ -448,17 +552,19 @@ namespace MinecraftClient
 
             if (host == "localhost" || host.Contains('.'))
             {
+                //Server IP (IP or domain names contains at least a dot)
                 ServerIP = host;
                 ServerPort = port;
                 return true;
             }
             else if (Servers.ContainsKey(server))
             {
+                //Server Alias (if no dot then treat the server as an alias)
                 ServerIP = Servers[server].Key;
                 ServerPort = Servers[server].Value;
                 return true;
             }
-            
+
             return false;
         }
 
@@ -469,15 +575,31 @@ namespace MinecraftClient
         /// <param name="varData">Value of the variable</param>
         /// <returns>True if the parameters were valid</returns>
 
-        public static bool setVar(string varName, string varData)
+        public static bool SetVar(string varName, object varData)
         {
-            varName = new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
-            if (varName.Length > 0)
+            lock (AppVars)
             {
-                AppVars[varName] = varData;
-                return true;
+                varName = new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
+                if (varName.Length > 0)
+                {
+                    AppVars[varName] = varData;
+                    return true;
+                }
+                else return false;
             }
-            else return false;
+        }
+
+        /// <summary>
+        /// Get a custom %variable% or null if the variable does not exist
+        /// </summary>
+        /// <param name="varName">Variable name</param>
+        /// <returns>The value or null if the variable does not exists</returns>
+
+        public static object GetVar(string varName)
+        {
+            if (AppVars.ContainsKey(varName))
+                return AppVars[varName];
+            return null;
         }
 
         /// <summary>
@@ -486,7 +608,7 @@ namespace MinecraftClient
         /// <param name="str">String to parse</param>
         /// <returns>Modifier string</returns>
 
-        public static string expandVars(string str)
+        public static string ExpandVars(string str)
         {
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < str.Length; i++)
@@ -521,7 +643,7 @@ namespace MinecraftClient
                             default:
                                 if (AppVars.ContainsKey(varname_lower))
                                 {
-                                    result.Append(AppVars[varname_lower]);
+                                    result.Append(AppVars[varname_lower].ToString());
                                 }
                                 else result.Append("%" + varname + '%');
                                 break;

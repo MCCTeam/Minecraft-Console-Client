@@ -17,13 +17,13 @@ namespace MinecraftClient.Commands
                 string[] args = getArgs(command);
                 if (args.Length > 1)
                 {
-                    if (!Settings.setAccount(args[1]))
+                    if (!Settings.SetAccount(args[1]))
                     {
                         return "Unknown account '" + args[1] + "'.";
                     }
                 }
 
-                if (Settings.setServerIP(args[0]))
+                if (Settings.SetServerIP(args[0]))
                 {
                     Program.Restart();
                     return "";

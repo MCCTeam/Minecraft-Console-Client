@@ -19,31 +19,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         public static string ParseText(string json)
         {
-            int cursorpos = 0;
-            JSONData jsonData = String2Data(json, ref cursorpos);
-            return JSONData2String(jsonData, "");
-        }
-
-        /// <summary>
-        /// An internal class to store unserialized JSON data
-        /// The data can be an object, an array or a string
-        /// </summary>
-
-        private class JSONData
-        {
-            public enum DataType { Object, Array, String };
-            private DataType type;
-            public DataType Type { get { return type; } }
-            public Dictionary<string, JSONData> Properties;
-            public List<JSONData> DataArray;
-            public string StringValue;
-            public JSONData(DataType datatype)
-            {
-                type = datatype;
-                Properties = new Dictionary<string, JSONData>();
-                DataArray = new List<JSONData>();
-                StringValue = String.Empty;
-            }
+            return JSONData2String(Json.ParseJson(json), "");
         }
 
         /// <summary>
@@ -169,135 +145,45 @@ namespace MinecraftClient.Protocol.Handlers
             if (!init) { InitRules(); init = true; }
             if (TranslationRules.ContainsKey(rulename))
             {
-                if ((TranslationRules[rulename].IndexOf("%1$s") >= 0 && TranslationRules[rulename].IndexOf("%2$s") >= 0)
-                    && (TranslationRules[rulename].IndexOf("%1$s") > TranslationRules[rulename].IndexOf("%2$s")))
+                int using_idx = 0;
+                string rule = TranslationRules[rulename];
+                StringBuilder result = new StringBuilder();
+                for (int i = 0; i < rule.Length; i++)
                 {
-                    while (using_data.Count < 2) { using_data.Add(""); }
-                    string tmp = using_data[0];
-                    using_data[0] = using_data[1];
-                    using_data[1] = tmp;
+                    if (rule[i] == '%' && i + 1 < rule.Length)
+                    {
+                        //Using string or int with %s or %d
+                        if (rule[i + 1] == 's' || rule[i + 1] == 'd')
+                        {
+                            if (using_data.Count > using_idx)
+                            {
+                                result.Append(using_data[using_idx]);
+                                using_idx++;
+                                i += 1;
+                                continue;
+                            }
+                        }
+
+                        //Using specified string or int with %1$s, %2$s...
+                        else if (char.IsDigit(rule[i + 1])
+                            && i + 3 < rule.Length && rule[i + 2] == '$'
+                            && (rule[i + 3] == 's' || rule[i + 3] == 'd'))
+                        {
+                            int specified_idx = rule[i + 1] - '1';
+                            if (using_data.Count > specified_idx)
+                            {
+                                result.Append(using_data[specified_idx]);
+                                using_idx++;
+                                i += 3;
+                                continue;
+                            }
+                        }
+                    }
+                    result.Append(rule[i]);
                 }
-                string[] syntax = TranslationRules[rulename].Split(new string[] { "%s", "%d", "%1$s", "%2$s" }, StringSplitOptions.None);
-                while (using_data.Count < syntax.Length - 1) { using_data.Add(""); }
-                string[] using_array = using_data.ToArray();
-                string translated = "";
-                for (int i = 0; i < syntax.Length - 1; i++)
-                {
-                    translated += syntax[i];
-                    translated += using_array[i];
-                }
-                translated += syntax[syntax.Length - 1];
-                return translated;
+                return result.ToString();
             }
             else return "[" + rulename + "] " + String.Join(" ", using_data);
-        }
-
-        /// <summary>
-        /// Parse a JSON string to build a JSON object
-        /// </summary>
-        /// <param name="toparse">String to parse</param>
-        /// <param name="cursorpos">Cursor start (set to 0 for function init)</param>
-        /// <returns></returns>
-
-        private static JSONData String2Data(string toparse, ref int cursorpos)
-        {
-            try
-            {
-                JSONData data;
-                switch (toparse[cursorpos])
-                {
-                    //Object
-                    case '{':
-                        data = new JSONData(JSONData.DataType.Object);
-                        cursorpos++;
-                        while (toparse[cursorpos] != '}')
-                        {
-                            if (toparse[cursorpos] == '"')
-                            {
-                                JSONData propertyname = String2Data(toparse, ref cursorpos);
-                                if (toparse[cursorpos] == ':') { cursorpos++; } else { /* parse error ? */ }
-                                JSONData propertyData = String2Data(toparse, ref cursorpos);
-                                data.Properties[propertyname.StringValue] = propertyData;
-                            }
-                            else cursorpos++;
-                        }
-                        cursorpos++;
-                        break;
-
-                    //Array
-                    case '[':
-                        data = new JSONData(JSONData.DataType.Array);
-                        cursorpos++;
-                        while (toparse[cursorpos] != ']')
-                        {
-                            if (toparse[cursorpos] == ',') { cursorpos++; }
-                            JSONData arrayItem = String2Data(toparse, ref cursorpos);
-                            data.DataArray.Add(arrayItem);
-                        }
-                        cursorpos++;
-                        break;
-
-                    //String
-                    case '"':
-                        data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        while (toparse[cursorpos] != '"')
-                        {
-                            if (toparse[cursorpos] == '\\')
-                            {
-                                try //Unicode character \u0123
-                                {
-                                    if (toparse[cursorpos + 1] == 'u'
-                                        && isHex(toparse[cursorpos + 2])
-                                        && isHex(toparse[cursorpos + 3])
-                                        && isHex(toparse[cursorpos + 4])
-                                        && isHex(toparse[cursorpos + 5]))
-                                    {
-                                        //"abc\u0123abc" => "0123" => 0123 => Unicode char n°0123 => Add char to string
-                                        data.StringValue += char.ConvertFromUtf32(int.Parse(toparse.Substring(cursorpos + 2, 4), System.Globalization.NumberStyles.HexNumber));
-                                        cursorpos += 6; continue;
-                                    }
-                                    else cursorpos++; //Normal character escapement \"
-                                }
-                                catch (IndexOutOfRangeException) { cursorpos++; } // \u01<end of string>
-                                catch (ArgumentOutOfRangeException) { cursorpos++; } // Unicode index 0123 was invalid
-                            }
-                            data.StringValue += toparse[cursorpos];
-                            cursorpos++;
-                        }
-                        cursorpos++;
-                        break;
-
-                    //Boolean : true
-                    case 't':
-                        data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        if (toparse[cursorpos] == 'r') { cursorpos++; }
-                        if (toparse[cursorpos] == 'u') { cursorpos++; }
-                        if (toparse[cursorpos] == 'e') { cursorpos++; data.StringValue = "true"; }
-                        break;
-
-                    //Boolean : false
-                    case 'f':
-                        data = new JSONData(JSONData.DataType.String);
-                        cursorpos++;
-                        if (toparse[cursorpos] == 'a') { cursorpos++; }
-                        if (toparse[cursorpos] == 'l') { cursorpos++; }
-                        if (toparse[cursorpos] == 's') { cursorpos++; }
-                        if (toparse[cursorpos] == 'e') { cursorpos++; data.StringValue = "false"; }
-                        break;
-
-                    //Unknown data
-                    default:
-                        cursorpos++;
-                        return String2Data(toparse, ref cursorpos);
-                }
-                return data;
-            }
-            catch (IndexOutOfRangeException)
-            {
-                return new JSONData(JSONData.DataType.String);
-            }
         }
 
         /// <summary>
@@ -306,21 +192,21 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="data">JSON object to convert</param>
         /// <param name="colorcode">Allow parent color code to affect child elements (set to "" for function init)</param>
         /// <returns>returns the Minecraft-formatted string</returns>
-
-        private static string JSONData2String(JSONData data, string colorcode)
+        
+        private static string JSONData2String(Json.JSONData data, string colorcode)
         {
             string extra_result = "";
             switch (data.Type)
             {
-                case JSONData.DataType.Object:
+                case Json.JSONData.DataType.Object:
                     if (data.Properties.ContainsKey("color"))
                     {
                         colorcode = color2tag(JSONData2String(data.Properties["color"], ""));
                     }
                     if (data.Properties.ContainsKey("extra"))
                     {
-                        JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
-                        foreach (JSONData item in extras)
+                        Json.JSONData[] extras = data.Properties["extra"].DataArray.ToArray();
+                        foreach (Json.JSONData item in extras)
                             extra_result = extra_result + JSONData2String(item, colorcode) + "§r";
                     }
                     if (data.Properties.ContainsKey("text"))
@@ -334,7 +220,7 @@ namespace MinecraftClient.Protocol.Handlers
                             data.Properties["with"] = data.Properties["using"];
                         if (data.Properties.ContainsKey("with"))
                         {
-                            JSONData[] array = data.Properties["with"].DataArray.ToArray();
+                            Json.JSONData[] array = data.Properties["with"].DataArray.ToArray();
                             for (int i = 0; i < array.Length; i++)
                             {
                                 using_data.Add(JSONData2String(array[i], colorcode));
@@ -344,28 +230,20 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                     else return extra_result;
 
-                case JSONData.DataType.Array:
+                case Json.JSONData.DataType.Array:
                     string result = "";
-                    foreach (JSONData item in data.DataArray)
+                    foreach (Json.JSONData item in data.DataArray)
                     {
                         result += JSONData2String(item, colorcode);
                     }
                     return result;
 
-                case JSONData.DataType.String:
+                case Json.JSONData.DataType.String:
                     return colorcode + data.StringValue;
             }
 
             return "";
         }
-
-        /// <summary>
-        /// Small function for checking if a char is an hexadecimal char (0-9 A-F a-f)
-        /// </summary>
-        /// <param name="c">Char to test</param>
-        /// <returns>True if hexadecimal</returns>
-
-        private static bool isHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
 
         /// <summary>
         /// Do a HTTP request to get a webpage or text data from a server file

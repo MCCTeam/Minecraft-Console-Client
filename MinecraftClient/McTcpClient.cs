@@ -8,6 +8,8 @@ using System.IO;
 using System.Net;
 using MinecraftClient.Protocol;
 using MinecraftClient.Proxy;
+using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient
 {
@@ -17,16 +19,24 @@ namespace MinecraftClient
 
     public class McTcpClient : IMinecraftComHandler
     {
-        private static List<string> cmd_names = new List<string>();
-        private static Dictionary<string, Command> cmds = new Dictionary<string, Command>();
-        private List<ChatBot> bots = new List<ChatBot>();
-        private Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid,string>();
-        private static List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
+        public static int ReconnectionAttemptsLeft = 0;
+
+        private static readonly List<string> cmd_names = new List<string>();
+        private static readonly Dictionary<string, Command> cmds = new Dictionary<string, Command>();
+        private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
+
+        private readonly List<ChatBot> bots = new List<ChatBot>();
+        private static readonly List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
         public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
         public void BotClear() { bots.Clear(); }
 
-        public static int AttemptsLeft = 0;
+        private object locationLock = new object();
+        private bool locationReceived = false;
+        private World world = new World();
+        private Queue<Location> steps;
+        private Queue<Location> path;
+        private Location location;
 
         private string host;
         private int port;
@@ -34,12 +44,14 @@ namespace MinecraftClient
         private string uuid;
         private string sessionid;
 
-        public int getServerPort() { return port; }
-        public string getServerHost() { return host; }
-        public string getUsername() { return username; }
-        public string getUserUUID() { return uuid; }
-        public string getSessionID() { return sessionid; }
-        
+        public int GetServerPort() { return port; }
+        public string GetServerHost() { return host; }
+        public string GetUsername() { return username; }
+        public string GetUserUUID() { return uuid; }
+        public string GetSessionID() { return sessionid; }
+        public Location GetCurrentLocation() { return location; }
+        public World GetWorld() { return world; }
+
         TcpClient client;
         IMinecraftCom handler;
         Thread cmdprompt;
@@ -54,9 +66,9 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
 
-        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, string server_ip, ushort port)
+        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
         {
-            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, false, "");
+            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, false, "");
         }
 
         /// <summary>
@@ -70,9 +82,9 @@ namespace MinecraftClient
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
 
-        public McTcpClient(string username, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, string command)
+        public McTcpClient(string username, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
         {
-            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, true, command);
+            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, true, command);
         }
 
         /// <summary>
@@ -87,8 +99,9 @@ namespace MinecraftClient
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
 
-        private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, bool singlecommand, string command)
+        private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
+            bool retry = false;
             this.sessionid = sessionID;
             this.uuid = uuid;
             this.username = user;
@@ -100,56 +113,75 @@ namespace MinecraftClient
                 if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
                 if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
                 if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
-                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.expandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.expandVars(Settings.PlayerLog_File))); }
+                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
                 if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
-                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.expandVars(Settings.ScriptScheduler_TasksFile))); }
+                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
                 if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
+                if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
             }
 
             try
             {
                 client = ProxyHandler.newTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
-                handler = Protocol.ProtocolHandler.getProtocolHandler(client, protocolversion, this);
+                handler = Protocol.ProtocolHandler.getProtocolHandler(client, protocolversion, forgeInfo, this);
                 Console.WriteLine("Version is supported.\nLogging in...");
-                
-                if (handler.Login())
+
+                try
                 {
-                    if (singlecommand)
+                    if (handler.Login())
                     {
-                        handler.SendChatMessage(command);
-                        ConsoleIO.WriteLineFormatted("§7Command §8" + command + "§7 sent.");
-                        Thread.Sleep(5000);
-                        handler.Disconnect();
-                        Thread.Sleep(1000);
+                        if (singlecommand)
+                        {
+                            handler.SendChatMessage(command);
+                            ConsoleIO.WriteLineFormatted("§7Command §8" + command + "§7 sent.");
+                            Thread.Sleep(5000);
+                            handler.Disconnect();
+                            Thread.Sleep(1000);
+                        }
+                        else
+                        {
+                            foreach (ChatBot bot in scripts_on_hold)
+                                bot.SetHandler(this);
+                            bots.AddRange(scripts_on_hold);
+                            scripts_on_hold.Clear();
+
+                            Console.WriteLine("Server was successfully joined.\nType '"
+                                + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)
+                                + "quit' to leave the server.");
+
+                            cmdprompt = new Thread(new ThreadStart(CommandPrompt));
+                            cmdprompt.Name = "MCC Command prompt";
+                            cmdprompt.Start();
+                        }
                     }
-                    else
-                    {
-                        foreach (ChatBot bot in scripts_on_hold)
-                            bot.SetHandler(this);
-                        bots.AddRange(scripts_on_hold);
-                        scripts_on_hold.Clear();
-                        
-                        Console.WriteLine("Server was successfully joined.\nType '"
-                            + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)
-                            + "quit' to leave the server.");
-                        
-                        cmdprompt = new Thread(new ThreadStart(CommandPrompt));
-                        cmdprompt.Name = "MCC Command prompt";
-                        cmdprompt.Start();
-                    }
+                }
+                catch (Exception e)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + e.Message);
+                    Console.WriteLine("Failed to join this server.");
+                    retry = true;
                 }
             }
-            catch (SocketException)
+            catch (SocketException e)
             {
+                ConsoleIO.WriteLineFormatted("§8" + e.Message);
                 Console.WriteLine("Failed to connect to this IP.");
-                if (AttemptsLeft > 0)
+                retry = true;
+            }
+
+            if (retry)
+            {
+                if (ReconnectionAttemptsLeft > 0)
                 {
-                    ChatBot.LogToConsole("Waiting 5 seconds (" + AttemptsLeft + " attempts left)...");
-                    Thread.Sleep(5000); AttemptsLeft--; Program.Restart();
+                    ConsoleIO.WriteLogLine("Waiting 5 seconds (" + ReconnectionAttemptsLeft + " attempts left)...");
+                    Thread.Sleep(5000); ReconnectionAttemptsLeft--; Program.Restart();
                 }
-                else if (!singlecommand) { Console.ReadLine(); }
+                else if (!singlecommand && Settings.interactiveMode)
+                {
+                    Program.HandleFailure();
+                }
             }
         }
 
@@ -189,7 +221,7 @@ namespace MinecraftClient
                             {
                                 string response_msg = "";
                                 string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
-                                if (!performInternalCommand(Settings.expandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
+                                if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
                                 {
                                     SendText(text);
                                 }
@@ -204,6 +236,7 @@ namespace MinecraftClient
                 }
             }
             catch (IOException) { }
+            catch (NullReferenceException) { }
         }
 
         /// <summary>
@@ -214,7 +247,7 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
 
-        public bool performInternalCommand(string command, ref string response_msg)
+        public bool PerformInternalCommand(string command, ref string response_msg)
         {
             /* Load commands from the 'Commands' namespace */
 
@@ -294,7 +327,67 @@ namespace MinecraftClient
 
             Thread.Sleep(1000);
 
-            if (client != null) { client.Close(); }
+            if (client != null)
+                client.Close();
+        }
+
+        /// <summary>
+        /// Called when a server was successfully joined
+        /// </summary>
+
+        public void OnGameJoined()
+        {
+            if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
+                handler.SendBrandInfo(Settings.BrandInfo.Trim());
+        }
+
+        /// <summary>
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
+        /// </summary>
+        /// <param name="location">The new location</param>
+        /// <param name="relative">If true, the location is relative to the current location</param>
+
+        public void UpdateLocation(Location location, bool relative)
+        {
+            lock (locationLock)
+            {
+                if (relative)
+                {
+                    this.location += location;
+                }
+                else this.location = location;
+                locationReceived = true;
+            }
+        }
+
+        /// <summary>
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
+        /// </summary>
+        /// <param name="location">The new location</param>
+        /// <param name="relative">If true, the location is relative to the current location</param>
+
+        public void UpdateLocation(Location location)
+        {
+            UpdateLocation(location, false);
+        }
+
+        /// <summary>
+        /// Move to the specified location
+        /// </summary>
+        /// <param name="location">Location to reach</param>
+        /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
+        /// <returns>True if a path has been found</returns>
+        public bool MoveTo(Location location, bool allowUnsafe = false)
+        {
+            lock (locationLock)
+            {
+                if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
+                    path = new Queue<Location>(new[] { location });
+                else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
+                return path != null;
+            }
         }
 
         /// <summary>
@@ -305,8 +398,21 @@ namespace MinecraftClient
         public void OnTextReceived(string text)
         {
             ConsoleIO.WriteLineFormatted(text, false);
-            foreach (ChatBot bot in new List<ChatBot>(bots))
-                bot.GetText(text);
+            for (int i = 0; i < bots.Count; i++)
+            {
+                try
+                {
+                    bots[i].GetText(text);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLineFormatted("§8GetText: Got error from " + bots[i].ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
         }
 
         /// <summary>
@@ -338,7 +444,8 @@ namespace MinecraftClient
             foreach (ChatBot bot in bots)
                 will_restart |= bot.OnDisconnect(reason, message);
 
-            if (!will_restart) { Program.OfflineCommandPrompt(); }
+            if (!will_restart)
+                Program.HandleFailure();
         }
 
         /// <summary>
@@ -357,9 +464,25 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLineFormatted("§8Got error from " + bots[i].ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLineFormatted("§8Update: Got error from " + bots[i].ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
+                }
+            }
+
+            if (Settings.TerrainAndMovements && locationReceived)
+            {
+                lock (locationLock)
+                {
+                    for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    {
+                        if (steps != null && steps.Count > 0)
+                            location = steps.Dequeue();
+                        else if (path != null && path.Count > 0)
+                            steps = Movement.Move2Steps(location, path.Dequeue());
+                        else location = Movement.HandleGravity(world, location);
+                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location));
+                    }
                 }
             }
         }
@@ -387,6 +510,8 @@ namespace MinecraftClient
                     {
                         handler.SendChatMessage(text.Substring(0, 100));
                         text = text.Substring(100, text.Length - 100);
+                        if (Settings.splitMessageDelay.TotalSeconds > 0)
+                            Thread.Sleep(Settings.splitMessageDelay);
                     }
                     return handler.SendChatMessage(text);
                 }
@@ -412,9 +537,16 @@ namespace MinecraftClient
 
         public void OnPlayerJoin(Guid uuid, string name)
         {
-            onlinePlayers[uuid] = name;
+            //Ignore TabListPlus placeholders
+            if (name.StartsWith("0000tab#"))
+                return;
+
+            lock (onlinePlayers)
+            {
+                onlinePlayers[uuid] = name;
+            }
         }
-        
+
         /// <summary>
         /// Triggered when a player has left the game
         /// </summary>
@@ -422,7 +554,10 @@ namespace MinecraftClient
 
         public void OnPlayerLeave(Guid uuid)
         {
-            onlinePlayers.Remove(uuid);
+            lock (onlinePlayers)
+            {
+                onlinePlayers.Remove(uuid);
+            }
         }
 
         /// <summary>
@@ -430,9 +565,12 @@ namespace MinecraftClient
         /// </summary>
         /// <returns>Online player names</returns>
 
-        public string[] getOnlinePlayers()
+        public string[] GetOnlinePlayers()
         {
-            return onlinePlayers.Values.Distinct().ToArray();
+            lock (onlinePlayers)
+            {
+                return onlinePlayers.Values.Distinct().ToArray();
+            }
         }
     }
 }

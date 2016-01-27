@@ -197,14 +197,13 @@ namespace MinecraftClient.Crypto
         /// </summary>
         /// <param name="underlyingStream">Stream to encrypt</param>
         /// <param name="AesKey">Key to use</param>
-        /// <param name="paddingProvider">Padding provider for Mono implementation</param>
         /// <returns>Return an appropriate stream depending on the framework being used</returns>
 
-        public static IAesStream getAesStream(Stream underlyingStream, byte[] AesKey, IPaddingProvider paddingProvider)
+        public static IAesStream getAesStream(Stream underlyingStream, byte[] AesKey)
         {
             if (Program.isUsingMono)
             {
-                return new Streams.MonoAesStream(underlyingStream, AesKey, paddingProvider);
+                return new Streams.MonoAesStream(underlyingStream, AesKey);
             }
             else return new Streams.RegularAesStream(underlyingStream, AesKey);
         }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Protocol
 {
@@ -16,12 +17,20 @@ namespace MinecraftClient.Protocol
         /* The MinecraftCom Hanler must
          * provide these getters */
 
-        int getServerPort();
-        string getServerHost();
-        string getUsername();
-        string getUserUUID();
-        string getSessionID();
-        string[] getOnlinePlayers();
+        int GetServerPort();
+        string GetServerHost();
+        string GetUsername();
+        string GetUserUUID();
+        string GetSessionID();
+        string[] GetOnlinePlayers();
+        Location GetCurrentLocation();
+        World GetWorld();
+
+        /// <summary>
+        /// Called when a server was successfully joined
+        /// </summary>
+
+        void OnGameJoined();
 
         /// <summary>
         /// This method is called when the protocol handler receives a chat message
@@ -43,6 +52,13 @@ namespace MinecraftClient.Protocol
         /// <param name="uuid">UUID of the player</param>
 
         void OnPlayerLeave(Guid uuid);
+
+        /// <summary>
+        /// Called when the server sets the new location for the player
+        /// </summary>
+        /// <param name="location">New location of the player</param>
+
+        void UpdateLocation(Location location);
 
         /// <summary>
         /// This method is called when the connection has been lost

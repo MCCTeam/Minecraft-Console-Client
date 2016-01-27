@@ -95,7 +95,7 @@ namespace MinecraftClient.ChatBots
             if (current_task != null)
             {
                 //Check if we built a valid task before adding it
-                if (current_task.script_file != null && Script.lookForScript(ref current_task.script_file) //Check if file exists
+                if (current_task.script_file != null && Script.LookForScript(ref current_task.script_file) //Check if file exists
                     && (current_task.triggerOnLogin
                     || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0))
                     || (current_task.triggerOnInterval && current_task.triggerOnInterval_Interval > 0)) //Look for a valid trigger

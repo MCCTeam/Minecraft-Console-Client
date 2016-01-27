@@ -14,16 +14,30 @@ namespace MinecraftClient
 
     public static class ConsoleIO
     {
-        public static void Reset() { if (reading) { reading = false; Console.Write("\b \b"); } }
-        public static void SetAutoCompleteEngine(IAutoComplete engine) { autocomplete_engine = engine; }
         public static bool basicIO = false;
         private static IAutoComplete autocomplete_engine;
         private static LinkedList<string> previous = new LinkedList<string>();
+        private static readonly object io_lock = new object();
+        private static bool reading = false;
         private static string buffer = "";
         private static string buffer2 = "";
-        private static bool reading = false;
-        private static bool reading_lock = false;
-        private static bool writing_lock = false;
+
+        /// <summary>
+        /// Reset the IO mechanism and clear all buffers
+        /// </summary>
+
+        public static void Reset()
+        {
+            lock (io_lock)
+            {
+                if (reading)
+                {
+                    ClearLineAndBuffer();
+                    reading = false;
+                    Console.Write("\b \b");
+                }
+            }
+        }
 
         /// <summary>
         /// Read a password from the standard input
@@ -31,22 +45,18 @@ namespace MinecraftClient
 
         public static string ReadPassword()
         {
-            string password = "";
-            ConsoleKeyInfo k = new ConsoleKeyInfo();
-            while (k.Key != ConsoleKey.Enter)
+            StringBuilder password = new StringBuilder();
+
+            ConsoleKeyInfo k;
+            while ((k = Console.ReadKey(true)).Key != ConsoleKey.Enter)
             {
-                k = Console.ReadKey(true);
                 switch (k.Key)
                 {
-                    case ConsoleKey.Enter:
-                        Console.Write('\n');
-                        return password;
-
                     case ConsoleKey.Backspace:
                         if (password.Length > 0)
                         {
                             Console.Write("\b \b");
-                            password = password.Substring(0, password.Length - 1);
+                            password.Remove(password.Length - 1, 1);
                         }
                         break;
 
@@ -56,7 +66,6 @@ namespace MinecraftClient
                     case ConsoleKey.Home:
                     case ConsoleKey.End:
                     case ConsoleKey.Delete:
-                    case ConsoleKey.Oem6:
                     case ConsoleKey.DownArrow:
                     case ConsoleKey.UpArrow:
                     case ConsoleKey.Tab:
@@ -66,12 +75,14 @@ namespace MinecraftClient
                         if (k.KeyChar != 0)
                         {
                             Console.Write('*');
-                            password += k.KeyChar;
+                            password.Append(k.KeyChar);
                         }
                         break;
                 }
             }
-            return password;
+
+            Console.WriteLine();
+            return password.ToString();
         }
 
         /// <summary>
@@ -82,104 +93,106 @@ namespace MinecraftClient
         {
             if (basicIO) { return Console.ReadLine(); }
             ConsoleKeyInfo k = new ConsoleKeyInfo();
-            Console.Write('>');
-            reading = true;
-            buffer = "";
-            buffer2 = "";
+
+            lock (io_lock)
+            {
+                Console.Write('>');
+                reading = true;
+                buffer = "";
+                buffer2 = "";
+            }
 
             while (k.Key != ConsoleKey.Enter)
             {
                 k = Console.ReadKey(true);
-                while (writing_lock) { }
-                reading_lock = true;
-                if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
+                lock (io_lock)
                 {
-                    string clip = ReadClipboard();
-                    foreach (char c in clip)
-                        AddChar(c);
-                }
-                else
-                {
-                    switch (k.Key)
+                    if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
                     {
-                        case ConsoleKey.Escape:
-                            ClearLineAndBuffer();
-                            break;
-                        case ConsoleKey.Backspace:
-                            RemoveOneChar();
-                            break;
-                        case ConsoleKey.Enter:
-                            Console.Write('\n');
-                            break;
-                        case ConsoleKey.LeftArrow:
-                            GoLeft();
-                            break;
-                        case ConsoleKey.RightArrow:
-                            GoRight();
-                            break;
-                        case ConsoleKey.Home:
-                            while (buffer.Length > 0) { GoLeft(); }
-                            break;
-                        case ConsoleKey.End:
-                            while (buffer2.Length > 0) { GoRight(); }
-                            break;
-                        case ConsoleKey.Delete:
-                            if (buffer2.Length > 0)
-                            {
-                                GoRight();
+                        string clip = ReadClipboard();
+                        foreach (char c in clip)
+                            AddChar(c);
+                    }
+                    else
+                    {
+                        switch (k.Key)
+                        {
+                            case ConsoleKey.Escape:
+                                ClearLineAndBuffer();
+                                break;
+                            case ConsoleKey.Backspace:
                                 RemoveOneChar();
-                            }
-                            break;
-                        case ConsoleKey.Oem6:
-                            break;
-                        case ConsoleKey.DownArrow:
-                            if (previous.Count > 0)
-                            {
-                                ClearLineAndBuffer();
-                                buffer = previous.First.Value;
-                                previous.AddLast(buffer);
-                                previous.RemoveFirst();
-                                Console.Write(buffer);
-                            }
-                            break;
-                        case ConsoleKey.UpArrow:
-                            if (previous.Count > 0)
-                            {
-                                ClearLineAndBuffer();
-                                buffer = previous.Last.Value;
-                                previous.AddFirst(buffer);
-                                previous.RemoveLast();
-                                Console.Write(buffer);
-                            }
-                            break;
-                        case ConsoleKey.Tab:
-                            if (autocomplete_engine != null && buffer.Length > 0)
-                            {
-                                string[] tmp = buffer.Split(' ');
-                                if (tmp.Length > 0)
+                                break;
+                            case ConsoleKey.Enter:
+                                Console.Write('\n');
+                                break;
+                            case ConsoleKey.LeftArrow:
+                                GoLeft();
+                                break;
+                            case ConsoleKey.RightArrow:
+                                GoRight();
+                                break;
+                            case ConsoleKey.Home:
+                                while (buffer.Length > 0) { GoLeft(); }
+                                break;
+                            case ConsoleKey.End:
+                                while (buffer2.Length > 0) { GoRight(); }
+                                break;
+                            case ConsoleKey.Delete:
+                                if (buffer2.Length > 0)
                                 {
-                                    string word_tocomplete = tmp[tmp.Length - 1];
+                                    GoRight();
+                                    RemoveOneChar();
+                                }
+                                break;
+                            case ConsoleKey.Oem6:
+                                break;
+                            case ConsoleKey.DownArrow:
+                                if (previous.Count > 0)
+                                {
+                                    ClearLineAndBuffer();
+                                    buffer = previous.First.Value;
+                                    previous.AddLast(buffer);
+                                    previous.RemoveFirst();
+                                    Console.Write(buffer);
+                                }
+                                break;
+                            case ConsoleKey.UpArrow:
+                                if (previous.Count > 0)
+                                {
+                                    ClearLineAndBuffer();
+                                    buffer = previous.Last.Value;
+                                    previous.AddFirst(buffer);
+                                    previous.RemoveLast();
+                                    Console.Write(buffer);
+                                }
+                                break;
+                            case ConsoleKey.Tab:
+                                if (autocomplete_engine != null && buffer.Length > 0)
+                                {
                                     string word_autocomplete = autocomplete_engine.AutoComplete(buffer);
-                                    if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != word_tocomplete)
+                                    if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != buffer)
                                     {
                                         while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
                                         foreach (char c in word_autocomplete) { AddChar(c); }
                                     }
                                 }
-                            }
-                            break;
-                        default:
-                            if (k.KeyChar != 0)
-                                AddChar(k.KeyChar);
-                            break;
+                                break;
+                            default:
+                                if (k.KeyChar != 0)
+                                    AddChar(k.KeyChar);
+                                break;
+                        }
                     }
                 }
-                reading_lock = false;
             }
-            while (writing_lock) { }
-            reading = false;
-            previous.AddLast(buffer + buffer2);
-            return buffer + buffer2;
+
+            lock (io_lock)
+            {
+                reading = false;
+                previous.AddLast(buffer + buffer2);
+                return buffer + buffer2;
+            }
         }
         
         /// <summary>
@@ -188,41 +201,47 @@ namespace MinecraftClient
 
         public static void Write(string text)
         {
-            if (basicIO) { Console.Write(text); return; }
-            while (reading_lock) { }
-            writing_lock = true;
-            if (reading)
+            if (!basicIO)
             {
-                ConsoleColor fore = Console.ForegroundColor;
-                ConsoleColor back = Console.BackgroundColor;
-                string buf = buffer;
-                string buf2 = buffer2;
-                ClearLineAndBuffer();
-                if (Console.CursorLeft == 0)
+                lock (io_lock)
                 {
-                    Console.CursorLeft = Console.BufferWidth - 1;
-                    Console.CursorTop--;
-                    Console.Write(' ');
-                    Console.CursorLeft = Console.BufferWidth - 1;
-                    Console.CursorTop--;
+                    if (reading)
+                    {
+                        try
+                        {
+                            string buf = buffer;
+                            string buf2 = buffer2;
+                            ClearLineAndBuffer();
+                            if (Console.CursorLeft == 0)
+                            {
+                                Console.CursorLeft = Console.BufferWidth - 1;
+                                Console.CursorTop--;
+                                Console.Write(' ');
+                                Console.CursorLeft = Console.BufferWidth - 1;
+                                Console.CursorTop--;
+                            }
+                            else Console.Write("\b \b");
+                            Console.Write(text);
+                            buffer = buf;
+                            buffer2 = buf2;
+                            Console.Write(">" + buffer);
+                            if (buffer2.Length > 0)
+                            {
+                                Console.Write(buffer2 + " \b");
+                                for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
+                            }
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            //Console resized: Try again
+                            Console.Write('\n');
+                            Write(text);
+                        }
+                    }
+                    else Console.Write(text);
                 }
-                else Console.Write("\b \b");
-                Console.Write(text);
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.BackgroundColor = ConsoleColor.Black;
-                buffer = buf;
-                buffer2 = buf2;
-                Console.Write(">" + buffer);
-                if (buffer2.Length > 0)
-                {
-                    Console.Write(buffer2 + " \b");
-                    for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
-                }
-                Console.ForegroundColor = fore;
-                Console.BackgroundColor = back;
             }
             else Console.Write(text);
-            writing_lock = false;
         }
 
         /// <summary>
@@ -257,7 +276,7 @@ namespace MinecraftClient
                 if (Settings.chatTimeStamps)
                 {
                     int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
-                    ConsoleIO.Write(hour.ToString("00") + ':' + minute.ToString("00") + ':' + second.ToString("00") + ' ');
+                    ConsoleIO.Write(String.Format("{0}:{1}:{2} ", hour.ToString("00"), minute.ToString("00"), second.ToString("00")));
                 }
                 if (!acceptnewlines) { str = str.Replace('\n', ' '); }
                 if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(str); return; }
@@ -285,7 +304,7 @@ namespace MinecraftClient
                             case 'd': Console.ForegroundColor = ConsoleColor.Magenta; break;
                             case 'e': Console.ForegroundColor = ConsoleColor.Yellow; break;
                             case 'f': Console.ForegroundColor = ConsoleColor.White; break;
-                            case 'r': Console.ForegroundColor = ConsoleColor.White; break;
+                            case 'r': Console.ForegroundColor = ConsoleColor.Gray; break;
                         }
 
                         if (subs[i].Length > 1)
@@ -294,9 +313,19 @@ namespace MinecraftClient
                         }
                     }
                 }
+                Console.ForegroundColor = ConsoleColor.Gray;
                 ConsoleIO.Write('\n');
             }
-            Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
+        /// <summary>
+        /// Write a Minecraft Console Client Log line
+        /// </summary>
+        /// <param name="text">Text of the log line</param>
+
+        public static void WriteLogLine(string text)
+        {
+            WriteLineFormatted("§8[MCC] " + text);
         }
 
         #region Subfunctions
@@ -309,15 +338,21 @@ namespace MinecraftClient
         {
             if (buffer.Length > 0)
             {
-                if (Console.CursorLeft == 0)
+                try
                 {
-                    Console.CursorLeft = Console.BufferWidth - 1;
-                    Console.CursorTop--;
-                    Console.Write(' ');
-                    Console.CursorLeft = Console.BufferWidth - 1;
-                    Console.CursorTop--;
+                    if (Console.CursorLeft == 0)
+                    {
+                        Console.CursorLeft = Console.BufferWidth - 1;
+                        if (Console.CursorTop > 0)
+                            Console.CursorTop--;
+                        Console.Write(' ');
+                        Console.CursorLeft = Console.BufferWidth - 1;
+                        if (Console.CursorTop > 0)
+                            Console.CursorTop--;
+                    }
+                    else Console.Write("\b \b");
                 }
-                else Console.Write("\b \b");
+                catch (ArgumentOutOfRangeException) { /* Console was resized!? */ }
                 buffer = buffer.Substring(0, buffer.Length - 1);
 
                 if (buffer2.Length > 0)
@@ -329,12 +364,17 @@ namespace MinecraftClient
         }
         private static void GoBack()
         {
-            if (Console.CursorLeft == 0)
+            try
             {
-                Console.CursorLeft = Console.BufferWidth - 1;
-                Console.CursorTop--;
+                if (Console.CursorLeft == 0)
+                {
+                    Console.CursorLeft = Console.BufferWidth - 1;
+                    if (Console.CursorTop > 0)
+                        Console.CursorTop--;
+                }
+                else Console.Write('\b');
             }
-            else Console.Write('\b');
+            catch (ArgumentOutOfRangeException) { /* Console was resized!? */ }
         }
         private static void GoLeft()
         {
@@ -381,6 +421,18 @@ namespace MinecraftClient
             staThread.Start();
             staThread.Join();
             return clipdata;
+        }
+        #endregion
+
+        #region AutoComplete API
+        /// <summary>
+        /// Set an auto-completion engine for TAB autocompletion
+        /// </summary>
+        /// <param name="engine">Engine implementing the IAutoComplete interface</param>
+        
+        public static void SetAutoCompleteEngine(IAutoComplete engine)
+        {
+            autocomplete_engine = engine;
         }
         #endregion
     }

@@ -5,6 +5,7 @@ using System.Text;
 using MinecraftClient.Protocol;
 using System.Reflection;
 using System.Threading;
+using MinecraftClient.Protocol.Handlers.Forge;
 
 namespace MinecraftClient
 {
@@ -18,8 +19,13 @@ namespace MinecraftClient
     {
         private static McTcpClient Client;
         public static string[] startupargs;
-        public const string Version = "1.8.0";
+
+        public const string Version = "1.8.2";
+        public const string MCLowestVersion = "1.4.6";
+        public const string MCHighestVersion = "1.8.8";
+
         private static Thread offlinePrompt = null;
+        private static bool useMcVersionOnce = false;
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -27,7 +33,7 @@ namespace MinecraftClient
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC 1.4.6 to 1.8.1 - v" + Version + " - By ORelio & Contributors");
+            Console.WriteLine("Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors", MCLowestVersion, MCHighestVersion, Version);
 
             //Basic Input/Output ?
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
@@ -62,7 +68,7 @@ namespace MinecraftClient
                     Settings.Password = args[1];
                     if (args.Length >= 3)
                     {
-                        Settings.setServerIP(args[2]);
+                        Settings.SetServerIP(args[2]);
 
                         //Single command?
                         if (args.Length >= 4)
@@ -76,7 +82,7 @@ namespace MinecraftClient
             if (Settings.ConsoleTitle != "")
             {
                 Settings.Username = "New Window";
-                Console.Title = Settings.expandVars(Settings.ConsoleTitle);
+                Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
             }
 
             //Asking the user to type in missing data such as Username and Password
@@ -129,46 +135,55 @@ namespace MinecraftClient
             if (result == ProtocolHandler.LoginResult.Success)
             {
                 if (Settings.ConsoleTitle != "")
-                    Console.Title = Settings.expandVars(Settings.ConsoleTitle);
+                    Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
                 
                 if (Settings.playerHeadAsIcon)
                     ConsoleIcon.setPlayerIconAsync(Settings.Username);
                 
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
+
+                //ProtocolHandler.RealmsListWorlds(Settings.Username, UUID, sessionID); //TODO REMOVE
                 
                 if (Settings.ServerIP == "")
                 {
                     Console.Write("Server IP : ");
-                    Settings.setServerIP(Console.ReadLine());
+                    Settings.SetServerIP(Console.ReadLine());
                 }
 
                 //Get server version
                 int protocolversion = 0;
+                ForgeInfo forgeInfo = null;
 
                 if (Settings.ServerVersion != "" && Settings.ServerVersion.ToLower() != "auto")
                 {
                     protocolversion = Protocol.ProtocolHandler.MCVer2ProtocolVersion(Settings.ServerVersion);
+
                     if (protocolversion != 0)
                     {
                         ConsoleIO.WriteLineFormatted("§8Using Minecraft version " + Settings.ServerVersion + " (protocol v" + protocolversion + ')');
                     }
                     else ConsoleIO.WriteLineFormatted("§8Unknown or not supported MC version '" + Settings.ServerVersion + "'.\nSwitching to autodetection mode.");
+
+                    if (useMcVersionOnce)
+                    {
+                        useMcVersionOnce = false;
+                        Settings.ServerVersion = "";
+                    }
                 }
 
                 if (protocolversion == 0)
                 {
                     Console.WriteLine("Retrieving Server Info...");
-                    if (!ProtocolHandler.GetServerInfo(Settings.ServerIP, Settings.ServerPort, ref protocolversion))
+                    if (!ProtocolHandler.GetServerInfo(Settings.ServerIP, Settings.ServerPort, ref protocolversion, ref forgeInfo))
                     {
-                        Console.WriteLine("Failed to ping this IP.");
-                        if (Settings.AutoRelog_Enabled)
-                        {
-                            ChatBots.AutoRelog bot = new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries);
-                            if (!bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Failed to ping this IP.")) { OfflineCommandPrompt(); }
-                        }
-                        else OfflineCommandPrompt();
+                        HandleFailure("Failed to ping this IP.", true, ChatBots.AutoRelog.DisconnectReason.ConnectionLost);
                         return;
                     }
+                }
+
+                if (forgeInfo != null && !forgeInfo.Mods.Any())
+                {
+                    forgeInfo = null;
                 }
 
                 if (protocolversion != 0)
@@ -178,45 +193,40 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, Settings.ServerPort, protocolversion, Settings.SingleCommand);
+                            Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
                         }
-                        else Client = new McTcpClient(Settings.Username, UUID, sessionID, protocolversion, Settings.ServerIP, Settings.ServerPort);
+                        else Client = new McTcpClient(Settings.Username, UUID, sessionID, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
+
+                        //Update console title
+                        if (Settings.ConsoleTitle != "")
+                            Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
                     }
-                    catch (NotSupportedException)
-                    {
-                        Console.WriteLine("Cannot connect to the server : This version is not supported !");
-                        OfflineCommandPrompt();
-                    }
+                    catch (NotSupportedException) { HandleFailure("Cannot connect to the server : This version is not supported !", true); }
                 }
-                else
-                {
-                    Console.WriteLine("Failed to determine server version.");
-                    OfflineCommandPrompt();
-                }
+                else HandleFailure("Failed to determine server version.", true);
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
-                Console.Write("Connection failed : ");
+                string failureMessage = "Minecraft Login failed : ";
                 switch (result)
                 {
-                    case ProtocolHandler.LoginResult.AccountMigrated: Console.WriteLine("Account migrated, use e-mail as username."); break;
-                    case ProtocolHandler.LoginResult.ServiceUnavailable: Console.WriteLine("Login servers are unavailable. Please try again later."); break;
-                    case ProtocolHandler.LoginResult.WrongPassword: Console.WriteLine("Incorrect password."); break;
-                    case ProtocolHandler.LoginResult.NotPremium: Console.WriteLine("User not premium."); break;
-                    case ProtocolHandler.LoginResult.OtherError: Console.WriteLine("Network error."); break;
-                    case ProtocolHandler.LoginResult.SSLError: Console.WriteLine("SSL Error.");
-                        if (isUsingMono)
-                        {
-                            ConsoleIO.WriteLineFormatted("§8It appears that you are using Mono to run this program."
-                                + '\n' + "The first time, you have to import HTTPS certificates using:"
-                                + '\n' + "mozroots --import --ask-remove");
-                            return;
-                        }
-                        break;
+                    case ProtocolHandler.LoginResult.AccountMigrated: failureMessage += "Account migrated, use e-mail as username."; break;
+                    case ProtocolHandler.LoginResult.ServiceUnavailable: failureMessage += "Login servers are unavailable. Please try again later."; break;
+                    case ProtocolHandler.LoginResult.WrongPassword: failureMessage += "Incorrect password."; break;
+                    case ProtocolHandler.LoginResult.NotPremium: failureMessage += "User not premium."; break;
+                    case ProtocolHandler.LoginResult.OtherError: failureMessage += "Network error."; break;
+                    case ProtocolHandler.LoginResult.SSLError: failureMessage += "SSL Error."; break;
+                    default: failureMessage += "Unknown Error."; break;
                 }
-                while (Console.KeyAvailable) { Console.ReadKey(false); }
-                if (Settings.SingleCommand == "") { OfflineCommandPrompt(); }
+                if (result == ProtocolHandler.LoginResult.SSLError && isUsingMono)
+                {
+                    ConsoleIO.WriteLineFormatted("§8It appears that you are using Mono to run this program."
+                        + '\n' + "The first time, you have to import HTTPS certificates using:"
+                        + '\n' + "mozroots --import --ask-remove");
+                    return;
+                }
+                HandleFailure(failureMessage, false, ChatBot.DisconnectReason.LoginRejected);
             }
         }
 
@@ -251,39 +261,73 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Pause the program, usually when an error or a kick occured, letting the user press Enter to quit OR type /reconnect
+        /// Handle fatal errors such as ping failure, login failure, server disconnection, and so on.
+        /// Allows AutoRelog to perform on fatal errors, prompt for server version, and offline commands.
         /// </summary>
-
-        public static void OfflineCommandPrompt()
+        /// <param name="errorMessage">Error message to display and optionally pass to AutoRelog bot</param>
+        /// <param name="versionError">Specify if the error is related to an incompatible or unkown server version</param>
+        /// <param name="disconnectReason">If set, the error message will be processed by the AutoRelog bot</param>
+        
+        public static void HandleFailure(string errorMessage = null, bool versionError = false, ChatBots.AutoRelog.DisconnectReason? disconnectReason = null)
         {
-            if (!Settings.exitOnFailure && offlinePrompt == null)
+            if (!String.IsNullOrEmpty(errorMessage))
             {
-                offlinePrompt = new Thread(new ThreadStart(delegate
+                ConsoleIO.Reset();
+                while (Console.KeyAvailable)
+                    Console.ReadKey(true);
+                Console.WriteLine(errorMessage);
+
+                if (disconnectReason.HasValue)
                 {
-                    string command = " ";
-                    ConsoleIO.WriteLineFormatted("Not connected to any server. Use '" + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + "help' for help.");
-                    ConsoleIO.WriteLineFormatted("Or press Enter to exit Minecraft Console Client.");
-                    while (command.Length > 0)
+                    if (ChatBots.AutoRelog.OnDisconnectStatic(disconnectReason.Value, errorMessage))
+                        return; //AutoRelog is triggering a restart of the client
+                }
+            }
+
+            if (Settings.interactiveMode)
+            {
+                if (versionError)
+                {
+                    Console.Write("Server version : ");
+                    Settings.ServerVersion = Console.ReadLine();
+                    if (Settings.ServerVersion != "")
                     {
-                        if (!ConsoleIO.basicIO) { ConsoleIO.Write('>'); }
-                        command = Console.ReadLine().Trim();
-                        if (command.Length > 0)
+                        useMcVersionOnce = true;
+                        Restart();
+                        return;
+                    }
+                }
+
+                if (offlinePrompt == null)
+                {
+                    offlinePrompt = new Thread(new ThreadStart(delegate
+                    {
+                        string command = " ";
+                        ConsoleIO.WriteLineFormatted("Not connected to any server. Use '" + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + "help' for help.");
+                        ConsoleIO.WriteLineFormatted("Or press Enter to exit Minecraft Console Client.");
+                        while (command.Length > 0)
                         {
-                            if (Settings.internalCmdChar != ' ' && command[0] == Settings.internalCmdChar)
+                            if (!ConsoleIO.basicIO) { ConsoleIO.Write('>'); }
+                            command = Console.ReadLine().Trim();
+                            if (command.Length > 0)
                             {
                                 string message = "";
-                                command = command.Substring(1);
+
+                                if (Settings.internalCmdChar != ' '
+                                    && command[0] == Settings.internalCmdChar)
+                                    command = command.Substring(1);
+
                                 if (command.StartsWith("reco"))
                                 {
-                                    message = new Commands.Reco().Run(null, Settings.expandVars(command));
+                                    message = new Commands.Reco().Run(null, Settings.ExpandVars(command));
                                 }
                                 else if (command.StartsWith("connect"))
                                 {
-                                    message = new Commands.Connect().Run(null, Settings.expandVars(command));
+                                    message = new Commands.Connect().Run(null, Settings.ExpandVars(command));
                                 }
                                 else if (command.StartsWith("exit") || command.StartsWith("quit"))
                                 {
-                                    message = new Commands.Exit().Run(null, Settings.expandVars(command));
+                                    message = new Commands.Exit().Run(null, Settings.ExpandVars(command));
                                 }
                                 else if (command.StartsWith("help"))
                                 {
@@ -291,13 +335,14 @@ namespace MinecraftClient
                                     ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Connect().CMDDesc);
                                 }
                                 else ConsoleIO.WriteLineFormatted("§8Unknown command '" + command.Split(' ')[0] + "'.");
-                                if (message != "") { ConsoleIO.WriteLineFormatted("§8MCC: " + message); }
+
+                                if (message != "")
+                                    ConsoleIO.WriteLineFormatted("§8MCC: " + message);
                             }
-                            else ConsoleIO.WriteLineFormatted("§8Please type a command or press Enter to exit.");
                         }
-                    }
-                }));
-                offlinePrompt.Start();
+                    }));
+                    offlinePrompt.Start();
+                }
             }
         }
 

@@ -69,15 +69,15 @@ namespace MinecraftClient.ChatBots
 
         public override void GetText(string text)
         {
-            text = getVerbatim(text);
+            text = GetVerbatim(text);
             string sender = "";
             string message = "";
 
-            if (saveChat && isChatMessage(text, ref message, ref sender))
+            if (saveChat && IsChatMessage(text, ref message, ref sender))
             {
                 save("Chat " + sender + ": " + message);
             }
-            else if (savePrivate && isPrivateMessage(text, ref message, ref sender))
+            else if (savePrivate && IsPrivateMessage(text, ref message, ref sender))
             {
                 save("Private " + sender + ": " + message);
             }
@@ -90,7 +90,7 @@ namespace MinecraftClient.ChatBots
         private void save(string tosave)
         {
             if (dateandtime)
-                tosave = getTimestamp() + ' ' + tosave;
+                tosave = GetTimestamp() + ' ' + tosave;
 
             string directory = Path.GetDirectoryName(logfile);
             if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))

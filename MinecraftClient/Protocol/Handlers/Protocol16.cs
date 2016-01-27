@@ -7,6 +7,7 @@ using System.Threading;
 using MinecraftClient.Crypto;
 using MinecraftClient.Proxy;
 using System.Security.Cryptography;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -42,19 +43,11 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void Updater()
         {
-            int keep_alive_interval = 100;
-            int keep_alive_timer = 100;
             try
             {
                 do
                 {
                     Thread.Sleep(100);
-                    keep_alive_timer--;
-                    if (keep_alive_timer <= 0)
-                    {
-                        Send(getPaddingPacket());
-                        keep_alive_timer = keep_alive_interval;
-                    }
                 }
                 while (Update());
             }
@@ -449,15 +442,11 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] token = readNextByteArray();
 
                 if (serverID == "-")
-                {
                     ConsoleIO.WriteLineFormatted("§8Server is in offline mode.");
-                    return true; //No need to check session or start encryption
-                }
                 else
-                {
                     ConsoleIO.WriteLineFormatted("§8Handshake successful. (Server ID: " + serverID + ')');
-                    return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey);
-                }
+
+                return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey);
             }
             else return false;
         }
@@ -504,7 +493,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (pid[0] == 0xFC)
             {
                 readData(4);
-                s = CryptoHandler.getAesStream(c.GetStream(), secretKey, this);
+                s = CryptoHandler.getAesStream(c.GetStream(), secretKey);
                 encrypted = true;
                 return true;
             }
@@ -513,7 +502,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool Login()
         {
-            if (Handshake(handler.getUserUUID(), handler.getUsername(), handler.getSessionID(), handler.getServerHost(), handler.getServerPort()))
+            if (Handshake(handler.GetUserUUID(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort()))
             {
                 Send(new byte[] { 0xCD, 0 });
                 try
@@ -622,6 +611,41 @@ namespace MinecraftClient.Protocol.Handlers
             catch (SocketException) { return false; }
         }
 
+        public bool SendBrandInfo(string brandInfo)
+        {
+            return false; //Only supported since MC 1.7
+        }
+
+        public bool SendLocationUpdate(Location location, bool onGround)
+        {
+            return false; //Currently not implemented
+        }
+
+        /// <summary>
+        /// Send a plugin channel packet to the server.
+        /// </summary>
+        /// <param name="channel">Channel to send packet on</param>
+        /// <param name="data">packet Data</param>
+
+        public bool SendPluginChannelPacket(string channel, byte[] data)
+        {
+            try {
+                byte[] channelLength = BitConverter.GetBytes((short)channel.Length);
+                Array.Reverse(channelLength);
+
+                byte[] channelData = Encoding.BigEndianUnicode.GetBytes(channel);
+
+                byte[] dataLength = BitConverter.GetBytes((short)data.Length);
+                Array.Reverse(dataLength);
+
+                Send(concatBytes(new byte[] { 0xFA }, channelLength, channelData, dataLength, data));
+
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+        }
+
         public string AutoComplete(string BehindCursor)
         {
             if (String.IsNullOrEmpty(BehindCursor))
@@ -652,25 +676,13 @@ namespace MinecraftClient.Protocol.Handlers
             return result.ToArray();
         }
 
-        public byte[] getPaddingPacket()
-        {
-            //Will generate a 15-bytes long padding packet
-            byte[] id = new byte[1] { 0xFA }; //Plugin Message
-            byte[] channel_name = Encoding.BigEndianUnicode.GetBytes("MCC|");
-            byte[] channel_name_len = BitConverter.GetBytes((short)channel_name.Length); Array.Reverse(channel_name_len);
-            byte[] data = new byte[] { 0x00, 0x00 };
-            byte[] data_len = BitConverter.GetBytes((short)data.Length); Array.Reverse(data_len);
-            byte[] packet_data = concatBytes(id, channel_name_len, channel_name, data_len, data);
-            return packet_data;
-        }
-
         public static bool doPing(string host, int port, ref int protocolversion)
         {
             try
             {
                 string version = "";
                 TcpClient tcp = ProxyHandler.newTcpClient(host, port);
-                tcp.ReceiveTimeout = 5000; //MC 1.7.2+ SpigotMC servers won't answer, so we need a reasonable timeout.
+                tcp.ReceiveTimeout = 5000; //MC 1.7.2+ SpigotMC servers won't respond, so we need a reasonable timeout.
                 byte[] ping = new byte[2] { 0xfe, 0x01 };
                 tcp.Client.Send(ping, SocketFlags.None);
 

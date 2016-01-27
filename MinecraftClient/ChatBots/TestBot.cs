@@ -15,13 +15,13 @@ namespace MinecraftClient.ChatBots
         {
             string message = "";
             string username = "";
-            text = getVerbatim(text);
+            text = GetVerbatim(text);
 
-            if (isPrivateMessage(text, ref message, ref username))
+            if (IsPrivateMessage(text, ref message, ref username))
             {
                 ConsoleIO.WriteLine("Bot: " + username + " told me : " + message);
             }
-            else if (isChatMessage(text, ref message, ref username))
+            else if (IsChatMessage(text, ref message, ref username))
             {
                 ConsoleIO.WriteLine("Bot: " + username + " said : " + message);
             }
