@@ -44,6 +44,7 @@ namespace MinecraftClient
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static TimeSpan splitMessageDelay = TimeSpan.FromSeconds(2);
         public static List<string> Bots_Owners = new List<string>();
+        public static TimeSpan botMessageDelay = TimeSpan.FromSeconds(2);
         public static string Language = "en_GB";
         public static bool chatTimeStamps = false;
         public static bool interactiveMode = true;
@@ -182,6 +183,7 @@ namespace MinecraftClient
                                                 case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
                                                 case "terrainandmovements": TerrainAndMovements = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
+                                                case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -406,6 +408,7 @@ namespace MinecraftClient
                 + "consoletitle=%username%@%serverip% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
                 + "splitmessagedelay=2 #seconds between each part of a long message\r\n"
+                + "botmessagedelay=2 #seconds to delay between message a bot makes to avoid accidental spam\n\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "brandinfo=mcc #use 'mcc','vanilla', or 'none'\r\n"
                 + "chatbotlogfile= #leave empty for no logfile\r\n"

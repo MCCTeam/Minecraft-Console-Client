@@ -459,6 +459,7 @@ namespace MinecraftClient
                 try
                 {
                     bots[i].Update();
+                    bots[i].ProcessQueuedText();
                 }
                 catch (Exception e)
                 {
