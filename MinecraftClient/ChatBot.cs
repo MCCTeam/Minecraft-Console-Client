@@ -41,6 +41,34 @@ namespace MinecraftClient
         private McTcpClient Handler { get { return master != null ? master.Handler : _handler; } }
         private McTcpClient _handler = null;
         private ChatBot master = null;
+        private Queue<string> chatQueue = new Queue<string>();
+        private DateTime? lastMessageSentTime = null;
+        private bool CanSendTextNow
+        {
+            get
+            {
+                return lastMessageSentTime != null
+                    ? DateTime.Now > lastMessageSentTime.Value + Settings.botMessageDelay
+                    : true;
+            }
+        }
+
+        /// <summary>
+        /// Processes the current chat message queue, displaying a message after enough time passes.
+        /// </summary>
+        internal void ProcessQueuedText()
+        {
+            if (chatQueue.Count > 0)
+            {
+                if (CanSendTextNow)
+                {
+                    string text = chatQueue.Dequeue();
+                    LogToConsole("Sending '" + text + "'");
+                    lastMessageSentTime = DateTime.Now;
+                    Handler.SendText(text);
+                }
+            }
+        }
 
         /* ================================================== */
         /*   Main methods to override for creating your bot   */
@@ -84,11 +112,24 @@ namespace MinecraftClient
         /// Send text to the server. Can be anything such as chat messages or commands
         /// </summary>
         /// <param name="text">Text to send to the server</param>
+        /// <param name="sendImmediately">Whether the message should be sent immediately rather than being queued to avoid chat spam</param>
         /// <returns>True if the text was sent with no error</returns>
 
-        protected bool SendText(string text)
+        protected bool SendText(string text, bool sendImmediately = false)
         {
+            if (Settings.botMessageDelay.TotalSeconds > 0 && !sendImmediately)
+            {
+                if (!CanSendTextNow)
+                {
+                    chatQueue.Enqueue(text);
+                    // TODO: We don't know whether there was an error at this point, so we assume there isn't.
+                    // Might not be the best idea.
+                    return true;
+                }
+            }
+
             LogToConsole("Sending '" + text + "'");
+            lastMessageSentTime = DateTime.Now;
             return Handler.SendText(text);
         }
 
