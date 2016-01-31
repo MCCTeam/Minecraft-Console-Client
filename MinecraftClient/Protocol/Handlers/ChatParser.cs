@@ -85,12 +85,13 @@ namespace MinecraftClient.Protocol.Handlers
                 ConsoleIO.WriteLine("Downloading '" + Settings.Language + ".lang' from Mojang servers...");
                 try
                 {
-                        string assets_index = downloadString(Settings.TranslationsFile_Website_Index);
-                        string[] tmp = assets_index.Split(new string[] { "lang/" + Settings.Language + ".lang" }, StringSplitOptions.None);
-                        tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
-                        string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
-                        System.IO.File.WriteAllText(Language_File, downloadString(Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash));
-                        ConsoleIO.WriteLine("Done. File saved as '" + Language_File + '\'');
+                    string assets_index = downloadString(Settings.TranslationsFile_Website_Index);
+                    string[] tmp = assets_index.Split(new string[] { "minecraft/lang/" + Settings.Language + ".lang" }, StringSplitOptions.None);
+                    tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
+                    string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
+                    System.IO.File.WriteAllText(Language_File, downloadString(Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash));
+                    Console.WriteLine(hash);
+                    ConsoleIO.WriteLine("Done. File saved as '" + Language_File + '\'');
                 }
                 catch
                 {
