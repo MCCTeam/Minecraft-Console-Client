@@ -90,7 +90,6 @@ namespace MinecraftClient.Protocol.Handlers
                     tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
                     string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
                     System.IO.File.WriteAllText(Language_File, downloadString(Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash));
-                    Console.WriteLine(hash);
                     ConsoleIO.WriteLine("Done. File saved as '" + Language_File + '\'');
                 }
                 catch

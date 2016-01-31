@@ -42,14 +42,12 @@ namespace MinecraftClient
         private McTcpClient _handler = null;
         private ChatBot master = null;
         private Queue<string> chatQueue = new Queue<string>();
-        private DateTime? lastMessageSentTime = null;
+        private DateTime? lastMessageSentTime = DateTime.MinValue;
         private bool CanSendTextNow
         {
             get
             {
-                return lastMessageSentTime != null
-                    ? DateTime.Now > lastMessageSentTime.Value + Settings.botMessageDelay
-                    : true;
+                return DateTime.Now > lastMessageSentTime.Value + Settings.botMessageDelay;
             }
         }
 
