@@ -164,7 +164,10 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0xCF: if (protocolversion > 51) { readNextString(); readData(1); readNextString(); } readData(4); break;
                 case 0xD0: if (protocolversion > 51) { readData(1); readNextString(); } break;
                 case 0xD1: if (protocolversion > 51) { readNextTeamData(); } break;
-                case 0xFA: readNextString(); nbr = readNextShort(); readData(nbr); break;
+                case 0xFA: string channel = readNextString();
+                    byte[] payload = readNextByteArray();
+                    handler.OnPluginChannelMessage(channel, payload);
+                    break;
                 case 0xFF: string reason = readNextString();
                     handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, reason); break;
                 default: return false; //unknown packet!

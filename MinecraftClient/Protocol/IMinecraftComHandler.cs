@@ -14,7 +14,7 @@ namespace MinecraftClient.Protocol
 
     public interface IMinecraftComHandler
     {
-        /* The MinecraftCom Hanler must
+        /* The MinecraftCom Handler must
          * provide these getters */
 
         int GetServerPort();
@@ -72,5 +72,40 @@ namespace MinecraftClient.Protocol
         /// </summary>
 
         void OnUpdate();
+
+        /// <summary>
+        /// Registers the given plugin channel for the given bot.
+        /// </summary>
+        /// <param name="channel">The channel to register.</param>
+        /// <param name="bot">The bot to register the channel for.</param>
+
+        void RegisterPluginChannel(string channel, ChatBot bot);
+
+        /// <summary>
+        /// Unregisters the given plugin channel for the given bot.
+        /// </summary>
+        /// <param name="channel">The channel to unregister.</param>
+        /// <param name="bot">The bot to unregister the channel for.</param>
+
+        void UnregisterPluginChannel(string channel, ChatBot bot);
+
+        /// <summary>
+        /// Sends a plugin channel packet to the server.  See http://wiki.vg/Plugin_channel for more information
+        /// about plugin channels.
+        /// </summary>
+        /// <param name="channel">The channel to send the packet on.</param>
+        /// <param name="data">The payload for the packet.</param>
+        /// <param name="sendEvenIfNotRegistered">Whether the packet should be sent even if the server or the client hasn't registered it yet.</param>
+        /// <returns>Whether the packet was sent: true if it was sent, false if there was a connection error or it wasn't registered.</returns>
+
+        bool SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false);
+
+        /// <summary>
+        /// Called when a plugin channel message was sent from the server.
+        /// </summary>
+        /// <param name="channel">The channel the message was sent on</param>
+        /// <param name="data">The data from the channel</param>
+
+        void OnPluginChannelMessage(string channel, byte[] data);
     }
 }
