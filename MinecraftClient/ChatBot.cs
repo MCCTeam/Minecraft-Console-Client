@@ -75,9 +75,21 @@ namespace MinecraftClient
 
         /// <summary>
         /// Anything you want to initialize your bot, will be called on load by MinecraftCom
+        ///
+        /// NOTE: Chat messages cannot be sent at this point in the login process.  If you want to send
+        /// a message when the bot is loaded, use AfterGameJoined.
         /// </summary>
 
         public virtual void Initialize() { }
+
+        /// <summary>
+        /// Called after the server has been joined successfully and chat messages are able to be sent.
+        ///
+        /// NOTE: This is not always right after joining the server - if the bot was loaded after logging
+        /// in this is still called.
+        /// </summary>
+
+        public virtual void AfterGameJoined() { }
 
         /// <summary>
         /// Will be called every ~100ms (10fps) if loaded in MinecraftCom

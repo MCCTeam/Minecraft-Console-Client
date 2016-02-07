@@ -27,7 +27,16 @@ namespace MinecraftClient
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
-        public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
+        public void BotLoad(ChatBot b) {
+            b.SetHandler(this);
+            bots.Add(b);
+            b.Initialize();
+            if (this.handler != null)
+            {
+                b.AfterGameJoined();
+            }
+            Settings.SingleCommand = "";
+        }
         public void BotUnLoad(ChatBot b) {
             bots.RemoveAll(item => object.ReferenceEquals(item, b));
 
@@ -351,6 +360,8 @@ namespace MinecraftClient
         {
             if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
                 handler.SendBrandInfo(Settings.BrandInfo.Trim());
+            foreach (ChatBot bot in bots)
+                bot.AfterGameJoined();
         }
 
         /// <summary>
