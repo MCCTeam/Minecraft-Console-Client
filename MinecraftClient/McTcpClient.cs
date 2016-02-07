@@ -28,8 +28,20 @@ namespace MinecraftClient
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
         public void BotLoad(ChatBot b) { b.SetHandler(this); bots.Add(b); b.Initialize(); Settings.SingleCommand = ""; }
-        public void BotUnLoad(ChatBot b) { bots.RemoveAll(item => object.ReferenceEquals(item, b)); }
+        public void BotUnLoad(ChatBot b) {
+            bots.RemoveAll(item => object.ReferenceEquals(item, b));
+
+            // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
+            var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
+            foreach (var entry in botRegistrations)
+            {
+                UnregisterPluginChannel(entry.Key, b);
+            }
+        }
         public void BotClear() { bots.Clear(); }
+
+        private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
+        private readonly List<string> registeredServerPluginChannels = new List<String>();
 
         private object locationLock = new object();
         private bool locationReceived = false;
@@ -571,6 +583,109 @@ namespace MinecraftClient
             lock (onlinePlayers)
             {
                 return onlinePlayers.Values.Distinct().ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Registers the given plugin channel for the given bot.
+        /// </summary>
+        /// <param name="channel">The channel to register.</param>
+        /// <param name="bot">The bot to register the channel for.</param>
+
+        public void RegisterPluginChannel(string channel, ChatBot bot)
+        {
+            if (registeredBotPluginChannels.ContainsKey(channel))
+            {
+                registeredBotPluginChannels[channel].Add(bot);
+            }
+            else
+            {
+                List<ChatBot> bots = new List<ChatBot>();
+                bots.Add(bot);
+                registeredBotPluginChannels[channel] = bots;
+                SendPluginChannelMessage("REGISTER", Encoding.UTF8.GetBytes(channel), true);
+            }
+        }
+
+        /// <summary>
+        /// Unregisters the given plugin channel for the given bot.
+        /// </summary>
+        /// <param name="channel">The channel to unregister.</param>
+        /// <param name="bot">The bot to unregister the channel for.</param>
+
+        public void UnregisterPluginChannel(string channel, ChatBot bot)
+        {
+            if (registeredBotPluginChannels.ContainsKey(channel))
+            {
+                List<ChatBot> registeredBots = registeredBotPluginChannels[channel];
+                registeredBots.RemoveAll(item => object.ReferenceEquals(item, bot));
+                if (registeredBots.Count == 0)
+                {
+                    registeredBotPluginChannels.Remove(channel);
+                    SendPluginChannelMessage("UNREGISTER", Encoding.UTF8.GetBytes(channel), true);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends a plugin channel packet to the server.  See http://wiki.vg/Plugin_channel for more information
+        /// about plugin channels.
+        /// </summary>
+        /// <param name="channel">The channel to send the packet on.</param>
+        /// <param name="data">The payload for the packet.</param>
+        /// <param name="sendEvenIfNotRegistered">Whether the packet should be sent even if the server or the client hasn't registered it yet.</param>
+        /// <returns>Whether the packet was sent: true if it was sent, false if there was a connection error or it wasn't registered.</returns>
+
+        public bool SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false)
+        {
+            if (!sendEvenIfNotRegistered)
+            {
+                if (!registeredBotPluginChannels.ContainsKey(channel))
+                {
+                    return false;
+                }
+                if (!registeredServerPluginChannels.Contains(channel))
+                {
+                    return false;
+                }
+            }
+            return handler.SendPluginChannelPacket(channel, data);
+        }
+
+        /// <summary>
+        /// Called when a plugin channel message was sent from the server.
+        /// </summary>
+        /// <param name="channel">The channel the message was sent on</param>
+        /// <param name="data">The data from the channel</param>
+
+        public void OnPluginChannelMessage(string channel, byte[] data)
+        {
+            if (channel == "REGISTER")
+            {
+                string[] channels = Encoding.UTF8.GetString(data).Split('\0');
+                foreach (string chan in channels)
+                {
+                    if (!registeredServerPluginChannels.Contains(chan))
+                    {
+                        registeredServerPluginChannels.Add(chan);
+                    }
+                }
+            }
+            if (channel == "UNREGISTER")
+            {
+                string[] channels = Encoding.UTF8.GetString(data).Split('\0');
+                foreach (string chan in channels)
+                {
+                    registeredServerPluginChannels.Remove(chan);
+                }
+            }
+
+            if (registeredBotPluginChannels.ContainsKey(channel))
+            {
+                foreach (ChatBot bot in registeredBotPluginChannels[channel])
+                {
+                    bot.OnPluginMessage(channel, data);
+                }
             }
         }
     }
