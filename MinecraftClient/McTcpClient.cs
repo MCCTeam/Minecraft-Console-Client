@@ -477,18 +477,18 @@ namespace MinecraftClient
 
         public void OnUpdate()
         {
-            for (int i = 0; i < bots.Count; i++)
+            foreach (var bot in bots.ToArray())
             {
                 try
                 {
-                    bots[i].Update();
-                    bots[i].ProcessQueuedText();
+                    bot.Update();
+                    bot.ProcessQueuedText();
                 }
                 catch (Exception e)
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLineFormatted("§8Update: Got error from " + bots[i].ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLineFormatted("§8Update: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
