@@ -43,12 +43,12 @@ namespace MinecraftClient
         private ChatBot master = null;
         private List<string> registeredPluginChannels = new List<String>();
         private Queue<string> chatQueue = new Queue<string>();
-        private DateTime? lastMessageSentTime = DateTime.MinValue;
+        private DateTime lastMessageSentTime = DateTime.MinValue;
         private bool CanSendTextNow
         {
             get
             {
-                return DateTime.Now > lastMessageSentTime.Value + Settings.botMessageDelay;
+                return DateTime.Now > lastMessageSentTime + Settings.botMessageDelay;
             }
         }
 
