@@ -258,7 +258,7 @@ namespace MinecraftClient
                     //[Someone -> me] message
                     //[~Someone -> me] message
                     else if (text[0] == '[' && tmp.Length > 3 && tmp[1] == "->"
-                            && (tmp[2] == "me]" || tmp[2] == "moi]")) //'me' is replaced by 'moi' in french servers
+                            && (tmp[2].ToLower() == "me]" || tmp[2].ToLower() == "moi]")) //'me' is replaced by 'moi' in french servers
                     {
                         message = text.Substring(tmp[0].Length + 4 + tmp[2].Length + 1);
                         sender = tmp[0].Substring(1);
@@ -269,7 +269,7 @@ namespace MinecraftClient
                     //Detect Modified server messages. /m
                     //[Someone @ me] message
                     else if (text[0] == '[' && tmp.Length > 3 && tmp[1] == "@"
-                            && (tmp[2] == "me]" || tmp[2] == "moi]")) //'me' is replaced by 'moi' in french servers
+                            && (tmp[2].ToLower() == "me]" || tmp[2].ToLower() == "moi]")) //'me' is replaced by 'moi' in french servers
                     {
                         message = text.Substring(tmp[0].Length + 4 + tmp[2].Length + 0);
                         sender = tmp[0].Substring(1);
@@ -282,7 +282,7 @@ namespace MinecraftClient
                     //[Prefix] [~Someone -> me] message
                     else if (text[0] == '[' && tmp[0][tmp[0].Length - 1] == ']'
                             && tmp[1][0] == '[' && tmp.Length > 4 && tmp[2] == "->"
-                            && (tmp[3] == "me]" || tmp[3] == "moi]"))
+                            && (tmp[3].ToLower() == "me]" || tmp[3].ToLower() == "moi]"))
                     {
                         message = text.Substring(tmp[0].Length + 1 + tmp[1].Length + 4 + tmp[3].Length + 1);
                         sender = tmp[1].Substring(1);
@@ -294,7 +294,7 @@ namespace MinecraftClient
                     //[Someone [rank] -> me] message
                     //[~Someone [rank] -> me] message
                     else if (text[0] == '[' && tmp.Length > 3 && tmp[2] == "->"
-                            && (tmp[3] == "me]" || tmp[3] == "moi]"))
+                            && (tmp[3].ToLower() == "me]" || tmp[3].ToLower() == "moi]"))
                     {
                         message = text.Substring(tmp[0].Length + 1 + tmp[1].Length + 4 + tmp[2].Length + 1);
                         sender = tmp[0].Substring(1);
