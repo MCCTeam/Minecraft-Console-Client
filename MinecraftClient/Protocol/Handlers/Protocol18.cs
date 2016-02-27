@@ -308,7 +308,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // The remaining data in the array is the entire payload of the packet.
                     handler.OnPluginChannelMessage(channel, packetData.ToArray());
 
-                    if (forgeInfo != null)
+                    if (forgeInfo != null && fmlHandshakeState != FMLHandshakeClientState.DONE)
                     {
                         if (channel == "FML|HS")
                         {
