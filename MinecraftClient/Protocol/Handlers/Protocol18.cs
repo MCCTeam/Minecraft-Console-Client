@@ -104,6 +104,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void readNextPacket(ref int packetID, List<byte> packetData)
         {
+            packetData.Clear();
             int size = readNextVarIntRAW(); //Packet size
             packetData.AddRange(readDataRAW(size)); //Packet contents
 
@@ -165,7 +166,7 @@ namespace MinecraftClient.Protocol.Handlers
                             || (messageType == 2 && !Settings.DisplayXPBarMessages))
                             break;
                     }
-                    catch (IndexOutOfRangeException) { /* No message type */ }
+                    catch (ArgumentOutOfRangeException) { /* No message type */ }
                     handler.OnTextReceived(ChatParser.ParseText(message));
                     break;
                 case 0x08: //Player Position and Look

@@ -408,7 +408,7 @@ namespace MinecraftClient
                 + "consoletitle=%username%@%serverip% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
                 + "splitmessagedelay=2 #seconds between each part of a long message\r\n"
-                + "botmessagedelay=2 #seconds to delay between message a bot makes to avoid accidental spam\n\n"
+                + "botmessagedelay=2 #seconds to delay between message a bot makes to avoid accidental spam\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "brandinfo=mcc #use 'mcc','vanilla', or 'none'\r\n"
                 + "chatbotlogfile= #leave empty for no logfile\r\n"
