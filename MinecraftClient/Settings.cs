@@ -29,6 +29,9 @@ namespace MinecraftClient
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
 
+        //Cache Settings
+        public static Cache.AuthCacheHandler.Type CacheType = Cache.AuthCacheHandler.Type.NONE;
+
         //Proxy Settings
         public static bool ProxyEnabledLogin = false;
         public static bool ProxyEnabledIngame = false;
@@ -198,6 +201,12 @@ namespace MinecraftClient
                                                         case "slash": internalCmdChar = '/'; break;
                                                         case "backslash": internalCmdChar = '\\'; break;
                                                     }
+                                                    break;
+
+                                                case "accountcache":
+                                                    if(argValue == "none") { CacheType = Cache.AuthCacheHandler.Type.NONE; }
+                                                    else if(argValue == "memory") { CacheType = Cache.AuthCacheHandler.Type.MEMORY; }
+                                                    else if(argValue == "disk") { CacheType = Cache.AuthCacheHandler.Type.DISK; }
                                                     break;
 
                                                 case "accountlist":
@@ -416,6 +425,7 @@ namespace MinecraftClient
                 + "showsystemmessages=true #system messages for server ops\r\n"
                 + "showxpbarmessages=true #messages displayed above xp bar\r\n"
                 + "terrainandmovements=false #uses more ram, cpu, bandwidth\r\n"
+                + "accountcache=none #use 'none', 'memory' or 'disk'\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"
