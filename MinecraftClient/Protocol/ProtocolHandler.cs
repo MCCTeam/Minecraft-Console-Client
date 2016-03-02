@@ -148,6 +148,7 @@ namespace MinecraftClient.Protocol
         /// <param name="user">Login</param>
         /// <param name="pass">Password</param>
         /// <param name="accesstoken">Will contain the access token returned by Minecraft.net, if the login is successful</param>
+        /// <param name="clienttoken">Will contain the client token generated before sending to Minecraft.net</param>
         /// <param name="uuid">Will contain the player's UUID, needed for multiplayer</param>
         /// <returns>Returns the status of the login (Success, Failure, etc.)</returns>
 
