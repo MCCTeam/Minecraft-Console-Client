@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Net.Security;
 using MinecraftClient.Protocol.Handlers.Forge;
 
+
 namespace MinecraftClient.Protocol
 {
     /// <summary>
@@ -159,7 +160,7 @@ namespace MinecraftClient.Protocol
                 string result = "";
                 if (clienttoken == string.Empty)
                 {
-                    clienttoken = Guid.NewGuid().ToString();
+                    clienttoken = Guid.NewGuid().ToString().Replace("-","");
                 }
                 string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + jsonEncode(user) + "\", \"password\": \"" + jsonEncode(pass) + "\", \"clientToken\": \"" + jsonEncode(clienttoken) + "\" }";
                 int code = doHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
@@ -216,7 +217,7 @@ namespace MinecraftClient.Protocol
             }
         }
 
-        public enum ValidationResult { Validated, RefreshRequired, Error };
+        public enum ValidationResult { Validated, NewTokenRequired, Error };
 
         /// <summary>
         /// Validates whether accessToken must be refreshed
@@ -238,7 +239,7 @@ namespace MinecraftClient.Protocol
                 }
                 else if (code == 403)
                 {
-                    return ValidationResult.RefreshRequired;
+                    return ValidationResult.NewTokenRequired;
                 }
                 else
                 {
@@ -250,6 +251,57 @@ namespace MinecraftClient.Protocol
                 return ValidationResult.Error;
             }
         }
+
+        public enum NewTokenResult { Success, InvalidToken, NullError, OtherError}
+
+        /// <summary>
+        /// Refreshes invalid token
+        /// </summary>
+        /// <param name="user">Login</param>
+        /// <param name="accesstoken">Will contain the new access token returned by Minecraft.net, if the refresh is successful</param>
+        /// <param name="clienttoken">Will contain the client token generated before sending to Minecraft.net</param>
+        /// <param name="uuid">Will contain the player's UUID, needed for multiplayer</param>
+        /// <returns>Returns the status of the new token request (Success, Failure, etc.)</returns>
+        ///
+        public static NewTokenResult GetNewToken(ref string user, ref string accesstoken, ref string clienttoken, ref string uuid)
+        {
+            try
+            {
+                string result = "";
+                string json_request = "{ \"accessToken\": \"" + jsonEncode(accesstoken) + "\", \"clientToken\": \"" + jsonEncode(clienttoken) + "\", \"selectedProfile\": { \"id\": \"" + jsonEncode(uuid) + "\", \"name\": \"" + jsonEncode(user) + "\" } }";
+                int code = doHTTPSPost("authserver.mojang.com", "/refresh", json_request, ref result);
+                if (code == 200)
+                {
+                    if (result == null) {
+                        return NewTokenResult.NullError;
+                    }else{
+                        string[] temp = result.Split(new string[] { "accessToken\":\"" }, StringSplitOptions.RemoveEmptyEntries);
+                        if (temp.Length >= 2) { accesstoken = temp[1].Split('"')[0]; }
+                        temp = result.Split(new string[] { "clientToken\":\"" }, StringSplitOptions.RemoveEmptyEntries);
+                        if (temp.Length >= 2) { clienttoken = temp[1].Split('"')[0]; }
+                        temp = result.Split(new string[] { "name\":\"" }, StringSplitOptions.RemoveEmptyEntries);
+                        if (temp.Length >= 2) { user = temp[1].Split('"')[0]; }
+                        temp = result.Split(new string[] { "selectedProfile\":[{\"id\":\"" }, StringSplitOptions.RemoveEmptyEntries);
+                        if (temp.Length >= 2) { uuid = temp[1].Split('"')[0]; }
+                        return NewTokenResult.Success;
+                    }
+                }
+                else if(code == 403 && result.Contains("InvalidToken"))
+                {
+                    return NewTokenResult.InvalidToken;
+                }
+                else
+                {
+                    ConsoleIO.WriteLineFormatted("§8Got error code from server while refreshing authentication: " + code);
+                    return NewTokenResult.OtherError;
+                }
+            }
+            catch
+            {
+                return NewTokenResult.OtherError;
+            }
+        }
+
         /// <summary>
         /// Check session using Mojang's Yggdrasil authentication scheme. Allows to join an online-mode server
         /// </summary>
