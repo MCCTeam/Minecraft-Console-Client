@@ -211,6 +211,39 @@ namespace MinecraftClient.Protocol
             }
         }
 
+        public enum ValidationResult { Validated, RefreshRequired, Error };
+
+        /// <summary>
+        /// Validates whether accessToken must be refreshed
+        /// </summary>
+        /// <param name="accesstoken">Will contain the cached access token previously returned by Minecraft.net</param>
+        /// <returns>Returns the status of the token (Valid, Invalid, etc.)</returns>
+        /// 
+        public static  ValidationResult  GetTokenValidation(string accesstoken)
+        {
+            try
+            {
+                string result = "";
+                string json_request = "{\"accessToken\": \"" + jsonEncode(accesstoken) + "\" }";
+                int code = doHTTPSPost("authserver.mojang.com", "/validate", json_request, ref result);
+                if (code == 204)
+                {
+                    return ValidationResult.Validated;
+                }
+                else if (code == 403)
+                {
+                    return ValidationResult.RefreshRequired;
+                }
+                else
+                {
+                    return ValidationResult.Error;
+                }
+            }
+            catch
+            {
+                return ValidationResult.Error;
+            }
+        }
         /// <summary>
         /// Check session using Mojang's Yggdrasil authentication scheme. Allows to join an online-mode server
         /// </summary>
