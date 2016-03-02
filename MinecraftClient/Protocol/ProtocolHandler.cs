@@ -151,12 +151,16 @@ namespace MinecraftClient.Protocol
         /// <param name="uuid">Will contain the player's UUID, needed for multiplayer</param>
         /// <returns>Returns the status of the login (Success, Failure, etc.)</returns>
 
-        public static LoginResult GetLogin(ref string user, string pass, ref string accesstoken, ref string uuid)
+        public static LoginResult GetLogin(ref string user, string pass, ref string accesstoken, ref string clienttoken, ref string uuid)
         {
             try
             {
                 string result = "";
-                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + jsonEncode(user) + "\", \"password\": \"" + jsonEncode(pass) + "\" }";
+                if (clienttoken == string.Empty)
+                {
+                    clienttoken = Guid.NewGuid().ToString();
+                }
+                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + jsonEncode(user) + "\", \"password\": \"" + jsonEncode(pass) + "\", \"clientToken\": \"" + jsonEncode(clienttoken) + "\" }";
                 int code = doHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
                 if (code == 200)
                 {
