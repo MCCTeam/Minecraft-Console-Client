@@ -221,14 +221,15 @@ namespace MinecraftClient.Protocol
         /// Validates whether accessToken must be refreshed
         /// </summary>
         /// <param name="accesstoken">Will contain the cached access token previously returned by Minecraft.net</param>
+        /// <param name="clienttoken">Will contain the cached client token created on login</param>
         /// <returns>Returns the status of the token (Valid, Invalid, etc.)</returns>
         /// 
-        public static  ValidationResult  GetTokenValidation(string accesstoken)
+        public static  ValidationResult  GetTokenValidation(string accesstoken, string clienttoken)
         {
             try
             {
                 string result = "";
-                string json_request = "{\"accessToken\": \"" + jsonEncode(accesstoken) + "\" }";
+                string json_request = "{\"accessToken\": \"" + jsonEncode(accesstoken) + "\", \"clientToken\": \"" + jsonEncode(clienttoken) + "\" }";
                 int code = doHTTPSPost("authserver.mojang.com", "/validate", json_request, ref result);
                 if (code == 204)
                 {
