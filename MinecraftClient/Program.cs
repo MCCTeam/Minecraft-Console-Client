@@ -118,6 +118,7 @@ namespace MinecraftClient
             ProtocolHandler.LoginResult result;
             Settings.Username = Settings.Login;
             string sessionID = "";
+            string clientID = "";
             string UUID = "";
 
             if (Settings.Password == "-")
@@ -129,21 +130,21 @@ namespace MinecraftClient
             else
             {
                 Console.WriteLine("Connecting to Minecraft.net...");
-                result = ProtocolHandler.GetLogin(ref Settings.Username, Settings.Password, ref sessionID, ref UUID);
+                result = ProtocolHandler.GetLogin(ref Settings.Username, Settings.Password, ref sessionID, ref clientID, ref UUID);
             }
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
                 if (Settings.ConsoleTitle != "")
                     Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
-                
+
                 if (Settings.playerHeadAsIcon)
                     ConsoleIcon.setPlayerIconAsync(Settings.Username);
-                
+
                 Console.WriteLine("Success. (session ID: " + sessionID + ')');
 
                 //ProtocolHandler.RealmsListWorlds(Settings.Username, UUID, sessionID); //TODO REMOVE
-                
+
                 if (Settings.ServerIP == "")
                 {
                     Console.Write("Server IP : ");
@@ -267,7 +268,7 @@ namespace MinecraftClient
         /// <param name="errorMessage">Error message to display and optionally pass to AutoRelog bot</param>
         /// <param name="versionError">Specify if the error is related to an incompatible or unkown server version</param>
         /// <param name="disconnectReason">If set, the error message will be processed by the AutoRelog bot</param>
-        
+
         public static void HandleFailure(string errorMessage = null, bool versionError = false, ChatBots.AutoRelog.DisconnectReason? disconnectReason = null)
         {
             if (!String.IsNullOrEmpty(errorMessage))
