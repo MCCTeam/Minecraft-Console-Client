@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Timers;
 
 namespace MinecraftClient.Cache
 {
@@ -16,6 +17,8 @@ namespace MinecraftClient.Cache
         const string filename = "cache.bin";
         private static Dictionary<string, SessionToken> sessions = new Dictionary<string, SessionToken>();
         private static FileSystemWatcher cachemonitor = new FileSystemWatcher();
+        private static Timer updatetimer = new Timer(100);
+        private static List<KeyValuePair<string, SessionToken>> pendingadds = new List<KeyValuePair<string, SessionToken>>();
 
         private static BinaryFormatter formatter = new BinaryFormatter();
 
@@ -47,7 +50,9 @@ namespace MinecraftClient.Cache
                 sessions.Add(login, session);
             }
 
-            if (Settings.CacheType == CacheType.DISK)
+            if (Settings.CacheType == CacheType.DISK && updatetimer.Enabled == true) {
+                pendingadds.Add(new KeyValuePair<string, SessionToken>(login, session));
+            }else if (Settings.CacheType == CacheType.DISK)
             {
                 SaveToDisk();
             }
@@ -78,18 +83,38 @@ namespace MinecraftClient.Cache
             cachemonitor.Changed += new FileSystemEventHandler(OnChanged);
             cachemonitor.EnableRaisingEvents = true;
 
+            updatetimer.Elapsed += HandlePending;
+
             return LoadFromDisk();
         }
 
         /// <summary>
         /// Reloads cache on external cache file change.
         /// </summary>
-        /// <param name="source">Sender</param>
+        /// <param name="sender">Sender</param>
         /// <param name="e">Event data</param>
 
-        private static void OnChanged(object source, FileSystemEventArgs e)
+        private static void OnChanged(object sender, FileSystemEventArgs e)
+        {
+            updatetimer.Stop();
+            updatetimer.Start();
+        }
+
+        /// <summary>
+        /// Called after timer elapsed. Reads disk cache and adds new/modified sessions back.
+        /// </summary>
+        /// <param name="sender">Sender</param>
+        /// <param name="e">Event data</param>
+
+        private static void HandlePending(object sender, ElapsedEventArgs e)
         {
             LoadFromDisk();
+
+            foreach(KeyValuePair<string, SessionToken> pending in pendingadds.ToArray())
+            {
+                Store(pending.Key, pending.Value);
+                pendingadds.Remove(pending);
+            }
         }
 
         /// <summary>
