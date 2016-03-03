@@ -216,8 +216,6 @@ namespace MinecraftClient.Protocol
             }
         }
 
-        public enum ValidationResult { Validated, NewTokenRequired, Error };
-
         /// <summary>
         /// Validates whether accessToken must be refreshed
         /// </summary>
@@ -250,8 +248,6 @@ namespace MinecraftClient.Protocol
                 return LoginResult.OtherError;
             }
         }
-
-        public enum NewTokenResult { Success, InvalidToken, NullError, OtherError }
 
         /// <summary>
         /// Refreshes invalid token

@@ -2,14 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace MinecraftClient.Cache
 {
+    /// <summary>
+    /// Handle sessions caching and storage.
+    /// </summary>
+     
     public static class SessionCache
     {
         const string filename = "cache.bin";
@@ -18,10 +19,22 @@ namespace MinecraftClient.Cache
 
         private static BinaryFormatter formatter = new BinaryFormatter();
 
+        /// <summary>
+        /// Retrieve whether SessionCache contains a session for the given login.
+        /// </summary>
+        /// <param name="login">User login used with Minecraft.net</param>
+        /// <returns>TRUE if session is available</returns>
+
         public static bool Contains(string login)
         {
             return sessions.ContainsKey(login);
         }
+
+        /// <summary>
+        /// Store a session and save it to disk if required.
+        /// </summary>
+        /// <param name="login">User login used with Minecraft.net</param>
+        /// <param name="session">User session token used with Minecraft.net</param>
 
         public static void Store(string login, SessionToken session)
         {
@@ -40,12 +53,23 @@ namespace MinecraftClient.Cache
             }
         }
 
+        /// <summary>
+        /// Retrieve a session token for the given login.
+        /// </summary>
+        /// <param name="login">User login used with Minecraft.net</param>
+        /// <returns>SessionToken for given login</returns>
+
         public static SessionToken Get(string login)
         {
             return sessions[login];
         }
 
-        public static bool LoadFromDisk()
+        /// <summary>
+        /// Initialize cache monitoring to keep cache updated with external changes.
+        /// </summary>
+        /// <returns>TRUE if session tokens are seeded from file</returns>
+
+        public static bool InitializeDiskCache()
         {
             cachemonitor.Path = AppDomain.CurrentDomain.BaseDirectory;
             cachemonitor.IncludeSubdirectories = false;
@@ -54,15 +78,26 @@ namespace MinecraftClient.Cache
             cachemonitor.Changed += new FileSystemEventHandler(OnChanged);
             cachemonitor.EnableRaisingEvents = true;
 
-            return ReadCacheFile();
+            return LoadFromDisk();
         }
 
-        public static void OnChanged(object source, FileSystemEventArgs e)
+        /// <summary>
+        /// Reloads cache on external cache file change.
+        /// </summary>
+        /// <param name="source">Sender</param>
+        /// <param name="e">Event data</param>
+
+        private static void OnChanged(object source, FileSystemEventArgs e)
         {
-            ReadCacheFile();
+            LoadFromDisk();
         }
 
-        private static bool ReadCacheFile()
+        /// <summary>
+        /// Reads cache file and loads SessionTokens into SessionCache.
+        /// </summary>
+        /// <returns>True if data is successfully loaded</returns>
+
+        private static bool LoadFromDisk()
         {
             if (File.Exists(filename))
             {
@@ -80,19 +115,25 @@ namespace MinecraftClient.Cache
                 }
                 catch (SerializationException)
                 {
-                    Console.WriteLine("Error getting sessions from cache file ");
+                    Console.WriteLine("Malformed sessions from cache file ");
                 }
             }
             return false;
         }
 
-        public static void SaveToDisk()
+        /// <summary>
+        /// Saves SessionToken's from SessionCache into cache file.
+        /// </summary>
+
+        private static void SaveToDisk()
         {
             bool fileexists = File.Exists(filename);
 
             using (FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
                 cachemonitor.EnableRaisingEvents = false;
+
+                // delete existing file contents
                 if (fileexists)
                 {
                     fs.SetLength(0);
@@ -104,36 +145,5 @@ namespace MinecraftClient.Cache
             }
 
         }
-
-        private static byte[] GetHash(FileStream fs, bool resetposition = true)
-        {
-            using (var md5 = MD5.Create())
-            {
-                long pos = fs.Position;
-                byte[] hash = md5.ComputeHash(fs);
-
-                fs.Position = resetposition ? pos : fs.Position;
-                return hash;
-            }
-        }
-
-        private static bool HashesEqual(byte[] hash1, byte[] hash2)
-        {
-            if (hash1.Length != hash2.Length)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < hash1.Length; i++)
-            {
-                if (hash1[i] != hash2[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
     }
 }

@@ -88,7 +88,7 @@ namespace MinecraftClient
             //Load cached sessions from disk if necessary
             if (Settings.CacheType == Cache.CacheType.DISK)
             {
-                ConsoleIO.WriteLineFormatted(Cache.SessionCache.LoadFromDisk() ? "Cached sessions loaded." : "§8Cached sessions could not be loaded from disk");
+                Console.WriteLine(Cache.SessionCache.InitializeDiskCache() ? "Cached sessions loaded." : "§8Cached sessions could not be loaded from disk");
             }
 
             //Asking the user to type in missing data such as Username and Password
