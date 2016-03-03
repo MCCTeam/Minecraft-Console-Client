@@ -85,6 +85,12 @@ namespace MinecraftClient
                 Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
             }
 
+            //Load cached sessions from disk if necessary
+            if (Settings.CacheType == Cache.CacheType.DISK)
+            {
+                ConsoleIO.WriteLineFormatted(Cache.SessionCache.LoadFromDisk() ? "Cached sessions loaded." : "§8Cached sessions could not be loaded from disk");
+            }
+
             //Asking the user to type in missing data such as Username and Password
 
             if (Settings.Login == "")
@@ -92,21 +98,29 @@ namespace MinecraftClient
                 Console.Write(ConsoleIO.basicIO ? "Please type the username of your choice.\n" : "Username : ");
                 Settings.Login = Console.ReadLine();
             }
-            if (Settings.Password == "")
+            if (Settings.Password == "" && (Settings.CacheType == Cache.CacheType.NONE || !Cache.SessionCache.Contains(Settings.Login)))
             {
-                Console.Write(ConsoleIO.basicIO ? "Please type the password for " + Settings.Login + ".\n" : "Password : ");
-                Settings.Password = ConsoleIO.basicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
-                if (Settings.Password == "") { Settings.Password = "-"; }
-                if (!ConsoleIO.basicIO)
-                {
-                    //Hide password length
-                    Console.CursorTop--; Console.Write("Password : <******>");
-                    for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
-                }
+                RequestPassword();
             }
 
             startupargs = args;
             InitializeClient();
+        }
+
+        /// <summary>
+        /// Reduest user to submit password.
+        /// </summary>
+        private static void RequestPassword()
+        {
+            Console.Write(ConsoleIO.basicIO ? "Please type the password for " + Settings.Login + ".\n" : "Password : ");
+            Settings.Password = ConsoleIO.basicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+            if (Settings.Password == "") { Settings.Password = "-"; }
+            if (!ConsoleIO.basicIO)
+            {
+                //Hide password length
+                Console.CursorTop--; Console.Write("Password : <******>");
+                for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
+            }
         }
 
         /// <summary>
@@ -115,35 +129,60 @@ namespace MinecraftClient
 
         private static void InitializeClient()
         {
-            ProtocolHandler.LoginResult result;
-            Settings.Username = Settings.Login;
-            string sessionID = "";
-            string clientID = "";
-            string UUID = "";
+            SessionToken session = new SessionToken();
+
+            ProtocolHandler.LoginResult result = ProtocolHandler.LoginResult.LoginRequired;
 
             if (Settings.Password == "-")
             {
                 ConsoleIO.WriteLineFormatted("§8You chose to run in offline mode.");
                 result = ProtocolHandler.LoginResult.Success;
-                sessionID = "0";
+                session.PlayerID = "0";
+                session.PlayerName = Settings.Login;
             }
             else
             {
-                Console.WriteLine("Connecting to Minecraft.net...");
-                result = ProtocolHandler.GetLogin(ref Settings.Username, Settings.Password, ref sessionID, ref clientID, ref UUID);
+                // Validate cached session or login new session.
+                if (Settings.CacheType != Cache.CacheType.NONE && Cache.SessionCache.Contains(Settings.Login))
+                {
+                    session = Cache.SessionCache.Get(Settings.Login);
+                    result = ProtocolHandler.GetTokenValidation(session);
+
+                    if (result != ProtocolHandler.LoginResult.Success && Settings.Password == "")
+                    {
+                        RequestPassword();
+                    }
+
+                    Console.WriteLine("Cached session is " + (result == ProtocolHandler.LoginResult.Success ? "valid." : "invalid."));
+
+                }
+
+                if (result != ProtocolHandler.LoginResult.Success)
+                {
+                    Console.WriteLine("Connecting to Minecraft.net...");
+                    result = ProtocolHandler.GetLogin(Settings.Login, Settings.Password, out session);
+
+                    if (result == ProtocolHandler.LoginResult.Success && Settings.CacheType != Cache.CacheType.NONE)
+                    {
+                        Cache.SessionCache.Store(Settings.Login, session);
+                    }
+                }
+
             }
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
+                Settings.Username = session.PlayerName;
+
                 if (Settings.ConsoleTitle != "")
                     Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
 
                 if (Settings.playerHeadAsIcon)
                     ConsoleIcon.setPlayerIconAsync(Settings.Username);
 
-                Console.WriteLine("Success. (session ID: " + sessionID + ')');
+                Console.WriteLine("Success. (session ID: " + session.ID + ')');
 
-                //ProtocolHandler.RealmsListWorlds(Settings.Username, UUID, sessionID); //TODO REMOVE
+                //ProtocolHandler.RealmsListWorlds(Settings.Username, PlayerID, sessionID); //TODO REMOVE
 
                 if (Settings.ServerIP == "")
                 {
@@ -194,9 +233,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            Client = new McTcpClient(Settings.Username, UUID, sessionID, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
+                            Client = new McTcpClient(session.PlayerName, session.PlayerID, session.ID, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
                         }
-                        else Client = new McTcpClient(Settings.Username, UUID, sessionID, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
+                        else Client = new McTcpClient(session.PlayerName, session.PlayerID, session.ID, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")

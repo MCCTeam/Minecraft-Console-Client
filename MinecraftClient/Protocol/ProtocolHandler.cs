@@ -141,7 +141,7 @@ namespace MinecraftClient.Protocol
             }
         }
 
-        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium };
+        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, NullError };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -150,19 +150,18 @@ namespace MinecraftClient.Protocol
         /// <param name="pass">Password</param>
         /// <param name="accesstoken">Will contain the access token returned by Minecraft.net, if the login is successful</param>
         /// <param name="clienttoken">Will contain the client token generated before sending to Minecraft.net</param>
-        /// <param name="uuid">Will contain the player's UUID, needed for multiplayer</param>
+        /// <param name="uuid">Will contain the player's PlayerID, needed for multiplayer</param>
         /// <returns>Returns the status of the login (Success, Failure, etc.)</returns>
 
-        public static LoginResult GetLogin(ref string user, string pass, ref string accesstoken, ref string clienttoken, ref string uuid)
+        public static LoginResult GetLogin(string user, string pass, out SessionToken session)
         {
+            session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+
             try
             {
                 string result = "";
-                if (clienttoken == string.Empty)
-                {
-                    clienttoken = Guid.NewGuid().ToString().Replace("-","");
-                }
-                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + jsonEncode(user) + "\", \"password\": \"" + jsonEncode(pass) + "\", \"clientToken\": \"" + jsonEncode(clienttoken) + "\" }";
+
+                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + jsonEncode(user) + "\", \"password\": \"" + jsonEncode(pass) + "\", \"clientToken\": \"" + jsonEncode(session.ClientID) + "\" }";
                 int code = doHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
                 if (code == 200)
                 {
@@ -173,11 +172,11 @@ namespace MinecraftClient.Protocol
                     else
                     {
                         string[] temp = result.Split(new string[] { "accessToken\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { accesstoken = temp[1].Split('"')[0]; }
+                        if (temp.Length >= 2) { session.ID = temp[1].Split('"')[0]; }
                         temp = result.Split(new string[] { "name\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { user = temp[1].Split('"')[0]; }
+                        if (temp.Length >= 2) { session.PlayerName = temp[1].Split('"')[0]; }
                         temp = result.Split(new string[] { "availableProfiles\":[{\"id\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { uuid = temp[1].Split('"')[0]; }
+                        if (temp.Length >= 2) { session.PlayerID = temp[1].Split('"')[0]; }
                         return LoginResult.Success;
                     }
                 }
@@ -226,33 +225,33 @@ namespace MinecraftClient.Protocol
         /// <param name="clienttoken">Will contain the cached client token created on login</param>
         /// <returns>Returns the status of the token (Valid, Invalid, etc.)</returns>
         /// 
-        public static  ValidationResult  GetTokenValidation(string accesstoken, string clienttoken)
+        public static LoginResult GetTokenValidation(SessionToken session)
         {
             try
             {
                 string result = "";
-                string json_request = "{\"accessToken\": \"" + jsonEncode(accesstoken) + "\", \"clientToken\": \"" + jsonEncode(clienttoken) + "\" }";
+                string json_request = "{\"accessToken\": \"" + jsonEncode(session.ID) + "\", \"clientToken\": \"" + jsonEncode(session.ClientID) + "\" }";
                 int code = doHTTPSPost("authserver.mojang.com", "/validate", json_request, ref result);
                 if (code == 204)
                 {
-                    return ValidationResult.Validated;
+                    return LoginResult.Success;
                 }
                 else if (code == 403)
                 {
-                    return ValidationResult.NewTokenRequired;
+                    return LoginResult.LoginRequired;
                 }
                 else
                 {
-                    return ValidationResult.Error;
+                    return LoginResult.OtherError;
                 }
             }
             catch
             {
-                return ValidationResult.Error;
+                return LoginResult.OtherError;
             }
         }
 
-        public enum NewTokenResult { Success, InvalidToken, NullError, OtherError}
+        public enum NewTokenResult { Success, InvalidToken, NullError, OtherError }
 
         /// <summary>
         /// Refreshes invalid token
@@ -260,45 +259,48 @@ namespace MinecraftClient.Protocol
         /// <param name="user">Login</param>
         /// <param name="accesstoken">Will contain the new access token returned by Minecraft.net, if the refresh is successful</param>
         /// <param name="clienttoken">Will contain the client token generated before sending to Minecraft.net</param>
-        /// <param name="uuid">Will contain the player's UUID, needed for multiplayer</param>
+        /// <param name="uuid">Will contain the player's PlayerID, needed for multiplayer</param>
         /// <returns>Returns the status of the new token request (Success, Failure, etc.)</returns>
         ///
-        public static NewTokenResult GetNewToken(ref string user, ref string accesstoken, ref string clienttoken, ref string uuid)
+        public static LoginResult GetNewToken(SessionToken currentsession, out SessionToken newsession)
         {
+            newsession = new SessionToken();
             try
             {
                 string result = "";
-                string json_request = "{ \"accessToken\": \"" + jsonEncode(accesstoken) + "\", \"clientToken\": \"" + jsonEncode(clienttoken) + "\", \"selectedProfile\": { \"id\": \"" + jsonEncode(uuid) + "\", \"name\": \"" + jsonEncode(user) + "\" } }";
+                string json_request = "{ \"accessToken\": \"" + jsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + jsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + jsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + jsonEncode(currentsession.PlayerName) + "\" } }";
                 int code = doHTTPSPost("authserver.mojang.com", "/refresh", json_request, ref result);
                 if (code == 200)
                 {
-                    if (result == null) {
-                        return NewTokenResult.NullError;
-                    }else{
+                    if (result == null)
+                    {
+                        return LoginResult.NullError;
+                    }
+                    else {
                         string[] temp = result.Split(new string[] { "accessToken\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { accesstoken = temp[1].Split('"')[0]; }
+                        if (temp.Length >= 2) { newsession.ID = temp[1].Split('"')[0]; }
                         temp = result.Split(new string[] { "clientToken\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { clienttoken = temp[1].Split('"')[0]; }
+                        if (temp.Length >= 2) { newsession.ClientID = temp[1].Split('"')[0]; }
                         temp = result.Split(new string[] { "name\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { user = temp[1].Split('"')[0]; }
+                        if (temp.Length >= 2) { newsession.PlayerName = temp[1].Split('"')[0]; }
                         temp = result.Split(new string[] { "selectedProfile\":[{\"id\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { uuid = temp[1].Split('"')[0]; }
-                        return NewTokenResult.Success;
+                        if (temp.Length >= 2) { newsession.PlayerID = temp[1].Split('"')[0]; }
+                        return LoginResult.Success;
                     }
                 }
-                else if(code == 403 && result.Contains("InvalidToken"))
+                else if (code == 403 && result.Contains("InvalidToken"))
                 {
-                    return NewTokenResult.InvalidToken;
+                    return LoginResult.InvalidToken;
                 }
                 else
                 {
                     ConsoleIO.WriteLineFormatted("§8Got error code from server while refreshing authentication: " + code);
-                    return NewTokenResult.OtherError;
+                    return LoginResult.OtherError;
                 }
             }
             catch
             {
-                return NewTokenResult.OtherError;
+                return LoginResult.OtherError;
             }
         }
 

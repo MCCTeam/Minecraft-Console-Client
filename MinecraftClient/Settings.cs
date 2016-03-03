@@ -30,7 +30,7 @@ namespace MinecraftClient
         public static string ConsoleTitle = "";
 
         //Cache Settings
-        public static Cache.AuthCacheHandler.Type CacheType = Cache.AuthCacheHandler.Type.NONE;
+        public static Cache.CacheType CacheType = Cache.CacheType.NONE;
 
         //Proxy Settings
         public static bool ProxyEnabledLogin = false;
@@ -204,9 +204,9 @@ namespace MinecraftClient
                                                     break;
 
                                                 case "accountcache":
-                                                    if(argValue == "none") { CacheType = Cache.AuthCacheHandler.Type.NONE; }
-                                                    else if(argValue == "memory") { CacheType = Cache.AuthCacheHandler.Type.MEMORY; }
-                                                    else if(argValue == "disk") { CacheType = Cache.AuthCacheHandler.Type.DISK; }
+                                                    if (argValue == "none") { CacheType = Cache.CacheType.NONE; }
+                                                    else if (argValue == "memory") { CacheType = Cache.CacheType.MEMORY; }
+                                                    else if (argValue == "disk") { CacheType = Cache.CacheType.DISK; }
                                                     break;
 
                                                 case "accountlist":
