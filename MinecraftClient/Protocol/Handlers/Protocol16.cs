@@ -34,6 +34,9 @@ namespace MinecraftClient.Protocol.Handlers
             this.c = Client;
             this.protocolversion = ProtocolVersion;
             this.handler = Handler;
+
+            if (Settings.TerrainAndMovements)
+                ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
         }
 
         private Protocol16Handler(TcpClient Client)

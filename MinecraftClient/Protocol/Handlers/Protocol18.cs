@@ -13,12 +13,13 @@ using MinecraftClient.Mapping;
 namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
-    /// Implementation for Minecraft 1.7.X and 1.8.X Protocols
+    /// Implementation for Minecraft 1.7.X, 1.8.X, 1.9.X Protocols
     /// </summary>
 
     class Protocol18Handler : IMinecraftCom
     {
         private const int MC18Version = 47;
+        private const int MC19Version = 107;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -44,6 +45,9 @@ namespace MinecraftClient.Protocol.Handlers
             this.protocolversion = ProtocolVersion;
             this.handler = Handler;
             this.forgeInfo = ForgeInfo;
+
+            if (Settings.TerrainAndMovements && protocolversion > MC18Version)
+                ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
         }
 
         private Protocol18Handler(TcpClient Client)
@@ -126,6 +130,85 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Abstract incoming packet numbering
+        /// </summary>
+
+        private enum PacketIncomingType
+        {
+            KeepAlive,
+            JoinGame,
+            ChatMessage,
+            PlayerPositionAndLook,
+            ChunkData,
+            MultiBlockChange,
+            BlockChange,
+            MapChunkBulk,
+            UnloadChunk,
+            PlayerListUpdate,
+            TabCompleteResult,
+            PluginMessage,
+            KickPacket,
+            NetworkCompressionTreshold,
+            ResourcePackSend,
+            UnknownPacket
+        }
+
+        /// <summary>
+        /// Get abstract numbering ov the specified packet ID
+        /// </summary>
+        /// <param name="packetID">Packet ID</param>
+        /// <param name="protocol">Protocol version</param>
+        /// <returns>Abstract numbering</returns>
+
+        private PacketIncomingType getPacketIncomingType(int packetID, int protocol)
+        {
+            if (protocol < MC19Version)
+            {
+                switch (packetID)
+                {
+                    case 0x00: return PacketIncomingType.KeepAlive;
+                    case 0x01: return PacketIncomingType.JoinGame;
+                    case 0x02: return PacketIncomingType.ChatMessage;
+                    case 0x08: return PacketIncomingType.PlayerPositionAndLook;
+                    case 0x21: return PacketIncomingType.ChunkData;
+                    case 0x22: return PacketIncomingType.MultiBlockChange;
+                    case 0x23: return PacketIncomingType.BlockChange;
+                    case 0x26: return PacketIncomingType.MapChunkBulk;
+                    //UnloadChunk does not exists prior to 1.9
+                    case 0x38: return PacketIncomingType.PlayerListUpdate;
+                    case 0x3A: return PacketIncomingType.TabCompleteResult;
+                    case 0x3F: return PacketIncomingType.PluginMessage;
+                    case 0x40: return PacketIncomingType.KickPacket;
+                    case 0x46: return PacketIncomingType.NetworkCompressionTreshold;
+                    case 0x48: return PacketIncomingType.ResourcePackSend;
+                    default: return PacketIncomingType.UnknownPacket;
+                }
+            }
+            else
+            {
+                switch (packetID)
+                {
+                    case 0x1F: return PacketIncomingType.KeepAlive;
+                    case 0x23: return PacketIncomingType.JoinGame;
+                    case 0x0F: return PacketIncomingType.ChatMessage;
+                    case 0x2E: return PacketIncomingType.PlayerPositionAndLook;
+                    case 0x20: return PacketIncomingType.ChunkData;
+                    case 0x10: return PacketIncomingType.MultiBlockChange;
+                    case 0x0B: return PacketIncomingType.BlockChange;
+                    //MapChunkBulk removed in 1.9
+                    case 0x1D: return PacketIncomingType.UnloadChunk;
+                    case 0x2D: return PacketIncomingType.PlayerListUpdate;
+                    case 0x0E: return PacketIncomingType.TabCompleteResult;
+                    case 0x18: return PacketIncomingType.PluginMessage;
+                    case 0x1A: return PacketIncomingType.KickPacket;
+                    //NetworkCompressionTreshold removed in 1.9
+                    case 0x32: return PacketIncomingType.ResourcePackSend;
+                    default: return PacketIncomingType.UnknownPacket;
+                }
+            }
+        }
+
+        /// <summary>
         /// Handle the given packet
         /// </summary>
         /// <param name="packetID">Packet ID</param>
@@ -148,15 +231,15 @@ namespace MinecraftClient.Protocol.Handlers
             }
             // Regular in-game packets
 
-            switch (packetID)
+            switch (getPacketIncomingType(packetID, protocolversion))
             {
-                case 0x00: //Keep-Alive
-                    SendPacket(0x00, packetData);
+                case PacketIncomingType.KeepAlive:
+                    SendPacket(protocolversion >= MC19Version ? 0x0B : 0x00, packetData);
                     break;
-                case 0x01: //Join game
+                case PacketIncomingType.JoinGame:
                     handler.OnGameJoined();
                     break;
-                case 0x02: //Chat message
+                case PacketIncomingType.ChatMessage:
                     string message = readNextString(packetData);
                     try
                     {
@@ -169,7 +252,7 @@ namespace MinecraftClient.Protocol.Handlers
                     catch (ArgumentOutOfRangeException) { /* No message type */ }
                     handler.OnTextReceived(ChatParser.ParseText(message));
                     break;
-                case 0x08: //Player Position and Look
+                case PacketIncomingType.PlayerPositionAndLook:
                     if (Settings.TerrainAndMovements)
                     {
                         double x = readNextDouble(packetData);
@@ -184,20 +267,23 @@ namespace MinecraftClient.Protocol.Handlers
                         location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
 
                         handler.UpdateLocation(location);
+
+                        if (protocolversion >= MC19Version)
+                            readNextVarInt(packetData);
                     }
                     break;
-                case 0x21: //Chunk Data
+                case PacketIncomingType.ChunkData:
                     if (Settings.TerrainAndMovements)
                     {
                         int chunkX = readNextInt(packetData);
                         int chunkZ = readNextInt(packetData);
                         bool chunksContinuous = readNextBool(packetData);
-                        ushort chunkMask = readNextUShort(packetData);
+                        ushort chunkMask = protocolversion >= MC19Version ? (ushort)readNextVarInt(packetData) : readNextUShort(packetData);
                         int dataSize = readNextVarInt(packetData);
                         ProcessChunkColumnData(chunkX, chunkZ, chunkMask, false, chunksContinuous, packetData);
                     }
                     break;
-                case 0x22: //Multi Block Change
+                case PacketIncomingType.MultiBlockChange:
                     if (Settings.TerrainAndMovements)
                     {
                         int chunkX = readNextInt(packetData);
@@ -214,12 +300,12 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                     }
                     break;
-                case 0x23: //Block Change
+                case PacketIncomingType.BlockChange:
                     if (Settings.TerrainAndMovements)
                         handler.GetWorld().SetBlock(Location.FromLong(readNextULong(packetData)), new Block((ushort)readNextVarInt(packetData)));
                     break;
-                case 0x26: //Map Chunk Bulk
-                    if (Settings.TerrainAndMovements)
+                case PacketIncomingType.MapChunkBulk:
+                    if (protocolversion < MC19Version && Settings.TerrainAndMovements)
                     {
                         bool hasSkyLight = readNextBool(packetData);
                         int chunkCount = readNextVarInt(packetData);
@@ -240,7 +326,15 @@ namespace MinecraftClient.Protocol.Handlers
                             ProcessChunkColumnData(chunkXs[chunkColumnNo], chunkZs[chunkColumnNo], chunkMasks[chunkColumnNo], hasSkyLight, true, packetData);
                     }
                     break;
-                case 0x38: //Player List update
+                case PacketIncomingType.UnloadChunk:
+                    if (protocolversion >= MC19Version && Settings.TerrainAndMovements)
+                    {
+                        int chunkX = readNextInt(packetData);
+                        int chunkZ = readNextInt(packetData);
+                        handler.GetWorld()[chunkX, chunkZ] = null;
+                    }
+                    break;
+                case PacketIncomingType.PlayerListUpdate:
                     if (protocolversion >= MC18Version)
                     {
                         int action = readNextVarInt(packetData);
@@ -274,7 +368,7 @@ namespace MinecraftClient.Protocol.Handlers
                         else handler.OnPlayerLeave(FakeUUID);
                     }
                     break;
-                case 0x3A: //Tab-Complete Result
+                case PacketIncomingType.TabCompleteResult:
                     int autocomplete_count = readNextVarInt(packetData);
                     string tab_list = "";
                     for (int i = 0; i < autocomplete_count; i++)
@@ -288,7 +382,7 @@ namespace MinecraftClient.Protocol.Handlers
                     if (tab_list.Length > 0)
                         ConsoleIO.WriteLineFormatted("§8" + tab_list, false);
                     break;
-                case 0x3F: //Plugin message.
+                case PacketIncomingType.PluginMessage:
                     String channel = readNextString(packetData);
                     if (protocolversion < MC18Version)
                     {
@@ -308,6 +402,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // The remaining data in the array is the entire payload of the packet.
                     handler.OnPluginChannelMessage(channel, packetData.ToArray());
 
+                    #region Forge Login
                     if (forgeInfo != null && fmlHandshakeState != FMLHandshakeClientState.DONE)
                     {
                         if (channel == "FML|HS")
@@ -432,20 +527,22 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                         }
                     }
+                    #endregion
+
                     return false;
-                case 0x40: //Kick Packet
+                case PacketIncomingType.KickPacket:
                     handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(readNextString(packetData)));
                     return false;
-                case 0x46: //Network Compression Treshold Info
-                    if (protocolversion >= MC18Version)
+                case PacketIncomingType.NetworkCompressionTreshold:
+                    if (protocolversion >= MC18Version && protocolversion < MC19Version)
                         compression_treshold = readNextVarInt(packetData);
                     break;
-                case 0x48: //Resource Pack Send
+                case PacketIncomingType.ResourcePackSend:
                     string url = readNextString(packetData);
                     string hash = readNextString(packetData);
                     //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
-                    SendPacket(0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(3)));
-                    SendPacket(0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(0)));
+                    SendPacket(protocolversion >= MC19Version ? 0x16 : 0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(3)));
+                    SendPacket(protocolversion >= MC19Version ? 0x16 : 0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(0)));
                     break;
                 default:
                     return false; //Ignored packet
@@ -465,7 +562,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, bool hasSkyLight, bool chunksContinuous, List<byte> cache)
         {
-            if (chunksContinuous && chunkMask == 0)
+            if (protocolversion >= MC19Version && chunksContinuous && chunkMask == 0)
             {
                 //Unload the entire chunk column
                 handler.GetWorld()[chunkX, chunkZ] = null;
@@ -978,7 +1075,8 @@ namespace MinecraftClient.Protocol.Handlers
                     ConsoleIO.WriteLineFormatted("§8Server is in offline mode.");
                     login_phase = false;
 
-                    if (forgeInfo != null) {
+                    if (forgeInfo != null)
+                    {
                         // Do the forge handshake.
                         if (!CompleteForgeHandshake())
                         {
@@ -1099,7 +1197,7 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] message_val = Encoding.UTF8.GetBytes(message);
                 byte[] message_len = getVarInt(message_val.Length);
                 byte[] message_packet = concatBytes(message_len, message_val);
-                SendPacket(0x01, message_packet);
+                SendPacket(protocolversion >= MC19Version ? 0x02 : 0x01, message_packet);
                 return true;
             }
             catch (SocketException) { return false; }
@@ -1116,7 +1214,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                SendPacket(0x16, new byte[] { 0 });
+                SendPacket(protocolversion >= MC19Version ? 0x03 : 0x16, new byte[] { 0 });
                 return true;
             }
             catch (SocketException) { return false; }
@@ -1149,7 +1247,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 try
                 {
-                    SendPacket(0x04, concatBytes(
+                    SendPacket(protocolversion >= MC19Version ? 0x0C : 0x04, concatBytes(
                         getDouble(location.X), getDouble(location.Y), getDouble(location.Z),
                         new byte[] { onGround ? (byte)1 : (byte)0 }));
                     return true;
@@ -1180,7 +1278,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else
                 {
-                    SendPacket(0x17, concatBytes(getString(channel), data));
+                    SendPacket(protocolversion >= MC19Version ? 0x09 : 0x17, concatBytes(getString(channel), data));
                 }
 
                 return true;
@@ -1218,14 +1316,17 @@ namespace MinecraftClient.Protocol.Handlers
 
             byte[] tocomplete_val = Encoding.UTF8.GetBytes(BehindCursor);
             byte[] tocomplete_len = getVarInt(tocomplete_val.Length);
+            byte[] assume_command = new byte[] { 0x00 };
             byte[] has_position = new byte[] { 0x00 };
             byte[] tabcomplete_packet = protocolversion >= MC18Version
-                ? concatBytes(tocomplete_len, tocomplete_val, has_position)
+                ? protocolversion >= MC19Version
+                    ? concatBytes(tocomplete_len, tocomplete_val, assume_command, has_position)
+                    : concatBytes(tocomplete_len, tocomplete_val, has_position)
                 : concatBytes(tocomplete_len, tocomplete_val);
 
             autocomplete_received = false;
             autocomplete_result = BehindCursor;
-            SendPacket(0x14, tabcomplete_packet);
+            SendPacket(protocolversion >= MC19Version ? 0x01 : 0x14, tabcomplete_packet);
 
             int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
             while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }

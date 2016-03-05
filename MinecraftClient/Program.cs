@@ -10,7 +10,7 @@ using MinecraftClient.Protocol.Handlers.Forge;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by ORelio (c) 2012-2014.
+    /// Minecraft Console Client by ORelio & Contributors (c) 2012-2016.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
@@ -20,9 +20,9 @@ namespace MinecraftClient
         private static McTcpClient Client;
         public static string[] startupargs;
 
-        public const string Version = "1.8.2";
+        public const string Version = "1.9.0 BETA";
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.8.8";
+        public const string MCHighestVersion = "1.9.0";
 
         private static Thread offlinePrompt = null;
         private static bool useMcVersionOnce = false;
