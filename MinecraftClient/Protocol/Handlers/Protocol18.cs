@@ -346,7 +346,27 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 case 0x00: //Player Join
                                     string name = readNextString(packetData);
+                                    int propNum = readNextVarInt(packetData);
+                                    for (int p = 0; p < propNum; p++)
+                                    {
+                                        readNextString(packetData);
+                                        readNextString(packetData);
+                                        if (readNextBool(packetData))
+                                            readNextString(packetData);
+                                    }
+                                    readNextVarInt(packetData);
+                                    readNextVarInt(packetData);
+                                    if (readNextBool(packetData))
+                                        readNextString(packetData);
                                     handler.OnPlayerJoin(uuid, name);
+                                    break;
+                                case 0x01: //Update gamemode
+                                case 0x02: //Update latency
+                                    readNextVarInt(packetData);
+                                    break;
+                                case 0x03: //Update display name
+                                    if (readNextBool(packetData))
+                                        readNextString(packetData);
                                     break;
                                 case 0x04: //Player Leave
                                     handler.OnPlayerLeave(uuid);
