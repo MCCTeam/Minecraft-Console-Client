@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Timers;
 
-namespace MinecraftClient.Cache
+namespace MinecraftClient.Protocol.SessionCache
 {
     /// <summary>
     /// Handle sessions caching and storage.
@@ -14,7 +14,8 @@ namespace MinecraftClient.Cache
      
     public static class SessionCache
     {
-        const string filename = "cache.bin";
+        private const string SessionCacheFile = "SessionCache.db";
+
         private static Dictionary<string, SessionToken> sessions = new Dictionary<string, SessionToken>();
         private static FileSystemWatcher cachemonitor = new FileSystemWatcher();
         private static Timer updatetimer = new Timer(100);
@@ -50,9 +51,11 @@ namespace MinecraftClient.Cache
                 sessions.Add(login, session);
             }
 
-            if (Settings.CacheType == CacheType.DISK && updatetimer.Enabled == true) {
+            if (Settings.SessionCaching == CacheType.Disk && updatetimer.Enabled == true)
+            {
                 pendingadds.Add(new KeyValuePair<string, SessionToken>(login, session));
-            }else if (Settings.CacheType == CacheType.DISK)
+            }
+            else if (Settings.SessionCaching == CacheType.Disk)
             {
                 SaveToDisk();
             }
@@ -78,7 +81,7 @@ namespace MinecraftClient.Cache
         {
             cachemonitor.Path = AppDomain.CurrentDomain.BaseDirectory;
             cachemonitor.IncludeSubdirectories = false;
-            cachemonitor.Filter = filename;
+            cachemonitor.Filter = SessionCacheFile;
             cachemonitor.NotifyFilter = NotifyFilters.LastWrite;
             cachemonitor.Changed += new FileSystemEventHandler(OnChanged);
             cachemonitor.EnableRaisingEvents = true;
@@ -124,11 +127,11 @@ namespace MinecraftClient.Cache
 
         private static bool LoadFromDisk()
         {
-            if (File.Exists(filename))
+            if (File.Exists(SessionCacheFile))
             {
                 try
                 {
-                    using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (FileStream fs = new FileStream(SessionCacheFile, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         sessions = (Dictionary<string, SessionToken>)formatter.Deserialize(fs);
                         return true;
@@ -152,9 +155,9 @@ namespace MinecraftClient.Cache
 
         private static void SaveToDisk()
         {
-            bool fileexists = File.Exists(filename);
+            bool fileexists = File.Exists(SessionCacheFile);
 
-            using (FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            using (FileStream fs = new FileStream(SessionCacheFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
                 cachemonitor.EnableRaisingEvents = false;
 

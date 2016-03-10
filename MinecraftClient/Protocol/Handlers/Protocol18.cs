@@ -451,13 +451,15 @@ namespace MinecraftClient.Protocol.Handlers
                                     byte fmlProtocolVersion = readNextByte(packetData);
                                     // There's another value afterwards for the dimension, but we don't need it.
 
-                                    ConsoleIO.WriteLineFormatted("§8Forge protocol version : " + fmlProtocolVersion);
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted("§8Forge protocol version : " + fmlProtocolVersion);
 
                                     // Tell the server we're running the same version.
                                     SendForgeHandshakePacket(FMLHandshakeDiscriminator.ClientHello, new byte[] { fmlProtocolVersion });
 
                                     // Then tell the server that we're running the same mods.
-                                    ConsoleIO.WriteLineFormatted("§8Sending falsified mod list to server...");
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted("§8Sending falsified mod list to server...");
                                     byte[][] mods = new byte[forgeInfo.Mods.Count][];
                                     for (int i = 0; i < forgeInfo.Mods.Count; i++)
                                     {
@@ -476,7 +478,8 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     Thread.Sleep(2000);
 
-                                    ConsoleIO.WriteLineFormatted("§8Accepting server mod list...");
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted("§8Accepting server mod list...");
                                     // Tell the server that yes, we are OK with the mods it has
                                     // even though we don't actually care what mods it has.
 
@@ -497,8 +500,8 @@ namespace MinecraftClient.Protocol.Handlers
                                         // with blocks and items.
                                         int registrySize = readNextVarInt(packetData);
 
-                                        ConsoleIO.WriteLineFormatted("§8Received registry " +
-                                            "with " + registrySize + " entries");
+                                        if (Settings.DebugMessages)
+                                            ConsoleIO.WriteLineFormatted("§8Received registry with " + registrySize + " entries");
 
                                         fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
                                     }
@@ -509,14 +512,10 @@ namespace MinecraftClient.Protocol.Handlers
                                         bool hasNextRegistry = readNextBool(packetData);
                                         string registryName = readNextString(packetData);
                                         int registrySize = readNextVarInt(packetData);
-
-                                        ConsoleIO.WriteLineFormatted("§8Received registry " + registryName +
-                                            " with " + registrySize + " entries");
-
+                                        if (Settings.DebugMessages)
+                                            ConsoleIO.WriteLineFormatted("§8Received registry " + registryName + " with " + registrySize + " entries");
                                         if (!hasNextRegistry)
-                                        {
                                             fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
-                                        }
                                     }
 
                                     return false;
@@ -525,9 +524,8 @@ namespace MinecraftClient.Protocol.Handlers
                                     // Just say yes.
                                     if (discriminator != FMLHandshakeDiscriminator.HandshakeAck)
                                         return false;
-
-                                    ConsoleIO.WriteLineFormatted("§8Accepting server registries...");
-
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted("§8Accepting server registries...");
                                     SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
                                         new byte[] { (byte)FMLHandshakeClientState.PENDINGCOMPLETE });
                                     fmlHandshakeState = FMLHandshakeClientState.COMPLETE;
@@ -540,8 +538,8 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
                                         new byte[] { (byte)FMLHandshakeClientState.COMPLETE });
-                                    ConsoleIO.WriteLine("Forge server connection complete!");
-
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLine("Forge server connection complete!");
                                     fmlHandshakeState = FMLHandshakeClientState.DONE;
                                     return true;
                             }
@@ -582,7 +580,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, bool hasSkyLight, bool chunksContinuous, List<byte> cache)
         {
-            if (protocolversion >= MC19Version && chunksContinuous && chunkMask == 0)
+            if (protocolversion < MC19Version && chunksContinuous && chunkMask == 0)
             {
                 //Unload the entire chunk column
                 handler.GetWorld()[chunkX, chunkZ] = null;
@@ -1124,7 +1122,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 readNextPacket(ref packetID, packetData);
 
-                if (packetID == 0x40) // Disconect
+                if (packetID == 0x40) // Disconnect
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, ChatParser.ParseText(readNextString(packetData)));
                     return false;
@@ -1148,7 +1146,8 @@ namespace MinecraftClient.Protocol.Handlers
             System.Security.Cryptography.RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverKey);
             byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
 
-            ConsoleIO.WriteLineFormatted("§8Crypto keys & hash generated.");
+            if (Settings.DebugMessages)
+                ConsoleIO.WriteLineFormatted("§8Crypto keys & hash generated.");
 
             if (serverIDhash != "-")
             {
@@ -1408,8 +1407,6 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolversion < 47 && version.Split(' ', '/').Contains("1.8"))
                                 protocolversion = ProtocolHandler.MCVer2ProtocolVersion("1.8.0");
 
-                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + ").");
-
                             // Check for forge on the server.
                             if (jsonData.Properties.ContainsKey("modinfo") && jsonData.Properties["modinfo"].Type == Json.JSONData.DataType.Object)
                             {
@@ -1418,13 +1415,24 @@ namespace MinecraftClient.Protocol.Handlers
                                 {
                                     forgeInfo = new ForgeInfo(modData);
 
-                                    ConsoleIO.WriteLineFormatted("§8Server is running forge. Mod list:");
-                                    foreach (ForgeInfo.ForgeMod mod in forgeInfo.Mods)
+                                    if (forgeInfo.Mods.Any())
                                     {
-                                        ConsoleIO.WriteLineFormatted("§8  " + mod.ToString());
+                                        if (Settings.DebugMessages)
+                                        {
+                                            ConsoleIO.WriteLineFormatted("§8Server is running Forge. Mod list:");
+                                            foreach (ForgeInfo.ForgeMod mod in forgeInfo.Mods)
+                                            {
+                                                ConsoleIO.WriteLineFormatted("§8  " + mod.ToString());
+                                            }
+                                        }
+                                        else ConsoleIO.WriteLineFormatted("§8Server is running Forge.");
                                     }
+                                    else forgeInfo = null;
                                 }
                             }
+
+                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + (forgeInfo != null ? ", with Forge)." : ")."));
+
                             return true;
                         }
                     }

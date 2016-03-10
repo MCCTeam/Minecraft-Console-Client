@@ -73,8 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoTimeout.cs" />
-    <Compile Include="Cache\CacheType.cs" />
-    <Compile Include="Cache\SessionCache.cs" />
     <Compile Include="ChatBots\Alerts.cs" />
     <Compile Include="ChatBots\AntiAFK.cs" />
     <Compile Include="ChatBots\AutoRespond.cs" />
@@ -151,6 +149,8 @@
     <Compile Include="Protocol\IMinecraftCom.cs" />
     <Compile Include="Protocol\IMinecraftComHandler.cs" />
     <Compile Include="Protocol\ProtocolHandler.cs" />
+    <Compile Include="Protocol\SessionCache\CacheType.cs" />
+    <Compile Include="Protocol\SessionCache\SessionCache.cs" />
     <Compile Include="Protocol\SessionToken.cs" />
     <Compile Include="Proxy\ProxyHandler.cs" />
     <Compile Include="Proxy\Handlers\EventArgs\CreateConnectionAsyncCompletedEventArgs.cs" />

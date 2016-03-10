@@ -6,6 +6,7 @@ using MinecraftClient.Protocol;
 using System.Reflection;
 using System.Threading;
 using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Protocol.SessionCache;
 
 namespace MinecraftClient
 {
@@ -86,19 +87,21 @@ namespace MinecraftClient
             }
 
             //Load cached sessions from disk if necessary
-            if (Settings.CacheType == Cache.CacheType.DISK)
+            if (Settings.SessionCaching == CacheType.Disk)
             {
-                Console.WriteLine(Cache.SessionCache.InitializeDiskCache() ? "Cached sessions loaded." : "Cached sessions could not be loaded from disk");
+                bool cacheLoaded = SessionCache.InitializeDiskCache();
+                if (Settings.DebugMessages)
+                    ConsoleIO.WriteLineFormatted(cacheLoaded ? "§8Session cache has been successfully loaded from disk." : "§8Cached sessions could not be loaded from disk");
             }
 
             //Asking the user to type in missing data such as Username and Password
 
             if (Settings.Login == "")
             {
-                Console.Write(ConsoleIO.basicIO ? "Please type the username of your choice.\n" : "Username : ");
+                Console.Write(ConsoleIO.basicIO ? "Please type the username or email of your choice.\n" : "Login : ");
                 Settings.Login = Console.ReadLine();
             }
-            if (Settings.Password == "" && (Settings.CacheType == Cache.CacheType.NONE || !Cache.SessionCache.Contains(Settings.Login)))
+            if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
             {
                 RequestPassword();
             }
@@ -143,18 +146,17 @@ namespace MinecraftClient
             else
             {
                 // Validate cached session or login new session.
-                if (Settings.CacheType != Cache.CacheType.NONE && Cache.SessionCache.Contains(Settings.Login))
+                if (Settings.SessionCaching != CacheType.None && SessionCache.Contains(Settings.Login.ToLower()))
                 {
-                    session = Cache.SessionCache.Get(Settings.Login);
+                    session = SessionCache.Get(Settings.Login.ToLower());
                     result = ProtocolHandler.GetTokenValidation(session);
-
-                    if (result != ProtocolHandler.LoginResult.Success && Settings.Password == "")
+                    if (result != ProtocolHandler.LoginResult.Success)
                     {
-                        RequestPassword();
+                        ConsoleIO.WriteLineFormatted("§8Cached session is invalid or expired.");
+                        if (Settings.Password == "")
+                            RequestPassword();
                     }
-
-                    Console.WriteLine("Cached session is " + (result == ProtocolHandler.LoginResult.Success ? "valid." : "invalid."));
-
+                    else ConsoleIO.WriteLineFormatted("§8Cached session is still valid for " + session.PlayerName + '.');
                 }
 
                 if (result != ProtocolHandler.LoginResult.Success)
@@ -162,9 +164,9 @@ namespace MinecraftClient
                     Console.WriteLine("Connecting to Minecraft.net...");
                     result = ProtocolHandler.GetLogin(Settings.Login, Settings.Password, out session);
 
-                    if (result == ProtocolHandler.LoginResult.Success && Settings.CacheType != Cache.CacheType.NONE)
+                    if (result == ProtocolHandler.LoginResult.Success && Settings.SessionCaching != CacheType.None)
                     {
-                        Cache.SessionCache.Store(Settings.Login, session);
+                        SessionCache.Store(Settings.Login.ToLower(), session);
                     }
                 }
 
@@ -180,7 +182,8 @@ namespace MinecraftClient
                 if (Settings.playerHeadAsIcon)
                     ConsoleIcon.setPlayerIconAsync(Settings.Username);
 
-                Console.WriteLine("Success. (session ID: " + session.ID + ')');
+                if (Settings.DebugMessages)
+                    Console.WriteLine("Success. (session ID: " + session.ID + ')');
 
                 //ProtocolHandler.RealmsListWorlds(Settings.Username, PlayerID, sessionID); //TODO REMOVE
 
@@ -219,11 +222,6 @@ namespace MinecraftClient
                         HandleFailure("Failed to ping this IP.", true, ChatBots.AutoRelog.DisconnectReason.ConnectionLost);
                         return;
                     }
-                }
-
-                if (forgeInfo != null && !forgeInfo.Mods.Any())
-                {
-                    forgeInfo = null;
                 }
 
                 if (protocolversion != 0)

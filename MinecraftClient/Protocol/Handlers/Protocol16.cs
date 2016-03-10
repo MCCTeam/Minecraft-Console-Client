@@ -449,7 +449,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (serverID == "-")
                     ConsoleIO.WriteLineFormatted("§8Server is in offline mode.");
-                else
+                else if (Settings.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§8Handshake successful. (Server ID: " + serverID + ')');
 
                 return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey);
@@ -462,7 +462,8 @@ namespace MinecraftClient.Protocol.Handlers
             System.Security.Cryptography.RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverKey);
             byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
 
-            ConsoleIO.WriteLineFormatted("§8Crypto keys & hash generated.");
+            if (Settings.DebugMessages)
+                ConsoleIO.WriteLineFormatted("§8Crypto keys & hash generated.");
 
             if (serverIDhash != "-")
             {

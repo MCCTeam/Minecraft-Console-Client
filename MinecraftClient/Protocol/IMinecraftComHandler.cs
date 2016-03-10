@@ -90,8 +90,8 @@ namespace MinecraftClient.Protocol
         void UnregisterPluginChannel(string channel, ChatBot bot);
 
         /// <summary>
-        /// Sends a plugin channel packet to the server.  See http://wiki.vg/Plugin_channel for more information
-        /// about plugin channels.
+        /// Sends a plugin channel packet to the server.
+        /// See http://wiki.vg/Plugin_channel for more information about plugin channels.
         /// </summary>
         /// <param name="channel">The channel to send the packet on.</param>
         /// <param name="data">The payload for the packet.</param>

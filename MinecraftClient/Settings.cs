@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
+using MinecraftClient.Protocol.SessionCache;
 
 namespace MinecraftClient
 {
@@ -29,9 +30,6 @@ namespace MinecraftClient
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
 
-        //Cache Settings
-        public static Cache.CacheType CacheType = Cache.CacheType.NONE;
-
         //Proxy Settings
         public static bool ProxyEnabledLogin = false;
         public static bool ProxyEnabledIngame = false;
@@ -42,8 +40,8 @@ namespace MinecraftClient
         public static string ProxyPassword = "";
 
         //Other Settings
-        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\03\03f31164d234f10a3230611656332f1756e570a9"; //MC 1.8 en_GB.lang
-        public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.8.json";
+        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\3d\3d7f778ea0a3baaf826ae75a094d77c46410902f"; //MC 1.9 en_GB.lang
+        public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.9.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static TimeSpan splitMessageDelay = TimeSpan.FromSeconds(2);
         public static List<string> Bots_Owners = new List<string>();
@@ -60,6 +58,8 @@ namespace MinecraftClient
         public static bool DisplayXPBarMessages = true;
         public static bool TerrainAndMovements = false;
         public static string PrivateMsgsCmdName = "tell";
+        public static CacheType SessionCaching = CacheType.None;
+        public static bool DebugMessages = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -187,6 +187,7 @@ namespace MinecraftClient
                                                 case "terrainandmovements": TerrainAndMovements = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
+                                                case "debugmessages": DebugMessages = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -203,10 +204,10 @@ namespace MinecraftClient
                                                     }
                                                     break;
 
-                                                case "accountcache":
-                                                    if (argValue == "none") { CacheType = Cache.CacheType.NONE; }
-                                                    else if (argValue == "memory") { CacheType = Cache.CacheType.MEMORY; }
-                                                    else if (argValue == "disk") { CacheType = Cache.CacheType.DISK; }
+                                                case "sessioncache":
+                                                    if (argValue == "none") { SessionCaching = CacheType.None; }
+                                                    else if (argValue == "memory") { SessionCaching = CacheType.Memory; }
+                                                    else if (argValue == "disk") { SessionCaching = CacheType.Disk; }
                                                     break;
 
                                                 case "accountlist":
@@ -425,11 +426,12 @@ namespace MinecraftClient
                 + "showsystemmessages=true #system messages for server ops\r\n"
                 + "showxpbarmessages=true #messages displayed above xp bar\r\n"
                 + "terrainandmovements=false #uses more ram, cpu, bandwidth\r\n"
-                + "accountcache=none #use 'none', 'memory' or 'disk'\r\n"
+                + "sessioncache=memory #use 'none', 'memory' or 'disk'\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"
                 + "exitonfailure=false\r\n"
+                + "debugmessages=false\r\n"
                 + "scriptcache=true\r\n"
                 + "timestamps=false\r\n"
                 + "\r\n"

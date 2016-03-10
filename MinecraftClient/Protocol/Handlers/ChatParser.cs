@@ -123,7 +123,8 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
 
-                ConsoleIO.WriteLineFormatted("§8Translations file loaded.");
+                if (Settings.DebugMessages)
+                    ConsoleIO.WriteLineFormatted("§8Translations file loaded.");
             }
             else //No external dictionnary found.
             {
