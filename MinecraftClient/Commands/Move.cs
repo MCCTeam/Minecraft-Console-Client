@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     public class Move : Command
     {
         public override string CMDName { get { return "move"; } }
-        public override string CMDDesc { get { return "move <up|down|east|west|north|south|x y z>: walk or start walking."; } }
+        public override string CMDDesc { get { return "move <get|up|down|east|west|north|south|x y z>: walk or start walking."; } }
 
         public override string Run(McTcpClient handler, string command)
         {
@@ -28,6 +28,7 @@ namespace MinecraftClient.Commands
                         case "west": direction = Direction.West; break;
                         case "north": direction = Direction.North; break;
                         case "south": direction = Direction.South; break;
+                        case "get": return handler.GetCurrentLocation().ToString();
                         default: return "Unknown direction '" + dirStr + "'.";
                     }
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
