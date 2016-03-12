@@ -4,29 +4,28 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 using System.IO;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Modes;
+using Org.BouncyCastle.Crypto.IO;
 
 namespace MinecraftClient.Crypto.Streams
 {
     /// <summary>
     /// An encrypted stream using AES, used for encrypting network data on the fly using AES.
-    /// This is a mono-compatible adaptation which only sends and receive 16 bytes at a time, and manually transforms blocks.
-    /// Data is cached before reaching the 128bits block size necessary for mono which is not CFB-8 compatible.
+    /// This is a mono-compatible adaptation which uses AES engine from the BouncyCastle project.
     /// </summary>
 
     public class MonoAesStream : Stream, IAesStream
     {
-        IPaddingProvider pad;
-        ICryptoTransform enc;
-        ICryptoTransform dec;
-        List<byte> dec_cache = new List<byte>();
-        List<byte> tosend_cache = new List<byte>();
-        public MonoAesStream(System.IO.Stream stream, byte[] key, IPaddingProvider provider)
+        CipherStream cstream;
+        public MonoAesStream(System.IO.Stream stream, byte[] key)
         {
             BaseStream = stream;
-            RijndaelManaged aes = GenerateAES(key);
-            enc = aes.CreateEncryptor();
-            dec = aes.CreateDecryptor();
-            pad = provider;
+            BufferedBlockCipher enc = GenerateAES(key, true);
+            BufferedBlockCipher dec = GenerateAES(key, false);
+            cstream = new CipherStream(stream, dec, enc);
         }
         public System.IO.Stream BaseStream { get; set; }
 
@@ -76,25 +75,7 @@ namespace MinecraftClient.Crypto.Streams
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            while (dec_cache.Count < count)
-            {
-                byte[] temp_in = new byte[16];
-                byte[] temp_out = new byte[16];
-                int read = 0;
-                while (read < 16)
-                    read += BaseStream.Read(temp_in, read, 16 - read);
-                dec.TransformBlock(temp_in, 0, 16, temp_out, 0);
-                foreach (byte b in temp_out)
-                    dec_cache.Add(b);
-            }
-
-            for (int i = offset; i - offset < count; i++)
-            {
-                buffer[i] = dec_cache[0];
-                dec_cache.RemoveAt(0);
-            }
-
-            return count;
+            return cstream.Read(buffer, offset, count);
         }
 
         public override long Seek(long offset, System.IO.SeekOrigin origin)
@@ -114,35 +95,13 @@ namespace MinecraftClient.Crypto.Streams
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            for (int i = offset; i - offset < count; i++)
-                tosend_cache.Add(buffer[i]);
-
-            if (tosend_cache.Count < 16)
-                tosend_cache.AddRange(pad.getPaddingPacket());
-
-            while (tosend_cache.Count > 16)
-            {
-                byte[] temp_in = new byte[16];
-                byte[] temp_out = new byte[16];
-                for (int i = 0; i < 16; i++)
-                {
-                    temp_in[i] = tosend_cache[0];
-                    tosend_cache.RemoveAt(0);
-                }
-                enc.TransformBlock(temp_in, 0, 16, temp_out, 0);
-                BaseStream.Write(temp_out, 0, 16);
-            }
+            cstream.Write(buffer, offset, count);
         }
 
-        private RijndaelManaged GenerateAES(byte[] key)
+        private BufferedBlockCipher GenerateAES(byte[] key, bool forEncryption)
         {
-            RijndaelManaged cipher = new RijndaelManaged();
-            cipher.Mode = CipherMode.CFB;
-            cipher.Padding = PaddingMode.None;
-            cipher.KeySize = 128;
-            cipher.FeedbackSize = 8;
-            cipher.Key = key;
-            cipher.IV = key;
+            BufferedBlockCipher cipher = new BufferedBlockCipher(new CfbBlockCipher(new AesFastEngine(), 8));
+            cipher.Init(forEncryption, new ParametersWithIV(new KeyParameter(key), key));
             return cipher;
         }
     }

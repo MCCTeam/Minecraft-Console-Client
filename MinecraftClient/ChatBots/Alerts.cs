@@ -15,35 +15,12 @@ namespace MinecraftClient.ChatBots
         private string[] excludelist = new string[0];
 
         /// <summary>
-        /// Import alerts from the specified file
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        private static string[] FromFile(string file)
-        {
-            if (File.Exists(file))
-            {
-                //Read all lines from file, remove lines with no text, convert to lowercase,
-                //remove duplicate entries, convert to a string array, and return the result.
-                return File.ReadAllLines(file)
-                        .Where(line => !String.IsNullOrWhiteSpace(line))
-                        .Select(line => line.ToLower())
-                        .Distinct().ToArray();
-            }
-            else
-            {
-                LogToConsole("File not found: " + Settings.Alerts_MatchesFile);
-                return new string[0];
-            }
-        }
-
-        /// <summary>
         /// Intitialize the Alerts bot
         /// </summary>
         public override void Initialize()
         {
-            dictionary = FromFile(Settings.Alerts_MatchesFile);
-            excludelist = FromFile(Settings.Alerts_ExcludesFile);
+            dictionary = LoadDistinctEntriesFromFile(Settings.Alerts_MatchesFile);
+            excludelist = LoadDistinctEntriesFromFile(Settings.Alerts_ExcludesFile);
         }
 
         /// <summary>
@@ -53,7 +30,7 @@ namespace MinecraftClient.ChatBots
         public override void GetText(string text)
         {
             //Remove color codes and convert to lowercase
-            text = getVerbatim(text).ToLower();
+            text = GetVerbatim(text).ToLower();
 
             //Proceed only if no exclusions are found in text
             if (!excludelist.Any(exclusion => text.Contains(exclusion)))
@@ -67,9 +44,12 @@ namespace MinecraftClient.ChatBots
                     if (ConsoleIO.basicIO) //Using a GUI? Pass text as is.
                         ConsoleIO.WriteLine(text.Replace(alert, "§c" + alert + "§r"));
 
-                    else //Using Consome Prompt : Print text with alert highlighted
+                    else //Using Console Prompt : Print text with alert highlighted
                     {
                         string[] splitted = text.Split(new string[] { alert }, StringSplitOptions.None);
+
+                        ConsoleColor fore = Console.ForegroundColor;
+                        ConsoleColor back = Console.BackgroundColor;
 
                         if (splitted.Length > 0)
                         {
@@ -89,8 +69,8 @@ namespace MinecraftClient.ChatBots
                             }
                         }
 
-                        Console.BackgroundColor = ConsoleColor.Black;
-                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.BackgroundColor = back;
+                        Console.ForegroundColor = fore;
                         ConsoleIO.Write('\n');
                     }
                 }

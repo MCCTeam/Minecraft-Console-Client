@@ -63,6 +63,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -74,6 +75,7 @@
     <Compile Include="AutoTimeout.cs" />
     <Compile Include="ChatBots\Alerts.cs" />
     <Compile Include="ChatBots\AntiAFK.cs" />
+    <Compile Include="ChatBots\AutoRespond.cs" />
     <Compile Include="ChatBots\AutoRelog.cs" />
     <Compile Include="ChatBots\ChatLog.cs" />
     <Compile Include="ChatBots\HangmanGame.cs" />
@@ -85,6 +87,7 @@
     <Compile Include="ChatBot.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Commands\Connect.cs" />
+    <Compile Include="Commands\Move.cs" />
     <Compile Include="Commands\Exit.cs" />
     <Compile Include="Commands\Log.cs" />
     <Compile Include="Commands\Reco.cs" />
@@ -94,9 +97,35 @@
     <Compile Include="Commands\Set.cs" />
     <Compile Include="ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\BufferedBlockCipher.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\BufferedCipherBase.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\CfbBlockCipher.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\Check.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\CipherStream.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\CryptoException.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\DataLengthException.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\IBlockCipher.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\IBufferedCipher.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\ICipherParameters.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\KeyParameter.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\OutputLengthException.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\Pack.cs" />
+    <Compile Include="Crypto\Streams\BouncyAes\ParametersWithIV.cs" />
     <Compile Include="Crypto\Streams\MonoAesStream.cs" />
     <Compile Include="Crypto\Streams\RegularAesStream.cs" />
     <Compile Include="Crypto\CryptoHandler.cs" />
+    <Compile Include="CSharpRunner.cs" />
+    <Compile Include="Mapping\Block.cs" />
+    <Compile Include="Mapping\Chunk.cs" />
+    <Compile Include="Mapping\ChunkColumn.cs" />
+    <Compile Include="Mapping\Direction.cs" />
+    <Compile Include="Mapping\Material.cs" />
+    <Compile Include="Mapping\Movement.cs" />
+    <Compile Include="Mapping\World.cs" />
+    <Compile Include="Protocol\Handlers\Forge\FMLHandshakeClientState.cs" />
+    <Compile Include="Protocol\Handlers\Forge\FMLHandshakeDiscriminator.cs" />
+    <Compile Include="Protocol\Handlers\Forge\ForgeInfo.cs" />
     <Compile Include="Protocol\Handlers\Compression\CRC32.cs" />
     <Compile Include="Protocol\Handlers\Compression\Deflate.cs" />
     <Compile Include="Protocol\Handlers\Compression\GZipStream.cs" />
@@ -107,10 +136,10 @@
     <Compile Include="Protocol\Handlers\Compression\ZlibBaseStream.cs" />
     <Compile Include="Protocol\Handlers\Compression\ZlibCodec.cs" />
     <Compile Include="Protocol\Handlers\Compression\ZlibConstants.cs" />
+    <Compile Include="Protocol\Handlers\Json.cs" />
     <Compile Include="Protocol\Handlers\ZlibUtils.cs" />
     <Compile Include="Protocol\Handlers\ChatParser.cs" />
     <Compile Include="Crypto\IAesStream.cs" />
-    <Compile Include="Crypto\IPaddingProvider.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="McTcpClient.cs" />
@@ -119,8 +148,10 @@
     <Compile Include="Protocol\Handlers\Protocol16.cs" />
     <Compile Include="Protocol\IMinecraftCom.cs" />
     <Compile Include="Protocol\IMinecraftComHandler.cs" />
-    <Compile Include="Protocol\Handlers\Protocol17.cs" />
     <Compile Include="Protocol\ProtocolHandler.cs" />
+    <Compile Include="Protocol\SessionCache\CacheType.cs" />
+    <Compile Include="Protocol\SessionCache\SessionCache.cs" />
+    <Compile Include="Protocol\SessionToken.cs" />
     <Compile Include="Proxy\ProxyHandler.cs" />
     <Compile Include="Proxy\Handlers\EventArgs\CreateConnectionAsyncCompletedEventArgs.cs" />
     <Compile Include="Proxy\Handlers\Exceptions\ProxyException.cs" />
@@ -133,6 +164,7 @@
     <Compile Include="Proxy\Handlers\Utils.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Commands\List.cs" />
+    <Compile Include="Mapping\Location.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

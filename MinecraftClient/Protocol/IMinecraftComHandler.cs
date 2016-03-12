@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Protocol
 {
@@ -13,15 +14,23 @@ namespace MinecraftClient.Protocol
 
     public interface IMinecraftComHandler
     {
-        /* The MinecraftCom Hanler must
+        /* The MinecraftCom Handler must
          * provide these getters */
 
-        int getServerPort();
-        string getServerHost();
-        string getUsername();
-        string getUserUUID();
-        string getSessionID();
-        string[] getOnlinePlayers();
+        int GetServerPort();
+        string GetServerHost();
+        string GetUsername();
+        string GetUserUUID();
+        string GetSessionID();
+        string[] GetOnlinePlayers();
+        Location GetCurrentLocation();
+        World GetWorld();
+
+        /// <summary>
+        /// Called when a server was successfully joined
+        /// </summary>
+
+        void OnGameJoined();
 
         /// <summary>
         /// This method is called when the protocol handler receives a chat message
@@ -45,6 +54,13 @@ namespace MinecraftClient.Protocol
         void OnPlayerLeave(Guid uuid);
 
         /// <summary>
+        /// Called when the server sets the new location for the player
+        /// </summary>
+        /// <param name="location">New location of the player</param>
+
+        void UpdateLocation(Location location);
+
+        /// <summary>
         /// This method is called when the connection has been lost
         /// </summary>
 
@@ -56,5 +72,40 @@ namespace MinecraftClient.Protocol
         /// </summary>
 
         void OnUpdate();
+
+        /// <summary>
+        /// Registers the given plugin channel for the given bot.
+        /// </summary>
+        /// <param name="channel">The channel to register.</param>
+        /// <param name="bot">The bot to register the channel for.</param>
+
+        void RegisterPluginChannel(string channel, ChatBot bot);
+
+        /// <summary>
+        /// Unregisters the given plugin channel for the given bot.
+        /// </summary>
+        /// <param name="channel">The channel to unregister.</param>
+        /// <param name="bot">The bot to unregister the channel for.</param>
+
+        void UnregisterPluginChannel(string channel, ChatBot bot);
+
+        /// <summary>
+        /// Sends a plugin channel packet to the server.
+        /// See http://wiki.vg/Plugin_channel for more information about plugin channels.
+        /// </summary>
+        /// <param name="channel">The channel to send the packet on.</param>
+        /// <param name="data">The payload for the packet.</param>
+        /// <param name="sendEvenIfNotRegistered">Whether the packet should be sent even if the server or the client hasn't registered it yet.</param>
+        /// <returns>Whether the packet was sent: true if it was sent, false if there was a connection error or it wasn't registered.</returns>
+
+        bool SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false);
+
+        /// <summary>
+        /// Called when a plugin channel message was sent from the server.
+        /// </summary>
+        /// <param name="channel">The channel the message was sent on</param>
+        /// <param name="data">The data from the channel</param>
+
+        void OnPluginChannelMessage(string channel, byte[] data);
     }
 }

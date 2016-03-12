@@ -24,12 +24,15 @@ namespace MinecraftClient.Proxy
         /// <summary>
         /// Create a regular TcpClient or a proxied TcpClient according to the app Settings.
         /// </summary>
+        /// <param name="host">Target host</param>
+        /// <param name="port">Target port</param>
+        /// <param name="login">True if the purpose is logging in to a Minecraft account</param>
 
-        public static TcpClient newTcpClient(string host, int port)
+        public static TcpClient newTcpClient(string host, int port, bool login = false)
         {
             try
             {
-                if (Settings.ProxyEnabled)
+                if (login ? Settings.ProxyEnabledLogin : Settings.ProxyEnabledIngame)
                 {
                     ProxyType innerProxytype = ProxyType.Http;
 
@@ -61,7 +64,7 @@ namespace MinecraftClient.Proxy
             {
                 ConsoleIO.WriteLineFormatted("§8" + e.Message);
                 proxy = null;
-                return null;
+                return null; 
             }
         }
     }

@@ -36,9 +36,13 @@ namespace MinecraftClient
                     {
                         using (HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse())
                         {
-                            Bitmap skin = new Bitmap(Image.FromStream(httpWebReponse.GetResponseStream())); //Read skin from network
-                            skin = skin.Clone(new Rectangle(8, 8, 8, 8), skin.PixelFormat); //Crop skin
-                            SetConsoleIcon(skin.GetHicon()); //Set skin as icon
+                            try
+                            {
+                                Bitmap skin = new Bitmap(Image.FromStream(httpWebReponse.GetResponseStream())); //Read skin from network
+                                skin = skin.Clone(new Rectangle(8, 8, 8, 8), skin.PixelFormat); //Crop skin
+                                SetConsoleIcon(skin.GetHicon()); //Set skin as icon
+                            }
+                            catch (ArgumentException) { /* Invalid image in HTTP response */ }
                         }
                     }
                     catch (WebException) //Skin not found? Reset to default icon

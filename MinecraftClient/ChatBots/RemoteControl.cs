@@ -13,19 +13,19 @@ namespace MinecraftClient.ChatBots
     {
         public override void GetText(string text)
         {
-            text = getVerbatim(text);
+            text = GetVerbatim(text);
             string command = "", sender = "";
-            if (isPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower().Trim()))
+            if (IsPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower().Trim()))
             {
                 string response = "";
-                performInternalCommand(command, ref response);
+                PerformInternalCommand(command, ref response);
                 if (response.Length > 0)
                 {
                     SendPrivateMessage(sender, response);
                 }
             }
             else if (Settings.RemoteCtrl_AutoTpaccept
-                && isTeleportRequest(text, ref sender)
+                && IsTeleportRequest(text, ref sender)
                 && (Settings.RemoteCtrl_AutoTpaccept_Everyone || Settings.Bots_Owners.Contains(sender.ToLower().Trim())))
             {
                 SendText("/tpaccept");

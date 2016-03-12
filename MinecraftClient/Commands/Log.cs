@@ -14,7 +14,7 @@ namespace MinecraftClient.Commands
         {
             if (hasArg(command))
             {
-                ChatBot.LogToConsole(getArg(command));
+                ConsoleIO.WriteLogLine(getArg(command));
                 return "";
             }
             else return CMDDesc;
