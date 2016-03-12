@@ -47,7 +47,10 @@ namespace MinecraftClient.Protocol.Handlers
             this.forgeInfo = ForgeInfo;
 
             if (Settings.TerrainAndMovements && protocolversion > MC18Version)
+            {
                 ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
+                Settings.TerrainAndMovements = false;
+            }
         }
 
         private Protocol18Handler(TcpClient Client)
