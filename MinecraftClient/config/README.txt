@@ -112,7 +112,7 @@ If you are experienced with C#, you may also write a C# script.
 That's a bit more involved, but way more powerful than regular scripts.
 You can look to the provided sample C# scripts for getting started.
 
-C# scripts can be used for creating your own ChatBot without recompiling the wole project.
+C# scripts can be used for creating your own ChatBot without recompiling the whole project.
 These bots are embedded in a script file, which is compiled and loaded on the fly.
 ChatBots can access plugin channels for communicating with your own plugin.
 
