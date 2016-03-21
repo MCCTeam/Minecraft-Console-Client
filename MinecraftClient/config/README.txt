@@ -1,6 +1,6 @@
-﻿==================================================================
- Minecraft Client v1.8.2 for Minecraft 1.4.6 to 1.8.3 - By ORelio
-==================================================================
+﻿=================================================================================
+ Minecraft Client v1.9.0 for Minecraft 1.4.6 to 1.9.0 - By ORelio & Contributors
+=================================================================================
 
 Thanks for dowloading Minecraft Console Client!
 
@@ -62,6 +62,7 @@ In scripts and remote control, no slash is needed to perform the command.
  - log <text> : display some text in the console (useful for scripts)
  - set varname=value : set a value which can be used as %varname% in further commands
  - wait <time> : wait X ticks (10 ticks = ~1 second. Only for scripts)
+ - move : used for moving when terrain and movements feature is enabled
  - help : show command help. Tip: Use "/send /help" for server help
 
 [account] is an account alias defined in accounts file, read more below.
@@ -78,6 +79,16 @@ using aliases is really important for privacy and for safely switching between a
 To use these files, simply take a look at sample-accounts.txt and sample-servers.txt.
 Once you have created your files, fill the 'accountlist' and 'serverlist' fields in INI file.
 
+======================================
+ Interacting with the Minecraft world
+======================================
+
+By default, Minecraft Console Client cannot interact with the world around you.
+However for some versions of the game you can enabl the terrainandmovements settings.
+Please note that this regquires much more RAM, a bit more CPU, and slightly more bandwidth.
+This will allow you to properly fall on ground, pickup items and move around.
+There is a C# API for reading the terrain data and moving from C# scripts.
+
 ============================
  How to write a script file
 ============================
@@ -92,6 +103,21 @@ Allowed instructions are given in "Internal commands" section.
 
 Application variables defined using the 'set' command or [AppVars] INI section can be used.
 The following read-only variables can also be used: %username%, %serverip%, %serverport%
+
+==========================
+ How to write a C# script
+===========================
+
+If you are experienced with C#, you may also write a C# script.
+That's a bit more involved, but way more powerful than regular scripts.
+You can look to the provided sample C# scripts for getting started.
+
+C# scripts can be used for creating your own ChatBot without recompiling the wole project.
+These bots are embedded in a script file, which is compiled and loaded on the fly.
+ChatBots can access plugin channels for communicating with your own plugin.
+
+For knowing everything the API has to offer, you can look at CSharpRunner.cs and ChatBot.cs.
+The latest version for these files can be found on the GitHub repository.
 
 ==========================
  Using HTTP/Socks proxies
@@ -197,6 +223,6 @@ Use the script scheduler bot to send a teleport command after logging in.
 You can find more info at:
 http://www.minecraftforum.net/topic/1314800-/
 
-+--------------------+
-| © 2012-2015 ORelio |
-+--------------------+
++-----------------------------------+
+| © 2012-2016 ORelio & Contributors |
++-----------------------------------+
