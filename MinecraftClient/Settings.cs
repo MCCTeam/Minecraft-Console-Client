@@ -136,7 +136,10 @@ namespace MinecraftClient
                     ParseMode pMode = ParseMode.Default;
                     foreach (string lineRAW in Lines)
                     {
-                        string line = lineRAW.Split('#')[0].Trim();
+                        string line = pMode == ParseMode.Main && lineRAW.ToLower().Trim().StartsWith("password")
+                            ? lineRAW.Trim() //Do not strip # in passwords
+                            : lineRAW.Split('#')[0].Trim();
+
                         if (line.Length > 0)
                         {
                             if (line[0] == '[' && line[line.Length - 1] == ']')
