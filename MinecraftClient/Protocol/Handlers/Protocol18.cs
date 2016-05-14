@@ -23,7 +23,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
-        private string autocomplete_result = "";
+        private readonly List<string> autocomplete_result = new List<string>();
         private bool login_phase = true;
         private bool encrypted = false;
         private int protocolversion;
@@ -393,17 +393,10 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case PacketIncomingType.TabCompleteResult:
                     int autocomplete_count = readNextVarInt(packetData);
-                    string tab_list = "";
+                    autocomplete_result.Clear();
                     for (int i = 0; i < autocomplete_count; i++)
-                    {
-                        autocomplete_result = readNextString(packetData);
-                        if (autocomplete_result != "")
-                            tab_list = tab_list + autocomplete_result + " ";
-                    }
+                        autocomplete_result.Add(readNextString(packetData));
                     autocomplete_received = true;
-                    tab_list = tab_list.Trim();
-                    if (tab_list.Length > 0)
-                        ConsoleIO.WriteLineFormatted("§8" + tab_list, false);
                     break;
                 case PacketIncomingType.PluginMessage:
                     String channel = readNextString(packetData);
@@ -1331,10 +1324,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="BehindCursor">Text behind cursor</param>
         /// <returns>Completed text</returns>
 
-        public string AutoComplete(string BehindCursor)
+        IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
         {
             if (String.IsNullOrEmpty(BehindCursor))
-                return "";
+                return new string[] { };
 
             byte[] tocomplete_val = Encoding.UTF8.GetBytes(BehindCursor);
             byte[] tocomplete_len = getVarInt(tocomplete_val.Length);
@@ -1347,11 +1340,14 @@ namespace MinecraftClient.Protocol.Handlers
                 : concatBytes(tocomplete_len, tocomplete_val);
 
             autocomplete_received = false;
-            autocomplete_result = BehindCursor;
+            autocomplete_result.Clear();
+            autocomplete_result.Add(BehindCursor);
             SendPacket(protocolversion >= MC19Version ? 0x01 : 0x14, tabcomplete_packet);
 
             int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
             while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
+            if (autocomplete_result.Count > 0)
+                ConsoleIO.WriteLineFormatted("§8" + String.Join(" ", autocomplete_result), false);
             return autocomplete_result;
         }
 

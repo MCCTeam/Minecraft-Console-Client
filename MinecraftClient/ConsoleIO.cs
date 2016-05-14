@@ -16,6 +16,7 @@ namespace MinecraftClient
     {
         public static bool basicIO = false;
         private static IAutoComplete autocomplete_engine;
+        private static LinkedList<string> autocomplete_words = new LinkedList<string>();
         private static LinkedList<string> previous = new LinkedList<string>();
         private static readonly object io_lock = new object();
         private static bool reading = false;
@@ -168,14 +169,20 @@ namespace MinecraftClient
                                 }
                                 break;
                             case ConsoleKey.Tab:
-                                if (autocomplete_engine != null && buffer.Length > 0)
+                                if (autocomplete_words.Count == 0 && autocomplete_engine != null && buffer.Length > 0)
+                                    foreach (string result in autocomplete_engine.AutoComplete(buffer))
+                                        autocomplete_words.AddLast(result);
+                                string word_autocomplete = null;
+                                if (autocomplete_words.Count > 0)
                                 {
-                                    string word_autocomplete = autocomplete_engine.AutoComplete(buffer);
-                                    if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != buffer)
-                                    {
-                                        while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
-                                        foreach (char c in word_autocomplete) { AddChar(c); }
-                                    }
+                                    word_autocomplete = autocomplete_words.First.Value;
+                                    autocomplete_words.RemoveFirst();
+                                    autocomplete_words.AddLast(word_autocomplete);
+                                }
+                                if (!String.IsNullOrEmpty(word_autocomplete) && word_autocomplete != buffer)
+                                {
+                                    while (buffer.Length > 0 && buffer[buffer.Length - 1] != ' ') { RemoveOneChar(); }
+                                    foreach (char c in word_autocomplete) { AddChar(c); }
                                 }
                                 break;
                             default:
@@ -184,6 +191,8 @@ namespace MinecraftClient
                                 break;
                         }
                     }
+                    if (k.Key != ConsoleKey.Tab)
+                        autocomplete_words.Clear();
                 }
             }
 
@@ -444,6 +453,6 @@ namespace MinecraftClient
 
     public interface IAutoComplete
     {
-        string AutoComplete(string BehindCursor);
+        IEnumerable<string> AutoComplete(string BehindCursor);
     }
 }
