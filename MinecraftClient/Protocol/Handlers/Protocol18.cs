@@ -13,13 +13,14 @@ using MinecraftClient.Mapping;
 namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
-    /// Implementation for Minecraft 1.7.X, 1.8.X, 1.9.X Protocols
+    /// Implementation for Minecraft 1.7.X, 1.8.X, 1.9.X, 1.10.X Protocols
     /// </summary>
 
     class Protocol18Handler : IMinecraftCom
     {
         private const int MC18Version = 47;
         private const int MC19Version = 107;
+        private const int MC110Version = 210;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -555,8 +556,12 @@ namespace MinecraftClient.Protocol.Handlers
                     string url = readNextString(packetData);
                     string hash = readNextString(packetData);
                     //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
-                    SendPacket(protocolversion >= MC19Version ? 0x16 : 0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(3)));
-                    SendPacket(protocolversion >= MC19Version ? 0x16 : 0x19, concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash), getVarInt(0)));
+                    byte[] responseHeader = new byte[0];
+                    if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
+                        responseHeader = concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
+                    int packResponsePid = protocolversion >= MC19Version ? 0x16 : 0x19; //ID changed in 1.9
+                    SendPacket(packResponsePid, concatBytes(responseHeader, getVarInt(3))); //Accepted pack
+                    SendPacket(packResponsePid, concatBytes(responseHeader, getVarInt(0))); //Successfully loaded
                     break;
                 default:
                     return false; //Ignored packet
