@@ -20,6 +20,7 @@ namespace MinecraftClient.Protocol.Handlers
     {
         private const int MC18Version = 47;
         private const int MC19Version = 107;
+        private const int MC191Version = 108;
         private const int MC110Version = 210;
 
         private int compression_treshold = 0;
@@ -37,6 +38,8 @@ namespace MinecraftClient.Protocol.Handlers
         Thread netRead;
         IAesStream s;
         TcpClient c;
+
+        int currentDimension;
 
         public Protocol18Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler, ForgeInfo ForgeInfo)
         {
@@ -136,6 +139,7 @@ namespace MinecraftClient.Protocol.Handlers
             KeepAlive,
             JoinGame,
             ChatMessage,
+            Respawn,
             PlayerPositionAndLook,
             ChunkData,
             MultiBlockChange,
@@ -167,6 +171,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x00: return PacketIncomingType.KeepAlive;
                     case 0x01: return PacketIncomingType.JoinGame;
                     case 0x02: return PacketIncomingType.ChatMessage;
+                    case 0x07: return PacketIncomingType.Respawn;
                     case 0x08: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
                     case 0x22: return PacketIncomingType.MultiBlockChange;
@@ -189,6 +194,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x1F: return PacketIncomingType.KeepAlive;
                     case 0x23: return PacketIncomingType.JoinGame;
                     case 0x0F: return PacketIncomingType.ChatMessage;
+                    case 0x33: return PacketIncomingType.Respawn;
                     case 0x2E: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x20: return PacketIncomingType.ChunkData;
                     case 0x10: return PacketIncomingType.MultiBlockChange;
@@ -235,6 +241,16 @@ namespace MinecraftClient.Protocol.Handlers
                     break;
                 case PacketIncomingType.JoinGame:
                     handler.OnGameJoined();
+                    readNextInt(packetData);
+                    readNextByte(packetData);
+                    if (protocolversion >= MC191Version)
+                        this.currentDimension = readNextInt(packetData);
+                    else
+                        this.currentDimension = (sbyte)readNextByte(packetData);
+                    readNextByte(packetData);
+                    readNextByte(packetData);
+                    readNextString(packetData);
+                    readNextBool(packetData);
                     break;
                 case PacketIncomingType.ChatMessage:
                     string message = readNextString(packetData);
@@ -248,6 +264,12 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                     catch (ArgumentOutOfRangeException) { /* No message type */ }
                     handler.OnTextReceived(ChatParser.ParseText(message));
+                    break;
+                case PacketIncomingType.Respawn:
+                    this.currentDimension = readNextInt(packetData);
+                    readNextByte(packetData);
+                    readNextByte(packetData);
+                    readNextString(packetData);
                     break;
                 case PacketIncomingType.PlayerPositionAndLook:
                     if (Settings.TerrainAndMovements)
@@ -443,10 +465,12 @@ namespace MinecraftClient.Protocol.Handlers
                                     SendPluginChannelPacket("REGISTER", Encoding.UTF8.GetBytes(string.Join("\0", channels)));
 
                                     byte fmlProtocolVersion = readNextByte(packetData);
-                                    // There's another value afterwards for the dimension, but we don't need it.
 
                                     if (Settings.DebugMessages)
                                         ConsoleIO.WriteLineFormatted("§8Forge protocol version : " + fmlProtocolVersion);
+
+                                    if (fmlProtocolVersion >= 1)
+                                        this.currentDimension = readNextInt(packetData);
 
                                     // Tell the server we're running the same version.
                                     SendForgeHandshakePacket(FMLHandshakeDiscriminator.ClientHello, new byte[] { fmlProtocolVersion });
@@ -614,7 +638,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     int startLong = (blockNumber * bitsPerBlock) / 64;
                                     int startOffset = (blockNumber * bitsPerBlock) % 64;
-                                    int endLong = ((blockNumber+ 1) * bitsPerBlock - 1) / 64;
+                                    int endLong = ((blockNumber + 1) * bitsPerBlock - 1) / 64;
 
                                     // TODO: In the future a single ushort may not store the entire block id;
                                     // the Block code may need to change.
@@ -649,8 +673,9 @@ namespace MinecraftClient.Protocol.Handlers
                         readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
 
                         //Skip sky light
-                        // TODO: handle hasSkylight check correctly (nether/nonnether)
-                        readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                        if (this.currentDimension != -1)
+                            // Sky light is not sent in the nether
+                            readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
                     }
                 }
 
