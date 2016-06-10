@@ -46,12 +46,6 @@ namespace MinecraftClient.Protocol.Handlers
             this.protocolversion = ProtocolVersion;
             this.handler = Handler;
             this.forgeInfo = ForgeInfo;
-
-            if (Settings.TerrainAndMovements && protocolversion > MC18Version)
-            {
-                ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
-                Settings.TerrainAndMovements = false;
-            }
         }
 
         private Protocol18Handler(TcpClient Client)
@@ -234,7 +228,6 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             // Regular in-game packets
-
             switch (getPacketIncomingType(packetID, protocolversion))
             {
                 case PacketIncomingType.KeepAlive:
@@ -273,7 +266,11 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.UpdateLocation(location);
 
                         if (protocolversion >= MC19Version)
-                            readNextVarInt(packetData);
+                        {
+                            int teleportID = readNextVarInt(packetData);
+                            // Teleport confirm packet
+                            SendPacket(0x00, getVarInt(teleportID));
+                        }
                     }
                     break;
                 case PacketIncomingType.ChunkData:
@@ -581,51 +578,131 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, bool hasSkyLight, bool chunksContinuous, List<byte> cache)
         {
-            if (protocolversion < MC19Version && chunksContinuous && chunkMask == 0)
+            if (protocolversion >= MC19Version)
             {
-                //Unload the entire chunk column
-                handler.GetWorld()[chunkX, chunkZ] = null;
-            }
-            else
-            {
-                //Load chunk data from the server
+                // 1.9 and above chunk format
+                // Unloading chunks is handled by a separate packet
                 for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
                 {
                     if ((chunkMask & (1 << chunkY)) != 0)
                     {
+                        byte bitsPerBlock = readNextByte(cache);
+                        bool usePalette = (bitsPerBlock <= 8);
+
+                        int paletteLength = readNextVarInt(cache);
+                        int[] palette = new int[paletteLength];
+                        for (int i = 0; i < paletteLength; i++)
+                        {
+                            palette[i] = readNextVarInt(cache);
+                        }
+
+                        // Bit mask covering bitsPerBlock bits
+                        // EG, if bitsPerBlock = 5, valueMask = 00011111 in binary
+                        uint valueMask = (uint)((1 << bitsPerBlock) - 1);
+
+                        ulong[] dataArray = readNextULongArray(cache);
+
                         Chunk chunk = new Chunk();
 
-                        //Read chunk data, all at once for performance reasons, and build the chunk object
-                        Queue<ushort> queue = new Queue<ushort>(readNextUShortsLittleEndian(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ, cache));
                         for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
+                        {
                             for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
+                            {
                                 for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                    chunk[blockX, blockY, blockZ] = new Block(queue.Dequeue());
+                                {
+                                    int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
+
+                                    int startLong = (blockNumber * bitsPerBlock) / 64;
+                                    int startOffset = (blockNumber * bitsPerBlock) % 64;
+                                    int endLong = ((blockNumber+ 1) * bitsPerBlock - 1) / 64;
+
+                                    // TODO: In the future a single ushort may not store the entire block id;
+                                    // the Block code may need to change.
+                                    ushort blockId;
+                                    if (startLong == endLong)
+                                    {
+                                        blockId = (ushort)((dataArray[startLong] >> startOffset) & valueMask);
+                                    }
+                                    else
+                                    {
+                                        int endOffset = 64 - startOffset;
+                                        blockId = (ushort)((dataArray[startLong] >> startOffset | dataArray[endLong] << endOffset) & valueMask);
+                                    }
+
+                                    if (usePalette)
+                                    {
+                                        // Get the real block ID out of the palette
+                                        blockId = (ushort)palette[blockId];
+                                    }
+
+                                    chunk[blockX, blockY, blockZ] = new Block(blockId);
+                                }
+                            }
+                        }
 
                         //We have our chunk, save the chunk into the world
                         if (handler.GetWorld()[chunkX, chunkZ] == null)
                             handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
                         handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
-                    }
-                }
 
-                //Skip light information
-                for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
-                {
-                    if ((chunkMask & (1 << chunkY)) != 0)
-                    {
                         //Skip block light
                         readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
 
                         //Skip sky light
-                        if (hasSkyLight)
-                            readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                        // TODO: handle hasSkylight check correctly (nether/nonnether)
+                        readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
                     }
                 }
 
-                //Skip biome metadata
-                if (chunksContinuous)
-                    readData(Chunk.SizeX * Chunk.SizeZ, cache);
+                // Don't worry about skipping remaining data since there is no useful data afterwards in 1.9
+                // (plus, it would require parsing the tile entity lists' NBT)
+            }
+            else
+            {
+                // Pre 1.9 chunk format
+                if (chunksContinuous && chunkMask == 0) {
+                    //Unload the entire chunk column
+                    handler.GetWorld()[chunkX, chunkZ] = null;
+                } else {
+                    //Load chunk data from the server
+                    for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
+                    {
+                        if ((chunkMask & (1 << chunkY)) != 0)
+                        {
+                            Chunk chunk = new Chunk();
+
+                            //Read chunk data, all at once for performance reasons, and build the chunk object
+                            Queue<ushort> queue = new Queue<ushort>(readNextUShortsLittleEndian(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ, cache));
+                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
+                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
+                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
+                                        chunk[blockX, blockY, blockZ] = new Block(queue.Dequeue());
+
+                            //We have our chunk, save the chunk into the world
+                            if (handler.GetWorld()[chunkX, chunkZ] == null)
+                                handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
+                            handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
+                        }
+                    }
+
+                    //Skip light information
+                    for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
+                    {
+                        if ((chunkMask & (1 << chunkY)) != 0)
+                        {
+                            //Skip block light
+                            readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+
+                            //Skip sky light
+                            if (hasSkyLight)
+                                readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                        }
+                    }
+
+                    //Skip biome metadata
+                    if (chunksContinuous)
+                        readData(Chunk.SizeX * Chunk.SizeZ, cache);
+                }
             }
         }
 
@@ -755,9 +832,9 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Read an unsigned short integer from a cache of bytes and remove it from the cache
+        /// Read an unsigned long integer from a cache of bytes and remove it from the cache
         /// </summary>
-        /// <returns>The unsigned short integer value</returns>
+        /// <returns>The unsigned long integer value</returns>
 
         private static ulong readNextULong(List<byte> cache)
         {
@@ -803,6 +880,20 @@ namespace MinecraftClient.Protocol.Handlers
                 ? readNextVarInt(cache)
                 : readNextShort(cache);
             return readData(len, cache);
+        }
+
+        /// <summary>
+        /// Reads a length-prefixed array of unsigned long integers and removes it from the cache
+        /// </summary>
+        /// <returns>The unsigned long integer values</returns>
+
+        private static ulong[] readNextULongArray(List<byte> cache)
+        {
+            int len = readNextVarInt(cache);
+            ulong[] result = new ulong[len];
+            for (int i = 0; i < len; i++)
+                result[i] = readNextULong(cache);
+            return result;
         }
 
         /// <summary>
