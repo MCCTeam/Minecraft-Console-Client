@@ -250,7 +250,8 @@ namespace MinecraftClient.Protocol.Handlers
                     readNextByte(packetData);
                     readNextByte(packetData);
                     readNextString(packetData);
-                    readNextBool(packetData);
+                    if (protocolversion >= MC18Version)
+                        readNextBool(packetData);  // Reduced debug info - 1.8 and above
                     break;
                 case PacketIncomingType.ChatMessage:
                     string message = readNextString(packetData);
