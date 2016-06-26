@@ -16,6 +16,7 @@ First, extract the archive if not already extracted.
 On Windows, simply open MinecraftClient.exe by double-clicking on it.
 On Mac or Linux, open a terminal in this folder and run "mono MinecraftClient.exe".
 If you cannot authenticate on Mono, you'll need to run "mozroots --import --ask-remove" once.
+If Mono crashes, retry with mono-complete, not mono-runtime. Mono v4.0 to 4.2 is recommended.
 
 ===========================================
  Using Configuration files & Enabling bots
@@ -112,7 +113,7 @@ If you are experienced with C#, you may also write a C# script.
 That's a bit more involved, but way more powerful than regular scripts.
 You can look to the provided sample C# scripts for getting started.
 
-C# scripts can be used for creating your own ChatBot without recompiling the wole project.
+C# scripts can be used for creating your own ChatBot without recompiling the whole project.
 These bots are embedded in a script file, which is compiled and loaded on the fly.
 ChatBots can access plugin channels for communicating with your own plugin.
 

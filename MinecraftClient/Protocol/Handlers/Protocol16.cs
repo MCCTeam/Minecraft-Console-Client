@@ -656,10 +656,10 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
         }
 
-        public string AutoComplete(string BehindCursor)
+        IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
         {
             if (String.IsNullOrEmpty(BehindCursor))
-                return "";
+                return new string[] { };
 
             byte[] autocomplete = new byte[3 + (BehindCursor.Length * 2)];
             autocomplete[0] = 0xCB;
@@ -674,8 +674,9 @@ namespace MinecraftClient.Protocol.Handlers
 
             int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
             while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
-            string[] results = autocomplete_result.Split((char)0x00);
-            return results[0];
+            if (!String.IsNullOrEmpty(autocomplete_result) && autocomplete_received)
+                ConsoleIO.WriteLineFormatted("§8" + autocomplete_result.Replace((char)0x00, ' '), false);
+            return autocomplete_result.Split((char)0x00);
         }
 
         private static byte[] concatBytes(params byte[][] bytes)

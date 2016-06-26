@@ -118,8 +118,7 @@ namespace MinecraftClient
             {
                 try
                 {
-                    object compiledScript
-                        = CompileCache[scriptHash].CreateInstance("ScriptLoader.Script");
+                    object compiledScript = assembly.CreateInstance("ScriptLoader.Script");
                     return
                         compiledScript
                         .GetType()

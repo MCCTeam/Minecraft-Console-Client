@@ -582,6 +582,28 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get the current location of the player
+        /// </summary>
+        /// <returns>Minecraft world or null if associated setting is disabled</returns>
+
+        protected Mapping.Location GetCurrentLocation()
+        {
+            return Handler.GetCurrentLocation();
+        }
+
+        /// <summary>
+        /// Move to the specified location
+        /// </summary>
+        /// <param name="location">Location to reach</param>
+        /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
+        /// <returns>True if a path has been found</returns>
+
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false)
+        {
+            return Handler.MoveTo(location, allowUnsafe);
+        }
+
+        /// <summary>
         /// Get a Y-M-D h:m:s timestamp representing the current system date and time
         /// </summary>
 

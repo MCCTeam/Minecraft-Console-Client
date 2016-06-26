@@ -156,22 +156,38 @@ namespace MinecraftClient.Protocol.SessionCache
         private static void SaveToDisk()
         {
             bool fileexists = File.Exists(SessionCacheFile);
+            IOException lastEx = null;
+            int attempt = 1;
 
-            using (FileStream fs = new FileStream(SessionCacheFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            while (attempt < 4)
             {
-                cachemonitor.EnableRaisingEvents = false;
-
-                // delete existing file contents
-                if (fileexists)
+                try
                 {
-                    fs.SetLength(0);
-                    fs.Flush();
-                }
+                    using (FileStream fs = new FileStream(SessionCacheFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        cachemonitor.EnableRaisingEvents = false;
 
-                formatter.Serialize(fs, sessions);
-                cachemonitor.EnableRaisingEvents = true;
+                        // delete existing file contents
+                        if (fileexists)
+                        {
+                            fs.SetLength(0);
+                            fs.Flush();
+                        }
+
+                        formatter.Serialize(fs, sessions);
+                        cachemonitor.EnableRaisingEvents = true;
+                    }
+                    return;
+                }
+                catch (IOException ex)
+                {
+                    lastEx = ex;
+                    attempt++;
+                    System.Threading.Thread.Sleep(new Random().Next(150, 350) * attempt); //CSMA/CD :)
+                }
             }
 
+            Console.WriteLine("Error writing cached sessions to disk" + (lastEx != null ? ": " + lastEx.Message : ""));
         }
     }
 }

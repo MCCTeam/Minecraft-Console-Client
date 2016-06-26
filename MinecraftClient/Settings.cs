@@ -132,11 +132,15 @@ namespace MinecraftClient
             {
                 try
                 {
+                    string serverAlias = "";
                     string[] Lines = File.ReadAllLines(settingsfile);
                     ParseMode pMode = ParseMode.Default;
                     foreach (string lineRAW in Lines)
                     {
-                        string line = lineRAW.Split('#')[0].Trim();
+                        string line = pMode == ParseMode.Main && lineRAW.ToLower().Trim().StartsWith("password")
+                            ? lineRAW.Trim() //Do not strip # in passwords
+                            : lineRAW.Split('#')[0].Trim();
+
                         if (line.Length > 0)
                         {
                             if (line[0] == '[' && line[line.Length - 1] == ']')
@@ -171,7 +175,7 @@ namespace MinecraftClient
                                             {
                                                 case "login": Login = argValue; break;
                                                 case "password": Password = argValue; break;
-                                                case "serverip": SetServerIP(argValue); break;
+                                                case "serverip": if(!SetServerIP(argValue)) serverAlias = argValue; ; break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
@@ -221,6 +225,9 @@ namespace MinecraftClient
                                                                 Accounts[account_data[0].ToLower()]
                                                                     = new KeyValuePair<string, string>(account_data[1], account_data[2]);
                                                         }
+
+                                                        //Try user value against aliases after load
+                                                        Settings.SetAccount(Login);
                                                     }
                                                     break;
 
@@ -247,6 +254,9 @@ namespace MinecraftClient
                                                         //Restore current server info
                                                         ServerIP = server_host_temp;
                                                         ServerPort = server_port_temp;
+
+                                                        //Try server value against aliases after load
+                                                        SetServerIP(serverAlias);
                                                     }
                                                     break;
 
