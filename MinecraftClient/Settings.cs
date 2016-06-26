@@ -132,6 +132,8 @@ namespace MinecraftClient
             {
                 try
                 {
+                    string serverIP = "";
+                    string login = "";
                     string[] Lines = File.ReadAllLines(settingsfile);
                     ParseMode pMode = ParseMode.Default;
                     foreach (string lineRAW in Lines)
@@ -172,9 +174,9 @@ namespace MinecraftClient
                                         case ParseMode.Main:
                                             switch (argName.ToLower())
                                             {
-                                                case "login": Login = argValue; break;
+                                                case "login": login = argValue; Login = argValue; break;
                                                 case "password": Password = argValue; break;
-                                                case "serverip": SetServerIP(argValue); break;
+                                                case "serverip": serverIP = argValue; SetServerIP(argValue); break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
@@ -224,6 +226,9 @@ namespace MinecraftClient
                                                                 Accounts[account_data[0].ToLower()]
                                                                     = new KeyValuePair<string, string>(account_data[1], account_data[2]);
                                                         }
+
+                                                        //Try user value against aliases after load
+                                                        Settings.SetAccount(login);
                                                     }
                                                     break;
 
@@ -250,6 +255,9 @@ namespace MinecraftClient
                                                         //Restore current server info
                                                         ServerIP = server_host_temp;
                                                         ServerPort = server_port_temp;
+
+                                                        //Try server value against aliases after load
+                                                        SetServerIP(serverIP);
                                                     }
                                                     break;
 
