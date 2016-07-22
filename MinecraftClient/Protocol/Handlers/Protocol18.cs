@@ -629,38 +629,41 @@ namespace MinecraftClient.Protocol.Handlers
 
                         Chunk chunk = new Chunk();
 
-                        for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
+                        if (dataArray.Length > 0)
                         {
-                            for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
+                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                             {
-                                for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
+                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                                 {
-                                    int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
-
-                                    int startLong = (blockNumber * bitsPerBlock) / 64;
-                                    int startOffset = (blockNumber * bitsPerBlock) % 64;
-                                    int endLong = ((blockNumber + 1) * bitsPerBlock - 1) / 64;
-
-                                    // TODO: In the future a single ushort may not store the entire block id;
-                                    // the Block code may need to change.
-                                    ushort blockId;
-                                    if (startLong == endLong)
+                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
                                     {
-                                        blockId = (ushort)((dataArray[startLong] >> startOffset) & valueMask);
-                                    }
-                                    else
-                                    {
-                                        int endOffset = 64 - startOffset;
-                                        blockId = (ushort)((dataArray[startLong] >> startOffset | dataArray[endLong] << endOffset) & valueMask);
-                                    }
+                                        int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
 
-                                    if (usePalette)
-                                    {
-                                        // Get the real block ID out of the palette
-                                        blockId = (ushort)palette[blockId];
-                                    }
+                                        int startLong = (blockNumber * bitsPerBlock) / 64;
+                                        int startOffset = (blockNumber * bitsPerBlock) % 64;
+                                        int endLong = ((blockNumber + 1) * bitsPerBlock - 1) / 64;
 
-                                    chunk[blockX, blockY, blockZ] = new Block(blockId);
+                                        // TODO: In the future a single ushort may not store the entire block id;
+                                        // the Block code may need to change.
+                                        ushort blockId;
+                                        if (startLong == endLong)
+                                        {
+                                            blockId = (ushort)((dataArray[startLong] >> startOffset) & valueMask);
+                                        }
+                                        else
+                                        {
+                                            int endOffset = 64 - startOffset;
+                                            blockId = (ushort)((dataArray[startLong] >> startOffset | dataArray[endLong] << endOffset) & valueMask);
+                                        }
+
+                                        if (usePalette)
+                                        {
+                                            // Get the real block ID out of the palette
+                                            blockId = (ushort)palette[blockId];
+                                        }
+
+                                        chunk[blockX, blockY, blockZ] = new Block(blockId);
+                                    }
                                 }
                             }
                         }
@@ -674,8 +677,8 @@ namespace MinecraftClient.Protocol.Handlers
                         readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
 
                         //Skip sky light
-                        if (this.currentDimension != -1)
-                            // Sky light is not sent in the nether
+                        if (this.currentDimension == 0)
+                            // Sky light is not sent in the nether or the end
                             readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
                     }
                 }
