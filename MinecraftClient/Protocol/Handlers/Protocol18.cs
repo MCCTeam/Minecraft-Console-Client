@@ -15,7 +15,6 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Implementation for Minecraft 1.7.X, 1.8.X, 1.9.X, 1.10.X Protocols
     /// </summary>
-
     class Protocol18Handler : IMinecraftCom
     {
         private const int MC18Version = 47;
@@ -59,7 +58,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Separate thread. Network reading loop.
         /// </summary>
-
         private void Updater()
         {
             try
@@ -80,8 +78,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read data from the network. Should be called on a separate thread.
         /// </summary>
-        /// <returns></returns>
-
+        /// <returns>FALSE if an error occured, TRUE otherwise.</returns>
         private bool Update()
         {
             handler.OnUpdate();
@@ -106,7 +103,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="packetID">will contain packet ID</param>
         /// <param name="packetData">will contain raw packet Data</param>
-
         private void readNextPacket(ref int packetID, List<byte> packetData)
         {
             packetData.Clear();
@@ -133,7 +129,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Abstract incoming packet numbering
         /// </summary>
-
         private enum PacketIncomingType
         {
             KeepAlive,
@@ -161,7 +156,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetID">Packet ID</param>
         /// <param name="protocol">Protocol version</param>
         /// <returns>Abstract numbering</returns>
-
         private PacketIncomingType getPacketIncomingType(int packetID, int protocol)
         {
             if (protocol < MC19Version)
@@ -218,7 +212,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetID">Packet ID</param>
         /// <param name="packetData">Packet contents</param>
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
-
         private bool handlePacket(int packetID, List<byte> packetData)
         {
             if (login_phase)
@@ -280,13 +273,16 @@ namespace MinecraftClient.Protocol.Handlers
                         double z = readNextDouble(packetData);
                         readData(8, packetData); //Ignore look
                         byte locMask = readNextByte(packetData);
-                        Location location = handler.GetCurrentLocation();
 
-                        location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
-                        location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
-                        location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
-
-                        handler.UpdateLocation(location);
+                        if (protocolversion >= MC18Version)
+                        {
+                            Location location = handler.GetCurrentLocation();
+                            location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
+                            location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
+                            location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
+                            handler.UpdateLocation(location);
+                        }
+                        else handler.UpdateLocation(new Location(x, y, z));
 
                         if (protocolversion >= MC19Version)
                         {
@@ -302,9 +298,22 @@ namespace MinecraftClient.Protocol.Handlers
                         int chunkX = readNextInt(packetData);
                         int chunkZ = readNextInt(packetData);
                         bool chunksContinuous = readNextBool(packetData);
-                        ushort chunkMask = protocolversion >= MC19Version ? (ushort)readNextVarInt(packetData) : readNextUShort(packetData);
-                        int dataSize = readNextVarInt(packetData);
-                        ProcessChunkColumnData(chunkX, chunkZ, chunkMask, false, chunksContinuous, packetData);
+                        ushort chunkMask = protocolversion >= MC19Version
+                            ? (ushort)readNextVarInt(packetData)
+                            : readNextUShort(packetData);
+                        if (protocolversion < MC18Version)
+                        {
+                            ushort addBitmap = readNextUShort(packetData);
+                            int compressedDataSize = readNextInt(packetData);
+                            byte[] compressed = readData(compressedDataSize, packetData);
+                            byte[] decompressed = ZlibUtils.Decompress(compressed);
+                            ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, true, chunksContinuous, new List<byte>(decompressed));
+                        }
+                        else
+                        {
+                            int dataSize = readNextVarInt(packetData);
+                            ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, packetData);
+                        }
                     }
                     break;
                 case PacketIncomingType.MultiBlockChange:
@@ -312,42 +321,90 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         int chunkX = readNextInt(packetData);
                         int chunkZ = readNextInt(packetData);
-                        int recordCount = readNextVarInt(packetData);
+                        int recordCount = protocolversion < MC18Version
+                            ? (int)readNextShort(packetData)
+                            : readNextVarInt(packetData);
+
                         for (int i = 0; i < recordCount; i++)
                         {
-                            byte locationXZ = readNextByte(packetData);
+                            byte locationXZ;
+                            ushort blockIdMeta;
+                            int blockY;
+
+                            if (protocolversion < MC18Version)
+                            {
+                                blockIdMeta = readNextUShort(packetData);
+                                blockY = (ushort)readNextByte(packetData);
+                                locationXZ = readNextByte(packetData);
+                            }
+                            else
+                            {
+                                locationXZ = readNextByte(packetData);
+                                blockY = (ushort)readNextByte(packetData);
+                                blockIdMeta = (ushort)readNextVarInt(packetData);
+                            }
+
                             int blockX = locationXZ >> 4;
                             int blockZ = locationXZ & 0x0F;
-                            int blockY = (ushort)readNextByte(packetData);
-                            Block block = new Block((ushort)readNextVarInt(packetData));
+                            Block block = new Block(blockIdMeta);
                             handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
                         }
                     }
                     break;
                 case PacketIncomingType.BlockChange:
                     if (Settings.TerrainAndMovements)
-                        handler.GetWorld().SetBlock(Location.FromLong(readNextULong(packetData)), new Block((ushort)readNextVarInt(packetData)));
+                        if (protocolversion < MC18Version)
+                        {
+                            int blockX = readNextInt(packetData);
+                            int blockY = readNextByte(packetData);
+                            int blockZ = readNextInt(packetData);
+                            short blockId = (short)readNextVarInt(packetData);
+                            byte blockMeta = readNextByte(packetData);
+                            handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
+                        }
+                        else handler.GetWorld().SetBlock(Location.FromLong(readNextULong(packetData)), new Block((ushort)readNextVarInt(packetData)));
                     break;
                 case PacketIncomingType.MapChunkBulk:
                     if (protocolversion < MC19Version && Settings.TerrainAndMovements)
                     {
-                        bool hasSkyLight = readNextBool(packetData);
-                        int chunkCount = readNextVarInt(packetData);
+                        int chunkCount;
+                        bool hasSkyLight;
+                        List<byte> chunkData = packetData;
+
+                        //Read global fields
+                        if (protocolversion < MC18Version)
+                        {
+                            chunkCount = readNextShort(packetData);
+                            int compressedDataSize = readNextInt(packetData);
+                            hasSkyLight = readNextBool(packetData);
+                            byte[] compressed = readData(compressedDataSize, packetData);
+                            byte[] decompressed = ZlibUtils.Decompress(compressed);
+                            chunkData = new List<byte>(decompressed);
+                        }
+                        else
+                        {
+                            hasSkyLight = readNextBool(packetData);
+                            chunkCount = readNextVarInt(packetData);
+                        }
 
                         //Read chunk records
                         int[] chunkXs = new int[chunkCount];
                         int[] chunkZs = new int[chunkCount];
                         ushort[] chunkMasks = new ushort[chunkCount];
+                        ushort[] addBitmaps = new ushort[chunkCount];
                         for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
                         {
                             chunkXs[chunkColumnNo] = readNextInt(packetData);
                             chunkZs[chunkColumnNo] = readNextInt(packetData);
                             chunkMasks[chunkColumnNo] = readNextUShort(packetData);
+                            addBitmaps[chunkColumnNo] = protocolversion < MC18Version
+                                ? readNextUShort(packetData)
+                                : (ushort)0;
                         }
 
                         //Process chunk records
                         for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
-                            ProcessChunkColumnData(chunkXs[chunkColumnNo], chunkZs[chunkColumnNo], chunkMasks[chunkColumnNo], hasSkyLight, true, packetData);
+                            ProcessChunkColumnData(chunkXs[chunkColumnNo], chunkZs[chunkColumnNo], chunkMasks[chunkColumnNo], addBitmaps[chunkColumnNo], hasSkyLight, true, chunkData);
                     }
                     break;
                 case PacketIncomingType.UnloadChunk:
@@ -597,11 +654,11 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="chunkX">Chunk X location</param>
         /// <param name="chunkZ">Chunk Z location</param>
         /// <param name="chunkMask">Chunk mask for reading data</param>
+        /// <param name="chunkMask2">Chunk mask for some additional 1.7 metadata</param>
         /// <param name="hasSkyLight">Contains skylight info</param>
         /// <param name="chunksContinuous">Are the chunk continuous</param>
         /// <param name="cache">Cache for reading chunk data</param>
-
-        private void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, bool hasSkyLight, bool chunksContinuous, List<byte> cache)
+        private void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, List<byte> cache)
         {
             if (protocolversion >= MC19Version)
             {
@@ -686,13 +743,16 @@ namespace MinecraftClient.Protocol.Handlers
                 // Don't worry about skipping remaining data since there is no useful data afterwards in 1.9
                 // (plus, it would require parsing the tile entity lists' NBT)
             }
-            else
+            else if (protocolversion >= MC18Version)
             {
-                // Pre 1.9 chunk format
-                if (chunksContinuous && chunkMask == 0) {
+                // 1.8 chunk format
+                if (chunksContinuous && chunkMask == 0)
+                {
                     //Unload the entire chunk column
                     handler.GetWorld()[chunkX, chunkZ] = null;
-                } else {
+                }
+                else
+                {
                     //Load chunk data from the server
                     for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
                     {
@@ -733,12 +793,70 @@ namespace MinecraftClient.Protocol.Handlers
                         readData(Chunk.SizeX * Chunk.SizeZ, cache);
                 }
             }
+            else
+            {
+                // 1.7 chunk format
+                if (chunksContinuous && chunkMask == 0)
+                {
+                    //Unload the entire chunk column
+                    handler.GetWorld()[chunkX, chunkZ] = null;
+                }
+                else
+                {
+                    //Count chunk sections
+                    int sectionCount = 0;
+                    int addDataSectionCount = 0;
+                    for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
+                    {
+                        if ((chunkMask & (1 << chunkY)) != 0)
+                            sectionCount++;
+                        if ((chunkMask2 & (1 << chunkY)) != 0)
+                            addDataSectionCount++;
+                    }
+
+                    //Read chunk data, unpacking 4-bit values into 8-bit values for block metadata
+                    Queue<byte> blockTypes = new Queue<byte>(readData(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount, cache));
+                    Queue<byte> blockMeta = new Queue<byte>();
+                    foreach (byte packed in readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache))
+                    {
+                        byte hig = (byte)(packed >> 4);
+                        byte low = (byte)(packed & (byte)0x0F);
+                        blockMeta.Enqueue(hig);
+                        blockMeta.Enqueue(low);
+                    }
+
+                    //Skip data we don't need
+                    readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache);          //Block light
+                    if (hasSkyLight)
+                        readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache);      //Sky light
+                    readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * addDataSectionCount) / 2, cache);   //BlockAdd
+                    if (chunksContinuous)
+                        readData(Chunk.SizeX * Chunk.SizeZ, cache);                                         //Biomes
+
+                    //Load chunk data
+                    for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
+                    {
+                        if ((chunkMask & (1 << chunkY)) != 0)
+                        {
+                            Chunk chunk = new Chunk();
+
+                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
+                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
+                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
+                                        chunk[blockX, blockY, blockZ] = new Block(blockTypes.Dequeue(), blockMeta.Dequeue());
+
+                            if (handler.GetWorld()[chunkX, chunkZ] == null)
+                                handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
+                            handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
         /// Start the updating thread. Should be called after login success.
         /// </summary>
-
         private void StartUpdating()
         {
             netRead = new Thread(new ThreadStart(Updater));
@@ -749,7 +867,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Disconnect from the server, cancel network reading.
         /// </summary>
-
         public void Dispose()
         {
             try
@@ -768,7 +885,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="offset">Amount of bytes to read</param>
         /// <returns>The data read from the network as an array</returns>
-
         private byte[] readDataRAW(int offset)
         {
             if (offset > 0)
@@ -790,7 +906,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="offset">Amount of bytes to read</param>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The data read from the cache as an array</returns>
-
         private static byte[] readData(int offset, List<byte> cache)
         {
             byte[] result = cache.Take(offset).ToArray();
@@ -803,7 +918,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The string</returns>
-
         private static string readNextString(List<byte> cache)
         {
             int length = readNextVarInt(cache);
@@ -818,7 +932,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a boolean from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The boolean value</returns>
-
         private static bool readNextBool(List<byte> cache)
         {
             return readNextByte(cache) != 0x00;
@@ -828,7 +941,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a short integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The short integer value</returns>
-
         private static short readNextShort(List<byte> cache)
         {
             byte[] rawValue = readData(2, cache);
@@ -840,7 +952,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read an integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The integer value</returns>
-
         private static int readNextInt(List<byte> cache)
         {
             byte[] rawValue = readData(4, cache);
@@ -852,7 +963,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read an unsigned short integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned short integer value</returns>
-
         private static ushort readNextUShort(List<byte> cache)
         {
             byte[] rawValue = readData(2, cache);
@@ -864,7 +974,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read an unsigned long integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned long integer value</returns>
-
         private static ulong readNextULong(List<byte> cache)
         {
             byte[] rawValue = readData(8, cache);
@@ -876,7 +985,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read several little endian unsigned short integers at once from a cache of bytes and remove them from the cache
         /// </summary>
         /// <returns>The unsigned short integer value</returns>
-
         private static ushort[] readNextUShortsLittleEndian(int amount, List<byte> cache)
         {
             byte[] rawValues = readData(2 * amount, cache);
@@ -891,7 +999,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The uuid</returns>
-
         private static Guid readNextUUID(List<byte> cache)
         {
             return new Guid(readData(16, cache));
@@ -902,7 +1009,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The byte array</returns>
-
         private byte[] readNextByteArray(List<byte> cache)
         {
             int len = protocolversion >= MC18Version
@@ -915,7 +1021,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Reads a length-prefixed array of unsigned long integers and removes it from the cache
         /// </summary>
         /// <returns>The unsigned long integer values</returns>
-
         private static ulong[] readNextULongArray(List<byte> cache)
         {
             int len = readNextVarInt(cache);
@@ -929,7 +1034,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a double from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The double value</returns>
-
         private static double readNextDouble(List<byte> cache)
         {
             byte[] rawValue = readData(8, cache);
@@ -941,7 +1045,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read an integer from the network
         /// </summary>
         /// <returns>The integer</returns>
-
         private int readNextVarIntRAW()
         {
             int i = 0;
@@ -964,7 +1067,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The integer</returns>
-
         private static int readNextVarInt(List<byte> cache)
         {
             int i = 0;
@@ -987,7 +1089,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The int</returns>
-
         private static int readNextVarShort(List<byte> cache)
         {
             ushort low = readNextUShort(cache);
@@ -1004,7 +1105,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single byte from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The byte that was read</returns>
-
         private static byte readNextByte(List<byte> cache)
         {
             byte result = cache[0];
@@ -1017,7 +1117,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="paramInt">Integer to encode</param>
         /// <returns>Byte array for this integer</returns>
-
         private static byte[] getVarInt(int paramInt)
         {
             List<byte> bytes = new List<byte>();
@@ -1035,7 +1134,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="array">Array to process</param>
         /// <returns>Array ready to send</returns>
-
         private byte[] getDouble(double number)
         {
             byte[] theDouble = BitConverter.GetBytes(number);
@@ -1048,7 +1146,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="array">Array to process</param>
         /// <returns>Array ready to send</returns>
-
         private byte[] getArray(byte[] array)
         {
             if (protocolversion < MC18Version)
@@ -1065,7 +1162,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="array">String to process</param>
         /// <returns>Array ready to send</returns>
-
         private byte[] getString(string text)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(text);
@@ -1078,7 +1174,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="bytes">Bytes to append</param>
         /// <returns>Array containing all the data</returns>
-
         private static byte[] concatBytes(params byte[][] bytes)
         {
             List<byte> result = new List<byte>();
@@ -1092,7 +1187,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="str">String to parse</param>
         /// <returns>Int parsed</returns>
-
         private static int atoi(string str)
         {
             return int.Parse(new string(str.Trim().TakeWhile(char.IsDigit).ToArray()));
@@ -1101,7 +1195,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Network reading method. Read bytes from the socket or encrypted socket.
         /// </summary>
-
         private void Receive(byte[] buffer, int start, int offset, SocketFlags f)
         {
             int read = 0;
@@ -1120,7 +1213,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="discriminator">Discriminator to use.</param>
         /// <param name="data">packet Data</param>
-
         private void SendForgeHandshakePacket(FMLHandshakeDiscriminator discriminator, byte[] data)
         {
             SendPluginChannelPacket("FML|HS", concatBytes(new byte[] { (byte)discriminator }, data));
@@ -1131,7 +1223,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="packetID">packet ID</param>
         /// <param name="packetData">packet Data</param>
-
         private void SendPacket(int packetID, IEnumerable<byte> packetData)
         {
             //The inner packet
@@ -1160,7 +1251,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Send raw data to the server. Encryption will be handled automatically.
         /// </summary>
         /// <param name="buffer">data to send</param>
-
         private void SendRAW(byte[] buffer)
         {
             if (encrypted)
@@ -1174,7 +1264,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Do the Minecraft login.
         /// </summary>
         /// <returns>True if login successful</returns>
-
         public bool Login()
         {
             byte[] protocol_version = getVarInt(protocolversion);
@@ -1261,7 +1350,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Start network encryption. Automatically called by Login() if the server requests encryption.
         /// </summary>
         /// <returns>True if encryption was successful</returns>
-
         private bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverKey)
         {
             System.Security.Cryptography.RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverKey);
@@ -1327,7 +1415,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="message">Message</param>
         /// <returns>True if properly sent</returns>
-
         public bool SendChatMessage(string message)
         {
             if (String.IsNullOrEmpty(message))
@@ -1349,7 +1436,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="message">Message</param>
         /// <returns>True if properly sent</returns>
-
         public bool SendRespawnPacket()
         {
             try
@@ -1365,7 +1451,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="brandInfo">Client string describing the client</param>
         /// <returns>True if brand info was successfully sent</returns>
-
         public bool SendBrandInfo(string brandInfo)
         {
             if (String.IsNullOrEmpty(brandInfo))
@@ -1380,7 +1465,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="location">The new location of the player</param>
         /// <param name="onGround">True if the player is on the ground</param>
         /// <returns>True if the location update was successfully sent</returns>
-
         public bool SendLocationUpdate(Location location, bool onGround)
         {
             if (Settings.TerrainAndMovements)
@@ -1388,7 +1472,12 @@ namespace MinecraftClient.Protocol.Handlers
                 try
                 {
                     SendPacket(protocolversion >= MC19Version ? 0x0C : 0x04, concatBytes(
-                        getDouble(location.X), getDouble(location.Y), getDouble(location.Z),
+                        getDouble(location.X),
+                        getDouble(location.Y),
+                        protocolversion < MC18Version
+                            ? getDouble(location.Y + 1.62)
+                            : new byte[0],
+                        getDouble(location.Z),
                         new byte[] { onGround ? (byte)1 : (byte)0 }));
                     return true;
                 }
@@ -1402,7 +1491,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="channel">Channel to send packet on</param>
         /// <param name="data">packet Data</param>
-
         public bool SendPluginChannelPacket(string channel, byte[] data)
         {
             try
@@ -1430,7 +1518,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Disconnect from the server
         /// </summary>
-
         public void Disconnect()
         {
             try
@@ -1448,7 +1535,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="BehindCursor">Text behind cursor</param>
         /// <returns>Completed text</returns>
-
         IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
         {
             if (String.IsNullOrEmpty(BehindCursor))
@@ -1480,7 +1566,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// Ping a Minecraft server to get information about the server
         /// </summary>
         /// <returns>True if ping was successful</returns>
-
         public static bool doPing(string host, int port, ref int protocolversion, ref ForgeInfo forgeInfo)
         {
             string version = "";
