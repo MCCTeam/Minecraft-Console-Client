@@ -196,7 +196,8 @@ namespace MinecraftClient
                                                 case "botowners":
                                                     Bots_Owners.Clear();
                                                     foreach (string name in argValue.ToLower().Split(','))
-                                                        Bots_Owners.Add(name.Trim());
+                                                        if (!String.IsNullOrWhiteSpace(name))
+                                                            Bots_Owners.Add(name.Trim());
                                                     break;
 
                                                 case "internalcmdchar":
