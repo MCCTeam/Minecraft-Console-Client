@@ -63,7 +63,7 @@ In scripts and remote control, no slash is needed to perform the command.
  - send <text> : send a message or a command to the server
  - respawn : Use this to respawn if you are dead (like clicking "respawn" ingame)
  - log <text> : display some text in the console (useful for scripts)
- - list : list players logged in to the server (uses tab list info sent by server)
+ - list [raw] : list players logged in to the server (raw = force show real names)
  - set varname=value : set a value which can be used as %varname% in further commands
  - wait <time> : wait X ticks (10 ticks = ~1 second. Only for scripts)
  - move : used for moving when terrain and movements feature is enabled

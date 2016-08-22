@@ -22,55 +22,48 @@ namespace MinecraftClient.Protocol
         string GetUsername();
         string GetUserUUID();
         string GetSessionID();
-        string[] GetOnlinePlayers();
+        PlayerInfo[] GetOnlinePlayers();
         Location GetCurrentLocation();
         World GetWorld();
 
         /// <summary>
         /// Called when a server was successfully joined
         /// </summary>
-
         void OnGameJoined();
 
         /// <summary>
         /// This method is called when the protocol handler receives a chat message
         /// </summary>
-
         void OnTextReceived(string text);
 
         /// <summary>
         /// This method is called when a new player joins the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
-        /// <param name="name">Name of the player</param>
-
-        void OnPlayerJoin(Guid uuid, string name);
+        /// <param name="info">Info about this player</param>
+        void OnPlayerJoin(PlayerInfo info);
 
         /// <summary>
         /// This method is called when a player has left the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
-
         void OnPlayerLeave(Guid uuid);
 
         /// <summary>
         /// Called when the server sets the new location for the player
         /// </summary>
         /// <param name="location">New location of the player</param>
-
         void UpdateLocation(Location location);
 
         /// <summary>
         /// This method is called when the connection has been lost
         /// </summary>
-
         void OnConnectionLost(ChatBot.DisconnectReason reason, string message);
 
         /// <summary>
         /// Called ~10 times per second (10 ticks per second)
         /// Useful for updating bots in other parts of the program
         /// </summary>
-
         void OnUpdate();
 
         /// <summary>
@@ -78,7 +71,6 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="channel">The channel to register.</param>
         /// <param name="bot">The bot to register the channel for.</param>
-
         void RegisterPluginChannel(string channel, ChatBot bot);
 
         /// <summary>
@@ -86,7 +78,6 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="channel">The channel to unregister.</param>
         /// <param name="bot">The bot to unregister the channel for.</param>
-
         void UnregisterPluginChannel(string channel, ChatBot bot);
 
         /// <summary>
@@ -97,7 +88,6 @@ namespace MinecraftClient.Protocol
         /// <param name="data">The payload for the packet.</param>
         /// <param name="sendEvenIfNotRegistered">Whether the packet should be sent even if the server or the client hasn't registered it yet.</param>
         /// <returns>Whether the packet was sent: true if it was sent, false if there was a connection error or it wasn't registered.</returns>
-
         bool SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false);
 
         /// <summary>
@@ -105,7 +95,6 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="channel">The channel the message was sent on</param>
         /// <param name="data">The data from the channel</param>
-
         void OnPluginChannelMessage(string channel, byte[] data);
     }
 }

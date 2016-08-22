@@ -96,6 +96,7 @@ namespace MinecraftClient.Protocol
                         return 60;
                     case "1.5.2":
                         return 61;
+                    case "1.6":
                     case "1.6.0":
                         return 72;
                     case "1.6.1":
@@ -114,6 +115,7 @@ namespace MinecraftClient.Protocol
                     case "1.7.9":
                     case "1.7.10":
                         return 5;
+                    case "1.8":
                     case "1.8.0":
                     case "1.8.1":
                     case "1.8.2":
@@ -125,6 +127,7 @@ namespace MinecraftClient.Protocol
                     case "1.8.8":
                     case "1.8.9":
                         return 47;
+                    case "1.9":
                     case "1.9.0":
                         return 107;
                     case "1.9.1":
@@ -134,7 +137,10 @@ namespace MinecraftClient.Protocol
                     case "1.9.3":
                     case "1.9.4":
                         return 110;
+                    case "1.10":
                     case "1.10.0":
+                    case "1.10.1":
+                    case "1.10.2":
                         return 210;
                     default:
                         return 0;
@@ -234,7 +240,6 @@ namespace MinecraftClient.Protocol
         /// <param name="accesstoken">Will contain the cached access token previously returned by Minecraft.net</param>
         /// <param name="clienttoken">Will contain the cached client token created on login</param>
         /// <returns>Returns the status of the token (Valid, Invalid, etc.)</returns>
-        /// 
         public static LoginResult GetTokenValidation(SessionToken session)
         {
             try
@@ -269,7 +274,6 @@ namespace MinecraftClient.Protocol
         /// <param name="clienttoken">Will contain the client token generated before sending to Minecraft.net</param>
         /// <param name="uuid">Will contain the player's PlayerID, needed for multiplayer</param>
         /// <returns>Returns the status of the new token request (Success, Failure, etc.)</returns>
-        ///
         public static LoginResult GetNewToken(SessionToken currentsession, out SessionToken newsession)
         {
             newsession = new SessionToken();
@@ -319,7 +323,6 @@ namespace MinecraftClient.Protocol
         /// <param name="accesstoken">Session ID</param>
         /// <param name="serverhash">Server ID</param>
         /// <returns>TRUE if session was successfully checked</returns>
-
         public static bool SessionCheck(string uuid, string accesstoken, string serverhash)
         {
             try
@@ -348,7 +351,6 @@ namespace MinecraftClient.Protocol
         /// <param name="cookies">Cookies for making the request</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-
         private static int doHTTPSGet(string host, string endpoint, string cookies, ref string result)
         {
             List<String> http_request = new List<string>();
@@ -372,7 +374,6 @@ namespace MinecraftClient.Protocol
         /// <param name="request">Request payload</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-
         private static int doHTTPSPost(string host, string endpoint, string request, ref string result)
         {
             List<String> http_request = new List<string>();
@@ -395,7 +396,6 @@ namespace MinecraftClient.Protocol
         /// <param name="host">Host to connect to</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-
         private static int doHTTPSRequest(List<string> headers, string host, ref string result)
         {
             string postResult = null;
@@ -425,7 +425,6 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="text">Source text</param>
         /// <returns>Encoded text</returns>
-
         private static string jsonEncode(string text)
         {
             StringBuilder result = new StringBuilder();

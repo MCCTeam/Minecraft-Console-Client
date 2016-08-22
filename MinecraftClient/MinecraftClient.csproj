@@ -148,6 +148,7 @@
     <Compile Include="Protocol\Handlers\Protocol16.cs" />
     <Compile Include="Protocol\IMinecraftCom.cs" />
     <Compile Include="Protocol\IMinecraftComHandler.cs" />
+    <Compile Include="Protocol\PlayerInfo.cs" />
     <Compile Include="Protocol\ProtocolHandler.cs" />
     <Compile Include="Protocol\SessionCache\CacheType.cs" />
     <Compile Include="Protocol\SessionCache\SessionCache.cs" />

@@ -437,9 +437,10 @@ namespace MinecraftClient.Protocol.Handlers
                                     }
                                     readNextVarInt(packetData);
                                     readNextVarInt(packetData);
+                                    string displayName = name;
                                     if (readNextBool(packetData))
-                                        readNextString(packetData);
-                                    handler.OnPlayerJoin(uuid, name);
+                                        displayName = readNextString(packetData);
+                                    handler.OnPlayerJoin(new PlayerInfo(uuid, name, displayName));
                                     break;
                                 case 0x01: //Update gamemode
                                 case 0x02: //Update latency
@@ -465,7 +466,7 @@ namespace MinecraftClient.Protocol.Handlers
                         short ping = readNextShort(packetData);
                         Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
                         if (online)
-                            handler.OnPlayerJoin(FakeUUID, name);
+                            handler.OnPlayerJoin(new PlayerInfo(FakeUUID, name));
                         else handler.OnPlayerLeave(FakeUUID);
                     }
                     break;
