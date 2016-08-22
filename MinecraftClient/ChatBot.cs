@@ -204,7 +204,7 @@ namespace MinecraftClient
         /// Verify that a string contains only a-z A-Z 0-9 and _ characters.
         /// </summary>
 
-        protected static bool IsValidName(string username)
+        public static bool IsValidName(string username)
         {
             if (String.IsNullOrEmpty(username))
                 return false;

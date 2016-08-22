@@ -563,8 +563,8 @@ namespace MinecraftClient
         /// <param name="info">Info about this player</param>
         public void OnPlayerJoin(PlayerInfo info)
         {
-            //Ignore TabListPlus placeholders
-            if (info.Name.StartsWith("0000tab#"))
+            //Ignore placeholders eg 0000tab# from TabListPlus
+            if (!ChatBot.IsValidName(info.Name))
                 return;
 
             lock (onlinePlayers)

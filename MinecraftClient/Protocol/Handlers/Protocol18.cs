@@ -430,8 +430,8 @@ namespace MinecraftClient.Protocol.Handlers
                                     int propNum = readNextVarInt(packetData);
                                     for (int p = 0; p < propNum; p++)
                                     {
-                                        readNextString(packetData);
-                                        readNextString(packetData);
+                                        string key = readNextString(packetData);
+                                        string val = readNextString(packetData);
                                         if (readNextBool(packetData))
                                             readNextString(packetData);
                                     }
