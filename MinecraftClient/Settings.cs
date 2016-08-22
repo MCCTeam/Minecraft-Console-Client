@@ -195,7 +195,10 @@ namespace MinecraftClient
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
-                                                    foreach (string name in argValue.ToLower().Split(','))
+                                                    string[] names = argValue.ToLower().Split(',');
+                                                    if (!argValue.Contains(",") && argValue.ToLower().EndsWith(".txt") && File.Exists(argValue))
+                                                        names = File.ReadAllLines(argValue);
+                                                    foreach (string name in names)
                                                         if (!String.IsNullOrWhiteSpace(name))
                                                             Bots_Owners.Add(name.Trim());
                                                     break;
@@ -425,10 +428,10 @@ namespace MinecraftClient
                 + "#Advanced settings\r\n"
                 + "\r\n"
                 + "language=en_GB\r\n"
-                + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username%@%serverip% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
                 + "splitmessagedelay=2 #seconds between each part of a long message\r\n"
+                + "botowners=Player1,Player2,Player3 #use name list or myfile.txt with one name per line\r\n"
                 + "botmessagedelay=2 #seconds to delay between message a bot makes to avoid accidental spam\r\n"
                 + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
                 + "brandinfo=mcc #use 'mcc','vanilla', or 'none'\r\n"
