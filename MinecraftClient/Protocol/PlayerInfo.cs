@@ -8,15 +8,14 @@ namespace MinecraftClient.Protocol
     /// <summary>
     /// Information about a player (player tab list item)
     /// </summary>
-    public struct PlayerInfo : IComparable<PlayerInfo>
+    public class PlayerInfo : IComparable<PlayerInfo>
     {
         private Guid _uuid;
         private string _name;
-        private string _displayName;
 
         public Guid UUID { get { return _uuid; } }
         public string Name { get { return _name; } }
-        public string DisplayName { get { return _displayName; } }
+        public string DisplayName { get; set; }
 
         /// <summary>
         /// Create a new PlayerInfo structure
@@ -27,7 +26,7 @@ namespace MinecraftClient.Protocol
         {
             _uuid = uuid;
             _name = name;
-            _displayName = name;
+            DisplayName = name;
         }
 
         /// <summary>
@@ -39,7 +38,7 @@ namespace MinecraftClient.Protocol
         public PlayerInfo(Guid uuid, string name, string displayName)
             : this(uuid, name)
         {
-            _displayName = displayName;
+            DisplayName = displayName;
         }
 
         /// <summary>

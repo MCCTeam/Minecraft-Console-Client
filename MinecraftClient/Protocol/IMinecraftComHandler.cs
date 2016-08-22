@@ -23,6 +23,7 @@ namespace MinecraftClient.Protocol
         string GetUserUUID();
         string GetSessionID();
         PlayerInfo[] GetOnlinePlayers();
+        PlayerInfo GetPlayer(Guid uuid);
         Location GetCurrentLocation();
         World GetWorld();
 

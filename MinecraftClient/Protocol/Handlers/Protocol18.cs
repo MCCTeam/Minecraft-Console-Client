@@ -447,8 +447,17 @@ namespace MinecraftClient.Protocol.Handlers
                                     readNextVarInt(packetData);
                                     break;
                                 case 0x03: //Update display name
-                                    if (readNextBool(packetData))
-                                        readNextString(packetData);
+                                    bool hasDisplayName = readNextBool(packetData);
+                                    string newDisplayName = null;
+                                    if (hasDisplayName)
+                                        newDisplayName = readNextString(packetData);
+                                    PlayerInfo player = handler.GetPlayer(uuid);
+                                    if (player != null)
+                                    {
+                                        if (hasDisplayName)
+                                            player.DisplayName = newDisplayName;
+                                        else player.DisplayName = player.Name;
+                                    }
                                     break;
                                 case 0x04: //Player Leave
                                     handler.OnPlayerLeave(uuid);

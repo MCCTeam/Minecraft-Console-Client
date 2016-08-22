@@ -598,6 +598,21 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get an online player by UUID
+        /// </summary>
+        /// <param name="uuid">Player UUID</param>
+        /// <returns>The player, or NULL if not found</returns>
+        public PlayerInfo GetPlayer(Guid uuid)
+        {
+            lock (onlinePlayers)
+            {
+                if (onlinePlayers.ContainsKey(uuid))
+                    return onlinePlayers[uuid];
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Registers the given plugin channel for the given bot.
         /// </summary>
         /// <param name="channel">The channel to register.</param>
