@@ -370,6 +370,15 @@ namespace MinecraftClient
         {
             if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
                 handler.SendBrandInfo(Settings.BrandInfo.Trim());
+            if (Settings.MCSettings_Enabled)
+                handler.SendClientSettings(
+                    Settings.MCSettings_Locale,
+                    Settings.MCSettings_RenderDistance,
+                    Settings.MCSettings_Difficulty,
+                    Settings.MCSettings_ChatMode,
+                    Settings.MCSettings_ChatColors,
+                    Settings.MCSettings_Skin_All,
+                    Settings.MCSettings_MainHand);
             foreach (ChatBot bot in bots)
                 bot.AfterGameJoined();
         }

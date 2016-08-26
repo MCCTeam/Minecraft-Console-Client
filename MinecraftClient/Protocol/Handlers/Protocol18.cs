@@ -1470,6 +1470,42 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Inform the server of the client's Minecraft settings
+        /// </summary>
+        /// <param name="language">Client language eg en_US</param>
+        /// <param name="viewDistance">View distance, in chunks</param>
+        /// <param name="difficulty">Game difficulty (client-side...)</param>
+        /// <param name="chatMode">Chat mode (allows muting yourself)</param>
+        /// <param name="chatColors">Show chat colors</param>
+        /// <param name="skinParts">Show skin layers</param>
+        /// <param name="mainHand">1.9+ main hand</param>
+        /// <returns>True if client settings were successfully sent</returns>
+        public bool SendClientSettings(string language, byte viewDistance, byte difficulty, byte chatMode, bool chatColors, byte skinParts, byte mainHand)
+        {
+            try
+            {
+                List<byte> fields = new List<byte>();
+                fields.AddRange(getString(language));
+                fields.Add(viewDistance);
+                fields.AddRange(protocolversion >= MC19Version
+                    ? getVarInt(chatMode)
+                    : new byte[] { chatMode });
+                fields.Add(chatColors ? (byte)1 : (byte)0);
+                if (protocolversion < MC18Version)
+                {
+                    fields.Add(difficulty);
+                    fields.Add((byte)(skinParts & 0x1)); //show cape
+                }
+                else fields.Add(skinParts);
+                if (protocolversion >= MC19Version)
+                    fields.AddRange(getVarInt(mainHand));
+                SendPacket(protocolversion >= MC19Version ? 0x04 : 0x15, fields);
+            }
+            catch (SocketException) { }
+            return false;
+        }
+
+        /// <summary>
         /// Send a location update to the server
         /// </summary>
         /// <param name="location">The new location of the player</param>

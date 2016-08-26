@@ -626,6 +626,11 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Only supported since MC 1.7
         }
 
+        public bool SendClientSettings(string language, byte viewDistance, byte difficulty, byte chatMode, bool chatColors, byte skinParts, byte mainHand)
+        {
+            return false; //Currently not implemented
+        }
+
         public bool SendLocationUpdate(Location location, bool onGround)
         {
             return false; //Currently not implemented
