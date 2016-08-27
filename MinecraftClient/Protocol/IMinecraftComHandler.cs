@@ -22,8 +22,7 @@ namespace MinecraftClient.Protocol
         string GetUsername();
         string GetUserUUID();
         string GetSessionID();
-        PlayerInfo[] GetOnlinePlayers();
-        PlayerInfo GetPlayer(Guid uuid);
+        string[] GetOnlinePlayers();
         Location GetCurrentLocation();
         World GetWorld();
 
@@ -41,8 +40,8 @@ namespace MinecraftClient.Protocol
         /// This method is called when a new player joins the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
-        /// <param name="info">Info about this player</param>
-        void OnPlayerJoin(PlayerInfo info);
+        /// <param name="name">Name of the player</param>
+        void OnPlayerJoin(Guid uuid, string name);
 
         /// <summary>
         /// This method is called when a player has left the game

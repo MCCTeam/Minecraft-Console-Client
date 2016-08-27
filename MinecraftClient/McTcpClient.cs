@@ -23,7 +23,7 @@ namespace MinecraftClient
 
         private static readonly List<string> cmd_names = new List<string>();
         private static readonly Dictionary<string, Command> cmds = new Dictionary<string, Command>();
-        private readonly Dictionary<Guid, PlayerInfo> onlinePlayers = new Dictionary<Guid, PlayerInfo>();
+        private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
@@ -569,16 +569,16 @@ namespace MinecraftClient
         /// Triggered when a new player joins the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
-        /// <param name="info">Info about this player</param>
-        public void OnPlayerJoin(PlayerInfo info)
+        /// <param name="name">Name of the player</param>
+        public void OnPlayerJoin(Guid uuid, string name)
         {
             //Ignore placeholders eg 0000tab# from TabListPlus
-            if (!ChatBot.IsValidName(info.Name))
+            if (!ChatBot.IsValidName(name))
                 return;
 
             lock (onlinePlayers)
             {
-                onlinePlayers[info.UUID] = info;
+                onlinePlayers[uuid] = name;
             }
         }
 
@@ -598,26 +598,11 @@ namespace MinecraftClient
         /// Get a set of online player names
         /// </summary>
         /// <returns>Online player names</returns>
-        public PlayerInfo[] GetOnlinePlayers()
+        public string[] GetOnlinePlayers()
         {
             lock (onlinePlayers)
             {
                 return onlinePlayers.Values.Distinct().ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Get an online player by UUID
-        /// </summary>
-        /// <param name="uuid">Player UUID</param>
-        /// <returns>The player, or NULL if not found</returns>
-        public PlayerInfo GetPlayer(Guid uuid)
-        {
-            lock (onlinePlayers)
-            {
-                if (onlinePlayers.ContainsKey(uuid))
-                    return onlinePlayers[uuid];
-                return null;
             }
         }
 

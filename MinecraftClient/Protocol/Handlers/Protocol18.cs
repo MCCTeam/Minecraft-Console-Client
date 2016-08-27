@@ -437,27 +437,17 @@ namespace MinecraftClient.Protocol.Handlers
                                     }
                                     readNextVarInt(packetData);
                                     readNextVarInt(packetData);
-                                    string displayName = name;
                                     if (readNextBool(packetData))
-                                        displayName = readNextString(packetData);
-                                    handler.OnPlayerJoin(new PlayerInfo(uuid, name, displayName));
+                                        readNextString(packetData);
+                                    handler.OnPlayerJoin(uuid, name);
                                     break;
                                 case 0x01: //Update gamemode
                                 case 0x02: //Update latency
                                     readNextVarInt(packetData);
                                     break;
                                 case 0x03: //Update display name
-                                    bool hasDisplayName = readNextBool(packetData);
-                                    string newDisplayName = null;
-                                    if (hasDisplayName)
-                                        newDisplayName = readNextString(packetData);
-                                    PlayerInfo player = handler.GetPlayer(uuid);
-                                    if (player != null)
-                                    {
-                                        if (hasDisplayName)
-                                            player.DisplayName = newDisplayName;
-                                        else player.DisplayName = player.Name;
-                                    }
+                                    if (readNextBool(packetData))
+                                        readNextString(packetData);
                                     break;
                                 case 0x04: //Player Leave
                                     handler.OnPlayerLeave(uuid);
@@ -475,7 +465,7 @@ namespace MinecraftClient.Protocol.Handlers
                         short ping = readNextShort(packetData);
                         Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
                         if (online)
-                            handler.OnPlayerJoin(new PlayerInfo(FakeUUID, name));
+                            handler.OnPlayerJoin(FakeUUID, name);
                         else handler.OnPlayerLeave(FakeUUID);
                     }
                     break;

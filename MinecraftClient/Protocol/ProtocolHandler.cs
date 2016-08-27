@@ -24,7 +24,6 @@ namespace MinecraftClient.Protocol
         /// <param name="serverPort">Server Port to ping</param>
         /// <param name="protocolversion">Will contain protocol version, if ping successful</param>
         /// <returns>TRUE if ping was successful</returns>
-
         public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion, ref ForgeInfo forgeInfo)
         {
             bool success = false;
@@ -65,7 +64,6 @@ namespace MinecraftClient.Protocol
         /// <param name="ProtocolVersion">Protocol version to handle</param>
         /// <param name="Handler">Handler with the appropriate callbacks</param>
         /// <returns></returns>
-
         public static IMinecraftCom getProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo forgeInfo, IMinecraftComHandler Handler)
         {
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
@@ -82,7 +80,6 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="MCVersion">The Minecraft version number</param>
         /// <returns>The protocol version number or 0 if could not determine protocol version: error, unknown, not supported</returns>
-
         public static int MCVer2ProtocolVersion(string MCVersion)
         {
             if (MCVersion.Contains('.'))
@@ -170,7 +167,6 @@ namespace MinecraftClient.Protocol
         /// <param name="clienttoken">Will contain the client token generated before sending to Minecraft.net</param>
         /// <param name="uuid">Will contain the player's PlayerID, needed for multiplayer</param>
         /// <returns>Returns the status of the login (Success, Failure, etc.)</returns>
-
         public static LoginResult GetLogin(string user, string pass, out SessionToken session)
         {
             session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
