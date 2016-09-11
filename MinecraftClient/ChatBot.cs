@@ -11,19 +11,15 @@ namespace MinecraftClient
     ///
     /// Welcome to the Bot API file !
     /// The virtual class "ChatBot" contains anything you need for creating chat bots
-    /// Inherit from this class while adding your bot class to the folder "ChatBots".
+    /// Inherit from this class while adding your bot class to the "ChatBots" folder.
     /// Override the methods you want for handling events: Initialize, Update, GetText.
-    /// Once your bot is created, read the explanations below to start using it in the MinecraftClient app.
     ///
-    /// Pieces of code to add in other parts of the program for your bot. Line numbers are approximative.
-    /// Settings.cs:73  | public static bool YourBot_Enabled = false;
-    /// Settings.cs:74  | private enum ParseMode { /* [...] */, YourBot };
-    /// Settings.cs:106 | case "yourbot": pMode = ParseMode.YourBot; break;
-    /// Settings.cs:197 | case ParseMode.YourBot: switch (argName.ToLower()) { case "enabled": YourBot_Enabled = str2bool(argValue); break; } break;
-    /// Settings.cs:267 | + "[YourBot]\r\n" + "enabled=false\r\n"
-    /// McTcpClient:110 | if (Settings.YourBot_Enabled) { handler.BotLoad(new ChatBots.YourBot()); }
-    /// Here your are. Now you will have a setting in MinecraftClient.ini for enabling your brand new bot.
-    /// Delete MinecraftClient.ini to re-generate it or add the lines [YourBot] and enabled=true to the existing one.
+    /// For testing your bot you can add it in McTcpClient.cs (see comment at line ~119).
+    /// Your bot will be loaded everytime MCC is started so that you can test/debug.
+    ///
+    /// Once your bot is fully written and tested, you can export it a standalone script.
+    /// This way it can be loaded in newer MCC builds, without modifying MCC itself.
+    /// See config/sample-script-with-chatbot.cs for a ChatBot script example.
     ///
 
     /// <summary>

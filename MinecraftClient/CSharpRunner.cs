@@ -304,6 +304,21 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get a global variable by name, as a double
+        /// </summary>
+        /// <param name="varName">Name of the variable</param>
+        /// <returns>Value of the variable as double, or 0 if no variable or not a number</returns>
+        public double GetVarAsDouble(string varName)
+        {
+            if (GetVar(varName) is double)
+                return (double)GetVar(varName);
+            double result;
+            if (double.TryParse(GetVarAsString(varName), out result))
+                return result;
+            return 0;
+        }
+
+        /// <summary>
         /// Get a global variable by name, as a boolean
         /// </summary>
         /// <param name="varName">Name of the variable</param>
