@@ -396,22 +396,35 @@ namespace MinecraftClient.Protocol
         {
             string postResult = null;
             int statusCode = 520;
+            Exception exception = null;
             AutoTimeout.Perform(() =>
             {
-                TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
-                SslStream stream = new SslStream(client.GetStream());
-                stream.AuthenticateAsClient(host);
-                stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())));
-                System.IO.StreamReader sr = new System.IO.StreamReader(stream);
-                string raw_result = sr.ReadToEnd();
-                if (raw_result.StartsWith("HTTP/1.1"))
+                try
                 {
-                    postResult = raw_result.Substring(raw_result.IndexOf("\r\n\r\n") + 4);
-                    statusCode = Settings.str2int(raw_result.Split(' ')[1]);
+                    TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
+                    SslStream stream = new SslStream(client.GetStream());
+                    stream.AuthenticateAsClient(host);
+                    stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())));
+                    System.IO.StreamReader sr = new System.IO.StreamReader(stream);
+                    string raw_result = sr.ReadToEnd();
+                    if (raw_result.StartsWith("HTTP/1.1"))
+                    {
+                        postResult = raw_result.Substring(raw_result.IndexOf("\r\n\r\n") + 4);
+                        statusCode = Settings.str2int(raw_result.Split(' ')[1]);
+                    }
+                    else statusCode = 520; //Web server is returning an unknown error
                 }
-                else statusCode = 520; //Web server is returning an unknown error
+                catch (Exception e)
+                {
+                    if (!(e is System.Threading.ThreadAbortException))
+                    {
+                        exception = e;
+                    }
+                }
             }, TimeSpan.FromSeconds(30));
             result = postResult;
+            if (exception != null)
+                throw exception;
             return statusCode;
         }
 
