@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using MinecraftClient.Protocol.SessionCache;
+using MinecraftClient.Protocol;
 
 namespace MinecraftClient
 {
@@ -156,7 +157,6 @@ namespace MinecraftClient
         /// Load settings from the give INI file
         /// </summary>
         /// <param name="settingsfile">File to load</param>
-
         public static void LoadSettings(string settingsfile)
         {
             if (File.Exists(settingsfile))
@@ -491,7 +491,6 @@ namespace MinecraftClient
         /// Write an INI file with default settings
         /// </summary>
         /// <param name="settingsfile">File to (over)write</param>
-
         public static void WriteDefaultSettings(string settingsfile)
         {
             System.IO.File.WriteAllText(settingsfile, "# Minecraft Console Client v" + Program.Version + "\r\n"
@@ -615,7 +614,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="str">String to parse as an integer</param>
         /// <returns>Integer value</returns>
-        
         public static int str2int(string str)
         {
             try
@@ -630,7 +628,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="str">String to parse as a boolean</param>
         /// <returns>Boolean value</returns>
-        
         public static bool str2bool(string str)
         {
             if (String.IsNullOrEmpty(str))
@@ -643,7 +640,6 @@ namespace MinecraftClient
         /// Load login/password using an account alias
         /// </summary>
         /// <returns>True if the account was found and loaded</returns>
-
         public static bool SetAccount(string accountAlias)
         {
             accountAlias = accountAlias.ToLower();
@@ -660,7 +656,6 @@ namespace MinecraftClient
         /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
         /// </summary>
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
-
         public static bool SetServerIP(string server)
         {
             server = server.ToLower();
@@ -680,6 +675,9 @@ namespace MinecraftClient
             if (host == "localhost" || host.Contains('.'))
             {
                 //Server IP (IP or domain names contains at least a dot)
+                if (sip.Length == 1 && host.Contains('.') && host.Any(c => char.IsLetter(c)))
+                    //Domain name without port may need Minecraft SRV Record lookup
+                    ProtocolHandler.MinecraftServiceLookup(ref host, ref port);
                 ServerIP = host;
                 ServerPort = port;
                 return true;
@@ -701,7 +699,6 @@ namespace MinecraftClient
         /// <param name="varName">Name of the variable</param>
         /// <param name="varData">Value of the variable</param>
         /// <returns>True if the parameters were valid</returns>
-
         public static bool SetVar(string varName, object varData)
         {
             lock (AppVars)
@@ -721,7 +718,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="varName">Variable name</param>
         /// <returns>The value or null if the variable does not exists</returns>
-
         public static object GetVar(string varName)
         {
             if (AppVars.ContainsKey(varName))
@@ -734,7 +730,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="str">String to parse</param>
         /// <returns>Modifier string</returns>
-
         public static string ExpandVars(string str)
         {
             StringBuilder result = new StringBuilder();

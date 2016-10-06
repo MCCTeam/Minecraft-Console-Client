@@ -124,7 +124,7 @@ namespace MinecraftClient
             {
                 client = ProxyHandler.newTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
-                handler = Protocol.ProtocolHandler.getProtocolHandler(client, protocolversion, forgeInfo, this);
+                handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Console.WriteLine("Version is supported.\nLogging in...");
 
                 try
