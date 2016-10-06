@@ -225,9 +225,9 @@ The AutoRespond bot allows you to automatically react on specific chat messages 
 You can use either a string to detect in chat messages, or an advanced regular expression.
 For more information about how to define match rules, please refer to sample-matches.ini
 
-=========================
- Disclaimer & Last words
-=========================
+============
+ Disclaimer
+============
 
 Even if everything should work, I am not responsible of any damage this app could cause to your computer or your server.
 This app does not steal your password. If you don't trust it, don't use it or check & compile from the source code.
@@ -236,8 +236,70 @@ Also, remember that when you connect to a server with this program, you will app
 This means that you can die if you log in in an unsafe place on a survival server!
 Use the script scheduler bot to send a teleport command after logging in.
 
-You can find more info at:
-http://www.minecraftforum.net/topic/1314800-/
+=========
+ License
+=========
+
+Minecraft Console Client is a totally free of charge, open source project.
+Source code is available at https://github.com/ORelio/Minecraft-Console-Client
+
+Unless specifically stated, source code is from me or contributors, and available under CDDL-1.0.
+More info about CDDL-1.0: http://qstuff.blogspot.fr/2007/04/why-cddl.html
+Full license at http://opensource.org/licenses/CDDL-1.0
+
+=========
+ Credits
+=========
+
+Even though I'm the main author of Minecraft Console Client, many features
+would not have been possible without the help of talented contributors:
+
+Ideas
+
+  ambysdotnet, Awpocalypse, azoundria, bearbear12345, bSun0000, Cat7373, dagonzaros, Dids,
+  Elvang, fuckofftwice, GeorgH93, initsuj, JamieSinn, joshbean39, LehmusFIN, maski, medxo,
+  mobdon, MousePak, TNT-UP, TorchRJ, yayes2, Yoann166, ZizzyDizzyMC
+
+Bug Hunters
+
+  1092CQ, ambysdotnet, bearbear12345, c0dei, Cat7373, Darkaegis, dbear20, DigitalSniperz,
+  doranchak, drXor, FantomHD, gerik43, ibspa, iTzMrpitBull, JamieSinn, k3ldon, KenXeiko,
+  link3321, lyze237, mattman00000, Nicconyancat, Pokechu22, ridgewell, Ryan6578, Solethia,
+  TNT-UP, TorchRJ, TRTrident, WeedIsGood, xp9kus, Yoann166
+
+Code contributions
+
+  Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, dbear20, dogwatch, initsuj,
+  JamieSinn, justcool393, lokulin, maxpowa, medxo, Pokechu22, TheMeq, v1RuX, ZizzyDizzyMC
+
+
+Libraries
+
+  Minecraft Console Client also borrows code from the following libraries:
+
+  --------------------------------------------------------------
+    Name           Purpose             Author          License
+  --------------------------------------------------------------
+    Biko           Proxy handling      Benton Stark    MIT
+    BouncyCastle   CFB-8 AES on Mono   The Legion      MIT
+    DnDns          DNS SRV Lookup      J. Montgomery   MIT
+    DotNetZip      Zlib compression    Dino Chiesa     MS-PL
+  --------------------------------------------------------------
+
+=========
+ Support
+=========
+
+If you still have any question after reading this file, you can get support here:
+
+ - General Questions: http://www.minecraftforum.net/topic/1314800-/
+ - Bugs & Issues: https://github.com/ORelio/Minecraft-Console-Client/issues
+
+Like Minecraft Console Client? You can buy me a coffee here:
+
+ - https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EALHERGB9DQY8
+
+Code contributions, bug reports and any kind of comments are also highly appreciated :)
 
 +-----------------------------------+
 | © 2012-2016 ORelio & Contributors |
