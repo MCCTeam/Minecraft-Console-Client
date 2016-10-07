@@ -436,9 +436,13 @@ namespace MinecraftClient
         /// Received some text from the server
         /// </summary>
         /// <param name="text">Text received</param>
-        public void OnTextReceived(string text)
+        /// <param name="links">Links embedded in text</param>
+        public void OnTextReceived(string text, IEnumerable<string> links)
         {
             ConsoleIO.WriteLineFormatted(text, false);
+            if (Settings.DisplayChatLinks)
+                foreach (string link in links)
+                    ConsoleIO.WriteLineFormatted("§8MCC: Link: " + link, false);
             for (int i = 0; i < bots.Count; i++)
             {
                 try

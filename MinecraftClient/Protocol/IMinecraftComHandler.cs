@@ -34,7 +34,9 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// This method is called when the protocol handler receives a chat message
         /// </summary>
-        void OnTextReceived(string text);
+        /// <param name="text">Text received from the server</param>
+        /// <param name="links">Links embedded in text (for click events)</param>
+        void OnTextReceived(string text, IEnumerable<string> links);
 
         /// <summary>
         /// This method is called when a new player joins the game

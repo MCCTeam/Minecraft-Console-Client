@@ -88,8 +88,9 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x02: readData(1); readNextString(); readNextString(); readData(4); break;
                 case 0x03:
                     string message = readNextString();
-                    if (protocolversion >= 72) { message = ChatParser.ParseText(message); }
-                    handler.OnTextReceived(message); break;
+                    List<string> links = new List<string>();
+                    if (protocolversion >= 72) { message = ChatParser.ParseText(message, links); }
+                    handler.OnTextReceived(message, links); break;
                 case 0x04: readData(16); break;
                 case 0x05: readData(6); readNextItemSlot(); break;
                 case 0x06: readData(12); break;
@@ -154,7 +155,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x84: readData(11); nbr = readNextShort(); if (nbr > 0) { readData(nbr); } break;
                 case 0x85: if (protocolversion >= 74) { readData(13); } break;
                 case 0xC8:
-                    if (readNextInt() == 2022) { handler.OnTextReceived("You are dead. Type /reco to respawn & reconnect."); }
+                    if (readNextInt() == 2022) { ConsoleIO.WriteLineFormatted("§MCC: You are dead. Type /reco to respawn & reconnect."); }
                     if (protocolversion >= 72) { readData(4); } else readData(1);
                     break;
                 case 0xC9:

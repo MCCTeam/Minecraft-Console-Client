@@ -88,6 +88,7 @@ namespace MinecraftClient
         public static string BrandInfo = MCCBrandInfo;
         public static bool DisplaySystemMessages = true;
         public static bool DisplayXPBarMessages = true;
+        public static bool DisplayChatLinks = true;
         public static bool TerrainAndMovements = false;
         public static string PrivateMsgsCmdName = "tell";
         public static CacheType SessionCaching = CacheType.None;
@@ -220,6 +221,7 @@ namespace MinecraftClient
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
                                                 case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
                                                 case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
+                                                case "showchatlinks": DisplayChatLinks = str2bool(argValue); break;
                                                 case "terrainandmovements": TerrainAndMovements = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
@@ -520,6 +522,7 @@ namespace MinecraftClient
                 + "privatemsgscmdname=tell            # Used by RemoteControl bot\r\n"
                 + "showsystemmessages=true            # System messages for server ops\r\n"
                 + "showxpbarmessages=true             # Messages displayed above xp bar\r\n"
+                + "showchatlinks=true                 # Show links embedded in chat messages\r\n"
                 + "terrainandmovements=false          # Uses more ram, cpu, bandwidth\r\n"
                 + "sessioncache=memory                # Use 'none', 'memory' or 'disk' (disk is experimental)\r\n"
                 + "accountlist=accounts.txt\r\n"

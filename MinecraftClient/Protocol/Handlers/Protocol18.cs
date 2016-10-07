@@ -257,7 +257,8 @@ namespace MinecraftClient.Protocol.Handlers
                             break;
                     }
                     catch (ArgumentOutOfRangeException) { /* No message type */ }
-                    handler.OnTextReceived(ChatParser.ParseText(message));
+                    List<string> links = new List<string>();
+                    handler.OnTextReceived(ChatParser.ParseText(message, links), links);
                     break;
                 case PacketIncomingType.Respawn:
                     this.currentDimension = readNextInt(packetData);
