@@ -25,7 +25,6 @@ namespace MinecraftClient
     /// <summary>
     /// The virtual class containing anything you need for creating chat bots.
     /// </summary>
-
     public abstract class ChatBot
     {
         public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost };
@@ -75,7 +74,6 @@ namespace MinecraftClient
         /// NOTE: Chat messages cannot be sent at this point in the login process.  If you want to send
         /// a message when the bot is loaded, use AfterGameJoined.
         /// </summary>
-
         public virtual void Initialize() { }
 
         /// <summary>
@@ -84,20 +82,17 @@ namespace MinecraftClient
         /// NOTE: This is not always right after joining the server - if the bot was loaded after logging
         /// in this is still called.
         /// </summary>
-
         public virtual void AfterGameJoined() { }
 
         /// <summary>
         /// Will be called every ~100ms (10fps) if loaded in MinecraftCom
         /// </summary>
-
         public virtual void Update() { }
 
         /// <summary>
         /// Any text sent by the server will be sent here by MinecraftCom
         /// </summary>
         /// <param name="text">Text from the server</param>
-
         public virtual void GetText(string text) { }
 
         /// <summary>
@@ -106,7 +101,6 @@ namespace MinecraftClient
         /// <param name="reason">Disconnect Reason</param>
         /// <param name="message">Kick message, if any</param>
         /// <returns>Return TRUE if the client is about to restart</returns>
-
         public virtual bool OnDisconnect(DisconnectReason reason, string message) { return false; }
 
         /// <summary>
@@ -117,7 +111,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="channel">The name of the channel</param>
         /// <param name="data">The payload for the message</param>
-
         public virtual void OnPluginMessage(string channel, byte[] data) { }
 
         /* =================================================================== */
@@ -132,7 +125,6 @@ namespace MinecraftClient
         /// <param name="text">Text to send to the server</param>
         /// <param name="sendImmediately">Whether the message should be sent immediately rather than being queued to avoid chat spam</param>
         /// <returns>True if the text was sent with no error</returns>
-
         protected bool SendText(string text, bool sendImmediately = false)
         {
             if (Settings.botMessageDelay.TotalSeconds > 0 && !sendImmediately)
@@ -156,7 +148,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="command">The command to process</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-
         protected bool PerformInternalCommand(string command)
         {
             string temp = "";
@@ -169,7 +160,6 @@ namespace MinecraftClient
         /// <param name="command">The command to process</param>
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-
         protected bool PerformInternalCommand(string command, ref string response_msg)
         {
             return Handler.PerformInternalCommand(command, ref response_msg);
@@ -178,7 +168,6 @@ namespace MinecraftClient
         /// <summary>
         /// Remove color codes ("§c") from a text message received from the server
         /// </summary>
-
         protected static string GetVerbatim(string text)
         {
             if ( String.IsNullOrEmpty(text) )
@@ -199,7 +188,6 @@ namespace MinecraftClient
         /// <summary>
         /// Verify that a string contains only a-z A-Z 0-9 and _ characters.
         /// </summary>
-
         public static bool IsValidName(string username)
         {
             if (String.IsNullOrEmpty(username))
@@ -222,7 +210,6 @@ namespace MinecraftClient
         /// <param name="message">if it's a private message, this will contain the message</param>
         /// <param name="sender">if it's a private message, this will contain the player name that sends the message</param>
         /// <returns>Returns true if the text is a private message</returns>
-
         protected static bool IsPrivateMessage(string text, ref string message, ref string sender)
         {
             if (String.IsNullOrEmpty(text))
@@ -334,7 +321,6 @@ namespace MinecraftClient
         /// <param name="message">if it's message, this will contain the message</param>
         /// <param name="sender">if it's message, this will contain the player name that sends the message</param>
         /// <returns>Returns true if the text is a chat message</returns>
-
         protected static bool IsChatMessage(string text, ref string message, ref string sender)
         {
             if (String.IsNullOrEmpty(text))
@@ -438,7 +424,6 @@ namespace MinecraftClient
         /// <param name="text">Text to parse</param>
         /// <param name="sender">Will contain the sender's username, if it's a teleport request</param>
         /// <returns>Returns true if the text is a teleport request</returns>
-
         protected static bool IsTeleportRequest(string text, ref string sender)
         {
             if (String.IsNullOrEmpty(text))
@@ -493,7 +478,6 @@ namespace MinecraftClient
         /// Write some text in the console. Nothing will be sent to the server.
         /// </summary>
         /// <param name="text">Log text to write</param>
-
         protected void LogToConsole(object text)
         {
             ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", this.GetType().Name, text));
@@ -518,7 +502,6 @@ namespace MinecraftClient
         /// It will unload and reload all the bots and then reconnect to the server
         /// </summary>
         /// <param name="attempts">If connection fails, the client will make X extra attempts</param>
-
         protected void ReconnectToTheServer(int ExtraAttempts = 3)
         {
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
@@ -528,7 +511,6 @@ namespace MinecraftClient
         /// <summary>
         /// Disconnect from the server and exit the program
         /// </summary>
-
         protected void DisconnectAndExit()
         {
             Program.Exit();
@@ -537,7 +519,6 @@ namespace MinecraftClient
         /// <summary>
         /// Unload the chatbot, and release associated memory.
         /// </summary>
-
         protected void UnloadBot()
         {
             Handler.BotUnLoad(this);
@@ -548,7 +529,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="player">Player name</param>
         /// <param name="message">Message</param>
-
         protected void SendPrivateMessage(string player, string message)
         {
             SendText(String.Format("/{0} {1} {2}", Settings.PrivateMsgsCmdName, player, message));
@@ -559,7 +539,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="filename">File name</param>
         /// <param name="playername">Player name to send error messages, if applicable</param>
-
         protected void RunScript(string filename, string playername = "")
         {
             Handler.BotLoad(new ChatBots.Script(filename, playername));
@@ -569,7 +548,6 @@ namespace MinecraftClient
         /// Get the current Minecraft World
         /// </summary>
         /// <returns>Minecraft world or null if associated setting is disabled</returns>
-
         protected Mapping.World GetWorld()
         {
             if (Settings.TerrainAndMovements)
@@ -581,7 +559,6 @@ namespace MinecraftClient
         /// Get the current location of the player
         /// </summary>
         /// <returns>Minecraft world or null if associated setting is disabled</returns>
-
         protected Mapping.Location GetCurrentLocation()
         {
             return Handler.GetCurrentLocation();
@@ -593,7 +570,6 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
         /// <returns>True if a path has been found</returns>
-
         protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false)
         {
             return Handler.MoveTo(location, allowUnsafe);
@@ -602,7 +578,6 @@ namespace MinecraftClient
         /// <summary>
         /// Get a Y-M-D h:m:s timestamp representing the current system date and time
         /// </summary>
-
         protected static string GetTimestamp()
         {
             DateTime time = DateTime.Now;
@@ -620,7 +595,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="file">File to load</param>
         /// <returns>The string array or an empty array if failed to load the file</returns>
-        
         protected string[] LoadDistinctEntriesFromFile(string file)
         {
             if (File.Exists(file))
@@ -640,10 +614,18 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Return the list of currently online players
+        /// </summary>
+        /// <returns>List of online players</returns>
+        protected string[] GetOnlinePlayers()
+        {
+            return Handler.GetOnlinePlayers();
+        }
+
+        /// <summary>
         /// Registers the given plugin channel for use by this chatbot.
         /// </summary>
         /// <param name="channel">The name of the channel to register</param>
-
         protected void RegisterPluginChannel(string channel)
         {
             this.registeredPluginChannels.Add(channel);
@@ -654,7 +636,6 @@ namespace MinecraftClient
         /// Unregisters the given plugin channel, meaning this chatbot can no longer use it.
         /// </summary>
         /// <param name="channel">The name of the channel to unregister</param>
-
         protected void UnregisterPluginChannel(string channel)
         {
             this.registeredPluginChannels.RemoveAll(chan => chan == channel);
@@ -669,7 +650,6 @@ namespace MinecraftClient
         /// <param name="data">The data to send.</param>
         /// <param name="sendEvenIfNotRegistered">Should the message be sent even if it hasn't been registered by the server or this bot?  (Some Minecraft channels aren't registered)</param>
         /// <returns>Whether the message was successfully sent.  False if there was a network error or if the channel wasn't registered.</returns>
-
         protected bool SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false)
         {
             if (!sendEvenIfNotRegistered)
