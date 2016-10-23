@@ -93,6 +93,7 @@ namespace MinecraftClient
         public static string PrivateMsgsCmdName = "tell";
         public static CacheType SessionCaching = CacheType.None;
         public static bool DebugMessages = false;
+        public static bool ResolveSrvRecords = true;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -226,6 +227,7 @@ namespace MinecraftClient
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
+                                                case "resolvesrvrecords": ResolveSrvRecords = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -525,6 +527,7 @@ namespace MinecraftClient
                 + "showchatlinks=true                 # Show links embedded in chat messages\r\n"
                 + "terrainandmovements=false          # Uses more ram, cpu, bandwidth\r\n"
                 + "sessioncache=memory                # Use 'none', 'memory' or 'disk' (disk is experimental)\r\n"
+                + "resolvesrvrecords=true             # Resolve SRV DNS record (required for joining some servers)\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"
@@ -678,7 +681,7 @@ namespace MinecraftClient
             if (host == "localhost" || host.Contains('.'))
             {
                 //Server IP (IP or domain names contains at least a dot)
-                if (sip.Length == 1 && host.Contains('.') && host.Any(c => char.IsLetter(c)))
+                if (sip.Length == 1 && host.Contains('.') && host.Any(c => char.IsLetter(c)) && ResolveSrvRecords)
                     //Domain name without port may need Minecraft SRV Record lookup
                     ProtocolHandler.MinecraftServiceLookup(ref host, ref port);
                 ServerIP = host;
