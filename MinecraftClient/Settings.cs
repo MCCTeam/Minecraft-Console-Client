@@ -94,6 +94,7 @@ namespace MinecraftClient
         public static CacheType SessionCaching = CacheType.None;
         public static bool DebugMessages = false;
         public static bool ResolveSrvRecords = true;
+        public static bool ResolveSrvRecordsShortTimeout = true;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -227,7 +228,6 @@ namespace MinecraftClient
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
-                                                case "resolvesrvrecords": ResolveSrvRecords = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -306,6 +306,19 @@ namespace MinecraftClient
                                                         case "mcc": BrandInfo = MCCBrandInfo; break;
                                                         case "vanilla": BrandInfo = "vanilla"; break;
                                                         default: BrandInfo = null; break;
+                                                    }
+                                                    break;
+
+                                                case "resolvesrvrecords":
+                                                    if (argValue.Trim().ToLower() == "fast")
+                                                    {
+                                                        ResolveSrvRecords = true;
+                                                        ResolveSrvRecordsShortTimeout = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        ResolveSrvRecords = str2bool(argValue);
+                                                        ResolveSrvRecordsShortTimeout = false;
                                                     }
                                                     break;
                                             }
@@ -527,7 +540,7 @@ namespace MinecraftClient
                 + "showchatlinks=true                 # Show links embedded in chat messages\r\n"
                 + "terrainandmovements=false          # Uses more ram, cpu, bandwidth\r\n"
                 + "sessioncache=memory                # Use 'none', 'memory' or 'disk' (disk is experimental)\r\n"
-                + "resolvesrvrecords=true             # Resolve SRV DNS record (required for joining some servers)\r\n"
+                + "resolvesrvrecords=fast             # Use 'false', 'fast' (5s timeout), or 'true'. Required for joining some servers.\r\n"
                 + "accountlist=accounts.txt\r\n"
                 + "serverlist=servers.txt\r\n"
                 + "playerheadicon=true\r\n"
