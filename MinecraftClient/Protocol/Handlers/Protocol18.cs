@@ -309,7 +309,7 @@ namespace MinecraftClient.Protocol.Handlers
                             int compressedDataSize = readNextInt(packetData);
                             byte[] compressed = readData(compressedDataSize, packetData);
                             byte[] decompressed = ZlibUtils.Decompress(compressed);
-                            ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, true, chunksContinuous, new List<byte>(decompressed));
+                            ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, new List<byte>(decompressed));
                         }
                         else
                         {
