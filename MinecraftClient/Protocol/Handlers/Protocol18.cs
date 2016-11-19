@@ -21,6 +21,7 @@ namespace MinecraftClient.Protocol.Handlers
         private const int MC19Version = 107;
         private const int MC191Version = 108;
         private const int MC110Version = 210;
+        private const int MC111Version = 315;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -1409,6 +1410,17 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else handlePacket(packetID, packetData);
             }
+        }
+
+        /// <summary>
+        /// Get max length for chat messages
+        /// </summary>
+        /// <returns>Max length, in characters</returns>
+        public int GetMaxChatMessageLength()
+        {
+            return protocolversion >= MC111Version
+                ? 256
+                : 100;
         }
 
         /// <summary>

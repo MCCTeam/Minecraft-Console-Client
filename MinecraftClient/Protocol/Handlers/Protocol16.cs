@@ -586,6 +586,11 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { }
         }
 
+        public int GetMaxChatMessageLength()
+        {
+            return 100;
+        }
+
         public bool SendChatMessage(string message)
         {
             if (String.IsNullOrEmpty(message))

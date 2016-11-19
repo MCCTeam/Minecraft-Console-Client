@@ -538,21 +538,22 @@ namespace MinecraftClient
         /// <returns>True if the text was sent with no error</returns>
         public bool SendText(string text)
         {
-            if (text.Length > 100) //Message is too long?
+            int maxLength = handler.GetMaxChatMessageLength();
+            if (text.Length > maxLength) //Message is too long?
             {
                 if (text[0] == '/')
                 {
-                    //Send the first 100 chars of the command
-                    text = text.Substring(0, 100);
+                    //Send the first 100/256 chars of the command
+                    text = text.Substring(0, maxLength);
                     return handler.SendChatMessage(text);
                 }
                 else
                 {
                     //Send the message splitted into several messages
-                    while (text.Length > 100)
+                    while (text.Length > maxLength)
                     {
-                        handler.SendChatMessage(text.Substring(0, 100));
-                        text = text.Substring(100, text.Length - 100);
+                        handler.SendChatMessage(text.Substring(0, maxLength));
+                        text = text.Substring(maxLength, text.Length - maxLength);
                         if (Settings.splitMessageDelay.TotalSeconds > 0)
                             Thread.Sleep(Settings.splitMessageDelay);
                     }

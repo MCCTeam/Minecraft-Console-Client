@@ -29,6 +29,12 @@ namespace MinecraftClient.Protocol
         void Disconnect();
 
         /// <summary>
+        /// Get max length for chat messages
+        /// </summary>
+        /// <returns>Max length, in characters</returns>
+        int GetMaxChatMessageLength();
+
+        /// <summary>
         /// Send a chat message or command to the server
         /// </summary>
         /// <param name="message">Text to send</param>
