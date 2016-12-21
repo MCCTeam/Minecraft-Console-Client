@@ -22,7 +22,7 @@ namespace MinecraftClient
 
         public const string Version = "1.11.0 DEV";
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.11.0";
+        public const string MCHighestVersion = "1.11.1";
 
         private static Thread offlinePrompt = null;
         private static bool useMcVersionOnce = false;
