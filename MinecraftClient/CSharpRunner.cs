@@ -263,6 +263,15 @@ namespace MinecraftClient
             tickHandler.WaitOne();
         }
 
+        /// <summary>
+        /// Return the list of currently online players
+        /// </summary>
+        /// <returns>List of online players</returns>
+        new public string[] GetOnlinePlayers()
+        {
+            return base.GetOnlinePlayers();
+        }
+
         /* == Additional Methods useful for Script API == */
 
         /// <summary>
