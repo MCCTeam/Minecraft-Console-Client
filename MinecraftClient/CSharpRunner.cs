@@ -118,8 +118,7 @@ namespace MinecraftClient
             {
                 try
                 {
-                    object compiledScript
-                        = CompileCache[scriptHash].CreateInstance("ScriptLoader.Script");
+                    object compiledScript = assembly.CreateInstance("ScriptLoader.Script");
                     return
                         compiledScript
                         .GetType()
@@ -264,6 +263,15 @@ namespace MinecraftClient
             tickHandler.WaitOne();
         }
 
+        /// <summary>
+        /// Return the list of currently online players
+        /// </summary>
+        /// <returns>List of online players</returns>
+        new public string[] GetOnlinePlayers()
+        {
+            return base.GetOnlinePlayers();
+        }
+
         /* == Additional Methods useful for Script API == */
 
         /// <summary>
@@ -300,6 +308,21 @@ namespace MinecraftClient
                 return (int)GetVar(varName);
             int result;
             if (int.TryParse(GetVarAsString(varName), out result))
+                return result;
+            return 0;
+        }
+
+        /// <summary>
+        /// Get a global variable by name, as a double
+        /// </summary>
+        /// <param name="varName">Name of the variable</param>
+        /// <returns>Value of the variable as double, or 0 if no variable or not a number</returns>
+        public double GetVarAsDouble(string varName)
+        {
+            if (GetVar(varName) is double)
+                return (double)GetVar(varName);
+            double result;
+            if (double.TryParse(GetVarAsString(varName), out result))
                 return result;
             return 0;
         }

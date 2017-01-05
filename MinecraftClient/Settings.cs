@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using MinecraftClient.Protocol.SessionCache;
+using MinecraftClient.Protocol;
 
 namespace MinecraftClient
 {
@@ -39,9 +40,40 @@ namespace MinecraftClient
         public static string ProxyUsername = "";
         public static string ProxyPassword = "";
 
+        //Minecraft Settings
+        public static bool MCSettings_Enabled = true;
+        public static string MCSettings_Locale = "en_US";
+        public static byte MCSettings_Difficulty = 0;
+        public static byte MCSettings_RenderDistance = 8;
+        public static byte MCSettings_ChatMode = 0;
+        public static bool MCSettings_ChatColors = true;
+        public static byte MCSettings_MainHand = 0;
+        public static bool MCSettings_Skin_Hat = true;
+        public static bool MCSettings_Skin_Cape = true;
+        public static bool MCSettings_Skin_Jacket = false;
+        public static bool MCSettings_Skin_Sleeve_Left = false;
+        public static bool MCSettings_Skin_Sleeve_Right = false;
+        public static bool MCSettings_Skin_Pants_Left = false;
+        public static bool MCSettings_Skin_Pants_Right = false;
+        public static byte MCSettings_Skin_All
+        {
+            get
+            {
+                return (byte) (
+                      ((MCSettings_Skin_Cape         ? 1 : 0) << 0)
+                    | ((MCSettings_Skin_Jacket       ? 1 : 0) << 1)
+                    | ((MCSettings_Skin_Sleeve_Left  ? 1 : 0) << 2)
+                    | ((MCSettings_Skin_Sleeve_Right ? 1 : 0) << 3)
+                    | ((MCSettings_Skin_Pants_Left   ? 1 : 0) << 4)
+                    | ((MCSettings_Skin_Pants_Right  ? 1 : 0) << 5)
+                    | ((MCSettings_Skin_Hat          ? 1 : 0) << 6)
+                );
+            }
+        }
+
         //Other Settings
-        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\3d\3d7f778ea0a3baaf826ae75a094d77c46410902f"; //MC 1.9 en_GB.lang
-        public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.9.json";
+        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\ed\eda1518b15c711cf6e75d99003bd87753f67fac4"; //MC 1.10 en_GB.lang
+        public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.10.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static TimeSpan splitMessageDelay = TimeSpan.FromSeconds(2);
         public static List<string> Bots_Owners = new List<string>();
@@ -56,10 +88,13 @@ namespace MinecraftClient
         public static string BrandInfo = MCCBrandInfo;
         public static bool DisplaySystemMessages = true;
         public static bool DisplayXPBarMessages = true;
+        public static bool DisplayChatLinks = true;
         public static bool TerrainAndMovements = false;
         public static string PrivateMsgsCmdName = "tell";
         public static CacheType SessionCaching = CacheType.None;
         public static bool DebugMessages = false;
+        public static bool ResolveSrvRecords = true;
+        public static bool ResolveSrvRecordsShortTimeout = true;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -119,24 +154,27 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond };
 
         /// <summary>
         /// Load settings from the give INI file
         /// </summary>
         /// <param name="settingsfile">File to load</param>
-
         public static void LoadSettings(string settingsfile)
         {
             if (File.Exists(settingsfile))
             {
                 try
                 {
+                    string serverAlias = "";
                     string[] Lines = File.ReadAllLines(settingsfile);
                     ParseMode pMode = ParseMode.Default;
                     foreach (string lineRAW in Lines)
                     {
-                        string line = lineRAW.Split('#')[0].Trim();
+                        string line = pMode == ParseMode.Main && lineRAW.ToLower().Trim().StartsWith("password")
+                            ? lineRAW.Trim() //Do not strip # in passwords
+                            : lineRAW.Split('#')[0].Trim();
+
                         if (line.Length > 0)
                         {
                             if (line[0] == '[' && line[line.Length - 1] == ']')
@@ -149,6 +187,7 @@ namespace MinecraftClient
                                     case "chatlog": pMode = ParseMode.ChatLog; break;
                                     case "hangman": pMode = ParseMode.Hangman; break;
                                     case "main": pMode = ParseMode.Main; break;
+                                    case "mcsettings": pMode = ParseMode.MCSettings; break;
                                     case "scriptscheduler": pMode = ParseMode.ScriptScheduler; break;
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     case "proxy": pMode = ParseMode.Proxy; break;
@@ -171,7 +210,7 @@ namespace MinecraftClient
                                             {
                                                 case "login": Login = argValue; break;
                                                 case "password": Password = argValue; break;
-                                                case "serverip": SetServerIP(argValue); break;
+                                                case "serverip": if(!SetServerIP(argValue)) serverAlias = argValue; ; break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
@@ -184,6 +223,7 @@ namespace MinecraftClient
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
                                                 case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
                                                 case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
+                                                case "showchatlinks": DisplayChatLinks = str2bool(argValue); break;
                                                 case "terrainandmovements": TerrainAndMovements = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
@@ -191,8 +231,12 @@ namespace MinecraftClient
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
-                                                    foreach (string name in argValue.ToLower().Split(','))
-                                                        Bots_Owners.Add(name.Trim());
+                                                    string[] names = argValue.ToLower().Split(',');
+                                                    if (!argValue.Contains(",") && argValue.ToLower().EndsWith(".txt") && File.Exists(argValue))
+                                                        names = File.ReadAllLines(argValue);
+                                                    foreach (string name in names)
+                                                        if (!String.IsNullOrWhiteSpace(name))
+                                                            Bots_Owners.Add(name.Trim());
                                                     break;
 
                                                 case "internalcmdchar":
@@ -221,6 +265,9 @@ namespace MinecraftClient
                                                                 Accounts[account_data[0].ToLower()]
                                                                     = new KeyValuePair<string, string>(account_data[1], account_data[2]);
                                                         }
+
+                                                        //Try user value against aliases after load
+                                                        Settings.SetAccount(Login);
                                                     }
                                                     break;
 
@@ -247,6 +294,9 @@ namespace MinecraftClient
                                                         //Restore current server info
                                                         ServerIP = server_host_temp;
                                                         ServerPort = server_port_temp;
+
+                                                        //Try server value against aliases after load
+                                                        SetServerIP(serverAlias);
                                                     }
                                                     break;
 
@@ -256,6 +306,19 @@ namespace MinecraftClient
                                                         case "mcc": BrandInfo = MCCBrandInfo; break;
                                                         case "vanilla": BrandInfo = "vanilla"; break;
                                                         default: BrandInfo = null; break;
+                                                    }
+                                                    break;
+
+                                                case "resolvesrvrecords":
+                                                    if (argValue.Trim().ToLower() == "fast")
+                                                    {
+                                                        ResolveSrvRecords = true;
+                                                        ResolveSrvRecordsShortTimeout = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        ResolveSrvRecords = str2bool(argValue);
+                                                        ResolveSrvRecordsShortTimeout = false;
                                                     }
                                                     break;
                                             }
@@ -381,6 +444,56 @@ namespace MinecraftClient
                                                 case "matchesfile": AutoRespond_Matches = argValue; break;
                                             }
                                             break;
+
+                                        case ParseMode.MCSettings:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": MCSettings_Enabled = str2bool(argValue); break;
+                                                case "locale": MCSettings_Locale = argValue; break;
+                                                case "difficulty":
+                                                    switch (argValue.ToLower())
+                                                    {
+                                                        case "peaceful": MCSettings_Difficulty = 0; break;
+                                                        case "easy": MCSettings_Difficulty = 1; break;
+                                                        case "normal": MCSettings_Difficulty = 2; break;
+                                                        case "difficult": MCSettings_Difficulty = 3; break;
+                                                    }
+                                                    break;
+                                                case "renderdistance":
+                                                    MCSettings_RenderDistance = (byte)str2int(argValue);
+                                                    switch (argValue.ToLower())
+                                                    {
+                                                        case "tiny": MCSettings_RenderDistance = 2; break;
+                                                        case "short": MCSettings_RenderDistance = 4; break;
+                                                        case "medium": MCSettings_RenderDistance = 8; break;
+                                                        case "far": MCSettings_RenderDistance = 16; break;
+                                                    }
+                                                    break;
+                                                case "chatmode":
+                                                    switch (argValue.ToLower())
+                                                    {
+                                                        case "enabled": MCSettings_ChatMode = 0; break;
+                                                        case "commands": MCSettings_ChatMode = 1; break;
+                                                        case "disabled": MCSettings_ChatMode = 2; break;
+                                                    }
+                                                    break;
+                                                case "chatcolors": MCSettings_ChatColors = str2bool(argValue); break;
+                                                case "skin_cape": MCSettings_Skin_Cape = str2bool(argValue); break;
+                                                case "skin_jacket": MCSettings_Skin_Jacket = str2bool(argValue); break;
+                                                case "skin_sleeve_left": MCSettings_Skin_Sleeve_Left = str2bool(argValue); break;
+                                                case "skin_sleeve_right": MCSettings_Skin_Sleeve_Right = str2bool(argValue); break;
+                                                case "skin_pants_left": MCSettings_Skin_Pants_Left = str2bool(argValue); break;
+                                                case "skin_pants_right": MCSettings_Skin_Pants_Right = str2bool(argValue); break;
+                                                case "skin_hat": MCSettings_Skin_Hat = str2bool(argValue); break;
+                                                case "main_hand":
+                                                    switch (argValue.ToLower())
+                                                    {
+                                                        case "left": MCSettings_MainHand = 0; break;
+                                                        case "right": MCSettings_MainHand = 1; break;
+                                                    }
+                                                    break;
+                                            }
+                                            break;
                                     }
                                 }
                             }
@@ -395,65 +508,83 @@ namespace MinecraftClient
         /// Write an INI file with default settings
         /// </summary>
         /// <param name="settingsfile">File to (over)write</param>
-
         public static void WriteDefaultSettings(string settingsfile)
         {
-            System.IO.File.WriteAllText(settingsfile, "#Minecraft Console Client v" + Program.Version + "\r\n"
-                + "#Startup Config File\r\n"
+            System.IO.File.WriteAllText(settingsfile, "# Minecraft Console Client v" + Program.Version + "\r\n"
+                + "# Startup Config File\r\n"
                 + "\r\n"
                 + "[Main]\r\n"
                 + "\r\n"
-                + "#General settings\r\n"
-                + "#leave blank to prompt user on startup\r\n"
-                + "#Use \"-\" as password for offline mode\r\n"
+                + "# General settings\r\n"
+                + "# Leave blank to prompt user on startup\r\n"
+                + "# Use \"-\" as password for offline mode\r\n"
                 + "\r\n"
                 + "login=\r\n"
                 + "password=\r\n"
                 + "serverip=\r\n"
                 + "\r\n"
-                + "#Advanced settings\r\n"
+                + "# Advanced settings\r\n"
                 + "\r\n"
                 + "language=en_GB\r\n"
-                + "botowners=Player1,Player2,Player3\r\n"
                 + "consoletitle=%username%@%serverip% - Minecraft Console Client\r\n"
-                + "internalcmdchar=slash #use 'none', 'slash' or 'backslash'\r\n"
-                + "splitmessagedelay=2 #seconds between each part of a long message\r\n"
-                + "botmessagedelay=2 #seconds to delay between message a bot makes to avoid accidental spam\r\n"
-                + "mcversion=auto #use 'auto' or '1.X.X' values\r\n"
-                + "brandinfo=mcc #use 'mcc','vanilla', or 'none'\r\n"
-                + "chatbotlogfile= #leave empty for no logfile\r\n"
-                + "privatemsgscmdname=tell #used by RemoteControl bot\r\n"
-                + "showsystemmessages=true #system messages for server ops\r\n"
-                + "showxpbarmessages=true #messages displayed above xp bar\r\n"
-                + "terrainandmovements=false #uses more ram, cpu, bandwidth\r\n"
-                + "sessioncache=memory #use 'none', 'memory' or 'disk'\r\n"
-                + "accountlist=accounts.txt\r\n"
-                + "serverlist=servers.txt\r\n"
-                + "playerheadicon=true\r\n"
-                + "exitonfailure=false\r\n"
-                + "debugmessages=false\r\n"
-                + "scriptcache=true\r\n"
-                + "timestamps=false\r\n"
+                + "internalcmdchar=slash              # Use 'none', 'slash' or 'backslash'\r\n"
+                + "splitmessagedelay=2                # Seconds between each part of a long message\r\n"
+                + "botowners=Player1,Player2,Player3  # Use name list or myfile.txt with one name per line\r\n"
+                + "botmessagedelay=2                  # Seconds to delay between message a bot makes to avoid accidental spam\r\n"
+                + "mcversion=auto                     # Use 'auto' or '1.X.X' values\r\n"
+                + "brandinfo=mcc                      # Use 'mcc','vanilla', or 'none'\r\n"
+                + "chatbotlogfile=                    # Leave empty for no logfile\r\n"
+                + "privatemsgscmdname=tell            # Used by RemoteControl bot\r\n"
+                + "showsystemmessages=true            # System messages for server ops\r\n"
+                + "showxpbarmessages=true             # Messages displayed above xp bar\r\n"
+                + "showchatlinks=true                 # Show links embedded in chat messages\r\n"
+                + "terrainandmovements=false          # Uses more ram, cpu, bandwidth\r\n"
+                + "sessioncache=memory                # Use 'none', 'memory' or 'disk' (disk session storing is experimental)\r\n"
+                + "resolvesrvrecords=fast             # Use 'false', 'fast' (5s timeout), or 'true'. Required for joining some servers.\r\n"
+                + "accountlist=accounts.txt           # See README > 'Servers and Accounts file' for more info about this file\r\n"
+                + "serverlist=servers.txt             # See README > 'Servers and Accounts file' for more info about this file\r\n"
+                + "playerheadicon=true                # Only works on Windows XP-8 or Windows 10 with old console\r\n"
+                + "exitonfailure=false                # Disable pauses on error, for using MCC in non-interactive scripts\r\n"
+                + "debugmessages=false                # Please enable this before submitting bug reports. Thanks!\r\n"
+                + "scriptcache=true                   # Cache compiled scripts for faster load on low-end devices\r\n"
+                + "timestamps=false                   # Prepend timestamps to chat messages\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
-                + "#yourvar=yourvalue\r\n"
-                + "#can be used in some other fields as %yourvar%\r\n"
-                + "#%username% and %serverip% are reserved variables.\r\n"
+                + "# yourvar=yourvalue\r\n"
+                + "# can be used in some other fields as %yourvar%\r\n"
+                + "# %username% and %serverip% are reserved variables.\r\n"
                 + "\r\n"
                 + "[Proxy]\r\n"
-                + "enabled=false #use 'false', 'true', or 'login' for login only\r\n"
-                + "type=HTTP #Supported types: HTTP, SOCKS4, SOCKS4a, SOCKS5\r\n"
-                + "server=0.0.0.0:0000\r\n"
-                + "username=\r\n"
-                + "password=\r\n"
+                + "enabled=false                      # Use 'false', 'true', or 'login' for login only\r\n"
+                + "type=HTTP                          # Supported types: HTTP, SOCKS4, SOCKS4a, SOCKS5\r\n"
+                + "server=0.0.0.0:0000                # Proxy server must allow HTTPS for login, and non-443 ports for playing\r\n"
+                + "username=                          # Only required for password-protected proxies\r\n"
+                + "password=                          # Only required for password-protected proxies\r\n"
                 + "\r\n"
                 + "[ChatFormat]\r\n"
-                + "builtins=true #support for handling vanilla and common message formats\r\n"
-                + "#public=^<([a-zA-Z0-9_]+)> (.+)$ #uncomment and adapt if necessary\r\n"
-                + "#private=^([a-zA-Z0-9_]+) whispers to you: (.+)$ #vanilla example\r\n"
-                + "#tprequest=^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\\.$\r\n"
+                + "# Do not forget to uncomment (remove '#') these settings if modifying them\r\n"
+                + "builtins=true                      # MCC built-in support for common message formats\r\n"
+                + "# public=^<([a-zA-Z0-9_]+)> (.+)$\r\n"
+                + "# private=^([a-zA-Z0-9_]+) whispers to you: (.+)$\r\n"
+                + "# tprequest=^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\\.$\r\n"
                 + "\r\n"
-                + "#Bot Settings\r\n"
+                + "[MCSettings]\r\n"
+                + "enabled=true                       # If disabled, settings below are not sent to the server\r\n"
+                + "locale=en_US                       # Use any language implemented in Minecraft\r\n"
+                + "renderdistance=medium              # Use tiny, short, medium, far, or chunk amount [0 - 255]\r\n"
+                + "difficulty=normal                  # MC 1.7- difficulty. peaceful, easy, normal, difficult\r\n"
+                + "chatmode=enabled                   # Use 'enabled', 'commands', or 'disabled'. Allows to mute yourself...\r\n"
+                + "chatcolors=true                    # Allows disabling chat colors server-side\r\n"
+                + "main_hand=left                     # MC 1.9+ main hand. left or right\r\n"
+                + "skin_cape=true\r\n"
+                + "skin_hat=true\r\n"
+                + "skin_jacket=false\r\n"
+                + "skin_sleeve_left=false\r\n"
+                + "skin_sleeve_right=false\r\n"
+                + "skin_pants_left=false\r\n"
+                + "skin_pants_right=false"
+                + "\r\n"
+                + "# Bot Settings\r\n"
                 + "\r\n"
                 + "[Alerts]\r\n"
                 + "enabled=false\r\n"
@@ -503,7 +634,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="str">String to parse as an integer</param>
         /// <returns>Integer value</returns>
-        
         public static int str2int(string str)
         {
             try
@@ -518,7 +648,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="str">String to parse as a boolean</param>
         /// <returns>Boolean value</returns>
-        
         public static bool str2bool(string str)
         {
             if (String.IsNullOrEmpty(str))
@@ -531,7 +660,6 @@ namespace MinecraftClient
         /// Load login/password using an account alias
         /// </summary>
         /// <returns>True if the account was found and loaded</returns>
-
         public static bool SetAccount(string accountAlias)
         {
             accountAlias = accountAlias.ToLower();
@@ -548,7 +676,6 @@ namespace MinecraftClient
         /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
         /// </summary>
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
-
         public static bool SetServerIP(string server)
         {
             server = server.ToLower();
@@ -568,6 +695,9 @@ namespace MinecraftClient
             if (host == "localhost" || host.Contains('.'))
             {
                 //Server IP (IP or domain names contains at least a dot)
+                if (sip.Length == 1 && host.Contains('.') && host.Any(c => char.IsLetter(c)) && ResolveSrvRecords)
+                    //Domain name without port may need Minecraft SRV Record lookup
+                    ProtocolHandler.MinecraftServiceLookup(ref host, ref port);
                 ServerIP = host;
                 ServerPort = port;
                 return true;
@@ -589,7 +719,6 @@ namespace MinecraftClient
         /// <param name="varName">Name of the variable</param>
         /// <param name="varData">Value of the variable</param>
         /// <returns>True if the parameters were valid</returns>
-
         public static bool SetVar(string varName, object varData)
         {
             lock (AppVars)
@@ -609,7 +738,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="varName">Variable name</param>
         /// <returns>The value or null if the variable does not exists</returns>
-
         public static object GetVar(string varName)
         {
             if (AppVars.ContainsKey(varName))
@@ -622,7 +750,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="str">String to parse</param>
         /// <returns>Modifier string</returns>
-
         public static string ExpandVars(string str)
         {
             StringBuilder result = new StringBuilder();

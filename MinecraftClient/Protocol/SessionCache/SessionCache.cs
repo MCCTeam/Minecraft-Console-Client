@@ -11,16 +11,13 @@ namespace MinecraftClient.Protocol.SessionCache
     /// <summary>
     /// Handle sessions caching and storage.
     /// </summary>
-     
     public static class SessionCache
     {
         private const string SessionCacheFile = "SessionCache.db";
-
         private static Dictionary<string, SessionToken> sessions = new Dictionary<string, SessionToken>();
         private static FileSystemWatcher cachemonitor = new FileSystemWatcher();
         private static Timer updatetimer = new Timer(100);
         private static List<KeyValuePair<string, SessionToken>> pendingadds = new List<KeyValuePair<string, SessionToken>>();
-
         private static BinaryFormatter formatter = new BinaryFormatter();
 
         /// <summary>
@@ -28,7 +25,6 @@ namespace MinecraftClient.Protocol.SessionCache
         /// </summary>
         /// <param name="login">User login used with Minecraft.net</param>
         /// <returns>TRUE if session is available</returns>
-
         public static bool Contains(string login)
         {
             return sessions.ContainsKey(login);
@@ -39,7 +35,6 @@ namespace MinecraftClient.Protocol.SessionCache
         /// </summary>
         /// <param name="login">User login used with Minecraft.net</param>
         /// <param name="session">User session token used with Minecraft.net</param>
-
         public static void Store(string login, SessionToken session)
         {
             if (Contains(login))
@@ -66,7 +61,6 @@ namespace MinecraftClient.Protocol.SessionCache
         /// </summary>
         /// <param name="login">User login used with Minecraft.net</param>
         /// <returns>SessionToken for given login</returns>
-
         public static SessionToken Get(string login)
         {
             return sessions[login];
@@ -76,7 +70,6 @@ namespace MinecraftClient.Protocol.SessionCache
         /// Initialize cache monitoring to keep cache updated with external changes.
         /// </summary>
         /// <returns>TRUE if session tokens are seeded from file</returns>
-
         public static bool InitializeDiskCache()
         {
             cachemonitor.Path = AppDomain.CurrentDomain.BaseDirectory;
@@ -96,7 +89,6 @@ namespace MinecraftClient.Protocol.SessionCache
         /// </summary>
         /// <param name="sender">Sender</param>
         /// <param name="e">Event data</param>
-
         private static void OnChanged(object sender, FileSystemEventArgs e)
         {
             updatetimer.Stop();
@@ -108,9 +100,9 @@ namespace MinecraftClient.Protocol.SessionCache
         /// </summary>
         /// <param name="sender">Sender</param>
         /// <param name="e">Event data</param>
-
         private static void HandlePending(object sender, ElapsedEventArgs e)
         {
+            updatetimer.Stop();
             LoadFromDisk();
 
             foreach(KeyValuePair<string, SessionToken> pending in pendingadds.ToArray())
@@ -124,9 +116,11 @@ namespace MinecraftClient.Protocol.SessionCache
         /// Reads cache file and loads SessionTokens into SessionCache.
         /// </summary>
         /// <returns>True if data is successfully loaded</returns>
-
         private static bool LoadFromDisk()
         {
+            if (Settings.DebugMessages)
+                ConsoleIO.WriteLineFormatted("§8Updating session cache from disk");
+
             if (File.Exists(SessionCacheFile))
             {
                 try
@@ -139,11 +133,11 @@ namespace MinecraftClient.Protocol.SessionCache
                 }
                 catch (IOException ex)
                 {
-                    Console.WriteLine("Error reading cached sessions from disk: " + ex.Message);
+                    ConsoleIO.WriteLineFormatted("§8Failed to read session cache from disk: " + ex.Message);
                 }
-                catch (SerializationException)
+                catch (SerializationException ex2)
                 {
-                    Console.WriteLine("Malformed sessions from cache file ");
+                    ConsoleIO.WriteLineFormatted("§8Got malformed data while reading session cache from disk: " + ex2.Message);
                 }
             }
             return false;
@@ -152,26 +146,44 @@ namespace MinecraftClient.Protocol.SessionCache
         /// <summary>
         /// Saves SessionToken's from SessionCache into cache file.
         /// </summary>
-
         private static void SaveToDisk()
         {
+            if (Settings.DebugMessages)
+                ConsoleIO.WriteLineFormatted("§8Saving session cache to disk");
+
             bool fileexists = File.Exists(SessionCacheFile);
+            IOException lastEx = null;
+            int attempt = 1;
 
-            using (FileStream fs = new FileStream(SessionCacheFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            while (attempt < 4)
             {
-                cachemonitor.EnableRaisingEvents = false;
-
-                // delete existing file contents
-                if (fileexists)
+                try
                 {
-                    fs.SetLength(0);
-                    fs.Flush();
-                }
+                    using (FileStream fs = new FileStream(SessionCacheFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        cachemonitor.EnableRaisingEvents = false;
 
-                formatter.Serialize(fs, sessions);
-                cachemonitor.EnableRaisingEvents = true;
+                        // delete existing file contents
+                        if (fileexists)
+                        {
+                            fs.SetLength(0);
+                            fs.Flush();
+                        }
+
+                        formatter.Serialize(fs, sessions);
+                        cachemonitor.EnableRaisingEvents = true;
+                    }
+                    return;
+                }
+                catch (IOException ex)
+                {
+                    lastEx = ex;
+                    attempt++;
+                    System.Threading.Thread.Sleep(new Random().Next(150, 350) * attempt); //CSMA/CD :)
+                }
             }
 
+            ConsoleIO.WriteLineFormatted("§8Failed to write session cache to disk" + (lastEx != null ? ": " + lastEx.Message : ""));
         }
     }
 }

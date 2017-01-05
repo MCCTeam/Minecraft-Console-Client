@@ -27,27 +27,6 @@ namespace MinecraftClient
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
-        public void BotLoad(ChatBot b) {
-            b.SetHandler(this);
-            bots.Add(b);
-            b.Initialize();
-            if (this.handler != null)
-            {
-                b.AfterGameJoined();
-            }
-            Settings.SingleCommand = "";
-        }
-        public void BotUnLoad(ChatBot b) {
-            bots.RemoveAll(item => object.ReferenceEquals(item, b));
-
-            // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
-            var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
-            foreach (var entry in botRegistrations)
-            {
-                UnregisterPluginChannel(entry.Key, b);
-            }
-        }
-        public void BotClear() { bots.Clear(); }
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
         private readonly List<string> registeredServerPluginChannels = new List<String>();
@@ -86,7 +65,6 @@ namespace MinecraftClient
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-
         public McTcpClient(string username, string uuid, string sessionID, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, false, "");
@@ -102,7 +80,6 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
-
         public McTcpClient(string username, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, true, command);
@@ -119,7 +96,6 @@ namespace MinecraftClient
         /// <param name="uuid">The player's UUID for online-mode authentication</param>
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-
         private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             bool retry = false;
@@ -140,13 +116,15 @@ namespace MinecraftClient
                 if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
                 if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
                 if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
+                //Add your ChatBot here by uncommenting and adapting
+                //BotLoad(new ChatBots.YourBot());
             }
 
             try
             {
                 client = ProxyHandler.newTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
-                handler = Protocol.ProtocolHandler.getProtocolHandler(client, protocolversion, forgeInfo, this);
+                handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Console.WriteLine("Version is supported.\nLogging in...");
 
                 try
@@ -209,7 +187,6 @@ namespace MinecraftClient
         /// <summary>
         /// Allows the user to send chat messages, commands, and to leave the server.
         /// </summary>
-
         private void CommandPrompt()
         {
             try
@@ -267,7 +244,6 @@ namespace MinecraftClient
         /// <param name="interactive_mode">Set to true if command was sent by the user using the command prompt</param>
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-
         public bool PerformInternalCommand(string command, ref string response_msg)
         {
             /* Load commands from the 'Commands' namespace */
@@ -330,7 +306,6 @@ namespace MinecraftClient
         /// <summary>
         /// Disconnect the client from the server
         /// </summary>
-
         public void Disconnect()
         {
             foreach (ChatBot bot in bots)
@@ -353,13 +328,59 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Load a new bot
+        /// </summary>
+        public void BotLoad(ChatBot b)
+        {
+            b.SetHandler(this);
+            bots.Add(b);
+            b.Initialize();
+            if (this.handler != null)
+            {
+                b.AfterGameJoined();
+            }
+            Settings.SingleCommand = "";
+        }
+
+        /// <summary>
+        /// Unload a bot
+        /// </summary>
+        public void BotUnLoad(ChatBot b)
+        {
+            bots.RemoveAll(item => object.ReferenceEquals(item, b));
+
+            // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
+            var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
+            foreach (var entry in botRegistrations)
+            {
+                UnregisterPluginChannel(entry.Key, b);
+            }
+        }
+
+        /// <summary>
+        /// Clear bots
+        /// </summary>
+        public void BotClear()
+        {
+            bots.Clear();
+        }
+
+        /// <summary>
         /// Called when a server was successfully joined
         /// </summary>
-
         public void OnGameJoined()
         {
             if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
                 handler.SendBrandInfo(Settings.BrandInfo.Trim());
+            if (Settings.MCSettings_Enabled)
+                handler.SendClientSettings(
+                    Settings.MCSettings_Locale,
+                    Settings.MCSettings_RenderDistance,
+                    Settings.MCSettings_Difficulty,
+                    Settings.MCSettings_ChatMode,
+                    Settings.MCSettings_ChatColors,
+                    Settings.MCSettings_Skin_All,
+                    Settings.MCSettings_MainHand);
             foreach (ChatBot bot in bots)
                 bot.AfterGameJoined();
         }
@@ -370,7 +391,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">The new location</param>
         /// <param name="relative">If true, the location is relative to the current location</param>
-
         public void UpdateLocation(Location location, bool relative)
         {
             lock (locationLock)
@@ -390,7 +410,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">The new location</param>
         /// <param name="relative">If true, the location is relative to the current location</param>
-
         public void UpdateLocation(Location location)
         {
             UpdateLocation(location, false);
@@ -417,10 +436,13 @@ namespace MinecraftClient
         /// Received some text from the server
         /// </summary>
         /// <param name="text">Text received</param>
-
-        public void OnTextReceived(string text)
+        /// <param name="links">Links embedded in text</param>
+        public void OnTextReceived(string text, IEnumerable<string> links)
         {
             ConsoleIO.WriteLineFormatted(text, false);
+            if (Settings.DisplayChatLinks)
+                foreach (string link in links)
+                    ConsoleIO.WriteLineFormatted("§8MCC: Link: " + link, false);
             for (int i = 0; i < bots.Count; i++)
             {
                 try
@@ -441,7 +463,6 @@ namespace MinecraftClient
         /// <summary>
         /// When connection has been lost
         /// </summary>
-
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
             bool will_restart = false;
@@ -474,7 +495,6 @@ namespace MinecraftClient
         /// <summary>
         /// Called ~10 times per second by the protocol handler
         /// </summary>
-
         public void OnUpdate()
         {
             foreach (var bot in bots.ToArray())
@@ -516,24 +536,24 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="text">Text to send to the server</param>
         /// <returns>True if the text was sent with no error</returns>
-
         public bool SendText(string text)
         {
-            if (text.Length > 100) //Message is too long?
+            int maxLength = handler.GetMaxChatMessageLength();
+            if (text.Length > maxLength) //Message is too long?
             {
                 if (text[0] == '/')
                 {
-                    //Send the first 100 chars of the command
-                    text = text.Substring(0, 100);
+                    //Send the first 100/256 chars of the command
+                    text = text.Substring(0, maxLength);
                     return handler.SendChatMessage(text);
                 }
                 else
                 {
                     //Send the message splitted into several messages
-                    while (text.Length > 100)
+                    while (text.Length > maxLength)
                     {
-                        handler.SendChatMessage(text.Substring(0, 100));
-                        text = text.Substring(100, text.Length - 100);
+                        handler.SendChatMessage(text.Substring(0, maxLength));
+                        text = text.Substring(maxLength, text.Length - maxLength);
                         if (Settings.splitMessageDelay.TotalSeconds > 0)
                             Thread.Sleep(Settings.splitMessageDelay);
                     }
@@ -547,7 +567,6 @@ namespace MinecraftClient
         /// Allow to respawn after death
         /// </summary>
         /// <returns>True if packet successfully sent</returns>
-
         public bool SendRespawnPacket()
         {
             return handler.SendRespawnPacket();
@@ -558,11 +577,10 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
         /// <param name="name">Name of the player</param>
-
         public void OnPlayerJoin(Guid uuid, string name)
         {
-            //Ignore TabListPlus placeholders
-            if (name.StartsWith("0000tab#"))
+            //Ignore placeholders eg 0000tab# from TabListPlus
+            if (!ChatBot.IsValidName(name))
                 return;
 
             lock (onlinePlayers)
@@ -575,7 +593,6 @@ namespace MinecraftClient
         /// Triggered when a player has left the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
-
         public void OnPlayerLeave(Guid uuid)
         {
             lock (onlinePlayers)
@@ -588,7 +605,6 @@ namespace MinecraftClient
         /// Get a set of online player names
         /// </summary>
         /// <returns>Online player names</returns>
-
         public string[] GetOnlinePlayers()
         {
             lock (onlinePlayers)
@@ -602,7 +618,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="channel">The channel to register.</param>
         /// <param name="bot">The bot to register the channel for.</param>
-
         public void RegisterPluginChannel(string channel, ChatBot bot)
         {
             if (registeredBotPluginChannels.ContainsKey(channel))
@@ -623,7 +638,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="channel">The channel to unregister.</param>
         /// <param name="bot">The bot to unregister the channel for.</param>
-
         public void UnregisterPluginChannel(string channel, ChatBot bot)
         {
             if (registeredBotPluginChannels.ContainsKey(channel))
@@ -646,7 +660,6 @@ namespace MinecraftClient
         /// <param name="data">The payload for the packet.</param>
         /// <param name="sendEvenIfNotRegistered">Whether the packet should be sent even if the server or the client hasn't registered it yet.</param>
         /// <returns>Whether the packet was sent: true if it was sent, false if there was a connection error or it wasn't registered.</returns>
-
         public bool SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false)
         {
             if (!sendEvenIfNotRegistered)
@@ -668,7 +681,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="channel">The channel the message was sent on</param>
         /// <param name="data">The data from the channel</param>
-
         public void OnPluginChannelMessage(string channel, byte[] data)
         {
             if (channel == "REGISTER")

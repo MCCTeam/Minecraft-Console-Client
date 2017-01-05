@@ -33,6 +33,7 @@ namespace MinecraftClient.ChatBots
             private string actionPublic;
             private string actionPrivate;
             private string actionOther;
+            private bool ownersOnly;
 
             /// <summary>
             /// Create a respond rule from a regex and a reponse message or command
@@ -41,13 +42,15 @@ namespace MinecraftClient.ChatBots
             /// <param name="actionPublic">Internal command to run for public messages</param>
             /// <param name="actionPrivate">Internal command to run for private messages</param>
             /// <param name="actionOther">Internal command to run for any other messages</param>
-            public RespondRule(Regex regex, string actionPublic, string actionPrivate, string actionOther)
+            /// <param name="ownersOnly">Only match messages from bot owners</param>
+            public RespondRule(Regex regex, string actionPublic, string actionPrivate, string actionOther, bool ownersOnly)
             {
                 this.regex = regex;
                 this.match = null;
                 this.actionPublic = actionPublic;
                 this.actionPrivate = actionPrivate;
                 this.actionOther = actionOther;
+                this.ownersOnly = ownersOnly;
             }
 
             /// <summary>
@@ -56,13 +59,15 @@ namespace MinecraftClient.ChatBots
             /// <param name="match">Match string</param>
             /// <param name="actionPublic">Internal command to run for public messages</param>
             /// <param name="actionPrivate">Internal command to run for private messages</param>
-            public RespondRule(string match, string actionPublic, string actionPrivate, string actionOther)
+            /// <param name="ownersOnly">Only match messages from bot owners</param>
+            public RespondRule(string match, string actionPublic, string actionPrivate, string actionOther, bool ownersOnly)
             {
                 this.regex = null;
                 this.match = match;
                 this.actionPublic = actionPublic;
                 this.actionPrivate = actionPrivate;
                 this.actionOther = actionOther;
+                this.ownersOnly = ownersOnly;
             }
 
             /// <summary>
@@ -75,6 +80,9 @@ namespace MinecraftClient.ChatBots
             public string Match(string username, string message, MessageType msgType)
             {
                 string toSend = null;
+
+                if (ownersOnly && (String.IsNullOrEmpty(username) || !Settings.Bots_Owners.Contains(username.ToLower())))
+                    return null;
 
                 switch (msgType)
                 {
@@ -121,6 +129,7 @@ namespace MinecraftClient.ChatBots
                 string matchAction = null;
                 string matchActionPrivate = null;
                 string matchActionOther = null;
+                bool ownersOnly = false;
                 respondRules = new List<RespondRule>();
 
                 foreach (string lineRAW in File.ReadAllLines(matchesFile))
@@ -133,12 +142,13 @@ namespace MinecraftClient.ChatBots
                             switch (line.Substring(1, line.Length - 2).ToLower())
                             {
                                 case "match":
-                                    CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther);
+                                    CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly);
                                     matchRegex = null;
                                     matchString = null;
                                     matchAction = null;
                                     matchActionPrivate = null;
                                     matchActionOther = null;
+                                    ownersOnly = false;
                                     break;
                             }
                         }
@@ -155,12 +165,13 @@ namespace MinecraftClient.ChatBots
                                     case "action": matchAction = argValue; break;
                                     case "actionprivate": matchActionPrivate = argValue; break;
                                     case "actionother": matchActionOther = argValue; break;
+                                    case "ownersonly": ownersOnly = Settings.str2bool(argValue); break;
                                 }
                             }
                         }
                     }
                 }
-                CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther);
+                CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly);
             }
             else
             {
@@ -176,17 +187,18 @@ namespace MinecraftClient.ChatBots
         /// <param name="matchString">Matching string</param>
         /// <param name="matchAction">Action if the matching message is public</param>
         /// <param name="matchActionPrivate">Action if the matching message is private</param>
-        private void CheckAddMatch(Regex matchRegex, string matchString, string matchAction, string matchActionPrivate, string matchActionOther)
+        /// <param name="ownersOnly">Only match messages from bot owners</param>
+        private void CheckAddMatch(Regex matchRegex, string matchString, string matchAction, string matchActionPrivate, string matchActionOther, bool ownersOnly)
         {
             if (matchAction != null || matchActionPrivate != null || matchActionOther != null)
             {
                 if (matchRegex != null)
                 {
-                    respondRules.Add(new RespondRule(matchRegex, matchAction, matchActionPrivate, matchActionOther));
+                    respondRules.Add(new RespondRule(matchRegex, matchAction, matchActionPrivate, matchActionOther, ownersOnly));
                 }
                 else if (matchString != null)
                 {
-                    respondRules.Add(new RespondRule(matchString, matchAction, matchActionPrivate, matchActionOther));
+                    respondRules.Add(new RespondRule(matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly));
                 }
             }
         }
