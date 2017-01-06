@@ -53,6 +53,11 @@ namespace MinecraftClient.ChatBots
                     saveChat = false;
                     break;
             }
+            if (String.IsNullOrEmpty(file) || file.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+            {
+                LogToConsole("Path '" + file + "' contains invalid characters.");
+                UnloadBot();
+            }
         }
 
         public static MessageFilter str2filter(string filtername)
