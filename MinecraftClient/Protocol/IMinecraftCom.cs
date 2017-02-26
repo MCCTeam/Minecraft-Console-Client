@@ -20,29 +20,31 @@ namespace MinecraftClient.Protocol
         /// Start the login procedure once connected to the server
         /// </summary>
         /// <returns>True if login was successful</returns>
-
         bool Login();
 
         /// <summary>
         /// Disconnect from the server
         /// </summary>
         /// <param name="message">Reason</param>
-
         void Disconnect();
+
+        /// <summary>
+        /// Get max length for chat messages
+        /// </summary>
+        /// <returns>Max length, in characters</returns>
+        int GetMaxChatMessageLength();
 
         /// <summary>
         /// Send a chat message or command to the server
         /// </summary>
         /// <param name="message">Text to send</param>
         /// <returns>True if successfully sent</returns>
-
         bool SendChatMessage(string message);
 
         /// <summary>
         /// Allow to respawn after death
         /// </summary>
         /// <returns>True if packet successfully sent</returns>
-
         bool SendRespawnPacket();
 
         /// <summary>
@@ -50,15 +52,26 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="brandInfo">Client string describing the client</param>
         /// <returns>True if brand info was successfully sent</returns>
-
         bool SendBrandInfo(string brandInfo);
+
+        /// <summary>
+        /// Inform the server of the client's Minecraft settings
+        /// </summary>
+        /// <param name="language">Client language eg en_US</param>
+        /// <param name="viewDistance">View distance, in chunks</param>
+        /// <param name="difficulty">Game difficulty (client-side...)</param>
+        /// <param name="chatMode">Chat mode (allows muting yourself)</param>
+        /// <param name="chatColors">Show chat colors</param>
+        /// <param name="skinParts">Show skin layers</param>
+        /// <param name="mainHand">1.9+ main hand</param>
+        /// <returns>True if client settings were successfully sent</returns>
+        bool SendClientSettings(string language, byte viewDistance, byte difficulty, byte chatMode, bool chatColors, byte skinParts, byte mainHand);
 
         /// <summary>
         /// Send a location update telling that we moved to that location
         /// </summary>
         /// <param name="location">The new location</param>
         /// <returns>True if packet was successfully sent</returns>
-
         bool SendLocationUpdate(Location location, bool onGround);
 
         /// <summary>
@@ -68,7 +81,6 @@ namespace MinecraftClient.Protocol
         /// <param name="channel">Channel to send packet on</param>
         /// <param name="data">packet Data</param>
         /// <returns>True if message was successfully sent</returns>
-
         bool SendPluginChannelPacket(string channel, byte[] data);
     }
 }

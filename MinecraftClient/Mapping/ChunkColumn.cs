@@ -42,7 +42,14 @@ namespace MinecraftClient.Mapping
         /// <returns>The chunk, or null if not loaded</returns>
         public Chunk GetChunk(Location location)
         {
-            return this[location.ChunkY];
+            try
+            {
+                return this[location.ChunkY];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return null;
+            }
         }
     }
 }

@@ -12,7 +12,6 @@ namespace MinecraftClient.Protocol.Handlers
     /// This library is open source and provided under the Microsoft Public License.
     /// More info about DotNetZip at dotnetzip.codeplex.com.
     /// </summary>
-
     public static class ZlibUtils
     {
         /// <summary>
@@ -20,7 +19,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="to_compress">Data to compress</param>
         /// <returns>Compressed data as a byte array</returns>
-
         public static byte[] Compress(byte[] to_compress)
         {
             ZlibStream stream = new ZlibStream(new System.IO.MemoryStream(to_compress, false), CompressionMode.Compress);
@@ -42,7 +40,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="to_decompress">Data to decompress</param>
         /// <param name="size_uncompressed">Size of the data once decompressed</param>
         /// <returns>Decompressed data as a byte array</returns>
-
         public static byte[] Decompress(byte[] to_decompress, int size_uncompressed)
         {
             ZlibStream stream = new ZlibStream(new System.IO.MemoryStream(to_decompress, false), CompressionMode.Decompress);
@@ -50,6 +47,24 @@ namespace MinecraftClient.Protocol.Handlers
             stream.Read(packetData_decompressed, 0, size_uncompressed);
             stream.Close();
             return packetData_decompressed;
+        }
+
+        /// <summary>
+        /// Decompress a byte array into another byte array of a potentially unlimited size (!)
+        /// </summary>
+        /// <param name="to_decompress">Data to decompress</param>
+        /// <returns>Decompressed data as byte array</returns>
+        public static byte[] Decompress(byte[] to_decompress)
+        {
+            ZlibStream stream = new ZlibStream(new System.IO.MemoryStream(to_decompress, false), CompressionMode.Decompress);
+            byte[] buffer = new byte[16 * 1024];
+            using (System.IO.MemoryStream decompressedBuffer = new System.IO.MemoryStream())
+            {
+                int read;
+                while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    decompressedBuffer.Write(buffer, 0, read);
+                return decompressedBuffer.ToArray();
+            }
         }
     }
 }

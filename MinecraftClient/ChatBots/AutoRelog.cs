@@ -68,6 +68,7 @@ namespace MinecraftClient.ChatBots
             if (Settings.AutoRelog_Enabled)
             {
                 AutoRelog bot = new AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries);
+                bot.Initialize();
                 return bot.OnDisconnect(reason, message);
             }
             return false;
