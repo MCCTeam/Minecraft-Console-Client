@@ -289,7 +289,7 @@ namespace MinecraftClient
                     }
                     else response_msg = "Unknown command '" + command_name + "'. Use 'help' for command list.";
                 }
-                else response_msg = "help <cmdname>. Available commands: " + String.Join(", ", cmd_names.ToArray());
+                else response_msg = "help <cmdname>. Available commands: " + String.Join(", ", cmd_names.ToArray()) + ". For server help, use '" + Settings.internalCmdChar + "send /help' instead.";
             }
             else if (cmds.ContainsKey(command_name))
             {
