@@ -71,8 +71,10 @@ namespace MinecraftClient.Protocol
         /// Send a location update telling that we moved to that location
         /// </summary>
         /// <param name="location">The new location</param>
+        /// <param name="onGround">True if the player is on the ground</param>
+        /// <param name="yawpitch">Yaw and pitch (optional and currently not parsed)</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendLocationUpdate(Location location, bool onGround);
+        bool SendLocationUpdate(Location location, bool onGround, byte[] yawpitch);
 
         /// <summary>
         /// Send a plugin channel packet to the server.

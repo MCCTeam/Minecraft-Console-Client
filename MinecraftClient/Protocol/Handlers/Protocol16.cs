@@ -637,7 +637,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendLocationUpdate(Location location, bool onGround)
+        public bool SendLocationUpdate(Location location, bool onGround, byte[] yawpitch)
         {
             return false; //Currently not implemented
         }

@@ -273,7 +273,7 @@ namespace MinecraftClient.Protocol.Handlers
                         double x = readNextDouble(packetData);
                         double y = readNextDouble(packetData);
                         double z = readNextDouble(packetData);
-                        readData(8, packetData); //Ignore look
+                        byte[] yawpitch = readData(8, packetData);
                         byte locMask = readNextByte(packetData);
 
                         if (protocolversion >= MC18Version)
@@ -282,9 +282,9 @@ namespace MinecraftClient.Protocol.Handlers
                             location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
                             location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
                             location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
-                            handler.UpdateLocation(location);
+                            handler.UpdateLocation(location, yawpitch);
                         }
-                        else handler.UpdateLocation(new Location(x, y, z));
+                        else handler.UpdateLocation(new Location(x, y, z), yawpitch);
 
                         if (protocolversion >= MC19Version)
                         {
@@ -1513,20 +1513,33 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="location">The new location of the player</param>
         /// <param name="onGround">True if the player is on the ground</param>
+        /// <param name="yawpitch">Yaw and pitch (optional and currently not parsed)</param>
         /// <returns>True if the location update was successfully sent</returns>
-        public bool SendLocationUpdate(Location location, bool onGround)
+        public bool SendLocationUpdate(Location location, bool onGround, byte[] yawpitch = null)
         {
             if (Settings.TerrainAndMovements)
             {
+                int packetId;
+                if (yawpitch != null && yawpitch.Length == 8)
+                {
+                    packetId = protocolversion >= MC19Version ? 0x0D : 0x06;
+                }
+                else
+                {
+                    yawpitch = new byte[0];
+                    packetId = protocolversion >= MC19Version ? 0x0C : 0x04;
+                }
+
                 try
                 {
-                    SendPacket(protocolversion >= MC19Version ? 0x0C : 0x04, concatBytes(
+                    SendPacket(packetId, concatBytes(
                         getDouble(location.X),
                         getDouble(location.Y),
                         protocolversion < MC18Version
                             ? getDouble(location.Y + 1.62)
                             : new byte[0],
                         getDouble(location.Z),
+                        yawpitch,
                         new byte[] { onGround ? (byte)1 : (byte)0 }));
                     return true;
                 }

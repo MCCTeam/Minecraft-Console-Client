@@ -17,15 +17,25 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="world">World the player is currently located in</param>
         /// <param name="location">Location the player is currently at</param>
+        /// <param name="motionY">Current vertical motion speed</param>
         /// <returns>Updated location after applying gravity</returns>
-        public static Location HandleGravity(World world, Location location)
+        public static Location HandleGravity(World world, Location location, ref double motionY)
         {
             Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
             Location belowFoots = Move(location, Direction.Down);
+            if (location.Y > Math.Truncate(location.Y) + 0.0001)
+            {
+                belowFoots = location;
+                belowFoots.Y = Math.Truncate(location.Y);
+            }
             if (!IsOnGround(world, location) && !IsSwimming(world, location))
-                location = Move2Steps(location, belowFoots).Dequeue();
+            {
+                while (!IsOnGround(world, belowFoots) && belowFoots.Y >= 1)
+                    belowFoots = Move(belowFoots, Direction.Down);
+                location = Move2Steps(location, belowFoots, ref motionY, true).Dequeue();
+            }
             else if (!(world.GetBlock(onFoots).Type.IsSolid()))
-                location = Move2Steps(location, onFoots).Dequeue();
+                location = Move2Steps(location, onFoots, ref motionY, true).Dequeue();
             return location;
         }
 
@@ -64,25 +74,46 @@ namespace MinecraftClient.Mapping
         /// </remarks>
         /// <param name="start">Start location</param>
         /// <param name="goal">Destination location</param>
+        /// <param name="motionY">Current vertical motion speed</param>
+        /// <param name="falling">Specify if performing falling steps</param>
         /// <param name="stepsByBlock">Amount of steps by block</param>
         /// <returns>A list of locations corresponding to the requested steps</returns>
-        public static Queue<Location> Move2Steps(Location start, Location goal, int stepsByBlock = 8)
+        public static Queue<Location> Move2Steps(Location start, Location goal, ref double motionY, bool falling = false, int stepsByBlock = 8)
         {
             if (stepsByBlock <= 0)
                 stepsByBlock = 1;
 
-            double totalStepsDouble = start.Distance(goal) * stepsByBlock;
-            int totalSteps = (int)Math.Ceiling(totalStepsDouble);
-            Location step = (goal - start) / totalSteps;
-
-            if (totalStepsDouble >= 1)
+            if (falling)
             {
-                Queue<Location> movementSteps = new Queue<Location>();
-                for (int i = 1; i <= totalSteps; i++)
-                    movementSteps.Enqueue(start + step * i);
-                return movementSteps;
+                //Use MC-Like falling algorithm
+                double Y = start.Y;
+                Queue<Location> fallSteps = new Queue<Location>();
+                fallSteps.Enqueue(start);
+                double motionPrev = motionY;
+                motionY -= 0.08D;
+                motionY *= 0.9800000190734863D;
+                Y += motionY;
+                if (Y < goal.Y)
+                    return new Queue<Location>(new[] { goal });
+                else return new Queue<Location>(new[] { new Location(start.X, Y, start.Z) });
             }
-            else return new Queue<Location>(new[] { goal });
+            else
+            {
+                //Regular MCC moving algorithm
+                motionY = 0; //Reset motion speed
+                double totalStepsDouble = start.Distance(goal) * stepsByBlock;
+                int totalSteps = (int)Math.Ceiling(totalStepsDouble);
+                Location step = (goal - start) / totalSteps;
+
+                if (totalStepsDouble >= 1)
+                {
+                    Queue<Location> movementSteps = new Queue<Location>();
+                    for (int i = 1; i <= totalSteps; i++)
+                        movementSteps.Enqueue(start + step * i);
+                    return movementSteps;
+                }
+                else return new Queue<Location>(new[] { goal });
+            }
         }
 
         /// <summary>
@@ -163,7 +194,8 @@ namespace MinecraftClient.Mapping
         /// <returns>True if the specified location is on the ground</returns>
         public static bool IsOnGround(World world, Location location)
         {
-            return world.GetBlock(Move(location, Direction.Down)).Type.IsSolid();
+            return world.GetBlock(Move(location, Direction.Down)).Type.IsSolid()
+                && (location.Y <= Math.Truncate(location.Y) + 0.0001);
         }
 
         /// <summary>

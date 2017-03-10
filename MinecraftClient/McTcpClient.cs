@@ -37,6 +37,8 @@ namespace MinecraftClient
         private Queue<Location> steps;
         private Queue<Location> path;
         private Location location;
+        private byte[] yawpitch;
+        private double motionY;
 
         private string host;
         private int port;
@@ -410,8 +412,9 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">The new location</param>
         /// <param name="relative">If true, the location is relative to the current location</param>
-        public void UpdateLocation(Location location)
+        public void UpdateLocation(Location location, byte[] yawpitch)
         {
+            this.yawpitch = yawpitch;
             UpdateLocation(location, false);
         }
 
@@ -520,13 +523,17 @@ namespace MinecraftClient
                 {
                     for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
                     {
-                        if (steps != null && steps.Count > 0)
-                            location = steps.Dequeue();
-                        else if (path != null && path.Count > 0)
-                            steps = Movement.Move2Steps(location, path.Dequeue());
-                        else location = Movement.HandleGravity(world, location);
-                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location));
+                        if (yawpitch == null)
+                        {
+                            if (steps != null && steps.Count > 0)
+                                location = steps.Dequeue();
+                            else if (path != null && path.Count > 0)
+                                steps = Movement.Move2Steps(location, path.Dequeue(), ref motionY);
+                            else location = Movement.HandleGravity(world, location, ref motionY);
+                        }
+                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yawpitch);
                     }
+                    yawpitch = null; //First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
                 }
             }
         }
