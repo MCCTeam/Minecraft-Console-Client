@@ -14,7 +14,6 @@ namespace MinecraftClient.Protocol
     /// <summary>
     /// Handle login, session, server ping and provide a protocol handler for interacting with a minecraft server.
     /// </summary>
-
     public static class ProtocolHandler
     {
         /// <summary>
@@ -30,21 +29,20 @@ namespace MinecraftClient.Protocol
                 try
                 {
                     Console.WriteLine("Resolving {0}...", domain);
-                    var response = new DnDns.Query.DnsQueryRequest().Resolve("_minecraft._tcp." + domain,
-                        DnDns.Enums.NsType.SRV, DnDns.Enums.NsClass.ANY, System.Net.Sockets.ProtocolType.Tcp);
-                    var records = response.Answers //Order SRV records by priority and weight, then randomly
-                            .Where(record => record is DnDns.Records.SrvRecord)
-                            .Select(record => (DnDns.Records.SrvRecord)record)
-                            .OrderBy(record => record.Priority)
-                            .ThenByDescending(record => record.Weight)
-                            .ThenBy(record => Guid.NewGuid());
-                    if (records.Any())
+                    Heijden.DNS.Response response = new Heijden.DNS.Resolver().Query("_minecraft._tcp." + domain, Heijden.DNS.QType.SRV);
+                    Heijden.DNS.RecordSRV[] srvRecords = response.RecordsSRV;
+                    if (srvRecords != null && srvRecords.Any())
                     {
-                        var result = records.First();
-                        string target = result.HostName.Trim('.');
-                        ConsoleIO.WriteLineFormatted(String.Format("§8Found server {0}:{1} for domain {2}", target, result.Port, domain));
+                        //Order SRV records by priority and weight, then randomly
+                        Heijden.DNS.RecordSRV result = srvRecords
+                            .OrderBy(record => record.PRIORITY)
+                            .ThenByDescending(record => record.WEIGHT)
+                            .ThenBy(record => Guid.NewGuid())
+                            .First();
+                        string target = result.TARGET.Trim('.');
+                        ConsoleIO.WriteLineFormatted(String.Format("§8Found server {0}:{1} for domain {2}", target, result.PORT, domain));
                         domain = target;
-                        port = result.Port;
+                        port = result.PORT;
                         return true;
                     }
                 }
