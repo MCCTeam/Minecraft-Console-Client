@@ -268,12 +268,18 @@ namespace MinecraftClient
         /// <summary>
         /// Disconnect the current client from the server and restart it
         /// </summary>
-        public static void Restart()
+        /// <param name="delay">Optional delay, in seconds, before restarting</param>
+        public static void Restart(int delaySeconds = 0)
         {
             new Thread(new ThreadStart(delegate
             {
                 if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
                 if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (delaySeconds > 0)
+                {
+                    Console.WriteLine("Waiting " + delaySeconds + " seconds before restarting...");
+                    System.Threading.Thread.Sleep(delaySeconds * 1000);
+                }
                 Console.WriteLine("Restarting Minecraft Console Client...");
                 InitializeClient();
             })).Start();
