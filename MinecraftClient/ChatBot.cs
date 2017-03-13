@@ -33,13 +33,25 @@ namespace MinecraftClient
         public void SetHandler(McTcpClient handler) { this._handler = handler; }
         protected void SetMaster(ChatBot master) { this.master = master; }
         protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
-        private McTcpClient Handler { get { return master != null ? master.Handler : _handler; } }
         private McTcpClient _handler = null;
         private ChatBot master = null;
         private List<string> registeredPluginChannels = new List<String>();
         private Queue<string> chatQueue = new Queue<string>();
         private DateTime lastMessageSentTime = DateTime.MinValue;
-        private bool CanSendTextNow
+        private McTcpClient Handler
+        {
+            get
+            {
+                if (master != null)
+                    return master.Handler;
+                if (_handler != null)
+                    return _handler;
+                throw new InvalidOperationException(
+                    "ChatBot methods should NOT be called in the constructor as API handler is not initialized yet."
+                    + " Override Initialize() or AfterGameJoined() instead to perform initialization tasks.");
+            }
+        }
+        private bool MessageCooldownEnded
         {
             get
             {
@@ -54,7 +66,7 @@ namespace MinecraftClient
         {
             if (chatQueue.Count > 0)
             {
-                if (CanSendTextNow)
+                if (MessageCooldownEnded)
                 {
                     string text = chatQueue.Dequeue();
                     LogToConsole("Sending '" + text + "'");
@@ -70,14 +82,16 @@ namespace MinecraftClient
 
         /// <summary>
         /// Anything you want to initialize your bot, will be called on load by MinecraftCom
+        /// This method is called only once, whereas AfterGameJoined() is called once per server join.
         ///
-        /// NOTE: Chat messages cannot be sent at this point in the login process.  If you want to send
-        /// a message when the bot is loaded, use AfterGameJoined.
+        /// NOTE: Chat messages cannot be sent at this point in the login process.
+        /// If you want to send a message when the bot is loaded, use AfterGameJoined.
         /// </summary>
         public virtual void Initialize() { }
 
         /// <summary>
         /// Called after the server has been joined successfully and chat messages are able to be sent.
+        /// This method is called again after reconnecting to the server, whereas Initialize() is called only once.
         ///
         /// NOTE: This is not always right after joining the server - if the bot was loaded after logging
         /// in this is still called.
@@ -129,7 +143,7 @@ namespace MinecraftClient
         {
             if (Settings.botMessageDelay.TotalSeconds > 0 && !sendImmediately)
             {
-                if (!CanSendTextNow)
+                if (!MessageCooldownEnded)
                 {
                     chatQueue.Enqueue(text);
                     // TODO: We don't know whether there was an error at this point, so we assume there isn't.
