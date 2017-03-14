@@ -512,6 +512,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Write some text in the console, but only if DebugMessages is enabled in INI file. Nothing will be sent to the server.
+        /// </summary>
+        /// <param name="text">Debug log text to write</param>
+        protected void LogDebugToConsole(object text)
+        {
+            if (Settings.DebugMessages)
+                LogToConsole(text);
+        }
+
+        /// <summary>
         /// Disconnect from the server and restart the program
         /// It will unload and reload all the bots and then reconnect to the server
         /// </summary>
