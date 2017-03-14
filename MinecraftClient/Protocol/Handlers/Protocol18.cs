@@ -1635,7 +1635,7 @@ namespace MinecraftClient.Protocol.Handlers
             tcp.ReceiveBufferSize = 1024 * 1024;
 
             byte[] packet_id = getVarInt(0);
-            byte[] protocol_version = getVarInt(4);
+            byte[] protocol_version = getVarInt(-1);
             byte[] server_adress_val = Encoding.UTF8.GetBytes(host);
             byte[] server_adress_len = getVarInt(server_adress_val.Length);
             byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
