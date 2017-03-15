@@ -67,6 +67,7 @@ In scripts and remote control, no slash is needed to perform the command.
  - set varname=value : set a value which can be used as %varname% in further commands
  - wait <time> : wait X ticks (10 ticks = ~1 second. Only for scripts)
  - move : used for moving when terrain and movements feature is enabled
+ - debug : toggle debug messages, useful for chatbot developers
  - help : show command help. Tip: Use "/send /help" for server help
 
 [account] is an account alias defined in accounts file, read more below.
