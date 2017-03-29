@@ -7,6 +7,7 @@ using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Threading;
+using System.ComponentModel;
 
 namespace MinecraftClient
 {
@@ -285,64 +286,6 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Get a global variable by name, as a string
-        /// </summary>
-        /// <param name="varName">Name of the variable</param>
-        /// <returns>Value of the variable as string, or null if no variable</returns>
-        public string GetVarAsString(string varName)
-        {
-            object val = GetVar(varName);
-            if (val != null)
-                return val.ToString();
-            return null;
-        }
-
-        /// <summary>
-        /// Get a global variable by name, as an integer
-        /// </summary>
-        /// <param name="varName">Name of the variable</param>
-        /// <returns>Value of the variable as int, or 0 if no variable or not a number</returns>
-        public int GetVarAsInt(string varName)
-        {
-            if (GetVar(varName) is int)
-                return (int)GetVar(varName);
-            int result;
-            if (int.TryParse(GetVarAsString(varName), out result))
-                return result;
-            return 0;
-        }
-
-        /// <summary>
-        /// Get a global variable by name, as a double
-        /// </summary>
-        /// <param name="varName">Name of the variable</param>
-        /// <returns>Value of the variable as double, or 0 if no variable or not a number</returns>
-        public double GetVarAsDouble(string varName)
-        {
-            if (GetVar(varName) is double)
-                return (double)GetVar(varName);
-            double result;
-            if (double.TryParse(GetVarAsString(varName), out result))
-                return result;
-            return 0;
-        }
-
-        /// <summary>
-        /// Get a global variable by name, as a boolean
-        /// </summary>
-        /// <param name="varName">Name of the variable</param>
-        /// <returns>Value of the variable as bool, or false if no variable or not a boolean</returns>
-        public bool GetVarAsBool(string varName)
-        {
-            if (GetVar(varName) is bool)
-                return (bool)GetVar(varName);
-            bool result;
-            if (bool.TryParse(GetVarAsString(varName), out result))
-                return result;
-            return false;
-        }
-
-        /// <summary>
         /// Set a global variable for further use in any other script
         /// </summary>
         /// <param name="varName">Name of the variable</param>
@@ -351,6 +294,37 @@ namespace MinecraftClient
         {
             return Settings.SetVar(varName, varValue);
         }
+
+        /// <summary>
+        /// Get a global variable by name, as the specified type, and try converting it if possible.
+        /// If you know what you are doing and just want a cast, use (T)MCC.GetVar("name") instead.
+        /// </summary>
+        /// <typeparam name="T">Variable type</typeparam>
+        /// <param name="varName">Variable name</param>
+        /// <returns>Variable as specified type or default value for this type</returns>
+        public T GetVar<T>(string varName)
+        {
+            object value = GetVar(varName);
+            if (value is T)
+                return (T)value;
+            if (value != null)
+            {
+                try
+                {
+                    TypeConverter converter = TypeDescriptor.GetConverter(typeof(T));
+                    if (converter != null)
+                        return (T)converter.ConvertFromString(value.ToString());
+                }
+                catch (NotSupportedException) { /* Was worth trying */ }
+            }
+            return default(T);
+        }
+
+        //Named shortcuts for GetVar<type>(varname)
+        public string GetVarAsString(string varName) { return GetVar<string>(varName); }
+        public int GetVarAsInt(string varName) { return GetVar<int>(varName); }
+        public double GetVarAsDouble(string varName) { return GetVar<double>(varName); }
+        public bool GetVarAsBool(string varName) { return GetVar<bool>(varName); }
 
         /// <summary>
         /// Load login/password using an account alias and optionally reconnect to the server
