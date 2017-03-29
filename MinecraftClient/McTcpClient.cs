@@ -26,7 +26,7 @@ namespace MinecraftClient
         private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
-        private static readonly List<ChatBots.Script> scripts_on_hold = new List<ChatBots.Script>();
+        private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
         private readonly List<string> registeredServerPluginChannels = new List<String>();
@@ -109,17 +109,20 @@ namespace MinecraftClient
 
             if (!singlecommand)
             {
-                if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
-                if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
-                if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
-                if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-                if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
-                if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
-                if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
-                if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
-                if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
-                //Add your ChatBot here by uncommenting and adapting
-                //BotLoad(new ChatBots.YourBot());
+                if (botsOnHold.Count == 0)
+                {
+                    if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
+                    if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
+                    if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
+                    if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+                    if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
+                    if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries)); }
+                    if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
+                    if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
+                    if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
+                    //Add your ChatBot here by uncommenting and adapting
+                    //BotLoad(new ChatBots.YourBot());
+                }
             }
 
             try
@@ -143,10 +146,9 @@ namespace MinecraftClient
                         }
                         else
                         {
-                            foreach (ChatBot bot in scripts_on_hold)
-                                bot.SetHandler(this);
-                            bots.AddRange(scripts_on_hold);
-                            scripts_on_hold.Clear();
+                            foreach (ChatBot bot in botsOnHold)
+                                BotLoad(bot, false);
+                            botsOnHold.Clear();
 
                             Console.WriteLine("Server was successfully joined.\nType '"
                                 + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)
@@ -310,9 +312,8 @@ namespace MinecraftClient
         /// </summary>
         public void Disconnect()
         {
-            foreach (ChatBot bot in bots)
-                if (bot is ChatBots.Script)
-                    scripts_on_hold.Add((ChatBots.Script)bot);
+            botsOnHold.Clear();
+            botsOnHold.AddRange(bots);
 
             if (handler != null)
             {
@@ -332,15 +333,14 @@ namespace MinecraftClient
         /// <summary>
         /// Load a new bot
         /// </summary>
-        public void BotLoad(ChatBot b)
+        public void BotLoad(ChatBot b, bool init = true)
         {
             b.SetHandler(this);
             bots.Add(b);
-            b.Initialize();
+            if (init)
+                b.Initialize();
             if (this.handler != null)
-            {
                 b.AfterGameJoined();
-            }
             Settings.SingleCommand = "";
         }
 
