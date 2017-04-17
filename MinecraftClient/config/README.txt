@@ -14,9 +14,12 @@ in a fast and easy way without having to open the main Minecraft game.
 
 First, extract the archive if not already extracted.
 On Windows, simply open MinecraftClient.exe by double-clicking on it.
-On Mac or Linux, open a terminal in this folder and run "mono MinecraftClient.exe".
+On Mac or Linux you need to install the Mono Runtime:
+ - On Mac: http://www.mono-project.com/download/#download-mac
+ - On Linux: sudo apt-get install mono-runtime libmono-reflection-cil
+Then, open a terminal in this folder and run "mono MinecraftClient.exe".
 If you cannot authenticate on Mono, you'll need to run "mozroots --import --ask-remove" once.
-If Mono crashes, retry with mono-complete, not mono-runtime. Mono v4.0 to 4.2 is recommended.
+If Mono crashes, retry with mono-complete instead of mono-runtime. Mono v4.0 to 4.2 is recommended.
 
 ===========================================
  Using Configuration files & Enabling bots

@@ -219,9 +219,13 @@ namespace MinecraftClient.Protocol
                 string result = "";
 
                 string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
+                if (Settings.DebugMessages)
+                    ConsoleIO.WriteLineFormatted("§8Debug: Login Request: " + json_request);
                 int code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
                 if (code == 200)
                 {
+                    if (Settings.DebugMessages)
+                        ConsoleIO.WriteLineFormatted("§8Debug: Login Response: " + result);
                     if (result.Contains("availableProfiles\":[]}"))
                     {
                         return LoginResult.NotPremium;
