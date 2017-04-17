@@ -382,6 +382,7 @@ namespace MinecraftClient
                     offlinePrompt.Start();
                 }
             }
+            else Exit();
         }
 
         /// <summary>
