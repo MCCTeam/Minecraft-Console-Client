@@ -117,6 +117,7 @@
     <Compile Include="Crypto\Streams\RegularAesStream.cs" />
     <Compile Include="Crypto\CryptoHandler.cs" />
     <Compile Include="CSharpRunner.cs" />
+    <Compile Include="Json.cs" />
     <Compile Include="Mapping\Block.cs" />
     <Compile Include="Mapping\Chunk.cs" />
     <Compile Include="Mapping\ChunkColumn.cs" />
@@ -206,7 +207,6 @@
     <Compile Include="Protocol\Handlers\Compression\ZlibBaseStream.cs" />
     <Compile Include="Protocol\Handlers\Compression\ZlibCodec.cs" />
     <Compile Include="Protocol\Handlers\Compression\ZlibConstants.cs" />
-    <Compile Include="Protocol\Handlers\Json.cs" />
     <Compile Include="Protocol\Handlers\ZlibUtils.cs" />
     <Compile Include="Protocol\Handlers\ChatParser.cs" />
     <Compile Include="Crypto\IAesStream.cs" />

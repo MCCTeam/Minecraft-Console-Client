@@ -11,7 +11,7 @@ using MinecraftClient.Protocol.SessionCache;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2016.
+    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2017.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>

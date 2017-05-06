@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftClient.Protocol.Handlers
+namespace MinecraftClient
 {
     /// <summary>
     /// This class parses JSON data and returns an object describing that data.
     /// Really lightweight JSON handling by ORelio - (c) 2013 - 2014
     /// </summary>
-
-    static class Json
+    public static class Json
     {
         /// <summary>
         /// Parse some JSON and return the corresponding JSON object
         /// </summary>
-
         public static JSONData ParseJson(string json)
         {
             int cursorpos = 0;
@@ -26,7 +24,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// The class storing unserialized JSON data
         /// The data can be an object, an array or a string
         /// </summary>
-
         public class JSONData
         {
             public enum DataType { Object, Array, String };
@@ -49,7 +46,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="toparse">String to parse</param>
         /// <param name="cursorpos">Cursor start (set to 0 for function init)</param>
-
         private static JSONData String2Data(string toparse, ref int cursorpos)
         {
             try
@@ -173,7 +169,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="c">Char to test</param>
         /// <returns>True if hexadecimal</returns>
-
         private static bool isHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
     }
 }
