@@ -11,7 +11,6 @@ namespace MinecraftClient
     /// Allows simultaneous console input and output without breaking user input
     /// (Without having this annoying behaviour : User inp[Some Console output]ut)
     /// </summary>
-
     public static class ConsoleIO
     {
         public static bool basicIO = false;
@@ -26,7 +25,6 @@ namespace MinecraftClient
         /// <summary>
         /// Reset the IO mechanism and clear all buffers
         /// </summary>
-
         public static void Reset()
         {
             lock (io_lock)
@@ -43,7 +41,6 @@ namespace MinecraftClient
         /// <summary>
         /// Read a password from the standard input
         /// </summary>
-
         public static string ReadPassword()
         {
             StringBuilder password = new StringBuilder();
@@ -89,7 +86,6 @@ namespace MinecraftClient
         /// <summary>
         /// Read a line from the standard input
         /// </summary>
-
         public static string ReadLine()
         {
             if (basicIO) { return Console.ReadLine(); }
@@ -203,11 +199,23 @@ namespace MinecraftClient
                 return buffer + buffer2;
             }
         }
-        
+
+        /// <summary>
+        /// Debug routine
+        /// </summary>
+        public static void DebugReadInput()
+        {
+            ConsoleKeyInfo k = new ConsoleKeyInfo();
+            while (true)
+            {
+                k = Console.ReadKey(true);
+                Console.WriteLine("Key: {0}\tChar: {1}\tModifiers: {2}", k.Key, k.KeyChar, k.Modifiers);
+            }
+        }
+
         /// <summary>
         /// Write a string to the standard output, without newline character
         /// </summary>
-
         public static void Write(string text)
         {
             if (!basicIO)
@@ -256,7 +264,6 @@ namespace MinecraftClient
         /// <summary>
         /// Write a string to the standard output with a trailing newline
         /// </summary>
-
         public static void WriteLine(string line)
         {
             Write(line + '\n');
@@ -265,7 +272,6 @@ namespace MinecraftClient
         /// <summary>
         /// Write a single character to the standard output
         /// </summary>
-
         public static void Write(char c)
         {
             Write("" + c);
@@ -276,7 +282,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="str">String to write</param>
         /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>
-
         public static void WriteLineFormatted(string str, bool acceptnewlines = true)
         {
             if (basicIO) { Console.WriteLine(str); return; }
@@ -331,7 +336,6 @@ namespace MinecraftClient
         /// Write a Minecraft Console Client Log line
         /// </summary>
         /// <param name="text">Text of the log line</param>
-
         public static void WriteLogLine(string text)
         {
             WriteLineFormatted("§8[MCC] " + text);
@@ -438,7 +442,6 @@ namespace MinecraftClient
         /// Set an auto-completion engine for TAB autocompletion
         /// </summary>
         /// <param name="engine">Engine implementing the IAutoComplete interface</param>
-        
         public static void SetAutoCompleteEngine(IAutoComplete engine)
         {
             autocomplete_engine = engine;
@@ -450,7 +453,6 @@ namespace MinecraftClient
     /// Interface for TAB autocompletion
     /// Allows to use any object which has an AutoComplete() method using the IAutocomplete interface
     /// </summary>
-
     public interface IAutoComplete
     {
         IEnumerable<string> AutoComplete(string BehindCursor);

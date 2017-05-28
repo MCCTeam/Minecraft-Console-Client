@@ -34,6 +34,13 @@ namespace MinecraftClient
         {
             Console.WriteLine("Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors", MCLowestVersion, MCHighestVersion, Version);
 
+            //Debug input ?
+            if (args.Length == 1 && args[0] == "--keyboard-debug")
+            {
+                Console.WriteLine("Keyboard debug mode: Press any key to display info");
+                ConsoleIO.DebugReadInput();
+            }
+
             //Basic Input/Output ?
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
             {
