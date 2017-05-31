@@ -125,6 +125,7 @@
     <Compile Include="Mapping\Material.cs" />
     <Compile Include="Mapping\Movement.cs" />
     <Compile Include="Mapping\World.cs" />
+    <Compile Include="Protocol\ChatParser.cs" />
     <Compile Include="Protocol\Dns\Header.cs" />
     <Compile Include="Protocol\Dns\Question.cs" />
     <Compile Include="Protocol\Dns\RecordReader.cs" />
@@ -208,7 +209,6 @@
     <Compile Include="Protocol\Handlers\Compression\ZlibCodec.cs" />
     <Compile Include="Protocol\Handlers\Compression\ZlibConstants.cs" />
     <Compile Include="Protocol\Handlers\ZlibUtils.cs" />
-    <Compile Include="Protocol\Handlers\ChatParser.cs" />
     <Compile Include="Crypto\IAesStream.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

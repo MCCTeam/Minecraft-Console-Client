@@ -439,9 +439,17 @@ namespace MinecraftClient
         /// Received some text from the server
         /// </summary>
         /// <param name="text">Text received</param>
+        /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
         /// <param name="links">Links embedded in text</param>
-        public void OnTextReceived(string text, IEnumerable<string> links)
+        public void OnTextReceived(string text, bool isJson)
         {
+            List<string> links = new List<string>();
+            string json = null;
+            if (isJson)
+            {
+                json = text;
+                text = ChatParser.ParseText(json, links);
+            }
             ConsoleIO.WriteLineFormatted(text, false);
             if (Settings.DisplayChatLinks)
                 foreach (string link in links)
@@ -451,6 +459,7 @@ namespace MinecraftClient
                 try
                 {
                     bots[i].GetText(text);
+                    bots[i].GetText(text, json);
                 }
                 catch (Exception e)
                 {

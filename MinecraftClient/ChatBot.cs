@@ -110,6 +110,16 @@ namespace MinecraftClient
         public virtual void GetText(string text) { }
 
         /// <summary>
+        /// Any text sent by the server will be sent here by MinecraftCom (extended variant)
+        /// </summary>
+        /// <remarks>
+        /// You can use Json.ParseJson() to process the JSON string.
+        /// </remarks>
+        /// <param name="text">Text from the server</param>
+        /// <param name="json">Raw JSON from the server. This parameter will be NULL on MC 1.5 or lower!</param>
+        public virtual void GetText(string text, string json) { }
+
+        /// <summary>
         /// Is called when the client has been disconnected fom the server
         /// </summary>
         /// <param name="reason">Disconnect Reason</param>

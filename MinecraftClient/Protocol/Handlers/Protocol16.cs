@@ -88,9 +88,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x02: readData(1); readNextString(); readNextString(); readData(4); break;
                 case 0x03:
                     string message = readNextString();
-                    List<string> links = new List<string>();
-                    if (protocolversion >= 72) { message = ChatParser.ParseText(message, links); }
-                    handler.OnTextReceived(message, links); break;
+                    handler.OnTextReceived(message, protocolversion >= 72); break;
                 case 0x04: readData(16); break;
                 case 0x05: readData(6); readNextItemSlot(); break;
                 case 0x06: readData(12); break;

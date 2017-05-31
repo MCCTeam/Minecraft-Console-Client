@@ -237,7 +237,8 @@ namespace MinecraftClient
         /// It will unload and reload all the bots and then reconnect to the server
         /// </summary>
         /// <param name="extraAttempts">If connection fails, the client will make X extra attempts</param>
-        new public void ReconnectToTheServer(int extraAttempts = -999999)
+        /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
+        new public void ReconnectToTheServer(int extraAttempts = -999999, int delaySeconds = 0)
         {
             if (extraAttempts == -999999)
                 base.ReconnectToTheServer();
