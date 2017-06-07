@@ -450,7 +450,7 @@ namespace MinecraftClient
                 json = text;
                 text = ChatParser.ParseText(json, links);
             }
-            ConsoleIO.WriteLineFormatted(text, false);
+            ConsoleIO.WriteLineFormatted(text, true);
             if (Settings.DisplayChatLinks)
                 foreach (string link in links)
                     ConsoleIO.WriteLineFormatted("§8MCC: Link: " + link, false);
