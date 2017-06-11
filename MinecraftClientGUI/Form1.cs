@@ -52,7 +52,7 @@ namespace MinecraftClientGUI
             box_output.Font = new Font("Consolas", 8);
             box_output.BackColor = Color.White;
 
-            if (Environment.OSVersion.Version.Major >= 6)
+            if (Environment.OSVersion.Version.Major >= 6 && Environment.OSVersion.Version.Minor == 1)
             {
                 this.BackColor = Color.DarkMagenta; this.TransparencyKey = Color.DarkMagenta;
                 MARGINS marg = new MARGINS() { Left = -1, Right = -1, Top = -1, Bottom = -1 };
