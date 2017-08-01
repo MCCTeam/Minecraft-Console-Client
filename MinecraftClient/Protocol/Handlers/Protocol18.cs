@@ -24,6 +24,7 @@ namespace MinecraftClient.Protocol.Handlers
         private const int MC111Version = 315;
         private const int MC17w13aVersion = 318;
         private const int MC112pre5Version = 332;
+        private const int MC17w31aVersion = 336;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -230,7 +231,7 @@ namespace MinecraftClient.Protocol.Handlers
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
-            else
+            else if (protocol < MC17w31aVersion)
             {
                 switch (packetID)
                 {
@@ -250,6 +251,29 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x1A: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x33: return PacketIncomingType.ResourcePackSend;
+                    default: return PacketIncomingType.UnknownPacket;
+                }
+            }
+            else
+            {
+                switch (packetID)
+                {
+                    case 0x1F: return PacketIncomingType.KeepAlive;
+                    case 0x23: return PacketIncomingType.JoinGame;
+                    case 0x0F: return PacketIncomingType.ChatMessage;
+                    case 0x35: return PacketIncomingType.Respawn;
+                    case 0x2F: return PacketIncomingType.PlayerPositionAndLook;
+                    case 0x20: return PacketIncomingType.ChunkData;
+                    case 0x10: return PacketIncomingType.MultiBlockChange;
+                    case 0x0B: return PacketIncomingType.BlockChange;
+                    //MapChunkBulk removed in 1.9
+                    case 0x1D: return PacketIncomingType.UnloadChunk;
+                    case 0x2E: return PacketIncomingType.PlayerListUpdate;
+                    case 0x0E: return PacketIncomingType.TabCompleteResult;
+                    case 0x18: return PacketIncomingType.PluginMessage;
+                    case 0x1A: return PacketIncomingType.KickPacket;
+                    //NetworkCompressionTreshold removed in 1.9
+                    case 0x34: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -324,7 +348,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                 }
             }
-            else
+            else if (protocol < MC17w31aVersion)
             {
                 switch (packet)
                 {
@@ -337,6 +361,21 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TabComplete: return 0x02;
                     case PacketOutgoingType.PlayerPosition: return 0x0E;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0F;
+                }
+            }
+            else
+            {
+                switch (packet)
+                {
+                    case PacketOutgoingType.KeepAlive: return 0x0B;
+                    case PacketOutgoingType.ResourcePackStatus: return 0x17;
+                    case PacketOutgoingType.ChatMessage: return 0x02;
+                    case PacketOutgoingType.ClientStatus: return 0x03;
+                    case PacketOutgoingType.ClientSettings: return 0x04;
+                    case PacketOutgoingType.PluginMessage: return 0x09;
+                    case PacketOutgoingType.TabComplete: return 0x01;
+                    case PacketOutgoingType.PlayerPosition: return 0x0D;
+                    case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                 }
             }
 
