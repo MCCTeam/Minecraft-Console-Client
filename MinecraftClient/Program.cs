@@ -20,9 +20,9 @@ namespace MinecraftClient
         private static McTcpClient Client;
         public static string[] startupargs;
 
-        public const string Version = "1.12.0 DEV";
+        public const string Version = "1.12.1 DEV";
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.12.0";
+        public const string MCHighestVersion = "1.12.1";
 
         private static Thread offlinePrompt = null;
         private static bool useMcVersionOnce = false;
