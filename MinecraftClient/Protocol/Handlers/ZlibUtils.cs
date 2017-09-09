@@ -21,17 +21,16 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Compressed data as a byte array</returns>
         public static byte[] Compress(byte[] to_compress)
         {
-            ZlibStream stream = new ZlibStream(new System.IO.MemoryStream(to_compress, false), CompressionMode.Compress);
-            List<byte> temp_compression_list = new List<byte>();
-            byte[] b = new byte[1];
-            while (true)
+            byte[] data;
+            using (System.IO.MemoryStream memstream = new System.IO.MemoryStream())
             {
-                int read = stream.Read(b, 0, 1);
-                if (read > 0) { temp_compression_list.Add(b[0]); }
-                else break;
+                using (ZlibStream stream = new ZlibStream(memstream, CompressionMode.Compress))
+                {
+                    stream.Write(to_compress, 0, to_compress.Length);
+                }
+                data = memstream.ToArray();
             }
-            stream.Close();
-            return temp_compression_list.ToArray();
+            return data;
         }
 
         /// <summary>
