@@ -1421,12 +1421,10 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (compression_treshold > 0) //Compression enabled?
             {
-                if (the_packet.Length > compression_treshold) //Packet long enough for compressing?
+                if (the_packet.Length >= compression_treshold) //Packet long enough for compressing?
                 {
-                    byte[] uncompressed_length = getVarInt(the_packet.Length);
                     byte[] compressed_packet = ZlibUtils.Compress(the_packet);
-                    byte[] compressed_packet_length = getVarInt(compressed_packet.Length);
-                    the_packet = concatBytes(compressed_packet_length, compressed_packet);
+                    the_packet = concatBytes(getVarInt(the_packet.Length), compressed_packet);
                 }
                 else
                 {
