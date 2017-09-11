@@ -45,9 +45,9 @@ namespace MinecraftClient
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
             {
                 ConsoleIO.basicIO = true;
-                Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
                 args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
             }
+            Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
 
             //Process ini configuration file
             if (args.Length >= 1 && System.IO.File.Exists(args[0]) && System.IO.Path.GetExtension(args[0]).ToLower() == ".ini")
