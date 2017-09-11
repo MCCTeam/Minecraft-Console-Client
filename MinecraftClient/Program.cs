@@ -45,7 +45,7 @@ namespace MinecraftClient
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
             {
                 ConsoleIO.basicIO = true;
-                Console.OutputEncoding = Console.InputEncoding = Encoding.GetEncoding(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage);
+                Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
                 args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
             }
 
