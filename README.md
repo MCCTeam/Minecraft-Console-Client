@@ -4,16 +4,16 @@ Minecraft Console Client
 Minecraft Console Client is a lightweight app allowing to connect to any minecraft server,
 send commands and receive text messages in a fast and easy way without having to open the main Minecraft game. It also provides various automation for administration and other purposes.
 
-##How to use
+## How to use
 
 Downloads, help and more info available on the [Minecraft Forum thread](http://www.minecraftforum.net/topic/1314800-/)'s first post.<br/>
 Alternatively, you can take a look at the [README](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/README.txt) file from the latest stable binary release.
 
-##How to contribute
+## How to contribute
 
 If you'd like to contribute to Minecraft Console Client, great! But please fork the *indev* branch to do so, as the *master* branch is the stable branch, corresponding to the last binary release, which does not contains the latest fixes and is available for forking into your own projects. Using *indev* branch, just submit a pull request :)
 
-##License
+## License
 
 Unless specifically stated, the code is from me or contributors, and available under CDDL-1.0.<br/>
 Else, the license and original author are mentioned in source file headers.<br/>
