@@ -341,7 +341,7 @@ namespace MinecraftClient.Protocol.Handlers
                 switch (packet)
                 {
                     case PacketOutgoingType.KeepAlive: return 0x0C;
-                    case PacketOutgoingType.ResourcePackStatus: return 0x17;
+                    case PacketOutgoingType.ResourcePackStatus: return 0x18;
                     case PacketOutgoingType.ChatMessage: return 0x03;
                     case PacketOutgoingType.ClientStatus: return 0x04;
                     case PacketOutgoingType.ClientSettings: return 0x05;
@@ -357,7 +357,7 @@ namespace MinecraftClient.Protocol.Handlers
                 switch (packet)
                 {
                     case PacketOutgoingType.KeepAlive: return 0x0C;
-                    case PacketOutgoingType.ResourcePackStatus: return 0x17;
+                    case PacketOutgoingType.ResourcePackStatus: return 0x18;
                     case PacketOutgoingType.ChatMessage: return 0x03;
                     case PacketOutgoingType.ClientStatus: return 0x04;
                     case PacketOutgoingType.ClientSettings: return 0x05;
@@ -373,7 +373,7 @@ namespace MinecraftClient.Protocol.Handlers
                 switch (packet)
                 {
                     case PacketOutgoingType.KeepAlive: return 0x0B;
-                    case PacketOutgoingType.ResourcePackStatus: return 0x17;
+                    case PacketOutgoingType.ResourcePackStatus: return 0x18;
                     case PacketOutgoingType.ChatMessage: return 0x02;
                     case PacketOutgoingType.ClientStatus: return 0x03;
                     case PacketOutgoingType.ClientSettings: return 0x04;
