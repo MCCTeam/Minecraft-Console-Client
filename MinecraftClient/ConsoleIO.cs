@@ -142,8 +142,6 @@ namespace MinecraftClient
                                     RemoveOneChar();
                                 }
                                 break;
-                            case ConsoleKey.Oem6:
-                                break;
                             case ConsoleKey.DownArrow:
                                 if (previous.Count > 0)
                                 {
