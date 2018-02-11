@@ -96,7 +96,7 @@
     <Compile Include="Commands\Script.cs" />
     <Compile Include="Commands\Send.cs" />
     <Compile Include="Commands\Set.cs" />
-    <Compile Include="ConsoleIcon.cs" />
+    <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\BufferedBlockCipher.cs" />
@@ -235,6 +235,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Commands\List.cs" />
     <Compile Include="Mapping\Location.cs" />
+    <Compile Include="WinAPI\WindowsVersion.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

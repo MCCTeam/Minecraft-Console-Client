@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.SessionCache;
+using MinecraftClient.WinAPI;
 
 namespace MinecraftClient
 {
@@ -49,7 +50,7 @@ namespace MinecraftClient
             }
 
             //Take advantage of Windows 10 / Mac / Linux UTF-8 console
-            if (Environment.Version.Major > 6 || isUsingMono)
+            if (isUsingMono || WindowsVersion.WinMajorVersion >= 10)
             {
                 Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
             }

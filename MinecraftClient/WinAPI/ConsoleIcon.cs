@@ -9,7 +9,7 @@ using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace MinecraftClient
+namespace MinecraftClient.WinAPI
 {
     /// <summary>
     /// Allow to set the player skin as console icon, on Windows only.
