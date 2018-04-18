@@ -261,7 +261,7 @@ namespace MinecraftClient
                 {
                     case ProtocolHandler.LoginResult.AccountMigrated: failureMessage += "Account migrated, use e-mail as username."; break;
                     case ProtocolHandler.LoginResult.ServiceUnavailable: failureMessage += "Login servers are unavailable. Please try again later."; break;
-                    case ProtocolHandler.LoginResult.WrongPassword: failureMessage += "Incorrect password."; break;
+                    case ProtocolHandler.LoginResult.WrongPassword: failureMessage += "Incorrect password, blacklisted IP or too many logins."; break;
                     case ProtocolHandler.LoginResult.NotPremium: failureMessage += "User not premium."; break;
                     case ProtocolHandler.LoginResult.OtherError: failureMessage += "Network error."; break;
                     case ProtocolHandler.LoginResult.SSLError: failureMessage += "SSL Error."; break;
