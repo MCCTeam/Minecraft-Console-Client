@@ -12,7 +12,7 @@ using MinecraftClient.WinAPI;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2017.
+    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2018.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
@@ -102,7 +102,7 @@ namespace MinecraftClient
             {
                 bool cacheLoaded = SessionCache.InitializeDiskCache();
                 if (Settings.DebugMessages)
-                    ConsoleIO.WriteLineFormatted(cacheLoaded ? "§8Session cache has been successfully loaded from disk." : "§8Cached sessions could not be loaded from disk");
+                    ConsoleIO.WriteLineFormatted(cacheLoaded ? "§8Session data has been successfully loaded from disk." : "§8No sessions could be loaded from disk");
             }
 
             //Asking the user to type in missing data such as Username and Password

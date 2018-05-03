@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Net.Security;
 using MinecraftClient.Protocol.Handlers.Forge;
 
-
 namespace MinecraftClient.Protocol
 {
     /// <summary>
@@ -229,10 +228,10 @@ namespace MinecraftClient.Protocol
                 if (Settings.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§8Debug: Login Request: " + json_request);
                 int code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
+                if (Settings.DebugMessages)
+                    ConsoleIO.WriteLineFormatted("§8Debug: Login Response: " + result);
                 if (code == 200)
                 {
-                    if (Settings.DebugMessages)
-                        ConsoleIO.WriteLineFormatted("§8Debug: Login Response: " + result);
                     if (result.Contains("availableProfiles\":[]}"))
                     {
                         return LoginResult.NotPremium;

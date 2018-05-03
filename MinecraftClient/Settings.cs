@@ -91,7 +91,7 @@ namespace MinecraftClient
         public static bool DisplayChatLinks = true;
         public static bool TerrainAndMovements = false;
         public static string PrivateMsgsCmdName = "tell";
-        public static CacheType SessionCaching = CacheType.None;
+        public static CacheType SessionCaching = CacheType.Disk;
         public static bool DebugMessages = false;
         public static bool ResolveSrvRecords = true;
         public static bool ResolveSrvRecordsShortTimeout = true;
@@ -539,7 +539,7 @@ namespace MinecraftClient
                 + "showxpbarmessages=true             # Messages displayed above xp bar\r\n"
                 + "showchatlinks=true                 # Show links embedded in chat messages\r\n"
                 + "terrainandmovements=false          # Uses more ram, cpu, bandwidth\r\n"
-                + "sessioncache=memory                # Use 'none', 'memory' or 'disk' (disk session storing is experimental)\r\n"
+                + "sessioncache=disk                  # How to retain session tokens. Use 'none', 'memory' or 'disk'\r\n"
                 + "resolvesrvrecords=fast             # Use 'false', 'fast' (5s timeout), or 'true'. Required for joining some servers.\r\n"
                 + "accountlist=accounts.txt           # See README > 'Servers and Accounts file' for more info about this file\r\n"
                 + "serverlist=servers.txt             # See README > 'Servers and Accounts file' for more info about this file\r\n"

@@ -13,7 +13,16 @@ namespace MinecraftClient.Protocol.SessionCache
     /// </summary>
     public static class SessionCache
     {
-        private const string SessionCacheFile = "SessionCache.db";
+        private const string SessionCacheFilePlaintext = "SessionCache.ini";
+        private const string SessionCacheFileSerialized = "SessionCache.db";
+        private static readonly string SessionCacheFileMinecraft = String.Concat(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            Path.DirectorySeparatorChar,
+            ".minecraft",
+            Path.DirectorySeparatorChar,
+            "launcher_profiles.json"
+        );
+
         private static Dictionary<string, SessionToken> sessions = new Dictionary<string, SessionToken>();
         private static FileSystemWatcher cachemonitor = new FileSystemWatcher();
         private static Timer updatetimer = new Timer(100);
@@ -74,7 +83,7 @@ namespace MinecraftClient.Protocol.SessionCache
         {
             cachemonitor.Path = AppDomain.CurrentDomain.BaseDirectory;
             cachemonitor.IncludeSubdirectories = false;
-            cachemonitor.Filter = SessionCacheFile;
+            cachemonitor.Filter = SessionCacheFilePlaintext;
             cachemonitor.NotifyFilter = NotifyFilters.LastWrite;
             cachemonitor.Changed += new FileSystemEventHandler(OnChanged);
             cachemonitor.EnableRaisingEvents = true;
@@ -118,17 +127,71 @@ namespace MinecraftClient.Protocol.SessionCache
         /// <returns>True if data is successfully loaded</returns>
         private static bool LoadFromDisk()
         {
-            if (Settings.DebugMessages)
-                ConsoleIO.WriteLineFormatted("§8Updating session cache from disk");
-
-            if (File.Exists(SessionCacheFile))
+            //Grab sessions in the Minecraft directory
+            if (File.Exists(SessionCacheFileMinecraft))
             {
+                if (Settings.DebugMessages)
+                    ConsoleIO.WriteLineFormatted("§8Loading Minecraft profiles: " + Path.GetFileName(SessionCacheFileMinecraft));
+                Json.JSONData mcSession = new Json.JSONData(Json.JSONData.DataType.String);
                 try
                 {
-                    using (FileStream fs = new FileStream(SessionCacheFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    mcSession = Json.ParseJson(File.ReadAllText(SessionCacheFileMinecraft));
+                }
+                catch (IOException) { /* Failed to read file from disk -- ignoring */ }
+                if (mcSession.Type == Json.JSONData.DataType.Object
+                    && mcSession.Properties.ContainsKey("clientToken")
+                    && mcSession.Properties.ContainsKey("authenticationDatabase"))
+                {
+                    Guid temp;
+                    string clientID = mcSession.Properties["clientToken"].StringValue.Replace("-", "");
+                    Dictionary<string, Json.JSONData> sessionItems = mcSession.Properties["authenticationDatabase"].Properties;
+                    foreach (string key in sessionItems.Keys)
                     {
-                        sessions = (Dictionary<string, SessionToken>)formatter.Deserialize(fs);
-                        return true;
+                        if (Guid.TryParseExact(key, "N", out temp))
+                        {
+                            Dictionary<string, Json.JSONData> sessionItem = sessionItems[key].Properties;
+                            if (sessionItem.ContainsKey("displayName")
+                                && sessionItem.ContainsKey("accessToken")
+                                && sessionItem.ContainsKey("username")
+                                && sessionItem.ContainsKey("uuid"))
+                            {
+                                string login = sessionItem["username"].StringValue.ToLower();
+                                try
+                                {
+                                    SessionToken session = SessionToken.FromString(String.Join(",",
+                                        sessionItem["accessToken"].StringValue,
+                                        sessionItem["displayName"].StringValue,
+                                        sessionItem["uuid"].StringValue.Replace("-", ""),
+                                        clientID
+                                    ));
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted("§8Loaded session: " + login + ':' + session.ID);
+                                    sessions[login] = session;
+                                }
+                                catch (InvalidDataException) { /* Not a valid session */ }
+                            }
+                        }
+                    }
+                }
+            }
+
+            //Serialized session cache file in binary format
+            if (File.Exists(SessionCacheFileSerialized))
+            {
+                if (Settings.DebugMessages)
+                    ConsoleIO.WriteLineFormatted("§8Converting session cache from disk: " + SessionCacheFileSerialized);
+
+                try
+                {
+                    using (FileStream fs = new FileStream(SessionCacheFileSerialized, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        Dictionary<string, SessionToken> sessionsTemp = (Dictionary<string, SessionToken>)formatter.Deserialize(fs);
+                        foreach (KeyValuePair<string, SessionToken> item in sessionsTemp)
+                        {
+                            if (Settings.DebugMessages)
+                                ConsoleIO.WriteLineFormatted("§8Loaded session: " + item.Key + ':' + item.Value.ID);
+                            sessions[item.Key] = item.Value;
+                        }
                     }
                 }
                 catch (IOException ex)
@@ -140,7 +203,43 @@ namespace MinecraftClient.Protocol.SessionCache
                     ConsoleIO.WriteLineFormatted("§8Got malformed data while reading session cache from disk: " + ex2.Message);
                 }
             }
-            return false;
+
+            //User-editable session cache file in text format
+            if (File.Exists(SessionCacheFilePlaintext))
+            {
+                if (Settings.DebugMessages)
+                    ConsoleIO.WriteLineFormatted("§8Loading session cache from disk: " + SessionCacheFilePlaintext);
+
+                foreach (string line in File.ReadAllLines(SessionCacheFilePlaintext))
+                {
+                    if (!line.Trim().StartsWith("#"))
+                    {
+                        string[] keyValue = line.Split('=');
+                        if (keyValue.Length == 2)
+                        {
+                            try
+                            {
+                                string login = keyValue[0].ToLower();
+                                SessionToken session = SessionToken.FromString(keyValue[1]);
+                                if (Settings.DebugMessages)
+                                    ConsoleIO.WriteLineFormatted("§8Loaded session: " + login + ':' + session.ID);
+                                sessions[login] = session;
+                            }
+                            catch (InvalidDataException e)
+                            {
+                                if (Settings.DebugMessages)
+                                    ConsoleIO.WriteLineFormatted("§8Ignoring session token string '" + keyValue[1] + "': " + e.Message);
+                            }
+                        }
+                        else if (Settings.DebugMessages)
+                        {
+                            ConsoleIO.WriteLineFormatted("§8Ignoring invalid session token line: " + line);
+                        }
+                    }
+                }
+            }
+
+            return sessions.Count > 0;
         }
 
         /// <summary>
@@ -151,7 +250,7 @@ namespace MinecraftClient.Protocol.SessionCache
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLineFormatted("§8Saving session cache to disk");
 
-            bool fileexists = File.Exists(SessionCacheFile);
+            bool fileexists = File.Exists(SessionCacheFilePlaintext);
             IOException lastEx = null;
             int attempt = 1;
 
@@ -159,20 +258,13 @@ namespace MinecraftClient.Protocol.SessionCache
             {
                 try
                 {
-                    using (FileStream fs = new FileStream(SessionCacheFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-                    {
-                        cachemonitor.EnableRaisingEvents = false;
-
-                        // delete existing file contents
-                        if (fileexists)
-                        {
-                            fs.SetLength(0);
-                            fs.Flush();
-                        }
-
-                        formatter.Serialize(fs, sessions);
-                        cachemonitor.EnableRaisingEvents = true;
-                    }
+                    List<string> sessionCacheLines = new List<string>();
+                    sessionCacheLines.Add("# Generated by MCC v" + Program.Version + " - Edit at own risk!");
+                    foreach (KeyValuePair<string, SessionToken> entry in sessions)
+                        sessionCacheLines.Add(entry.Key + '=' + entry.Value.ToString());
+                    File.WriteAllLines(SessionCacheFilePlaintext, sessionCacheLines);
+                    //if (File.Exists(SessionCacheFileSerialized))
+                    //    File.Delete(SessionCacheFileSerialized);
                     return;
                 }
                 catch (IOException ex)
