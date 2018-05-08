@@ -6,6 +6,7 @@ using System.Threading;
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace MinecraftClient.ChatBots
 {
@@ -106,6 +107,20 @@ namespace MinecraftClient.ChatBots
                     filename = possible_file;
                     return true;
                 }
+            }
+
+            if (Settings.DebugMessages)
+            {
+                string caller = "Script";
+                try
+                {
+                    StackFrame frame = new StackFrame(1);
+                    MethodBase method = frame.GetMethod();
+                    Type type = method.DeclaringType;
+                    caller = type.Name;
+                }
+                catch { }
+                ConsoleIO.WriteLineFormatted(String.Format("§8[MCC] [{0}] Cannot find script file: {1}", caller, filename));
             }
 
             return false;
