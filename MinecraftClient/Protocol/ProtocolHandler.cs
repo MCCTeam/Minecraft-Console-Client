@@ -205,16 +205,14 @@ namespace MinecraftClient.Protocol
             }
         }
 
-        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, NullError };
+        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
         /// </summary>
         /// <param name="user">Login</param>
         /// <param name="pass">Password</param>
-        /// <param name="accesstoken">Will contain the access token returned by Minecraft.net, if the login is successful</param>
-        /// <param name="clienttoken">Will contain the client token generated before sending to Minecraft.net</param>
-        /// <param name="uuid">Will contain the player's PlayerID, needed for multiplayer</param>
+        /// <param name="session">In case of successful login, will contain session information for multiplayer</param>
         /// <returns>Returns the status of the login (Success, Failure, etc.)</returns>
         public static LoginResult GetLogin(string user, string pass, out SessionToken session)
         {
@@ -233,13 +231,18 @@ namespace MinecraftClient.Protocol
                     }
                     else
                     {
-                        string[] temp = result.Split(new string[] { "accessToken\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { session.ID = temp[1].Split('"')[0]; }
-                        temp = result.Split(new string[] { "name\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { session.PlayerName = temp[1].Split('"')[0]; }
-                        temp = result.Split(new string[] { "availableProfiles\":[{\"id\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { session.PlayerID = temp[1].Split('"')[0]; }
-                        return LoginResult.Success;
+                        Json.JSONData loginResponse = Json.ParseJson(result);
+                        if (loginResponse.Properties.ContainsKey("accessToken")
+                            && loginResponse.Properties.ContainsKey("selectedProfile")
+                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
+                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        {
+                            session.ID = loginResponse.Properties["accessToken"].StringValue;
+                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
+                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
+                            return LoginResult.Success;
+                        }
+                        else return LoginResult.InvalidResponse;
                     }
                 }
                 else if (code == 403)
@@ -281,8 +284,7 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Validates whether accessToken must be refreshed
         /// </summary>
-        /// <param name="accesstoken">Will contain the cached access token previously returned by Minecraft.net</param>
-        /// <param name="clienttoken">Will contain the cached client token created on login</param>
+        /// <param name="session">Session token to validate</param>
         /// <returns>Returns the status of the token (Valid, Invalid, etc.)</returns>
         public static LoginResult GetTokenValidation(SessionToken session)
         {
@@ -314,13 +316,11 @@ namespace MinecraftClient.Protocol
         /// Refreshes invalid token
         /// </summary>
         /// <param name="user">Login</param>
-        /// <param name="accesstoken">Will contain the new access token returned by Minecraft.net, if the refresh is successful</param>
-        /// <param name="clienttoken">Will contain the client token generated before sending to Minecraft.net</param>
-        /// <param name="uuid">Will contain the player's PlayerID, needed for multiplayer</param>
+        /// <param name="session">In case of successful token refresh, will contain session information for multiplayer</param>
         /// <returns>Returns the status of the new token request (Success, Failure, etc.)</returns>
-        public static LoginResult GetNewToken(SessionToken currentsession, out SessionToken newsession)
+        public static LoginResult GetNewToken(SessionToken currentsession, out SessionToken session)
         {
-            newsession = new SessionToken();
+            session = new SessionToken();
             try
             {
                 string result = "";
@@ -332,16 +332,20 @@ namespace MinecraftClient.Protocol
                     {
                         return LoginResult.NullError;
                     }
-                    else {
-                        string[] temp = result.Split(new string[] { "accessToken\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { newsession.ID = temp[1].Split('"')[0]; }
-                        temp = result.Split(new string[] { "clientToken\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { newsession.ClientID = temp[1].Split('"')[0]; }
-                        temp = result.Split(new string[] { "name\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { newsession.PlayerName = temp[1].Split('"')[0]; }
-                        temp = result.Split(new string[] { "selectedProfile\":[{\"id\":\"" }, StringSplitOptions.RemoveEmptyEntries);
-                        if (temp.Length >= 2) { newsession.PlayerID = temp[1].Split('"')[0]; }
-                        return LoginResult.Success;
+                    else
+                    {
+                        Json.JSONData loginResponse = Json.ParseJson(result);
+                        if (loginResponse.Properties.ContainsKey("accessToken")
+                            && loginResponse.Properties.ContainsKey("selectedProfile")
+                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
+                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                        {
+                            session.ID = loginResponse.Properties["accessToken"].StringValue;
+                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
+                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
+                            return LoginResult.Success;
+                        }
+                        else return LoginResult.InvalidResponse;
                     }
                 }
                 else if (code == 403 && result.Contains("InvalidToken"))
