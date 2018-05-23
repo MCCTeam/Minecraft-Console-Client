@@ -454,18 +454,19 @@ namespace MinecraftClient
             if (Settings.DisplayChatLinks)
                 foreach (string link in links)
                     ConsoleIO.WriteLineFormatted("§8MCC: Link: " + link, false);
-            for (int i = 0; i < bots.Count; i++)
+            foreach (ChatBot bot in bots.ToArray())
             {
                 try
                 {
-                    bots[i].GetText(text);
-                    bots[i].GetText(text, json);
+                    bot.GetText(text);
+                    if (bots.Contains(bot))
+                        bot.GetText(text, json);
                 }
                 catch (Exception e)
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLineFormatted("§8GetText: Got error from " + bots[i].ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLineFormatted("§8GetText: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
