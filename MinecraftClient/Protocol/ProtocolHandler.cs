@@ -223,13 +223,8 @@ namespace MinecraftClient.Protocol
             try
             {
                 string result = "";
-
                 string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                if (Settings.DebugMessages)
-                    ConsoleIO.WriteLineFormatted("§8Debug: Login Request: " + json_request);
                 int code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
-                if (Settings.DebugMessages)
-                    ConsoleIO.WriteLineFormatted("§8Debug: Login Response: " + result);
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
@@ -456,12 +451,28 @@ namespace MinecraftClient.Protocol
             {
                 try
                 {
+                    if (Settings.DebugMessages)
+                        ConsoleIO.WriteLineFormatted("§8Performing request to " + host);
+
                     TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
                     SslStream stream = new SslStream(client.GetStream());
                     stream.AuthenticateAsClient(host);
+
+                    if (Settings.DebugMessages)
+                        foreach (string line in headers)
+                            ConsoleIO.WriteLineFormatted("§8> " + line);
+
                     stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())));
                     System.IO.StreamReader sr = new System.IO.StreamReader(stream);
                     string raw_result = sr.ReadToEnd();
+
+                    if (Settings.DebugMessages)
+                    {
+                        ConsoleIO.WriteLine("");
+                        foreach (string line in raw_result.Split('\n'))
+                            ConsoleIO.WriteLineFormatted("§8< " + line);
+                    }
+
                     if (raw_result.StartsWith("HTTP/1.1"))
                     {
                         postResult = raw_result.Substring(raw_result.IndexOf("\r\n\r\n") + 4);

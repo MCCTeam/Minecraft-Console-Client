@@ -189,7 +189,7 @@ namespace MinecraftClient.ChatBots
         private static string Task2String(TaskDesc task)
         {
             return String.Format(
-                "triggeronfirstlogin = {0}\n triggeronlogin = {1}\n triggerontime = {2}\n "
+                " triggeronfirstlogin = {0}\n triggeronlogin = {1}\n triggerontime = {2}\n "
                     + "triggeroninterval = {3}\n timevalue = {4}\n timeinterval = {5}\n script = {6}",
                 task.triggerOnFirstLogin,
                 task.triggerOnLogin,
