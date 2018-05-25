@@ -80,7 +80,7 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted(String.Format("§8{0}: {1}", e.GetType().FullName, e.Message));
                 }
-            }, TimeSpan.FromSeconds(Settings.ResolveSrvRecordsShortTimeout ? 5 : 30)))
+            }, TimeSpan.FromSeconds(Settings.ResolveSrvRecordsShortTimeout ? 10 : 30)))
             {
                 protocolversion = protocolversionTmp;
                 forgeInfo = forgeInfoTmp;
