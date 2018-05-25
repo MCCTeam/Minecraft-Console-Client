@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace MinecraftClient.Protocol
+namespace MinecraftClient.Protocol.Session
 {
     [Serializable]
     public class SessionToken

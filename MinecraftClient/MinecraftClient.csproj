@@ -219,9 +219,9 @@
     <Compile Include="Protocol\IMinecraftCom.cs" />
     <Compile Include="Protocol\IMinecraftComHandler.cs" />
     <Compile Include="Protocol\ProtocolHandler.cs" />
-    <Compile Include="Protocol\SessionCache\CacheType.cs" />
-    <Compile Include="Protocol\SessionCache\SessionCache.cs" />
-    <Compile Include="Protocol\SessionToken.cs" />
+    <Compile Include="Protocol\Session\CacheType.cs" />
+    <Compile Include="Protocol\Session\SessionCache.cs" />
+    <Compile Include="Protocol\Session\SessionToken.cs" />
     <Compile Include="Proxy\ProxyHandler.cs" />
     <Compile Include="Proxy\Handlers\EventArgs\CreateConnectionAsyncCompletedEventArgs.cs" />
     <Compile Include="Proxy\Handlers\Exceptions\ProxyException.cs" />

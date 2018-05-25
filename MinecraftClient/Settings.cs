@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
-using MinecraftClient.Protocol.SessionCache;
+using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol;
 
 namespace MinecraftClient

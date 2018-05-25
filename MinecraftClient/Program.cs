@@ -6,7 +6,7 @@ using MinecraftClient.Protocol;
 using System.Reflection;
 using System.Threading;
 using MinecraftClient.Protocol.Handlers.Forge;
-using MinecraftClient.Protocol.SessionCache;
+using MinecraftClient.Protocol.Session;
 using MinecraftClient.WinAPI;
 
 namespace MinecraftClient

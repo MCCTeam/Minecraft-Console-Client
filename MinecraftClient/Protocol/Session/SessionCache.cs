@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Timers;
 
-namespace MinecraftClient.Protocol.SessionCache
+namespace MinecraftClient.Protocol.Session
 {
     /// <summary>
     /// Handle sessions caching and storage.

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MinecraftClient.Protocol.Handlers;
-using MinecraftClient.Proxy;
 using System.Net.Sockets;
 using System.Net.Security;
+using MinecraftClient.Proxy;
+using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Protocol.Session;
 
 namespace MinecraftClient.Protocol
 {
