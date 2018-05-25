@@ -416,6 +416,7 @@ namespace MinecraftClient
         {
             this.yawpitch = yawpitch;
             UpdateLocation(location, false);
+            locationReceived = true;
         }
 
         /// <summary>
