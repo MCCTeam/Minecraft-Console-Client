@@ -10,10 +10,11 @@ namespace MinecraftClient
     /// <summary>
     /// Allows simultaneous console input and output without breaking user input
     /// (Without having this annoying behaviour : User inp[Some Console output]ut)
+    /// Provide some fancy features such as formatted output, text pasting and tab-completion.
+    /// By ORelio - (c) 2012-2018 - Available under the CDDL-1.0 license
     /// </summary>
     public static class ConsoleIO
     {
-        public static bool basicIO = false;
         private static IAutoComplete autocomplete_engine;
         private static LinkedList<string> autocomplete_words = new LinkedList<string>();
         private static LinkedList<string> previous = new LinkedList<string>();
@@ -37,6 +38,32 @@ namespace MinecraftClient
                 }
             }
         }
+
+        /// <summary>
+        /// Set an auto-completion engine for TAB autocompletion.
+        /// </summary>
+        /// <param name="engine">Engine implementing the IAutoComplete interface</param>
+        public static void SetAutoCompleteEngine(IAutoComplete engine)
+        {
+            autocomplete_engine = engine;
+        }
+
+        /// <summary>
+        /// Determines whether to use interactive IO or basic IO.
+        /// Set to true to disable interactive command prompt and use the default Console.Read|Write() methods.
+        /// Color codes are printed as is when BasicIO is enabled.
+        /// </summary>
+        public static bool BasicIO = false;
+
+        /// <summary>
+        /// Determine whether WriteLineFormatted() should prepend lines with timestamps by default.
+        /// </summary>
+        public static bool EnableTimestamps = false;
+
+        /// <summary>
+        /// Specify a generic log line prefix for WriteLogLine()
+        /// </summary>
+        public static string LogPrefix = "§8[Log] ";
 
         /// <summary>
         /// Read a password from the standard input
@@ -88,7 +115,11 @@ namespace MinecraftClient
         /// </summary>
         public static string ReadLine()
         {
-            if (basicIO) { return Console.ReadLine(); }
+            if (BasicIO)
+            {
+                return Console.ReadLine();
+            }
+
             ConsoleKeyInfo k = new ConsoleKeyInfo();
 
             lock (io_lock)
@@ -199,7 +230,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Debug routine
+        /// Debug routine: print all keys pressed in the console
         /// </summary>
         public static void DebugReadInput()
         {
@@ -216,7 +247,7 @@ namespace MinecraftClient
         /// </summary>
         public static void Write(string text)
         {
-            if (!basicIO)
+            if (!BasicIO)
             {
                 lock (io_lock)
                 {
@@ -276,29 +307,48 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Write a Minecraft-Formatted string to the standard output, using §c color codes
+        /// Write a Minecraft-Like formatted string to the standard output, using §c color codes
+        /// See minecraft.gamepedia.com/Classic_server_protocol#Color_Codes for more info
         /// </summary>
         /// <param name="str">String to write</param>
         /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>
-        public static void WriteLineFormatted(string str, bool acceptnewlines = true)
+        /// <param name="displayTimestamps">
+        /// If false, no timestamp is prepended.
+        /// If true, "hh-mm-ss" timestamp will be prepended.
+        /// If unspecified, value is retrieved from EnableTimestamps.
+        /// </param>
+        public static void WriteLineFormatted(string str, bool acceptnewlines = true, bool? displayTimestamp = null)
         {
-            if (basicIO) { Console.WriteLine(str); return; }
             if (!String.IsNullOrEmpty(str))
             {
-                if (Settings.chatTimeStamps)
+                if (!acceptnewlines)
+                {
+                    str = str.Replace('\n', ' ');
+                }
+                if (displayTimestamp == null)
+                {
+                    displayTimestamp = EnableTimestamps;
+                }
+                if (displayTimestamp.Value)
                 {
                     int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
                     ConsoleIO.Write(String.Format("{0}:{1}:{2} ", hour.ToString("00"), minute.ToString("00"), second.ToString("00")));
                 }
-                if (!acceptnewlines) { str = str.Replace('\n', ' '); }
-                if (ConsoleIO.basicIO) { ConsoleIO.WriteLine(str); return; }
-                string[] subs = str.Split(new char[] { '§' });
-                if (subs[0].Length > 0) { ConsoleIO.Write(subs[0]); }
-                for (int i = 1; i < subs.Length; i++)
+                if (BasicIO)
                 {
-                    if (subs[i].Length > 0)
+                    Console.WriteLine(str);
+                    return;
+                }
+                string[] parts = str.Split(new char[] { '§' });
+                if (parts[0].Length > 0)
+                {
+                    ConsoleIO.Write(parts[0]);
+                }
+                for (int i = 1; i < parts.Length; i++)
+                {
+                    if (parts[i].Length > 0)
                     {
-                        switch (subs[i][0])
+                        switch (parts[i][0])
                         {
                             case '0': Console.ForegroundColor = ConsoleColor.Gray; break; //Should be Black but Black is non-readable on a black background
                             case '1': Console.ForegroundColor = ConsoleColor.DarkBlue; break;
@@ -319,32 +369,46 @@ namespace MinecraftClient
                             case 'r': Console.ForegroundColor = ConsoleColor.Gray; break;
                         }
 
-                        if (subs[i].Length > 1)
+                        if (parts[i].Length > 1)
                         {
-                            ConsoleIO.Write(subs[i].Substring(1, subs[i].Length - 1));
+                            ConsoleIO.Write(parts[i].Substring(1, parts[i].Length - 1));
                         }
                     }
                 }
                 Console.ForegroundColor = ConsoleColor.Gray;
-                ConsoleIO.Write('\n');
             }
+            ConsoleIO.Write('\n');
         }
 
         /// <summary>
-        /// Write a Minecraft Console Client Log line
+        /// Write a prefixed log line. Prefix is set in LogPrefix.
         /// </summary>
         /// <param name="text">Text of the log line</param>
         public static void WriteLogLine(string text)
         {
-            WriteLineFormatted("§8[MCC] " + text);
+            WriteLineFormatted(LogPrefix + text);
         }
 
         #region Subfunctions
+
+        /// <summary>
+        /// Clear all text inside the input prompt
+        /// </summary>
         private static void ClearLineAndBuffer()
         {
-            while (buffer2.Length > 0) { GoRight(); }
-            while (buffer.Length > 0) { RemoveOneChar(); }
+            while (buffer2.Length > 0)
+            {
+                GoRight();
+            }
+            while (buffer.Length > 0)
+            {
+                RemoveOneChar();
+            }
         }
+
+        /// <summary>
+        /// Remove one character on the left of the cursor in input prompt
+        /// </summary>
         private static void RemoveOneChar()
         {
             if (buffer.Length > 0)
@@ -369,10 +433,17 @@ namespace MinecraftClient
                 if (buffer2.Length > 0)
                 {
                     Console.Write(buffer2 + " \b");
-                    for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
+                    for (int i = 0; i < buffer2.Length; i++)
+                    {
+                        GoBack();
+                    }
                 }
             }
         }
+
+        /// <summary>
+        /// Move the cursor one character to the left inside the console, regardless of input prompt state
+        /// </summary>
         private static void GoBack()
         {
             try
@@ -387,6 +458,10 @@ namespace MinecraftClient
             }
             catch (ArgumentOutOfRangeException) { /* Console was resized!? */ }
         }
+
+        /// <summary>
+        /// Move the cursor one character to the left in input prompt, adjusting buffers accordingly
+        /// </summary>
         private static void GoLeft()
         {
             if (buffer.Length > 0)
@@ -396,6 +471,10 @@ namespace MinecraftClient
                 Console.Write('\b');
             }
         }
+
+        /// <summary>
+        /// Move the cursor one character to the right in input prompt, adjusting buffers accordingly
+        /// </summary>
         private static void GoRight()
         {
             if (buffer2.Length > 0)
@@ -405,16 +484,30 @@ namespace MinecraftClient
                 buffer2 = buffer2.Substring(1);
             }
         }
+
+        /// <summary>
+        /// Insert a new character in the input prompt
+        /// </summary>
+        /// <param name="c">New character</param>
         private static void AddChar(char c)
         {
             Console.Write(c);
             buffer += c;
             Console.Write(buffer2);
-            for (int i = 0; i < buffer2.Length; i++) { GoBack(); }
+            for (int i = 0; i < buffer2.Length; i++)
+            {
+                GoBack();
+            }
         }
+
         #endregion
 
         #region Clipboard management
+
+        /// <summary>
+        /// Read a string from the Windows clipboard
+        /// </summary>
+        /// <returns>String from the Windows clipboard</returns>
         private static string ReadClipboard()
         {
             string clipdata = "";
@@ -433,17 +526,7 @@ namespace MinecraftClient
             staThread.Join();
             return clipdata;
         }
-        #endregion
 
-        #region AutoComplete API
-        /// <summary>
-        /// Set an auto-completion engine for TAB autocompletion
-        /// </summary>
-        /// <param name="engine">Engine implementing the IAutoComplete interface</param>
-        public static void SetAutoCompleteEngine(IAutoComplete engine)
-        {
-            autocomplete_engine = engine;
-        }
         #endregion
     }
 
@@ -453,6 +536,11 @@ namespace MinecraftClient
     /// </summary>
     public interface IAutoComplete
     {
+        /// <summary>
+        /// Provide a list of auto-complete strings based on the provided input behing the cursor
+        /// </summary>
+        /// <param name="BehindCursor">Text behind the cursor, e.g. "my input comm"</param>
+        /// <returns>List of auto-complete words, e.g. ["command", "comment"]</returns>
         IEnumerable<string> AutoComplete(string BehindCursor);
     }
 }

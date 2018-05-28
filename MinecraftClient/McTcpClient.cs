@@ -202,7 +202,7 @@ namespace MinecraftClient
                 while (client.Client.Connected)
                 {
                     text = ConsoleIO.ReadLine();
-                    if (ConsoleIO.basicIO && text.Length > 0 && text[0] == (char)0x00)
+                    if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
                     {
                         //Process a request from the GUI
                         string[] command = text.Substring(1).Split((char)0x00);

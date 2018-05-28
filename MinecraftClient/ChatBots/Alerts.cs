@@ -41,7 +41,7 @@ namespace MinecraftClient.ChatBots
                     if (Settings.Alerts_Beep_Enabled)
                         Console.Beep(); //Text found !
 
-                    if (ConsoleIO.basicIO) //Using a GUI? Pass text as is.
+                    if (ConsoleIO.BasicIO) //Using a GUI? Pass text as is.
                         ConsoleIO.WriteLine(text.Replace(alert, "§c" + alert + "§r"));
 
                     else //Using Console Prompt : Print text with alert highlighted

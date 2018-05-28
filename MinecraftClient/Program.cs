@@ -49,10 +49,11 @@ namespace MinecraftClient
                 ConsoleIO.DebugReadInput();
             }
 
-            //Basic Input/Output ?
+            //Setup ConsoleIO
+            ConsoleIO.LogPrefix = "§8[MCC] ";
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
             {
-                ConsoleIO.basicIO = true;
+                ConsoleIO.BasicIO = true;
                 args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
             }
 
@@ -116,7 +117,7 @@ namespace MinecraftClient
 
             if (Settings.Login == "")
             {
-                Console.Write(ConsoleIO.basicIO ? "Please type the username or email of your choice.\n" : "Login : ");
+                Console.Write(ConsoleIO.BasicIO ? "Please type the username or email of your choice.\n" : "Login : ");
                 Settings.Login = Console.ReadLine();
             }
             if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
@@ -133,10 +134,10 @@ namespace MinecraftClient
         /// </summary>
         private static void RequestPassword()
         {
-            Console.Write(ConsoleIO.basicIO ? "Please type the password for " + Settings.Login + ".\n" : "Password : ");
-            Settings.Password = ConsoleIO.basicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+            Console.Write(ConsoleIO.BasicIO ? "Please type the password for " + Settings.Login + ".\n" : "Password : ");
+            Settings.Password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
             if (Settings.Password == "") { Settings.Password = "-"; }
-            if (!ConsoleIO.basicIO)
+            if (!ConsoleIO.BasicIO)
             {
                 //Hide password length
                 Console.CursorTop--; Console.Write("Password : <******>");
@@ -262,7 +263,6 @@ namespace MinecraftClient
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Gray;
                 string failureMessage = "Minecraft Login failed : ";
                 switch (result)
                 {
@@ -366,7 +366,10 @@ namespace MinecraftClient
                         ConsoleIO.WriteLineFormatted("Or press Enter to exit Minecraft Console Client.");
                         while (command.Length > 0)
                         {
-                            if (!ConsoleIO.basicIO) { ConsoleIO.Write('>'); }
+                            if (!ConsoleIO.BasicIO)
+                            {
+                                ConsoleIO.Write('>');
+                            }
                             command = Console.ReadLine().Trim();
                             if (command.Length > 0)
                             {

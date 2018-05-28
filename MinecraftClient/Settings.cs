@@ -79,7 +79,6 @@ namespace MinecraftClient
         public static List<string> Bots_Owners = new List<string>();
         public static TimeSpan botMessageDelay = TimeSpan.FromSeconds(2);
         public static string Language = "en_GB";
-        public static bool chatTimeStamps = false;
         public static bool interactiveMode = true;
         public static char internalCmdChar = '/';
         public static bool playerHeadAsIcon = false;
@@ -214,7 +213,7 @@ namespace MinecraftClient
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
                                                 case "consoletitle": ConsoleTitle = argValue; break;
-                                                case "timestamps": chatTimeStamps = str2bool(argValue); break;
+                                                case "timestamps": ConsoleIO.EnableTimestamps = str2bool(argValue); break;
                                                 case "exitonfailure": interactiveMode = !str2bool(argValue); break;
                                                 case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
                                                 case "chatbotlogfile": chatbotLogFile = argValue; break;

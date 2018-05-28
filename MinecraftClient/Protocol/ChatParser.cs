@@ -92,8 +92,7 @@ namespace MinecraftClient.Protocol
             //File not found? Try downloading language file from Mojang's servers?
             if (!System.IO.File.Exists(Language_File))
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                ConsoleIO.WriteLine("Downloading '" + Settings.Language + ".lang' from Mojang servers...");
+                ConsoleIO.WriteLineFormatted("§8Downloading '" + Settings.Language + ".lang' from Mojang servers...");
                 try
                 {
                     string assets_index = DownloadString(Settings.TranslationsFile_Website_Index);
@@ -101,13 +100,12 @@ namespace MinecraftClient.Protocol
                     tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
                     string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
                     System.IO.File.WriteAllText(Language_File, DownloadString(Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash));
-                    ConsoleIO.WriteLine("Done. File saved as '" + Language_File + '\'');
+                    ConsoleIO.WriteLineFormatted("§8Done. File saved as '" + Language_File + '\'');
                 }
                 catch
                 {
-                    ConsoleIO.WriteLine("Failed to download the file.");
+                    ConsoleIO.WriteLineFormatted("§8Failed to download the file.");
                 }
-                Console.ForegroundColor = ConsoleColor.Gray;
             }
 
             //Download Failed? Defaulting to en_GB.lang if the game is installed
