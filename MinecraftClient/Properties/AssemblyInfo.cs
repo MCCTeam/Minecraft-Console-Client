@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Minecraft Console Client")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyDescription("Lightweight console for Minecraft chat and automated scripts")]
+//[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("https://github.com/ORelio/Minecraft-Console-Client")]
 [assembly: AssemblyProduct("MinecraftClient")]
-[assembly: AssemblyCopyright("Copyright © ORelio 2012-2014")]
+[assembly: AssemblyCopyright("Copyright © 2012-2018 ORelio & Contributors")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,11 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.8.0")]
-[assembly: AssemblyFileVersion("1.8.0")]
+// [assembly: AssemblyVersion("1.0.0")]
+// [assembly: AssemblyFileVersion("1.0.0")]
+
+// AppVeyor Build Number
+// MCC will use the following command as CMD pre-build script in AppVeyor msbuild settings:
+// echo [assembly: AssemblyConfiguration("AppVeyor build %APPVEYOR_BUILD_NUMBER%, built on %DATE% from commit %APPVEYOR_REPO_COMMIT:~0,7%")] >> MinecraftClient\Properties\AssemblyInfo.cs
+// The command will add build info like the example below to be incorporated in Assembly Info in order to display build info on launch
+// [assembly: AssemblyConfiguration("AppVeyor build 1234, built on Sun 31/12/2017 from commit abc1def")]

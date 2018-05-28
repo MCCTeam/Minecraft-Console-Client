@@ -21,9 +21,10 @@ namespace MinecraftClient
         private static McTcpClient Client;
         public static string[] startupargs;
 
-        public const string Version = "1.12.2 DEV";
+        public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
         public const string MCHighestVersion = "1.12.2";
+        public static readonly string BuildInfo = null;
 
         private static Thread offlinePrompt = null;
         private static bool useMcVersionOnce = false;
@@ -34,6 +35,12 @@ namespace MinecraftClient
         static void Main(string[] args)
         {
             Console.WriteLine("Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors", MCLowestVersion, MCHighestVersion, Version);
+
+            //Build information to facilitate processing of bug reports
+            if (BuildInfo != null)
+            {
+                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
+            }
 
             //Debug input ?
             if (args.Length == 1 && args[0] == "--keyboard-debug")
@@ -420,6 +427,20 @@ namespace MinecraftClient
         {
             if (assembly == null) { assembly = Assembly.GetExecutingAssembly(); }
             return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
+        }
+
+        /// <summary>
+        /// Static initialization of build information, read from assembly information
+        /// </summary>
+        static Program()
+        {
+            AssemblyConfigurationAttribute attribute
+             = typeof(Program)
+                .Assembly
+                .GetCustomAttributes(typeof(System.Reflection.AssemblyConfigurationAttribute), false)
+                .FirstOrDefault() as AssemblyConfigurationAttribute;
+            if (attribute != null)
+                BuildInfo = attribute.Configuration;
         }
     }
 }
