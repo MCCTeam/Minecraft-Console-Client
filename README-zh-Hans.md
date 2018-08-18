@@ -1,25 +1,25 @@
-Minecraft Console Client
+我的世界 Console Client
 ========================
 
-[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/ORelio/Minecraft-Console-Client?branch=Indev)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
+[![Appveyor build status](https://ci.appveyor.com/api/proMinecraftjects/status/github/ORelio/Minecraft-Console-Client?branch=Indev)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
 
-Minecraft-Console-Clinet是个轻量级的程序，允许你连接至任何Minecraft的服务器，
-发送指令和接收短信在一个快速和容易的方法以及不需要开启主要的Minecraft游戏。它也提供了多种自动化的管理管理和其他的意图。
+我的世界Console-Client是个轻量级的程序，允许你连接至任何我的世界的服务器，
+发送指令和接收短信在一个快速和容易的方法以及不需要开启主要的我的世界游戏。它也提供了多种自动化的管理管理和其他的意图。
 
 ## 下载
 
 获得exe文件从最新的[开发构建](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts).
-这exe文件是个.NET二进制而且也能运行于Max和Linux.
+这exe文件是个.NET二进制而且也能运行于Mac和Linux.
 
 ## 怎么使用
 
 
 检查[示例设定档](MinecraftClient/config/) ，它包括了怎么使用的 README.
-更多帮助和资讯可以从[Minecraft论坛](http://www.minecraftforum.net/topic/1314800-/).<br/>中查询。
+更多帮助和资讯可以从[我的世界论坛](http://www.minecraftforum.net/topic/1314800-/).<br/>中查询。
 
 ## 怎么贡献
 
-如果您希望为Minecraft主控台用户端出一份力的话，很好，您可以fork这repository和提交pull request. *Indev* branch 将不会继续当做MCC使用和目前分布式地当成开发构建。
+如果您希望为我的世界主控台用户端出一份力的话，很好，您可以fork这repository和提交pull request. *Indev* branch 将不会继续当做MCC使用和目前分布式地当成开发构建。
 
 ## 许可证
 
