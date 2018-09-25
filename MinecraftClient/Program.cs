@@ -23,7 +23,7 @@ namespace MinecraftClient
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.12.2";
+        public const string MCHighestVersion = "1.13";
         public static readonly string BuildInfo = null;
 
         private static Thread offlinePrompt = null;
@@ -289,7 +289,7 @@ namespace MinecraftClient
         /// <summary>
         /// Disconnect the current client from the server and restart it
         /// </summary>
-        /// <param name="delay">Optional delay, in seconds, before restarting</param>
+        /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
         public static void Restart(int delaySeconds = 0)
         {
             new Thread(new ThreadStart(delegate
