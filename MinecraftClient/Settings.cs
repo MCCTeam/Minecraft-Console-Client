@@ -73,7 +73,7 @@ namespace MinecraftClient
 
         //Other Settings
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\ed\eda1518b15c711cf6e75d99003bd87753f67fac4"; //MC 1.10 en_GB.lang
-        public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.10.json";
+        public static string TranslationsFile_Website_Index = "https://s3.amazonaws.com/Minecraft.Download/indexes/1.13.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static TimeSpan splitMessageDelay = TimeSpan.FromSeconds(2);
         public static List<string> Bots_Owners = new List<string>();

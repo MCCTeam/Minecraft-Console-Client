@@ -96,10 +96,20 @@ namespace MinecraftClient.Protocol
                 try
                 {
                     string assets_index = DownloadString(Settings.TranslationsFile_Website_Index);
-                    string[] tmp = assets_index.Split(new string[] { "minecraft/lang/" + Settings.Language + ".lang" }, StringSplitOptions.None);
+                    string[] tmp = assets_index.Split(new string[] { "minecraft/lang/" + Settings.Language.ToLower() + ".json" }, StringSplitOptions.None);
                     tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
                     string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
-                    System.IO.File.WriteAllText(Language_File, DownloadString(Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash));
+                    string translation_file_location = Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash;
+                    if (Settings.DebugMessages)
+                        ConsoleIO.WriteLineFormatted("§8Performing request to " + translation_file_location);
+
+                    StringBuilder stringBuilder = new StringBuilder();
+                    foreach (KeyValuePair<string, Json.JSONData> entry in Json.ParseJson(DownloadString(translation_file_location)).Properties)
+                    {
+                        stringBuilder.Append(entry.Key + "=" + entry.Value.StringValue + Environment.NewLine);
+                    }
+
+                    System.IO.File.WriteAllText(Language_File, stringBuilder.ToString());
                     ConsoleIO.WriteLineFormatted("§8Done. File saved as '" + Language_File + '\'');
                 }
                 catch
