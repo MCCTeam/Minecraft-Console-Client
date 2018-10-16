@@ -237,8 +237,13 @@ namespace MinecraftClient.Protocol
                     }
                     else
                     {
-                        Json.JSONData loginResponse = Json.ParseJson(result);
                         ConsoleIO.WriteLineFormatted(result);
+                        Json.JSONData loginResponse = Json.ParseJson(result);
+                        foreach( DictionaryEntry<string, JSONData> entry in loginResponse.Properties )
+                        {
+                                Console.WriteLine("Key = {0}, Value = {1}", entry.Key, entry.Value);
+                        }
+
                         if (loginResponse.Properties.ContainsKey("accessToken")
                             && loginResponse.Properties.ContainsKey("selectedProfile")
                             && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
