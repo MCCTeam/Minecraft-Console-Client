@@ -227,7 +227,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
+                int code = DoHTTPSPost("summermc.cc", "/api/yggdrasil/authenticate", json_request, ref result);
                 if (code == 200)
                 {
                     if (result.Contains("availableProfiles\":[]}"))
@@ -297,7 +297,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 string json_request = "{\"accessToken\": \"" + JsonEncode(session.ID) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/validate", json_request, ref result);
+                int code = DoHTTPSPost("summermc.cc", "/api/yggdrasil/validate", json_request, ref result);
                 if (code == 204)
                 {
                     return LoginResult.Success;
@@ -330,7 +330,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/refresh", json_request, ref result);
+                int code = DoHTTPSPost("summermc.cc", "/api/yggdrasil/refresh", json_request, ref result);
                 if (code == 200)
                 {
                     if (result == null)
@@ -382,7 +382,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
-                int code = DoHTTPSPost("sessionserver.mojang.com", "/session/minecraft/join", json_request, ref result);
+                int code = DoHTTPSPost("summermc.cc", "/api/yggdrasil/joinserver", json_request, ref result);
                 return (result == "");
             }
             catch { return false; }
