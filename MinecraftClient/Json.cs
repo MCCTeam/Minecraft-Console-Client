@@ -16,6 +16,21 @@ namespace MinecraftClient
         /// </summary>
         public static JSONData ParseJson(string json)
         {
+            char[] chars = json.ToCharArray();
+            int first = 0;
+            while (chars[first] != '{')
+            {
+                first++;
+            }
+
+            int last = json.Length - 1;
+            while (chars[last] != '}')
+            {
+                last--;
+            }
+
+            json = json.Substring(first, last);
+
             int cursorpos = 0;
             return String2Data(json, ref cursorpos);
         }
