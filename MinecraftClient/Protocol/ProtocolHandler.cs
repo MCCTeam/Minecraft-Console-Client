@@ -239,7 +239,7 @@ namespace MinecraftClient.Protocol
                     {
                         ConsoleIO.WriteLineFormatted(result);
                         Json.JSONData loginResponse = Json.ParseJson(result);
-                        foreach( DictionaryEntry<string, JSONData> entry in loginResponse.Properties )
+                        foreach( KeyValuePair<string, Json.JSONData> entry in loginResponse.Properties )
                         {
                                 Console.WriteLine("Key = {0}, Value = {1}", entry.Key, entry.Value);
                         }
