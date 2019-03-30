@@ -1367,7 +1367,39 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The uuid</returns>
         private static Guid readNextUUID(List<byte> cache)
         {
-            return new Guid(readData(16, cache));
+            byte[] javaUUID = readData(16, cache);
+            Guid guid;
+            if (BitConverter.IsLittleEndian)
+            {
+                guid = ToLittleEndian(javaUUID);
+            }
+            else
+            {
+                guid = new Guid(javaUUID);
+            }
+            return guid;
+        }
+
+        /// <summary>
+        /// convert a Java big-endian Guid to a .NET little-endian Guid.
+        /// </summary>
+        /// <returns>GUID in little endian.</returns>
+        private static Guid ToLittleEndian(byte[] java)
+        {
+            byte[] net = new byte[16];
+            for (int i = 8; i < 16; i++)
+            {
+                net[i] = java[i];
+            }
+            net[3] = java[0];
+            net[2] = java[1];
+            net[1] = java[2];
+            net[0] = java[3];
+            net[5] = java[4];
+            net[4] = java[5];
+            net[6] = java[7];
+            net[7] = java[6];
+            return new Guid(net);
         }
 
         /// <summary>
