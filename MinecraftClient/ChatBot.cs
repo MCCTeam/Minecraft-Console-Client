@@ -658,6 +658,18 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get a dictionary of online player names and their corresponding UUID
+        /// </summary>
+        /// <returns>
+        ///     dictionary of online player whereby
+        ///     UUID represents the key
+        ///     playername represents the value</returns>
+        protected Dictionary<string, string> GetOnlinePlayersWithUUID()
+        {
+            return Handler.GetOnlinePlayersWithUUID();
+        }
+
+        /// <summary>
         /// Registers the given plugin channel for use by this chatbot.
         /// </summary>
         /// <param name="channel">The name of the channel to register</param>

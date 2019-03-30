@@ -274,6 +274,18 @@ namespace MinecraftClient
             return base.GetOnlinePlayers();
         }
 
+        /// <summary>
+        /// Get a dictionary of online player names and their corresponding UUID
+        /// </summary>
+        /// <returns>
+        ///     dictionary of online player whereby
+        ///     UUID represents the key
+        ///     playername represents the value</returns>
+        new public Dictionary<string, string> GetOnlinePlayersWithUUID()
+        {
+            return base.GetOnlinePlayersWithUUID();
+        }
+
         /* == Additional Methods useful for Script API == */
 
         /// <summary>

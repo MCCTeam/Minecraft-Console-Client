@@ -631,6 +631,26 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get a dictionary of online player names and their corresponding UUID
+        /// </summary>
+        /// <returns>
+        ///     dictionary of online player whereby
+        ///     UUID represents the key
+        ///     playername represents the value</returns>
+        public Dictionary<string, string> GetOnlinePlayersWithUUID()
+        {
+            Dictionary<string, string> uuid2Player = new Dictionary<string, string>();
+            lock (onlinePlayers)
+            {
+                foreach (Guid key in onlinePlayers.Keys)
+                {
+                    uuid2Player.Add(key.ToString(), onlinePlayers[key]);
+                }
+            }
+            return uuid2Player;
+        }
+
+        /// <summary>
         /// Registers the given plugin channel for the given bot.
         /// </summary>
         /// <param name="channel">The channel to register.</param>
