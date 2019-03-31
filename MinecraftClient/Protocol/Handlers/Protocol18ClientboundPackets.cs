@@ -225,4 +225,21 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x10;
         }
     }
+
+    class PluginMessage
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x3F;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x18;
+            else if (protocol < PacketUtils.MC112pre5Version)
+                return 0x19;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x18;
+            else
+                return 0x19;
+        }
+    }
 }

@@ -179,12 +179,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return PacketIncomingType.PlayerListUpdate;
             else if (packetID == TabCompleteResult.getPacketID(protocol))
                 return PacketIncomingType.TabCompleteResult;
+            else if (packetID == PluginMessage.getPacketID(protocol))
+                return PacketIncomingType.PluginMessage;
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packetID)
                 {
-                    case 0x3F: return PacketIncomingType.PluginMessage;
                     case 0x40: return PacketIncomingType.KickPacket;
                     case 0x46: return PacketIncomingType.NetworkCompressionTreshold;
                     case 0x48: return PacketIncomingType.ResourcePackSend;
@@ -195,7 +196,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x32: return PacketIncomingType.ResourcePackSend;
@@ -206,7 +206,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x34: return PacketIncomingType.ResourcePackSend;
@@ -217,7 +216,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x33: return PacketIncomingType.ResourcePackSend;
@@ -228,7 +226,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x34: return PacketIncomingType.ResourcePackSend;
@@ -239,7 +236,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x34: return PacketIncomingType.ResourcePackSend;
@@ -250,7 +246,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x35: return PacketIncomingType.ResourcePackSend;
@@ -261,7 +256,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x36: return PacketIncomingType.ResourcePackSend;
@@ -272,7 +266,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x37: return PacketIncomingType.ResourcePackSend;
