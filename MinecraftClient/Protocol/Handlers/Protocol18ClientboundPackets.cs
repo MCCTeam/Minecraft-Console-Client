@@ -139,4 +139,19 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x0F;
         }
     }
+
+    class BlockChange
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x23;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x0B;
+            else if (protocol < PacketUtils.MC112pre5Version)
+                return 0x0C;
+            else
+                return 0x0B;
+        }
+    }
 }
