@@ -166,4 +166,22 @@ namespace MinecraftClient.Protocol.Handlers
                 return -1;
         }
     }
+
+    class UnloadChunk
+    {
+        public static int getPacketID(int protocol)
+        {
+            //UnloadChunk does not exists prior to 1.9
+            if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x1D;
+            else if (protocol < PacketUtils.MC112pre5Version)
+                return 0x1E;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x1D;
+            else if (protocol < PacketUtils.MC18w01aVersion)
+                return 0x1E;
+            else
+                return 0x1F;
+        }
+    }
 }
