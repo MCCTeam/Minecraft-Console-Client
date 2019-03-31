@@ -154,11 +154,16 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Abstract numbering</returns>
         private PacketIncomingType getPacketIncomingType(int packetID, int protocol)
         {
+            // temporary workaround
+            if (packetID == KeepAlive.getPacketID(protocol))
+            {
+                return PacketIncomingType.KeepAlive;
+            }
+
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packetID)
                 {
-                    case 0x00: return PacketIncomingType.KeepAlive;
                     case 0x01: return PacketIncomingType.JoinGame;
                     case 0x02: return PacketIncomingType.ChatMessage;
                     case 0x07: return PacketIncomingType.Respawn;
@@ -181,7 +186,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x1F: return PacketIncomingType.KeepAlive;
                     case 0x23: return PacketIncomingType.JoinGame;
                     case 0x0F: return PacketIncomingType.ChatMessage;
                     case 0x33: return PacketIncomingType.Respawn;
@@ -204,7 +208,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x20: return PacketIncomingType.KeepAlive;
                     case 0x24: return PacketIncomingType.JoinGame;
                     case 0x10: return PacketIncomingType.ChatMessage;
                     case 0x35: return PacketIncomingType.Respawn;
@@ -227,7 +230,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x1F: return PacketIncomingType.KeepAlive;
                     case 0x23: return PacketIncomingType.JoinGame;
                     case 0x0F: return PacketIncomingType.ChatMessage;
                     case 0x34: return PacketIncomingType.Respawn;
@@ -250,7 +252,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x1F: return PacketIncomingType.KeepAlive;
                     case 0x23: return PacketIncomingType.JoinGame;
                     case 0x0F: return PacketIncomingType.ChatMessage;
                     case 0x35: return PacketIncomingType.Respawn;
@@ -273,7 +274,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x1F: return PacketIncomingType.KeepAlive;
                     case 0x23: return PacketIncomingType.JoinGame;
                     case 0x0E: return PacketIncomingType.ChatMessage;
                     case 0x35: return PacketIncomingType.Respawn;
@@ -296,7 +296,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x20: return PacketIncomingType.KeepAlive;
                     case 0x24: return PacketIncomingType.JoinGame;
                     case 0x0E: return PacketIncomingType.ChatMessage;
                     case 0x36: return PacketIncomingType.Respawn;
@@ -319,7 +318,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x20: return PacketIncomingType.KeepAlive;
                     case 0x24: return PacketIncomingType.JoinGame;
                     case 0x0E: return PacketIncomingType.ChatMessage;
                     case 0x37: return PacketIncomingType.Respawn;
@@ -342,7 +340,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x21: return PacketIncomingType.KeepAlive;
                     case 0x25: return PacketIncomingType.JoinGame;
                     case 0x0E: return PacketIncomingType.ChatMessage;
                     case 0x38: return PacketIncomingType.Respawn;
