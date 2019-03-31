@@ -154,4 +154,16 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x0B;
         }
     }
+
+    class MapChunkBulk
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x26;
+            else
+                //MapChunkBulk removed in 1.9
+                return -1;
+        }
+    }
 }
