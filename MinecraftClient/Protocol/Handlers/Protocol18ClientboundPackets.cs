@@ -122,4 +122,21 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x22;
         }
     }
+
+    class MultiBlockChange
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x22;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x10;
+            else if (protocol < PacketUtils.MC112pre5Version)
+                return 0x11;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x10;
+            else
+                return 0x0F;
+        }
+    }
 }

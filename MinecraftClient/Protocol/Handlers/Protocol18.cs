@@ -167,12 +167,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return PacketIncomingType.PlayerPositionAndLook;
             else if (packetID == ChunkData.getPacketID(protocol))
                 return PacketIncomingType.ChunkData;
+            else if (packetID == MultiBlockChange.getPacketID(protocol))
+                return PacketIncomingType.MultiBlockChange;
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packetID)
                 {
-                    case 0x22: return PacketIncomingType.MultiBlockChange;
                     case 0x23: return PacketIncomingType.BlockChange;
                     case 0x26: return PacketIncomingType.MapChunkBulk;
                     //UnloadChunk does not exists prior to 1.9
@@ -189,7 +190,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x10: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
                     //MapChunkBulk removed in 1.9
                     case 0x1D: return PacketIncomingType.UnloadChunk;
@@ -206,7 +206,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x11: return PacketIncomingType.MultiBlockChange;
                     case 0x0C: return PacketIncomingType.BlockChange;
                     //MapChunkBulk removed in 1.9
                     case 0x1E: return PacketIncomingType.UnloadChunk;
@@ -223,7 +222,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x10: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
                     //MapChunkBulk removed in 1.9
                     case 0x1D: return PacketIncomingType.UnloadChunk;
@@ -240,7 +238,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x10: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
                     //MapChunkBulk removed in 1.9
                     case 0x1D: return PacketIncomingType.UnloadChunk;
@@ -257,7 +254,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0F: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
                     //MapChunkBulk removed in 1.9
                     case 0x1D: return PacketIncomingType.UnloadChunk;
@@ -274,7 +270,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0F: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
                     //MapChunkBulk removed in 1.9
                     case 0x1E: return PacketIncomingType.UnloadChunk;
@@ -291,7 +286,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0F: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
                     //MapChunkBulk removed in 1.9
                     case 0x1E: return PacketIncomingType.UnloadChunk;
@@ -308,7 +302,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0F: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
                     //MapChunkBulk removed in 1.9
                     case 0x1F: return PacketIncomingType.UnloadChunk;
