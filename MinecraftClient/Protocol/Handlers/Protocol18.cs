@@ -183,12 +183,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return PacketIncomingType.PluginMessage;
             else if (packetID == KickPacket.getPacketID(protocol))
                 return PacketIncomingType.KickPacket;
+            else if (packetID == NetworkCompressionTreshold.getPacketID(protocol))
+                return PacketIncomingType.NetworkCompressionTreshold;
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packetID)
                 {
-                    case 0x46: return PacketIncomingType.NetworkCompressionTreshold;
                     case 0x48: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -197,7 +198,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x32: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -206,7 +206,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x34: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -215,7 +214,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x33: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -224,7 +222,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x34: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -233,7 +230,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x34: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -242,7 +238,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x35: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -251,7 +246,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x36: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -260,7 +254,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x37: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }

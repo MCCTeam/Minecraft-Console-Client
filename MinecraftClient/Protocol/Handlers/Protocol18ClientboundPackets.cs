@@ -259,4 +259,16 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x1B;
         }
     }
+
+    class NetworkCompressionTreshold
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x46;
+            else
+                //NetworkCompressionTreshold removed in 1.9
+                return -1;
+        }
+    }
 }
