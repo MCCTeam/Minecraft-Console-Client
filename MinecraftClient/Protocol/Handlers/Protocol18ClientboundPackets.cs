@@ -271,4 +271,27 @@ namespace MinecraftClient.Protocol.Handlers
                 return -1;
         }
     }
+
+    class ResourcePackSend
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x48;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x32;
+            else if (protocol < PacketUtils.MC112pre5Version)
+                return 0x34;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x33;
+            else if (protocol < PacketUtils.MC17w45aVersion)
+                return 0x34;
+            else if (protocol < PacketUtils.MC18w01aVersion)
+                return 0x35;
+            else if (protocol < PacketUtils.MC113pre7Version)
+                return 0x36;
+            else
+                return 0x37;
+        }
+    }
 }
