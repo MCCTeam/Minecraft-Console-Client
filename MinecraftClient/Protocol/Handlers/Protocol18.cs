@@ -163,12 +163,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return PacketIncomingType.ChatMessage;
             else if (packetID == Respawn.getPacketID(protocol))
                 return PacketIncomingType.Respawn;
+            else if (packetID == PlayerPositionAndLook.getPacketID(protocol))
+                return PacketIncomingType.PlayerPositionAndLook;
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packetID)
                 {
-                    case 0x08: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
                     case 0x22: return PacketIncomingType.MultiBlockChange;
                     case 0x23: return PacketIncomingType.BlockChange;
@@ -187,7 +188,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x2E: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x20: return PacketIncomingType.ChunkData;
                     case 0x10: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
@@ -206,7 +206,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x2F: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
                     case 0x11: return PacketIncomingType.MultiBlockChange;
                     case 0x0C: return PacketIncomingType.BlockChange;
@@ -225,7 +224,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x2E: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x20: return PacketIncomingType.ChunkData;
                     case 0x10: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
@@ -244,7 +242,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x2F: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x20: return PacketIncomingType.ChunkData;
                     case 0x10: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
@@ -263,7 +260,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x2F: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
                     case 0x0F: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
@@ -282,7 +278,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x30: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
                     case 0x0F: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
@@ -301,7 +296,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x31: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
                     case 0x0F: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
@@ -320,7 +314,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x32: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x22: return PacketIncomingType.ChunkData;
                     case 0x0F: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
