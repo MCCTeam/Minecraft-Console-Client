@@ -242,4 +242,21 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x19;
         }
     }
+
+    class KickPacket
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x40;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x1A;
+            else if (protocol < PacketUtils.MC112pre5Version)
+                return 0x1B;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x1A;
+            else
+                return 0x1B;
+        }
+    }
 }
