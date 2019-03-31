@@ -187,70 +187,8 @@ namespace MinecraftClient.Protocol.Handlers
                 return PacketIncomingType.NetworkCompressionTreshold;
             else if (packetID == ResourcePackSend.getPacketID(protocol))
                 return PacketIncomingType.ResourcePackSend;
-
-            if (protocol < PacketUtils.MC19Version)
-            {
-                switch (packetID)
-                {
-                    default: return PacketIncomingType.UnknownPacket;
-                }
-            }
-            else if (protocol < PacketUtils.MC17w13aVersion)
-            {
-                switch (packetID)
-                {
-                    default: return PacketIncomingType.UnknownPacket;
-                }
-            }
-            else if (protocolversion < PacketUtils.MC112pre5Version)
-            {
-                switch (packetID)
-                {
-                    default: return PacketIncomingType.UnknownPacket;
-                }
-            }
-            else if (protocol < PacketUtils.MC17w31aVersion)
-            {
-                switch (packetID)
-                {
-                    default: return PacketIncomingType.UnknownPacket;
-                }
-            }
-            else if (protocol < PacketUtils.MC17w45aVersion)
-            {
-                switch (packetID)
-                {
-                    default: return PacketIncomingType.UnknownPacket;
-                }
-            }
-            else if (protocol < PacketUtils.MC17w46aVersion)
-            {
-                switch (packetID)
-                {
-                    default: return PacketIncomingType.UnknownPacket;
-                }
-            }
-            else if (protocol < PacketUtils.MC18w01aVersion)
-            {
-                switch (packetID)
-                {
-                    default: return PacketIncomingType.UnknownPacket;
-                }
-            }
-            else if (protocol < PacketUtils.MC113pre7Version)
-            {
-                switch (packetID)
-                {
-                    default: return PacketIncomingType.UnknownPacket;
-                }
-            }
             else
-            {
-                switch (packetID)
-                {
-                    default: return PacketIncomingType.UnknownPacket;
-                }
-            }
+                return PacketIncomingType.UnknownPacket;
         }
 
         /// <summary>
