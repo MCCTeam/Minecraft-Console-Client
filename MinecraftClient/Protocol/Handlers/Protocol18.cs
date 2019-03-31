@@ -177,12 +177,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return PacketIncomingType.UnloadChunk;
             else if (packetID == PlayerListUpdate.getPacketID(protocol))
                 return PacketIncomingType.PlayerListUpdate;
+            else if (packetID == TabCompleteResult.getPacketID(protocol))
+                return PacketIncomingType.TabCompleteResult;
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packetID)
                 {
-                    case 0x3A: return PacketIncomingType.TabCompleteResult;
                     case 0x3F: return PacketIncomingType.PluginMessage;
                     case 0x40: return PacketIncomingType.KickPacket;
                     case 0x46: return PacketIncomingType.NetworkCompressionTreshold;
@@ -194,7 +195,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0E: return PacketIncomingType.TabCompleteResult;
                     case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
@@ -206,7 +206,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0F: return PacketIncomingType.TabCompleteResult;
                     case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
@@ -218,7 +217,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0E: return PacketIncomingType.TabCompleteResult;
                     case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
@@ -230,7 +228,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0E: return PacketIncomingType.TabCompleteResult;
                     case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
@@ -242,7 +239,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    //TabCompleteResult accidentely removed
                     case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
@@ -254,7 +250,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x10: return PacketIncomingType.TabCompleteResult;
                     case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
@@ -266,7 +261,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x10: return PacketIncomingType.TabCompleteResult;
                     case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9
@@ -278,7 +272,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x10: return PacketIncomingType.TabCompleteResult;
                     case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
                     //NetworkCompressionTreshold removed in 1.9

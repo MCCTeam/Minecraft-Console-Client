@@ -205,4 +205,24 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x30;
         }
     }
+
+    class TabCompleteResult
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x3A;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x0E;
+            else if (protocol < PacketUtils.MC112pre5Version)
+                return 0x0F;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x0E;
+            else if (protocol < PacketUtils.MC17w46aVersion)
+                //TabCompleteResult accidentely removed
+                return -1;
+            else
+                return 0x10;
+        }
+    }
 }
