@@ -159,12 +159,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return PacketIncomingType.KeepAlive;
             else if (packetID == JoinGame.getPacketID(protocol))
                 return PacketIncomingType.JoinGame;
+            else if (packetID == ChatMessage.getPacketID(protocol))
+                return PacketIncomingType.ChatMessage;
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packetID)
                 {
-                    case 0x02: return PacketIncomingType.ChatMessage;
                     case 0x07: return PacketIncomingType.Respawn;
                     case 0x08: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
@@ -185,7 +186,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0F: return PacketIncomingType.ChatMessage;
                     case 0x33: return PacketIncomingType.Respawn;
                     case 0x2E: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x20: return PacketIncomingType.ChunkData;
@@ -206,7 +206,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x10: return PacketIncomingType.ChatMessage;
                     case 0x35: return PacketIncomingType.Respawn;
                     case 0x2F: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
@@ -227,7 +226,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0F: return PacketIncomingType.ChatMessage;
                     case 0x34: return PacketIncomingType.Respawn;
                     case 0x2E: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x20: return PacketIncomingType.ChunkData;
@@ -248,7 +246,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0F: return PacketIncomingType.ChatMessage;
                     case 0x35: return PacketIncomingType.Respawn;
                     case 0x2F: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x20: return PacketIncomingType.ChunkData;
@@ -269,7 +266,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0E: return PacketIncomingType.ChatMessage;
                     case 0x35: return PacketIncomingType.Respawn;
                     case 0x2F: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
@@ -290,7 +286,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0E: return PacketIncomingType.ChatMessage;
                     case 0x36: return PacketIncomingType.Respawn;
                     case 0x30: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
@@ -311,7 +306,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0E: return PacketIncomingType.ChatMessage;
                     case 0x37: return PacketIncomingType.Respawn;
                     case 0x31: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x21: return PacketIncomingType.ChunkData;
@@ -332,7 +326,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    case 0x0E: return PacketIncomingType.ChatMessage;
                     case 0x38: return PacketIncomingType.Respawn;
                     case 0x32: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x22: return PacketIncomingType.ChunkData;
