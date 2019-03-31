@@ -103,4 +103,23 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x32;
         }
     }
+
+    class ChunkData
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x21;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x20;
+            else if (protocol < PacketUtils.MC112pre5Version)
+                return 0x21;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x20;
+            else if (protocol < PacketUtils.MC17w46aVersion)
+                return 0x21;
+            else
+                return 0x22;
+        }
+    }
 }
