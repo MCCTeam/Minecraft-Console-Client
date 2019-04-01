@@ -155,37 +155,37 @@ namespace MinecraftClient.Protocol.Handlers
         private PacketIncomingType getPacketIncomingType(int packetID, int protocol)
         {
             // temporary workaround
-            if (packetID == KeepAlive.getPacketID(protocol))
+            if (packetID == ClientKeepAlive.getPacketID(protocol))
                 return PacketIncomingType.KeepAlive;
-            else if (packetID == JoinGame.getPacketID(protocol))
+            else if (packetID == ClientJoinGame.getPacketID(protocol))
                 return PacketIncomingType.JoinGame;
-            else if (packetID == ChatMessage.getPacketID(protocol))
+            else if (packetID == ClientChatMessage.getPacketID(protocol))
                 return PacketIncomingType.ChatMessage;
-            else if (packetID == Respawn.getPacketID(protocol))
+            else if (packetID == ClientRespawn.getPacketID(protocol))
                 return PacketIncomingType.Respawn;
-            else if (packetID == PlayerPositionAndLook.getPacketID(protocol))
+            else if (packetID == ClientPlayerPositionAndLook.getPacketID(protocol))
                 return PacketIncomingType.PlayerPositionAndLook;
-            else if (packetID == ChunkData.getPacketID(protocol))
+            else if (packetID == ClientChunkData.getPacketID(protocol))
                 return PacketIncomingType.ChunkData;
-            else if (packetID == MultiBlockChange.getPacketID(protocol))
+            else if (packetID == ClientMultiBlockChange.getPacketID(protocol))
                 return PacketIncomingType.MultiBlockChange;
-            else if (packetID == BlockChange.getPacketID(protocol))
+            else if (packetID == ClientBlockChange.getPacketID(protocol))
                 return PacketIncomingType.BlockChange;
-            else if (packetID == MapChunkBulk.getPacketID(protocol))
+            else if (packetID == ClientMapChunkBulk.getPacketID(protocol))
                 return PacketIncomingType.MapChunkBulk;
-            else if (packetID == UnloadChunk.getPacketID(protocol))
+            else if (packetID == ClientUnloadChunk.getPacketID(protocol))
                 return PacketIncomingType.UnloadChunk;
-            else if (packetID == PlayerListUpdate.getPacketID(protocol))
+            else if (packetID == ClientPlayerListUpdate.getPacketID(protocol))
                 return PacketIncomingType.PlayerListUpdate;
-            else if (packetID == TabCompleteResult.getPacketID(protocol))
+            else if (packetID == ClientTabCompleteResult.getPacketID(protocol))
                 return PacketIncomingType.TabCompleteResult;
-            else if (packetID == PluginMessage.getPacketID(protocol))
+            else if (packetID == ClientPluginMessage.getPacketID(protocol))
                 return PacketIncomingType.PluginMessage;
-            else if (packetID == KickPacket.getPacketID(protocol))
+            else if (packetID == ClientKickPacket.getPacketID(protocol))
                 return PacketIncomingType.KickPacket;
-            else if (packetID == NetworkCompressionTreshold.getPacketID(protocol))
+            else if (packetID == ClientNetworkCompressionTreshold.getPacketID(protocol))
                 return PacketIncomingType.NetworkCompressionTreshold;
-            else if (packetID == ResourcePackSend.getPacketID(protocol))
+            else if (packetID == ClientResourcePackSend.getPacketID(protocol))
                 return PacketIncomingType.ResourcePackSend;
             else
                 return PacketIncomingType.UnknownPacket;

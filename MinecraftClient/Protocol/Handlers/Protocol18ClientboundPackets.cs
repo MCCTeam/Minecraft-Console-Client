@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MinecraftClient.Protocol.Handlers
 {
-    class KeepAlive
+    class ClientKeepAlive
     {
         public static int getPacketID(int protocol)
         {
@@ -22,7 +22,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class JoinGame
+    class ClientJoinGame
     {
         public static int getPacketID(int protocol)
         {
@@ -41,7 +41,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class ChatMessage
+    class ClientChatMessage
     {
         public static int getPacketID(int protocol)
         {
@@ -58,7 +58,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class Respawn
+    class ClientRespawn
     {
         public static int getPacketID(int protocol)
         {
@@ -81,7 +81,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class PlayerPositionAndLook
+    class ClientPlayerPositionAndLook
     {
         public static int getPacketID(int protocol)
         {
@@ -104,7 +104,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class ChunkData
+    class ClientChunkData
     {
         public static int getPacketID(int protocol)
         {
@@ -123,7 +123,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class MultiBlockChange
+    class ClientMultiBlockChange
     {
         public static int getPacketID(int protocol)
         {
@@ -140,7 +140,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class BlockChange
+    class ClientBlockChange
     {
         public static int getPacketID(int protocol)
         {
@@ -155,7 +155,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class MapChunkBulk
+    class ClientMapChunkBulk
     {
         public static int getPacketID(int protocol)
         {
@@ -167,7 +167,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class UnloadChunk
+    class ClientUnloadChunk
     {
         public static int getPacketID(int protocol)
         {
@@ -185,7 +185,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class PlayerListUpdate
+    class ClientPlayerListUpdate
     {
         public static int getPacketID(int protocol)
         {
@@ -206,7 +206,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class TabCompleteResult
+    class ClientTabCompleteResult
     {
         public static int getPacketID(int protocol)
         {
@@ -226,7 +226,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class PluginMessage
+    class ClientPluginMessage
     {
         public static int getPacketID(int protocol)
         {
@@ -243,7 +243,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class KickPacket
+    class ClientKickPacket
     {
         public static int getPacketID(int protocol)
         {
@@ -260,7 +260,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class NetworkCompressionTreshold
+    class ClientNetworkCompressionTreshold
     {
         public static int getPacketID(int protocol)
         {
@@ -272,7 +272,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
-    class ResourcePackSend
+    class ClientResourcePackSend
     {
         public static int getPacketID(int protocol)
         {
