@@ -216,11 +216,14 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Packet ID</returns>
         private int getPacketOutgoingID(PacketOutgoingType packet, int protocol)
         {
+            // temporary workaround
+            if (packet == PacketOutgoingType.KeepAlive)
+                return ServerKeepAlive.getPacketID(protocol);
+
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.KeepAlive: return 0x00;
                     case PacketOutgoingType.ResourcePackStatus: return 0x19;
                     case PacketOutgoingType.ChatMessage: return 0x01;
                     case PacketOutgoingType.ClientStatus: return 0x16;
@@ -236,7 +239,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.KeepAlive: return 0x0B;
                     case PacketOutgoingType.ResourcePackStatus: return 0x16;
                     case PacketOutgoingType.ChatMessage: return 0x02;
                     case PacketOutgoingType.ClientStatus: return 0x03;
@@ -252,7 +254,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.KeepAlive: return 0x0C;
                     case PacketOutgoingType.ResourcePackStatus: return 0x18;
                     case PacketOutgoingType.ChatMessage: return 0x03;
                     case PacketOutgoingType.ClientStatus: return 0x04;
@@ -268,7 +269,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.KeepAlive: return 0x0C;
                     case PacketOutgoingType.ResourcePackStatus: return 0x18;
                     case PacketOutgoingType.ChatMessage: return 0x03;
                     case PacketOutgoingType.ClientStatus: return 0x04;
@@ -284,7 +284,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.KeepAlive: return 0x0B;
                     case PacketOutgoingType.ResourcePackStatus: return 0x18;
                     case PacketOutgoingType.ChatMessage: return 0x02;
                     case PacketOutgoingType.ClientStatus: return 0x03;
@@ -300,7 +299,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.KeepAlive: return 0x0A;
                     case PacketOutgoingType.ResourcePackStatus: return 0x17;
                     case PacketOutgoingType.ChatMessage: return 0x01;
                     case PacketOutgoingType.ClientStatus: return 0x02;
@@ -316,7 +314,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.KeepAlive: return 0x0B;
                     case PacketOutgoingType.ResourcePackStatus: return 0x18;
                     case PacketOutgoingType.ChatMessage: return 0x01;
                     case PacketOutgoingType.ClientStatus: return 0x02;
@@ -332,7 +329,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.KeepAlive: return 0x0C;
                     case PacketOutgoingType.ResourcePackStatus: return 0x1B;
                     case PacketOutgoingType.ChatMessage: return 0x01;
                     case PacketOutgoingType.ClientStatus: return 0x02;
@@ -348,7 +344,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.KeepAlive: return 0x0E;
                     case PacketOutgoingType.ResourcePackStatus: return 0x1D;
                     case PacketOutgoingType.ChatMessage: return 0x02;
                     case PacketOutgoingType.ClientStatus: return 0x03;

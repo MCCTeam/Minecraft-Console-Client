@@ -218,6 +218,7 @@
     <Compile Include="Protocol\Handlers\Protocol16.cs" />
     <Compile Include="Protocol\Handlers\PacketUtils.cs" />
     <Compile Include="Protocol\Handlers\Protocol18ClientboundPackets.cs" />
+    <Compile Include="Protocol\Handlers\Protocol18ServerboundPackets.cs" />
     <Compile Include="Protocol\IMinecraftCom.cs" />
     <Compile Include="Protocol\IMinecraftComHandler.cs" />
     <Compile Include="Protocol\ProtocolHandler.cs" />
