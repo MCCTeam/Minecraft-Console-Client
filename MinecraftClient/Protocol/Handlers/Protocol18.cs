@@ -221,12 +221,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return ServerKeepAlive.getPacketID(protocol);
             else if (packet == PacketOutgoingType.ResourcePackStatus)
                 return ServerResourcePackStatus.getPacketID(protocol);
+            else if (packet == PacketOutgoingType.ChatMessage)
+                return ServerChatMessage.getPacketID(protocol);
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ChatMessage: return 0x01;
                     case PacketOutgoingType.ClientStatus: return 0x16;
                     case PacketOutgoingType.ClientSettings: return 0x15;
                     case PacketOutgoingType.PluginMessage: return 0x17;
@@ -240,7 +241,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ChatMessage: return 0x02;
                     case PacketOutgoingType.ClientStatus: return 0x03;
                     case PacketOutgoingType.ClientSettings: return 0x04;
                     case PacketOutgoingType.PluginMessage: return 0x09;
@@ -254,7 +254,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ChatMessage: return 0x03;
                     case PacketOutgoingType.ClientStatus: return 0x04;
                     case PacketOutgoingType.ClientSettings: return 0x05;
                     case PacketOutgoingType.PluginMessage: return 0x0A;
@@ -282,7 +281,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ChatMessage: return 0x02;
                     case PacketOutgoingType.ClientStatus: return 0x03;
                     case PacketOutgoingType.ClientSettings: return 0x04;
                     case PacketOutgoingType.PluginMessage: return 0x09;
@@ -296,7 +294,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ChatMessage: return 0x01;
                     case PacketOutgoingType.ClientStatus: return 0x02;
                     case PacketOutgoingType.ClientSettings: return 0x03;
                     case PacketOutgoingType.PluginMessage: return 0x08;
@@ -310,7 +307,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ChatMessage: return 0x01;
                     case PacketOutgoingType.ClientStatus: return 0x02;
                     case PacketOutgoingType.ClientSettings: return 0x03;
                     case PacketOutgoingType.PluginMessage: return 0x09;
@@ -324,7 +320,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ChatMessage: return 0x01;
                     case PacketOutgoingType.ClientStatus: return 0x02;
                     case PacketOutgoingType.ClientSettings: return 0x03;
                     case PacketOutgoingType.PluginMessage: return 0x09;
@@ -338,7 +333,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ChatMessage: return 0x02;
                     case PacketOutgoingType.ClientStatus: return 0x03;
                     case PacketOutgoingType.ClientSettings: return 0x04;
                     case PacketOutgoingType.PluginMessage: return 0x0A;
