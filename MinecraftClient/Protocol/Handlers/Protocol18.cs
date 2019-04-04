@@ -223,12 +223,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return ServerResourcePackStatus.getPacketID(protocol);
             else if (packet == PacketOutgoingType.ChatMessage)
                 return ServerChatMessage.getPacketID(protocol);
+            else if (packet == PacketOutgoingType.ClientStatus)
+                return ServerClientStatus.getPacketID(protocol);
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientStatus: return 0x16;
                     case PacketOutgoingType.ClientSettings: return 0x15;
                     case PacketOutgoingType.PluginMessage: return 0x17;
                     case PacketOutgoingType.TabComplete: return 0x14;
@@ -241,7 +242,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientStatus: return 0x03;
                     case PacketOutgoingType.ClientSettings: return 0x04;
                     case PacketOutgoingType.PluginMessage: return 0x09;
                     case PacketOutgoingType.TabComplete: return 0x01;
@@ -254,7 +254,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientStatus: return 0x04;
                     case PacketOutgoingType.ClientSettings: return 0x05;
                     case PacketOutgoingType.PluginMessage: return 0x0A;
                     case PacketOutgoingType.TabComplete: return 0x02;
@@ -267,8 +266,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ChatMessage: return 0x03;
-                    case PacketOutgoingType.ClientStatus: return 0x04;
                     case PacketOutgoingType.ClientSettings: return 0x05;
                     case PacketOutgoingType.PluginMessage: return 0x0A;
                     case PacketOutgoingType.TabComplete: return 0x02;
@@ -281,7 +278,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientStatus: return 0x03;
                     case PacketOutgoingType.ClientSettings: return 0x04;
                     case PacketOutgoingType.PluginMessage: return 0x09;
                     case PacketOutgoingType.TabComplete: return 0x01;
@@ -294,7 +290,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientStatus: return 0x02;
                     case PacketOutgoingType.ClientSettings: return 0x03;
                     case PacketOutgoingType.PluginMessage: return 0x08;
                     case PacketOutgoingType.TabComplete: throw new InvalidOperationException("TabComplete was accidentely removed in protocol " + protocol + ". Please use a more recent version.");
@@ -307,7 +302,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientStatus: return 0x02;
                     case PacketOutgoingType.ClientSettings: return 0x03;
                     case PacketOutgoingType.PluginMessage: return 0x09;
                     case PacketOutgoingType.TabComplete: return 0x04;
@@ -320,7 +314,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientStatus: return 0x02;
                     case PacketOutgoingType.ClientSettings: return 0x03;
                     case PacketOutgoingType.PluginMessage: return 0x09;
                     case PacketOutgoingType.TabComplete: return 0x04;
@@ -333,7 +326,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientStatus: return 0x03;
                     case PacketOutgoingType.ClientSettings: return 0x04;
                     case PacketOutgoingType.PluginMessage: return 0x0A;
                     case PacketOutgoingType.TabComplete: return 0x05;
