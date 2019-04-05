@@ -225,12 +225,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return ServerChatMessage.getPacketID(protocol);
             else if (packet == PacketOutgoingType.ClientStatus)
                 return ServerClientStatus.getPacketID(protocol);
+            else if (packet == PacketOutgoingType.ClientSettings)
+                return ServerClientSettings.getPacketID(protocol);
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientSettings: return 0x15;
                     case PacketOutgoingType.PluginMessage: return 0x17;
                     case PacketOutgoingType.TabComplete: return 0x14;
                     case PacketOutgoingType.PlayerPosition: return 0x04;
@@ -242,7 +243,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientSettings: return 0x04;
                     case PacketOutgoingType.PluginMessage: return 0x09;
                     case PacketOutgoingType.TabComplete: return 0x01;
                     case PacketOutgoingType.PlayerPosition: return 0x0C;
@@ -254,7 +254,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientSettings: return 0x05;
                     case PacketOutgoingType.PluginMessage: return 0x0A;
                     case PacketOutgoingType.TabComplete: return 0x02;
                     case PacketOutgoingType.PlayerPosition: return 0x0D;
@@ -266,7 +265,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientSettings: return 0x05;
                     case PacketOutgoingType.PluginMessage: return 0x0A;
                     case PacketOutgoingType.TabComplete: return 0x02;
                     case PacketOutgoingType.PlayerPosition: return 0x0E;
@@ -278,7 +276,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientSettings: return 0x04;
                     case PacketOutgoingType.PluginMessage: return 0x09;
                     case PacketOutgoingType.TabComplete: return 0x01;
                     case PacketOutgoingType.PlayerPosition: return 0x0D;
@@ -290,7 +287,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientSettings: return 0x03;
                     case PacketOutgoingType.PluginMessage: return 0x08;
                     case PacketOutgoingType.TabComplete: throw new InvalidOperationException("TabComplete was accidentely removed in protocol " + protocol + ". Please use a more recent version.");
                     case PacketOutgoingType.PlayerPosition: return 0x0C;
@@ -302,7 +298,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientSettings: return 0x03;
                     case PacketOutgoingType.PluginMessage: return 0x09;
                     case PacketOutgoingType.TabComplete: return 0x04;
                     case PacketOutgoingType.PlayerPosition: return 0x0D;
@@ -314,7 +309,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientSettings: return 0x03;
                     case PacketOutgoingType.PluginMessage: return 0x09;
                     case PacketOutgoingType.TabComplete: return 0x04;
                     case PacketOutgoingType.PlayerPosition: return 0x0E;
@@ -326,7 +320,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.ClientSettings: return 0x04;
                     case PacketOutgoingType.PluginMessage: return 0x0A;
                     case PacketOutgoingType.TabComplete: return 0x05;
                     case PacketOutgoingType.PlayerPosition: return 0x10;

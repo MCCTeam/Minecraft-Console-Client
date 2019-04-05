@@ -84,4 +84,23 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x03;
         }
     }
+
+    class ServerClientSettings
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x15;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x04;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x05;
+            else if (protocol < PacketUtils.MC17w45aVersion)
+                return 0x04;
+            else if (protocol < PacketUtils.MC113pre7Version)
+                return 0x03;
+            else
+                return 0x04;
+        }
+    }
 }
