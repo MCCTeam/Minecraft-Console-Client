@@ -235,70 +235,8 @@ namespace MinecraftClient.Protocol.Handlers
                 return ServerPlayerPosition.getPacketID(protocol);
             else if (packet == PacketOutgoingType.PlayerPositionAndLook)
                 return ServerPlayerPositionAndLook.getPacketID(protocol);
-
-            if (protocol < PacketUtils.MC19Version)
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.TeleportConfirm: throw new InvalidOperationException("Teleport confirm is not supported in protocol " + protocol);
-                }
-            }
-            else if (protocol < PacketUtils.MC17w13aVersion)
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.TeleportConfirm: return 0x00;
-                }
-            }
-            else if (protocolversion < PacketUtils.MC112pre5Version)
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.TeleportConfirm: return 0x00;
-                }
-            }
-            else if (protocol < PacketUtils.MC17w31aVersion)
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.TeleportConfirm: return 0x00;
-                }
-            }
-            else if (protocol < PacketUtils.MC17w45aVersion)
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.TeleportConfirm: return 0x00;
-                }
-            }
-            else if (protocol < PacketUtils.MC17w46aVersion)
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.TeleportConfirm: return 0x00;
-                }
-            }
-            else if (protocol < PacketUtils.MC113pre4Version)
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.TeleportConfirm: return 0x00;
-                }
-            }
-            else if (protocol < PacketUtils.MC113pre7Version)
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.TeleportConfirm: return 0x00;
-                }
-            }
-            else
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.TeleportConfirm: return 0x00;
-                }
-            }
+            else if (packet == PacketOutgoingType.TeleportConfirm)
+                return ServerTeleportConfirm.getPacketID(protocol);
 
             throw new System.ComponentModel.InvalidEnumArgumentException("Unknown PacketOutgoingType (protocol=" + protocol + ")", (int)packet, typeof(PacketOutgoingType));
         }

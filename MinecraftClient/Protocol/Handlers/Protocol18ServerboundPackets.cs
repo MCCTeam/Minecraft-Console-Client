@@ -196,4 +196,16 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x11;
         }
     }
+
+    class ServerTeleportConfirm
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                // throw new InvalidOperationException("Teleport confirm is not supported in protocol " + protocol);
+                return -1;
+            else
+                return 0x00;
+        }
+    }
 }
