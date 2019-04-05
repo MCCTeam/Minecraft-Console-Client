@@ -146,4 +146,29 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x05;
         }
     }
+
+    class ServerPlayerPosition
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x04;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x0C;
+            else if (protocol < PacketUtils.MC112pre5Version)
+                return 0x0D;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x0E;
+            else if (protocol < PacketUtils.MC17w45aVersion)
+                return 0x0D;
+            else if (protocol < PacketUtils.MC17w46aVersion)
+                return 0x0C;
+            else if (protocol < PacketUtils.MC113pre4Version)
+                return 0x0D;
+            else if (protocol < PacketUtils.MC113pre7Version)
+                return 0x0E;
+            else
+                return 0x10;
+        }
+    }
 }

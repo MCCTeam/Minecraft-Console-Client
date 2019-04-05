@@ -231,12 +231,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return ServerPluginMessage.getPacketID(protocol);
             else if (packet == PacketOutgoingType.TabComplete)
                 return ServerTabComplete.getPacketID(protocol);
+            else if (packet == PacketOutgoingType.PlayerPosition)
+                return ServerPlayerPosition.getPacketID(protocol);
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.PlayerPosition: return 0x04;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x06;
                     case PacketOutgoingType.TeleportConfirm: throw new InvalidOperationException("Teleport confirm is not supported in protocol " + protocol);
                 }
@@ -245,7 +246,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.PlayerPosition: return 0x0C;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0D;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
@@ -254,7 +254,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.PlayerPosition: return 0x0D;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
@@ -263,7 +262,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.PlayerPosition: return 0x0E;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0F;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
@@ -272,7 +270,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.PlayerPosition: return 0x0D;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
@@ -281,7 +278,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.PlayerPosition: return 0x0C;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0D;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
@@ -290,7 +286,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.PlayerPosition: return 0x0D;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
@@ -299,7 +294,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.PlayerPosition: return 0x0E;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0F;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
@@ -308,7 +302,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.PlayerPosition: return 0x10;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x11;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
