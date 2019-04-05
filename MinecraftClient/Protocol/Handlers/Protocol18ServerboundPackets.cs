@@ -124,4 +124,26 @@ namespace MinecraftClient.Protocol.Handlers
                 return 0x0A;
         }
     }
+
+    class ServerTabComplete
+    {
+        public static int getPacketID(int protocol)
+        {
+            if (protocol < PacketUtils.MC19Version)
+                return 0x14;
+            else if (protocol < PacketUtils.MC17w13aVersion)
+                return 0x01;
+            else if (protocol < PacketUtils.MC17w31aVersion)
+                return 0x02;
+            else if (protocol < PacketUtils.MC17w45aVersion)
+                return 0x01;
+            else if (protocol < PacketUtils.MC17w46aVersion)
+                // throw new InvalidOperationException("TabComplete was accidentely removed in protocol " + protocol + ". Please use a more recent version.");
+                return -1;
+            else if (protocol < PacketUtils.MC113pre7Version)
+                return 0x04;
+            else
+                return 0x05;
+        }
+    }
 }

@@ -229,12 +229,13 @@ namespace MinecraftClient.Protocol.Handlers
                 return ServerClientSettings.getPacketID(protocol);
             else if (packet == PacketOutgoingType.PluginMessage)
                 return ServerPluginMessage.getPacketID(protocol);
+            else if (packet == PacketOutgoingType.TabComplete)
+                return ServerTabComplete.getPacketID(protocol);
 
             if (protocol < PacketUtils.MC19Version)
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.TabComplete: return 0x14;
                     case PacketOutgoingType.PlayerPosition: return 0x04;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x06;
                     case PacketOutgoingType.TeleportConfirm: throw new InvalidOperationException("Teleport confirm is not supported in protocol " + protocol);
@@ -244,7 +245,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.TabComplete: return 0x01;
                     case PacketOutgoingType.PlayerPosition: return 0x0C;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0D;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
@@ -254,7 +254,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.TabComplete: return 0x02;
                     case PacketOutgoingType.PlayerPosition: return 0x0D;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
@@ -264,7 +263,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.TabComplete: return 0x02;
                     case PacketOutgoingType.PlayerPosition: return 0x0E;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0F;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
@@ -274,7 +272,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.TabComplete: return 0x01;
                     case PacketOutgoingType.PlayerPosition: return 0x0D;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
@@ -284,7 +281,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.TabComplete: throw new InvalidOperationException("TabComplete was accidentely removed in protocol " + protocol + ". Please use a more recent version.");
                     case PacketOutgoingType.PlayerPosition: return 0x0C;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0D;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
@@ -294,7 +290,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.TabComplete: return 0x04;
                     case PacketOutgoingType.PlayerPosition: return 0x0D;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
@@ -304,7 +299,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.TabComplete: return 0x04;
                     case PacketOutgoingType.PlayerPosition: return 0x0E;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0F;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
@@ -314,7 +308,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packet)
                 {
-                    case PacketOutgoingType.TabComplete: return 0x05;
                     case PacketOutgoingType.PlayerPosition: return 0x10;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x11;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
