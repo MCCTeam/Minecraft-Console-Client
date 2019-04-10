@@ -426,23 +426,61 @@ namespace MinecraftClient
         /// <param name="block">The block to look at</param>
         public void LookAtBlock(Location block)
         {
-            double dx = block.X - location.X,
-                dy = block.Y - location.Y,
-                dz = block.Z - location.Z;
+            double dx = block.X - (location.X - 0.5),
+                dy = block.Y - (location.Y + 1),
+                dz = block.Z - (location.Z - 0.5);
 
             double r = Math.Sqrt(dx * dx + dy * dy + dz * dz);
 
             float yaw = Convert.ToSingle(-Math.Atan2(dx, dz) / Math.PI * 180),
                 pitch = Convert.ToSingle(-Math.Asin(dy / r) / Math.PI * 180);
             if (yaw < 0) yaw += 360;
-            
-
-            ConsoleIO.WriteLineFormatted("YAW: " + yaw);
-            ConsoleIO.WriteLineFormatted("PITCH: " + pitch);
 
             UpdateLocation(location, yaw, pitch);
         }
 
+        /// <summary>
+        /// Look at specified angle
+        /// </summary>
+        /// <param name="yaw">The yaw to look at</param>
+        /// <param name="pitch">The pitch to look at</param>
+        public void LookAtAngle(float yaw, float pitch)
+        {
+            UpdateLocation(location, yaw, pitch);
+        }
+
+        /// <summary>
+        /// Look in specified direction
+        /// </summary>
+        /// <param name="direction">The direction too look in</param>
+        public void LookAtDirection(Direction direction)
+        {
+            float yaw = 0,
+                pitch = 0;
+            switch (direction)
+            {
+                case Direction.Up:
+                    pitch = -90;
+                    break;
+                case Direction.Down:
+                    pitch = 90;
+                    break;
+                case Direction.East:
+                    yaw = 270;
+                    break;
+                case Direction.West:
+                    yaw = 90;
+                    break;
+                case Direction.North:
+                    yaw = 90;
+                    break;
+                case Direction.South:
+                    break;
+                default:
+                    throw new ArgumentException("Unknown direction", "direction");
+            }
+            UpdateLocation(location, yaw, pitch);
+        }
 
         /// <summary>
         /// Move to the specified location
