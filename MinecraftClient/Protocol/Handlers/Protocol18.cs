@@ -618,7 +618,8 @@ namespace MinecraftClient.Protocol.Handlers
                         double x = readNextDouble(packetData);
                         double y = readNextDouble(packetData);
                         double z = readNextDouble(packetData);
-                        byte[] yawpitch = readData(8, packetData);
+                        float yaw = readNextFloat(packetData);
+                        float pitch = readNextFloat(packetData);
                         byte locMask = readNextByte(packetData);
 
                         if (protocolversion >= MC18Version)
@@ -627,9 +628,9 @@ namespace MinecraftClient.Protocol.Handlers
                             location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
                             location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
                             location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
-                            handler.UpdateLocation(location, yawpitch);
+                            handler.UpdateLocation(location, yaw, pitch);
                         }
-                        else handler.UpdateLocation(new Location(x, y, z), yawpitch);
+                        else handler.UpdateLocation(new Location(x, y, z), yaw, pitch);
                     }
 
                     if (protocolversion >= MC19Version)
@@ -1408,6 +1409,17 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a float from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The float value</returns>
+        private static float readNextFloat(List<byte> cache)
+        {
+            byte[] rawValue = readData(4, cache);
+            Array.Reverse(rawValue); //Endianness
+            return BitConverter.ToSingle(rawValue, 0);
+        }
+
+        /// <summary>
         /// Read an integer from the network
         /// </summary>
         /// <returns>The integer</returns>
@@ -1506,6 +1518,19 @@ namespace MinecraftClient.Protocol.Handlers
             Array.Reverse(theDouble); //Endianness
             return theDouble;
         }
+
+        /// <summary>
+        /// Get byte array representing a float
+        /// </summary>
+        /// <param name="number">Floalt to process</param>
+        /// <returns>Array ready to send</returns>
+        private byte[] getFloat(float number)
+        {
+            byte[] theFloat = BitConverter.GetBytes(number);
+            Array.Reverse(theFloat); //Endianness
+            return theFloat;
+        }
+
 
         /// <summary>
         /// Get byte array with length information prepended to it
@@ -1889,18 +1914,19 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="onGround">True if the player is on the ground</param>
         /// <param name="yawpitch">Yaw and pitch (optional and currently not parsed)</param>
         /// <returns>True if the location update was successfully sent</returns>
-        public bool SendLocationUpdate(Location location, bool onGround, byte[] yawpitch = null)
+        public bool SendLocationUpdate(Location location, bool onGround, float? yaw = null, float? pitch = null)
         {
             if (Settings.TerrainAndMovements)
             {
                 PacketOutgoingType packetType;
-                if (yawpitch != null && yawpitch.Length == 8)
+                byte[] yawpitch = new byte[0];
+                if (yaw != null && pitch != null)
                 {
+                    yawpitch = getFloat((float)yaw).Concat(getFloat((float)pitch)).ToArray();
                     packetType = PacketOutgoingType.PlayerPositionAndLook;
                 }
                 else
                 {
-                    yawpitch = new byte[0];
                     packetType = PacketOutgoingType.PlayerPosition;
                 }
 
