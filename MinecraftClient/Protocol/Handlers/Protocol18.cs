@@ -1912,7 +1912,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="location">The new location of the player</param>
         /// <param name="onGround">True if the player is on the ground</param>
-        /// <param name="yawpitch">Yaw and pitch (optional and currently not parsed)</param>
+        /// <param name="yaw">The new yaw of the player</param>
+        /// <param name="pitch">The new pitch of the player</param>
         /// <returns>True if the location update was successfully sent</returns>
         public bool SendLocationUpdate(Location location, bool onGround, float? yaw = null, float? pitch = null)
         {
@@ -1922,7 +1923,7 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] yawpitch = new byte[0];
                 if (yaw != null && pitch != null)
                 {
-                    yawpitch = getFloat((float)yaw).Concat(getFloat((float)pitch)).ToArray();
+                    yawpitch = concatBytes(getFloat((float)yaw), getFloat((float)pitch));
                     packetType = PacketOutgoingType.PlayerPositionAndLook;
                 }
                 else
