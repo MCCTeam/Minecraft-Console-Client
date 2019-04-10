@@ -37,7 +37,8 @@ namespace MinecraftClient
         private Queue<Location> steps;
         private Queue<Location> path;
         private Location location;
-        private byte[] yawpitch;
+        private float? yaw;
+        private float? pitch;
         private double motionY;
 
         private string host;
@@ -412,11 +413,36 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">The new location</param>
         /// <param name="relative">If true, the location is relative to the current location</param>
-        public void UpdateLocation(Location location, byte[] yawpitch)
+        public void UpdateLocation(Location location, float yaw, float pitch)
         {
-            this.yawpitch = yawpitch;
+            this.yaw = yaw;
+            this.pitch = pitch;
             UpdateLocation(location, false);
         }
+
+        /// <summary>
+        /// Look at specified block
+        /// </summary>
+        /// <param name="block">The block to look at</param>
+        public void LookAtBlock(Location block)
+        {
+            double dx = block.X - location.X,
+                dy = block.Y - location.Y,
+                dz = block.Z - location.Z;
+
+            double r = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+
+            float yaw = Convert.ToSingle(-Math.Atan2(dx, dz) / Math.PI * 180),
+                pitch = Convert.ToSingle(-Math.Asin(dy / r) / Math.PI * 180);
+            if (yaw < 0) yaw += 360;
+            
+
+            ConsoleIO.WriteLineFormatted("YAW: " + yaw);
+            ConsoleIO.WriteLineFormatted("PITCH: " + pitch);
+
+            UpdateLocation(location, yaw, pitch);
+        }
+
 
         /// <summary>
         /// Move to the specified location
@@ -533,7 +559,7 @@ namespace MinecraftClient
                 {
                     for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
                     {
-                        if (yawpitch == null)
+                        if (yaw == null || pitch == null)
                         {
                             if (steps != null && steps.Count > 0)
                                 location = steps.Dequeue();
@@ -541,9 +567,10 @@ namespace MinecraftClient
                                 steps = Movement.Move2Steps(location, path.Dequeue(), ref motionY);
                             else location = Movement.HandleGravity(world, location, ref motionY);
                         }
-                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yawpitch);
+                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yaw, pitch);
                     }
-                    yawpitch = null; //First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
+                    yaw = null;
+                    pitch = null;
                 }
             }
         }
