@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace MinecraftClient.Protocol.Handlers
 {
+    /// <summary>
+    /// Implementation of the Serverbound Keep Alive Packet
+    /// https://wiki.vg/Protocol#Keep_Alive_.28serverbound.29
+    /// </summary>
     class ServerKeepAlive
     {
         public static int getPacketID(int protocol)
@@ -26,6 +30,10 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
+    /// <summary>
+    /// Implementation of the Serverbound Resource Pack Status Packet
+    /// https://wiki.vg/Protocol#Resource_Pack_Status
+    /// </summary>
     class ServerResourcePackStatus
     {
         public static int getPacketID(int protocol)
@@ -47,6 +55,10 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
+    /// <summary>
+    /// Implementation of the Serverbound Chat Message Packet
+    /// https://wiki.vg/Protocol#Chat_Message_.28serverbound.29
+    /// </summary>
     class ServerChatMessage
     {
         public static int getPacketID(int protocol)
@@ -66,6 +78,10 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
+    /// <summary>
+    /// Implementation of the Serverbound Client Status Packet
+    /// https://wiki.vg/Protocol#Client_Status
+    /// </summary>
     class ServerClientStatus
     {
         public static int getPacketID(int protocol)
@@ -85,6 +101,10 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
+    /// <summary>
+    /// Implementation of the Serverbound Client Settings Packet
+    /// https://wiki.vg/Protocol#Client_Settings
+    /// </summary>
     class ServerClientSettings
     {
         public static int getPacketID(int protocol)
@@ -104,6 +124,10 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
+    /// <summary>
+    /// Implementation of the Serverbound Plugin Message Packet
+    /// https://wiki.vg/Protocol#Plugin_Message_.28serverbound.29
+    /// </summary>
     class ServerPluginMessage
     {
         public static int getPacketID(int protocol)
@@ -125,6 +149,10 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
+    /// <summary>
+    /// Implementation of the Serverbound Tab-Complete Packet
+    /// https://wiki.vg/Protocol#Tab-Complete_.28serverbound.29
+    /// </summary>
     class ServerTabComplete
     {
         public static int getPacketID(int protocol)
@@ -147,6 +175,10 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
+    /// <summary>
+    /// Implementation of the Serverbound Player Position Packet
+    /// https://wiki.vg/Protocol#Player_Position
+    /// </summary>
     class ServerPlayerPosition
     {
         public static int getPacketID(int protocol)
@@ -172,6 +204,10 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
+    /// <summary>
+    /// Implementation of the Serverbound Player Position And Look Packet
+    /// https://wiki.vg/Protocol#Player_Position_And_Look_.28serverbound.29
+    /// </summary>
     class ServerPlayerPositionAndLook
     {
         public static int getPacketID(int protocol)
@@ -197,6 +233,10 @@ namespace MinecraftClient.Protocol.Handlers
         }
     }
 
+    /// <summary>
+    /// Implementation of the Serverbound Teleport Confirm Packet
+    /// https://wiki.vg/Protocol#Teleport_Confirm
+    /// </summary>
     class ServerTeleportConfirm
     {
         public static int getPacketID(int protocol)
