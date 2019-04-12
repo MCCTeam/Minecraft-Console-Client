@@ -13,7 +13,7 @@ using MinecraftClient.Mapping;
 namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
-    /// Implementation for Minecraft 1.7.X, 1.8.X, 1.9.X, 1.10.X Protocols
+    /// Implementation for Minecraft 1.7.X+ Protocols
     /// </summary>
     class Protocol18Handler : IMinecraftCom
     {
@@ -1912,23 +1912,20 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="location">The new location of the player</param>
         /// <param name="onGround">True if the player is on the ground</param>
-        /// <param name="yaw">The new yaw of the player</param>
-        /// <param name="pitch">The new pitch of the player</param>
+        /// <param name="yaw">Optional new yaw for updating player look</param>
+        /// <param name="pitch">Optional new pitch for updating player look</param>
         /// <returns>True if the location update was successfully sent</returns>
         public bool SendLocationUpdate(Location location, bool onGround, float? yaw = null, float? pitch = null)
         {
             if (Settings.TerrainAndMovements)
             {
-                PacketOutgoingType packetType;
                 byte[] yawpitch = new byte[0];
-                if (yaw != null && pitch != null)
+                PacketOutgoingType packetType = PacketOutgoingType.PlayerPosition;
+
+                if (yaw.HasValue && pitch.HasValue)
                 {
-                    yawpitch = concatBytes(getFloat((float)yaw), getFloat((float)pitch));
+                    yawpitch = concatBytes(getFloat(yaw.Value), getFloat(pitch.Value));
                     packetType = PacketOutgoingType.PlayerPositionAndLook;
-                }
-                else
-                {
-                    packetType = PacketOutgoingType.PlayerPosition;
                 }
 
                 try

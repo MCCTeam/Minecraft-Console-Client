@@ -1,6 +1,6 @@
-﻿=================================================================================
- Minecraft Client v1.9.0 for Minecraft 1.4.6 to 1.9.0 - By ORelio & Contributors
-=================================================================================
+﻿==================================================================================
+ Minecraft Client v1.13.0 for Minecraft 1.4.6 to 1.13.0 - By ORelio & Contributors
+==================================================================================
 
 Thanks for dowloading Minecraft Console Client!
 
@@ -70,6 +70,7 @@ In scripts and remote control, no slash is needed to perform the command.
  - set varname=value : set a value which can be used as %varname% in further commands
  - wait <time> : wait X ticks (10 ticks = ~1 second. Only for scripts)
  - move : used for moving when terrain and movements feature is enabled
+ - look : used for looking at direction when terrain and movements is enabled
  - debug : toggle debug messages, useful for chatbot developers
  - help : show command help. Tip: Use "/send /help" for server help
 
@@ -274,8 +275,8 @@ Bug Hunters
 Code contributions
 
   Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, dbear20, dogwatch, initsuj,
-  JamieSinn, justcool393, lokulin, maxpowa, medxo, Pokechu22, TheMeq, v1RuX, ZizzyDizzyMC
-
+  JamieSinn, justcool393, lokulin, maxpowa, medxo, Pokechu22, repository, TheMeq, v1RuX,
+  ZizzyDizzyMC
 
 Libraries
 
@@ -306,5 +307,5 @@ Like Minecraft Console Client? You can buy me a coffee here:
 Code contributions, bug reports and any kind of comments are also highly appreciated :)
 
 +-----------------------------------+
-| © 2012-2016 ORelio & Contributors |
+| © 2012-2019 ORelio & Contributors |
 +-----------------------------------+

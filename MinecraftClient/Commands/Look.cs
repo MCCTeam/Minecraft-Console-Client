@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     public class Look : Command
     {
         public override string CMDName { get { return "look"; } }
-        public override string CMDDesc { get { return "look <x y z|yaw pitch|up|down|east|west|north|south|>: look direction or at block."; } }
+        public override string CMDDesc { get { return "look <x y z|yaw pitch|up|down|east|west|north|south>: look at direction or coordinates."; } }
 
         public override string Run(McTcpClient handler, string command)
         {
@@ -31,18 +31,18 @@ namespace MinecraftClient.Commands
                         default: return "Unknown direction '" + dirStr + "'.";
                     }
 
-                    handler.LookAtDirection(direction);
+                    handler.UpdateLocation(handler.GetCurrentLocation(), direction);
                     return "Looking " + dirStr;
                 }
                 else if (args.Length == 2)
                 {
                     try
                     {
-                        float yaw = Single.Parse(args[0]),
-                            pitch = Single.Parse(args[1]);
+                        float yaw = Single.Parse(args[0]);
+                        float pitch = Single.Parse(args[1]);
 
-                        handler.LookAtAngle(yaw, pitch);
-                        return $"Looking at YAW: {yaw} PITCH: {pitch}";
+                        handler.UpdateLocation(handler.GetCurrentLocation(), yaw, pitch);
+                        return String.Format("Looking at YAW: {0} PITCH: {1}", yaw.ToString("0.00"), pitch.ToString("0.00"));
                     }
                     catch (FormatException) { return CMDDesc; }
                 }
@@ -50,14 +50,14 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        int x = int.Parse(args[0]),
-                            y = int.Parse(args[1]),
-                            z = int.Parse(args[2]);
+                        int x = int.Parse(args[0]);
+                        int y = int.Parse(args[1]);
+                        int z = int.Parse(args[2]);
 
-                            Location block = new Location(x, y, z);
-                            handler.LookAtBlock(block);
+                        Location block = new Location(x, y, z);
+                        handler.UpdateLocation(handler.GetCurrentLocation(), block);
 
-                            return "Looking at " + block;
+                        return "Looking at " + block;
                     }
                     catch (FormatException) { return CMDDesc; }
                     

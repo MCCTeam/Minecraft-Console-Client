@@ -412,7 +412,8 @@ namespace MinecraftClient
         /// or if a ChatBot whishes to update the player's location.
         /// </summary>
         /// <param name="location">The new location</param>
-        /// <param name="relative">If true, the location is relative to the current location</param>
+        /// <param name="yaw">Yaw to look at</param>
+        /// <param name="pitch">Pitch to look at</param>
         public void UpdateLocation(Location location, float yaw, float pitch)
         {
             this.yaw = yaw;
@@ -421,42 +422,37 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Look at specified block
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
         /// </summary>
-        /// <param name="block">The block to look at</param>
-        public void LookAtBlock(Location block)
+        /// <param name="location">The new location</param>
+        /// <param name="lookAt">Block coordinates to look at</param>
+        public void UpdateLocation(Location location, Location lookAtLocation)
         {
-            double dx = block.X - (location.X - 0.5),
-                dy = block.Y - (location.Y + 1),
-                dz = block.Z - (location.Z - 0.5);
+            double dx = lookAtLocation.X - (location.X - 0.5);
+            double dy = lookAtLocation.Y - (location.Y + 1);
+            double dz = lookAtLocation.Z - (location.Z - 0.5);
 
             double r = Math.Sqrt(dx * dx + dy * dy + dz * dz);
 
-            float yaw = Convert.ToSingle(-Math.Atan2(dx, dz) / Math.PI * 180),
-                pitch = Convert.ToSingle(-Math.Asin(dy / r) / Math.PI * 180);
+            float yaw = Convert.ToSingle(-Math.Atan2(dx, dz) / Math.PI * 180);
+            float pitch = Convert.ToSingle(-Math.Asin(dy / r) / Math.PI * 180);
             if (yaw < 0) yaw += 360;
 
             UpdateLocation(location, yaw, pitch);
         }
 
         /// <summary>
-        /// Look at specified angle
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
         /// </summary>
-        /// <param name="yaw">The yaw to look at</param>
-        /// <param name="pitch">The pitch to look at</param>
-        public void LookAtAngle(float yaw, float pitch)
+        /// <param name="location">The new location</param>
+        /// <param name="direction">Direction to look at</param>
+        public void UpdateLocation(Location location, Direction direction)
         {
-            UpdateLocation(location, yaw, pitch);
-        }
+            float yaw = 0;
+            float pitch = 0;
 
-        /// <summary>
-        /// Look in specified direction
-        /// </summary>
-        /// <param name="direction">The direction too look in</param>
-        public void LookAtDirection(Direction direction)
-        {
-            float yaw = 0,
-                pitch = 0;
             switch (direction)
             {
                 case Direction.Up:
@@ -479,6 +475,7 @@ namespace MinecraftClient
                 default:
                     throw new ArgumentException("Unknown direction", "direction");
             }
+
             UpdateLocation(location, yaw, pitch);
         }
 
@@ -600,13 +597,24 @@ namespace MinecraftClient
                         if (yaw == null || pitch == null)
                         {
                             if (steps != null && steps.Count > 0)
+                            {
                                 location = steps.Dequeue();
+                            }
                             else if (path != null && path.Count > 0)
-                                steps = Movement.Move2Steps(location, path.Dequeue(), ref motionY);
-                            else location = Movement.HandleGravity(world, location, ref motionY);
+                            {
+                                Location next = path.Dequeue();
+                                steps = Movement.Move2Steps(location, next, ref motionY);
+                                UpdateLocation(location, next); // Update yaw and pitch to look at next step
+                            }
+                            else
+                            {
+                                location = Movement.HandleGravity(world, location, ref motionY);
+                            }
                         }
                         handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yaw, pitch);
                     }
+                    // First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
+                    // Once yaw and pitch have been sent, switch back to location-only updates (without yaw and pitch)
                     yaw = null;
                     pitch = null;
                 }
