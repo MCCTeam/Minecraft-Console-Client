@@ -468,7 +468,7 @@ namespace MinecraftClient
                     yaw = 90;
                     break;
                 case Direction.North:
-                    yaw = 90;
+                    yaw = 180;
                     break;
                 case Direction.South:
                     break;
@@ -604,7 +604,7 @@ namespace MinecraftClient
                             {
                                 Location next = path.Dequeue();
                                 steps = Movement.Move2Steps(location, next, ref motionY);
-                                UpdateLocation(location, next); // Update yaw and pitch to look at next step
+                                UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
                             }
                             else
                             {
