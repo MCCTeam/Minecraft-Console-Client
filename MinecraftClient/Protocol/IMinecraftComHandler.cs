@@ -56,8 +56,9 @@ namespace MinecraftClient.Protocol
         /// Called when the server sets the new location for the player
         /// </summary>
         /// <param name="location">New location of the player</param>
-        /// <param name="yawpitch">Yaw and pitch (optional and currently not parsed)</param>
-        void UpdateLocation(Location location, byte[] yawpitch);
+        /// <param name="yaw">New yaw</param>
+        /// <param name="pitch">New pitch</param>
+        void UpdateLocation(Location location, float yaw, float pitch);
 
         /// <summary>
         /// This method is called when the connection has been lost
