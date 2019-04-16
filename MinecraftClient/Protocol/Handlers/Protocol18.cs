@@ -306,8 +306,8 @@ namespace MinecraftClient.Protocol.Handlers
                         double x = PacketUtils.readNextDouble(packetData);
                         double y = PacketUtils.readNextDouble(packetData);
                         double z = PacketUtils.readNextDouble(packetData);
-                        float yaw = readNextFloat(packetData);
-                        float pitch = readNextFloat(packetData);
+                        float yaw = PacketUtils.readNextFloat(packetData);
+                        float pitch = PacketUtils.readNextFloat(packetData);
                         byte locMask = PacketUtils.readNextByte(packetData);
 
                         if (protocolversion >= PacketUtils.MC18Version)
@@ -956,17 +956,6 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Read a float from a cache of bytes and remove it from the cache
-        /// </summary>
-        /// <returns>The float value</returns>
-        private static float readNextFloat(List<byte> cache)
-        {
-            byte[] rawValue = PacketUtils.readData(4, cache);
-            Array.Reverse(rawValue); //Endianness
-            return BitConverter.ToSingle(rawValue, 0);
-        }
-
-        /// <summary>
         /// Read an integer from the network
         /// </summary>
         /// <returns>The integer</returns>
@@ -985,18 +974,6 @@ namespace MinecraftClient.Protocol.Handlers
                 if ((k & 0x80) != 128) break;
             }
             return i;
-        }
-
-        /// <summary>
-        /// Get byte array representing a float
-        /// </summary>
-        /// <param name="number">Floalt to process</param>
-        /// <returns>Array ready to send</returns>
-        private byte[] getFloat(float number)
-        {
-            byte[] theFloat = BitConverter.GetBytes(number);
-            Array.Reverse(theFloat); //Endianness
-            return theFloat;
         }
 
         /// <summary>
@@ -1350,7 +1327,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (yaw.HasValue && pitch.HasValue)
                 {
-                    yawpitch = PacketUtils.concatBytes(getFloat(yaw.Value), getFloat(pitch.Value));
+                    yawpitch = PacketUtils.concatBytes(PacketUtils.getFloat(yaw.Value), PacketUtils.getFloat(pitch.Value));
                     packetType = PacketOutgoingType.PlayerPositionAndLook;
                 }
 

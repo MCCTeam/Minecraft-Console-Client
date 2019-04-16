@@ -258,6 +258,17 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a float from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The float value</returns>
+        public static float readNextFloat(List<byte> cache)
+        {
+            byte[] rawValue = PacketUtils.readData(4, cache);
+            Array.Reverse(rawValue); //Endianness
+            return BitConverter.ToSingle(rawValue, 0);
+        }
+
+        /// <summary>
         /// Build an integer for sending over the network
         /// </summary>
         /// <param name="paramInt">Integer to encode</param>
@@ -312,6 +323,18 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] bytes = Encoding.UTF8.GetBytes(text);
 
             return concatBytes(getVarInt(bytes.Length), bytes);
+        }
+
+        /// <summary>
+        /// Get byte array representing a float
+        /// </summary>
+        /// <param name="number">Floalt to process</param>
+        /// <returns>Array ready to send</returns>
+        public static byte[] getFloat(float number)
+        {
+            byte[] theFloat = BitConverter.GetBytes(number);
+            Array.Reverse(theFloat); //Endianness
+            return theFloat;
         }
 
         /// <summary>
