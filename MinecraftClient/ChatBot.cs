@@ -241,6 +241,18 @@ namespace MinecraftClient
 
             text = GetVerbatim(text);
 
+            //User-defined regex for private chat messages
+            if (Settings.ChatFormat_Private != null)
+            {
+                Match regexMatch = Settings.ChatFormat_Private.Match(text);
+                if (regexMatch.Success && regexMatch.Groups.Count >= 3)
+                {
+                    sender = regexMatch.Groups[1].Value;
+                    message = regexMatch.Groups[2].Value;
+                    return IsValidName(sender);
+                }
+            }
+
             //Built-in detection routine for private messages
             if (Settings.ChatFormat_Builtins)
             {
@@ -323,18 +335,6 @@ namespace MinecraftClient
                 catch (ArgumentOutOfRangeException) { /* Same here */ }
             }
 
-            //User-defined regex for private chat messages
-            if (Settings.ChatFormat_Private != null)
-            {
-                Match regexMatch = Settings.ChatFormat_Private.Match(text);
-                if (regexMatch.Success && regexMatch.Groups.Count >= 3)
-                {
-                    sender = regexMatch.Groups[1].Value;
-                    message = regexMatch.Groups[2].Value;
-                    return IsValidName(sender);
-                }
-            }
-
             return false;
         }
 
@@ -351,7 +351,19 @@ namespace MinecraftClient
                 return false;
 
             text = GetVerbatim(text);
-            
+
+            //User-defined regex for public chat messages
+            if (Settings.ChatFormat_Public != null)
+            {
+                Match regexMatch = Settings.ChatFormat_Public.Match(text);
+                if (regexMatch.Success && regexMatch.Groups.Count >= 3)
+                {
+                    sender = regexMatch.Groups[1].Value;
+                    message = regexMatch.Groups[2].Value;
+                    return IsValidName(sender);
+                }
+            }
+
             //Built-in detection routine for public messages
             if (Settings.ChatFormat_Builtins)
             {
@@ -427,18 +439,6 @@ namespace MinecraftClient
                 }
             }
 
-            //User-defined regex for public chat messages
-            if (Settings.ChatFormat_Public != null)
-            {
-                Match regexMatch = Settings.ChatFormat_Public.Match(text);
-                if (regexMatch.Success && regexMatch.Groups.Count >= 3)
-                {
-                    sender = regexMatch.Groups[1].Value;
-                    message = regexMatch.Groups[2].Value;
-                    return IsValidName(sender);
-                }
-            }
-
             return false;
         }
 
@@ -454,6 +454,17 @@ namespace MinecraftClient
                 return false;
 
             text = GetVerbatim(text);
+
+            //User-defined regex for teleport requests
+            if (Settings.ChatFormat_TeleportRequest != null)
+            {
+                Match regexMatch = Settings.ChatFormat_TeleportRequest.Match(text);
+                if (regexMatch.Success && regexMatch.Groups.Count >= 2)
+                {
+                    sender = regexMatch.Groups[1].Value;
+                    return IsValidName(sender);
+                }
+            }
 
             //Built-in detection routine for teleport requests
             if (Settings.ChatFormat_Builtins)
@@ -480,17 +491,6 @@ namespace MinecraftClient
                         sender = sender.Substring(1);
 
                     //Final check on username validity
-                    return IsValidName(sender);
-                }
-            }
-
-            //User-defined regex for teleport requests
-            if (Settings.ChatFormat_TeleportRequest != null)
-            {
-                Match regexMatch = Settings.ChatFormat_TeleportRequest.Match(text);
-                if (regexMatch.Success && regexMatch.Groups.Count >= 2)
-                {
-                    sender = regexMatch.Groups[1].Value;
                     return IsValidName(sender);
                 }
             }
