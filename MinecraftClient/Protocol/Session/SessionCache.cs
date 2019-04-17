@@ -23,8 +23,8 @@ namespace MinecraftClient.Protocol.Session
             "launcher_profiles.json"
         );
 
+        private static SessionFileMonitor cachemonitor;
         private static Dictionary<string, SessionToken> sessions = new Dictionary<string, SessionToken>();
-        private static FileSystemWatcher cachemonitor = new FileSystemWatcher();
         private static Timer updatetimer = new Timer(100);
         private static List<KeyValuePair<string, SessionToken>> pendingadds = new List<KeyValuePair<string, SessionToken>>();
         private static BinaryFormatter formatter = new BinaryFormatter();
@@ -81,15 +81,8 @@ namespace MinecraftClient.Protocol.Session
         /// <returns>TRUE if session tokens are seeded from file</returns>
         public static bool InitializeDiskCache()
         {
-            cachemonitor.Path = AppDomain.CurrentDomain.BaseDirectory;
-            cachemonitor.IncludeSubdirectories = false;
-            cachemonitor.Filter = SessionCacheFilePlaintext;
-            cachemonitor.NotifyFilter = NotifyFilters.LastWrite;
-            cachemonitor.Changed += new FileSystemEventHandler(OnChanged);
-            cachemonitor.EnableRaisingEvents = true;
-
+            cachemonitor = new SessionFileMonitor(AppDomain.CurrentDomain.BaseDirectory, SessionCacheFilePlaintext, new FileSystemEventHandler(OnChanged));
             updatetimer.Elapsed += HandlePending;
-
             return LoadFromDisk();
         }
 

@@ -97,6 +97,7 @@
     <Compile Include="Commands\Script.cs" />
     <Compile Include="Commands\Send.cs" />
     <Compile Include="Commands\Set.cs" />
+    <Compile Include="Protocol\Session\SessionFileMonitor.cs" />
     <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />
