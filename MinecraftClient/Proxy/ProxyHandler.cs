@@ -64,7 +64,7 @@ namespace MinecraftClient.Proxy
             {
                 ConsoleIO.WriteLineFormatted("§8" + e.Message);
                 proxy = null;
-                return null; 
+                throw new SocketException((int)SocketError.HostUnreachable);
             }
         }
     }
