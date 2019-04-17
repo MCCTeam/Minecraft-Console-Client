@@ -270,20 +270,32 @@ namespace MinecraftClient.Protocol
                     return LoginResult.OtherError;
                 }
             }
-            catch (System.Security.Authentication.AuthenticationException)
+            catch (System.Security.Authentication.AuthenticationException e)
             {
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + e.ToString());
+                }
                 return LoginResult.SSLError;
             }
             catch (System.IO.IOException e)
             {
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + e.ToString());
+                }
                 if (e.Message.Contains("authentication"))
                 {
                     return LoginResult.SSLError;
                 }
                 else return LoginResult.OtherError;
             }
-            catch
+            catch (Exception e)
             {
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + e.ToString());
+                }
                 return LoginResult.OtherError;
             }
         }
