@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using fNbt;
 using MinecraftClient.Protocol.Handlers;
 
 namespace MinecraftClient.Protocol.Packets.Inbound.ChunkData
@@ -10,8 +12,10 @@ namespace MinecraftClient.Protocol.Packets.Inbound.ChunkData
 
         protected override byte[] ReadHeightMap(List<byte> packetData)
         {
-            // NBT data stored in the array, 256 entities, 9 bits each, not sure how to read tho.
-            return PacketUtils.readData(288, packetData);
+            var cp = packetData.ToArray();
+            var nbt = new NbtFile();
+            var read = nbt.LoadFromStream(new MemoryStream(cp), NbtCompression.AutoDetect);
+            return PacketUtils.readData((int)read, packetData);
         }
     }
 }

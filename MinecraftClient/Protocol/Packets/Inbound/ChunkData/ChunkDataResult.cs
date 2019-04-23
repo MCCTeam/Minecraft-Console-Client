@@ -8,8 +8,10 @@ namespace MinecraftClient.Protocol.Packets.Inbound.ChunkData
         public int ChunkZ { get; internal set; }
         public ushort ChunkMask { get; internal set; }
         public ushort ChunkMask2 { get; internal set; }
-        public bool HasLights { get; internal set; }
+        public bool HasSkyLights { get; internal set; }
         public bool ChunksContinuous { get; internal set; }
         public List<byte> Cache { get; internal set; }
+
+        public int Dimension { get; internal set; }
     }
 }

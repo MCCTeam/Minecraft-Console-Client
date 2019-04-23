@@ -98,9 +98,41 @@
     <Compile Include="Commands\Send.cs" />
     <Compile Include="Commands\Set.cs" />
     <Compile Include="Protocol\Session\SessionFileMonitor.cs" />
+    <Compile Include="Protocol\Packets\Inbound\MultiBlockChange\MultiBlockChangeHandler114Pre5.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut112Pre5.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut113Pre4.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut113Pre7.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut114pre5.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut17W13A.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut17W31A.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut17W45A.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut17W46A.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut18.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookOut19.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPositionAndLook\PlayerPositionAndLookRequest.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut112Pre5.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut113Pre4.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut113Pre7.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut114Pre5.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut17W13A.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut17W31A.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut17W45A.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut17W46A.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut18.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionOut19.cs" />
+    <Compile Include="Protocol\Packets\Outbound\PlayerPosition\PlayerPositionRequest.cs" />
+    <Compile Include="Protocol\VersionsFactory.cs" />
     <Compile Include="Protocol\Packets\GamePacketHandler.cs" />
     <Compile Include="Protocol\Packets\IGamePacketHandler.cs" />
     <Compile Include="Protocol\Packets\Inbound\BlockChange\BlockChangeHandler.cs" />
+    <Compile Include="Protocol\Packets\Inbound\BlockChange\BlockChangeHandler112Pre5.cs" />
+    <Compile Include="Protocol\Packets\Inbound\BlockChange\BlockChangeHandler114Pre5.cs" />
+    <Compile Include="Protocol\Packets\Inbound\BlockChange\BlockChangeHandler17W13A.cs" />
+    <Compile Include="Protocol\Packets\Inbound\BlockChange\BlockChangeHandler17W31A.cs" />
+    <Compile Include="Protocol\Packets\Inbound\BlockChange\BlockChangeHandler18.cs" />
+    <Compile Include="Protocol\Packets\Inbound\BlockChange\BlockChangeHandler19.cs" />
     <Compile Include="Protocol\Packets\Inbound\ChatMessage\ChatMessageHandler.cs" />
     <Compile Include="Protocol\Packets\Inbound\ChatMessage\ChatMessageHandler112Pre5.cs" />
     <Compile Include="Protocol\Packets\Inbound\ChatMessage\ChatMessageHandler17W13A.cs" />
@@ -224,7 +256,23 @@
     <Compile Include="Protocol\Packets\Outbound\KeepAlive\KeepAliveOut19.cs" />
     <Compile Include="Protocol\Packets\Outbound\OutboundGamePacket.cs" />
     <Compile Include="Protocol\Packets\Outbound\OutboundTypes.cs" />
-    <Compile Include="Protocol\Packets\PacketFactory.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\114Pre5\Block.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\114Pre5\BlockProcessor114Pre5.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\114Pre5\Material.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\114Pre5\MaterialMapping.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\BlockProcessor.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\IBlock.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\IBlockProcessor.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\Legacy\BlockLegacy.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\Legacy\BlockProcessorLegacy.cs" />
+    <Compile Include="Protocol\WorldProcessors\BlockProcessors\Legacy\Material.cs" />
+    <Compile Include="Protocol\WorldProcessors\ChunkProcessors\ChunkProcessor.cs" />
+    <Compile Include="Protocol\WorldProcessors\ChunkProcessors\ChunkProcessor114Pre5.cs" />
+    <Compile Include="Protocol\WorldProcessors\ChunkProcessors\ChunkProcessor17.cs" />
+    <Compile Include="Protocol\WorldProcessors\ChunkProcessors\ChunkProcessor18.cs" />
+    <Compile Include="Protocol\WorldProcessors\ChunkProcessors\ChunkProcessor19.cs" />
+    <Compile Include="Protocol\WorldProcessors\ChunkProcessors\IChunkProcessor.cs" />
+    <Compile Include="Protocol\WorldProcessors\IWorldProcessor.cs" />
     <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />
@@ -247,11 +295,9 @@
     <Compile Include="Crypto\CryptoHandler.cs" />
     <Compile Include="CSharpRunner.cs" />
     <Compile Include="Json.cs" />
-    <Compile Include="Mapping\Block.cs" />
     <Compile Include="Mapping\Chunk.cs" />
     <Compile Include="Mapping\ChunkColumn.cs" />
     <Compile Include="Mapping\Direction.cs" />
-    <Compile Include="Mapping\Material.cs" />
     <Compile Include="Mapping\Movement.cs" />
     <Compile Include="Mapping\World.cs" />
     <Compile Include="Protocol\ChatParser.cs" />
@@ -392,6 +438,12 @@
   <ItemGroup>
     <Content Include="Protocol\Dns\Records\totla.txt" />
     <Content Include="Resources\AppIcon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Submodules\fNbt\fNbt\fNbt.csproj">
+      <Project>{4488498d-976d-4da3-bf72-109531af0488}</Project>
+      <Name>fNbt</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

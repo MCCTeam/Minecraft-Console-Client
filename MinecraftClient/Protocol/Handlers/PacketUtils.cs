@@ -146,6 +146,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 guid = new Guid(javaUUID);
             }
+
             return guid;
         }
 
@@ -160,6 +161,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 net[i] = java[i];
             }
+
             net[3] = java[0];
             net[2] = java[1];
             net[1] = java[2];
@@ -197,6 +199,18 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
+        public static int[] readNextVarIntArray(List<byte> cache)
+        {
+            var len = readNextVarInt(cache);
+            var result = new int[len];
+            for (var ii = 0; ii < len; ii++)
+            {
+                result[ii] = readNextVarInt(cache);
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Read a double from a cache of bytes and remove it from the cache
         /// </summary>
@@ -225,6 +239,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (j > 5) throw new OverflowException("VarInt too big");
                 if ((k & 0x80) != 128) break;
             }
+
             return i;
         }
 
@@ -244,6 +259,7 @@ namespace MinecraftClient.Protocol.Handlers
                 low &= 0x7FFF;
                 high = readNextByte(cache);
             }
+
             return ((high & 0xFF) << 15) | low;
         }
 
@@ -279,10 +295,11 @@ namespace MinecraftClient.Protocol.Handlers
             List<byte> bytes = new List<byte>();
             while ((paramInt & -128) != 0)
             {
-                bytes.Add((byte)(paramInt & 127 | 128));
-                paramInt = (int)(((uint)paramInt) >> 7);
+                bytes.Add((byte) (paramInt & 127 | 128));
+                paramInt = (int) (((uint) paramInt) >> 7);
             }
-            bytes.Add((byte)paramInt);
+
+            bytes.Add((byte) paramInt);
             return bytes.ToArray();
         }
 
@@ -307,7 +324,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (protocolversion < MC18Version)
             {
-                byte[] length = BitConverter.GetBytes((short)array.Length);
+                byte[] length = BitConverter.GetBytes((short) array.Length);
                 Array.Reverse(length);
                 return concatBytes(length, array);
             }

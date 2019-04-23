@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MinecraftClient.Protocol.WorldProcessors.BlockProcessors;
+using MinecraftClient.Protocol.WorldProcessors.BlockProcessors.Legacy;
 
 namespace MinecraftClient.Mapping
 {
@@ -17,7 +19,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Blocks contained into the chunk
         /// </summary>
-        private readonly Block[,,] blocks = new Block[SizeX, SizeY, SizeZ];
+        private readonly IBlock[,,] blocks = new IBlock[SizeX, SizeY, SizeZ];
 
         /// <summary>
         /// Read, or set the specified block
@@ -26,7 +28,7 @@ namespace MinecraftClient.Mapping
         /// <param name="blockY">Block Y</param>
         /// <param name="blockZ">Block Z</param>
         /// <returns>chunk at the given location</returns>
-        public Block this[int blockX, int blockY, int blockZ]
+        public IBlock this[int blockX, int blockY, int blockZ]
         {
             get
             {
@@ -55,7 +57,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="location">Location, a modulo will be applied</param>
         /// <returns>The block</returns>
-        public Block GetBlock(Location location)
+        public IBlock GetBlock(Location location)
         {
             return this[location.ChunkBlockX, location.ChunkBlockY, location.ChunkBlockZ];
         }

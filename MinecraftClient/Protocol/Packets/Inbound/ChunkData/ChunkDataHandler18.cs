@@ -12,7 +12,7 @@ namespace MinecraftClient.Protocol.Packets.Inbound.ChunkData
             var res = new ChunkDataResult();
             PacketUtils.readNextVarInt(packetData); // data size
             res.ChunkMask2 = 0;
-            res.HasLights = false;
+            res.HasSkyLights = false;
             res.Cache = packetData;
 
             return res;

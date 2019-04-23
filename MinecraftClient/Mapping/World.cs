@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using MinecraftClient.Protocol;
+using MinecraftClient.Protocol.WorldProcessors.BlockProcessors;
 
 namespace MinecraftClient.Mapping
 {
@@ -10,10 +9,18 @@ namespace MinecraftClient.Mapping
     /// </summary>
     public class World
     {
+        internal IBlockProcessor BlockProcessor { get; }
+
+        public World(int protocolVersion)
+        {
+            BlockProcessor = VersionsFactory.WorldProcessor<IBlockProcessor>(protocolVersion);
+        }
+
         /// <summary>
         /// The chunks contained into the Minecraft world
         /// </summary>
-        private Dictionary<int, Dictionary<int, ChunkColumn>> chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
+        private Dictionary<int, Dictionary<int, ChunkColumn>> chunks =
+            new Dictionary<int, Dictionary<int, ChunkColumn>>();
 
         /// <summary>
         /// Read, set or unload the specified chunk column
@@ -71,7 +78,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="location">Location to retrieve block from</param>
         /// <returns>Block at specified location or Air if the location is not loaded</returns>
-        public Block GetBlock(Location location)
+        public IBlock GetBlock(Location location)
         {
             ChunkColumn column = GetChunkColumn(location);
             if (column != null)
@@ -80,7 +87,8 @@ namespace MinecraftClient.Mapping
                 if (chunk != null)
                     return chunk.GetBlock(location);
             }
-            return new Block(Material.Air);
+
+            return BlockProcessor.CreateAirBlock();
         }
 
         /// <summary>
@@ -88,7 +96,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="location">Location to set block to</param>
         /// <param name="block">Block to set</param>
-        public void SetBlock(Location location, Block block)
+        public void SetBlock(Location location, IBlock block)
         {
             ChunkColumn column = this[location.ChunkX, location.ChunkZ];
             if (column != null)

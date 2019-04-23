@@ -16,7 +16,10 @@ using MinecraftClient.Protocol.Packets.Inbound.JoinGame;
 using MinecraftClient.Protocol.Packets.Outbound;
 using MinecraftClient.Protocol.Packets.Outbound.ChatMessage;
 using MinecraftClient.Protocol.Packets.Outbound.ClientSettings;
+using MinecraftClient.Protocol.Packets.Outbound.PlayerPosition;
+using MinecraftClient.Protocol.Packets.Outbound.PlayerPositionAndLook;
 using MinecraftClient.Protocol.Packets.Outbound.PluginMessage;
+using MinecraftClient.Protocol.WorldProcessors.ChunkProcessors;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -46,6 +49,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private Dictionary<int, IInboundGamePacketHandler> _inboundHandlers;
         private Dictionary<OutboundTypes, IOutboundGamePacket> _outboundPackets;
+        private IChunkProcessor _chunkProcessor;
 
         public Protocol18Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler,
             ForgeInfo ForgeInfo)
@@ -61,24 +65,33 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void initHandlers()
         {
-            _inboundHandlers = PacketFactory.InboundHandlers(protocolversion);
+            _inboundHandlers = VersionsFactory.InboundHandlers(protocolversion);
             ConsoleIO.WriteLine("Loaded inbound handlers:");
             foreach (var inboundGamePacketHandler in _inboundHandlers)
             {
                 ConsoleIO.WriteLineFormatted($"Type: {inboundGamePacketHandler.Value.Type()} " +
-                                             $"Implementation: {inboundGamePacketHandler.Value.GetType().Name} " +
+                                             $"Implementation: {inboundGamePacketHandler.Value.GetType().Name}" +
                                              $"Packet: 0x{inboundGamePacketHandler.Key:X2}");
             }
 
-            _outboundPackets = PacketFactory.OutboundHandlers(protocolversion);
+            _outboundPackets = VersionsFactory.OutboundHandlers(protocolversion);
 
             ConsoleIO.WriteLine("Loaded outbound packets:");
             foreach (var outboundPacket in _outboundPackets)
             {
                 ConsoleIO.WriteLineFormatted($"Type: {outboundPacket.Value.Type()} " +
-                                             $"Implementation: {outboundPacket.Value.GetType().Name} " +
+                                             $"Implementation: {outboundPacket.Value.GetType().Name}" +
                                              $"Packet: 0x{outboundPacket.Value.PacketId():X2}");
             }
+
+            _chunkProcessor = VersionsFactory.WorldProcessor<IChunkProcessor>(protocolversion);
+            ConsoleIO.WriteLine("Loaded Chunk processor:");
+            ConsoleIO.WriteLineFormatted($"Version: {_chunkProcessor.MinVersion()} " +
+                                         $"Implementation: {_chunkProcessor.GetType().Name}");
+
+            ConsoleIO.WriteLine("Loaded Block processor:");
+            ConsoleIO.WriteLineFormatted($"Version: {handler.GetWorld().BlockProcessor.MinVersion()} " +
+                                         $"Implementation: {handler.GetWorld().BlockProcessor.GetType().Name}");
         }
 
         private Protocol18Handler(TcpClient Client)
@@ -133,7 +146,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     try
                     {
-                        handleIncomingPacket(packetID, new List<byte>(packetData));
+                        HandleIncomingPacket(packetID, new List<byte>(packetData));
                     }
                     catch (Exception e)
                     {
@@ -223,7 +236,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetId">Packet ID</param>
         /// <param name="packetData">Packet contents</param>
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
-        private bool handleIncomingPacket(int packetId, List<byte> packetData)
+        private bool HandleIncomingPacket(int packetId, List<byte> packetData)
         {
             if (login_phase)
             {
@@ -258,231 +271,12 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     if (null == data)
                         break;
-                    ProcessChunkColumnData(((ChunkDataResult) data).ChunkX, ((ChunkDataResult) data).ChunkZ,
-                        ((ChunkDataResult) data).ChunkMask, ((ChunkDataResult) data).ChunkMask2,
-                        ((ChunkDataResult) data).HasLights, ((ChunkDataResult) data).ChunksContinuous,
-                        ((ChunkDataResult) data).Cache);
+                    _chunkProcessor.Process(handler, (ChunkDataResult) data);
                 }
                     break;
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Process chunk column data from the server and (un)load the chunk from the Minecraft world
-        /// </summary>
-        /// <param name="chunkX">Chunk X location</param>
-        /// <param name="chunkZ">Chunk Z location</param>
-        /// <param name="chunkMask">Chunk mask for reading data</param>
-        /// <param name="chunkMask2">Chunk mask for some additional 1.7 metadata</param>
-        /// <param name="hasSkyLight">Contains skylight info</param>
-        /// <param name="chunksContinuous">Are the chunk continuous</param>
-        /// <param name="cache">Cache for reading chunk data</param>
-        private void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2,
-            bool hasSkyLight, bool chunksContinuous, List<byte> cache)
-        {
-            if (protocolversion >= PacketUtils.MC19Version)
-            {
-                // 1.9 and above chunk format
-                // Unloading chunks is handled by a separate packet
-                for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
-                {
-                    if ((chunkMask & (1 << chunkY)) != 0)
-                    {
-                        byte bitsPerBlock = PacketUtils.readNextByte(cache);
-                        bool usePalette = (bitsPerBlock <= 8);
-
-                        int paletteLength = PacketUtils.readNextVarInt(cache);
-                        int[] palette = new int[paletteLength];
-                        for (int i = 0; i < paletteLength; i++)
-                        {
-                            palette[i] = PacketUtils.readNextVarInt(cache);
-                        }
-
-                        // Bit mask covering bitsPerBlock bits
-                        // EG, if bitsPerBlock = 5, valueMask = 00011111 in binary
-                        uint valueMask = (uint) ((1 << bitsPerBlock) - 1);
-
-                        ulong[] dataArray = PacketUtils.readNextULongArray(cache);
-
-                        Chunk chunk = new Chunk();
-
-                        if (dataArray.Length > 0)
-                        {
-                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
-                            {
-                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
-                                {
-                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                    {
-                                        int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
-
-                                        int startLong = (blockNumber * bitsPerBlock) / 64;
-                                        int startOffset = (blockNumber * bitsPerBlock) % 64;
-                                        int endLong = ((blockNumber + 1) * bitsPerBlock - 1) / 64;
-
-                                        // TODO: In the future a single ushort may not store the entire block id;
-                                        // the Block code may need to change.
-                                        ushort blockId;
-                                        if (startLong == endLong)
-                                        {
-                                            blockId = (ushort) ((dataArray[startLong] >> startOffset) & valueMask);
-                                        }
-                                        else
-                                        {
-                                            int endOffset = 64 - startOffset;
-                                            blockId = (ushort) ((dataArray[startLong] >> startOffset |
-                                                                 dataArray[endLong] << endOffset) & valueMask);
-                                        }
-
-                                        if (usePalette)
-                                        {
-                                            // Get the real block ID out of the palette
-                                            blockId = (ushort) palette[blockId];
-                                        }
-
-                                        chunk[blockX, blockY, blockZ] = new Block(blockId);
-                                    }
-                                }
-                            }
-                        }
-
-                        //We have our chunk, save the chunk into the world
-                        if (handler.GetWorld()[chunkX, chunkZ] == null)
-                            handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
-                        handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
-
-                        //Skip block light
-                        PacketUtils.readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
-
-                        //Skip sky light
-                        if (this.currentDimension == 0)
-                            // Sky light is not sent in the nether or the end
-                            PacketUtils.readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
-                    }
-                }
-
-                // Don't worry about skipping remaining data since there is no useful data afterwards in 1.9
-                // (plus, it would require parsing the tile entity lists' NBT)
-            }
-            else if (protocolversion >= PacketUtils.MC18Version)
-            {
-                // 1.8 chunk format
-                if (chunksContinuous && chunkMask == 0)
-                {
-                    //Unload the entire chunk column
-                    handler.GetWorld()[chunkX, chunkZ] = null;
-                }
-                else
-                {
-                    //Load chunk data from the server
-                    for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
-                    {
-                        if ((chunkMask & (1 << chunkY)) != 0)
-                        {
-                            Chunk chunk = new Chunk();
-
-                            //Read chunk data, all at once for performance reasons, and build the chunk object
-                            Queue<ushort> queue = new Queue<ushort>(
-                                PacketUtils.readNextUShortsLittleEndian(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ,
-                                    cache));
-                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
-                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
-                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                        chunk[blockX, blockY, blockZ] = new Block(queue.Dequeue());
-
-                            //We have our chunk, save the chunk into the world
-                            if (handler.GetWorld()[chunkX, chunkZ] == null)
-                                handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
-                            handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
-                        }
-                    }
-
-                    //Skip light information
-                    for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
-                    {
-                        if ((chunkMask & (1 << chunkY)) != 0)
-                        {
-                            //Skip block light
-                            PacketUtils.readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
-
-                            //Skip sky light
-                            if (hasSkyLight)
-                                PacketUtils.readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
-                        }
-                    }
-
-                    //Skip biome metadata
-                    if (chunksContinuous)
-                        PacketUtils.readData(Chunk.SizeX * Chunk.SizeZ, cache);
-                }
-            }
-            else
-            {
-                // 1.7 chunk format
-                if (chunksContinuous && chunkMask == 0)
-                {
-                    //Unload the entire chunk column
-                    handler.GetWorld()[chunkX, chunkZ] = null;
-                }
-                else
-                {
-                    //Count chunk sections
-                    int sectionCount = 0;
-                    int addDataSectionCount = 0;
-                    for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
-                    {
-                        if ((chunkMask & (1 << chunkY)) != 0)
-                            sectionCount++;
-                        if ((chunkMask2 & (1 << chunkY)) != 0)
-                            addDataSectionCount++;
-                    }
-
-                    //Read chunk data, unpacking 4-bit values into 8-bit values for block metadata
-                    Queue<byte> blockTypes =
-                        new Queue<byte>(PacketUtils.readData(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount,
-                            cache));
-                    Queue<byte> blockMeta = new Queue<byte>();
-                    foreach (byte packed in PacketUtils.readData(
-                        (Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache))
-                    {
-                        byte hig = (byte) (packed >> 4);
-                        byte low = (byte) (packed & (byte) 0x0F);
-                        blockMeta.Enqueue(hig);
-                        blockMeta.Enqueue(low);
-                    }
-
-                    //Skip data we don't need
-                    PacketUtils.readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2,
-                        cache); //Block light
-                    if (hasSkyLight)
-                        PacketUtils.readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2,
-                            cache); //Sky light
-                    PacketUtils.readData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * addDataSectionCount) / 2,
-                        cache); //BlockAdd
-                    if (chunksContinuous)
-                        PacketUtils.readData(Chunk.SizeX * Chunk.SizeZ, cache); //Biomes
-
-                    //Load chunk data
-                    for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
-                    {
-                        if ((chunkMask & (1 << chunkY)) != 0)
-                        {
-                            Chunk chunk = new Chunk();
-
-                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
-                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
-                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                        chunk[blockX, blockY, blockZ] = new Block(blockTypes.Dequeue(), blockMeta.Dequeue());
-
-                            if (handler.GetWorld()[chunkX, chunkZ] == null)
-                                handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
-                            handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -583,7 +377,6 @@ namespace MinecraftClient.Protocol.Handlers
                 else read += c.Client.Receive(buffer, start + read, offset - read, f);
             }
         }
-
         /// <summary>
         /// Send a packet to the server.  Compression and encryption will be handled automatically.
         /// </summary>
@@ -682,7 +475,7 @@ namespace MinecraftClient.Protocol.Handlers
                         return true; //No need to check session or start encryption
                     }
 
-                    handleIncomingPacket(packetID, packetData);
+                    HandleIncomingPacket(packetID, packetData);
                 }
             }
         }
@@ -707,7 +500,7 @@ namespace MinecraftClient.Protocol.Handlers
                     return false;
                 }
 
-                handleIncomingPacket(packetID, packetData);
+                HandleIncomingPacket(packetID, packetData);
             }
 
             return true;
@@ -779,7 +572,7 @@ namespace MinecraftClient.Protocol.Handlers
                         return true;
                     }
 
-                    handleIncomingPacket(packetID, packetData);
+                    HandleIncomingPacket(packetID, packetData);
                 }
             }
         }
@@ -877,38 +670,29 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>True if the location update was successfully sent</returns>
         public bool SendLocationUpdate(Location location, bool onGround, float? yaw = null, float? pitch = null)
         {
-//            if (Settings.TerrainAndMovements)
-//            {
-//                byte[] yawpitch = new byte[0];
-//                PacketOutgoingType packetType = PacketOutgoingType.PlayerPosition;
-//
-//                if (yaw.HasValue && pitch.HasValue)
-//                {
-//                    yawpitch = PacketUtils.concatBytes(PacketUtils.getFloat(yaw.Value),
-//                        PacketUtils.getFloat(pitch.Value));
-//                    packetType = PacketOutgoingType.PlayerPositionAndLook;
-//                }
-//
-//                try
-//                {
-//                    SendPacket(packetType, PacketUtils.concatBytes(
-//                        PacketUtils.getDouble(location.X),
-//                        PacketUtils.getDouble(location.Y),
-//                        protocolversion < PacketUtils.MC18Version
-//                            ? PacketUtils.getDouble(location.Y + 1.62)
-//                            : new byte[0],
-//                        PacketUtils.getDouble(location.Z),
-//                        yawpitch,
-//                        new byte[] {onGround ? (byte) 1 : (byte) 0}));
-//                    return true;
-//                }
-//                catch (SocketException)
-//                {
-//                    return false;
-//                }
-//            }
-//            else
-            return false;
+            if (!Settings.TerrainAndMovements)
+            {
+                return false;
+            }
+
+            if (yaw.HasValue && pitch.HasValue)
+            {
+                return SendPacketOut(OutboundTypes.PlayerPositionAndLook, null,
+                    new PlayerPositionAndLookRequest
+                    {
+                        Location = location,
+                        IsOnGround = onGround,
+                        Yaw = yaw.Value,
+                        Pitch = pitch.Value,
+                    });
+            }
+
+            return SendPacketOut(OutboundTypes.PlayerPosition, null,
+                new PlayerPositionRequest
+                {
+                    Location = location,
+                    IsOnGround = onGround,
+                });
         }
 
         /// <summary>

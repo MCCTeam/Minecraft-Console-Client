@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using MinecraftClient.Protocol.Packets;
 using MinecraftClient.Protocol.Packets.Inbound;
 using MinecraftClient.Protocol.Packets.Outbound;
+using MinecraftClient.Protocol.WorldProcessors;
 
-namespace MinecraftClient.Protocol.Packets
+namespace MinecraftClient.Protocol
 {
-    internal static class PacketFactory
+    internal static class VersionsFactory
     {
         public static Dictionary<int, IInboundGamePacketHandler> InboundHandlers(int protocolVersion)
         {
@@ -57,6 +59,28 @@ namespace MinecraftClient.Protocol.Packets
             }
 
             return latestHandlers;
+        }
+
+        public static T WorldProcessor<T>(int protocolVersion) where T : IWorldProcessor
+        {
+            var allHandlers = new SortedList<int, T>();
+
+            foreach (var t in Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => x.GetInterfaces().Contains(typeof(T)) && !x.IsAbstract))
+            {
+                var i = (T) Activator.CreateInstance(t);
+                allHandlers.Add(i.MinVersion(), i);
+            }
+
+            foreach (var handler in allHandlers.OrderByDescending(x => x.Key))
+            {
+                if (protocolVersion >= handler.Key)
+                {
+                    return handler.Value;
+                }
+            }
+
+            return default(T);
         }
     }
 }

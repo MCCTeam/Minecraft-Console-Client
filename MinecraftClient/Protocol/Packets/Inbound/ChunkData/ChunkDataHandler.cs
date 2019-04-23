@@ -28,6 +28,7 @@ namespace MinecraftClient.Protocol.Packets.Inbound.ChunkData
             res.ChunkZ = chunkZ;
             res.ChunksContinuous = chunksContinuous;
             res.ChunkMask = chunkMask;
+            res.Dimension = protocol.Dimension();
             return res;
         }
 
@@ -51,7 +52,7 @@ namespace MinecraftClient.Protocol.Packets.Inbound.ChunkData
             var decompressed = ZlibUtils.Decompress(compressed);
 
             res.ChunkMask2 = addBitmap;
-            res.HasLights = 0 == protocol.Dimension();
+            res.HasSkyLights = 0 == protocol.Dimension();
             res.Cache = new List<byte>(decompressed);
             return res;
         }

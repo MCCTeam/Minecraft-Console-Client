@@ -33,7 +33,7 @@ namespace MinecraftClient
 
         private object locationLock = new object();
         private bool locationReceived = false;
-        private World world = new World();
+        private World world;
         private Queue<Location> steps;
         private Queue<Location> path;
         private Location location;
@@ -59,6 +59,11 @@ namespace MinecraftClient
         IMinecraftCom handler;
         Thread cmdprompt;
 
+        private McTcpClient(int protocolVersion)
+        {
+            world = new World(protocolVersion);
+        }
+        
         /// <summary>
         /// Starts the main chat client
         /// </summary>
@@ -68,7 +73,8 @@ namespace MinecraftClient
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
+        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, 
+            ForgeInfo forgeInfo, string server_ip, ushort port):this(protocolversion)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, false, "");
         }
@@ -83,7 +89,8 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
-        public McTcpClient(string username, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
+        public McTcpClient(string username, string uuid, string sessionID, string server_ip, ushort port, 
+            int protocolversion, ForgeInfo forgeInfo, string command):this(protocolversion)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, true, command);
         }
@@ -99,7 +106,8 @@ namespace MinecraftClient
         /// <param name="uuid">The player's UUID for online-mode authentication</param>
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-        private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
+        private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, 
+            int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             bool retry = false;
             this.sessionid = sessionID;

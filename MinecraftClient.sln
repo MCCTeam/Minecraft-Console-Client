@@ -3,6 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftClient", "MinecraftClient\MinecraftClient.csproj", "{1E2FACE4-F5CA-4323-9641-740C6A551770}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fNbt", "Submodules\fNbt\fNbt\fNbt.csproj", "{4488498D-976D-4DA3-BF72-109531AF0488}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaterialGenerator", "MaterialGenerator\MaterialGenerator.csproj", "{BACE1059-93A7-4B06-92D0-36E9867BE1A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,6 +17,14 @@ Global
 		{1E2FACE4-F5CA-4323-9641-740C6A551770}.Debug|x86.Build.0 = Debug|x86
 		{1E2FACE4-F5CA-4323-9641-740C6A551770}.Release|x86.ActiveCfg = Release|x86
 		{1E2FACE4-F5CA-4323-9641-740C6A551770}.Release|x86.Build.0 = Release|x86
+		{4488498D-976D-4DA3-BF72-109531AF0488}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4488498D-976D-4DA3-BF72-109531AF0488}.Debug|x86.Build.0 = Debug|Any CPU
+		{4488498D-976D-4DA3-BF72-109531AF0488}.Release|x86.ActiveCfg = Release|Any CPU
+		{4488498D-976D-4DA3-BF72-109531AF0488}.Release|x86.Build.0 = Release|Any CPU
+		{BACE1059-93A7-4B06-92D0-36E9867BE1A5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BACE1059-93A7-4B06-92D0-36E9867BE1A5}.Debug|x86.Build.0 = Debug|Any CPU
+		{BACE1059-93A7-4B06-92D0-36E9867BE1A5}.Release|x86.ActiveCfg = Release|Any CPU
+		{BACE1059-93A7-4B06-92D0-36E9867BE1A5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
