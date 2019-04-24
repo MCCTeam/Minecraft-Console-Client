@@ -5,3 +5,5 @@
 /MinecraftClient.userprefs
 /.vs/
 SessionCache.ini
+.idea/
+*.user
