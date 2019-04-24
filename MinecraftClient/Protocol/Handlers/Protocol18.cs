@@ -47,15 +47,16 @@ namespace MinecraftClient.Protocol.Handlers
         private Dictionary<int, IInboundGamePacketHandler> _inboundHandlers;
         private Dictionary<OutboundTypes, IOutboundGamePacket> _outboundPackets;
 
-        public Protocol18Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler, ForgeInfo ForgeInfo)
+        public Protocol18Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler,
+            ForgeInfo ForgeInfo)
         {
             ConsoleIO.SetAutoCompleteEngine(this);
             ChatParser.InitTranslations();
-            this.c = Client;
-            this.protocolversion = ProtocolVersion;
-            this.handler = Handler;
-            this.forgeInfo = ForgeInfo;
-            this.initHandlers();
+            c = Client;
+            protocolversion = ProtocolVersion;
+            handler = Handler;
+            forgeInfo = ForgeInfo;
+            initHandlers();
         }
 
         private void initHandlers()
@@ -278,7 +279,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="hasSkyLight">Contains skylight info</param>
         /// <param name="chunksContinuous">Are the chunk continuous</param>
         /// <param name="cache">Cache for reading chunk data</param>
-        private void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, List<byte> cache)
+        private void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2,
+            bool hasSkyLight, bool chunksContinuous, List<byte> cache)
         {
             if (protocolversion >= PacketUtils.MC19Version)
             {
@@ -552,6 +554,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (j > 5) throw new OverflowException("VarInt too big");
                 if ((k & 0x80) != 128) break;
             }
+
             return i;
         }
 
@@ -716,7 +719,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>True if encryption was successful</returns>
         private bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverKey)
         {
-            System.Security.Cryptography.RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverKey);
+            System.Security.Cryptography.RSACryptoServiceProvider RSAService =
+                CryptoHandler.DecodeRSAPublicKey(serverKey);
             byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
 
             if (Settings.DebugMessages)
@@ -725,7 +729,8 @@ namespace MinecraftClient.Protocol.Handlers
             if (serverIDhash != "-")
             {
                 Console.WriteLine("Checking Session...");
-                if (!ProtocolHandler.SessionCheck(uuid, sessionID, CryptoHandler.getServerHash(serverIDhash, serverKey, secretKey)))
+                if (!ProtocolHandler.SessionCheck(uuid, sessionID,
+                    CryptoHandler.getServerHash(serverIDhash, serverKey, secretKey)))
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, "Failed to check session.");
                     return false;
@@ -751,7 +756,8 @@ namespace MinecraftClient.Protocol.Handlers
                 readNextPacket(ref packetID, packetData);
                 if (packetID == 0x00) //Login rejected
                 {
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, ChatParser.ParseText(PacketUtils.readNextString(packetData)));
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected,
+                        ChatParser.ParseText(PacketUtils.readNextString(packetData)));
                     return false;
                 }
                 else
@@ -844,7 +850,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="skinParts">Show skin layers</param>
         /// <param name="mainHand">1.9+ main hand</param>
         /// <returns>True if client settings were successfully sent</returns>
-        public bool SendClientSettings(string language, byte viewDistance, byte difficulty, byte chatMode, bool chatColors, byte skinParts, byte mainHand)
+        public bool SendClientSettings(string language, byte viewDistance, byte difficulty, byte chatMode,
+            bool chatColors, byte skinParts, byte mainHand)
         {
             var req = new ClientSettingsRequest
             {
@@ -1011,13 +1018,15 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] server_port = BitConverter.GetBytes((ushort) port);
             Array.Reverse(server_port);
             byte[] next_state = PacketUtils.getVarInt(1);
-            byte[] packet = PacketUtils.concatBytes(packet_id, protocol_version, PacketUtils.getString(host), server_port, next_state);
+            byte[] packet = PacketUtils.concatBytes(packet_id, protocol_version, PacketUtils.getString(host),
+                server_port, next_state);
             byte[] tosend = PacketUtils.concatBytes(PacketUtils.getVarInt(packet.Length), packet);
 
             tcp.Client.Send(tosend, SocketFlags.None);
 
             byte[] status_request = PacketUtils.getVarInt(0);
-            byte[] request_packet = PacketUtils.concatBytes(PacketUtils.getVarInt(status_request.Length), status_request);
+            byte[] request_packet =
+                PacketUtils.concatBytes(PacketUtils.getVarInt(status_request.Length), status_request);
 
             tcp.Client.Send(request_packet, SocketFlags.None);
 
@@ -1033,7 +1042,8 @@ namespace MinecraftClient.Protocol.Handlers
                     if (!String.IsNullOrEmpty(result) && result.StartsWith("{") && result.EndsWith("}"))
                     {
                         Json.JSONData jsonData = Json.ParseJson(result);
-                        if (jsonData.Type == Json.JSONData.DataType.Object && jsonData.Properties.ContainsKey("version"))
+                        if (jsonData.Type == Json.JSONData.DataType.Object &&
+                            jsonData.Properties.ContainsKey("version"))
                         {
                             Json.JSONData versionData = jsonData.Properties["version"];
 
@@ -1050,10 +1060,12 @@ namespace MinecraftClient.Protocol.Handlers
                                 protocolversion = ProtocolHandler.MCVer2ProtocolVersion("1.8.0");
 
                             // Check for forge on the server.
-                            if (jsonData.Properties.ContainsKey("modinfo") && jsonData.Properties["modinfo"].Type == Json.JSONData.DataType.Object)
+                            if (jsonData.Properties.ContainsKey("modinfo") &&
+                                jsonData.Properties["modinfo"].Type == Json.JSONData.DataType.Object)
                             {
                                 Json.JSONData modData = jsonData.Properties["modinfo"];
-                                if (modData.Properties.ContainsKey("type") && modData.Properties["type"].StringValue == "FML")
+                                if (modData.Properties.ContainsKey("type") &&
+                                    modData.Properties["type"].StringValue == "FML")
                                 {
                                     forgeInfo = new ForgeInfo(modData);
 
@@ -1073,13 +1085,16 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                             }
 
-                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + (forgeInfo != null ? ", with Forge)." : ")."));
+                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" +
+                                                         protocolversion +
+                                                         (forgeInfo != null ? ", with Forge)." : ")."));
 
                             return true;
                         }
                     }
                 }
             }
+
             return false;
         }
     }
