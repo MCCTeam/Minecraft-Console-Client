@@ -97,6 +97,11 @@
     <Compile Include="Commands\Script.cs" />
     <Compile Include="Commands\Send.cs" />
     <Compile Include="Commands\Set.cs" />
+    <Compile Include="Mapping\BlockPalettes\Palette112.cs" />
+    <Compile Include="Mapping\BlockPalettes\Palette113.cs" />
+    <Compile Include="Mapping\BlockPalettes\PaletteGenerator.cs" />
+    <Compile Include="Mapping\BlockPalettes\PaletteMapping.cs" />
+    <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Protocol\Session\SessionFileMonitor.cs" />
     <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />

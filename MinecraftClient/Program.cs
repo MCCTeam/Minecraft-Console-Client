@@ -12,7 +12,7 @@ using MinecraftClient.WinAPI;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2018.
+    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2019.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>

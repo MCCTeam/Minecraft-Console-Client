@@ -1,5 +1,5 @@
 ﻿==================================================================================
- Minecraft Client v1.13.0 for Minecraft 1.4.6 to 1.13.0 - By ORelio & Contributors
+ Minecraft Client v1.13.0 for Minecraft 1.4.6 to 1.13.2 - By ORelio & Contributors
 ==================================================================================
 
 Thanks for dowloading Minecraft Console Client!
@@ -275,8 +275,8 @@ Bug Hunters
 Code contributions
 
   Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, dbear20, dogwatch, initsuj,
-  JamieSinn, justcool393, lokulin, maxpowa, medxo, Pokechu22, repository, TheMeq, v1RuX,
-  ZizzyDizzyMC
+  JamieSinn, justcool393, lokulin, maxpowa, medxo, Pokechu22, repository, TheMeq, TheSnoozer,
+  vkorn, v1RuX, ZizzyDizzyMC
 
 Libraries
 

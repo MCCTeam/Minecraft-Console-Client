@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MinecraftClient.Mapping.BlockPalettes;
 
 namespace MinecraftClient.Mapping
 {
@@ -11,37 +12,68 @@ namespace MinecraftClient.Mapping
     public struct Block
     {
         /// <summary>
-        /// Storage for block ID and metadata
+        /// Get or set global block ID to Material mapping
+        /// The global Palette is a concept introduced with Minecraft 1.13
+        /// </summary>
+        public static PaletteMapping Palette { get; set; }
+
+        /// <summary>
+        /// Storage for block ID and metadata, as ushort for compatibility, performance and lower memory footprint
+        /// For Minecraft 1.12 and lower, first 12 bits contain block ID (0-4095), last 4 bits contain metadata (0-15)
+        /// For Minecraft 1.13 and greater, all 16 bits are used to store block state ID (0-65535)
         /// </summary>
         private ushort blockIdAndMeta;
 
         /// <summary>
         /// Id of the block
         /// </summary>
-        public short BlockId
+        public int BlockId
         {
             get
             {
-                return (short)(blockIdAndMeta >> 4);
+                if (Palette.IdHasMetadata)
+                {
+                    return blockIdAndMeta >> 4;
+                }
+                return blockIdAndMeta;
             }
             set
             {
-                blockIdAndMeta = (ushort)(value << 4 | BlockMeta);
+                if (Palette.IdHasMetadata)
+                {
+                    if (value > (ushort.MaxValue >> 4) || value < 0)
+                        throw new ArgumentOutOfRangeException("value", "Invalid block ID. Accepted range: 0-4095");
+                    blockIdAndMeta = (ushort)(value << 4 | BlockMeta);
+                }
+                else
+                {
+                    if (value > ushort.MaxValue || value < 0)
+                        throw new ArgumentOutOfRangeException("value", "Invalid block ID. Accepted range: 0-65535");
+                    blockIdAndMeta = (ushort)value;
+                }
             }
         }
 
         /// <summary>
-        /// Metadata of the block
+        /// Metadata of the block.
+        /// This field has no effect starting with Minecraft 1.13.
         /// </summary>
         public byte BlockMeta
         {
             get
             {
-                return (byte)(blockIdAndMeta & 0x0F);
+                if (Palette.IdHasMetadata)
+                {
+                    return (byte)(blockIdAndMeta & 0x0F);
+                }
+                return 0;
             }
             set
             {
-                blockIdAndMeta = (ushort)((blockIdAndMeta & ~0x0F) | (value & 0x0F));
+                if (Palette.IdHasMetadata)
+                {
+                    blockIdAndMeta = (ushort)((blockIdAndMeta & ~0x0F) | (value & 0x0F));
+                }
             }
         }
 
@@ -52,7 +84,7 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                return (Material)BlockId;
+                return Palette.FromId(BlockId);
             }
         }
 
@@ -63,26 +95,21 @@ namespace MinecraftClient.Mapping
         /// <param name="metadata">Block metadata</param>
         public Block(short type, byte metadata = 0)
         {
+            if (!Palette.IdHasMetadata)
+                throw new InvalidOperationException("Current global Palette does not support block Metadata");
             this.blockIdAndMeta = 0;
             this.BlockId = type;
             this.BlockMeta = metadata;
         }
 
         /// <summary>
-        /// Get a block of the specified type and metadata
+        /// Get a block of the specified type and metadata OR block state
         /// </summary>
-        /// <param name="typeAndMeta">Type and metadata packed in the same value</param>
+        /// <param name="typeAndMeta">Type and metadata packed in the same value OR block state</param>
         public Block(ushort typeAndMeta)
         {
             this.blockIdAndMeta = typeAndMeta;
         }
-
-        /// <summary>
-        /// Get a block of the specified type and metadata
-        /// </summary>
-        /// <param name="type">Block type</param>
-        public Block(Material type, byte metadata = 0)
-            : this((short)type, metadata) { }
 
         /// <summary>
         /// String representation of the block
