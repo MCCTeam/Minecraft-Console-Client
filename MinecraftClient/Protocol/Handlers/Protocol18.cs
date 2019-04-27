@@ -402,457 +402,471 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         private bool handlePacket(int packetID, List<byte> packetData)
         {
-            if (login_phase)
+            try
             {
-                switch (packetID) //Packet IDs are different while logging in
+                if (login_phase)
                 {
-                    case 0x03:
+                    switch (packetID) //Packet IDs are different while logging in
+                    {
+                        case 0x03:
+                            if (protocolversion >= MC18Version)
+                                compression_treshold = readNextVarInt(packetData);
+                            break;
+                        default:
+                            return false; //Ignored packet
+                    }
+                }
+                // Regular in-game packets
+                switch (getPacketIncomingType(packetID, protocolversion))
+                {
+                    case PacketIncomingType.KeepAlive:
+                        SendPacket(PacketOutgoingType.KeepAlive, packetData);
+                        break;
+                    case PacketIncomingType.JoinGame:
+                        handler.OnGameJoined();
+                        readNextInt(packetData);
+                        readNextByte(packetData);
+                        if (protocolversion >= MC191Version)
+                            this.currentDimension = readNextInt(packetData);
+                        else
+                            this.currentDimension = (sbyte)readNextByte(packetData);
+                        readNextByte(packetData);
+                        readNextByte(packetData);
+                        readNextString(packetData);
                         if (protocolversion >= MC18Version)
+                            readNextBool(packetData);  // Reduced debug info - 1.8 and above
+                        break;
+                    case PacketIncomingType.ChatMessage:
+                        string message = readNextString(packetData);
+                        try
+                        {
+                            //Hide system messages or xp bar messages?
+                            byte messageType = readNextByte(packetData);
+                            if ((messageType == 1 && !Settings.DisplaySystemMessages)
+                                || (messageType == 2 && !Settings.DisplayXPBarMessages))
+                                break;
+                        }
+                        catch (ArgumentOutOfRangeException) { /* No message type */ }
+                        handler.OnTextReceived(message, true);
+                        break;
+                    case PacketIncomingType.Respawn:
+                        this.currentDimension = readNextInt(packetData);
+                        readNextByte(packetData);
+                        readNextByte(packetData);
+                        readNextString(packetData);
+                        break;
+                    case PacketIncomingType.PlayerPositionAndLook:
+                        if (Settings.TerrainAndMovements)
+                        {
+                            double x = readNextDouble(packetData);
+                            double y = readNextDouble(packetData);
+                            double z = readNextDouble(packetData);
+                            float yaw = readNextFloat(packetData);
+                            float pitch = readNextFloat(packetData);
+                            byte locMask = readNextByte(packetData);
+
+                            if (protocolversion >= MC18Version)
+                            {
+                                Location location = handler.GetCurrentLocation();
+                                location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
+                                location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
+                                location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
+                                handler.UpdateLocation(location, yaw, pitch);
+                            }
+                            else handler.UpdateLocation(new Location(x, y, z), yaw, pitch);
+                        }
+
+                        if (protocolversion >= MC19Version)
+                        {
+                            int teleportID = readNextVarInt(packetData);
+                            // Teleport confirm packet
+                            SendPacket(PacketOutgoingType.TeleportConfirm, getVarInt(teleportID));
+                        }
+                        break;
+                    case PacketIncomingType.ChunkData:
+                        if (Settings.TerrainAndMovements)
+                        {
+                            int chunkX = readNextInt(packetData);
+                            int chunkZ = readNextInt(packetData);
+                            bool chunksContinuous = readNextBool(packetData);
+                            ushort chunkMask = protocolversion >= MC19Version
+                                ? (ushort)readNextVarInt(packetData)
+                                : readNextUShort(packetData);
+                            if (protocolversion < MC18Version)
+                            {
+                                ushort addBitmap = readNextUShort(packetData);
+                                int compressedDataSize = readNextInt(packetData);
+                                byte[] compressed = readData(compressedDataSize, packetData);
+                                byte[] decompressed = ZlibUtils.Decompress(compressed);
+                                ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, new List<byte>(decompressed));
+                            }
+                            else
+                            {
+                                int dataSize = readNextVarInt(packetData);
+                                ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, packetData);
+                            }
+                        }
+                        break;
+                    case PacketIncomingType.MultiBlockChange:
+                        if (Settings.TerrainAndMovements)
+                        {
+                            int chunkX = readNextInt(packetData);
+                            int chunkZ = readNextInt(packetData);
+                            int recordCount = protocolversion < MC18Version
+                                ? (int)readNextShort(packetData)
+                                : readNextVarInt(packetData);
+
+                            for (int i = 0; i < recordCount; i++)
+                            {
+                                byte locationXZ;
+                                ushort blockIdMeta;
+                                int blockY;
+
+                                if (protocolversion < MC18Version)
+                                {
+                                    blockIdMeta = readNextUShort(packetData);
+                                    blockY = (ushort)readNextByte(packetData);
+                                    locationXZ = readNextByte(packetData);
+                                }
+                                else
+                                {
+                                    locationXZ = readNextByte(packetData);
+                                    blockY = (ushort)readNextByte(packetData);
+                                    blockIdMeta = (ushort)readNextVarInt(packetData);
+                                }
+
+                                int blockX = locationXZ >> 4;
+                                int blockZ = locationXZ & 0x0F;
+                                Block block = new Block(blockIdMeta);
+                                handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
+                            }
+                        }
+                        break;
+                    case PacketIncomingType.BlockChange:
+                        if (Settings.TerrainAndMovements)
+                        {
+                            if (protocolversion < MC18Version)
+                            {
+                                int blockX = readNextInt(packetData);
+                                int blockY = readNextByte(packetData);
+                                int blockZ = readNextInt(packetData);
+                                short blockId = (short)readNextVarInt(packetData);
+                                byte blockMeta = readNextByte(packetData);
+                                handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
+                            }
+                            else handler.GetWorld().SetBlock(Location.FromLong(readNextULong(packetData)), new Block((ushort)readNextVarInt(packetData)));
+                        }
+                        break;
+                    case PacketIncomingType.MapChunkBulk:
+                        if (protocolversion < MC19Version && Settings.TerrainAndMovements)
+                        {
+                            int chunkCount;
+                            bool hasSkyLight;
+                            List<byte> chunkData = packetData;
+
+                            //Read global fields
+                            if (protocolversion < MC18Version)
+                            {
+                                chunkCount = readNextShort(packetData);
+                                int compressedDataSize = readNextInt(packetData);
+                                hasSkyLight = readNextBool(packetData);
+                                byte[] compressed = readData(compressedDataSize, packetData);
+                                byte[] decompressed = ZlibUtils.Decompress(compressed);
+                                chunkData = new List<byte>(decompressed);
+                            }
+                            else
+                            {
+                                hasSkyLight = readNextBool(packetData);
+                                chunkCount = readNextVarInt(packetData);
+                            }
+
+                            //Read chunk records
+                            int[] chunkXs = new int[chunkCount];
+                            int[] chunkZs = new int[chunkCount];
+                            ushort[] chunkMasks = new ushort[chunkCount];
+                            ushort[] addBitmaps = new ushort[chunkCount];
+                            for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
+                            {
+                                chunkXs[chunkColumnNo] = readNextInt(packetData);
+                                chunkZs[chunkColumnNo] = readNextInt(packetData);
+                                chunkMasks[chunkColumnNo] = readNextUShort(packetData);
+                                addBitmaps[chunkColumnNo] = protocolversion < MC18Version
+                                    ? readNextUShort(packetData)
+                                    : (ushort)0;
+                            }
+
+                            //Process chunk records
+                            for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
+                                ProcessChunkColumnData(chunkXs[chunkColumnNo], chunkZs[chunkColumnNo], chunkMasks[chunkColumnNo], addBitmaps[chunkColumnNo], hasSkyLight, true, chunkData);
+                        }
+                        break;
+                    case PacketIncomingType.UnloadChunk:
+                        if (protocolversion >= MC19Version && Settings.TerrainAndMovements)
+                        {
+                            int chunkX = readNextInt(packetData);
+                            int chunkZ = readNextInt(packetData);
+                            handler.GetWorld()[chunkX, chunkZ] = null;
+                        }
+                        break;
+                    case PacketIncomingType.PlayerListUpdate:
+                        if (protocolversion >= MC18Version)
+                        {
+                            int action = readNextVarInt(packetData);
+                            int numActions = readNextVarInt(packetData);
+                            for (int i = 0; i < numActions; i++)
+                            {
+                                Guid uuid = readNextUUID(packetData);
+                                switch (action)
+                                {
+                                    case 0x00: //Player Join
+                                        string name = readNextString(packetData);
+                                        int propNum = readNextVarInt(packetData);
+                                        for (int p = 0; p < propNum; p++)
+                                        {
+                                            string key = readNextString(packetData);
+                                            string val = readNextString(packetData);
+                                            if (readNextBool(packetData))
+                                                readNextString(packetData);
+                                        }
+                                        readNextVarInt(packetData);
+                                        readNextVarInt(packetData);
+                                        if (readNextBool(packetData))
+                                            readNextString(packetData);
+                                        handler.OnPlayerJoin(uuid, name);
+                                        break;
+                                    case 0x01: //Update gamemode
+                                    case 0x02: //Update latency
+                                        readNextVarInt(packetData);
+                                        break;
+                                    case 0x03: //Update display name
+                                        if (readNextBool(packetData))
+                                            readNextString(packetData);
+                                        break;
+                                    case 0x04: //Player Leave
+                                        handler.OnPlayerLeave(uuid);
+                                        break;
+                                    default:
+                                        //Unknown player list item type
+                                        break;
+                                }
+                            }
+                        }
+                        else //MC 1.7.X does not provide UUID in tab-list updates
+                        {
+                            string name = readNextString(packetData);
+                            bool online = readNextBool(packetData);
+                            short ping = readNextShort(packetData);
+                            Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
+                            if (online)
+                                handler.OnPlayerJoin(FakeUUID, name);
+                            else handler.OnPlayerLeave(FakeUUID);
+                        }
+                        break;
+                    case PacketIncomingType.TabCompleteResult:
+                        if (protocolversion >= MC113Version)
+                        {
+                            autocomplete_transaction_id = readNextVarInt(packetData);
+                            readNextVarInt(packetData); // Start of text to replace
+                            readNextVarInt(packetData); // Length of text to replace
+                        }
+
+                        int autocomplete_count = readNextVarInt(packetData);
+                        autocomplete_result.Clear();
+
+                        for (int i = 0; i < autocomplete_count; i++)
+                        {
+                            autocomplete_result.Add(readNextString(packetData));
+                            if (protocolversion >= MC113Version)
+                            {
+                                // Skip optional tooltip for each tab-complete result
+                                if (readNextBool(packetData))
+                                    readNextString(packetData);
+                            }
+                        }
+
+                        autocomplete_received = true;
+                        break;
+                    case PacketIncomingType.PluginMessage:
+                        String channel = readNextString(packetData);
+                        if (protocolversion < MC18Version)
+                        {
+                            if (forgeInfo == null)
+                            {
+                                // 1.7 and lower prefix plugin channel packets with the length.
+                                // We can skip it, though.
+                                readNextShort(packetData);
+                            }
+                            else
+                            {
+                                // Forge does something even weirder with the length.
+                                readNextVarShort(packetData);
+                            }
+                        }
+
+                        // The remaining data in the array is the entire payload of the packet.
+                        handler.OnPluginChannelMessage(channel, packetData.ToArray());
+
+                        #region Forge Login
+                        if (forgeInfo != null && fmlHandshakeState != FMLHandshakeClientState.DONE)
+                        {
+                            if (channel == "FML|HS")
+                            {
+                                FMLHandshakeDiscriminator discriminator = (FMLHandshakeDiscriminator)readNextByte(packetData);
+
+                                if (discriminator == FMLHandshakeDiscriminator.HandshakeReset)
+                                {
+                                    fmlHandshakeState = FMLHandshakeClientState.START;
+                                    return true;
+                                }
+
+                                switch (fmlHandshakeState)
+                                {
+                                    case FMLHandshakeClientState.START:
+                                        if (discriminator != FMLHandshakeDiscriminator.ServerHello)
+                                            return false;
+
+                                        // Send the plugin channel registration.
+                                        // REGISTER is somewhat special in that it doesn't actually include length information,
+                                        // and is also \0-separated.
+                                        // Also, yes, "FML" is there twice.  Don't ask me why, but that's the way forge does it.
+                                        string[] channels = { "FML|HS", "FML", "FML|MP", "FML", "FORGE" };
+                                        SendPluginChannelPacket("REGISTER", Encoding.UTF8.GetBytes(string.Join("\0", channels)));
+
+                                        byte fmlProtocolVersion = readNextByte(packetData);
+
+                                        if (Settings.DebugMessages)
+                                            ConsoleIO.WriteLineFormatted("§8Forge protocol version : " + fmlProtocolVersion);
+
+                                        if (fmlProtocolVersion >= 1)
+                                            this.currentDimension = readNextInt(packetData);
+
+                                        // Tell the server we're running the same version.
+                                        SendForgeHandshakePacket(FMLHandshakeDiscriminator.ClientHello, new byte[] { fmlProtocolVersion });
+
+                                        // Then tell the server that we're running the same mods.
+                                        if (Settings.DebugMessages)
+                                            ConsoleIO.WriteLineFormatted("§8Sending falsified mod list to server...");
+                                        byte[][] mods = new byte[forgeInfo.Mods.Count][];
+                                        for (int i = 0; i < forgeInfo.Mods.Count; i++)
+                                        {
+                                            ForgeInfo.ForgeMod mod = forgeInfo.Mods[i];
+                                            mods[i] = concatBytes(getString(mod.ModID), getString(mod.Version));
+                                        }
+                                        SendForgeHandshakePacket(FMLHandshakeDiscriminator.ModList,
+                                            concatBytes(getVarInt(forgeInfo.Mods.Count), concatBytes(mods)));
+
+                                        fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERDATA;
+
+                                        return true;
+                                    case FMLHandshakeClientState.WAITINGSERVERDATA:
+                                        if (discriminator != FMLHandshakeDiscriminator.ModList)
+                                            return false;
+
+                                        Thread.Sleep(2000);
+
+                                        if (Settings.DebugMessages)
+                                            ConsoleIO.WriteLineFormatted("§8Accepting server mod list...");
+                                        // Tell the server that yes, we are OK with the mods it has
+                                        // even though we don't actually care what mods it has.
+
+                                        SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
+                                            new byte[] { (byte)FMLHandshakeClientState.WAITINGSERVERDATA });
+
+                                        fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERCOMPLETE;
+                                        return false;
+                                    case FMLHandshakeClientState.WAITINGSERVERCOMPLETE:
+                                        // The server now will tell us a bunch of registry information.
+                                        // We need to read it all, though, until it says that there is no more.
+                                        if (discriminator != FMLHandshakeDiscriminator.RegistryData)
+                                            return false;
+
+                                        if (protocolversion < MC18Version)
+                                        {
+                                            // 1.7.10 and below have one registry
+                                            // with blocks and items.
+                                            int registrySize = readNextVarInt(packetData);
+
+                                            if (Settings.DebugMessages)
+                                                ConsoleIO.WriteLineFormatted("§8Received registry with " + registrySize + " entries");
+
+                                            fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
+                                        }
+                                        else
+                                        {
+                                            // 1.8+ has more than one registry.
+
+                                            bool hasNextRegistry = readNextBool(packetData);
+                                            string registryName = readNextString(packetData);
+                                            int registrySize = readNextVarInt(packetData);
+                                            if (Settings.DebugMessages)
+                                                ConsoleIO.WriteLineFormatted("§8Received registry " + registryName + " with " + registrySize + " entries");
+                                            if (!hasNextRegistry)
+                                                fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
+                                        }
+
+                                        return false;
+                                    case FMLHandshakeClientState.PENDINGCOMPLETE:
+                                        // The server will ask us to accept the registries.
+                                        // Just say yes.
+                                        if (discriminator != FMLHandshakeDiscriminator.HandshakeAck)
+                                            return false;
+                                        if (Settings.DebugMessages)
+                                            ConsoleIO.WriteLineFormatted("§8Accepting server registries...");
+                                        SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
+                                            new byte[] { (byte)FMLHandshakeClientState.PENDINGCOMPLETE });
+                                        fmlHandshakeState = FMLHandshakeClientState.COMPLETE;
+
+                                        return true;
+                                    case FMLHandshakeClientState.COMPLETE:
+                                        // One final "OK".  On the actual forge source, a packet is sent from
+                                        // the client to the client saying that the connection was complete, but
+                                        // we don't need to do that.
+
+                                        SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
+                                            new byte[] { (byte)FMLHandshakeClientState.COMPLETE });
+                                        if (Settings.DebugMessages)
+                                            ConsoleIO.WriteLine("Forge server connection complete!");
+                                        fmlHandshakeState = FMLHandshakeClientState.DONE;
+                                        return true;
+                                }
+                            }
+                        }
+                        #endregion
+
+                        return false;
+                    case PacketIncomingType.KickPacket:
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(readNextString(packetData)));
+                        return false;
+                    case PacketIncomingType.NetworkCompressionTreshold:
+                        if (protocolversion >= MC18Version && protocolversion < MC19Version)
                             compression_treshold = readNextVarInt(packetData);
+                        break;
+                    case PacketIncomingType.ResourcePackSend:
+                        string url = readNextString(packetData);
+                        string hash = readNextString(packetData);
+                        //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
+                        byte[] responseHeader = new byte[0];
+                        if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
+                            responseHeader = concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
+                        SendPacket(PacketOutgoingType.ResourcePackStatus, concatBytes(responseHeader, getVarInt(3))); //Accepted pack
+                        SendPacket(PacketOutgoingType.ResourcePackStatus, concatBytes(responseHeader, getVarInt(0))); //Successfully loaded
                         break;
                     default:
                         return false; //Ignored packet
                 }
+                return true; //Packet processed
             }
-            // Regular in-game packets
-            switch (getPacketIncomingType(packetID, protocolversion))
+            catch (Exception innerException)
             {
-                case PacketIncomingType.KeepAlive:
-                    SendPacket(PacketOutgoingType.KeepAlive, packetData);
-                    break;
-                case PacketIncomingType.JoinGame:
-                    handler.OnGameJoined();
-                    readNextInt(packetData);
-                    readNextByte(packetData);
-                    if (protocolversion >= MC191Version)
-                        this.currentDimension = readNextInt(packetData);
-                    else
-                        this.currentDimension = (sbyte)readNextByte(packetData);
-                    readNextByte(packetData);
-                    readNextByte(packetData);
-                    readNextString(packetData);
-                    if (protocolversion >= MC18Version)
-                        readNextBool(packetData);  // Reduced debug info - 1.8 and above
-                    break;
-                case PacketIncomingType.ChatMessage:
-                    string message = readNextString(packetData);
-                    try
-                    {
-                        //Hide system messages or xp bar messages?
-                        byte messageType = readNextByte(packetData);
-                        if ((messageType == 1 && !Settings.DisplaySystemMessages)
-                            || (messageType == 2 && !Settings.DisplayXPBarMessages))
-                            break;
-                    }
-                    catch (ArgumentOutOfRangeException) { /* No message type */ }
-                    handler.OnTextReceived(message, true);
-                    break;
-                case PacketIncomingType.Respawn:
-                    this.currentDimension = readNextInt(packetData);
-                    readNextByte(packetData);
-                    readNextByte(packetData);
-                    readNextString(packetData);
-                    break;
-                case PacketIncomingType.PlayerPositionAndLook:
-                    if (Settings.TerrainAndMovements)
-                    {
-                        double x = readNextDouble(packetData);
-                        double y = readNextDouble(packetData);
-                        double z = readNextDouble(packetData);
-                        float yaw = readNextFloat(packetData);
-                        float pitch = readNextFloat(packetData);
-                        byte locMask = readNextByte(packetData);
-
-                        if (protocolversion >= MC18Version)
-                        {
-                            Location location = handler.GetCurrentLocation();
-                            location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
-                            location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
-                            location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
-                            handler.UpdateLocation(location, yaw, pitch);
-                        }
-                        else handler.UpdateLocation(new Location(x, y, z), yaw, pitch);
-                    }
-
-                    if (protocolversion >= MC19Version)
-                    {
-                        int teleportID = readNextVarInt(packetData);
-                        // Teleport confirm packet
-                        SendPacket(PacketOutgoingType.TeleportConfirm, getVarInt(teleportID));
-                    }
-                    break;
-                case PacketIncomingType.ChunkData:
-                    if (Settings.TerrainAndMovements)
-                    {
-                        int chunkX = readNextInt(packetData);
-                        int chunkZ = readNextInt(packetData);
-                        bool chunksContinuous = readNextBool(packetData);
-                        ushort chunkMask = protocolversion >= MC19Version
-                            ? (ushort)readNextVarInt(packetData)
-                            : readNextUShort(packetData);
-                        if (protocolversion < MC18Version)
-                        {
-                            ushort addBitmap = readNextUShort(packetData);
-                            int compressedDataSize = readNextInt(packetData);
-                            byte[] compressed = readData(compressedDataSize, packetData);
-                            byte[] decompressed = ZlibUtils.Decompress(compressed);
-                            ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, new List<byte>(decompressed));
-                        }
-                        else
-                        {
-                            int dataSize = readNextVarInt(packetData);
-                            ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, packetData);
-                        }
-                    }
-                    break;
-                case PacketIncomingType.MultiBlockChange:
-                    if (Settings.TerrainAndMovements)
-                    {
-                        int chunkX = readNextInt(packetData);
-                        int chunkZ = readNextInt(packetData);
-                        int recordCount = protocolversion < MC18Version
-                            ? (int)readNextShort(packetData)
-                            : readNextVarInt(packetData);
-
-                        for (int i = 0; i < recordCount; i++)
-                        {
-                            byte locationXZ;
-                            ushort blockIdMeta;
-                            int blockY;
-
-                            if (protocolversion < MC18Version)
-                            {
-                                blockIdMeta = readNextUShort(packetData);
-                                blockY = (ushort)readNextByte(packetData);
-                                locationXZ = readNextByte(packetData);
-                            }
-                            else
-                            {
-                                locationXZ = readNextByte(packetData);
-                                blockY = (ushort)readNextByte(packetData);
-                                blockIdMeta = (ushort)readNextVarInt(packetData);
-                            }
-
-                            int blockX = locationXZ >> 4;
-                            int blockZ = locationXZ & 0x0F;
-                            Block block = new Block(blockIdMeta);
-                            handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
-                        }
-                    }
-                    break;
-                case PacketIncomingType.BlockChange:
-                    if (Settings.TerrainAndMovements)
-                    {
-                        if (protocolversion < MC18Version)
-                        {
-                            int blockX = readNextInt(packetData);
-                            int blockY = readNextByte(packetData);
-                            int blockZ = readNextInt(packetData);
-                            short blockId = (short)readNextVarInt(packetData);
-                            byte blockMeta = readNextByte(packetData);
-                            handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
-                        }
-                        else handler.GetWorld().SetBlock(Location.FromLong(readNextULong(packetData)), new Block((ushort)readNextVarInt(packetData)));
-                    }
-                    break;
-                case PacketIncomingType.MapChunkBulk:
-                    if (protocolversion < MC19Version && Settings.TerrainAndMovements)
-                    {
-                        int chunkCount;
-                        bool hasSkyLight;
-                        List<byte> chunkData = packetData;
-
-                        //Read global fields
-                        if (protocolversion < MC18Version)
-                        {
-                            chunkCount = readNextShort(packetData);
-                            int compressedDataSize = readNextInt(packetData);
-                            hasSkyLight = readNextBool(packetData);
-                            byte[] compressed = readData(compressedDataSize, packetData);
-                            byte[] decompressed = ZlibUtils.Decompress(compressed);
-                            chunkData = new List<byte>(decompressed);
-                        }
-                        else
-                        {
-                            hasSkyLight = readNextBool(packetData);
-                            chunkCount = readNextVarInt(packetData);
-                        }
-
-                        //Read chunk records
-                        int[] chunkXs = new int[chunkCount];
-                        int[] chunkZs = new int[chunkCount];
-                        ushort[] chunkMasks = new ushort[chunkCount];
-                        ushort[] addBitmaps = new ushort[chunkCount];
-                        for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
-                        {
-                            chunkXs[chunkColumnNo] = readNextInt(packetData);
-                            chunkZs[chunkColumnNo] = readNextInt(packetData);
-                            chunkMasks[chunkColumnNo] = readNextUShort(packetData);
-                            addBitmaps[chunkColumnNo] = protocolversion < MC18Version
-                                ? readNextUShort(packetData)
-                                : (ushort)0;
-                        }
-
-                        //Process chunk records
-                        for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
-                            ProcessChunkColumnData(chunkXs[chunkColumnNo], chunkZs[chunkColumnNo], chunkMasks[chunkColumnNo], addBitmaps[chunkColumnNo], hasSkyLight, true, chunkData);
-                    }
-                    break;
-                case PacketIncomingType.UnloadChunk:
-                    if (protocolversion >= MC19Version && Settings.TerrainAndMovements)
-                    {
-                        int chunkX = readNextInt(packetData);
-                        int chunkZ = readNextInt(packetData);
-                        handler.GetWorld()[chunkX, chunkZ] = null;
-                    }
-                    break;
-                case PacketIncomingType.PlayerListUpdate:
-                    if (protocolversion >= MC18Version)
-                    {
-                        int action = readNextVarInt(packetData);
-                        int numActions = readNextVarInt(packetData);
-                        for (int i = 0; i < numActions; i++)
-                        {
-                            Guid uuid = readNextUUID(packetData);
-                            switch (action)
-                            {
-                                case 0x00: //Player Join
-                                    string name = readNextString(packetData);
-                                    int propNum = readNextVarInt(packetData);
-                                    for (int p = 0; p < propNum; p++)
-                                    {
-                                        string key = readNextString(packetData);
-                                        string val = readNextString(packetData);
-                                        if (readNextBool(packetData))
-                                            readNextString(packetData);
-                                    }
-                                    readNextVarInt(packetData);
-                                    readNextVarInt(packetData);
-                                    if (readNextBool(packetData))
-                                        readNextString(packetData);
-                                    handler.OnPlayerJoin(uuid, name);
-                                    break;
-                                case 0x01: //Update gamemode
-                                case 0x02: //Update latency
-                                    readNextVarInt(packetData);
-                                    break;
-                                case 0x03: //Update display name
-                                    if (readNextBool(packetData))
-                                        readNextString(packetData);
-                                    break;
-                                case 0x04: //Player Leave
-                                    handler.OnPlayerLeave(uuid);
-                                    break;
-                                default:
-                                    //Unknown player list item type
-                                    break;
-                            }
-                        }
-                    }
-                    else //MC 1.7.X does not provide UUID in tab-list updates
-                    {
-                        string name = readNextString(packetData);
-                        bool online = readNextBool(packetData);
-                        short ping = readNextShort(packetData);
-                        Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
-                        if (online)
-                            handler.OnPlayerJoin(FakeUUID, name);
-                        else handler.OnPlayerLeave(FakeUUID);
-                    }
-                    break;
-                case PacketIncomingType.TabCompleteResult:
-                    if (protocolversion >= MC113Version)
-                    {
-                        autocomplete_transaction_id = readNextVarInt(packetData);
-                        readNextVarInt(packetData); // Start of text to replace
-                        readNextVarInt(packetData); // Length of text to replace
-                    }
-
-                    int autocomplete_count = readNextVarInt(packetData);
-                    autocomplete_result.Clear();
-
-                    for (int i = 0; i < autocomplete_count; i++)
-                    {
-                        autocomplete_result.Add(readNextString(packetData));
-                        if (protocolversion >= MC113Version)
-                        {
-                            // Skip optional tooltip for each tab-complete result
-                            if (readNextBool(packetData))
-                                readNextString(packetData);
-                        }
-                    }
-
-                    autocomplete_received = true;
-                    break;
-                case PacketIncomingType.PluginMessage:
-                    String channel = readNextString(packetData);
-                    if (protocolversion < MC18Version)
-                    {
-                        if (forgeInfo == null)
-                        {
-                            // 1.7 and lower prefix plugin channel packets with the length.
-                            // We can skip it, though.
-                            readNextShort(packetData);
-                        }
-                        else
-                        {
-                            // Forge does something even weirder with the length.
-                            readNextVarShort(packetData);
-                        }
-                    }
-
-                    // The remaining data in the array is the entire payload of the packet.
-                    handler.OnPluginChannelMessage(channel, packetData.ToArray());
-
-                    #region Forge Login
-                    if (forgeInfo != null && fmlHandshakeState != FMLHandshakeClientState.DONE)
-                    {
-                        if (channel == "FML|HS")
-                        {
-                            FMLHandshakeDiscriminator discriminator = (FMLHandshakeDiscriminator)readNextByte(packetData);
-
-                            if (discriminator == FMLHandshakeDiscriminator.HandshakeReset)
-                            {
-                                fmlHandshakeState = FMLHandshakeClientState.START;
-                                return true;
-                            }
-
-                            switch (fmlHandshakeState)
-                            {
-                                case FMLHandshakeClientState.START:
-                                    if (discriminator != FMLHandshakeDiscriminator.ServerHello)
-                                        return false;
-
-                                    // Send the plugin channel registration.
-                                    // REGISTER is somewhat special in that it doesn't actually include length information,
-                                    // and is also \0-separated.
-                                    // Also, yes, "FML" is there twice.  Don't ask me why, but that's the way forge does it.
-                                    string[] channels = { "FML|HS", "FML", "FML|MP", "FML", "FORGE" };
-                                    SendPluginChannelPacket("REGISTER", Encoding.UTF8.GetBytes(string.Join("\0", channels)));
-
-                                    byte fmlProtocolVersion = readNextByte(packetData);
-
-                                    if (Settings.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted("§8Forge protocol version : " + fmlProtocolVersion);
-
-                                    if (fmlProtocolVersion >= 1)
-                                        this.currentDimension = readNextInt(packetData);
-
-                                    // Tell the server we're running the same version.
-                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.ClientHello, new byte[] { fmlProtocolVersion });
-
-                                    // Then tell the server that we're running the same mods.
-                                    if (Settings.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted("§8Sending falsified mod list to server...");
-                                    byte[][] mods = new byte[forgeInfo.Mods.Count][];
-                                    for (int i = 0; i < forgeInfo.Mods.Count; i++)
-                                    {
-                                        ForgeInfo.ForgeMod mod = forgeInfo.Mods[i];
-                                        mods[i] = concatBytes(getString(mod.ModID), getString(mod.Version));
-                                    }
-                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.ModList,
-                                        concatBytes(getVarInt(forgeInfo.Mods.Count), concatBytes(mods)));
-
-                                    fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERDATA;
-
-                                    return true;
-                                case FMLHandshakeClientState.WAITINGSERVERDATA:
-                                    if (discriminator != FMLHandshakeDiscriminator.ModList)
-                                        return false;
-
-                                    Thread.Sleep(2000);
-
-                                    if (Settings.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted("§8Accepting server mod list...");
-                                    // Tell the server that yes, we are OK with the mods it has
-                                    // even though we don't actually care what mods it has.
-
-                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
-                                        new byte[] { (byte)FMLHandshakeClientState.WAITINGSERVERDATA });
-
-                                    fmlHandshakeState = FMLHandshakeClientState.WAITINGSERVERCOMPLETE;
-                                    return false;
-                                case FMLHandshakeClientState.WAITINGSERVERCOMPLETE:
-                                    // The server now will tell us a bunch of registry information.
-                                    // We need to read it all, though, until it says that there is no more.
-                                    if (discriminator != FMLHandshakeDiscriminator.RegistryData)
-                                        return false;
-
-                                    if (protocolversion < MC18Version)
-                                    {
-                                        // 1.7.10 and below have one registry
-                                        // with blocks and items.
-                                        int registrySize = readNextVarInt(packetData);
-
-                                        if (Settings.DebugMessages)
-                                            ConsoleIO.WriteLineFormatted("§8Received registry with " + registrySize + " entries");
-
-                                        fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
-                                    }
-                                    else
-                                    {
-                                        // 1.8+ has more than one registry.
-
-                                        bool hasNextRegistry = readNextBool(packetData);
-                                        string registryName = readNextString(packetData);
-                                        int registrySize = readNextVarInt(packetData);
-                                        if (Settings.DebugMessages)
-                                            ConsoleIO.WriteLineFormatted("§8Received registry " + registryName + " with " + registrySize + " entries");
-                                        if (!hasNextRegistry)
-                                            fmlHandshakeState = FMLHandshakeClientState.PENDINGCOMPLETE;
-                                    }
-
-                                    return false;
-                                case FMLHandshakeClientState.PENDINGCOMPLETE:
-                                    // The server will ask us to accept the registries.
-                                    // Just say yes.
-                                    if (discriminator != FMLHandshakeDiscriminator.HandshakeAck)
-                                        return false;
-                                    if (Settings.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted("§8Accepting server registries...");
-                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
-                                        new byte[] { (byte)FMLHandshakeClientState.PENDINGCOMPLETE });
-                                    fmlHandshakeState = FMLHandshakeClientState.COMPLETE;
-
-                                    return true;
-                                case FMLHandshakeClientState.COMPLETE:
-                                    // One final "OK".  On the actual forge source, a packet is sent from
-                                    // the client to the client saying that the connection was complete, but
-                                    // we don't need to do that.
-
-                                    SendForgeHandshakePacket(FMLHandshakeDiscriminator.HandshakeAck,
-                                        new byte[] { (byte)FMLHandshakeClientState.COMPLETE });
-                                    if (Settings.DebugMessages)
-                                        ConsoleIO.WriteLine("Forge server connection complete!");
-                                    fmlHandshakeState = FMLHandshakeClientState.DONE;
-                                    return true;
-                            }
-                        }
-                    }
-                    #endregion
-
-                    return false;
-                case PacketIncomingType.KickPacket:
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(readNextString(packetData)));
-                    return false;
-                case PacketIncomingType.NetworkCompressionTreshold:
-                    if (protocolversion >= MC18Version && protocolversion < MC19Version)
-                        compression_treshold = readNextVarInt(packetData);
-                    break;
-                case PacketIncomingType.ResourcePackSend:
-                    string url = readNextString(packetData);
-                    string hash = readNextString(packetData);
-                    //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
-                    byte[] responseHeader = new byte[0];
-                    if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
-                        responseHeader = concatBytes(getVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
-                    SendPacket(PacketOutgoingType.ResourcePackStatus, concatBytes(responseHeader, getVarInt(3))); //Accepted pack
-                    SendPacket(PacketOutgoingType.ResourcePackStatus, concatBytes(responseHeader, getVarInt(0))); //Successfully loaded
-                    break;
-                default:
-                    return false; //Ignored packet
+                throw new System.IO.InvalidDataException(
+                    String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
+                        getPacketIncomingType(packetID, protocolversion),
+                        packetID,
+                        protocolversion,
+                        login_phase,
+                        innerException.GetType()),
+                    innerException);
             }
-            return true; //Packet processed
         }
 
         /// <summary>
