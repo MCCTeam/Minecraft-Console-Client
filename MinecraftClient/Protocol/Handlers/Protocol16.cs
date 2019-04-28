@@ -38,9 +38,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (Handler.GetTerrainEnabled())
             {
                 ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
-                // Re-enable terrain on next relog on a supported server version
                 Handler.SetTerrainEnabled(false);
-                Handler.SetTerrainEnabled(true);
             }
         }
 

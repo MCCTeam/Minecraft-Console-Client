@@ -33,6 +33,7 @@ namespace MinecraftClient.Protocol.Handlers
         private const int MC1121Version = 338;
         private const int MC1122Version = 340;
         private const int MC113Version = 393;
+        private const int MC114Version = 477;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -64,6 +65,12 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocolversion >= MC113Version)
                 Block.Palette = new Palette113();
             else Block.Palette = new Palette112();
+
+            if (Handler.GetTerrainEnabled() && protocolversion >= MC114Version)
+            {
+                ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
+                Handler.SetTerrainEnabled(false);
+            }
         }
 
         private Protocol18Handler(TcpClient Client)
@@ -232,13 +239,11 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x20: return PacketIncomingType.ChunkData;
                     case 0x10: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
-                    //MapChunkBulk removed in 1.9
                     case 0x1D: return PacketIncomingType.UnloadChunk;
                     case 0x2D: return PacketIncomingType.PlayerListUpdate;
                     case 0x0E: return PacketIncomingType.TabCompleteResult;
                     case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x33: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -255,18 +260,16 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x20: return PacketIncomingType.ChunkData;
                     case 0x10: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
-                    //MapChunkBulk removed in 1.9
                     case 0x1D: return PacketIncomingType.UnloadChunk;
                     case 0x2E: return PacketIncomingType.PlayerListUpdate;
                     case 0x0E: return PacketIncomingType.TabCompleteResult;
                     case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x34: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
-            else // MC 1.13+
+            else if (protocolversion < MC114Version) // MC 1.13 to 1.13.2
             {
                 switch (packetID)
                 {
@@ -278,14 +281,33 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x22: return PacketIncomingType.ChunkData;
                     case 0x0F: return PacketIncomingType.MultiBlockChange;
                     case 0x0B: return PacketIncomingType.BlockChange;
-                    //MapChunkBulk removed in 1.9
                     case 0x1F: return PacketIncomingType.UnloadChunk;
                     case 0x30: return PacketIncomingType.PlayerListUpdate;
                     case 0x10: return PacketIncomingType.TabCompleteResult;
                     case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
-                    //NetworkCompressionTreshold removed in 1.9
                     case 0x37: return PacketIncomingType.ResourcePackSend;
+                    default: return PacketIncomingType.UnknownPacket;
+                }
+            }
+            else // MC 1.14
+            {
+                switch (packetID)
+                {
+                    case 0x20: return PacketIncomingType.KeepAlive;
+                    case 0x25: return PacketIncomingType.JoinGame;
+                    case 0x0E: return PacketIncomingType.ChatMessage;
+                    case 0x3A: return PacketIncomingType.Respawn;
+                    case 0x35: return PacketIncomingType.PlayerPositionAndLook;
+                    case 0x21: return PacketIncomingType.ChunkData;
+                    case 0x0F: return PacketIncomingType.MultiBlockChange;
+                    case 0x0B: return PacketIncomingType.BlockChange;
+                    case 0x1D: return PacketIncomingType.UnloadChunk;
+                    case 0x33: return PacketIncomingType.PlayerListUpdate;
+                    case 0x10: return PacketIncomingType.TabCompleteResult;
+                    case 0x18: return PacketIncomingType.PluginMessage;
+                    case 0x1A: return PacketIncomingType.KickPacket;
+                    case 0x39: return PacketIncomingType.ResourcePackSend;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -380,7 +402,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
             }
-            else // MC 1.13+
+            else if (protocol < MC114Version) // MC 1.13 to 1.13.2
             {
                 switch (packet)
                 {
@@ -393,6 +415,22 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TabComplete: return 0x05;
                     case PacketOutgoingType.PlayerPosition: return 0x10;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x11;
+                    case PacketOutgoingType.TeleportConfirm: return 0x00;
+                }
+            }
+            else // MC 1.14
+            {
+                switch (packet)
+                {
+                    case PacketOutgoingType.KeepAlive: return 0x0F;
+                    case PacketOutgoingType.ResourcePackStatus: return 0x1F;
+                    case PacketOutgoingType.ChatMessage: return 0x03;
+                    case PacketOutgoingType.ClientStatus: return 0x04;
+                    case PacketOutgoingType.ClientSettings: return 0x05;
+                    case PacketOutgoingType.PluginMessage: return 0x0B;
+                    case PacketOutgoingType.TabComplete: return 0x06;
+                    case PacketOutgoingType.PlayerPosition: return 0x11;
+                    case PacketOutgoingType.PlayerPositionAndLook: return 0x12;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
             }
@@ -436,11 +474,14 @@ namespace MinecraftClient.Protocol.Handlers
                             this.currentDimension = readNextInt(packetData);
                         else
                             this.currentDimension = (sbyte)readNextByte(packetData);
-                        readNextByte(packetData);
+                        if (protocolversion < MC114Version)
+                            readNextByte(packetData);           // Difficulty - 1.13 and below
                         readNextByte(packetData);
                         readNextString(packetData);
+                        if (protocolversion >= MC114Version)
+                            readNextVarInt(packetData);         // View distance - 1.14 and above
                         if (protocolversion >= MC18Version)
-                            readNextBool(packetData);  // Reduced debug info - 1.8 and above
+                            readNextBool(packetData);           // Reduced debug info - 1.8 and above
                         break;
                     case PacketIncomingType.ChatMessage:
                         string message = readNextString(packetData);
@@ -457,7 +498,8 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                     case PacketIncomingType.Respawn:
                         this.currentDimension = readNextInt(packetData);
-                        readNextByte(packetData);
+                        if (protocolversion < MC114Version)
+                            readNextByte(packetData);           // Difficulty - 1.13 and below
                         readNextByte(packetData);
                         readNextString(packetData);
                         handler.OnRespawn();
@@ -509,6 +551,10 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             else
                             {
+                                //TODO skip NBT Heightmaps field for 1.14
+                                //if (protocolversion >= MC114Version)
+                                //    readNextNBT(packetData);
+                                //TODO update Material.cs for 1.14
                                 int dataSize = readNextVarInt(packetData);
                                 ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, packetData);
                             }
@@ -561,7 +607,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte blockMeta = readNextByte(packetData);
                                 handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
                             }
-                            else handler.GetWorld().SetBlock(Location.FromLong(readNextULong(packetData)), new Block((ushort)readNextVarInt(packetData)));
+                            else handler.GetWorld().SetBlock(readNextLocation(packetData), new Block((ushort)readNextVarInt(packetData)));
                         }
                         break;
                     case PacketIncomingType.MapChunkBulk:
@@ -1219,6 +1265,35 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a Location encoded as an ulong field and remove it from the cache
+        /// </summary>
+        /// <returns>The Location value</returns>
+        private Location readNextLocation(List<byte> cache)
+        {
+            ulong locEncoded = readNextULong(cache);
+            int x, y, z;
+            if (protocolversion >= MC114Version)
+            {
+                x = (int)(locEncoded >> 38);
+                y = (int)(locEncoded & 0xFFF);
+                z = (int)(locEncoded << 26 >> 38);
+            }
+            else
+            {
+                x = (int)(locEncoded >> 38);
+                y = (int)((locEncoded >> 26) & 0xFFF);
+                z = (int)(locEncoded << 38 >> 38);
+            }
+            if (x >= 33554432)
+                x -= 67108864;
+            if (y >= 2048)
+                y -= 4096;
+            if (z >= 33554432)
+                z -= 67108864;
+            return new Location(x, y, z);
+        }
+
+        /// <summary>
         /// Read several little endian unsigned short integers at once from a cache of bytes and remove them from the cache
         /// </summary>
         /// <returns>The unsigned short integer value</returns>
@@ -1460,6 +1535,25 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] bytes = Encoding.UTF8.GetBytes(text);
 
             return concatBytes(getVarInt(bytes.Length), bytes);
+        }
+
+        /// <summary>
+        /// Get a byte array representing the given location encoded as an unsigned short
+        /// </summary>
+        /// <remarks>
+        /// A modulo will be applied if the location is outside the following ranges:
+        /// X: -33,554,432 to +33,554,431
+        /// Y: -2,048 to +2,047
+        /// Z: -33,554,432 to +33,554,431
+        /// </remarks>
+        /// <returns>Location representation as ulong</returns>
+        private byte[] GetLocation(Location location)
+        {
+            if (protocolversion >= MC114Version)
+            {
+                return BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Z) & 0x3FFFFFF) << 12) | (((ulong)location.Y) & 0xFFF));
+            }
+            else return BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Y) & 0xFFF) << 26) | (((ulong)location.Z) & 0x3FFFFFF));
         }
 
         /// <summary>

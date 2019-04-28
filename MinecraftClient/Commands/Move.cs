@@ -65,7 +65,7 @@ namespace MinecraftClient.Commands
                 }
                 else return CMDDesc;
             }
-            else return "Please enable terrainandmovements in config to use this command.";
+            else return "Please enable terrainandmovements to use this command.";
         }
     }
 }
