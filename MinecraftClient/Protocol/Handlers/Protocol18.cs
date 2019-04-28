@@ -28,7 +28,7 @@ namespace MinecraftClient.Protocol.Handlers
         private const int MC19Version = 107;
         private const int MC191Version = 108;
         private const int MC110Version = 210;
-        private const int MC111Version = 315;
+        private const int MC1112Version = 316;
         private const int MC112Version = 335;
         private const int MC1121Version = 338;
         private const int MC1122Version = 340;
@@ -197,7 +197,7 @@ namespace MinecraftClient.Protocol.Handlers
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
-            else if (protocol <= MC111Version) // MC 1.9, 1.10 and 1.11
+            else if (protocol <= MC1112Version) // MC 1.9, 1.10 and 1.11
             {
                 switch (packetID)
                 {
@@ -332,7 +332,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TeleportConfirm: throw new InvalidOperationException("Teleport confirm is not supported in protocol " + protocol);
                 }
             }
-            else if (protocol <= MC111Version) // MC 1.9, 1,10 and 1.11
+            else if (protocol <= MC1112Version) // MC 1.9, 1,10 and 1.11
             {
                 switch (packet)
                 {
@@ -1713,7 +1713,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Max length, in characters</returns>
         public int GetMaxChatMessageLength()
         {
-            return protocolversion >= MC111Version
+            return protocolversion > MC110Version
                 ? 256
                 : 100;
         }
