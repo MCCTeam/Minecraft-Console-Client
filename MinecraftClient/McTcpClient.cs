@@ -16,7 +16,6 @@ namespace MinecraftClient
     /// <summary>
     /// The main client class, used to connect to a Minecraft server.
     /// </summary>
-
     public class McTcpClient : IMinecraftComHandler
     {
         public static int ReconnectionAttemptsLeft = 0;

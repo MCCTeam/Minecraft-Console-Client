@@ -16,6 +16,12 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Implementation for Minecraft 1.7.X+ Protocols
     /// </summary>
+    /// <remarks>
+    /// Typical update steps for implementing protocol changes for a new Minecraft version:
+    ///  - Perform a diff between latest supported version in MCC and new stable version to support on https://wiki.vg/Protocol
+    ///  - If there are any changes in packets implemented by MCC, add MCXXXVersion field below and implement new packet layouts
+    ///  - If packet IDs were changed, also update getPacketIncomingType() and getPacketOutgoingID()
+    /// </remarks>
     class Protocol18Handler : IMinecraftCom
     {
         private const int MC18Version = 47;

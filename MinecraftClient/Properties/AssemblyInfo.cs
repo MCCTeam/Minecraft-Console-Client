@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 //[assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("https://github.com/ORelio/Minecraft-Console-Client")]
 [assembly: AssemblyProduct("MinecraftClient")]
-[assembly: AssemblyCopyright("Copyright © 2012-2018 ORelio & Contributors")]
+[assembly: AssemblyCopyright("Copyright © 2012-2019 ORelio & Contributors")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -16,6 +16,13 @@ namespace MinecraftClient
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
+    /// <remarks>
+    /// Typical steps to update MCC for a new Minecraft version
+    ///  - Implement protocol changes (see Protocol18.cs)
+    ///  - Handle new block types and states (see Material.cs)
+    ///  - Mark new version as handled (see ProtocolHandler.cs)
+    ///  - Update MCHighestVersion field below (for versionning)
+    /// </remarks>
     static class Program
     {
         private static McTcpClient Client;
