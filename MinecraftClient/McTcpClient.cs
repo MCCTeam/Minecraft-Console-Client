@@ -30,6 +30,8 @@ namespace MinecraftClient
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
         private readonly List<string> registeredServerPluginChannels = new List<String>();
 
+        private bool terrainAndMovementsEnabled;
+        private bool terrainAndMovementsRequested = false;
         private object locationLock = new object();
         private bool locationReceived = false;
         private World world = new World();
@@ -100,6 +102,8 @@ namespace MinecraftClient
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
         private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
+            terrainAndMovementsEnabled = Settings.TerrainAndMovements;
+
             bool retry = false;
             this.sessionid = sessionID;
             this.uuid = uuid;
@@ -388,6 +392,58 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Called when the player respawns, which happens on login, respawn and world change.
+        /// </summary>
+        public void OnRespawn()
+        {
+            if (terrainAndMovementsRequested)
+            {
+                terrainAndMovementsEnabled = true;
+                terrainAndMovementsRequested = false;
+                ConsoleIO.WriteLogLine("Terrain and Movements is now enabled.");
+            }
+
+            if (terrainAndMovementsEnabled)
+            {
+                world.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Get Terrain and Movements status.
+        /// </summary>
+        public bool GetTerrainEnabled()
+        {
+            return terrainAndMovementsEnabled;
+        }
+
+        /// <summary>
+        /// Enable or disable Terrain and Movements.
+        /// Please note that Enabling will be deferred until next relog, respawn or world change.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetTerrainEnabled(bool enabled)
+        {
+            if (enabled)
+            {
+                if (!terrainAndMovementsEnabled)
+                {
+                    terrainAndMovementsRequested = true;
+                    return false;
+                }
+            }
+            else
+            {
+                terrainAndMovementsEnabled = false;
+                terrainAndMovementsRequested = false;
+                locationReceived = false;
+                world.Clear();
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Called when the server sends a new player location,
         /// or if a ChatBot whishes to update the player's location.
         /// </summary>
@@ -538,6 +594,8 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
+            world.Clear();
+
             bool will_restart = false;
 
             switch (reason)
@@ -587,7 +645,7 @@ namespace MinecraftClient
                 }
             }
 
-            if (Settings.TerrainAndMovements && locationReceived)
+            if (terrainAndMovementsEnabled && locationReceived)
             {
                 lock (locationLock)
                 {

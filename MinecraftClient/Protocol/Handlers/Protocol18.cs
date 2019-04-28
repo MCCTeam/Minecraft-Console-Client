@@ -460,9 +460,10 @@ namespace MinecraftClient.Protocol.Handlers
                         readNextByte(packetData);
                         readNextByte(packetData);
                         readNextString(packetData);
+                        handler.OnRespawn();
                         break;
                     case PacketIncomingType.PlayerPositionAndLook:
-                        if (Settings.TerrainAndMovements)
+                        if (handler.GetTerrainEnabled())
                         {
                             double x = readNextDouble(packetData);
                             double y = readNextDouble(packetData);
@@ -490,7 +491,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.ChunkData:
-                        if (Settings.TerrainAndMovements)
+                        if (handler.GetTerrainEnabled())
                         {
                             int chunkX = readNextInt(packetData);
                             int chunkZ = readNextInt(packetData);
@@ -514,7 +515,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.MultiBlockChange:
-                        if (Settings.TerrainAndMovements)
+                        if (handler.GetTerrainEnabled())
                         {
                             int chunkX = readNextInt(packetData);
                             int chunkZ = readNextInt(packetData);
@@ -549,7 +550,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.BlockChange:
-                        if (Settings.TerrainAndMovements)
+                        if (handler.GetTerrainEnabled())
                         {
                             if (protocolversion < MC18Version)
                             {
@@ -564,7 +565,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.MapChunkBulk:
-                        if (protocolversion < MC19Version && Settings.TerrainAndMovements)
+                        if (protocolversion < MC19Version && handler.GetTerrainEnabled())
                         {
                             int chunkCount;
                             bool hasSkyLight;
@@ -607,7 +608,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.UnloadChunk:
-                        if (protocolversion >= MC19Version && Settings.TerrainAndMovements)
+                        if (protocolversion >= MC19Version && handler.GetTerrainEnabled())
                         {
                             int chunkX = readNextInt(packetData);
                             int chunkZ = readNextInt(packetData);
@@ -1818,7 +1819,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>True if the location update was successfully sent</returns>
         public bool SendLocationUpdate(Location location, bool onGround, float? yaw = null, float? pitch = null)
         {
-            if (Settings.TerrainAndMovements)
+            if (handler.GetTerrainEnabled())
             {
                 byte[] yawpitch = new byte[0];
                 PacketOutgoingType packetType = PacketOutgoingType.PlayerPosition;

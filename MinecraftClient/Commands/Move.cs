@@ -9,18 +9,29 @@ namespace MinecraftClient.Commands
     public class Move : Command
     {
         public override string CMDName { get { return "move"; } }
-        public override string CMDDesc { get { return "move <get|up|down|east|west|north|south|x y z>: walk or start walking."; } }
+        public override string CMDDesc { get { return "move <on|off|get|up|down|east|west|north|south|x y z>: walk or start walking."; } }
 
         public override string Run(McTcpClient handler, string command)
         {
-            if (Settings.TerrainAndMovements)
+            string[] args = getArgs(command);
+            string argStr = getArg(command).Trim().ToLower();
+
+            if (argStr == "on")
             {
-                string[] args = getArgs(command);
+                handler.SetTerrainEnabled(true);
+                return "Enabling Terrain and Movements on next server login, respawn or world change.";
+            }
+            else if (argStr == "off")
+            {
+                handler.SetTerrainEnabled(false);
+                return "Disabling Terrain and Movements.";
+            }
+            else if (handler.GetTerrainEnabled())
+            {
                 if (args.Length == 1)
                 {
-                    string dirStr = getArg(command).Trim().ToLower();
                     Direction direction;
-                    switch (dirStr)
+                    switch (argStr)
                     {
                         case "up": direction = Direction.Up; break;
                         case "down": direction = Direction.Down; break;
@@ -29,12 +40,12 @@ namespace MinecraftClient.Commands
                         case "north": direction = Direction.North; break;
                         case "south": direction = Direction.South; break;
                         case "get": return handler.GetCurrentLocation().ToString();
-                        default: return "Unknown direction '" + dirStr + "'.";
+                        default: return "Unknown direction '" + argStr + "'.";
                     }
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
                     {
                         handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction));
-                        return "Moving " + dirStr + '.';
+                        return "Moving " + argStr + '.';
                     }
                     else return "Cannot move in that direction.";
                 }

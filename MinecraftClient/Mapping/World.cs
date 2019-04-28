@@ -99,5 +99,13 @@ namespace MinecraftClient.Mapping
                 chunk[location.ChunkBlockX, location.ChunkBlockY, location.ChunkBlockZ] = block;
             }
         }
+
+        /// <summary>
+        /// Clear all terrain data from the world
+        /// </summary>
+        public void Clear()
+        {
+            chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
+        }
     }
 }

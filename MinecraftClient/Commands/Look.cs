@@ -13,7 +13,7 @@ namespace MinecraftClient.Commands
 
         public override string Run(McTcpClient handler, string command)
         {
-            if (Settings.TerrainAndMovements)
+            if (handler.GetTerrainEnabled())
             {
                 string[] args = getArgs(command);
                 if (args.Length == 1)

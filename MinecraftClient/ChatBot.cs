@@ -580,12 +580,32 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Check whether Terrain and Movements is enabled.
+        /// </summary>
+        /// <returns>Enable status.</returns>
+        public bool GetTerrainEnabled()
+        {
+            return Handler.GetTerrainEnabled();
+        }
+
+        /// <summary>
+        /// Enable or disable Terrain and Movements.
+        /// Please note that Enabling will be deferred until next relog, respawn or world change.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetTerrainEnabled(bool enabled)
+        {
+            return Handler.SetTerrainEnabled(enabled);
+        }
+
+        /// <summary>
         /// Get the current Minecraft World
         /// </summary>
         /// <returns>Minecraft world or null if associated setting is disabled</returns>
         protected Mapping.World GetWorld()
         {
-            if (Settings.TerrainAndMovements)
+            if (GetTerrainEnabled())
                 return Handler.GetWorld();
             return null;
         }

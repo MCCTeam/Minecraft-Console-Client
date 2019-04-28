@@ -26,6 +26,8 @@ namespace MinecraftClient.Protocol
         Dictionary<string, string> GetOnlinePlayersWithUUID();
         Location GetCurrentLocation();
         World GetWorld();
+        bool GetTerrainEnabled();
+        bool SetTerrainEnabled(bool enabled);
 
         /// <summary>
         /// Called when a server was successfully joined
@@ -38,6 +40,11 @@ namespace MinecraftClient.Protocol
         /// <param name="text">Text received from the server</param>
         /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
         void OnTextReceived(string text, bool isJson);
+
+        /// <summary>
+        /// Called when the player respawns, which happens on login, respawn and world change.
+        /// </summary>
+        void OnRespawn();
 
         /// <summary>
         /// This method is called when a new player joins the game
