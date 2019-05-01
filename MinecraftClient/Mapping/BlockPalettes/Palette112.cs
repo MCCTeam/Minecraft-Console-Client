@@ -76,12 +76,12 @@ namespace MinecraftClient.Mapping.BlockPalettes
             { 60, Material.Farmland },                       // Soil
             { 61, Material.Furnace },                        // Furnace
             { 62, Material.Furnace },                        // BurningFurnace
-            { 63, Material.WallSign },                       // SignPost
+            { 63, Material.OakWallSign },                    // SignPost
             { 64, Material.OakDoor },                        // WoodenDoor:0
             { 65, Material.Ladder },
             { 66, Material.Rail },                           // Rails
             { 67, Material.CobblestoneStairs },
-            { 68, Material.WallSign },
+            { 68, Material.OakWallSign },                    // WallSign
             { 69, Material.Lever },
             { 70, Material.StonePressurePlate },             // StonePlate
             { 71, Material.IronDoor },                       // IronDoorBlock

@@ -87,6 +87,17 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a long integer from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <returns>The unsigned long integer value</returns>
+        public long ReadNextLong(List<byte> cache)
+        {
+            byte[] rawValue = ReadData(8, cache);
+            Array.Reverse(rawValue); //Endianness
+            return BitConverter.ToInt64(rawValue, 0);
+        }
+
+        /// <summary>
         /// Read an unsigned short integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned short integer value</returns>
@@ -297,6 +308,88 @@ namespace MinecraftClient.Protocol.Handlers
             byte result = cache[0];
             cache.RemoveAt(0);
             return result;
+        }
+
+        /// <summary>
+        /// Read an uncompressed Named Binary Tag blob and remove it from the cache
+        /// </summary>
+        public Dictionary<string, object> ReadNextNbt(List<byte> cache)
+        {
+            return ReadNextNbt(cache, true);
+        }
+
+        /// <summary>
+        /// Read an uncompressed Named Binary Tag blob and remove it from the cache (internal)
+        /// </summary>
+        private Dictionary<string, object> ReadNextNbt(List<byte> cache, bool root)
+        {
+            if (root)
+            {
+                if (cache[0] != 10) // TAG_Compound
+                    throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
+                ReadNextByte(cache); // Tag type (TAG_Compound)
+                ReadData(ReadNextUShort(cache), cache); // NBT root name
+            }
+
+            Dictionary<string, object> NbtData = new Dictionary<string, object>();
+
+            while (true)
+            {
+                int fieldType = ReadNextByte(cache);
+
+                if (fieldType == 0) // TAG_End
+                    return NbtData;
+
+                int fieldNameLength = ReadNextUShort(cache);
+                string fieldName = Encoding.ASCII.GetString(ReadData(fieldNameLength, cache));
+                object fieldValue = ReadNbtField(cache, fieldType);
+
+                // This will override previous tags with the same name
+                NbtData[fieldName] = fieldValue;
+            }
+        }
+
+        /// <summary>
+        /// Read a single Named Binary Tag field of the specified type and remove it from the cache
+        /// </summary>
+        private object ReadNbtField(List<byte> cache, int fieldType)
+        {
+            switch (fieldType)
+            {
+                case 1: // TAG_Byte
+                    return ReadNextByte(cache);
+                case 2: // TAG_Short
+                    return ReadNextShort(cache);
+                case 3: // TAG_Int
+                    return ReadNextInt(cache);
+                case 4: // TAG_Long
+                    return ReadNextLong(cache);
+                case 5: // TAG_Float
+                    return ReadNextFloat(cache);
+                case 6: // TAG_Double
+                    return ReadNextDouble(cache);
+                case 7: // TAG_Byte_Array
+                    return ReadData(ReadNextInt(cache), cache);
+                case 8: // TAG_String
+                    return Encoding.UTF8.GetString(ReadData(ReadNextUShort(cache), cache));
+                case 9: // TAG_List
+                    int listType = ReadNextByte(cache);
+                    int listLength = ReadNextInt(cache);
+                    object[] listItems = new object[listLength];
+                    for (int i = 0; i < listLength; i++)
+                        listItems[i] = ReadNbtField(cache, listType);
+                    return listItems;
+                case 10: // TAG_Compound
+                    return ReadNextNbt(cache, false);
+                case 11: // TAG_Int_Array
+                    cache.Insert(0, 3);             // List type = TAG_Int
+                    return ReadNbtField(cache, 9);  // Read as TAG_List
+                case 12: // TAG_Long_Array
+                    cache.Insert(0, 4);             // List type = TAG_Long
+                    return ReadNbtField(cache, 9);  // Read as TAG_List
+                default:
+                    throw new System.IO.InvalidDataException("Failed to decode NBT: Unknown field type " + fieldType);
+            }
         }
 
         /// <summary>

@@ -234,13 +234,44 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Send a forge plugin channel packet ("FML|HS").  Compression and encryption will be handled automatically
+        /// Send a forge plugin channel packet ("FML|HS"). Compression and encryption will be handled automatically.
         /// </summary>
         /// <param name="discriminator">Discriminator to use.</param>
         /// <param name="data">packet Data</param>
         private void SendForgeHandshakePacket(FMLHandshakeDiscriminator discriminator, byte[] data)
         {
             protocol18.SendPluginChannelPacket("FML|HS", dataTypes.ConcatBytes(new byte[] { (byte)discriminator }, data));
+        }
+
+        /// <summary>
+        /// Server Info: Check for For Forge on a Minecraft server Ping result
+        /// </summary>
+        /// <param name="jsonData">JSON data returned by the server</param>
+        /// <param name="forgeInfo">ForgeInfo to populate</param>
+        public static void ServerInfoCheckForge(Json.JSONData jsonData, ref ForgeInfo forgeInfo)
+        {
+            if (jsonData.Properties.ContainsKey("modinfo") && jsonData.Properties["modinfo"].Type == Json.JSONData.DataType.Object)
+            {
+                Json.JSONData modData = jsonData.Properties["modinfo"];
+                if (modData.Properties.ContainsKey("type") && modData.Properties["type"].StringValue == "FML")
+                {
+                    forgeInfo = new ForgeInfo(modData);
+
+                    if (forgeInfo.Mods.Any())
+                    {
+                        if (Settings.DebugMessages)
+                        {
+                            ConsoleIO.WriteLineFormatted("§8Server is running Forge. Mod list:");
+                            foreach (ForgeInfo.ForgeMod mod in forgeInfo.Mods)
+                            {
+                                ConsoleIO.WriteLineFormatted("§8  " + mod.ToString());
+                            }
+                        }
+                        else ConsoleIO.WriteLineFormatted("§8Server is running Forge.");
+                    }
+                    else forgeInfo = null;
+                }
+            }
         }
     }
 }

@@ -135,7 +135,6 @@ namespace MinecraftClient.Mapping
                 case Material.CraftingTable:
                 case Material.Farmland:
                 case Material.Furnace:
-                case Material.Sign:
                 case Material.OakDoor:
                 case Material.Ladder:
                 case Material.CobblestoneStairs:
@@ -176,16 +175,16 @@ namespace MinecraftClient.Mapping
                 case Material.JungleTrapdoor:
                 case Material.AcaciaTrapdoor:
                 case Material.DarkOakTrapdoor:
+                case Material.StoneBricks:
+                case Material.MossyStoneBricks:
+                case Material.CrackedStoneBricks:
+                case Material.ChiseledStoneBricks:
                 case Material.InfestedStone:
                 case Material.InfestedCobblestone:
                 case Material.InfestedStoneBricks:
                 case Material.InfestedMossyStoneBricks:
                 case Material.InfestedCrackedStoneBricks:
                 case Material.InfestedChiseledStoneBricks:
-                case Material.StoneBricks:
-                case Material.MossyStoneBricks:
-                case Material.CrackedStoneBricks:
-                case Material.ChiseledStoneBricks:
                 case Material.BrownMushroomBlock:
                 case Material.RedMushroomBlock:
                 case Material.MushroomStem:
@@ -236,22 +235,25 @@ namespace MinecraftClient.Mapping
                 case Material.PottedWhiteTulip:
                 case Material.PottedPinkTulip:
                 case Material.PottedOxeyeDaisy:
+                case Material.PottedCornflower:
+                case Material.PottedLilyOfTheValley:
+                case Material.PottedWitherRose:
                 case Material.PottedRedMushroom:
                 case Material.PottedBrownMushroom:
                 case Material.PottedDeadBush:
                 case Material.PottedCactus:
-                case Material.SkeletonWallSkull:
                 case Material.SkeletonSkull:
-                case Material.WitherSkeletonWallSkull:
+                case Material.SkeletonWallSkull:
                 case Material.WitherSkeletonSkull:
-                case Material.ZombieWallHead:
+                case Material.WitherSkeletonWallSkull:
                 case Material.ZombieHead:
-                case Material.PlayerWallHead:
+                case Material.ZombieWallHead:
                 case Material.PlayerHead:
-                case Material.CreeperWallHead:
+                case Material.PlayerWallHead:
                 case Material.CreeperHead:
-                case Material.DragonWallHead:
+                case Material.CreeperWallHead:
                 case Material.DragonHead:
+                case Material.DragonWallHead:
                 case Material.Anvil:
                 case Material.ChippedAnvil:
                 case Material.DamagedAnvil:
@@ -327,7 +329,9 @@ namespace MinecraftClient.Mapping
                 case Material.AcaciaSlab:
                 case Material.DarkOakSlab:
                 case Material.StoneSlab:
+                case Material.SmoothStoneSlab:
                 case Material.SandstoneSlab:
+                case Material.CutSandstoneSlab:
                 case Material.PetrifiedOakSlab:
                 case Material.CobblestoneSlab:
                 case Material.BrickSlab:
@@ -335,6 +339,7 @@ namespace MinecraftClient.Mapping
                 case Material.NetherBrickSlab:
                 case Material.QuartzSlab:
                 case Material.RedSandstoneSlab:
+                case Material.CutRedSandstoneSlab:
                 case Material.PurpurSlab:
                 case Material.SmoothStone:
                 case Material.SmoothSandstone:
@@ -451,8 +456,64 @@ namespace MinecraftClient.Mapping
                 case Material.SeaPickle:
                 case Material.BlueIce:
                 case Material.Conduit:
+                case Material.Bamboo:
+                case Material.PottedBamboo:
                 case Material.BubbleColumn:
+                case Material.PolishedGraniteStairs:
+                case Material.SmoothRedSandstoneStairs:
+                case Material.MossyStoneBrickStairs:
+                case Material.PolishedDioriteStairs:
+                case Material.MossyCobblestoneStairs:
+                case Material.EndStoneBrickStairs:
+                case Material.StoneStairs:
+                case Material.SmoothSandstoneStairs:
+                case Material.SmoothQuartzStairs:
+                case Material.GraniteStairs:
+                case Material.AndesiteStairs:
+                case Material.RedNetherBrickStairs:
+                case Material.PolishedAndesiteStairs:
+                case Material.DioriteStairs:
+                case Material.PolishedGraniteSlab:
+                case Material.SmoothRedSandstoneSlab:
+                case Material.MossyStoneBrickSlab:
+                case Material.PolishedDioriteSlab:
+                case Material.MossyCobblestoneSlab:
+                case Material.EndStoneBrickSlab:
+                case Material.SmoothSandstoneSlab:
+                case Material.SmoothQuartzSlab:
+                case Material.GraniteSlab:
+                case Material.AndesiteSlab:
+                case Material.RedNetherBrickSlab:
+                case Material.PolishedAndesiteSlab:
+                case Material.DioriteSlab:
+                case Material.BrickWall:
+                case Material.PrismarineWall:
+                case Material.RedSandstoneWall:
+                case Material.MossyStoneBrickWall:
+                case Material.GraniteWall:
+                case Material.StoneBrickWall:
+                case Material.NetherBrickWall:
+                case Material.AndesiteWall:
+                case Material.RedNetherBrickWall:
+                case Material.SandstoneWall:
+                case Material.EndStoneBrickWall:
+                case Material.DioriteWall:
+                case Material.Loom:
+                case Material.Barrel:
+                case Material.Smoker:
+                case Material.BlastFurnace:
+                case Material.CartographyTable:
+                case Material.FletchingTable:
+                case Material.Grindstone:
+                case Material.Lectern:
+                case Material.SmithingTable:
+                case Material.Stonecutter:
+                case Material.Bell:
+                case Material.Lantern:
+                case Material.Campfire:
                 case Material.StructureBlock:
+                case Material.Jigsaw:
+                case Material.Composter:
                     return true;
                 default:
                     return false;
@@ -472,6 +533,7 @@ namespace MinecraftClient.Mapping
                 case Material.Cactus:
                 case Material.Lava:
                 case Material.MagmaBlock:
+                case Material.Campfire:
                     return true;
                 default:
                     return false;
