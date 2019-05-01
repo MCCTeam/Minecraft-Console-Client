@@ -93,7 +93,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="type">Block type</param>
         /// <param name="metadata">Block metadata</param>
-        public Block(short type, byte metadata = 0)
+        public Block(short type, byte metadata)
         {
             if (!Palette.IdHasMetadata)
                 throw new InvalidOperationException("Current global Palette does not support block Metadata");
