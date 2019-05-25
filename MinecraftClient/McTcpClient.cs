@@ -47,6 +47,8 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
+        private Inventory inventory;
+
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -587,6 +589,15 @@ namespace MinecraftClient
                     else throw; //ThreadAbortException should not be caught
                 }
             }
+        }
+
+        /// <summary>
+        /// When an inventory is opened
+        /// </summary>
+        /// <param name="inventory">Location to reach</param>
+        public void onInventoryOpen(Inventory inventory)
+        {
+            //TODO: Handle Inventory
         }
 
         /// <summary>

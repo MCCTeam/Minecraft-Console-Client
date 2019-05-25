@@ -251,6 +251,9 @@
     <Compile Include="Commands\List.cs" />
     <Compile Include="Mapping\Location.cs" />
     <Compile Include="WinAPI\WindowsVersion.cs" />
+    <Compile Include="Protocol\Inventory.cs" />
+    <Compile Include="Protocol\InventoryType.cs" />
+    <Compile Include="Protocol\Item.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

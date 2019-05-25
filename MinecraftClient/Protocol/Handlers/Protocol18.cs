@@ -464,6 +464,41 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion >= MC18Version && protocolversion < MC19Version)
                             compression_treshold = dataTypes.ReadNextVarInt(packetData);
                         break;
+                    case PacketIncomingType.OpenWindow:
+                        if (protocolversion < MC1141Version)
+                        {
+                            byte windowID = dataTypes.ReadNextByte(packetData);
+                            string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
+                            InventoryType inventoryType = (InventoryType)Enum.Parse(typeof(InventoryType), type);
+                            string title = dataTypes.ReadNextString(packetData);
+                            byte slots = dataTypes.ReadNextByte(packetData);
+                            Inventory inventory = new Inventory(windowID, inventoryType, title, slots);
+
+
+                            handler.onInventoryOpen(inventory);
+                        }
+                        break;
+                    case PacketIncomingType.WindowItems:
+                        if (protocolversion < MC1141Version)
+                        {
+                            byte id = dataTypes.ReadNextByte(packetData);
+                            short elements = dataTypes.ReadNextShort(packetData);
+
+                            for (int i = 0; i < elements; i++)
+                            {
+                                short itemID = dataTypes.ReadNextShort(packetData);
+                                if (itemID == -1) continue;
+                                byte itemCount = dataTypes.ReadNextByte(packetData);
+                                short itemDamage = dataTypes.ReadNextShort(packetData);
+                                Item item = new Item(itemID, itemCount, itemDamage, 0);
+                                //TODO: Add to the dictionary for the inventory its in using the id
+                                if (packetData.ToArray().Count() > 0)
+                                {
+                                    dataTypes.ReadNextNbt(packetData);
+                                }
+                            }
+                        }
+                        break;
                     case PacketIncomingType.ResourcePackSend:
                         string url = dataTypes.ReadNextString(packetData);
                         string hash = dataTypes.ReadNextString(packetData);
