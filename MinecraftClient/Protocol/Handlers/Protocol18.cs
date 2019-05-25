@@ -62,6 +62,12 @@ namespace MinecraftClient.Protocol.Handlers
             this.pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
 
+            if (handler.GetTerrainEnabled() && protocolversion > MC1141Version)
+            {
+                ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
+                handler.SetTerrainEnabled(false);
+            }
+
             if (protocolversion >= MC113Version)
             {
                 if (protocolVersion > MC1141Version && handler.GetTerrainEnabled())
@@ -71,12 +77,6 @@ namespace MinecraftClient.Protocol.Handlers
                 else Block.Palette = new Palette113();
             }
             else Block.Palette = new Palette112();
-
-            if (handler.GetTerrainEnabled() && protocolversion > MC1141Version)
-            {
-                ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
-                handler.SetTerrainEnabled(false);
-            }
         }
 
         /// <summary>
