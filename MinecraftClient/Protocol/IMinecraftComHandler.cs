@@ -41,6 +41,12 @@ namespace MinecraftClient.Protocol
         /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
         void OnTextReceived(string text, bool isJson);
 
+		/// <summary>
+        /// This method is called when an inventory is opened
+        /// </summary>
+        /// <param name="inventory">Inventory that was opened</param>  
+		void onInventoryOpen(Inventory inventory);
+
         /// <summary>
         /// Called when the player respawns, which happens on login, respawn and world change.
         /// </summary>
