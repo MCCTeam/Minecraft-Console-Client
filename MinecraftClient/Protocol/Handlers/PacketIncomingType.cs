@@ -10,7 +10,7 @@ namespace MinecraftClient.Protocol.Handlers
     /// </summary>
     enum PacketIncomingType
     {
-		KeepAlive,
+        KeepAlive,
         JoinGame,
         ChatMessage,
         Respawn,
@@ -26,6 +26,7 @@ namespace MinecraftClient.Protocol.Handlers
         KickPacket,
         NetworkCompressionTreshold,
         ResourcePackSend,
+        CloseWindow,
         OpenWindow,
         WindowItems,
         SetSlot,

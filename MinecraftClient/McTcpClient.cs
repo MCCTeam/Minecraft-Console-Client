@@ -26,12 +26,14 @@ namespace MinecraftClient
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
+        private static List<Inventory> inventories = new List<Inventory>();
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
         private readonly List<string> registeredServerPluginChannels = new List<String>();
 
         private bool terrainAndMovementsEnabled;
         private bool terrainAndMovementsRequested = false;
+        private bool inventoryHandling;
         private object locationLock = new object();
         private bool locationReceived = false;
         private World world = new World();
@@ -47,8 +49,7 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
-        private Inventory inventory;
-
+        private Inventory playerInventory;
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -105,6 +106,7 @@ namespace MinecraftClient
         private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
+            inventoryHandling = Settings.InventoryHandling;
 
             bool retry = false;
             this.sessionid = sessionID;
@@ -420,6 +422,14 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get Inventory Handling Mode
+        /// </summary>
+        public bool GetInventoryEnabled()
+        {
+            return inventoryHandling;
+        }
+
+        /// <summary>
         /// Enable or disable Terrain and Movements.
         /// Please note that Enabling will be deferred until next relog, respawn or world change.
         /// </summary>
@@ -598,6 +608,28 @@ namespace MinecraftClient
         public void onInventoryOpen(Inventory inventory)
         {
             //TODO: Handle Inventory
+            if (!inventories.Contains(inventory))
+            {
+                inventories.Add(inventory);
+            }
+        }
+
+        /// <summary>
+        /// When an inventory is close
+        /// </summary>
+        /// <param name="inventoryID">Location to reach</param>
+        public void onInventoryClose(byte inventoryID)
+        {
+            for (int i = 0; i < inventories.Count; i++)
+            {
+                Inventory inventory = inventories[i];
+                if (inventory == null) continue;
+                if (inventory.id == inventoryID)
+                {
+                    inventories.Remove(inventory);
+                    return;
+                }
+            }
         }
 
         /// <summary>

@@ -31,6 +31,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x22: return PacketIncomingType.MultiBlockChange;
                     case 0x23: return PacketIncomingType.BlockChange;
                     case 0x26: return PacketIncomingType.MapChunkBulk;
+                    case 0x30: return PacketIncomingType.WindowItems;
                     //UnloadChunk does not exists prior to 1.9
                     case 0x38: return PacketIncomingType.PlayerListUpdate;
                     case 0x3A: return PacketIncomingType.TabCompleteResult;
@@ -39,7 +40,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x46: return PacketIncomingType.NetworkCompressionTreshold;
                     case 0x48: return PacketIncomingType.ResourcePackSend;
                     case 0x2D: return PacketIncomingType.OpenWindow;
-                    case 0x30: return PacketIncomingType.WindowItems;
+                    case 0x2E: return PacketIncomingType.CloseWindow;
                     case 0x2F: return PacketIncomingType.SetSlot;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -62,6 +63,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x0E: return PacketIncomingType.TabCompleteResult;
                     case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
+                    case 0x12: return PacketIncomingType.CloseWindow;
                     case 0x13: return PacketIncomingType.OpenWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
                     case 0x16: return PacketIncomingType.SetSlot;
@@ -81,16 +83,17 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x2E: return PacketIncomingType.PlayerPositionAndLook;
                     case 0x20: return PacketIncomingType.ChunkData;
                     case 0x10: return PacketIncomingType.MultiBlockChange;
+                    case 0x14: return PacketIncomingType.WindowItems;
+                    case 0x16: return PacketIncomingType.SetSlot;
                     case 0x0B: return PacketIncomingType.BlockChange;
                     case 0x1D: return PacketIncomingType.UnloadChunk;
                     case 0x2D: return PacketIncomingType.PlayerListUpdate;
                     case 0x0E: return PacketIncomingType.TabCompleteResult;
                     case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
+                    case 0x12: return PacketIncomingType.CloseWindow;
                     case 0x13: return PacketIncomingType.OpenWindow;
                     case 0x33: return PacketIncomingType.ResourcePackSend;
-                    case 0x14: return PacketIncomingType.WindowItems;
-                    case 0x16: return PacketIncomingType.SetSlot;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -111,6 +114,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x0E: return PacketIncomingType.TabCompleteResult;
                     case 0x18: return PacketIncomingType.PluginMessage;
                     case 0x1A: return PacketIncomingType.KickPacket;
+                    case 0x12: return PacketIncomingType.CloseWindow;
                     case 0x13: return PacketIncomingType.OpenWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
                     case 0x16: return PacketIncomingType.SetSlot;
@@ -136,6 +140,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x19: return PacketIncomingType.PluginMessage;
                     case 0x1B: return PacketIncomingType.KickPacket;
                     case 0x37: return PacketIncomingType.ResourcePackSend;
+                    case 0x13: return PacketIncomingType.CloseWindow;
                     case 0x14: return PacketIncomingType.OpenWindow;
                     case 0x15: return PacketIncomingType.WindowItems;
                     case 0x17: return PacketIncomingType.SetSlot;
@@ -161,6 +166,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x1A: return PacketIncomingType.KickPacket;
                     case 0x39: return PacketIncomingType.ResourcePackSend;
                     case 0x2E: return PacketIncomingType.OpenWindow;
+                    case 0x13: return PacketIncomingType.CloseWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
                     case 0x16: return PacketIncomingType.SetSlot;
                     default: return PacketIncomingType.UnknownPacket;
