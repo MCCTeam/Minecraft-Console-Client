@@ -28,6 +28,7 @@ namespace MinecraftClient.Protocol
         World GetWorld();
         bool GetTerrainEnabled();
         bool SetTerrainEnabled(bool enabled);
+        bool GetInventoryEnabled();
 
         /// <summary>
         /// Called when a server was successfully joined
@@ -41,11 +42,15 @@ namespace MinecraftClient.Protocol
         /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
         void OnTextReceived(string text, bool isJson);
 
-		/// <summary>
-        /// This method is called when an inventory is opened
+        /// <summary>
+        /// Called when an inventory is opened
         /// </summary>
-        /// <param name="inventory">Inventory that was opened</param>  
-		void onInventoryOpen(Inventory inventory);
+        void onInventoryOpen(Inventory inventory);
+
+        /// <summary>
+        /// Called when an inventory is closed
+        /// </summary>
+        void onInventoryClose(byte inventoryID);
 
         /// <summary>
         /// Called when the player respawns, which happens on login, respawn and world change.

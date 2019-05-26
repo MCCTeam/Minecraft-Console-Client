@@ -465,7 +465,7 @@ namespace MinecraftClient.Protocol.Handlers
                             compression_treshold = dataTypes.ReadNextVarInt(packetData);
                         break;
                     case PacketIncomingType.OpenWindow:
-                        if (protocolversion < MC1141Version)
+                        if (protocolversion < MC1141Version && handler.GetInventoryEnabled())
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
                             string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
@@ -474,12 +474,19 @@ namespace MinecraftClient.Protocol.Handlers
                             byte slots = dataTypes.ReadNextByte(packetData);
                             Inventory inventory = new Inventory(windowID, inventoryType, title, slots);
 
-
                             handler.onInventoryOpen(inventory);
                         }
                         break;
+                    case PacketIncomingType.CloseWindow:
+                        if (protocolversion < MC1141Version && handler.GetInventoryEnabled())
+                        {
+                            byte windowID = dataTypes.ReadNextByte(packetData);
+
+                            handler.onInventoryClose(windowID);
+                        }
+                        break;
                     case PacketIncomingType.WindowItems:
-                        if (protocolversion < MC1141Version)
+                        if (protocolversion < MC1141Version && handler.GetInventoryEnabled())
                         {
                             byte id = dataTypes.ReadNextByte(packetData);
                             short elements = dataTypes.ReadNextShort(packetData);
