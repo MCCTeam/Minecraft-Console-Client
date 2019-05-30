@@ -42,7 +42,8 @@ namespace MinecraftClient.ChatBots
 
                 for (int i = 0; i < dictionary.Length; i++)
                 {
-                    LogToConsole("  Loaded message: " + dictionary[i]);
+                    if (Settings.DebugMessages)
+                        LogToConsole("  Loaded message: " + dictionary[i]);
                     dictionary[i] = dictionary[i].ToLower();
                 }
             }
