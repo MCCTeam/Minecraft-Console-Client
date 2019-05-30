@@ -33,7 +33,9 @@ namespace MinecraftClient
 
         private bool terrainAndMovementsEnabled;
         private bool terrainAndMovementsRequested = false;
-        private bool inventoryHandling;
+        private bool inventoryHandlingEnabled;
+        private bool inventoryHandlingRequested = false;
+
         private object locationLock = new object();
         private bool locationReceived = false;
         private World world = new World();
@@ -106,7 +108,7 @@ namespace MinecraftClient
         private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
-            inventoryHandling = Settings.InventoryHandling;
+            inventoryHandlingEnabled = Settings.InventoryHandling;
 
             bool retry = false;
             this.sessionid = sessionID;
@@ -393,6 +395,12 @@ namespace MinecraftClient
                     Settings.MCSettings_MainHand);
             foreach (ChatBot bot in bots)
                 bot.AfterGameJoined();
+            if (inventoryHandlingRequested)
+            {
+                inventoryHandlingRequested = false;
+                inventoryHandlingEnabled = true;
+                ConsoleIO.WriteLogLine("Inventory handling is now enabled.");
+            }
         }
 
         /// <summary>
@@ -426,7 +434,7 @@ namespace MinecraftClient
         /// </summary>
         public bool GetInventoryEnabled()
         {
-            return inventoryHandling;
+            return inventoryHandlingEnabled;
         }
 
         /// <summary>
@@ -451,6 +459,32 @@ namespace MinecraftClient
                 terrainAndMovementsRequested = false;
                 locationReceived = false;
                 world.Clear();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Enable or disable Inventories.
+        /// Please note that Enabling will be deferred until next relog.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetInventoryEnabled(bool enabled)
+        {
+            if (enabled)
+            {
+                if (!inventoryHandlingEnabled)
+                {
+                    inventoryHandlingRequested = true;
+                    return false;
+                }
+            }
+            else
+            {
+                inventoryHandlingEnabled = false;
+                inventoryHandlingRequested = false;
+                inventories.Clear();
+                playerInventory = null;
             }
             return true;
         }

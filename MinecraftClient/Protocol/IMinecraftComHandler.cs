@@ -29,6 +29,7 @@ namespace MinecraftClient.Protocol
         bool GetTerrainEnabled();
         bool SetTerrainEnabled(bool enabled);
         bool GetInventoryEnabled();
+        bool SetInventoryEnabled(bool enabled);
 
         /// <summary>
         /// Called when a server was successfully joined

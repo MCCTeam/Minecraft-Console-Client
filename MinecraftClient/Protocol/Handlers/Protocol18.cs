@@ -68,6 +68,12 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetTerrainEnabled(false);
             }
 
+            if (handler.GetInventoryEnabled() && protocolversion > MC114Version)
+            {
+                ConsoleIO.WriteLineFormatted("§8Inventories are currently not handled for that MC version.");
+                handler.SetInventoryEnabled(false);
+            }
+
             if (protocolversion >= MC113Version)
             {
                 if (protocolVersion > MC1142Version && handler.GetTerrainEnabled())
@@ -465,7 +471,7 @@ namespace MinecraftClient.Protocol.Handlers
                             compression_treshold = dataTypes.ReadNextVarInt(packetData);
                         break;
                     case PacketIncomingType.OpenWindow:
-                        if (protocolversion < MC1141Version && handler.GetInventoryEnabled())
+                        if (handler.GetInventoryEnabled())
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
                             string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
@@ -478,7 +484,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.CloseWindow:
-                        if (protocolversion < MC1141Version && handler.GetInventoryEnabled())
+                        if (handler.GetInventoryEnabled())
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
 
@@ -486,7 +492,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.WindowItems:
-                        if (protocolversion < MC1141Version && handler.GetInventoryEnabled())
+                        if (handler.GetInventoryEnabled())
                         {
                             byte id = dataTypes.ReadNextByte(packetData);
                             short elements = dataTypes.ReadNextShort(packetData);
