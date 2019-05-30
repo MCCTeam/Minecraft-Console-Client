@@ -189,7 +189,9 @@ namespace MinecraftClient
                 if (ReconnectionAttemptsLeft > 0)
                 {
                     ConsoleIO.WriteLogLine("Waiting 5 seconds (" + ReconnectionAttemptsLeft + " attempts left)...");
-                    Thread.Sleep(5000); ReconnectionAttemptsLeft--; Program.Restart();
+                    Thread.Sleep(5000);
+                    ReconnectionAttemptsLeft--;
+                    Program.Restart();
                 }
                 else if (!singlecommand && Settings.interactiveMode)
                 {
