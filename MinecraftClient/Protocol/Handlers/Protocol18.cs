@@ -34,7 +34,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC1122Version = 340;
         internal const int MC113Version = 393;
         internal const int MC114Version = 477;
-        internal const int MC1141Version = 480;
+        internal const int MC1142Version = 485;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -62,15 +62,21 @@ namespace MinecraftClient.Protocol.Handlers
             this.pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
 
-            if (handler.GetTerrainEnabled() && protocolversion > MC1141Version)
+            if (handler.GetTerrainEnabled() && protocolversion > MC1142Version)
             {
                 ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
                 handler.SetTerrainEnabled(false);
             }
 
+            if (handler.GetInventoryEnabled() && protocolversion > MC114Version)
+            {
+                ConsoleIO.WriteLineFormatted("§8Inventories are currently not handled for that MC version.");
+                handler.SetInventoryEnabled(false);
+            }
+
             if (protocolversion >= MC113Version)
             {
-                if (protocolVersion > MC1141Version && handler.GetTerrainEnabled())
+                if (protocolVersion > MC1142Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException("Please update block types handling for this Minecraft version. See Material.cs");
                 if (protocolVersion >= MC114Version)
                     Block.Palette = new Palette114();
@@ -465,7 +471,11 @@ namespace MinecraftClient.Protocol.Handlers
                             compression_treshold = dataTypes.ReadNextVarInt(packetData);
                         break;
                     case PacketIncomingType.OpenWindow:
+<<<<<<< HEAD
                         if (protocolversion < MC1141Version && handler.GetInventoryEnabled())
+=======
+                        if (handler.GetInventoryEnabled())
+>>>>>>> e7c664648e5535a8aeae47ceadf4bb2efaffb7d5
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
                             string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
@@ -478,7 +488,11 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.CloseWindow:
+<<<<<<< HEAD
                         if (protocolversion < MC1141Version && handler.GetInventoryEnabled())
+=======
+                        if (handler.GetInventoryEnabled())
+>>>>>>> e7c664648e5535a8aeae47ceadf4bb2efaffb7d5
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
 
@@ -486,7 +500,11 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.WindowItems:
+<<<<<<< HEAD
                         if (protocolversion < MC1141Version && handler.GetInventoryEnabled())
+=======
+                        if (handler.GetInventoryEnabled())
+>>>>>>> e7c664648e5535a8aeae47ceadf4bb2efaffb7d5
                         {
                             byte id = dataTypes.ReadNextByte(packetData);
                             short elements = dataTypes.ReadNextShort(packetData);

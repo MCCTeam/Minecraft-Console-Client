@@ -33,7 +33,13 @@ namespace MinecraftClient
 
         private bool terrainAndMovementsEnabled;
         private bool terrainAndMovementsRequested = false;
+<<<<<<< HEAD
         private bool inventoryHandling;
+=======
+        private bool inventoryHandlingEnabled;
+        private bool inventoryHandlingRequested = false;
+
+>>>>>>> e7c664648e5535a8aeae47ceadf4bb2efaffb7d5
         private object locationLock = new object();
         private bool locationReceived = false;
         private World world = new World();
@@ -106,7 +112,11 @@ namespace MinecraftClient
         private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
+<<<<<<< HEAD
             inventoryHandling = Settings.InventoryHandling;
+=======
+            inventoryHandlingEnabled = Settings.InventoryHandling;
+>>>>>>> e7c664648e5535a8aeae47ceadf4bb2efaffb7d5
 
             bool retry = false;
             this.sessionid = sessionID;
@@ -187,7 +197,9 @@ namespace MinecraftClient
                 if (ReconnectionAttemptsLeft > 0)
                 {
                     ConsoleIO.WriteLogLine("Waiting 5 seconds (" + ReconnectionAttemptsLeft + " attempts left)...");
-                    Thread.Sleep(5000); ReconnectionAttemptsLeft--; Program.Restart();
+                    Thread.Sleep(5000);
+                    ReconnectionAttemptsLeft--;
+                    Program.Restart();
                 }
                 else if (!singlecommand && Settings.interactiveMode)
                 {
@@ -393,6 +405,12 @@ namespace MinecraftClient
                     Settings.MCSettings_MainHand);
             foreach (ChatBot bot in bots)
                 bot.AfterGameJoined();
+            if (inventoryHandlingRequested)
+            {
+                inventoryHandlingRequested = false;
+                inventoryHandlingEnabled = true;
+                ConsoleIO.WriteLogLine("Inventory handling is now enabled.");
+            }
         }
 
         /// <summary>
@@ -426,7 +444,11 @@ namespace MinecraftClient
         /// </summary>
         public bool GetInventoryEnabled()
         {
+<<<<<<< HEAD
             return inventoryHandling;
+=======
+            return inventoryHandlingEnabled;
+>>>>>>> e7c664648e5535a8aeae47ceadf4bb2efaffb7d5
         }
 
         /// <summary>
@@ -451,6 +473,32 @@ namespace MinecraftClient
                 terrainAndMovementsRequested = false;
                 locationReceived = false;
                 world.Clear();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Enable or disable Inventories.
+        /// Please note that Enabling will be deferred until next relog.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetInventoryEnabled(bool enabled)
+        {
+            if (enabled)
+            {
+                if (!inventoryHandlingEnabled)
+                {
+                    inventoryHandlingRequested = true;
+                    return false;
+                }
+            }
+            else
+            {
+                inventoryHandlingEnabled = false;
+                inventoryHandlingRequested = false;
+                inventories.Clear();
+                playerInventory = null;
             }
             return true;
         }
