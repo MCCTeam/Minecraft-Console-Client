@@ -242,13 +242,13 @@ namespace MinecraftClient.Protocol.Handlers
                                 handler.UpdateLocation(location, yaw, pitch);
                             }
                             else handler.UpdateLocation(new Location(x, y, z), yaw, pitch);
-                        }
 
-                        if (protocolversion >= MC19Version)
-                        {
-                            int teleportID = dataTypes.ReadNextVarInt(packetData);
-                            // Teleport confirm packet
-                            SendPacket(PacketOutgoingType.TeleportConfirm, dataTypes.GetVarInt(teleportID));
+                            if (protocolversion >= MC19Version)
+                            {
+                                int teleportID = dataTypes.ReadNextVarInt(packetData);
+                                // Teleport confirm packet
+                                SendPacket(PacketOutgoingType.TeleportConfirm, dataTypes.GetVarInt(teleportID));
+                            }
                         }
                         break;
                     case PacketIncomingType.ChunkData:
