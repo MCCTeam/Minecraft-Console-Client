@@ -100,12 +100,12 @@ namespace MinecraftClient.ChatBots
                     {
                         Match regexMatch = regex.Match(message);
                         // how you pass an argument to script file is like:
-                        // script hello.txt Jacob
+                        // script hello.txt "Jacob"
                         
                         // how you pass multiple arguments is like:
-                        // script domath.txt Server 1 5
+                        // script domath.txt "Server" "1" "5"
 
-                        // very first argument is username of the sender
+                        // very first argument is the username of sender and the rest is by regex match
 
                         // if we are going to call a script, pass $u, $1, $2.. arguments
                         if (toSend.StartsWith("script"))
