@@ -199,6 +199,15 @@ namespace MinecraftClient.ChatBots
                             if (instruction_line[0] != '#' && instruction_line[0] != '/' && instruction_line[1] != '/')
                             {
                                 instruction_line = Settings.ExpandVars(instruction_line);
+
+                                //Replace sender and regex match arguments in instruction line
+                                instruction_line = instruction_line.Replace("$u", this.args[0]);
+
+                                for(int i=1; i<(this.args.Count()); i++)
+                                {
+                                    instruction_line = instruction_line.Replace("$" + i, this.args[i]);
+                                }
+
                                 string instruction_name = instruction_line.Split(' ')[0];
                                 switch (instruction_name.ToLower())
                                 {

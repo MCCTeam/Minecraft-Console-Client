@@ -99,9 +99,27 @@ namespace MinecraftClient.ChatBots
                     if (regex.IsMatch(message))
                     {
                         Match regexMatch = regex.Match(message);
-                        for (int i = regexMatch.Groups.Count - 1; i >= 1; i--)
-                            toSend = toSend.Replace("$" + i, regexMatch.Groups[i].Value);
-                        toSend = toSend.Replace("$u", username);
+                        // how you pass an argument to script file is like:
+                        // script hello.txt Jacob
+                        
+                        // how you pass multiple arguments is like:
+                        // script domath.txt Server 1 5
+
+                        // very first argument is username of the sender
+
+                        // if we are going to call a script, pass $u, $1, $2.. arguments
+                        if (toSend.StartsWith("script"))
+                        {
+                            toSend = toSend + " \"" + username + "\"";
+                            for (int i = regexMatch.Groups.Count - 1; i >= 1; i--)
+                                toSend = toSend + " \"" + regexMatch.Groups[i].Value + "\"";
+                        }
+                        else
+                        {
+                            for (int i = regexMatch.Groups.Count - 1; i >= 1; i--)
+                                toSend = toSend.Replace("$" + i, regexMatch.Groups[i].Value);
+                            toSend = toSend.Replace("$u", username);
+                        }
                         return toSend;
                     }
                 }
@@ -109,10 +127,19 @@ namespace MinecraftClient.ChatBots
                 {
                     if (message.ToLower().Contains(match.ToLower()))
                     {
-                        return toSend.Replace("$u", username);
+                        // if we are going to call a script, pass username
+                        if (toSend.StartsWith("script"))
+                        {
+                            toSend = toSend + " \"" + username+ "\"";
+                            return toSend;
+                        }
+                        else
+                        {
+                            return toSend.Replace("$u", username);
+                        }
+
                     }
                 }
-
                 return null;
             }
         }
