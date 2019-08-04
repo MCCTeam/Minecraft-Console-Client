@@ -186,6 +186,12 @@ namespace MinecraftClient.ChatBots
             else verifytasks_timeleft--;
         }
 
+        public override bool OnDisconnect(DisconnectReason reason, string message)
+        {
+            serverlogin_done = false;
+            return false;
+        }
+
         private static string Task2String(TaskDesc task)
         {
             return String.Format(
