@@ -124,6 +124,7 @@ namespace MinecraftClient.Protocol.Handlers
                     HandlePacket(packetID, new List<byte>(packetData));
                 }
             }
+            catch (System.IO.IOException) { return false; }
             catch (SocketException) { return false; }
             catch (NullReferenceException) { return false; }
             return true;
@@ -529,6 +530,8 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (Exception innerException)
             {
+                if (innerException is SocketException || innerException.InnerException is SocketException)
+                    throw; //Connection lost rather than invalid data
                 throw new System.IO.InvalidDataException(
                     String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
                         Protocol18PacketTypes.GetPacketIncomingType(packetID, protocolversion),
