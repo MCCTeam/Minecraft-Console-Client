@@ -44,14 +44,19 @@ namespace MinecraftClient.Protocol
         void OnTextReceived(string text, bool isJson);
 
         /// <summary>
+        /// Called when receiving a connection keep-alive from the server
+        /// </summary>
+        void OnServerKeepAlive();
+
+        /// <summary>
         /// Called when an inventory is opened
         /// </summary>
-        void onInventoryOpen(Inventory inventory);
+        void OnInventoryOpen(Inventory inventory);
 
         /// <summary>
         /// Called when an inventory is closed
         /// </summary>
-        void onInventoryClose(byte inventoryID);
+        void OnInventoryClose(byte inventoryID);
 
         /// <summary>
         /// Called when the player respawns, which happens on login, respawn and world change.

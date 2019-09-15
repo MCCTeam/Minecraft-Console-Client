@@ -185,6 +185,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     case PacketIncomingType.KeepAlive:
                         SendPacket(PacketOutgoingType.KeepAlive, packetData);
+                        handler.OnServerKeepAlive();
                         break;
                     case PacketIncomingType.JoinGame:
                         handler.OnGameJoined();
@@ -481,7 +482,7 @@ namespace MinecraftClient.Protocol.Handlers
                             byte slots = dataTypes.ReadNextByte(packetData);
                             Inventory inventory = new Inventory(windowID, inventoryType, title, slots);
 
-                            handler.onInventoryOpen(inventory);
+                            handler.OnInventoryOpen(inventory);
                         }
                         break;
                     case PacketIncomingType.CloseWindow:
@@ -489,7 +490,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
 
-                            handler.onInventoryClose(windowID);
+                            handler.OnInventoryClose(windowID);
                         }
                         break;
                     case PacketIncomingType.WindowItems:

@@ -83,6 +83,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 case 0x00: byte[] keepalive = new byte[5] { 0, 0, 0, 0, 0 };
                     Receive(keepalive, 1, 4, SocketFlags.None);
+                    handler.OnServerKeepAlive();
                     Send(keepalive); break;
                 case 0x01: readData(4); readNextString(); readData(5); break;
                 case 0x02: readData(1); readNextString(); readNextString(); readData(4); break;

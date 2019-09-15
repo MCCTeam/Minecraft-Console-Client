@@ -52,6 +52,8 @@ namespace MinecraftClient
         private string uuid;
         private string sessionid;
         private Inventory playerInventory;
+        private DateTime lastKeepAlive;
+        private object lastKeepAliveLock = new object();
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -64,6 +66,7 @@ namespace MinecraftClient
         TcpClient client;
         IMinecraftCom handler;
         Thread cmdprompt;
+        Thread timeoutdetector;
 
         /// <summary>
         /// Starts the main chat client
@@ -167,6 +170,10 @@ namespace MinecraftClient
                             cmdprompt = new Thread(new ThreadStart(CommandPrompt));
                             cmdprompt.Name = "MCC Command prompt";
                             cmdprompt.Start();
+
+                            timeoutdetector = new Thread(new ThreadStart(TimeoutDetector));
+                            timeoutdetector.Name = "MCC Connection timeout detector";
+                            timeoutdetector.Start();
                         }
                     }
                 }
@@ -254,6 +261,29 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive is too old.
+        /// </summary>
+        private void TimeoutDetector()
+        {
+            lock (lastKeepAliveLock)
+            {
+                lastKeepAlive = DateTime.Now;
+            }
+            do
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(15));
+                lock (lastKeepAliveLock)
+                {
+                    if (lastKeepAlive.AddSeconds(30) < DateTime.Now)
+                    {
+                        OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "Connection Timeout");
+                    }
+                }
+            }
+            while (true);
+        }
+
+        /// <summary>
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command</param>
@@ -335,6 +365,9 @@ namespace MinecraftClient
 
             if (cmdprompt != null)
                 cmdprompt.Abort();
+
+            if (timeoutdetector != null)
+                timeoutdetector.Abort();
 
             Thread.Sleep(1000);
 
@@ -607,6 +640,10 @@ namespace MinecraftClient
         /// <param name="links">Links embedded in text</param>
         public void OnTextReceived(string text, bool isJson)
         {
+            lock (lastKeepAliveLock)
+            {
+                lastKeepAlive = DateTime.Now;
+            }
             List<string> links = new List<string>();
             string json = null;
             if (isJson)
@@ -638,10 +675,21 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Received a connection keep-alive from the server
+        /// </summary>
+        public void OnServerKeepAlive()
+        {
+            lock (lastKeepAliveLock)
+            {
+                lastKeepAlive = DateTime.Now;
+            }
+        }
+
+        /// <summary>
         /// When an inventory is opened
         /// </summary>
         /// <param name="inventory">Location to reach</param>
-        public void onInventoryOpen(Inventory inventory)
+        public void OnInventoryOpen(Inventory inventory)
         {
             //TODO: Handle Inventory
             if (!inventories.Contains(inventory))
@@ -654,7 +702,7 @@ namespace MinecraftClient
         /// When an inventory is close
         /// </summary>
         /// <param name="inventoryID">Location to reach</param>
-        public void onInventoryClose(byte inventoryID)
+        public void OnInventoryClose(byte inventoryID)
         {
             for (int i = 0; i < inventories.Count; i++)
             {
