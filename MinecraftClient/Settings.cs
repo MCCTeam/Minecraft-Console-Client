@@ -162,6 +162,7 @@ namespace MinecraftClient
         /// <param name="settingsfile">File to load</param>
         public static void LoadSettings(string settingsfile)
         {
+            ConsoleIO.WriteLogLine(String.Format("[Settings] Loading Settings from {0}", System.IO.Path.GetFullPath(settingsfile)));
             if (File.Exists(settingsfile))
             {
                 try
