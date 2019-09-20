@@ -669,6 +669,42 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Return the Server Port where the client is connected to
+        /// </summary>
+        /// <returns>Server Port where the client is connected to</returns>
+        protected int GetServerPort()
+        {
+            return Handler.GetServerPort();
+        }
+
+        /// <summary>
+        /// Return the Server Host where the client is connected to
+        /// </summary>
+        /// <returns>Server Host where the client is connected to</returns>
+        protected string GetServerHost()
+        {
+            return Handler.GetServerHost();
+        }
+
+        /// <summary>
+        /// Return the Username of the current account
+        /// </summary>
+        /// <returns>Username of the current account</returns>
+        protected string GetUsername()
+        {
+            return Handler.GetUsername();
+        }
+
+        /// <summary>
+        /// Return the UserUUID of the current account
+        /// </summary>
+        /// <returns>UserUUID of the current account</returns>
+        protected string GetUserUUID()
+        {
+            return Handler.GetUserUUID();
+        }
+
+        /// <summary>
         /// Return the list of currently online players
         /// </summary>
         /// <returns>List of online players</returns>
