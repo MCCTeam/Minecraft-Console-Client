@@ -354,6 +354,9 @@ namespace MinecraftClient
         /// </summary>
         public void Disconnect()
         {
+            foreach (ChatBot bot in bots)
+                bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Disconnected");
+
             botsOnHold.Clear();
             botsOnHold.AddRange(bots);
 
