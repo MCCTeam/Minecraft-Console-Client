@@ -462,13 +462,20 @@ namespace MinecraftClient
                                                     }
                                                     break;
                                                 case "renderdistance":
-                                                    MCSettings_RenderDistance = (byte)str2int(argValue);
-                                                    switch (argValue.ToLower())
+                                                    MCSettings_RenderDistance = 2;
+                                                    if (argValue.All(Char.IsDigit))
                                                     {
-                                                        case "tiny": MCSettings_RenderDistance = 2; break;
-                                                        case "short": MCSettings_RenderDistance = 4; break;
-                                                        case "medium": MCSettings_RenderDistance = 8; break;
-                                                        case "far": MCSettings_RenderDistance = 16; break;
+                                                        MCSettings_RenderDistance = (byte)str2int(argValue);
+                                                    }
+                                                    else
+                                                    {
+                                                        switch (argValue.ToLower())
+                                                        {
+                                                            case "tiny": MCSettings_RenderDistance = 2; break;
+                                                            case "short": MCSettings_RenderDistance = 4; break;
+                                                            case "medium": MCSettings_RenderDistance = 8; break;
+                                                            case "far": MCSettings_RenderDistance = 16; break;
+                                                        }
                                                     }
                                                     break;
                                                 case "chatmode":
