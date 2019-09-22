@@ -641,9 +641,12 @@ namespace MinecraftClient
         {
             try
             {
-                return Convert.ToInt32(str);
+                return Convert.ToInt32(str.Trim());
             }
-            catch { return 0; }
+            catch {
+                ConsoleIO.WriteLogLine("Failed to convert '" + str + "' into an int. Please check your settings.");
+                return 0;
+            }
         }
 
         /// <summary>
