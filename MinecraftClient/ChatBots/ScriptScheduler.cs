@@ -45,7 +45,7 @@ namespace MinecraftClient.ChatBots
             if (System.IO.File.Exists(tasksfile))
             {
                 if (Settings.DebugMessages)
-                    LogToConsole("Loading tasks from '" + tasksfile + "'");
+                    LogToConsole("Loading tasks from '" + System.IO.Path.GetFullPath(tasksfile) + "'");
                 TaskDesc current_task = null;
                 String[] lines = System.IO.File.ReadAllLines(tasksfile);
                 foreach (string lineRAW in lines)
@@ -87,7 +87,7 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                LogToConsole("File not found: '" + tasksfile + "'");
+                LogToConsole("File not found: '" + System.IO.Path.GetFullPath(tasksfile) + "'");
                 UnloadBot(); //No need to keep the bot active
             }
         }

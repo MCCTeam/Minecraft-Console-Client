@@ -140,7 +140,7 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                LogToConsole("File not found: '" + file + "'");
+                LogToConsole("File not found: '" + System.IO.Path.GetFullPath(file) + "'");
 
                 if (owner != null)
                     SendPrivateMessage(owner, "File not found: '" + file + "'");

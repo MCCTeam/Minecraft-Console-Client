@@ -132,6 +132,9 @@ namespace MinecraftClient.ChatBots
                 bool ownersOnly = false;
                 respondRules = new List<RespondRule>();
 
+                if (Settings.DebugMessages)
+                    LogToConsole("Loading matches from file: " + System.IO.Path.GetFullPath(matchesFile));
+
                 foreach (string lineRAW in File.ReadAllLines(matchesFile))
                 {
                     string line = lineRAW.Split('#')[0].Trim();
@@ -175,7 +178,7 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                LogToConsole("File not found: '" + matchesFile + "'");
+                LogToConsole("File not found: '" + System.IO.Path.GetFullPath(matchesFile) + "'");
                 UnloadBot(); //No need to keep the bot active
             }
         }

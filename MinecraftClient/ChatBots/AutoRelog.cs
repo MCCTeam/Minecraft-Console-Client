@@ -36,7 +36,7 @@ namespace MinecraftClient.ChatBots
             if (System.IO.File.Exists(Settings.AutoRelog_KickMessagesFile))
             {
                 if (Settings.DebugMessages)
-                    LogToConsole("Loading messages from file: " + Settings.AutoRelog_KickMessagesFile);
+                    LogToConsole("Loading messages from file: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
 
                 dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile);
 
@@ -49,7 +49,7 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                LogToConsole("File not found: " + Settings.AutoRelog_KickMessagesFile);
+                LogToConsole("File not found: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
 
                 if (Settings.DebugMessages)
                     LogToConsole("  Current directory was: " + System.IO.Directory.GetCurrentDirectory());
