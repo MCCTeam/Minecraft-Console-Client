@@ -663,7 +663,7 @@ namespace MinecraftClient
             }
             else
             {
-                LogToConsole("File not found: " + Settings.Alerts_MatchesFile);
+                LogToConsole("File not found: " + System.IO.Path.GetFullPath(file));
                 return new string[0];
             }
         }
