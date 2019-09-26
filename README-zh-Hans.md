@@ -6,24 +6,26 @@
 我的世界控制台客户端是个轻量级的程序，它允许你连接至任何我的世界的服务器，
 快速的发送指令和接收聊天信息而不需要开启Java版我的世界游戏。它也提供了多种自动化管理服务器和进行其他操作的可能性。
 
+**注意！** MCC仅可以连接到**我的世界Java版**，而**不能连接到我的世界中国版！**
+
 ## 下载
 
-从这里获得最新的exe文件[开发构建](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts).
-这是个.NET可执行文件，它也能运行于Mac和Linux.
+从这里获得最新的exe文件[开发构建](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)。
+这是个.NET可执行文件，它也能运行于macOS系统和Linux系统。
 
 ## 如何使用
 
 
 在此查看[示例配置文件](MinecraftClient/config/) ，其中有基础使用教程 README 文件.
-更多帮助和信息可以从[我的世界官方论坛](http://www.minecraftforum.net/topic/1314800-/).<br/>中查询。
+更多帮助和信息可以从[我的世界官方论坛](http://www.minecraftforum.net/topic/1314800-/)。<br/>中查询。
 
 ## 贡献代码
 
-如果您希望为我的世界控制台客户端出一份力的话，我们不胜感激，您可以fork此repo并提交合并请求. *Indev* 分支 将不会继续被使用, 我们将只会把MCC作为测试版软件发布。
+如果您希望为我的世界控制台客户端出一份力的话，我们不胜感激，您可以fork此repo并提交合并请求。 *Indev* 分支将不会继续被使用, 我们将只会把MCC作为测试版软件发布。
 
 ## 许可证
 
-除非有特殊说明，此项目代码全部来自MCC开发者，并以CDDL-1.0协议发布.
+除非有特殊说明，此项目代码全部来自MCC开发者，并以CDDL-1.0协议发布。
 在其他情况下，许可证和原作者会被提及于源码文件的顶部。
 CDDL-1.0许可证的主要条件基本上在列明于下列：
 
