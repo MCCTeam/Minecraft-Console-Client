@@ -312,7 +312,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="str">String to write</param>
         /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>
-        /// <param name="displayTimestamps">
+        /// <param name="displayTimestamp">
         /// If false, no timestamp is prepended.
         /// If true, "hh-mm-ss" timestamp will be prepended.
         /// If unspecified, value is retrieved from EnableTimestamps.

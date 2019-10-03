@@ -25,8 +25,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// Initialize a new Forge protocol handler
         /// </summary>
         /// <param name="forgeInfo">Forge Server Information</param>
-        /// <param name="protocolversion">Minecraft protocol version</param>
-        /// <param name="datatypes">Minecraft data types handler</param>
+        /// <param name="protocolVersion">Minecraft protocol version</param>
+        /// <param name="dataTypes">Minecraft data types handler</param>
         public Protocol18Forge(ForgeInfo forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
         {
             this.forgeInfo = forgeInfo;
@@ -102,7 +102,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="channel">Plugin message channel</param>
         /// <param name="packetData">Plugin message data</param>
-        /// <param name="currentdimension">Current world dimension</param>
+        /// <param name="currentDimension">Current world dimension</param>
         /// <returns>TRUE if the plugin message was recognized and handled</returns>
         public bool HandlePluginMessage(string channel, List<byte> packetData, ref int currentDimension)
         {
