@@ -16,7 +16,7 @@ namespace MinecraftClient.Crypto
         /// <summary>
         /// Get a cryptographic service for encrypting data using the server's RSA public key
         /// </summary>
-        /// <param name="key">Byte array containing the encoded key</param>
+        /// <param name="x509key">Byte array containing the encoded key</param>
         /// <returns>Returns the corresponding RSA Crypto Service</returns>
 
         public static RSACryptoServiceProvider DecodeRSAPublicKey(byte[] x509key)

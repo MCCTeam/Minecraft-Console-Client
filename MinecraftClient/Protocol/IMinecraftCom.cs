@@ -25,7 +25,6 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Disconnect from the server
         /// </summary>
-        /// <param name="message">Reason</param>
         void Disconnect();
 
         /// <summary>
