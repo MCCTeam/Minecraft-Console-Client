@@ -267,6 +267,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The integer</returns>
         public int ReadNextVarInt(List<byte> cache)
         {
+            string rawData = BitConverter.ToString(cache.ToArray());
             int i = 0;
             int j = 0;
             int k = 0;
@@ -274,7 +275,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 k = ReadNextByte(cache);
                 i |= (k & 0x7F) << j++ * 7;
-                if (j > 5) throw new OverflowException("VarInt too big");
+                if (j > 5) throw new OverflowException("VarInt too big " + rawData);
                 if ((k & 0x80) != 128) break;
             }
             return i;

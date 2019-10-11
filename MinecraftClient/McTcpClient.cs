@@ -287,7 +287,6 @@ namespace MinecraftClient
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command</param>
-        /// <param name="interactive_mode">Set to true if command was sent by the user using the command prompt</param>
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
         public bool PerformInternalCommand(string command, ref string response_msg)
@@ -565,7 +564,7 @@ namespace MinecraftClient
         /// or if a ChatBot whishes to update the player's location.
         /// </summary>
         /// <param name="location">The new location</param>
-        /// <param name="lookAt">Block coordinates to look at</param>
+        /// <param name="lookAtLocation">Block coordinates to look at</param>
         public void UpdateLocation(Location location, Location lookAtLocation)
         {
             double dx = lookAtLocation.X - (location.X - 0.5);
@@ -640,7 +639,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="text">Text received</param>
         /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
-        /// <param name="links">Links embedded in text</param>
         public void OnTextReceived(string text, bool isJson)
         {
             lock (lastKeepAliveLock)
