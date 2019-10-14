@@ -226,15 +226,16 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnRespawn();
                         break;
                     case PacketIncomingType.PlayerPositionAndLook:
+                        // These always need to be read, since we need the field after them for teleport confirm
+                        double x = dataTypes.ReadNextDouble(packetData);
+                        double y = dataTypes.ReadNextDouble(packetData);
+                        double z = dataTypes.ReadNextDouble(packetData);
+                        float yaw = dataTypes.ReadNextFloat(packetData);
+                        float pitch = dataTypes.ReadNextFloat(packetData);
+                        byte locMask = dataTypes.ReadNextByte(packetData);
+
                         if (handler.GetTerrainEnabled())
                         {
-                            double x = dataTypes.ReadNextDouble(packetData);
-                            double y = dataTypes.ReadNextDouble(packetData);
-                            double z = dataTypes.ReadNextDouble(packetData);
-                            float yaw = dataTypes.ReadNextFloat(packetData);
-                            float pitch = dataTypes.ReadNextFloat(packetData);
-                            byte locMask = dataTypes.ReadNextByte(packetData);
-
                             if (protocolversion >= MC18Version)
                             {
                                 Location location = handler.GetCurrentLocation();
