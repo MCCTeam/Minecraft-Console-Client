@@ -369,7 +369,10 @@ namespace MinecraftClient
                 cmdprompt.Abort();
 
             if (timeoutdetector != null)
+            {
                 timeoutdetector.Abort();
+                timeoutdetector = null;
+            }
 
             Thread.Sleep(1000);
 
@@ -723,6 +726,12 @@ namespace MinecraftClient
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
             world.Clear();
+
+            if (timeoutdetector != null)
+            {
+                timeoutdetector.Abort();
+                timeoutdetector = null;
+            }
 
             bool will_restart = false;
 
