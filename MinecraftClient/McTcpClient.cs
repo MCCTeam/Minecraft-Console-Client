@@ -349,12 +349,12 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Disconnect the client from the server
+        /// Disconnect the client from the server (initiated from MCC)
         /// </summary>
         public void Disconnect()
         {
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Disconnected");
+                bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, "");
 
             botsOnHold.Clear();
             botsOnHold.AddRange(bots);
@@ -721,7 +721,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// When connection has been lost
+        /// When connection has been lost, login was denied or played was kicked from the server
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
@@ -751,6 +751,9 @@ namespace MinecraftClient
                     ConsoleIO.WriteLine("Login failed :");
                     ConsoleIO.WriteLineFormatted(message);
                     break;
+
+                case ChatBot.DisconnectReason.UserLogout:
+                    throw new InvalidOperationException("User-initiated logout should be done by calling Disconnect()");
             }
 
             foreach (ChatBot bot in bots.ToArray())

@@ -27,7 +27,7 @@ namespace MinecraftClient
     /// </summary>
     public abstract class ChatBot
     {
-        public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost };
+        public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost, UserLogout };
 
         //Handler will be automatically set on bot loading, don't worry about this
         public void SetHandler(McTcpClient handler) { this._handler = handler; }

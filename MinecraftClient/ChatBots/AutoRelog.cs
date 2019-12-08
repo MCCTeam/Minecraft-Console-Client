@@ -58,29 +58,37 @@ namespace MinecraftClient.ChatBots
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
         {
-            message = GetVerbatim(message);
-            string comp = message.ToLower();
-
-            if (Settings.DebugMessages)
-                LogToConsole("Got disconnected with message: " + message);
-
-            foreach (string msg in dictionary)
+            if (reason == DisconnectReason.UserLogout)
             {
-                if (comp.Contains(msg))
-                {
-                    if (Settings.DebugMessages)
-                        LogToConsole("Message contains '" + msg + "'. Reconnecting.");
-
-                    LogToConsole("Waiting " + delay + " seconds before reconnecting...");
-                    System.Threading.Thread.Sleep(delay * 1000);
-                    McTcpClient.ReconnectionAttemptsLeft = attempts;
-                    ReconnectToTheServer();
-                    return true;
-                }
+                if (Settings.DebugMessages)
+                    LogToConsole("Ignoring disconnection initiated by User or MCC bot");
             }
+            else
+            {
+                message = GetVerbatim(message);
+                string comp = message.ToLower();
 
-            if (Settings.DebugMessages)
-                LogToConsole("Message not containing any defined keywords. Ignoring.");
+                if (Settings.DebugMessages)
+                    LogToConsole("Got disconnected with message: " + message);
+
+                foreach (string msg in dictionary)
+                {
+                    if (comp.Contains(msg))
+                    {
+                        if (Settings.DebugMessages)
+                            LogToConsole("Message contains '" + msg + "'. Reconnecting.");
+
+                        LogToConsole("Waiting " + delay + " seconds before reconnecting...");
+                        System.Threading.Thread.Sleep(delay * 1000);
+                        McTcpClient.ReconnectionAttemptsLeft = attempts;
+                        ReconnectToTheServer();
+                        return true;
+                    }
+                }
+
+                if (Settings.DebugMessages)
+                    LogToConsole("Message not containing any defined keywords. Ignoring.");
+            }
 
             return false;
         }
