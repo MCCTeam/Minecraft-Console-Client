@@ -353,7 +353,7 @@ namespace MinecraftClient
         /// </summary>
         public void Disconnect()
         {
-            foreach (ChatBot bot in bots)
+            foreach (ChatBot bot in bots.ToArray())
                 bot.OnDisconnect(ChatBot.DisconnectReason.ConnectionLost, "Disconnected");
 
             botsOnHold.Clear();
@@ -433,7 +433,7 @@ namespace MinecraftClient
                     Settings.MCSettings_ChatColors,
                     Settings.MCSettings_Skin_All,
                     Settings.MCSettings_MainHand);
-            foreach (ChatBot bot in bots)
+            foreach (ChatBot bot in bots.ToArray())
                 bot.AfterGameJoined();
             if (inventoryHandlingRequested)
             {
@@ -753,7 +753,7 @@ namespace MinecraftClient
                     break;
             }
 
-            foreach (ChatBot bot in bots)
+            foreach (ChatBot bot in bots.ToArray())
                 will_restart |= bot.OnDisconnect(reason, message);
 
             if (!will_restart)
