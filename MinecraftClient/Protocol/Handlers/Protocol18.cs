@@ -743,6 +743,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (SocketException) { return false; }
             catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
         }
 
         /// <summary>
@@ -757,6 +758,8 @@ namespace MinecraftClient.Protocol.Handlers
                 return true;
             }
             catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
         }
 
         /// <summary>
@@ -813,6 +816,8 @@ namespace MinecraftClient.Protocol.Handlers
                 SendPacket(PacketOutgoingType.ClientSettings, fields);
             }
             catch (SocketException) { }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
             return false;
         }
 
@@ -851,6 +856,8 @@ namespace MinecraftClient.Protocol.Handlers
                     return true;
                 }
                 catch (SocketException) { return false; }
+                catch (System.IO.IOException) { return false; }
+                catch (ObjectDisposedException) { return false; }
             }
             else return false;
         }
@@ -882,6 +889,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (SocketException) { return false; }
             catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
         }
 
         /// <summary>
