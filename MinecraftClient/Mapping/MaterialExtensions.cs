@@ -514,6 +514,10 @@ namespace MinecraftClient.Mapping
                 case Material.StructureBlock:
                 case Material.Jigsaw:
                 case Material.Composter:
+                case Material.BeeNest:
+                case Material.Beehive:
+                case Material.HoneyBlock:
+                case Material.HoneycombBlock:
                     return true;
                 default:
                     return false;

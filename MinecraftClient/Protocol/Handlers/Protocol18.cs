@@ -35,6 +35,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC113Version = 393;
         internal const int MC114Version = 477;
         internal const int MC1144Version = 498;
+        internal const int MC115Version = 573;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -62,7 +63,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
 
-            if (handler.GetTerrainEnabled() && protocolversion > MC1144Version)
+            if (handler.GetTerrainEnabled() && protocolversion > MC115Version)
             {
                 ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
                 handler.SetTerrainEnabled(false);
@@ -76,9 +77,11 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (protocolversion >= MC113Version)
             {
-                if (protocolVersion > MC1144Version && handler.GetTerrainEnabled())
+                if (protocolVersion > MC115Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException("Please update block types handling for this Minecraft version. See Material.cs");
-                if (protocolVersion >= MC114Version)
+                if (protocolVersion >= MC115Version)
+                    Block.Palette = new Palette115();
+                else if (protocolVersion >= MC114Version)
                     Block.Palette = new Palette114();
                 else Block.Palette = new Palette113();
             }
@@ -197,12 +200,16 @@ namespace MinecraftClient.Protocol.Handlers
                             this.currentDimension = (sbyte)dataTypes.ReadNextByte(packetData);
                         if (protocolversion < MC114Version)
                             dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
+                        if (protocolversion >= MC115Version)
+                            dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
                         dataTypes.ReadNextByte(packetData);
                         dataTypes.ReadNextString(packetData);
                         if (protocolversion >= MC114Version)
                             dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
                         if (protocolversion >= MC18Version)
                             dataTypes.ReadNextBool(packetData);           // Reduced debug info - 1.8 and above
+                        if (protocolversion >= MC115Version)
+                            dataTypes.ReadNextBool(packetData);           // Enable respawn screen - 1.15 and above
                         break;
                     case PacketIncomingType.ChatMessage:
                         string message = dataTypes.ReadNextString(packetData);
@@ -221,6 +228,8 @@ namespace MinecraftClient.Protocol.Handlers
                         this.currentDimension = dataTypes.ReadNextInt(packetData);
                         if (protocolversion < MC114Version)
                             dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
+                        if (protocolversion >= MC115Version)
+                            dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
                         dataTypes.ReadNextByte(packetData);
                         dataTypes.ReadNextString(packetData);
                         handler.OnRespawn();
@@ -275,6 +284,8 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 if (protocolversion >= MC114Version)
                                     dataTypes.ReadNextNbt(packetData);  // Heightmaps - 1.14 and above
+                                if (protocolversion >= MC115Version && chunksContinuous)
+                                    dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
                                 int dataSize = dataTypes.ReadNextVarInt(packetData);
                                 pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
                             }

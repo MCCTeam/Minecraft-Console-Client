@@ -147,7 +147,7 @@ namespace MinecraftClient.Protocol.Handlers
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
-            else // MC 1.14
+            else if (protocol < Protocol18Handler.MC115Version) // MC 1.14 to 1.14.4
             {
                 switch (packetID)
                 {
@@ -169,6 +169,31 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x13: return PacketIncomingType.CloseWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
                     case 0x16: return PacketIncomingType.SetSlot;
+                    default: return PacketIncomingType.UnknownPacket;
+                }
+            }
+            else // MC 1.15
+            {
+                switch (packetID)
+                {
+                    case 0x21: return PacketIncomingType.KeepAlive;
+                    case 0x26: return PacketIncomingType.JoinGame;
+                    case 0x0F: return PacketIncomingType.ChatMessage;
+                    case 0x3B: return PacketIncomingType.Respawn;
+                    case 0x36: return PacketIncomingType.PlayerPositionAndLook;
+                    case 0x22: return PacketIncomingType.ChunkData;
+                    case 0x10: return PacketIncomingType.MultiBlockChange;
+                    case 0x0C: return PacketIncomingType.BlockChange;
+                    case 0x1E: return PacketIncomingType.UnloadChunk;
+                    case 0x34: return PacketIncomingType.PlayerListUpdate;
+                    case 0x11: return PacketIncomingType.TabCompleteResult;
+                    case 0x19: return PacketIncomingType.PluginMessage;
+                    case 0x1B: return PacketIncomingType.KickPacket;
+                    case 0x3A: return PacketIncomingType.ResourcePackSend;
+                    case 0x2F: return PacketIncomingType.OpenWindow;
+                    case 0x14: return PacketIncomingType.CloseWindow;
+                    case 0x15: return PacketIncomingType.WindowItems;
+                    case 0x17: return PacketIncomingType.SetSlot;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -262,7 +287,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                 }
             }
-            else // MC 1.14
+            else // MC 1.14 to 1.15
             {
                 switch (packet)
                 {
