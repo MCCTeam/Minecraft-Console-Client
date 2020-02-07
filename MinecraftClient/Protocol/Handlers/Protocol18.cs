@@ -35,6 +35,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC114Version = 477;
         internal const int MC115Version = 573;
         internal const int MC1151Version = 575;
+        internal const int MC1152Version = 578;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -62,7 +63,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
 
-            if (handler.GetTerrainEnabled() && protocolversion > MC1151Version)
+            if (handler.GetTerrainEnabled() && protocolversion > MC1152Version)
             {
                 ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
                 handler.SetTerrainEnabled(false);
@@ -76,7 +77,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (protocolversion >= MC113Version)
             {
-                if (protocolVersion > MC1151Version && handler.GetTerrainEnabled())
+                if (protocolVersion > MC1152Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException("Please update block types handling for this Minecraft version. See Material.cs");
                 if (protocolVersion >= MC115Version)
                     Block.Palette = new Palette115();
