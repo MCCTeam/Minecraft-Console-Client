@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -49,9 +49,14 @@ namespace MinecraftClient
                     bool scriptMain = true;
                     List<string> script = new List<string>();
                     List<string> extensions = new List<string>();
+                    List<string> libs = new List<string>();
                     foreach (string line in lines)
                     {
-                        if (line.StartsWith("//MCCScript"))
+                        if (line.StartsWith("//using"))
+                        {
+                            libs.Add(line.Replace("//", "").Trim());
+                        }
+                        else if (line.StartsWith("//MCCScript"))
                         {
                             if (line.EndsWith("Extensions"))
                                 scriptMain = false;
@@ -78,6 +83,7 @@ namespace MinecraftClient
                         "using System.Threading;",
                         "using MinecraftClient;",
                         "using MinecraftClient.Mapping;",
+                        String.Join("\n", libs),
                         "namespace ScriptLoader {",
                         "public class Script {",
                         "public CSharpAPI MCC;",
