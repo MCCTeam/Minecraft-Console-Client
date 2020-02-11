@@ -34,7 +34,6 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC113Version = 393;
         internal const int MC114Version = 477;
         internal const int MC115Version = 573;
-        internal const int MC1151Version = 575;
         internal const int MC1152Version = 578;
 
         private int compression_treshold = 0;

@@ -548,7 +548,7 @@ namespace MinecraftClient
                 + "showxpbarmessages=true             # Messages displayed above xp bar\r\n"
                 + "showchatlinks=true                 # Show links embedded in chat messages\r\n"
                 + "terrainandmovements=false          # Uses more ram, cpu, bandwidth\r\n"
-                + "inventoryhandling=false            # Toggle inventory handling\r\n"
+                + "inventoryhandling=false            # Toggle inventory handling (experimental, enable only for development)\r\n"
                 + "sessioncache=disk                  # How to retain session tokens. Use 'none', 'memory' or 'disk'\r\n"
                 + "resolvesrvrecords=fast             # Use 'false', 'fast' (5s timeout), or 'true'. Required for joining some servers.\r\n"
                 + "accountlist=accounts.txt           # See README > 'Servers and Accounts file' for more info about this file\r\n"
