@@ -15,6 +15,42 @@ Due to no longer having time to implement upgrades for new Minecraft versions an
 Get exe file from the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts).
 This exe file is a .NET binary which also works on Mac and Linux.
 
+## Building and usage on Linux
+First you need to install the **Mono**.
+Read this and follow the instructions: [Project Mono installation](https://www.mono-project.com/download/stable/#download-lin).
+
+Then you need to install the **Git** if you do not have it installed.
+
+To install it, follow the instructions from [Git](https://git-scm.com/download/linux).
+
+After that, navigate to your prefered directory and execute the following:
+```
+git clone https://github.com/ORelio/Minecraft-Console-Client.git .
+```
+Then, navigate to the **Minecraft-Console-Client/MinecraftClient**.
+
+Edit the **MinecraftClient.csproj**, change the following:
+```
+<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+```
+To:
+```
+<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+<Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+```
+(Replace your platform).
+
+Type the following:
+```
+msbuild
+```
+After the build has finished, then navigate to the **bin/Release** directory, and then you can move the **.exe** file to your prefered location.
+
+To run the file just type: **mono MinecraftClient.exe**
+
+You can create **start.sh** with '**mono MinecraftClient.exe**' inside it (**without quotes**), then do **chmod +x start.sh** and then you can run it by typing: **./start.sh**.
+
 ## How to use
 
 Check out the [sample configuration files](MinecraftClient/config/) which includes the how-to-use README.
