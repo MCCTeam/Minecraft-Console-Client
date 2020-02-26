@@ -1,7 +1,7 @@
 我的世界控制台客户端
 ========================
 
-[![Appveyor build status](https://ci.appveyor.com/api/proMinecraftjects/status/github/ORelio/Minecraft-Console-Client?branch=Indev)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
+[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/ORelio/Minecraft-Console-Client?branch=Indev)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
 
 我的世界控制台客户端(MCC)是一个轻量级的程序，它允许你连接至任何我的世界服务器，
 简单快速地发送指令和接收聊天信息而不需要开启游戏。它也提供了多种自动化管理服务器和进行其他操作的可能性。
