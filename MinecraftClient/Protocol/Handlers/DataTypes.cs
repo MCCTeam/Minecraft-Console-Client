@@ -445,7 +445,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocolversion < Protocol18Handler.MC18Version)
             {
                 byte[] length = BitConverter.GetBytes((short)array.Length);
-                Array.Reverse(length);
+                Array.Reverse(length); //Endianness
                 return ConcatBytes(length, array);
             }
             else return ConcatBytes(GetVarInt(array.Length), array);
@@ -464,7 +464,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Get a byte array representing the given location encoded as an unsigned short
+        /// Get a byte array representing the given location encoded as an unsigned long
         /// </summary>
         /// <remarks>
         /// A modulo will be applied if the location is outside the following ranges:
@@ -475,11 +475,14 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Location representation as ulong</returns>
         public byte[] GetLocation(Location location)
         {
+            byte[] locationBytes;
             if (protocolversion >= Protocol18Handler.MC114Version)
             {
-                return BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Z) & 0x3FFFFFF) << 12) | (((ulong)location.Y) & 0xFFF));
+                locationBytes = BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Z) & 0x3FFFFFF) << 12) | (((ulong)location.Y) & 0xFFF));
             }
-            else return BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Y) & 0xFFF) << 26) | (((ulong)location.Z) & 0x3FFFFFF));
+            else locationBytes = BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Y) & 0xFFF) << 26) | (((ulong)location.Z) & 0x3FFFFFF));
+            Array.Reverse(locationBytes); //Endianness
+            return locationBytes;
         }
 
         /// <summary>
