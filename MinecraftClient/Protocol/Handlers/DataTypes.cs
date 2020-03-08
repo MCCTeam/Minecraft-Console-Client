@@ -324,15 +324,17 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         private Dictionary<string, object> ReadNextNbt(List<byte> cache, bool root)
         {
+            Dictionary<string, object> NbtData = new Dictionary<string, object>();
+
             if (root)
             {
+                if (cache[0] == 0) // TAG_End
+                    return NbtData;
                 if (cache[0] != 10) // TAG_Compound
                     throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
                 ReadNextByte(cache); // Tag type (TAG_Compound)
                 ReadData(ReadNextUShort(cache), cache); // NBT root name
             }
-
-            Dictionary<string, object> NbtData = new Dictionary<string, object>();
 
             while (true)
             {
