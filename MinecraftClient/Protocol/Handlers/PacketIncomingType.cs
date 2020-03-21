@@ -39,6 +39,7 @@ namespace MinecraftClient.Protocol.Handlers
         EntityPosition,
         EntityPositionAndRotation,
         EntityProperties,
-        TimeUpdate
+        TimeUpdate,
+        EntityTeleport
     }
 }

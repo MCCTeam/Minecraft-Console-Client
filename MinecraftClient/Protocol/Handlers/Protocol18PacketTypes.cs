@@ -203,6 +203,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x2A: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x59: return PacketIncomingType.EntityProperties;
                     case 0x4F: return PacketIncomingType.TimeUpdate;
+                    case 0x57: return PacketIncomingType.EntityTeleport;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
