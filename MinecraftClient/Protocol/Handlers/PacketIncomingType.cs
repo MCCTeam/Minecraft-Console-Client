@@ -10,6 +10,9 @@ namespace MinecraftClient.Protocol.Handlers
     /// </summary>
     enum PacketIncomingType
     {
+        // modified by reinforce
+        SpawnEntity,
+        SpawnLivingEntity,
         KeepAlive,
         JoinGame,
         ChatMessage,
@@ -30,6 +33,12 @@ namespace MinecraftClient.Protocol.Handlers
         OpenWindow,
         WindowItems,
         SetSlot,
-        UnknownPacket
+        UnknownPacket,
+        DestroyEntities,
+        SetCooldown,
+        EntityPosition,
+        EntityPositionAndRotation,
+        EntityProperties,
+        TimeUpdate
     }
 }

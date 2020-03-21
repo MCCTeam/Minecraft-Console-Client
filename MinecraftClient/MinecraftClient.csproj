@@ -79,6 +79,7 @@
     <Compile Include="ChatBots\AutoRelog.cs" />
     <Compile Include="ChatBots\ChatLog.cs" />
     <Compile Include="ChatBots\HangmanGame.cs" />
+    <Compile Include="ChatBots\kill.cs" />
     <Compile Include="ChatBots\PlayerListLogger.cs" />
     <Compile Include="ChatBots\RemoteControl.cs" />
     <Compile Include="ChatBots\Script.cs" />

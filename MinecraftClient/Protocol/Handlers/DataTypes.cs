@@ -324,17 +324,15 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         private Dictionary<string, object> ReadNextNbt(List<byte> cache, bool root)
         {
-            Dictionary<string, object> NbtData = new Dictionary<string, object>();
-
             if (root)
             {
-                if (cache[0] == 0) // TAG_End
-                    return NbtData;
                 if (cache[0] != 10) // TAG_Compound
                     throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
                 ReadNextByte(cache); // Tag type (TAG_Compound)
                 ReadData(ReadNextUShort(cache), cache); // NBT root name
             }
+
+            Dictionary<string, object> NbtData = new Dictionary<string, object>();
 
             while (true)
             {
@@ -447,7 +445,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocolversion < Protocol18Handler.MC18Version)
             {
                 byte[] length = BitConverter.GetBytes((short)array.Length);
-                Array.Reverse(length); //Endianness
+                Array.Reverse(length);
                 return ConcatBytes(length, array);
             }
             else return ConcatBytes(GetVarInt(array.Length), array);
@@ -466,7 +464,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Get a byte array representing the given location encoded as an unsigned long
+        /// Get a byte array representing the given location encoded as an unsigned short
         /// </summary>
         /// <remarks>
         /// A modulo will be applied if the location is outside the following ranges:
@@ -477,14 +475,11 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Location representation as ulong</returns>
         public byte[] GetLocation(Location location)
         {
-            byte[] locationBytes;
             if (protocolversion >= Protocol18Handler.MC114Version)
             {
-                locationBytes = BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Z) & 0x3FFFFFF) << 12) | (((ulong)location.Y) & 0xFFF));
+                return BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Z) & 0x3FFFFFF) << 12) | (((ulong)location.Y) & 0xFFF));
             }
-            else locationBytes = BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Y) & 0xFFF) << 26) | (((ulong)location.Z) & 0x3FFFFFF));
-            Array.Reverse(locationBytes); //Endianness
-            return locationBytes;
+            else return BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Y) & 0xFFF) << 26) | (((ulong)location.Z) & 0x3FFFFFF));
         }
 
         /// <summary>

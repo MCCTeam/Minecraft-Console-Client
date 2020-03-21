@@ -1,0 +1,1688 @@
+Entities
+area_effect_cloud
+ID
+0
+Name
+area_effect_cloud
+Display name
+Area Effect Cloud
+Height
+0.5
+Width
+6.0
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+Float: 0.5
+VarInt: 0
+Boolean: False
+Particle: Unknown
+armor_stand
+ID
+1
+Name
+armor_stand
+Display name
+Armor Stand
+Height
+1.975
+Width
+0.5
+Metadata
+Inherits from ~abstract_living
+Own metadata:
+Byte: 0
+Rotations: Unknown
+Rotations: Unknown
+Rotations: Unknown
+Rotations: Unknown
+Rotations: Unknown
+Rotations: Unknown
+arrow
+ID
+2
+Name
+arrow
+Display name
+Arrow
+Height
+0.5
+Width
+0.5
+Metadata
+Inherits from ~abstract_entity
+Abstract parent:
+Byte: 0
+OptUUID: Empty
+Byte: 0
+Own metadata:
+VarInt: -1
+bat
+ID
+3
+Name
+bat
+Display name
+Bat
+Height
+0.9
+Width
+0.5
+Metadata
+Inherits from ~abstract_insentient
+Own metadata:
+Byte: 0
+bee
+ID
+4
+Name
+bee
+Display name
+Bee
+Height
+0.6
+Width
+0.7
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+Byte: 0
+VarInt: 0
+blaze
+ID
+5
+Name
+blaze
+Display name
+Blaze
+Height
+1.8
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+Own metadata:
+Byte: 0
+boat
+ID
+6
+Name
+boat
+Display name
+Boat
+Height
+0.5625
+Width
+1.375
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+VarInt: 0
+VarInt: 1
+Float: 0.0
+VarInt: Unknown
+Boolean: False
+Boolean: False
+VarInt: 0
+cat
+ID
+7
+Name
+cat
+Display name
+Cat
+Height
+0.7
+Width
+0.6
+Metadata
+Inherits from ~abstract_tameable
+Own metadata:
+VarInt: 1
+Boolean: False
+Boolean: False
+VarInt: Unknown
+cave_spider
+ID
+8
+Name
+cave_spider
+Display name
+Cave Spider
+Height
+0.5
+Width
+0.7
+Metadata
+Inherits from spider
+chest_minecart
+ID
+43
+Name
+chest_minecart
+Display name
+Minecart with Chest
+Height
+0.7
+Width
+0.98
+Metadata
+Inherits from ~abstract_minecart
+chicken
+ID
+9
+Name
+chicken
+Display name
+Chicken
+Height
+0.7
+Width
+0.4
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+cod
+ID
+10
+Name
+cod
+Display name
+Cod
+Height
+0.3
+Width
+0.5
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+command_block_minecart
+ID
+44
+Name
+command_block_minecart
+Display name
+Minecart with Command Block
+Height
+0.7
+Width
+0.98
+Metadata
+Inherits from ~abstract_minecart
+Own metadata:
+String: ""
+Chat: {'text': ''}
+cow
+ID
+11
+Name
+cow
+Display name
+Cow
+Height
+1.4
+Width
+0.9
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+creeper
+ID
+12
+Name
+creeper
+Display name
+Creeper
+Height
+1.7
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+Own metadata:
+VarInt: -1
+Boolean: False
+Boolean: False
+dolphin
+ID
+14
+Name
+dolphin
+Display name
+Dolphin
+Height
+0.6
+Width
+0.9
+Metadata
+Inherits from ~abstract_insentient
+Own metadata:
+BlockPos: (0, 0, 0)
+Boolean: False
+VarInt: 2400
+donkey
+ID
+13
+Name
+donkey
+Display name
+Donkey
+Height
+1.5
+Width
+1.39648
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Abstract parent:
+Byte: 0
+OptUUID: Empty
+Abstract parent:
+Boolean: False
+dragon_fireball
+ID
+15
+Name
+dragon_fireball
+Display name
+Dragon Fireball
+Height
+1.0
+Width
+1.0
+Metadata
+Inherits from ~abstract_entity
+drowned
+ID
+16
+Name
+drowned
+Display name
+Drowned
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from zombie
+egg
+ID
+79
+Name
+egg
+Display name
+Thrown Egg
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+Abstract parent:
+Slot: Empty
+elder_guardian
+ID
+17
+Name
+elder_guardian
+Display name
+Elder Guardian
+Height
+1.9975
+Width
+1.9975
+Metadata
+Inherits from guardian
+end_crystal
+ID
+18
+Name
+end_crystal
+Display name
+End Crystal
+Height
+2.0
+Width
+2.0
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+OptBlockPos: Empty
+Boolean: True
+ender_dragon
+ID
+19
+Name
+ender_dragon
+Display name
+Ender Dragon
+Height
+8.0
+Width
+16.0
+Metadata
+Inherits from ~abstract_insentient
+Own metadata:
+VarInt: Unknown
+ender_pearl
+ID
+80
+Name
+ender_pearl
+Display name
+Thrown Ender Pearl
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+Abstract parent:
+Slot: Empty
+enderman
+ID
+20
+Name
+enderman
+Display name
+Enderman
+Height
+2.9
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+Own metadata:
+OptBlockState: Empty
+Boolean: False
+Boolean: False
+endermite
+ID
+21
+Name
+endermite
+Display name
+Endermite
+Height
+0.3
+Width
+0.4
+Metadata
+Inherits from ~abstract_monster
+evoker
+ID
+23
+Name
+evoker
+Display name
+Evoker
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+Abstract parent:
+Boolean: False
+Abstract parent:
+Byte: 0
+evoker_fangs
+ID
+22
+Name
+evoker_fangs
+Display name
+Evoker Fangs
+Height
+0.8
+Width
+0.5
+Metadata
+Inherits from ~abstract_entity
+experience_bottle
+ID
+81
+Name
+experience_bottle
+Display name
+Thrown Bottle o' Enchanting
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+Abstract parent:
+Slot: Empty
+experience_orb
+ID
+24
+Name
+experience_orb
+Display name
+Experience Orb
+Height
+0.5
+Width
+0.5
+Metadata
+Inherits from ~abstract_entity
+eye_of_ender
+ID
+25
+Name
+eye_of_ender
+Display name
+Eye of Ender
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+Slot: Empty
+falling_block
+ID
+26
+Name
+falling_block
+Display name
+Falling Block
+Height
+0.98
+Width
+0.98
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+BlockPos: (0, 0, 0)
+fireball
+ID
+37
+Name
+fireball
+Display name
+Fireball
+Height
+1.0
+Width
+1.0
+Metadata
+Inherits from ~abstract_entity
+Abstract parent:
+Slot: Empty
+firework_rocket
+ID
+27
+Name
+firework_rocket
+Display name
+Firework Rocket
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+Slot: Empty
+OptVarInt: Empty
+Boolean: False
+fishing_bobber
+ID
+102
+Name
+fishing_bobber
+Display name
+Fishing Bobber
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+VarInt: 0
+fox
+ID
+28
+Name
+fox
+Display name
+Fox
+Height
+0.7
+Width
+0.6
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+VarInt: 0
+Byte: 0
+OptUUID: Empty
+OptUUID: Empty
+furnace_minecart
+ID
+45
+Name
+furnace_minecart
+Display name
+Minecart with Furnace
+Height
+0.7
+Width
+0.98
+Metadata
+Inherits from ~abstract_minecart
+Own metadata:
+Boolean: False
+ghast
+ID
+29
+Name
+ghast
+Display name
+Ghast
+Height
+4.0
+Width
+4.0
+Metadata
+Inherits from ~abstract_insentient
+Own metadata:
+Boolean: False
+giant
+ID
+30
+Name
+giant
+Display name
+Giant
+Height
+12.0
+Width
+3.6
+Metadata
+Inherits from ~abstract_monster
+guardian
+ID
+31
+Name
+guardian
+Display name
+Guardian
+Height
+0.85
+Width
+0.85
+Metadata
+Inherits from ~abstract_monster
+Own metadata:
+Boolean: False
+VarInt: 0
+hopper_minecart
+ID
+46
+Name
+hopper_minecart
+Display name
+Minecart with Hopper
+Height
+0.7
+Width
+0.98
+Metadata
+Inherits from ~abstract_minecart
+horse
+ID
+32
+Name
+horse
+Display name
+Horse
+Height
+1.6
+Width
+1.39648
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Abstract parent:
+Byte: 0
+OptUUID: Empty
+Own metadata:
+VarInt: 0
+husk
+ID
+33
+Name
+husk
+Display name
+Husk
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from zombie
+illusioner
+ID
+34
+Name
+illusioner
+Display name
+Illusioner
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+Abstract parent:
+Boolean: False
+Abstract parent:
+Byte: 0
+iron_golem
+ID
+86
+Name
+iron_golem
+Display name
+Iron Golem
+Height
+2.7
+Width
+1.4
+Metadata
+Inherits from ~abstract_insentient
+Own metadata:
+Byte: 0
+item
+ID
+35
+Name
+item
+Display name
+Item
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+Slot: Empty
+item_frame
+ID
+36
+Name
+item_frame
+Display name
+Item Frame
+Height
+0.5
+Width
+0.5
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+Slot: Empty
+VarInt: 0
+leash_knot
+ID
+38
+Name
+leash_knot
+Display name
+Leash Knot
+Height
+0.5
+Width
+0.5
+Metadata
+Inherits from ~abstract_entity
+lightning_bolt
+ID
+100
+Name
+lightning_bolt
+Display name
+Lightning Bolt
+Height
+0.0
+Width
+0.0
+Metadata
+Inherits from ~abstract_entity
+llama
+ID
+39
+Name
+llama
+Display name
+Llama
+Height
+1.87
+Width
+0.9
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Abstract parent:
+Byte: 0
+OptUUID: Empty
+Abstract parent:
+Boolean: False
+Own metadata:
+VarInt: 0
+VarInt: -1
+VarInt: 0
+llama_spit
+ID
+40
+Name
+llama_spit
+Display name
+Llama Spit
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+magma_cube
+ID
+41
+Name
+magma_cube
+Display name
+Magma Cube
+Height
+2.04
+Width
+2.04
+Metadata
+Inherits from slime
+minecart
+ID
+42
+Name
+minecart
+Display name
+Minecart
+Height
+0.7
+Width
+0.98
+Metadata
+Inherits from ~abstract_minecart
+mooshroom
+ID
+50
+Name
+mooshroom
+Display name
+Mooshroom
+Height
+1.4
+Width
+0.9
+Metadata
+Inherits from cow
+Own metadata:
+String: Unknown
+mule
+ID
+49
+Name
+mule
+Display name
+Mule
+Height
+1.6
+Width
+1.39648
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Abstract parent:
+Byte: 0
+OptUUID: Empty
+Abstract parent:
+Boolean: False
+ocelot
+ID
+51
+Name
+ocelot
+Display name
+Ocelot
+Height
+0.7
+Width
+0.6
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+Boolean: False
+painting
+ID
+52
+Name
+painting
+Display name
+Painting
+Height
+0.5
+Width
+0.5
+Metadata
+Inherits from ~abstract_entity
+panda
+ID
+53
+Name
+panda
+Display name
+Panda
+Height
+1.25
+Width
+1.3
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+VarInt: 0
+VarInt: 0
+VarInt: 0
+Byte: 0
+Byte: 0
+Byte: 0
+parrot
+ID
+54
+Name
+parrot
+Display name
+Parrot
+Height
+0.9
+Width
+0.5
+Metadata
+Inherits from ~abstract_tameable
+Own metadata:
+VarInt: 0
+phantom
+ID
+98
+Name
+phantom
+Display name
+Phantom
+Height
+0.5
+Width
+0.9
+Metadata
+Inherits from ~abstract_insentient
+Own metadata:
+VarInt: 0
+pig
+ID
+55
+Name
+pig
+Display name
+Pig
+Height
+0.9
+Width
+0.9
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+Boolean: False
+VarInt: 0
+pillager
+ID
+88
+Name
+pillager
+Display name
+Pillager
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+Abstract parent:
+Boolean: False
+Own metadata:
+Boolean: False
+player
+ID
+101
+Name
+player
+Display name
+Player
+Height
+1.8
+Width
+0.6
+Metadata
+Inherits from ~abstract_living
+Own metadata:
+Float: 0.0
+VarInt: 0
+Byte: 0
+Byte: 1
+NBT: Empty
+NBT: Empty
+polar_bear
+ID
+58
+Name
+polar_bear
+Display name
+Polar Bear
+Height
+1.4
+Width
+1.4
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+Boolean: False
+potion
+ID
+82
+Name
+potion
+Display name
+Potion
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+Slot: Empty
+pufferfish
+ID
+56
+Name
+pufferfish
+Display name
+Pufferfish
+Height
+0.7
+Width
+0.7
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+VarInt: 0
+rabbit
+ID
+60
+Name
+rabbit
+Display name
+Rabbit
+Height
+0.5
+Width
+0.4
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+VarInt: 0
+ravager
+ID
+99
+Name
+ravager
+Display name
+Ravager
+Height
+2.2
+Width
+1.95
+Metadata
+Inherits from ~abstract_monster
+Abstract parent:
+Boolean: False
+salmon
+ID
+61
+Name
+salmon
+Display name
+Salmon
+Height
+0.4
+Width
+0.7
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+sheep
+ID
+62
+Name
+sheep
+Display name
+Sheep
+Height
+1.3
+Width
+0.9
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+Byte: 0
+shulker
+ID
+63
+Name
+shulker
+Display name
+Shulker
+Height
+1.0
+Width
+1.0
+Metadata
+Inherits from ~abstract_insentient
+Own metadata:
+Facing: Unknown
+OptBlockPos: Empty
+Byte: 0
+Byte: 16
+shulker_bullet
+ID
+64
+Name
+shulker_bullet
+Display name
+Shulker Bullet
+Height
+0.3125
+Width
+0.3125
+Metadata
+Inherits from ~abstract_entity
+silverfish
+ID
+65
+Name
+silverfish
+Display name
+Silverfish
+Height
+0.3
+Width
+0.4
+Metadata
+Inherits from ~abstract_monster
+skeleton
+ID
+66
+Name
+skeleton
+Display name
+Skeleton
+Height
+1.99
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+skeleton_horse
+ID
+67
+Name
+skeleton_horse
+Display name
+Skeleton Horse
+Height
+1.6
+Width
+1.39648
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Abstract parent:
+Byte: 0
+OptUUID: Empty
+slime
+ID
+68
+Name
+slime
+Display name
+Slime
+Height
+2.04
+Width
+2.04
+Metadata
+Inherits from ~abstract_insentient
+Own metadata:
+VarInt: 1
+small_fireball
+ID
+69
+Name
+small_fireball
+Display name
+Small Fireball
+Height
+0.3125
+Width
+0.3125
+Metadata
+Inherits from ~abstract_entity
+Abstract parent:
+Slot: Empty
+snow_golem
+ID
+70
+Name
+snow_golem
+Display name
+Snow Golem
+Height
+1.9
+Width
+0.7
+Metadata
+Inherits from ~abstract_insentient
+Own metadata:
+Byte: 16
+snowball
+ID
+71
+Name
+snowball
+Display name
+Snowball
+Height
+0.25
+Width
+0.25
+Metadata
+Inherits from ~abstract_entity
+Abstract parent:
+Slot: Empty
+spawner_minecart
+ID
+47
+Name
+spawner_minecart
+Display name
+Minecart with Spawner
+Height
+0.7
+Width
+0.98
+Metadata
+Inherits from ~abstract_minecart
+spectral_arrow
+ID
+72
+Name
+spectral_arrow
+Display name
+Spectral Arrow
+Height
+0.5
+Width
+0.5
+Metadata
+Inherits from ~abstract_entity
+Abstract parent:
+Byte: 0
+OptUUID: Empty
+Byte: 0
+spider
+ID
+73
+Name
+spider
+Display name
+Spider
+Height
+0.9
+Width
+1.4
+Metadata
+Inherits from ~abstract_monster
+Own metadata:
+Byte: 0
+squid
+ID
+74
+Name
+squid
+Display name
+Squid
+Height
+0.8
+Width
+0.8
+Metadata
+Inherits from ~abstract_insentient
+stray
+ID
+75
+Name
+stray
+Display name
+Stray
+Height
+1.99
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+tnt
+ID
+59
+Name
+tnt
+Display name
+Primed TNT
+Height
+0.98
+Width
+0.98
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+VarInt: 80
+tnt_minecart
+ID
+48
+Name
+tnt_minecart
+Display name
+Minecart with TNT
+Height
+0.7
+Width
+0.98
+Metadata
+Inherits from ~abstract_minecart
+trader_llama
+ID
+76
+Name
+trader_llama
+Display name
+Trader Llama
+Height
+1.87
+Width
+0.9
+Metadata
+Inherits from llama
+trident
+ID
+83
+Name
+trident
+Display name
+Trident
+Height
+0.5
+Width
+0.5
+Metadata
+Inherits from ~abstract_entity
+Abstract parent:
+Byte: 0
+OptUUID: Empty
+Byte: 0
+Own metadata:
+Byte: 0
+Boolean: False
+tropical_fish
+ID
+77
+Name
+tropical_fish
+Display name
+Tropical Fish
+Height
+0.4
+Width
+0.5
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+VarInt: 0
+turtle
+ID
+78
+Name
+turtle
+Display name
+Turtle
+Height
+0.4
+Width
+1.2
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+BlockPos: (0, 0, 0)
+Boolean: False
+Boolean: False
+BlockPos: (0, 0, 0)
+Boolean: False
+Boolean: False
+vex
+ID
+84
+Name
+vex
+Display name
+Vex
+Height
+0.8
+Width
+0.4
+Metadata
+Inherits from ~abstract_monster
+Own metadata:
+Byte: 0
+villager
+ID
+85
+Name
+villager
+Display name
+Villager
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Abstract parent:
+VarInt: 0
+Own metadata:
+16: Unknown
+vindicator
+ID
+87
+Name
+vindicator
+Display name
+Vindicator
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+Abstract parent:
+Boolean: False
+wandering_trader
+ID
+89
+Name
+wandering_trader
+Display name
+Wandering Trader
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Abstract parent:
+VarInt: 0
+witch
+ID
+90
+Name
+witch
+Display name
+Witch
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+Abstract parent:
+Boolean: False
+Own metadata:
+Boolean: False
+wither
+ID
+91
+Name
+wither
+Display name
+Wither
+Height
+3.5
+Width
+0.9
+Metadata
+Inherits from ~abstract_monster
+Own metadata:
+VarInt: 0
+VarInt: 0
+VarInt: 0
+VarInt: 0
+wither_skeleton
+ID
+92
+Name
+wither_skeleton
+Display name
+Wither Skeleton
+Height
+2.4
+Width
+0.7
+Metadata
+Inherits from ~abstract_monster
+wither_skull
+ID
+93
+Name
+wither_skull
+Display name
+Wither Skull
+Height
+0.3125
+Width
+0.3125
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+Boolean: False
+wolf
+ID
+94
+Name
+wolf
+Display name
+Wolf
+Height
+0.85
+Width
+0.6
+Metadata
+Inherits from ~abstract_tameable
+Own metadata:
+Boolean: False
+VarInt: Unknown
+zombie
+ID
+95
+Name
+zombie
+Display name
+Zombie
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from ~abstract_monster
+Own metadata:
+Boolean: False
+VarInt: 0
+Boolean: False
+zombie_horse
+ID
+96
+Name
+zombie_horse
+Display name
+Zombie Horse
+Height
+1.6
+Width
+1.39648
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Abstract parent:
+Byte: 0
+OptUUID: Empty
+zombie_pigman
+ID
+57
+Name
+zombie_pigman
+Display name
+Zombie Pigman
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from zombie
+zombie_villager
+ID
+97
+Name
+zombie_villager
+Display name
+Zombie Villager
+Height
+1.95
+Width
+0.6
+Metadata
+Inherits from zombie
+Own metadata:
+Boolean: False
+16: Unknown
+~abstract_entity
+Name
+~abstract_entity
+Metadata
+Own metadata:
+Byte: 0
+VarInt: Unknown
+OptChat: Empty
+Boolean: False
+Boolean: False
+Boolean: False
+18: Unknown
+~abstract_insentient
+Name
+~abstract_insentient
+Metadata
+Inherits from ~abstract_living
+Own metadata:
+Byte: 0
+~abstract_living
+Name
+~abstract_living
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+Byte: 0
+Float: 1.0
+VarInt: 0
+Boolean: False
+VarInt: 0
+VarInt: 0
+OptBlockPos: Empty
+~abstract_minecart
+Name
+~abstract_minecart
+Metadata
+Inherits from ~abstract_entity
+Own metadata:
+VarInt: 0
+VarInt: 1
+Float: 0.0
+VarInt: Unknown
+VarInt: 6
+Boolean: False
+~abstract_monster
+Name
+~abstract_monster
+Metadata
+Inherits from ~abstract_insentient
+~abstract_tameable
+Name
+~abstract_tameable
+Metadata
+Inherits from ~abstract_insentient
+Abstract parent:
+Boolean: False
+Own metadata:
+Byte: 0
+OptUUID: Empty
