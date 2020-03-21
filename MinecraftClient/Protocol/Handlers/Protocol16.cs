@@ -733,5 +733,19 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch { return false; }
         }
+
+        // reinforce
+        public bool SendInteractEntityPacket(int EntityID, int type)
+        {
+            return true;
+        }
+        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand)
+        {
+            return true;
+        }
+        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z)
+        {
+            return true;
+        }
     }
 }

@@ -84,5 +84,10 @@ namespace MinecraftClient.Protocol
         /// <param name="data">packet Data</param>
         /// <returns>True if message was successfully sent</returns>
         bool SendPluginChannelPacket(string channel, byte[] data);
+
+        // by reinforce
+        bool SendInteractEntityPacket(int EntityID, int type);
+        bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand);
+        bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z);
     }
 }

@@ -176,6 +176,9 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
+                    // modified by reinforce
+                    case 0x00: return PacketIncomingType.SpawnEntity;
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity;
                     case 0x21: return PacketIncomingType.KeepAlive;
                     case 0x26: return PacketIncomingType.JoinGame;
                     case 0x0F: return PacketIncomingType.ChatMessage;
@@ -194,6 +197,12 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x14: return PacketIncomingType.CloseWindow;
                     case 0x15: return PacketIncomingType.WindowItems;
                     case 0x17: return PacketIncomingType.SetSlot;
+                    case 0x38: return PacketIncomingType.DestroyEntities;
+                    case 0x18: return PacketIncomingType.SetCooldown;
+                    case 0x29: return PacketIncomingType.EntityPosition;
+                    case 0x2A: return PacketIncomingType.EntityPositionAndRotation;
+                    case 0x59: return PacketIncomingType.EntityProperties;
+                    case 0x4F: return PacketIncomingType.TimeUpdate;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -301,6 +310,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPosition: return 0x11;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x12;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
+                    case PacketOutgoingType.HeldItemChange: return 0x23;
+                    case PacketOutgoingType.InteractEntity: return 0x0E;
                 }
             }
 

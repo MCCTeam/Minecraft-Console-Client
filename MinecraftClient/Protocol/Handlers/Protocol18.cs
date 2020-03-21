@@ -191,7 +191,10 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                     case PacketIncomingType.JoinGame:
                         handler.OnGameJoined();
-                        dataTypes.ReadNextInt(packetData);
+                        // by reinforce
+                        // get client player EntityID
+                        int playerEntityID = dataTypes.ReadNextInt(packetData);
+                        handler.SetPlayerEntityID(playerEntityID);
                         dataTypes.ReadNextByte(packetData);
                         if (protocolversion >= MC191Version)
                             this.currentDimension = dataTypes.ReadNextInt(packetData);
@@ -242,7 +245,9 @@ namespace MinecraftClient.Protocol.Handlers
                         float pitch = dataTypes.ReadNextFloat(packetData);
                         byte locMask = dataTypes.ReadNextByte(packetData);
 
-                        if (handler.GetTerrainEnabled())
+                        // player pos is needed for calculate entity distance
+                        // modified by reinforce
+                        if (handler.GetTerrainEnabled() || true)
                         {
                             if (protocolversion >= MC18Version)
                             {
@@ -534,6 +539,98 @@ namespace MinecraftClient.Protocol.Handlers
                             responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
                         SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
                         SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
+                        break;
+                    // modified by reinforce
+                    case PacketIncomingType.SpawnLivingEntity:
+                        if (login_phase) break;
+                        int EntityID = dataTypes.ReadNextVarInt(packetData);
+                        Guid EntityUUID = dataTypes.ReadNextUUID(packetData);
+                        int EntityType = dataTypes.ReadNextVarInt(packetData);
+                        Double X = dataTypes.ReadNextDouble(packetData);
+                        Double Y = dataTypes.ReadNextDouble(packetData);
+                        Double Z = dataTypes.ReadNextDouble(packetData);
+                        byte EntityYaw = dataTypes.ReadNextByte(packetData);
+                        byte EntityPitch = dataTypes.ReadNextByte(packetData);
+                        byte EntityHeadPitch = dataTypes.ReadNextByte(packetData);
+                        short VelocityX = dataTypes.ReadNextShort(packetData);
+                        short VelocityY = dataTypes.ReadNextShort(packetData);
+                        short VelocityZ = dataTypes.ReadNextShort(packetData);
+
+                        Location EntityLocation = new Location(X, Y, Z);
+                        
+                        
+                        handler.OnSpawnLivingEntity(EntityID,EntityType,EntityUUID,EntityLocation);
+                        break;
+                    case PacketIncomingType.DestroyEntities:
+                        int EntityCount = dataTypes.ReadNextVarInt(packetData);
+                        int[] EntitiesList = new int[EntityCount];
+                        for(int i = 0; i < EntityCount; i++)
+                        {
+                            EntitiesList[i] = dataTypes.ReadNextVarInt(packetData);
+                        }
+                        handler.OnDestroyEntities(EntitiesList);
+                        break;
+                    case PacketIncomingType.SetCooldown:
+                        int _itemID = dataTypes.ReadNextVarInt(packetData);
+                        int tick = dataTypes.ReadNextVarInt(packetData);
+                        handler.OnSetCooldown(_itemID, tick);
+                        break;
+                    case PacketIncomingType.EntityPosition:
+                        EntityID = dataTypes.ReadNextVarInt(packetData);
+                        Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                        Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                        Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                        bool OnGround = dataTypes.ReadNextBool(packetData);
+                        DeltaX = DeltaX / (128 * 32);
+                        DeltaY = DeltaY / (128 * 32);
+                        DeltaZ = DeltaZ / (128 * 32);
+                        handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ,OnGround);
+                        break;
+                    case PacketIncomingType.EntityPositionAndRotation:
+                        EntityID = dataTypes.ReadNextVarInt(packetData);
+                        DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                        DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                        DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                        yaw = dataTypes.ReadNextByte(packetData);
+                        pitch = dataTypes.ReadNextByte(packetData);
+                        OnGround = dataTypes.ReadNextBool(packetData);
+                        DeltaX = DeltaX / (128 * 32);
+                        DeltaY = DeltaY / (128 * 32);
+                        DeltaZ = DeltaZ / (128 * 32);
+                        handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        break;
+                    case PacketIncomingType.EntityProperties:
+                        EntityID = dataTypes.ReadNextVarInt(packetData);
+                        int NumberOfProperties = dataTypes.ReadNextInt(packetData);
+                        Dictionary<string,Double> keys = new Dictionary<string,Double>();
+                        for(int i = 0; i < NumberOfProperties; i++)
+                        {
+                            string _key = dataTypes.ReadNextString(packetData);
+                            Double _value = dataTypes.ReadNextDouble(packetData);
+                            
+
+                            int NumberOfModifiers = dataTypes.ReadNextVarInt(packetData);
+                            //if (NumberOfModifiers == 0) continue;
+                            for(int j = 0; j < NumberOfModifiers; j++)
+                            {
+                                dataTypes.ReadNextUUID(packetData);
+                                Double amount = dataTypes.ReadNextDouble(packetData);
+                                byte operation = dataTypes.ReadNextByte(packetData);
+                                switch (operation)
+                                {
+                                    case 0: _value += amount; break;
+                                    case 1: _value += (amount / 100); break;
+                                    case 2: _value *= amount; break;
+                                }
+                            }
+                            keys.Add(_key, _value);
+                        }
+                        handler.OnEntityProperties(EntityID, keys);
+                        break;
+                    case PacketIncomingType.TimeUpdate:
+                        long WorldAge = dataTypes.ReadNextLong(packetData);
+                        long TimeOfday = dataTypes.ReadNextLong(packetData);
+                        handler.OnTimeUpdate(WorldAge, TimeOfday);
                         break;
                     default:
                         return false; //Ignored packet
@@ -1022,6 +1119,30 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             return false;
+        }
+
+        // reinforce
+        public bool SendInteractEntityPacket(int EntityID, int type)
+        {
+            try
+            {
+                List<byte> fields = new List<byte>();
+                fields.AddRange(dataTypes.GetVarInt(EntityID));
+                fields.AddRange(dataTypes.GetVarInt(type));
+                SendPacket(PacketOutgoingType.InteractEntity, fields);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand)
+        {
+            return true;
+        }
+        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z)
+        {
+            return true;
         }
     }
 }
