@@ -135,6 +135,7 @@ namespace MinecraftClient
                     if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
+                    //BotLoad(new ChatBots.kill());
                 }
             }
 
@@ -816,6 +817,25 @@ namespace MinecraftClient
                     pitch = null;
                 }
             }
+
+            // auto attack entity within range
+            // by reinforce
+            if (attackCooldown == 0)
+            {
+                attackCooldown = 6;
+                if (entitiesToAttack.Count > 0)
+                {
+                    foreach(KeyValuePair<int,Location> a in entitiesToAttack)
+                    {
+                        handler.SendInteractEntityPacket(a.Key, 1);
+                        ConsoleIO.WriteLine("Attacked Entity with ID " + a.Key);
+                    }
+                }
+            }
+            else
+            {
+                attackCooldown--;
+            }
         }
 
         /// <summary>
@@ -1018,5 +1038,157 @@ namespace MinecraftClient
                 }
             }
         }
+
+        // by reinforce
+        //public List<Entity> entitiesToAttack = new List<Entity>();
+        //public List<Entity> entitiesInAttackList = new List<Entity>();
+        public Dictionary<int,Location> entitiesToAttack = new Dictionary<int, Location>();
+        public Dictionary<int, Location> entitiesToTrack = new Dictionary<int, Location>();
+        public int attackCooldown = 6;
+        public Double attackSpeed;
+        public Double attackCooldownSecond;
+        public void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location)
+        {
+            string msg;
+            
+            string name = getEntityName(EntityType);
+            if (name == "")
+            {
+                //msg = "Spawn Entity with typeID " + EntityType.ToString();
+                //msg = "";
+            }
+            else
+            {
+                msg = "Spawn Entity " + getEntityName(EntityType);
+
+                //handler.SendInteractEntityPacket(EntityID, 1);
+                //ConsoleIO.WriteLine("Attacked Entity with ID " + EntityID.ToString());
+
+                if (calculateDistance(location, GetCurrentLocation()) < 5)
+                {
+                    entitiesToAttack.Add(EntityID, location);
+                    ConsoleIO.WriteLine("Added Entity with ID " + EntityID.ToString()+" to Attack list");
+                }
+
+                entitiesToTrack.Add(EntityID, location);
+                //ConsoleIO.WriteLine("Added Entity with ID " + EntityID.ToString() + " to Track list");
+                //ConsoleIO.WriteLine(msg);
+
+            }
+        }
+
+        public void OnDestroyEntities(int[] Entities)
+        {
+            foreach(int a in Entities)
+            {
+                if (entitiesToTrack.ContainsKey(a))
+                {
+                    if(entitiesToAttack.ContainsKey(a)) ConsoleIO.WriteLine("Removed Entity with ID " + a.ToString());
+                    entitiesToAttack.Remove(a);
+                    entitiesToTrack.Remove(a);
+                }
+            }
+        }
+
+        public void OnSetCooldown(int itemID, int tick)
+        {
+            ConsoleIO.WriteLine("Set Cooldown on item " + itemID + " by " + tick + " ticks");
+        }
+
+        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround)
+        {
+            if (entitiesToTrack.ContainsKey(EntityID))
+            {
+                
+                Location L = entitiesToTrack[EntityID];
+                L.X += Dx;
+                L.Y += Dy;
+                L.Z += Dz;
+                entitiesToTrack[EntityID] = L;
+                entitiesToAttack[EntityID] = L;
+                Double distance = calculateDistance(L, GetCurrentLocation());
+                
+                if (distance < 5)
+                {
+                    ConsoleIO.WriteLine("Entity Pos changed, ID " + EntityID + ", Distance: " + distance);
+                    if (!entitiesToAttack.ContainsKey(EntityID))
+                    {
+                        entitiesToAttack.Add(EntityID, L);
+                        ConsoleIO.WriteLine("Added Entity with ID " + EntityID.ToString()+" to Attack list");
+                    }
+                }
+                else
+                {
+                    entitiesToAttack.Remove(EntityID);
+                }
+            }
+        }
+
+        public void OnEntityProperties(int EntityID, Dictionary<string, Double> prop)
+        {
+            if(EntityID == playerEntityID)
+            {
+                //ConsoleIO.WriteLine("Prop On Player reviced");
+                if (prop.ContainsKey("generic.attackSpeed"))
+                {
+                    if (attackSpeed != prop["generic.attackSpeed"])
+                    {
+                        ConsoleIO.WriteLine("generic.attackSpeed: " + prop["generic.attackSpeed"].ToString());
+                        attackSpeed = prop["generic.attackSpeed"];
+                        attackCooldownSecond = 1 / attackSpeed * (serverTPS / 20.0);
+                        attackCooldown = Convert.ToInt16(Math.Truncate(attackCooldownSecond / 0.1) + 1);
+                        ConsoleIO.WriteLine("attack cooldown: " + attackCooldown);
+                    }
+                }
+            }
+        }
+
+        long lastAge = 0;
+        DateTime lastTime;
+        Double serverTPS = 0;
+        public void OnTimeUpdate(long WorldAge, long TimeOfDay)
+        {
+            //ConsoleIO.WriteLine("Time update: World age: " + WorldAge.ToString());
+            //ConsoleIO.WriteLine("Time update: Time of day: " + TimeOfDay.ToString());
+            if (lastAge != 0)
+            {
+                DateTime currentTime = DateTime.Now;
+                Double tps = (WorldAge - lastAge) / (currentTime - lastTime).TotalSeconds;
+                lastAge = WorldAge;
+                lastTime = currentTime;
+                ConsoleIO.WriteLine("TPS: " + tps.ToString());
+                if (tps <= 20 || tps >= 0)
+                {
+                    serverTPS = tps;
+                }
+            }
+            else
+            {
+                lastAge = WorldAge;
+                lastTime = DateTime.Now;
+            }
+            
+        }
+
+        public double calculateDistance(Location l1,Location l2)
+        {
+            return Math.Sqrt(Math.Pow(l2.X - l1.X, 2) + Math.Pow(l2.Y - l1.Y, 2) + Math.Pow(l2.Z - l1.Z, 2));
+        }
+        public string getEntityName(int EntityType)
+        {
+            switch (EntityType)
+            {
+                case 31: return "Guardian";
+                case 95: return "zombie";
+                default: return "";
+            }
+        }
+        public int playerEntityID;
+        public void SetPlayerEntityID(int EntityID)
+        {
+            playerEntityID = EntityID;
+        }
+
+
     }
 }

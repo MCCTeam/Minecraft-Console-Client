@@ -125,5 +125,19 @@ namespace MinecraftClient.Protocol
         /// <param name="channel">The channel the message was sent on</param>
         /// <param name="data">The data from the channel</param>
         void OnPluginChannelMessage(string channel, byte[] data);
+
+        void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location);
+
+        void OnDestroyEntities(int[] EntityID);
+
+        void OnSetCooldown(int itemID, int tick);
+
+        void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround);
+
+        void OnEntityProperties(int EntityID, Dictionary<string, Double> prop);
+
+        void OnTimeUpdate(long WorldAge, long TimeOfDay);
+
+        void SetPlayerEntityID(int EntityID);
     }
 }

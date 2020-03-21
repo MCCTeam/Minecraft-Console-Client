@@ -19,6 +19,9 @@ namespace MinecraftClient.Protocol.Handlers
         TabComplete,
         PlayerPosition,
         PlayerPositionAndLook,
-        TeleportConfirm
+        TeleportConfirm,
+        //modified by reinforce
+        HeldItemChange,
+        InteractEntity
     }
 }
