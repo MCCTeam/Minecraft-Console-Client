@@ -820,21 +820,23 @@ namespace MinecraftClient
 
             // auto attack entity within range
             // by reinforce
-            if (attackCooldown == 0)
+            if (Settings.AutoAttackMobs)
             {
-                attackCooldown = 6;
-                if (entitiesToAttack.Count > 0)
+                if (attackCooldownCounter == 0)
                 {
-                    foreach(KeyValuePair<int,Location> a in entitiesToAttack)
+                    attackCooldownCounter = attackCooldown;
+                    if (entitiesToAttack.Count > 0)
                     {
-                        handler.SendInteractEntityPacket(a.Key, 1);
-                        ConsoleIO.WriteLine("Attacked Entity with ID " + a.Key);
+                        foreach (KeyValuePair<int, Entity> a in entitiesToAttack)
+                        {
+                            handler.SendInteractEntityPacket(a.Key, 1);
+                        }
                     }
                 }
-            }
-            else
-            {
-                attackCooldown--;
+                else
+                {
+                    attackCooldownCounter--;
+                }
             }
         }
 
@@ -1040,50 +1042,66 @@ namespace MinecraftClient
         }
 
         // by reinforce
-        //public List<Entity> entitiesToAttack = new List<Entity>();
-        //public List<Entity> entitiesInAttackList = new List<Entity>();
-        public Dictionary<int,Location> entitiesToAttack = new Dictionary<int, Location>();
-        public Dictionary<int, Location> entitiesToTrack = new Dictionary<int, Location>();
+        public class Entity
+        {
+            public int ID;
+            public int Type;
+            public string Name;
+            public Location Location;
+            public Entity(int ID,Location location)
+            {
+                this.ID = ID;
+                this.Location = location;
+            }
+            public Entity(int ID,int Type,string Name,Location location)
+            {
+                this.ID = ID;
+                this.Type = Type;
+                this.Name = Name;
+                this.Location = location;
+            }
+        }
+        public Dictionary<int,Entity> entitiesToAttack = new Dictionary<int, Entity>(); // mobs within attack range
+        public Dictionary<int, Entity> entitiesToTrack = new Dictionary<int, Entity>(); // all mobs in view distance
         public int attackCooldown = 6;
+        public int attackCooldownCounter = 6;
         public Double attackSpeed;
         public Double attackCooldownSecond;
+        public int attackRange = 4;
+
+        /// <summary>
+        /// Called when an Entity was created/spawned.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="EntityType"></param>
+        /// <param name="UUID"></param>
+        /// <param name="location"></param>
         public void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location)
         {
-            string msg;
-            
+            if (!Settings.AutoAttackMobs) return;
             string name = getEntityName(EntityType);
-            if (name == "")
+            if (name != "")
             {
-                //msg = "Spawn Entity with typeID " + EntityType.ToString();
-                //msg = "";
-            }
-            else
-            {
-                msg = "Spawn Entity " + getEntityName(EntityType);
-
-                //handler.SendInteractEntityPacket(EntityID, 1);
-                //ConsoleIO.WriteLine("Attacked Entity with ID " + EntityID.ToString());
-
-                if (calculateDistance(location, GetCurrentLocation()) < 5)
+                Entity entity = new Entity(EntityID, EntityType, name, location);
+                entitiesToTrack.Add(EntityID, entity);
+                if (calculateDistance(location, GetCurrentLocation()) < attackRange)
                 {
-                    entitiesToAttack.Add(EntityID, location);
-                    ConsoleIO.WriteLine("Added Entity with ID " + EntityID.ToString()+" to Attack list");
+                    entitiesToAttack.Add(EntityID, entity);
                 }
-
-                entitiesToTrack.Add(EntityID, location);
-                //ConsoleIO.WriteLine("Added Entity with ID " + EntityID.ToString() + " to Track list");
-                //ConsoleIO.WriteLine(msg);
-
             }
         }
 
+        /// <summary>
+        /// Called when entities dead/despawn.
+        /// </summary>
+        /// <param name="Entities"></param>
         public void OnDestroyEntities(int[] Entities)
         {
-            foreach(int a in Entities)
+            if (!Settings.AutoAttackMobs) return;
+            foreach (int a in Entities)
             {
                 if (entitiesToTrack.ContainsKey(a))
                 {
-                    if(entitiesToAttack.ContainsKey(a)) ConsoleIO.WriteLine("Removed Entity with ID " + a.ToString());
                     entitiesToAttack.Remove(a);
                     entitiesToTrack.Remove(a);
                 }
@@ -1095,26 +1113,33 @@ namespace MinecraftClient
             ConsoleIO.WriteLine("Set Cooldown on item " + itemID + " by " + tick + " ticks");
         }
 
+        /// <summary>
+        /// Called when an entity's position changed within 8 block of its previous position.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="Dx"></param>
+        /// <param name="Dy"></param>
+        /// <param name="Dz"></param>
+        /// <param name="onGround"></param>
         public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround)
         {
             if (entitiesToTrack.ContainsKey(EntityID))
             {
-                
-                Location L = entitiesToTrack[EntityID];
+                Entity entity = entitiesToTrack[EntityID];
+                Location L = entity.Location;
                 L.X += Dx;
                 L.Y += Dy;
                 L.Z += Dz;
-                entitiesToTrack[EntityID] = L;
-                entitiesToAttack[EntityID] = L;
+                entitiesToTrack[EntityID].Location = L;
+                if(entitiesToAttack.ContainsKey(EntityID))
+                    entitiesToAttack[EntityID].Location = L;
                 Double distance = calculateDistance(L, GetCurrentLocation());
                 
-                if (distance < 5)
+                if (distance < attackRange)
                 {
-                    ConsoleIO.WriteLine("Entity Pos changed, ID " + EntityID + ", Distance: " + distance);
                     if (!entitiesToAttack.ContainsKey(EntityID))
                     {
-                        entitiesToAttack.Add(EntityID, L);
-                        ConsoleIO.WriteLine("Added Entity with ID " + EntityID.ToString()+" to Attack list");
+                        entitiesToAttack.Add(EntityID, entity);
                     }
                 }
                 else
@@ -1124,20 +1149,23 @@ namespace MinecraftClient
             }
         }
 
+        /// <summary>
+        /// Called when received entity properties from server.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="prop"></param>
         public void OnEntityProperties(int EntityID, Dictionary<string, Double> prop)
         {
             if(EntityID == playerEntityID)
             {
-                //ConsoleIO.WriteLine("Prop On Player reviced");
+                // adjust auto attack cooldown for maximum attack damage
                 if (prop.ContainsKey("generic.attackSpeed"))
                 {
                     if (attackSpeed != prop["generic.attackSpeed"])
                     {
-                        ConsoleIO.WriteLine("generic.attackSpeed: " + prop["generic.attackSpeed"].ToString());
                         attackSpeed = prop["generic.attackSpeed"];
-                        attackCooldownSecond = 1 / attackSpeed * (serverTPS / 20.0);
+                        attackCooldownSecond = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
                         attackCooldown = Convert.ToInt16(Math.Truncate(attackCooldownSecond / 0.1) + 1);
-                        ConsoleIO.WriteLine("attack cooldown: " + attackCooldown);
                     }
                 }
             }
@@ -1146,17 +1174,21 @@ namespace MinecraftClient
         long lastAge = 0;
         DateTime lastTime;
         Double serverTPS = 0;
+        /// <summary>
+        /// Called when server sent a Time Update packet.
+        /// </summary>
+        /// <param name="WorldAge"></param>
+        /// <param name="TimeOfDay"></param>
         public void OnTimeUpdate(long WorldAge, long TimeOfDay)
         {
-            //ConsoleIO.WriteLine("Time update: World age: " + WorldAge.ToString());
-            //ConsoleIO.WriteLine("Time update: Time of day: " + TimeOfDay.ToString());
+            if (!Settings.AutoAttackMobs) return;
+            // calculate server tps for adjusting attack cooldown
             if (lastAge != 0)
             {
                 DateTime currentTime = DateTime.Now;
                 Double tps = (WorldAge - lastAge) / (currentTime - lastTime).TotalSeconds;
                 lastAge = WorldAge;
                 lastTime = currentTime;
-                ConsoleIO.WriteLine("TPS: " + tps.ToString());
                 if (tps <= 20 || tps >= 0)
                 {
                     serverTPS = tps;
@@ -1170,20 +1202,74 @@ namespace MinecraftClient
             
         }
 
+        /// <summary>
+        /// Called when an entity moved over 8 block.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
+        /// <param name="Z"></param>
+        /// <param name="onGround"></param>
+        public void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround)
+        {
+            if (!Settings.AutoAttackMobs) return;
+            if (entitiesToTrack.ContainsKey(EntityID))
+            {
+                entitiesToTrack[EntityID].Location = new Location(X, Y, Z);
+            }
+        }
+
+        /// <summary>
+        /// Calculate the distance between two coordinate
+        /// </summary>
+        /// <param name="l1"></param>
+        /// <param name="l2"></param>
+        /// <returns></returns>
         public double calculateDistance(Location l1,Location l2)
         {
             return Math.Sqrt(Math.Pow(l2.X - l1.X, 2) + Math.Pow(l2.Y - l1.Y, 2) + Math.Pow(l2.Z - l1.Z, 2));
         }
+        /// <summary>
+        /// Get the entity name by entity type ID.
+        /// </summary>
+        /// <param name="EntityType"></param>
+        /// <returns></returns>
         public string getEntityName(int EntityType)
         {
+            // only mobs in this list will be auto attacked
             switch (EntityType)
             {
+                case 5: return "Blaze";
+                case 12: return "Creeper";
+                case 16: return "Drowned";
+                case 23: return "Evoker";
+                case 29: return "Ghast";
                 case 31: return "Guardian";
-                case 95: return "zombie";
+                case 33: return "Husk";
+                case 41: return "Magma Cube";
+                case 57: return "Zombie Pigman";
+                case 63: return "Shulker";
+                case 65: return "Silverfish";
+                case 66: return "Skeleton";
+                case 68: return "Slime";
+                case 75: return "Stray";
+                case 84: return "Vex";
+                case 87: return "Vindicator";
+                case 88: return "Pillager";
+                case 90: return "Witch";
+                case 92: return "Wither Skeleton";
+                case 95: return "Zombie";
+                case 97: return "Zombie Villager";
+                case 98: return "Phantom";
+                case 99: return "Ravager";
                 default: return "";
             }
         }
         public int playerEntityID;
+        /// <summary>
+        /// Set client player's ID for later receiving player's own properties
+        /// </summary>
+        /// <param name="EntityID"></param>
         public void SetPlayerEntityID(int EntityID)
         {
             playerEntityID = EntityID;

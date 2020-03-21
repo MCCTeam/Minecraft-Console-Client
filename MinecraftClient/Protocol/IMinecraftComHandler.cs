@@ -138,6 +138,8 @@ namespace MinecraftClient.Protocol
 
         void OnTimeUpdate(long WorldAge, long TimeOfDay);
 
+        void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround);
+
         void SetPlayerEntityID(int EntityID);
     }
 }

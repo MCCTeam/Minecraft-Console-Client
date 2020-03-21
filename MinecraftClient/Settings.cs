@@ -95,6 +95,7 @@ namespace MinecraftClient
         public static bool DebugMessages = false;
         public static bool ResolveSrvRecords = true;
         public static bool ResolveSrvRecordsShortTimeout = true;
+        public static bool AutoAttackMobs = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -230,6 +231,7 @@ namespace MinecraftClient
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
+                                                case "autoattackmobs": AutoAttackMobs = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -558,6 +560,7 @@ namespace MinecraftClient
                 + "debugmessages=false                # Please enable this before submitting bug reports. Thanks!\r\n"
                 + "scriptcache=true                   # Cache compiled scripts for faster load on low-end devices\r\n"
                 + "timestamps=false                   # Prepend timestamps to chat messages\r\n"
+                + "autoattackmobs=false               # Auto attack mobs around client player\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
                 + "# yourvar=yourvalue\r\n"

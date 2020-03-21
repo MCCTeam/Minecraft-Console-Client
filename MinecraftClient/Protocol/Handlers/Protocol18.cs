@@ -597,7 +597,7 @@ namespace MinecraftClient.Protocol.Handlers
                         DeltaX = DeltaX / (128 * 32);
                         DeltaY = DeltaY / (128 * 32);
                         DeltaZ = DeltaZ / (128 * 32);
-                        handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        //handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
                         break;
                     case PacketIncomingType.EntityProperties:
                         EntityID = dataTypes.ReadNextVarInt(packetData);
@@ -631,6 +631,16 @@ namespace MinecraftClient.Protocol.Handlers
                         long WorldAge = dataTypes.ReadNextLong(packetData);
                         long TimeOfday = dataTypes.ReadNextLong(packetData);
                         handler.OnTimeUpdate(WorldAge, TimeOfday);
+                        break;
+                    case PacketIncomingType.EntityTeleport:
+                        EntityID = dataTypes.ReadNextVarInt(packetData);
+                        X = dataTypes.ReadNextDouble(packetData);
+                        Y = dataTypes.ReadNextDouble(packetData);
+                        Z = dataTypes.ReadNextDouble(packetData);
+                        EntityYaw = dataTypes.ReadNextByte(packetData);
+                        EntityPitch = dataTypes.ReadNextByte(packetData);
+                        OnGround = dataTypes.ReadNextBool(packetData);
+                        handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
                         break;
                     default:
                         return false; //Ignored packet
@@ -1122,6 +1132,12 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         // reinforce
+        /// <summary>
+        /// Send an Interact Entity Packet to server
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public bool SendInteractEntityPacket(int EntityID, int type)
         {
             try
@@ -1136,6 +1152,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+        // TODO: Interact at block location
         public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand)
         {
             return true;
