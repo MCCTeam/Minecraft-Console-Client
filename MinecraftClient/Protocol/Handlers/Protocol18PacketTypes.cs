@@ -42,6 +42,17 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x2D: return PacketIncomingType.OpenWindow;
                     case 0x2E: return PacketIncomingType.CloseWindow;
                     case 0x2F: return PacketIncomingType.SetSlot;
+
+                    // Set Cooldown does not exists
+                    case 0x03: return PacketIncomingType.TimeUpdate;
+                    // Entity handling
+                    case 0x0E: return PacketIncomingType.SpawnEntity; // for non-living entity
+                    case 0x0F: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x13: return PacketIncomingType.DestroyEntities;
+                    case 0x15: return PacketIncomingType.EntityPosition;
+                    case 0x17: return PacketIncomingType.EntityPositionAndRotation;
+                    case 0x20: return PacketIncomingType.EntityProperties;
+                    case 0x18: return PacketIncomingType.EntityTeleport;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -69,6 +80,17 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x16: return PacketIncomingType.SetSlot;
                     //NetworkCompressionTreshold removed in 1.9
                     case 0x32: return PacketIncomingType.ResourcePackSend;
+
+                    case 0x17: return PacketIncomingType.SetCooldown;
+                    case 0x44: return PacketIncomingType.TimeUpdate;
+                    // Entity handling
+                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x30: return PacketIncomingType.DestroyEntities;
+                    case 0x25: return PacketIncomingType.EntityPosition;
+                    case 0x26: return PacketIncomingType.EntityPositionAndRotation;
+                    case 0x4A: return PacketIncomingType.EntityProperties;
+                    case 0x49: return PacketIncomingType.EntityTeleport;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -94,6 +116,17 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x12: return PacketIncomingType.CloseWindow;
                     case 0x13: return PacketIncomingType.OpenWindow;
                     case 0x33: return PacketIncomingType.ResourcePackSend;
+
+                    case 0x17: return PacketIncomingType.SetCooldown;
+                    case 0x46: return PacketIncomingType.TimeUpdate;
+                    // Entity handling
+                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x31: return PacketIncomingType.DestroyEntities;
+                    case 0x26: return PacketIncomingType.EntityPosition;
+                    case 0x27: return PacketIncomingType.EntityPositionAndRotation;
+                    case 0x4D: return PacketIncomingType.EntityProperties;
+                    case 0x4B: return PacketIncomingType.EntityTeleport;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -119,6 +152,17 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x14: return PacketIncomingType.WindowItems;
                     case 0x16: return PacketIncomingType.SetSlot;
                     case 0x34: return PacketIncomingType.ResourcePackSend;
+
+                    case 0x17: return PacketIncomingType.SetCooldown;
+                    case 0x47: return PacketIncomingType.TimeUpdate;
+                    // Entity handling
+                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x32: return PacketIncomingType.DestroyEntities;
+                    case 0x26: return PacketIncomingType.EntityPosition;
+                    case 0x27: return PacketIncomingType.EntityPositionAndRotation;
+                    case 0x4E: return PacketIncomingType.EntityProperties;
+                    case 0x4C: return PacketIncomingType.EntityTeleport;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -144,6 +188,17 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x14: return PacketIncomingType.OpenWindow;
                     case 0x15: return PacketIncomingType.WindowItems;
                     case 0x17: return PacketIncomingType.SetSlot;
+
+                    case 0x18: return PacketIncomingType.SetCooldown;
+                    case 0x4A: return PacketIncomingType.TimeUpdate;
+                    // Entity handling
+                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x35: return PacketIncomingType.DestroyEntities;
+                    case 0x28: return PacketIncomingType.EntityPosition;
+                    case 0x29: return PacketIncomingType.EntityPositionAndRotation;
+                    case 0x52: return PacketIncomingType.EntityProperties;
+                    case 0x50: return PacketIncomingType.EntityTeleport;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -169,6 +224,16 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x13: return PacketIncomingType.CloseWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
                     case 0x16: return PacketIncomingType.SetSlot;
+                    case 0x17: return PacketIncomingType.SetCooldown;
+                    case 0x4E: return PacketIncomingType.TimeUpdate;
+                    // Entity handling
+                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x37: return PacketIncomingType.DestroyEntities;
+                    case 0x28: return PacketIncomingType.EntityPosition;
+                    case 0x29: return PacketIncomingType.EntityPositionAndRotation;
+                    case 0x58: return PacketIncomingType.EntityProperties;
+                    case 0x56: return PacketIncomingType.EntityTeleport;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -176,9 +241,6 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 switch (packetID)
                 {
-                    // modified by reinforce
-                    case 0x00: return PacketIncomingType.SpawnEntity;
-                    case 0x03: return PacketIncomingType.SpawnLivingEntity;
                     case 0x21: return PacketIncomingType.KeepAlive;
                     case 0x26: return PacketIncomingType.JoinGame;
                     case 0x0F: return PacketIncomingType.ChatMessage;
@@ -197,12 +259,15 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x14: return PacketIncomingType.CloseWindow;
                     case 0x15: return PacketIncomingType.WindowItems;
                     case 0x17: return PacketIncomingType.SetSlot;
-                    case 0x38: return PacketIncomingType.DestroyEntities;
                     case 0x18: return PacketIncomingType.SetCooldown;
+                    case 0x4F: return PacketIncomingType.TimeUpdate;
+                    // Entity handling
+                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x38: return PacketIncomingType.DestroyEntities;
                     case 0x29: return PacketIncomingType.EntityPosition;
                     case 0x2A: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x59: return PacketIncomingType.EntityProperties;
-                    case 0x4F: return PacketIncomingType.TimeUpdate;
                     case 0x57: return PacketIncomingType.EntityTeleport;
                     default: return PacketIncomingType.UnknownPacket;
                 }
@@ -230,6 +295,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TabComplete: return 0x14;
                     case PacketOutgoingType.PlayerPosition: return 0x04;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x06;
+                    case PacketOutgoingType.InteractEntity: return 0x02;
                     case PacketOutgoingType.TeleportConfirm: throw new InvalidOperationException("Teleport confirm is not supported in protocol " + protocol);
                 }
             }
@@ -247,6 +313,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPosition: return 0x0C;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0D;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
+                    case PacketOutgoingType.InteractEntity: return 0x0A;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12
@@ -263,6 +330,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPosition: return 0x0E;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0F;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
+                    case PacketOutgoingType.InteractEntity: return 0x0B;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1122Version) // 1.12.2
@@ -279,6 +347,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPosition: return 0x0D;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
+                    case PacketOutgoingType.InteractEntity: return 0x0A;
                 }
             }
             else if (protocol < Protocol18Handler.MC114Version) // MC 1.13 to 1.13.2
@@ -295,6 +364,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPosition: return 0x10;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x11;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
+                    case PacketOutgoingType.InteractEntity: return 0x0D;
                 }
             }
             else // MC 1.14 to 1.15
