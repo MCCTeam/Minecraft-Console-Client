@@ -79,7 +79,6 @@
     <Compile Include="ChatBots\AutoRelog.cs" />
     <Compile Include="ChatBots\ChatLog.cs" />
     <Compile Include="ChatBots\HangmanGame.cs" />
-    <Compile Include="ChatBots\kill.cs" />
     <Compile Include="ChatBots\PlayerListLogger.cs" />
     <Compile Include="ChatBots\RemoteControl.cs" />
     <Compile Include="ChatBots\Script.cs" />
@@ -87,6 +86,7 @@
     <Compile Include="ChatBots\TestBot.cs" />
     <Compile Include="ChatBot.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Commands\AutoAttack.cs" />
     <Compile Include="Commands\Connect.cs" />
     <Compile Include="Commands\Debug.cs" />
     <Compile Include="Commands\Look.cs" />
