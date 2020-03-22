@@ -628,6 +628,7 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnEntityProperties(EntityID, keys);
                         break;
                     case PacketIncomingType.TimeUpdate:
+                        if (login_phase) break;
                         long WorldAge = dataTypes.ReadNextLong(packetData);
                         long TimeOfday = dataTypes.ReadNextLong(packetData);
                         handler.OnTimeUpdate(WorldAge, TimeOfday);
