@@ -55,6 +55,47 @@ namespace MinecraftClient
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new object();
 
+        private int playerEntityID;
+
+        // auto attack
+        private class Entity
+        {
+            public int ID;
+            public int Type;
+            public string Name;
+            public Location Location;
+            public Entity(int ID, Location location)
+            {
+                this.ID = ID;
+                this.Location = location;
+            }
+            public Entity(int ID, int Type, string Name, Location location)
+            {
+                this.ID = ID;
+                this.Type = Type;
+                this.Name = Name;
+                this.Location = location;
+            }
+        }
+        private Dictionary<int, Entity> entitiesToAttack = new Dictionary<int, Entity>(); // mobs within attack range
+        private Dictionary<int, Entity> entitiesToTrack = new Dictionary<int, Entity>(); // all mobs in view distance
+        private int attackCooldown = 6;
+        private int attackCooldownCounter = 6;
+        private Double attackSpeed;
+        private Double attackCooldownSecond;
+        private int attackRange = 4;
+
+        // server TPS
+        private long lastAge = 0;
+        private DateTime lastTime;
+        private Double serverTPS = 0;
+
+        public bool AutoAttack
+        {
+            get => Settings.AutoAttackMobs;
+            set => Settings.AutoAttackMobs = value;
+        }
+
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
         public string GetUsername() { return username; }
@@ -819,7 +860,6 @@ namespace MinecraftClient
             }
 
             // auto attack entity within range
-            // by reinforce
             if (Settings.AutoAttackMobs)
             {
                 if (attackCooldownCounter == 0)
@@ -1041,33 +1081,7 @@ namespace MinecraftClient
             }
         }
 
-        // by reinforce
-        public class Entity
-        {
-            public int ID;
-            public int Type;
-            public string Name;
-            public Location Location;
-            public Entity(int ID,Location location)
-            {
-                this.ID = ID;
-                this.Location = location;
-            }
-            public Entity(int ID,int Type,string Name,Location location)
-            {
-                this.ID = ID;
-                this.Type = Type;
-                this.Name = Name;
-                this.Location = location;
-            }
-        }
-        public Dictionary<int,Entity> entitiesToAttack = new Dictionary<int, Entity>(); // mobs within attack range
-        public Dictionary<int, Entity> entitiesToTrack = new Dictionary<int, Entity>(); // all mobs in view distance
-        public int attackCooldown = 6;
-        public int attackCooldownCounter = 6;
-        public Double attackSpeed;
-        public Double attackCooldownSecond;
-        public int attackRange = 4;
+        
 
         /// <summary>
         /// Called when an Entity was created/spawned.
@@ -1171,9 +1185,7 @@ namespace MinecraftClient
             }
         }
 
-        long lastAge = 0;
-        DateTime lastTime;
-        Double serverTPS = 0;
+        
         /// <summary>
         /// Called when server sent a Time Update packet.
         /// </summary>
@@ -1265,7 +1277,7 @@ namespace MinecraftClient
                 default: return "";
             }
         }
-        public int playerEntityID;
+        
         /// <summary>
         /// Set client player's ID for later receiving player's own properties
         /// </summary>
