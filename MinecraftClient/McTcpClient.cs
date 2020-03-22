@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using System.IO;
 using System.Net;
 using MinecraftClient.Protocol;
@@ -1081,7 +1082,32 @@ namespace MinecraftClient
             }
         }
 
-        
+        private Dictionary<int,Entity> fishingRod = new Dictionary<int, Entity>();
+        private Double fishingHookThreshold = -0.3; // must be negetive
+        public bool AutoFishing { get; set; } = false;
+        public void OnSpawnEntity(int EntityID, int EntityType, Guid UUID, Location location)
+        {
+            if (EntityType == 102 && AutoFishing)
+            {
+                ConsoleIO.WriteLine("Threw a fishing rod");
+                fishingRod.Add(EntityID,new Entity(EntityID, EntityType, "fishing bobber", location));
+            }
+        }
+
+        public void OnEntityStatus(int EntityID, byte EntityStatus)
+        {
+            if (fishingRod.ContainsKey(EntityID))
+            {
+                if (EntityStatus == 31)
+                {
+                    ConsoleIO.WriteLine("Status is bobber");
+                }
+                else
+                {
+                    ConsoleIO.WriteLine("Status is " + EntityStatus);
+                }
+            }
+        }
 
         /// <summary>
         /// Called when an Entity was created/spawned.
@@ -1092,15 +1118,17 @@ namespace MinecraftClient
         /// <param name="location"></param>
         public void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location)
         {
-            if (!Settings.AutoAttackMobs) return;
             string name = getEntityName(EntityType);
             if (name != "")
             {
                 Entity entity = new Entity(EntityID, EntityType, name, location);
                 entitiesToTrack.Add(EntityID, entity);
-                if (calculateDistance(location, GetCurrentLocation()) < attackRange)
+                if (Settings.AutoAttackMobs)
                 {
-                    entitiesToAttack.Add(EntityID, entity);
+                    if (calculateDistance(location, GetCurrentLocation()) < attackRange)
+                    {
+                        entitiesToAttack.Add(EntityID, entity);
+                    }
                 }
             }
         }
@@ -1111,13 +1139,17 @@ namespace MinecraftClient
         /// <param name="Entities"></param>
         public void OnDestroyEntities(int[] Entities)
         {
-            if (!Settings.AutoAttackMobs) return;
             foreach (int a in Entities)
             {
                 if (entitiesToTrack.ContainsKey(a))
                 {
                     entitiesToAttack.Remove(a);
                     entitiesToTrack.Remove(a);
+                }
+
+                if (fishingRod.ContainsKey(a))
+                {
+                    fishingRod.Remove(a);
                 }
             }
         }
@@ -1161,6 +1193,23 @@ namespace MinecraftClient
                     entitiesToAttack.Remove(EntityID);
                 }
             }
+            if (fishingRod.ContainsKey(EntityID))
+            {
+                Location L = fishingRod[EntityID].Location;
+                L.X += Dx;
+                L.Y += Dy;
+                L.Z += Dz;
+                fishingRod[EntityID].Location = L;
+                // check if fishing hook is stationary
+                if (Dx == 0 && Dz == 0)
+                {
+                    if (Dy < fishingHookThreshold)
+                    {
+                        // caught
+                        OnCaughtFish();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -1184,7 +1233,6 @@ namespace MinecraftClient
                 }
             }
         }
-
         
         /// <summary>
         /// Called when server sent a Time Update packet.
@@ -1224,11 +1272,46 @@ namespace MinecraftClient
         /// <param name="onGround"></param>
         public void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround)
         {
-            if (!Settings.AutoAttackMobs) return;
-            if (entitiesToTrack.ContainsKey(EntityID))
+            if (Settings.AutoAttackMobs)
             {
-                entitiesToTrack[EntityID].Location = new Location(X, Y, Z);
+                if (entitiesToTrack.ContainsKey(EntityID))
+                {
+                    entitiesToTrack[EntityID].Location = new Location(X, Y, Z);
+                }
             }
+            if (fishingRod.ContainsKey(EntityID))
+            {
+                Location L = fishingRod[EntityID].Location;
+                Double Dy = L.Y - Y;
+                L.X = X;
+                L.Y = Y;
+                L.Z = Z;
+                fishingRod[EntityID].Location = L;
+                if (Dy < fishingHookThreshold)
+                {
+                    // caught
+                    OnCaughtFish();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when detected a fish is caught
+        /// </summary>
+        public void OnCaughtFish()
+        {
+            ConsoleIO.WriteLine("Caught a fish!");
+            // retract fishing rod
+            useItemOnHand();
+            // retract fishing rod need some time
+            Task.Factory.StartNew(delegate
+            {
+                Thread.Sleep(500);
+                // throw again
+                // TODO: to check if hand have fishing rod
+                if(AutoFishing)
+                    useItemOnHand();
+            });
         }
 
         /// <summary>
@@ -1287,6 +1370,9 @@ namespace MinecraftClient
             playerEntityID = EntityID;
         }
 
-
+        public void useItemOnHand()
+        {
+            handler.SendUseItemPacket(0);
+        }
     }
 }

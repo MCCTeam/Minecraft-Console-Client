@@ -22,6 +22,7 @@ namespace MinecraftClient.Protocol.Handlers
         TeleportConfirm,
         //modified by reinforce
         HeldItemChange,
-        InteractEntity
+        InteractEntity,
+        UseItem
     }
 }

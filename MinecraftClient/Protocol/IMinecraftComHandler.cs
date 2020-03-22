@@ -126,6 +126,8 @@ namespace MinecraftClient.Protocol
         /// <param name="data">The data from the channel</param>
         void OnPluginChannelMessage(string channel, byte[] data);
 
+        void OnSpawnEntity(int EntityID, int EntityType, Guid UUID, Location location);
+
         void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location);
 
         void OnDestroyEntities(int[] EntityID);
@@ -139,6 +141,8 @@ namespace MinecraftClient.Protocol
         void OnTimeUpdate(long WorldAge, long TimeOfDay);
 
         void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround);
+
+        void OnEntityStatus(int EntityID, byte EntityStatus);
 
         void SetPlayerEntityID(int EntityID);
     }

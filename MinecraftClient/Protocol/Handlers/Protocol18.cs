@@ -540,9 +540,7 @@ namespace MinecraftClient.Protocol.Handlers
                         SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
                         SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
                         break;
-                    // modified by reinforce
-                    case PacketIncomingType.SpawnLivingEntity:
-                        if (login_phase) break;
+                    case PacketIncomingType.SpawnEntity:
                         int EntityID = dataTypes.ReadNextVarInt(packetData);
                         Guid EntityUUID = dataTypes.ReadNextUUID(packetData);
                         int EntityType = dataTypes.ReadNextVarInt(packetData);
@@ -551,13 +549,31 @@ namespace MinecraftClient.Protocol.Handlers
                         Double Z = dataTypes.ReadNextDouble(packetData);
                         byte EntityYaw = dataTypes.ReadNextByte(packetData);
                         byte EntityPitch = dataTypes.ReadNextByte(packetData);
-                        byte EntityHeadPitch = dataTypes.ReadNextByte(packetData);
+                        int Data = dataTypes.ReadNextInt(packetData);
                         short VelocityX = dataTypes.ReadNextShort(packetData);
                         short VelocityY = dataTypes.ReadNextShort(packetData);
                         short VelocityZ = dataTypes.ReadNextShort(packetData);
 
                         Location EntityLocation = new Location(X, Y, Z);
-                        
+
+                        handler.OnSpawnEntity(EntityID, EntityType, EntityUUID, EntityLocation);
+                        break;
+                    case PacketIncomingType.SpawnLivingEntity:
+                        if (login_phase) break;
+                        EntityID = dataTypes.ReadNextVarInt(packetData);
+                        EntityUUID = dataTypes.ReadNextUUID(packetData);
+                        EntityType = dataTypes.ReadNextVarInt(packetData);
+                        X = dataTypes.ReadNextDouble(packetData);
+                        Y = dataTypes.ReadNextDouble(packetData);
+                        Z = dataTypes.ReadNextDouble(packetData);
+                        EntityYaw = dataTypes.ReadNextByte(packetData);
+                        EntityPitch = dataTypes.ReadNextByte(packetData);
+                        byte EntityHeadPitch = dataTypes.ReadNextByte(packetData);
+                        VelocityX = dataTypes.ReadNextShort(packetData);
+                        VelocityY = dataTypes.ReadNextShort(packetData);
+                        VelocityZ = dataTypes.ReadNextShort(packetData);
+
+                        EntityLocation = new Location(X, Y, Z);
                         
                         handler.OnSpawnLivingEntity(EntityID,EntityType,EntityUUID,EntityLocation);
                         break;
@@ -597,7 +613,7 @@ namespace MinecraftClient.Protocol.Handlers
                         DeltaX = DeltaX / (128 * 32);
                         DeltaY = DeltaY / (128 * 32);
                         DeltaZ = DeltaZ / (128 * 32);
-                        //handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
                         break;
                     case PacketIncomingType.EntityProperties:
                         EntityID = dataTypes.ReadNextVarInt(packetData);
@@ -642,6 +658,11 @@ namespace MinecraftClient.Protocol.Handlers
                         EntityPitch = dataTypes.ReadNextByte(packetData);
                         OnGround = dataTypes.ReadNextBool(packetData);
                         handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
+                        break;
+                    case PacketIncomingType.EntityStatus:
+                        EntityID = dataTypes.ReadNextInt(packetData);
+                        byte EntityStatus = dataTypes.ReadNextByte(packetData);
+                        handler.OnEntityStatus(EntityID, EntityStatus);
                         break;
                     default:
                         return false; //Ignored packet
@@ -1161,6 +1182,20 @@ namespace MinecraftClient.Protocol.Handlers
         public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z)
         {
             return true;
+        }
+
+        public bool SendUseItemPacket(int hand)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetVarInt(hand));
+                SendPacket(PacketOutgoingType.UseItem, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
         }
     }
 }

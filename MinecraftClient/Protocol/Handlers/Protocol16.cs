@@ -747,5 +747,9 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return true;
         }
+        public bool SendUseItemPacket(int hand)
+        {
+            return true;
+        }
     }
 }
