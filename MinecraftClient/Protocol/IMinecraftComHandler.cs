@@ -144,6 +144,8 @@ namespace MinecraftClient.Protocol
 
         void OnEntityStatus(int EntityID, byte EntityStatus);
 
+        void OnWindowItems(int type, Dictionary<int, Item> itemList);
+
         void SetPlayerEntityID(int EntityID);
     }
 }

@@ -57,6 +57,9 @@ namespace MinecraftClient
         private object lastKeepAliveLock = new object();
 
         private int playerEntityID;
+        // not really understand the Inventory Class
+        // so I use a Dict instead for player inventory
+        private Dictionary<int, Item> playerItems; 
 
         // auto attack
         private class Entity
@@ -761,6 +764,23 @@ namespace MinecraftClient
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// When received window items from server.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="itemList"></param>
+        public void OnWindowItems(int type, Dictionary<int, Item> itemList)
+        {
+            // player inventory
+            //if (type == 0)
+            //    playerItems = itemList;
+            foreach(KeyValuePair<int,Item> pair in itemList)
+            {
+                ConsoleIO.WriteLine("Slot: "+pair.Key+" itemID:"+pair.Value.id);
+            }
+            ConsoleIO.WriteLine("Type: "+type);
         }
 
         /// <summary>

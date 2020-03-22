@@ -510,8 +510,11 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.WindowItems:
-                        if (handler.GetInventoryEnabled())
+                        if (handler.GetInventoryEnabled()||true)
                         {
+                            /*
+                             * Following commented code not working
+                             * 
                             byte id = dataTypes.ReadNextByte(packetData);
                             short elements = dataTypes.ReadNextShort(packetData);
 
@@ -528,6 +531,24 @@ namespace MinecraftClient.Protocol.Handlers
                                     dataTypes.ReadNextNbt(packetData);
                                 }
                             }
+                            */
+                            byte id = dataTypes.ReadNextByte(packetData);
+                            short elements = dataTypes.ReadNextShort(packetData);
+                            Dictionary<int, Item> itemsList = new Dictionary<int, Item>(); // index is SlotID
+                            for(int i = 0; i < elements; i++)
+                            {
+                                bool haveItem = dataTypes.ReadNextBool(packetData);
+                                if (haveItem)
+                                {
+                                    int itemID = dataTypes.ReadNextVarInt(packetData);
+                                    byte itemCount = dataTypes.ReadNextByte(packetData);
+                                    dataTypes.ReadNextNbt(packetData);
+
+                                    Item item = new Item(itemID, itemCount);
+                                    itemsList.Add(i, item);
+                                }
+                            }
+                            handler.OnWindowItems(id, itemsList);
                         }
                         break;
                     case PacketIncomingType.ResourcePackSend:
