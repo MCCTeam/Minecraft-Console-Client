@@ -269,6 +269,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x2A: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x59: return PacketIncomingType.EntityProperties;
                     case 0x57: return PacketIncomingType.EntityTeleport;
+                    case 0x1C: return PacketIncomingType.EntityStatus;
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }
@@ -383,6 +384,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                     case PacketOutgoingType.HeldItemChange: return 0x23;
                     case PacketOutgoingType.InteractEntity: return 0x0E;
+                    case PacketOutgoingType.UseItem: return 0x2D;
                 }
             }
 

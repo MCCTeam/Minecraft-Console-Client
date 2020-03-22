@@ -89,5 +89,7 @@ namespace MinecraftClient.Protocol
         bool SendInteractEntityPacket(int EntityID, int type);
         bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand);
         bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z);
+
+        bool SendUseItemPacket(int hand);
     }
 }
