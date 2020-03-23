@@ -8,39 +8,35 @@ namespace MinecraftClient.Commands
     class AutoAttack : Command
     {
         public override string CMDName { get { return "autoattack"; } }
-        public override string CMDDesc { get { return "autoattack <on|off>: Enable/disable auto attack mobs."; } }
+        public override string CMDDesc { get { return "autoattack <on|off>: Auto attack mobs around you."; } }
 
         public override string Run(McTcpClient handler, string command)
         {
             if (hasArg(command))
             {
-                string state = getArg(command);
-                if (state.ToLower() == "on")
+                string arg = getArg(command);
+                if (arg == "on")
                 {
-                    if (!handler.AutoAttack)
+                    if (handler.GetEntityHandlingEnabled())
                     {
-                        handler.AutoAttack = true;
-                        return "Auto attack turned on.";
+                        // TODO: check if the bot already loaded
+                        // I don't know how :C
+                        handler.BotLoad(new ChatBots.AutoAttack());
+                        return "Auto Attack now enabled.";
                     }
                     else
                     {
-                        return "Auto attack is on.";
-                    }
-                }else if (state.ToLower() == "off")
-                {
-                    if (handler.AutoAttack)
-                    {
-                        handler.AutoAttack = false;
-                        return "Auto attack turned off.";
-                    }
-                    else
-                    {
-                        return "Auto attack is off.";
+                        return "Please enable EntityHandling in the config before using this.";
                     }
                 }
-                return "";
+                else if(arg == "off")
+                {
+                    // TODO: unload auto attack bot
+                    // I don't know how to unload a single bot :C
+                    return "Currently not implemented :/";
+                }
             }
-            else return CMDDesc;
+            return CMDDesc;
         }
     }
 }

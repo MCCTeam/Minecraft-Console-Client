@@ -641,6 +641,24 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
+        //Currently not implemented
+        public bool SendInteractEntityPacket(int EntityID, int type)
+        {
+            return false;
+        }
+        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand)
+        {
+            return false;
+        }
+        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z)
+        {
+            return false;
+        }
+        public bool SendUseItemPacket(int hand)
+        {
+            return false;
+        }
+
         /// <summary>
         /// Send a plugin channel packet to the server.
         /// </summary>
@@ -732,24 +750,6 @@ namespace MinecraftClient.Protocol.Handlers
                 else return false;
             }
             catch { return false; }
-        }
-
-        // reinforce
-        public bool SendInteractEntityPacket(int EntityID, int type)
-        {
-            return true;
-        }
-        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand)
-        {
-            return true;
-        }
-        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z)
-        {
-            return true;
-        }
-        public bool SendUseItemPacket(int hand)
-        {
-            return true;
         }
     }
 }

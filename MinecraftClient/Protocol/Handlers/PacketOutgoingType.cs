@@ -20,7 +20,6 @@ namespace MinecraftClient.Protocol.Handlers
         PlayerPosition,
         PlayerPositionAndLook,
         TeleportConfirm,
-        //modified by reinforce
         HeldItemChange,
         InteractEntity,
         UseItem
