@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
 using System.IO;
 using System.Net;
 using MinecraftClient.Protocol;
@@ -36,6 +35,7 @@ namespace MinecraftClient
         private bool terrainAndMovementsRequested = false;
         private bool inventoryHandlingEnabled;
         private bool inventoryHandlingRequested = false;
+        private bool entityHandlingEnabled;
 
         private object locationLock = new object();
         private bool locationReceived = false;
@@ -59,46 +59,15 @@ namespace MinecraftClient
         private int playerEntityID;
         // not really understand the Inventory Class
         // so I use a Dict instead for player inventory
-        private Dictionary<int, Item> playerItems; 
+        private Dictionary<int, Item> playerItems;
 
-        // auto attack
-        private class Entity
-        {
-            public int ID;
-            public int Type;
-            public string Name;
-            public Location Location;
-            public Entity(int ID, Location location)
-            {
-                this.ID = ID;
-                this.Location = location;
-            }
-            public Entity(int ID, int Type, string Name, Location location)
-            {
-                this.ID = ID;
-                this.Type = Type;
-                this.Name = Name;
-                this.Location = location;
-            }
-        }
-        private Dictionary<int, Entity> entitiesToAttack = new Dictionary<int, Entity>(); // mobs within attack range
-        private Dictionary<int, Entity> entitiesToTrack = new Dictionary<int, Entity>(); // all mobs in view distance
-        private int attackCooldown = 6;
-        private int attackCooldownCounter = 6;
-        private Double attackSpeed;
-        private Double attackCooldownSecond;
-        private int attackRange = 4;
+        // Entity handling
+        private Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
 
         // server TPS
         private long lastAge = 0;
         private DateTime lastTime;
         private Double serverTPS = 0;
-
-        public bool AutoAttack
-        {
-            get => Settings.AutoAttackMobs;
-            set => Settings.AutoAttackMobs = value;
-        }
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -107,6 +76,13 @@ namespace MinecraftClient
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
         public World GetWorld() { return world; }
+        public Double GetServerTPS() { return serverTPS; }
+
+        // get bots list for unloading them by commands
+        public List<ChatBot> GetLoadedChatBots()
+        {
+            return bots;
+        }
 
         TcpClient client;
         IMinecraftCom handler;
@@ -157,6 +133,7 @@ namespace MinecraftClient
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;
+            entityHandlingEnabled = Settings.EntityHandling;
 
             bool retry = false;
             this.sessionid = sessionID;
@@ -178,9 +155,10 @@ namespace MinecraftClient
                     if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
                     if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
                     if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
+                    if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack()); }
+                    if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
-                    //BotLoad(new ChatBots.kill());
                 }
             }
 
@@ -576,6 +554,26 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get entity handling status
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>Entity Handling cannot be enabled in runtime (or after joining server)</remarks>
+        public bool GetEntityHandlingEnabled()
+        {
+            return entityHandlingEnabled;
+        }
+
+        /// <summary>
+        /// Get client player's inventory items
+        /// </summary>
+        /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
+        public Dictionary<int, Item> GetPlayerInventory()
+        {
+            return playerItems;
+        }
+        // TODO: add command for displaying player inventory
+
+        /// <summary>
         /// Called when the server sends a new player location,
         /// or if a ChatBot whishes to update the player's location.
         /// </summary>
@@ -773,14 +771,9 @@ namespace MinecraftClient
         /// <param name="itemList"></param>
         public void OnWindowItems(int type, Dictionary<int, Item> itemList)
         {
-            // player inventory
-            //if (type == 0)
-            //    playerItems = itemList;
-            foreach(KeyValuePair<int,Item> pair in itemList)
-            {
-                ConsoleIO.WriteLine("Slot: "+pair.Key+" itemID:"+pair.Value.id);
-            }
-            ConsoleIO.WriteLine("Type: "+type);
+            // 0 is player inventory
+            if (type == 0)
+                playerItems = itemList;
         }
 
         /// <summary>
@@ -880,25 +873,7 @@ namespace MinecraftClient
                 }
             }
 
-            // auto attack entity within range
-            if (Settings.AutoAttackMobs)
-            {
-                if (attackCooldownCounter == 0)
-                {
-                    attackCooldownCounter = attackCooldown;
-                    if (entitiesToAttack.Count > 0)
-                    {
-                        foreach (KeyValuePair<int, Entity> a in entitiesToAttack)
-                        {
-                            handler.SendInteractEntityPacket(a.Key, 1);
-                        }
-                    }
-                }
-                else
-                {
-                    attackCooldownCounter--;
-                }
-            }
+            
         }
 
         /// <summary>
@@ -1101,32 +1076,20 @@ namespace MinecraftClient
                 }
             }
         }
-
-        private Dictionary<int,Entity> fishingRod = new Dictionary<int, Entity>();
-        private Double fishingHookThreshold = -0.3; // must be negetive
-        public bool AutoFishing { get; set; } = false;
+        
+        /// <summary>
+        /// Called when a non-living entity spawned (fishing hook, minecart, etc)
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="EntityType"></param>
+        /// <param name="UUID"></param>
+        /// <param name="location"></param>
         public void OnSpawnEntity(int EntityID, int EntityType, Guid UUID, Location location)
         {
-            if (EntityType == 102 && AutoFishing)
-            {
-                ConsoleIO.WriteLine("Threw a fishing rod");
-                fishingRod.Add(EntityID,new Entity(EntityID, EntityType, "fishing bobber", location));
-            }
-        }
-
-        public void OnEntityStatus(int EntityID, byte EntityStatus)
-        {
-            if (fishingRod.ContainsKey(EntityID))
-            {
-                if (EntityStatus == 31)
-                {
-                    ConsoleIO.WriteLine("Status is bobber");
-                }
-                else
-                {
-                    ConsoleIO.WriteLine("Status is " + EntityStatus);
-                }
-            }
+            Entity entity = new Entity(EntityID, EntityType, location);
+            entities.Add(EntityID, entity);
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnEntitySpawn(entity);
         }
 
         /// <summary>
@@ -1138,19 +1101,10 @@ namespace MinecraftClient
         /// <param name="location"></param>
         public void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location)
         {
-            string name = getEntityName(EntityType);
-            if (name != "")
-            {
-                Entity entity = new Entity(EntityID, EntityType, name, location);
-                entitiesToTrack.Add(EntityID, entity);
-                if (Settings.AutoAttackMobs)
-                {
-                    if (calculateDistance(location, GetCurrentLocation()) < attackRange)
-                    {
-                        entitiesToAttack.Add(EntityID, entity);
-                    }
-                }
-            }
+            Entity entity = new Entity(EntityID, EntityType, location);
+            entities.Add(EntityID, entity);
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnEntitySpawn(entity);
         }
 
         /// <summary>
@@ -1161,22 +1115,13 @@ namespace MinecraftClient
         {
             foreach (int a in Entities)
             {
-                if (entitiesToTrack.ContainsKey(a))
+                if (entities.ContainsKey(a))
                 {
-                    entitiesToAttack.Remove(a);
-                    entitiesToTrack.Remove(a);
+                    entities.Remove(a);
                 }
-
-                if (fishingRod.ContainsKey(a))
-                {
-                    fishingRod.Remove(a);
-                }
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnEntityDespawn(a);
             }
-        }
-
-        public void OnSetCooldown(int itemID, int tick)
-        {
-            ConsoleIO.WriteLine("Set Cooldown on item " + itemID + " by " + tick + " ticks");
         }
 
         /// <summary>
@@ -1189,46 +1134,36 @@ namespace MinecraftClient
         /// <param name="onGround"></param>
         public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround)
         {
-            if (entitiesToTrack.ContainsKey(EntityID))
+            if (entities.ContainsKey(EntityID))
             {
-                Entity entity = entitiesToTrack[EntityID];
-                Location L = entity.Location;
+                Location L = entities[EntityID].Location;
                 L.X += Dx;
                 L.Y += Dy;
                 L.Z += Dz;
-                entitiesToTrack[EntityID].Location = L;
-                if(entitiesToAttack.ContainsKey(EntityID))
-                    entitiesToAttack[EntityID].Location = L;
-                Double distance = calculateDistance(L, GetCurrentLocation());
-                
-                if (distance < attackRange)
-                {
-                    if (!entitiesToAttack.ContainsKey(EntityID))
-                    {
-                        entitiesToAttack.Add(EntityID, entity);
-                    }
-                }
-                else
-                {
-                    entitiesToAttack.Remove(EntityID);
-                }
+                entities[EntityID].Location = L;
+
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].Type, entities[EntityID].Location));
             }
-            if (fishingRod.ContainsKey(EntityID))
+            
+        }
+        /// <summary>
+        /// Called when an entity moved over 8 block.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
+        /// <param name="Z"></param>
+        /// <param name="onGround"></param>
+        public void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround)
+        {
+            if (entities.ContainsKey(EntityID))
             {
-                Location L = fishingRod[EntityID].Location;
-                L.X += Dx;
-                L.Y += Dy;
-                L.Z += Dz;
-                fishingRod[EntityID].Location = L;
-                // check if fishing hook is stationary
-                if (Dx == 0 && Dz == 0)
-                {
-                    if (Dy < fishingHookThreshold)
-                    {
-                        // caught
-                        OnCaughtFish();
-                    }
-                }
+                Location location = new Location(X, Y, Z);
+                entities[EntityID].Location = location;
+
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].Type, entities[EntityID].Location));
             }
         }
 
@@ -1241,16 +1176,8 @@ namespace MinecraftClient
         {
             if(EntityID == playerEntityID)
             {
-                // adjust auto attack cooldown for maximum attack damage
-                if (prop.ContainsKey("generic.attackSpeed"))
-                {
-                    if (attackSpeed != prop["generic.attackSpeed"])
-                    {
-                        attackSpeed = prop["generic.attackSpeed"];
-                        attackCooldownSecond = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
-                        attackCooldown = Convert.ToInt16(Math.Truncate(attackCooldownSecond / 0.1) + 1);
-                    }
-                }
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnPlayerProperty(prop);
             }
         }
         
@@ -1261,17 +1188,20 @@ namespace MinecraftClient
         /// <param name="TimeOfDay"></param>
         public void OnTimeUpdate(long WorldAge, long TimeOfDay)
         {
-            if (!Settings.AutoAttackMobs) return;
-            // calculate server tps for adjusting attack cooldown
+            // calculate server tps
             if (lastAge != 0)
             {
                 DateTime currentTime = DateTime.Now;
-                Double tps = (WorldAge - lastAge) / (currentTime - lastTime).TotalSeconds;
+                long tickDiff = WorldAge - lastAge;
+                Double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
                 lastAge = WorldAge;
                 lastTime = currentTime;
-                if (tps <= 20 || tps >= 0)
+                if (tps <= 20.0 && tps >= 0.0 && serverTPS != tps)
                 {
                     serverTPS = tps;
+                    // invoke ChatBot
+                    foreach (ChatBot bot in bots.ToArray())
+                        bot.OnServerTpsUpdate(tps);
                 }
             }
             else
@@ -1280,105 +1210,6 @@ namespace MinecraftClient
                 lastTime = DateTime.Now;
             }
             
-        }
-
-        /// <summary>
-        /// Called when an entity moved over 8 block.
-        /// </summary>
-        /// <param name="EntityID"></param>
-        /// <param name="X"></param>
-        /// <param name="Y"></param>
-        /// <param name="Z"></param>
-        /// <param name="onGround"></param>
-        public void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround)
-        {
-            if (Settings.AutoAttackMobs)
-            {
-                if (entitiesToTrack.ContainsKey(EntityID))
-                {
-                    entitiesToTrack[EntityID].Location = new Location(X, Y, Z);
-                }
-            }
-            if (fishingRod.ContainsKey(EntityID))
-            {
-                Location L = fishingRod[EntityID].Location;
-                Double Dy = L.Y - Y;
-                L.X = X;
-                L.Y = Y;
-                L.Z = Z;
-                fishingRod[EntityID].Location = L;
-                if (Dy < fishingHookThreshold)
-                {
-                    // caught
-                    OnCaughtFish();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Called when detected a fish is caught
-        /// </summary>
-        public void OnCaughtFish()
-        {
-            ConsoleIO.WriteLine("Caught a fish!");
-            // retract fishing rod
-            useItemOnHand();
-            // retract fishing rod need some time
-            Task.Factory.StartNew(delegate
-            {
-                Thread.Sleep(500);
-                // throw again
-                // TODO: to check if hand have fishing rod
-                if(AutoFishing)
-                    useItemOnHand();
-            });
-        }
-
-        /// <summary>
-        /// Calculate the distance between two coordinate
-        /// </summary>
-        /// <param name="l1"></param>
-        /// <param name="l2"></param>
-        /// <returns></returns>
-        public double calculateDistance(Location l1,Location l2)
-        {
-            return Math.Sqrt(Math.Pow(l2.X - l1.X, 2) + Math.Pow(l2.Y - l1.Y, 2) + Math.Pow(l2.Z - l1.Z, 2));
-        }
-        /// <summary>
-        /// Get the entity name by entity type ID.
-        /// </summary>
-        /// <param name="EntityType"></param>
-        /// <returns></returns>
-        public string getEntityName(int EntityType)
-        {
-            // only mobs in this list will be auto attacked
-            switch (EntityType)
-            {
-                case 5: return "Blaze";
-                case 12: return "Creeper";
-                case 16: return "Drowned";
-                case 23: return "Evoker";
-                case 29: return "Ghast";
-                case 31: return "Guardian";
-                case 33: return "Husk";
-                case 41: return "Magma Cube";
-                case 57: return "Zombie Pigman";
-                case 63: return "Shulker";
-                case 65: return "Silverfish";
-                case 66: return "Skeleton";
-                case 68: return "Slime";
-                case 75: return "Stray";
-                case 84: return "Vex";
-                case 87: return "Vindicator";
-                case 88: return "Pillager";
-                case 90: return "Witch";
-                case 92: return "Wither Skeleton";
-                case 95: return "Zombie";
-                case 97: return "Zombie Villager";
-                case 98: return "Phantom";
-                case 99: return "Ravager";
-                default: return "";
-            }
         }
         
         /// <summary>
@@ -1390,9 +1221,20 @@ namespace MinecraftClient
             playerEntityID = EntityID;
         }
 
-        public void useItemOnHand()
+        public bool UseItemOnHand()
         {
-            handler.SendUseItemPacket(0);
+            return handler.SendUseItemPacket(0);
+        }
+
+        /// <summary>
+        /// Interact with an entity
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="type">0: interact, 1: attack, 2: interact at</param>
+        /// <returns></returns>
+        public bool InteractEntity(int EntityID, int type)
+        {
+            return handler.SendInteractEntityPacket(EntityID, type);
         }
     }
 }

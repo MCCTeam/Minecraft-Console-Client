@@ -245,9 +245,8 @@ namespace MinecraftClient.Protocol.Handlers
                         float pitch = dataTypes.ReadNextFloat(packetData);
                         byte locMask = dataTypes.ReadNextByte(packetData);
 
-                        // player pos is needed for calculate entity distance
-                        // modified by reinforce
-                        if (handler.GetTerrainEnabled() || true)
+                        // entity handling require player pos for distance calculating
+                        if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
                         {
                             if (protocolversion >= MC18Version)
                             {
@@ -510,10 +509,10 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.WindowItems:
-                        if (handler.GetInventoryEnabled()||true)
+                        if (handler.GetInventoryEnabled()||true) // set true in .ini but GetInventoryEnabled seems like return false
                         {
                             /*
-                             * Following commented code not working
+                             * Following commented code will crash
                              * 
                             byte id = dataTypes.ReadNextByte(packetData);
                             short elements = dataTypes.ReadNextShort(packetData);
@@ -562,107 +561,119 @@ namespace MinecraftClient.Protocol.Handlers
                         SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
                         break;
                     case PacketIncomingType.SpawnEntity:
-                        int EntityID = dataTypes.ReadNextVarInt(packetData);
-                        Guid EntityUUID = dataTypes.ReadNextUUID(packetData);
-                        int EntityType = dataTypes.ReadNextVarInt(packetData);
-                        Double X = dataTypes.ReadNextDouble(packetData);
-                        Double Y = dataTypes.ReadNextDouble(packetData);
-                        Double Z = dataTypes.ReadNextDouble(packetData);
-                        byte EntityYaw = dataTypes.ReadNextByte(packetData);
-                        byte EntityPitch = dataTypes.ReadNextByte(packetData);
-                        int Data = dataTypes.ReadNextInt(packetData);
-                        short VelocityX = dataTypes.ReadNextShort(packetData);
-                        short VelocityY = dataTypes.ReadNextShort(packetData);
-                        short VelocityZ = dataTypes.ReadNextShort(packetData);
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Guid EntityUUID = dataTypes.ReadNextUUID(packetData);
+                            int EntityType = dataTypes.ReadNextVarInt(packetData);
+                            Double X = dataTypes.ReadNextDouble(packetData);
+                            Double Y = dataTypes.ReadNextDouble(packetData);
+                            Double Z = dataTypes.ReadNextDouble(packetData);
+                            byte EntityYaw = dataTypes.ReadNextByte(packetData);
+                            byte EntityPitch = dataTypes.ReadNextByte(packetData);
+                            int Data = dataTypes.ReadNextInt(packetData);
+                            short VelocityX = dataTypes.ReadNextShort(packetData);
+                            short VelocityY = dataTypes.ReadNextShort(packetData);
+                            short VelocityZ = dataTypes.ReadNextShort(packetData);
 
-                        Location EntityLocation = new Location(X, Y, Z);
+                            Location EntityLocation = new Location(X, Y, Z);
 
-                        handler.OnSpawnEntity(EntityID, EntityType, EntityUUID, EntityLocation);
+                            handler.OnSpawnEntity(EntityID, EntityType, EntityUUID, EntityLocation);
+                        }
                         break;
                     case PacketIncomingType.SpawnLivingEntity:
-                        if (login_phase) break;
-                        EntityID = dataTypes.ReadNextVarInt(packetData);
-                        EntityUUID = dataTypes.ReadNextUUID(packetData);
-                        EntityType = dataTypes.ReadNextVarInt(packetData);
-                        X = dataTypes.ReadNextDouble(packetData);
-                        Y = dataTypes.ReadNextDouble(packetData);
-                        Z = dataTypes.ReadNextDouble(packetData);
-                        EntityYaw = dataTypes.ReadNextByte(packetData);
-                        EntityPitch = dataTypes.ReadNextByte(packetData);
-                        byte EntityHeadPitch = dataTypes.ReadNextByte(packetData);
-                        VelocityX = dataTypes.ReadNextShort(packetData);
-                        VelocityY = dataTypes.ReadNextShort(packetData);
-                        VelocityZ = dataTypes.ReadNextShort(packetData);
+                        if (login_phase) break; // same packet ID with login packet
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Guid EntityUUID = dataTypes.ReadNextUUID(packetData);
+                            int EntityType = dataTypes.ReadNextVarInt(packetData);
+                            Double X = dataTypes.ReadNextDouble(packetData);
+                            Double Y = dataTypes.ReadNextDouble(packetData);
+                            Double Z = dataTypes.ReadNextDouble(packetData);
+                            byte EntityYaw = dataTypes.ReadNextByte(packetData);
+                            byte EntityPitch = dataTypes.ReadNextByte(packetData);
+                            byte EntityHeadPitch = dataTypes.ReadNextByte(packetData);
+                            short VelocityX = dataTypes.ReadNextShort(packetData);
+                            short VelocityY = dataTypes.ReadNextShort(packetData);
+                            short VelocityZ = dataTypes.ReadNextShort(packetData);
 
-                        EntityLocation = new Location(X, Y, Z);
-                        
-                        handler.OnSpawnLivingEntity(EntityID,EntityType,EntityUUID,EntityLocation);
+                            Location EntityLocation = new Location(X, Y, Z);
+
+                            handler.OnSpawnLivingEntity(EntityID, EntityType, EntityUUID, EntityLocation);
+                        }
                         break;
                     case PacketIncomingType.DestroyEntities:
-                        int EntityCount = dataTypes.ReadNextVarInt(packetData);
-                        int[] EntitiesList = new int[EntityCount];
-                        for(int i = 0; i < EntityCount; i++)
+                        if (handler.GetEntityHandlingEnabled())
                         {
-                            EntitiesList[i] = dataTypes.ReadNextVarInt(packetData);
+                            int EntityCount = dataTypes.ReadNextVarInt(packetData);
+                            int[] EntitiesList = new int[EntityCount];
+                            for (int i = 0; i < EntityCount; i++)
+                            {
+                                EntitiesList[i] = dataTypes.ReadNextVarInt(packetData);
+                            }
+                            handler.OnDestroyEntities(EntitiesList);
                         }
-                        handler.OnDestroyEntities(EntitiesList);
-                        break;
-                    case PacketIncomingType.SetCooldown:
-                        int _itemID = dataTypes.ReadNextVarInt(packetData);
-                        int tick = dataTypes.ReadNextVarInt(packetData);
-                        handler.OnSetCooldown(_itemID, tick);
                         break;
                     case PacketIncomingType.EntityPosition:
-                        EntityID = dataTypes.ReadNextVarInt(packetData);
-                        Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                        Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                        Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                        bool OnGround = dataTypes.ReadNextBool(packetData);
-                        DeltaX = DeltaX / (128 * 32);
-                        DeltaY = DeltaY / (128 * 32);
-                        DeltaZ = DeltaZ / (128 * 32);
-                        handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ,OnGround);
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            bool OnGround = dataTypes.ReadNextBool(packetData);
+                            DeltaX = DeltaX / (128 * 32);
+                            DeltaY = DeltaY / (128 * 32);
+                            DeltaZ = DeltaZ / (128 * 32);
+                            handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        }
                         break;
                     case PacketIncomingType.EntityPositionAndRotation:
-                        EntityID = dataTypes.ReadNextVarInt(packetData);
-                        DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                        DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                        DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                        yaw = dataTypes.ReadNextByte(packetData);
-                        pitch = dataTypes.ReadNextByte(packetData);
-                        OnGround = dataTypes.ReadNextBool(packetData);
-                        DeltaX = DeltaX / (128 * 32);
-                        DeltaY = DeltaY / (128 * 32);
-                        DeltaZ = DeltaZ / (128 * 32);
-                        handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            byte _yaw = dataTypes.ReadNextByte(packetData);
+                            byte _pitch = dataTypes.ReadNextByte(packetData);
+                            bool OnGround = dataTypes.ReadNextBool(packetData);
+                            DeltaX = DeltaX / (128 * 32);
+                            DeltaY = DeltaY / (128 * 32);
+                            DeltaZ = DeltaZ / (128 * 32);
+                            handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        }
                         break;
                     case PacketIncomingType.EntityProperties:
-                        EntityID = dataTypes.ReadNextVarInt(packetData);
-                        int NumberOfProperties = dataTypes.ReadNextInt(packetData);
-                        Dictionary<string,Double> keys = new Dictionary<string,Double>();
-                        for(int i = 0; i < NumberOfProperties; i++)
+                        if (handler.GetEntityHandlingEnabled())
                         {
-                            string _key = dataTypes.ReadNextString(packetData);
-                            Double _value = dataTypes.ReadNextDouble(packetData);
-                            
-
-                            int NumberOfModifiers = dataTypes.ReadNextVarInt(packetData);
-                            //if (NumberOfModifiers == 0) continue;
-                            for(int j = 0; j < NumberOfModifiers; j++)
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            int NumberOfProperties = dataTypes.ReadNextInt(packetData);
+                            Dictionary<string, Double> keys = new Dictionary<string, Double>();
+                            for (int i = 0; i < NumberOfProperties; i++)
                             {
-                                dataTypes.ReadNextUUID(packetData);
-                                Double amount = dataTypes.ReadNextDouble(packetData);
-                                byte operation = dataTypes.ReadNextByte(packetData);
-                                switch (operation)
+                                string _key = dataTypes.ReadNextString(packetData);
+                                Double _value = dataTypes.ReadNextDouble(packetData);
+
+
+                                int NumberOfModifiers = dataTypes.ReadNextVarInt(packetData);
+                                for (int j = 0; j < NumberOfModifiers; j++)
                                 {
-                                    case 0: _value += amount; break;
-                                    case 1: _value += (amount / 100); break;
-                                    case 2: _value *= amount; break;
+                                    dataTypes.ReadNextUUID(packetData);
+                                    Double amount = dataTypes.ReadNextDouble(packetData);
+                                    byte operation = dataTypes.ReadNextByte(packetData);
+                                    switch (operation)
+                                    {
+                                        case 0: _value += amount; break;
+                                        case 1: _value += (amount / 100); break;
+                                        case 2: _value *= amount; break;
+                                    }
                                 }
+                                keys.Add(_key, _value);
                             }
-                            keys.Add(_key, _value);
+                            handler.OnEntityProperties(EntityID, keys);
                         }
-                        handler.OnEntityProperties(EntityID, keys);
                         break;
                     case PacketIncomingType.TimeUpdate:
                         if (login_phase) break;
@@ -671,19 +682,17 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnTimeUpdate(WorldAge, TimeOfday);
                         break;
                     case PacketIncomingType.EntityTeleport:
-                        EntityID = dataTypes.ReadNextVarInt(packetData);
-                        X = dataTypes.ReadNextDouble(packetData);
-                        Y = dataTypes.ReadNextDouble(packetData);
-                        Z = dataTypes.ReadNextDouble(packetData);
-                        EntityYaw = dataTypes.ReadNextByte(packetData);
-                        EntityPitch = dataTypes.ReadNextByte(packetData);
-                        OnGround = dataTypes.ReadNextBool(packetData);
-                        handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
-                        break;
-                    case PacketIncomingType.EntityStatus:
-                        EntityID = dataTypes.ReadNextInt(packetData);
-                        byte EntityStatus = dataTypes.ReadNextByte(packetData);
-                        handler.OnEntityStatus(EntityID, EntityStatus);
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Double X = dataTypes.ReadNextDouble(packetData);
+                            Double Y = dataTypes.ReadNextDouble(packetData);
+                            Double Z = dataTypes.ReadNextDouble(packetData);
+                            byte EntityYaw = dataTypes.ReadNextByte(packetData);
+                            byte EntityPitch = dataTypes.ReadNextByte(packetData);
+                            bool OnGround = dataTypes.ReadNextBool(packetData);
+                            handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
+                        }
                         break;
                     default:
                         return false; //Ignored packet
@@ -1195,14 +1204,14 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-        // TODO: Interact at block location
+        // TODO: Interact at block location (e.g. chest)
         public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand)
         {
-            return true;
+            return false;
         }
         public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z)
         {
-            return true;
+            return false;
         }
 
         public bool SendUseItemPacket(int hand)

@@ -33,7 +33,6 @@ namespace MinecraftClient.Protocol.Handlers
         OpenWindow,
         WindowItems,
         SetSlot,
-        UnknownPacket,
         DestroyEntities,
         SetCooldown,
         EntityPosition,
@@ -41,6 +40,7 @@ namespace MinecraftClient.Protocol.Handlers
         EntityProperties,
         TimeUpdate,
         EntityTeleport,
-        EntityStatus
+        EntityStatus,
+        UnknownPacket
     }
 }

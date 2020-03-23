@@ -137,6 +137,17 @@ namespace MinecraftClient
         /// <param name="data">The payload for the message</param>
         public virtual void OnPluginMessage(string channel, byte[] data) { }
 
+        public virtual void OnPlayerProperty(Dictionary<string, Double> prop) { }
+
+        public virtual void OnServerTpsUpdate(Double tps) { }
+
+        public virtual void OnEntityMove(Mapping.Entity entity) { }
+
+        public virtual void OnEntitySpawn(Mapping.Entity entity) { }
+
+        public virtual void OnEntityDespawn(int EntityID) { }
+
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
@@ -600,6 +611,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get entity handling status
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>Entity Handling cannot be enabled in runtime (or after joining server)</remarks>
+        public bool GetEntityHandlingEnabled()
+        {
+            return Handler.GetEntityHandlingEnabled();
+        }
+
+        /// <summary>
         /// Get the current Minecraft World
         /// </summary>
         /// <returns>Minecraft world or null if associated setting is disabled</returns>
@@ -763,6 +784,27 @@ namespace MinecraftClient
                 }
             }
             return Handler.SendPluginChannelMessage(channel, data, sendEvenIfNotRegistered);
+        }
+
+        protected Double GetServerTPS()
+        {
+            return Handler.GetServerTPS();
+        }
+
+        /// <summary>
+        /// Interact with an entity
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="type">0: interact, 1: attack, 2: interact at</param>
+        /// <returns></returns>
+        protected bool InteractEntity(int EntityID, int type)
+        {
+            return Handler.InteractEntity(EntityID, type);
+        }
+
+        protected bool UseItemOnHand()
+        {
+            return Handler.UseItemOnHand();
         }
     }
 }

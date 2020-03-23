@@ -30,6 +30,7 @@ namespace MinecraftClient.Protocol
         bool SetTerrainEnabled(bool enabled);
         bool GetInventoryEnabled();
         bool SetInventoryEnabled(bool enabled);
+        bool GetEntityHandlingEnabled();
 
         /// <summary>
         /// Called when a server was successfully joined
@@ -132,8 +133,6 @@ namespace MinecraftClient.Protocol
 
         void OnDestroyEntities(int[] EntityID);
 
-        void OnSetCooldown(int itemID, int tick);
-
         void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround);
 
         void OnEntityProperties(int EntityID, Dictionary<string, Double> prop);
@@ -141,8 +140,6 @@ namespace MinecraftClient.Protocol
         void OnTimeUpdate(long WorldAge, long TimeOfDay);
 
         void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround);
-
-        void OnEntityStatus(int EntityID, byte EntityStatus);
 
         void OnWindowItems(int type, Dictionary<int, Item> itemList);
 

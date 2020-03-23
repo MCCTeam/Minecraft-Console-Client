@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
 
         public override string Run(McTcpClient handler, string command)
         {
-            handler.useItemOnHand();
+            handler.UseItemOnHand();
             return "Use an item";
         }
     }
