@@ -20,7 +20,7 @@ namespace MinecraftClient.ChatBots
             if (!GetEntityHandlingEnabled())
             {
                 ConsoleIO.WriteLine("[AutoFishing] Entity Handling is not enabled in the config file!");
-                ConsoleIO.WriteLine("Please enable it to use this bot.");
+                ConsoleIO.WriteLine("[AutoFishing] This bot will be unloaded.");
                 UnloadBot();
             }
         }
@@ -60,8 +60,7 @@ namespace MinecraftClient.ChatBots
                 fishingRod[entity.ID] = entity;
             }
         }
-
-        // TODO: Move into ChatBot
+        
         /// <summary>
         /// Called when detected a fish is caught
         /// </summary>

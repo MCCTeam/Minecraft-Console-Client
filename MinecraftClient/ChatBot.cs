@@ -145,7 +145,7 @@ namespace MinecraftClient
 
         public virtual void OnEntitySpawn(Mapping.Entity entity) { }
 
-        public virtual void OnEntityDespawn(int EntityID) { }
+        public virtual void OnEntityDespawn(Mapping.Entity entity) { }
 
 
         /* =================================================================== */
