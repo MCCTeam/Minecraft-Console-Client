@@ -68,7 +68,7 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && protocolversion > MC114Version)
+            if (handler.GetInventoryEnabled() && protocolversion > MC1152Version)
             {
                 ConsoleIO.WriteLineFormatted("§8Inventories are currently not handled for that MC version.");
                 handler.SetInventoryEnabled(false);
@@ -509,7 +509,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.WindowItems:
-                        if (handler.GetInventoryEnabled()||true) // set true in .ini but GetInventoryEnabled seems like return false
+                        if (handler.GetInventoryEnabled())
                         {
                             /*
                              * Following commented code will crash
