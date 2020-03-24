@@ -31,6 +31,8 @@ namespace MinecraftClient.Inventory
         Smoker,
         Cartography,
         Stonecutter,
+        // not in the list
+        PlayerInventory,
         Unknown
     }
 }

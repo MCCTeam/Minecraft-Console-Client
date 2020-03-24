@@ -144,6 +144,9 @@ namespace MinecraftClient.Protocol
 
         void OnWindowItems(int type, Dictionary<int, MinecraftClient.Inventory.Item> itemList);
 
+        void OnSetSlot(byte WindowID, short SlotID, bool Present);
+        void OnSetSlot(byte WindowID, short SlotID, bool Present, int ItemID, byte Count, Dictionary<string, object> NBT);
+
         void SetPlayerEntityID(int EntityID);
     }
 }

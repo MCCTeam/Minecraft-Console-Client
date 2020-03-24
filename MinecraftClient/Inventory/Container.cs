@@ -11,12 +11,20 @@ namespace MinecraftClient.Inventory
         public ContainerType Type;
         public string Title;
         public Dictionary<int, Item> Items;
-
+        
+        public Container() { }
         public Container(int id, ContainerType type, string title)
         {
             ID = id;
             Type = type;
             Title = title;
+        }
+        public Container(int id, ContainerType type, string title,Dictionary<int,Item> items)
+        {
+            ID = id;
+            Type = type;
+            Title = title;
+            Items = items;
         }
         public Container(int id, Protocol.InventoryType type, string title)
         {
@@ -28,6 +36,16 @@ namespace MinecraftClient.Inventory
             ID = id;
             Type = GetContainerType(typeID);
             Title = title;
+        }
+        // for player inventory because they dont have ID and title
+        public Container(ContainerType type)
+        {
+            Type = type;
+        }
+        public Container(ContainerType type, Dictionary<int, Item> items)
+        {
+            Type = type;
+            Items = items;
         }
 
         public static ContainerType GetContainerType(int typeID)

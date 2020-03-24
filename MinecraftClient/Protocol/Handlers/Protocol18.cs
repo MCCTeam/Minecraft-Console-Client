@@ -522,7 +522,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.WindowItems:
-                        if (handler.GetInventoryEnabled())
+                        if (handler.GetInventoryEnabled()||true) // bypass for testing
                         {
                             /*
                              * Following commented code will crash
@@ -561,6 +561,25 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                             }
                             handler.OnWindowItems(id, itemsList);
+                        }
+                        break;
+                    case PacketIncomingType.SetSlot:
+                        if(handler.GetInventoryEnabled()||true) // bypass for testing
+                        {
+                            byte WindowID = dataTypes.ReadNextByte(packetData);
+                            short SlotID = dataTypes.ReadNextShort(packetData);
+                            bool Present = dataTypes.ReadNextBool(packetData);
+                            if (Present)
+                            {
+                                int ItemID = dataTypes.ReadNextVarInt(packetData);
+                                byte Count = dataTypes.ReadNextByte(packetData);
+                                Dictionary<string, object> NBT = dataTypes.ReadNextNbt(packetData);
+                                handler.OnSetSlot(WindowID, SlotID, Present, ItemID, Count, NBT);
+                            }
+                            else
+                            {
+                                handler.OnSetSlot(WindowID, SlotID, Present);
+                            }
                         }
                         break;
                     case PacketIncomingType.ResourcePackSend:

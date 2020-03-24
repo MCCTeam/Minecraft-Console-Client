@@ -53,14 +53,14 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
-        private Container playerInventory;
+        private Container playerInventory = new Container(ContainerType.PlayerInventory);
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new object();
 
         private int playerEntityID;
         // not really understand the Inventory Class
         // so I use a Dict instead for player inventory
-        private Dictionary<int, Inventory.Item> playerItems;
+        //private Dictionary<int, Inventory.Item> playerItems;
 
         // Entity handling
         private Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
@@ -775,7 +775,23 @@ namespace MinecraftClient
         {
             // 0 is player inventory
             if (type == 0)
-                playerItems = itemList;
+                playerInventory.Items = itemList;
+        }
+
+        public void OnSetSlot(byte WindowID, short SlotID, bool Present)
+        {
+            if(WindowID == 0)
+            {
+                if (playerInventory.Items.ContainsKey(SlotID))
+                    playerInventory.Items.Remove(SlotID);
+            }
+        }
+        public void OnSetSlot(byte WindowID, short SlotID, bool Present, int ItemID, byte Count, Dictionary<string, object> NBT)
+        {
+            if (WindowID == 0)
+            {
+                playerInventory.Items[SlotID] = new Inventory.Item(ItemID, Count, SlotID, NBT);
+            }
         }
 
         /// <summary>
@@ -1117,10 +1133,10 @@ namespace MinecraftClient
         {
             foreach (int a in Entities)
             {
-                foreach (ChatBot bot in bots.ToArray())
-                    bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].Type, entities[a].Location));
                 if (entities.ContainsKey(a))
                 {
+                    foreach (ChatBot bot in bots.ToArray())
+                        bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].Type, entities[a].Location));
                     entities.Remove(a);
                 }
             }
@@ -1238,7 +1254,7 @@ namespace MinecraftClient
         {
             return handler.SendInteractEntityPacket(EntityID, type);
         }
-
+        // not work :(
         public bool PlaceBlock(Location location)
         {
             ConsoleIO.WriteLine(location.ToString());
