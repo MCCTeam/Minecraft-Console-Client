@@ -1115,10 +1115,10 @@ namespace MinecraftClient
         {
             foreach (int a in Entities)
             {
-                foreach (ChatBot bot in bots.ToArray())
-                    bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].Type, entities[a].Location));
                 if (entities.ContainsKey(a))
                 {
+                    foreach (ChatBot bot in bots.ToArray())
+                        bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].Type, entities[a].Location));
                     entities.Remove(a);
                 }
             }
