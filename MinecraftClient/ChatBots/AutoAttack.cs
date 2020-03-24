@@ -22,7 +22,7 @@ namespace MinecraftClient.ChatBots
             if (!GetEntityHandlingEnabled())
             {
                 ConsoleIO.WriteLine("[AutoAttack] Entity Handling is not enabled in the config file!");
-                ConsoleIO.WriteLine("Please enable it to use this bot.");
+                ConsoleIO.WriteLine("[AutoAttack] This bot will be unloaded.");
                 UnloadBot();
             }
         }
@@ -53,11 +53,11 @@ namespace MinecraftClient.ChatBots
                 entitiesToTrack.Add(entity.ID, entity);
             }
         }
-        public override void OnEntityDespawn(int EntityID)
+        public override void OnEntityDespawn(Entity entity)
         {
-            if (entitiesToTrack.ContainsKey(EntityID))
+            if (entitiesToTrack.ContainsKey(entity.ID))
             {
-                entitiesToTrack.Remove(EntityID);
+                entitiesToTrack.Remove(entity.ID);
             }
         }
         public override void OnEntityMove(Entity entity)
