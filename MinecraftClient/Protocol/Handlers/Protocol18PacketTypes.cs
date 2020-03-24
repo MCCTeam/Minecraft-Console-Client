@@ -385,6 +385,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.HeldItemChange: return 0x23;
                     case PacketOutgoingType.InteractEntity: return 0x0E;
                     case PacketOutgoingType.UseItem: return 0x2D;
+                    case PacketOutgoingType.PlayerBlockPlacement: return 0x2C;
                 }
             }
 

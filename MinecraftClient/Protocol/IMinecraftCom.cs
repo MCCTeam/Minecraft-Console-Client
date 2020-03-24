@@ -90,5 +90,7 @@ namespace MinecraftClient.Protocol
         bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z);
 
         bool SendUseItemPacket(int hand);
+
+        bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock);
     }
 }
