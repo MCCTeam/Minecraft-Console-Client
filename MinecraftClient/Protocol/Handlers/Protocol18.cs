@@ -490,14 +490,17 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.OpenWindow:
                         if (handler.GetInventoryEnabled())
                         {
-                            byte windowID = dataTypes.ReadNextByte(packetData);
-                            string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
-                            InventoryType inventoryType = (InventoryType)Enum.Parse(typeof(InventoryType), type);
-                            string title = dataTypes.ReadNextString(packetData);
-                            byte slots = dataTypes.ReadNextByte(packetData);
-                            Inventory inventory = new Inventory(windowID, inventoryType, title, slots);
+                            if (protocolversion < MC114Version) // packet changed at 1.14
+                            {
+                                byte windowID = dataTypes.ReadNextByte(packetData);
+                                string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
+                                InventoryType inventoryType = (InventoryType)Enum.Parse(typeof(InventoryType), type);
+                                string title = dataTypes.ReadNextString(packetData);
+                                byte slots = dataTypes.ReadNextByte(packetData);
+                                Inventory inventory = new Inventory(windowID, inventoryType, title, slots);
 
-                            handler.OnInventoryOpen(inventory);
+                                handler.OnInventoryOpen(inventory);
+                            }
                         }
                         break;
                     case PacketIncomingType.CloseWindow:
