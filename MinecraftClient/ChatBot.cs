@@ -621,6 +621,11 @@ namespace MinecraftClient
             return Handler.GetEntityHandlingEnabled();
         }
 
+        public bool GetInventoryEnabled()
+        {
+            return Handler.GetInventoryEnabled();
+        }
+
         /// <summary>
         /// Get the current Minecraft World
         /// </summary>

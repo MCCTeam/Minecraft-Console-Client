@@ -1277,5 +1277,17 @@ namespace MinecraftClient
             ConsoleIO.WriteLine(location.ToString());
             return handler.SendPlayerBlockPlacement(0, location, 1, 0.5f, 0.5f, 0.5f, false);
         }
+
+        public bool ChangeSlot(short slot)
+        {
+            if (slot >= 0 && slot <= 8)
+            {
+                return handler.SendHeldItemChange(slot);
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

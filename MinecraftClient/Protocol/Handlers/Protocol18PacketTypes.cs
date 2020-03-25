@@ -303,6 +303,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TabComplete: return 0x14;
                     case PacketOutgoingType.PlayerPosition: return 0x04;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x06;
+                    case PacketOutgoingType.HeldItemChange: return 0x17;
                     case PacketOutgoingType.InteractEntity: return 0x02;
                     case PacketOutgoingType.TeleportConfirm: throw new InvalidOperationException("Teleport confirm is not supported in protocol " + protocol);
                 }
@@ -321,6 +322,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPosition: return 0x0C;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0D;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
+                    case PacketOutgoingType.HeldItemChange: return 0x17;
                     case PacketOutgoingType.InteractEntity: return 0x0A;
                 }
             }
@@ -338,6 +340,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPosition: return 0x0E;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0F;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
+                    case PacketOutgoingType.HeldItemChange: return 0x1A;
                     case PacketOutgoingType.InteractEntity: return 0x0B;
                 }
             }
@@ -355,6 +358,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPosition: return 0x0D;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x0E;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
+                    case PacketOutgoingType.HeldItemChange: return 0x1F;
                     case PacketOutgoingType.InteractEntity: return 0x0A;
                 }
             }
@@ -372,6 +376,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerPosition: return 0x10;
                     case PacketOutgoingType.PlayerPositionAndLook: return 0x11;
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
+                    case PacketOutgoingType.HeldItemChange: return 0x21;
                     case PacketOutgoingType.InteractEntity: return 0x0D;
                 }
             }

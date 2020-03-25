@@ -14,6 +14,7 @@ namespace MinecraftClient.ChatBots
         private Double fishingHookThreshold = 0.2;
         private Location LastPos = new Location();
         private DateTime CaughtTime = DateTime.Now;
+        private bool inventoryEnabled;
 
         public override void Initialize()
         {
@@ -23,6 +24,7 @@ namespace MinecraftClient.ChatBots
                 ConsoleIO.WriteLine("[AutoFishing] This bot will be unloaded.");
                 UnloadBot();
             }
+            inventoryEnabled = GetInventoryEnabled();
         }
 
         public override void OnEntitySpawn(Entity entity)
@@ -69,10 +71,13 @@ namespace MinecraftClient.ChatBots
             ConsoleIO.WriteLine("Caught a fish!");
             // retract fishing rod
             UseItemOnHand();
-            if (!hasFishingRod())
+            if (inventoryEnabled)
             {
-                ConsoleIO.WriteLine("No Fishing Rod on hand. Maybe broken?");
-                return;
+                if (!hasFishingRod())
+                {
+                    ConsoleIO.WriteLine("No Fishing Rod on hand. Maybe broken?");
+                    return;
+                }
             }
             // non-blocking delay
             Task.Factory.StartNew(delegate
@@ -86,6 +91,7 @@ namespace MinecraftClient.ChatBots
 
         public bool hasFishingRod()
         {
+            if (!inventoryEnabled) return false;
             int start = 36;
             int end = 44;
             Inventory.Container container = GetPlayerInventory();

@@ -662,6 +662,10 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false;
         }
+        public bool SendHeldItemChange(short slot)
+        {
+            return false;
+        }
 
         /// <summary>
         /// Send a plugin channel packet to the server.

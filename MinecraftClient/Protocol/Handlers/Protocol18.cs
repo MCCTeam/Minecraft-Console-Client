@@ -510,7 +510,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 string title = dataTypes.ReadNextString(packetData);
                                 MinecraftClient.Inventory.Container inventory = new MinecraftClient.Inventory.Container(WindowID, WindowType, title);
 
-
                                 handler.OnInventoryOpen(inventory);
                             }
                         }
@@ -524,7 +523,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.WindowItems:
-                        if (handler.GetInventoryEnabled()||true) // bypass for testing
+                        if (handler.GetInventoryEnabled())
                         {
                             /*
                              * Following commented code will crash
@@ -566,7 +565,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.SetSlot:
-                        if(handler.GetInventoryEnabled()||true) // bypass for testing
+                        if(handler.GetInventoryEnabled())
                         {
                             byte WindowID = dataTypes.ReadNextByte(packetData);
                             short SlotID = dataTypes.ReadNextShort(packetData);
@@ -1232,8 +1231,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             return false;
         }
-
-        // reinforce
+        
         /// <summary>
         /// Send an Interact Entity Packet to server
         /// </summary>
@@ -1305,6 +1303,23 @@ namespace MinecraftClient.Protocol.Handlers
                 packet.AddRange(dataTypes.GetFloat(CursorZ));
                 packet.Add(Convert.ToByte(insideBlock ? 1 : 0));
                 SendPacket(PacketOutgoingType.PlayerBlockPlacement, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool SendHeldItemChange(short slot)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                // short to byte (?
+                byte[] b = BitConverter.GetBytes(slot);
+                Array.Reverse(b);
+                packet.AddRange(b);
+                SendPacket(PacketOutgoingType.HeldItemChange, packet);
                 return true;
             }
             catch (SocketException) { return false; }
