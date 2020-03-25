@@ -98,7 +98,7 @@ namespace MinecraftClient.ChatBots
             foreach(KeyValuePair<int,Inventory.Item> a in container.Items)
             {
                 if (a.Key < start || a.Key > end) continue;
-                if (a.Value.ID == 626) return true;
+                if (a.Value.ID == 622) return true;
             }
             return false;
         }
