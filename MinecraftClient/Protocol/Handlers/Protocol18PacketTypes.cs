@@ -48,6 +48,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // Entity handling
                     case 0x0E: return PacketIncomingType.SpawnEntity; // for non-living entity
                     case 0x0F: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x13: return PacketIncomingType.DestroyEntities;
                     case 0x15: return PacketIncomingType.EntityPosition;
                     case 0x17: return PacketIncomingType.EntityPositionAndRotation;
@@ -86,6 +87,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // Entity handling
                     case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
                     case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x30: return PacketIncomingType.DestroyEntities;
                     case 0x25: return PacketIncomingType.EntityPosition;
                     case 0x26: return PacketIncomingType.EntityPositionAndRotation;
@@ -122,6 +124,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // Entity handling
                     case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
                     case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x31: return PacketIncomingType.DestroyEntities;
                     case 0x26: return PacketIncomingType.EntityPosition;
                     case 0x27: return PacketIncomingType.EntityPositionAndRotation;
@@ -158,6 +161,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // Entity handling
                     case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
                     case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x32: return PacketIncomingType.DestroyEntities;
                     case 0x26: return PacketIncomingType.EntityPosition;
                     case 0x27: return PacketIncomingType.EntityPositionAndRotation;
@@ -194,6 +198,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // Entity handling
                     case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
                     case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x35: return PacketIncomingType.DestroyEntities;
                     case 0x28: return PacketIncomingType.EntityPosition;
                     case 0x29: return PacketIncomingType.EntityPositionAndRotation;
@@ -229,6 +234,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // Entity handling
                     case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
                     case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x37: return PacketIncomingType.DestroyEntities;
                     case 0x28: return PacketIncomingType.EntityPosition;
                     case 0x29: return PacketIncomingType.EntityPositionAndRotation;
@@ -264,6 +270,7 @@ namespace MinecraftClient.Protocol.Handlers
                     // Entity handling
                     case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
                     case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x38: return PacketIncomingType.DestroyEntities;
                     case 0x29: return PacketIncomingType.EntityPosition;
                     case 0x2A: return PacketIncomingType.EntityPositionAndRotation;

@@ -1099,12 +1099,12 @@ namespace MinecraftClient
         /// Called when a non-living entity spawned (fishing hook, minecart, etc)
         /// </summary>
         /// <param name="EntityID"></param>
-        /// <param name="EntityType"></param>
+        /// <param name="TypeID"></param>
         /// <param name="UUID"></param>
         /// <param name="location"></param>
-        public void OnSpawnEntity(int EntityID, int EntityType, Guid UUID, Location location)
+        public void OnSpawnEntity(int EntityID, int TypeID, Guid UUID, Location location)
         {
-            Entity entity = new Entity(EntityID, EntityType, location);
+            Entity entity = new Entity(EntityID, TypeID, EntityType.NonLivingThings, location);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
                 bot.OnEntitySpawn(entity);
@@ -1114,12 +1114,29 @@ namespace MinecraftClient
         /// Called when an Entity was created/spawned.
         /// </summary>
         /// <param name="EntityID"></param>
-        /// <param name="EntityType"></param>
+        /// <param name="TypeID"></param>
         /// <param name="UUID"></param>
         /// <param name="location"></param>
-        public void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location)
+        /// <remarks>Cannot determine is a Mob or a Cuty Animal</remarks>
+        public void OnSpawnLivingEntity(int EntityID, int TypeID, Guid UUID, Location location)
         {
-            Entity entity = new Entity(EntityID, EntityType, location);
+            Entity entity = new Entity(EntityID, TypeID, EntityType.MobAndAnimal, location);
+            entities.Add(EntityID, entity);
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnEntitySpawn(entity);
+        }
+
+        /// <summary>
+        /// Called when a player was spawned/in the render distance
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="UUID"></param>
+        /// <param name="location"></param>
+        /// <param name="Yaw"></param>
+        /// <param name="Pitch"></param>
+        public void OnSpawnPlayer(int EntityID, Guid UUID, Location location, byte Yaw, byte Pitch)
+        {
+            Entity entity = new Entity(EntityID, EntityType.Player, location);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
                 bot.OnEntitySpawn(entity);
@@ -1136,7 +1153,7 @@ namespace MinecraftClient
                 if (entities.ContainsKey(a))
                 {
                     foreach (ChatBot bot in bots.ToArray())
-                        bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].Type, entities[a].Location));
+                        bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].TypeID, entities[a].Type, entities[a].Location));
                     entities.Remove(a);
                 }
             }
@@ -1161,7 +1178,7 @@ namespace MinecraftClient
                 entities[EntityID].Location = L;
 
                 foreach (ChatBot bot in bots.ToArray())
-                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].Type, entities[EntityID].Location));
+                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
             }
             
         }
@@ -1181,7 +1198,7 @@ namespace MinecraftClient
                 entities[EntityID].Location = location;
 
                 foreach (ChatBot bot in bots.ToArray())
-                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].Type, entities[EntityID].Location));
+                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
             }
         }
 

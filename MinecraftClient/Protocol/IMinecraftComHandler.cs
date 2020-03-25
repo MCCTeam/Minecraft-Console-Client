@@ -132,6 +132,8 @@ namespace MinecraftClient.Protocol
 
         void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location);
 
+        void OnSpawnPlayer(int EntityID, Guid UUID, Location location, byte Yaw, byte Pitch);
+
         void OnDestroyEntities(int[] EntityID);
 
         void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround);

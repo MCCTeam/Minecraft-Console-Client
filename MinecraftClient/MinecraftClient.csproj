@@ -111,6 +111,7 @@
     <Compile Include="Mapping\BlockPalettes\PaletteGenerator.cs" />
     <Compile Include="Mapping\BlockPalettes\PaletteMapping.cs" />
     <Compile Include="Mapping\Entity.cs" />
+    <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Protocol\Handlers\DataTypes.cs" />
     <Compile Include="Protocol\Handlers\PacketIncomingType.cs" />

@@ -637,6 +637,22 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnSpawnLivingEntity(EntityID, EntityType, EntityUUID, EntityLocation);
                         }
                         break;
+                    case PacketIncomingType.SpawnPlayer:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Guid UUID = dataTypes.ReadNextUUID(packetData);
+                            double X = dataTypes.ReadNextDouble(packetData);
+                            double Y = dataTypes.ReadNextDouble(packetData);
+                            double Z = dataTypes.ReadNextDouble(packetData);
+                            byte Yaw = dataTypes.ReadNextByte(packetData);
+                            byte Pitch = dataTypes.ReadNextByte(packetData);
+
+                            Location EntityLocation = new Location(X, Y, Z);
+
+                            handler.OnSpawnPlayer(EntityID, UUID, EntityLocation, Yaw, Pitch);
+                        }
+                        break;
                     case PacketIncomingType.DestroyEntities:
                         if (handler.GetEntityHandlingEnabled())
                         {

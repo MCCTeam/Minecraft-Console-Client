@@ -27,7 +27,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntitySpawn(Entity entity)
         {
-            if (entity.Type == 102)
+            if (entity.TypeID == 102)
             {
                 ConsoleIO.WriteLine("Threw a fishing rod");
                 fishingRod.Add(entity.ID, entity);
