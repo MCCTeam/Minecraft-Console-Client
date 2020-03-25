@@ -83,7 +83,7 @@ namespace MinecraftClient.ChatBots
             Task.Factory.StartNew(delegate
             {
                 // retract fishing rod need some time
-                Thread.Sleep(500);
+                Thread.Sleep(800);
                 // throw again
                 UseItemOnHand();
             });
