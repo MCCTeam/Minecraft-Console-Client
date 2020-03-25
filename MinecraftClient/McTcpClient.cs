@@ -10,6 +10,7 @@ using MinecraftClient.Protocol;
 using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient
 {
@@ -26,7 +27,7 @@ namespace MinecraftClient
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
-        private static List<Inventory> inventories = new List<Inventory>();
+        private static List<Container> inventories = new List<Container>();
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
         private readonly List<string> registeredServerPluginChannels = new List<String>();
@@ -52,14 +53,14 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
-        private Inventory playerInventory;
+        private Container playerInventory = new Container(ContainerType.PlayerInventory);
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new object();
 
         private int playerEntityID;
         // not really understand the Inventory Class
         // so I use a Dict instead for player inventory
-        private Dictionary<int, Item> playerItems;
+        //private Dictionary<int, Inventory.Item> playerItems;
 
         // Entity handling
         private Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
@@ -567,9 +568,9 @@ namespace MinecraftClient
         /// Get client player's inventory items
         /// </summary>
         /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
-        public Dictionary<int, Item> GetPlayerInventory()
+        public Container GetPlayerInventory()
         {
-            return playerItems;
+            return playerInventory;
         }
         // TODO: add command for displaying player inventory
 
@@ -737,13 +738,14 @@ namespace MinecraftClient
         /// When an inventory is opened
         /// </summary>
         /// <param name="inventory">Location to reach</param>
-        public void OnInventoryOpen(Inventory inventory)
+        public void OnInventoryOpen(Container inventory)
         {
             //TODO: Handle Inventory
             if (!inventories.Contains(inventory))
             {
                 inventories.Add(inventory);
             }
+            ConsoleIO.WriteLine(inventory.Type.ToString());
         }
 
         /// <summary>
@@ -754,9 +756,9 @@ namespace MinecraftClient
         {
             for (int i = 0; i < inventories.Count; i++)
             {
-                Inventory inventory = inventories[i];
+                Container inventory = inventories[i];
                 if (inventory == null) continue;
-                if (inventory.id == inventoryID)
+                if (inventory.Type == Container.GetContainerType(inventoryID))
                 {
                     inventories.Remove(inventory);
                     return;
@@ -769,11 +771,27 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="type"></param>
         /// <param name="itemList"></param>
-        public void OnWindowItems(int type, Dictionary<int, Item> itemList)
+        public void OnWindowItems(int type, Dictionary<int, Inventory.Item> itemList)
         {
             // 0 is player inventory
             if (type == 0)
-                playerItems = itemList;
+                playerInventory.Items = itemList;
+        }
+
+        public void OnSetSlot(byte WindowID, short SlotID, bool Present)
+        {
+            if(WindowID == 0)
+            {
+                if (playerInventory.Items.ContainsKey(SlotID))
+                    playerInventory.Items.Remove(SlotID);
+            }
+        }
+        public void OnSetSlot(byte WindowID, short SlotID, bool Present, int ItemID, byte Count, Dictionary<string, object> NBT)
+        {
+            if (WindowID == 0)
+            {
+                playerInventory.Items[SlotID] = new Inventory.Item(ItemID, Count, SlotID, NBT);
+            }
         }
 
         /// <summary>
@@ -1235,6 +1253,12 @@ namespace MinecraftClient
         public bool InteractEntity(int EntityID, int type)
         {
             return handler.SendInteractEntityPacket(EntityID, type);
+        }
+        // not work :(
+        public bool PlaceBlock(Location location)
+        {
+            ConsoleIO.WriteLine(location.ToString());
+            return handler.SendPlayerBlockPlacement(0, location, 1, 0.5f, 0.5f, 0.5f, false);
         }
     }
 }

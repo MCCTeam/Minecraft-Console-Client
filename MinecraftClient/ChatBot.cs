@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient
 {
@@ -805,6 +806,12 @@ namespace MinecraftClient
         protected bool UseItemOnHand()
         {
             return Handler.UseItemOnHand();
+        }
+
+        protected Container GetPlayerInventory()
+        {
+            Container container = Handler.GetPlayerInventory();
+            return new Container(container.ID,container.Type,container.Title,container.Items);
         }
     }
 }

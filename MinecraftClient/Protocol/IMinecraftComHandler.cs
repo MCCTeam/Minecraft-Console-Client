@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MinecraftClient.Mapping;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Protocol
 {
@@ -52,7 +53,7 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Called when an inventory is opened
         /// </summary>
-        void OnInventoryOpen(Inventory inventory);
+        void OnInventoryOpen(Container inventory);
 
         /// <summary>
         /// Called when an inventory is closed
@@ -141,7 +142,10 @@ namespace MinecraftClient.Protocol
 
         void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround);
 
-        void OnWindowItems(int type, Dictionary<int, Item> itemList);
+        void OnWindowItems(int type, Dictionary<int, MinecraftClient.Inventory.Item> itemList);
+
+        void OnSetSlot(byte WindowID, short SlotID, bool Present);
+        void OnSetSlot(byte WindowID, short SlotID, bool Present, int ItemID, byte Count, Dictionary<string, object> NBT);
 
         void SetPlayerEntityID(int EntityID);
     }

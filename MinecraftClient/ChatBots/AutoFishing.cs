@@ -69,15 +69,32 @@ namespace MinecraftClient.ChatBots
             ConsoleIO.WriteLine("Caught a fish!");
             // retract fishing rod
             UseItemOnHand();
+            if (!hasFishingRod())
+            {
+                ConsoleIO.WriteLine("No Fishing Rod on hand. Maybe broken?");
+                return;
+            }
             // non-blocking delay
             Task.Factory.StartNew(delegate
             {
                 // retract fishing rod need some time
                 Thread.Sleep(500);
                 // throw again
-                // TODO: to check if hand have fishing rod
                 UseItemOnHand();
             });
+        }
+
+        public bool hasFishingRod()
+        {
+            int start = 36;
+            int end = 44;
+            Inventory.Container container = GetPlayerInventory();
+            foreach(KeyValuePair<int,Inventory.Item> a in container.Items)
+            {
+                if (a.Key < start || a.Key > end) continue;
+                if (a.Value.ID == 626) return true;
+            }
+            return false;
         }
     }
 }
