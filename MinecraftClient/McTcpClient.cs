@@ -564,6 +564,27 @@ namespace MinecraftClient
             return entityHandlingEnabled;
         }
 
+        public bool SetEntityHandlingEnabled(bool enabled)
+        {
+            if (!enabled)
+            {
+                if (entityHandlingEnabled)
+                {
+                    entityHandlingEnabled = false;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Entity Handling cannot be enabled in runtime (or after joining server)
+                return false;
+            }
+        }
+
         /// <summary>
         /// Get client player's inventory items
         /// </summary>
@@ -1104,6 +1125,7 @@ namespace MinecraftClient
         /// <param name="location"></param>
         public void OnSpawnEntity(int EntityID, int TypeID, Guid UUID, Location location)
         {
+            if (entities.ContainsKey(EntityID)) return;
             Entity entity = new Entity(EntityID, TypeID, EntityType.NonLivingThings, location);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
@@ -1120,6 +1142,7 @@ namespace MinecraftClient
         /// <remarks>Cannot determine is a Mob or a Cuty Animal</remarks>
         public void OnSpawnLivingEntity(int EntityID, int TypeID, Guid UUID, Location location)
         {
+            if (entities.ContainsKey(EntityID)) return;
             Entity entity = new Entity(EntityID, TypeID, EntityType.MobAndAnimal, location);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
@@ -1136,6 +1159,7 @@ namespace MinecraftClient
         /// <param name="Pitch"></param>
         public void OnSpawnPlayer(int EntityID, Guid UUID, Location location, byte Yaw, byte Pitch)
         {
+            if (entities.ContainsKey(EntityID)) return;
             Entity entity = new Entity(EntityID, EntityType.Player, location);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
