@@ -14,6 +14,7 @@ namespace MinecraftClient.ChatBots
         private Double fishingHookThreshold = 0.2;
         private Location LastPos = new Location();
         private DateTime CaughtTime = DateTime.Now;
+        private bool inventoryEnabled;
 
         public override void Initialize()
         {
@@ -23,11 +24,12 @@ namespace MinecraftClient.ChatBots
                 ConsoleIO.WriteLine("[AutoFishing] This bot will be unloaded.");
                 UnloadBot();
             }
+            inventoryEnabled = GetInventoryEnabled();
         }
 
         public override void OnEntitySpawn(Entity entity)
         {
-            if (entity.Type == 102)
+            if (entity.TypeID == 102)
             {
                 ConsoleIO.WriteLine("Threw a fishing rod");
                 fishingRod.Add(entity.ID, entity);
@@ -69,15 +71,36 @@ namespace MinecraftClient.ChatBots
             ConsoleIO.WriteLine("Caught a fish!");
             // retract fishing rod
             UseItemOnHand();
+            if (inventoryEnabled)
+            {
+                if (!hasFishingRod())
+                {
+                    ConsoleIO.WriteLine("No Fishing Rod on hand. Maybe broken?");
+                    return;
+                }
+            }
             // non-blocking delay
             Task.Factory.StartNew(delegate
             {
                 // retract fishing rod need some time
-                Thread.Sleep(500);
+                Thread.Sleep(800);
                 // throw again
-                // TODO: to check if hand have fishing rod
                 UseItemOnHand();
             });
+        }
+
+        public bool hasFishingRod()
+        {
+            if (!inventoryEnabled) return false;
+            int start = 36;
+            int end = 44;
+            Inventory.Container container = GetPlayerInventory();
+            foreach(KeyValuePair<int,Inventory.Item> a in container.Items)
+            {
+                if (a.Key < start || a.Key > end) continue;
+                if (a.Value.ID == 622) return true;
+            }
+            return false;
         }
     }
 }

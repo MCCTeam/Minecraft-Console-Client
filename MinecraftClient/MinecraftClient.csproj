@@ -88,8 +88,10 @@
     <Compile Include="ChatBots\TestBot.cs" />
     <Compile Include="ChatBot.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Commands\ChangeSlot.cs" />
     <Compile Include="Commands\Connect.cs" />
     <Compile Include="Commands\Debug.cs" />
+    <Compile Include="Commands\GetInventory.cs" />
     <Compile Include="Commands\Look.cs" />
     <Compile Include="Commands\Move.cs" />
     <Compile Include="Commands\Exit.cs" />
@@ -100,6 +102,9 @@
     <Compile Include="Commands\Send.cs" />
     <Compile Include="Commands\Set.cs" />
     <Compile Include="Commands\UseItem.cs" />
+    <Compile Include="Inventory\Container.cs" />
+    <Compile Include="Inventory\ContainerType.cs" />
+    <Compile Include="Inventory\Item.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette112.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette113.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette114.cs" />
@@ -107,6 +112,7 @@
     <Compile Include="Mapping\BlockPalettes\PaletteGenerator.cs" />
     <Compile Include="Mapping\BlockPalettes\PaletteMapping.cs" />
     <Compile Include="Mapping\Entity.cs" />
+    <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Protocol\Handlers\DataTypes.cs" />
     <Compile Include="Protocol\Handlers\PacketIncomingType.cs" />
@@ -286,6 +292,7 @@
     <Content Include="Protocol\Dns\Records\totla.txt" />
     <Content Include="Resources\AppIcon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
