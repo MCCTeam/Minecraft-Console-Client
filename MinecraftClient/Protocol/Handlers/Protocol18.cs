@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -494,12 +495,11 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 byte windowID = dataTypes.ReadNextByte(packetData);
                                 string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
-                                InventoryType inventoryType = (InventoryType)Enum.Parse(typeof(InventoryType), type);
+                                ContainerTypeOld inventoryType = (ContainerTypeOld)Enum.Parse(typeof(ContainerTypeOld), type);
                                 string title = dataTypes.ReadNextString(packetData);
                                 byte slots = dataTypes.ReadNextByte(packetData);
-
-                                // TODO: 
-                                MinecraftClient.Inventory.Container inventory = new MinecraftClient.Inventory.Container(windowID, inventoryType, title);
+                                
+                                Container inventory = new Container(windowID, inventoryType, title);
 
                                 handler.OnInventoryOpen(inventory);
                             }
@@ -508,7 +508,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 int WindowID = dataTypes.ReadNextVarInt(packetData);
                                 int WindowType = dataTypes.ReadNextVarInt(packetData);
                                 string title = dataTypes.ReadNextString(packetData);
-                                MinecraftClient.Inventory.Container inventory = new MinecraftClient.Inventory.Container(WindowID, WindowType, title);
+                                Container inventory = new Container(WindowID, WindowType, title);
 
                                 handler.OnInventoryOpen(inventory);
                             }
@@ -547,7 +547,7 @@ namespace MinecraftClient.Protocol.Handlers
                             */
                             byte id = dataTypes.ReadNextByte(packetData);
                             short elements = dataTypes.ReadNextShort(packetData);
-                            Dictionary<int, MinecraftClient.Inventory.Item> itemsList = new Dictionary<int, MinecraftClient.Inventory.Item>(); // index is SlotID
+                            Dictionary<int, Item> itemsList = new Dictionary<int, Item>(); // index is SlotID
                             for(int i = 0; i < elements; i++)
                             {
                                 bool haveItem = dataTypes.ReadNextBool(packetData);
@@ -557,7 +557,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     byte itemCount = dataTypes.ReadNextByte(packetData);
                                     dataTypes.ReadNextNbt(packetData);
 
-                                    MinecraftClient.Inventory.Item item = new MinecraftClient.Inventory.Item(itemID, itemCount);
+                                    Item item = new Item(itemID, itemCount);
                                     itemsList.Add(i, item);
                                 }
                             }
