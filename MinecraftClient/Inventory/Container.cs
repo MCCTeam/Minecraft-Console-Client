@@ -26,10 +26,11 @@ namespace MinecraftClient.Inventory
             Title = title;
             Items = items;
         }
-        public Container(int id, Protocol.InventoryType type, string title)
+        public Container(int id, ContainerTypeOld type, string title)
         {
             ID = id;
             Title = title;
+            Type = ConvertType.ToNew(type);
         }
         public Container(int id, int typeID, string title)
         {

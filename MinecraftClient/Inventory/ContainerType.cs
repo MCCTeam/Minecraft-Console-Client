@@ -31,8 +31,47 @@ namespace MinecraftClient.Inventory
         Smoker,
         Cartography,
         Stonecutter,
-        // not in the list
+        // not in the wiki.vg list
         PlayerInventory,
         Unknown
+    }
+    public enum ContainerTypeOld
+    {
+        CONTAINER,
+        CHEST,
+        CRAFTING_TABLE,
+        FURNACE,
+        DISPENSER,
+        ENCHANTING_TABLE,
+        BREWING_STAND,
+        VILLAGER,
+        BEACON,
+        ANVIL,
+        HOPPER,
+        DROPPER,
+        SHULKER_BOX,
+        ENTITYHORSE
+    }
+    public static class ConvertType
+    {
+        public static ContainerType ToNew(ContainerTypeOld type)
+        {
+            switch (type)
+            {
+                case ContainerTypeOld.CONTAINER: return ContainerType.Unknown;
+                case ContainerTypeOld.CHEST: return ContainerType.Generic_9x3;
+                case ContainerTypeOld.CRAFTING_TABLE: return ContainerType.Crafting;
+                case ContainerTypeOld.FURNACE: return ContainerType.Furnace;
+                case ContainerTypeOld.DISPENSER: return ContainerType.Generic_3x3;
+                case ContainerTypeOld.ENCHANTING_TABLE: return ContainerType.Enchantment;
+                case ContainerTypeOld.BREWING_STAND: return ContainerType.BrewingStand;
+                case ContainerTypeOld.VILLAGER: return ContainerType.Merchant;
+                case ContainerTypeOld.HOPPER: return ContainerType.Hopper;
+                case ContainerTypeOld.DROPPER: return ContainerType.Generic_3x3;
+                case ContainerTypeOld.SHULKER_BOX: return ContainerType.ShulkerBox;
+                case ContainerTypeOld.ENTITYHORSE: return ContainerType.Unknown;
+                default: return ContainerType.Unknown;
+            }
+        }
     }
 }
