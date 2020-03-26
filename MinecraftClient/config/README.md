@@ -233,7 +233,7 @@ For more information about how to define match rules, please refer to sample-mat
 Using the Auto Attack
 ------
 
-The AutoAttack bot allows you to automatically attack mobs around you (precisely within radius of 4).
+The AutoAttack bot allows you to automatically attack mobs around you (precisely within radius of 4 block).
 To use this bot, you will need to enable **Entity Handling** in the config file first.
 
 Using the Auto Fishing
@@ -249,7 +249,7 @@ Steps for using this bot:
 2. Make sure AutoFish is enabled in config file
 3. Login with MCC
 4. Do /useitem and you should see "threw a fishing rod"
-5. To stop fishing, do /useitem again right after the message "threw a fishing rod"
+5. To stop fishing, do /useitem again
 
 Disclaimer
 ------
