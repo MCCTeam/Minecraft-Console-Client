@@ -10,11 +10,12 @@ namespace MinecraftClient.ChatBots
 {
     class AutoFishing : ChatBot
     {
-        private Dictionary<int, Entity> fishingRod = new Dictionary<int, Entity>();
+        private Entity fishingRod;
         private Double fishingHookThreshold = 0.2;
         private Location LastPos = new Location();
         private DateTime CaughtTime = DateTime.Now;
         private bool inventoryEnabled;
+        private bool isFishing = false;
 
         public override void Initialize()
         {
@@ -31,35 +32,52 @@ namespace MinecraftClient.ChatBots
         {
             if (entity.TypeID == 102)
             {
-                ConsoleIO.WriteLine("Threw a fishing rod");
-                fishingRod.Add(entity.ID, entity);
-                LastPos = entity.Location;
+                if (Entity.CalculateDistance(GetCurrentLocation(), entity.Location) < 2 && !isFishing)
+                {
+                    ConsoleIO.WriteLine("Threw a fishing rod");
+                    fishingRod = entity;
+                    LastPos = entity.Location;
+                    isFishing = true;
+                }
+            }
+        }
+        public override void OnEntityDespawn(Entity entity)
+        {
+            if(entity.TypeID == 102)
+            {
+                if(entity.ID == fishingRod.ID)
+                {
+                    isFishing = false;
+                }
             }
         }
         public override void OnEntityMove(Entity entity)
         {
-            if (fishingRod.ContainsKey(entity.ID))
+            if (isFishing)
             {
-                Location Pos = entity.Location;
-                Double Dx = LastPos.X - Pos.X;
-                Double Dy = LastPos.Y - Pos.Y;
-                Double Dz = LastPos.Z - Pos.Z;
-                LastPos = Pos;
-                // check if fishing hook is stationary
-                if (Dx == 0 && Dz == 0)
+                if (fishingRod.ID == entity.ID)
                 {
-                    if (Math.Abs(Dy) > fishingHookThreshold)
+                    Location Pos = entity.Location;
+                    Double Dx = LastPos.X - Pos.X;
+                    Double Dy = LastPos.Y - Pos.Y;
+                    Double Dz = LastPos.Z - Pos.Z;
+                    LastPos = Pos;
+                    // check if fishing hook is stationary
+                    if (Dx == 0 && Dz == 0)
                     {
-                        // caught
-                        // prevent triggering multiple time
-                        if ((DateTime.Now - CaughtTime).TotalSeconds > 1)
+                        if (Math.Abs(Dy) > fishingHookThreshold)
                         {
-                            OnCaughtFish();
-                            CaughtTime = DateTime.Now;
+                            // caught
+                            // prevent triggering multiple time
+                            if ((DateTime.Now - CaughtTime).TotalSeconds > 1)
+                            {
+                                OnCaughtFish();
+                                CaughtTime = DateTime.Now;
+                            }
                         }
                     }
+                    fishingRod = entity;
                 }
-                fishingRod[entity.ID] = entity;
             }
         }
         
@@ -68,14 +86,14 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void OnCaughtFish()
         {
-            ConsoleIO.WriteLine("Caught a fish!");
+            ConsoleIO.WriteLine(GetTimestamp()+": Caught a fish!");
             // retract fishing rod
             UseItemOnHand();
             if (inventoryEnabled)
             {
                 if (!hasFishingRod())
                 {
-                    ConsoleIO.WriteLine("No Fishing Rod on hand. Maybe broken?");
+                    ConsoleIO.WriteLine(GetTimestamp() + ": No Fishing Rod on hand. Maybe broken?");
                     return;
                 }
             }
