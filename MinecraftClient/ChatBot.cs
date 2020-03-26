@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient
 {
@@ -620,6 +621,11 @@ namespace MinecraftClient
             return Handler.GetEntityHandlingEnabled();
         }
 
+        public bool GetInventoryEnabled()
+        {
+            return Handler.GetInventoryEnabled();
+        }
+
         /// <summary>
         /// Get the current Minecraft World
         /// </summary>
@@ -805,6 +811,12 @@ namespace MinecraftClient
         protected bool UseItemOnHand()
         {
             return Handler.UseItemOnHand();
+        }
+
+        protected Container GetPlayerInventory()
+        {
+            Container container = Handler.GetPlayerInventory();
+            return new Container(container.ID,container.Type,container.Title,container.Items);
         }
     }
 }

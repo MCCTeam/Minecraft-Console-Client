@@ -22,6 +22,7 @@ namespace MinecraftClient.Protocol.Handlers
         TeleportConfirm,
         HeldItemChange,
         InteractEntity,
-        UseItem
+        UseItem,
+        PlayerBlockPlacement
     }
 }

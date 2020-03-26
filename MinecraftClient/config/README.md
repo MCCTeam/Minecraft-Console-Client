@@ -230,6 +230,27 @@ The AutoRespond bot allows you to automatically react on specific chat messages 
 You can use either a string to detect in chat messages, or an advanced regular expression.
 For more information about how to define match rules, please refer to sample-matches.ini
 
+Using the Auto Attack
+------
+
+The AutoAttack bot allows you to automatically attack mobs around you (precisely within radius of 4).
+To use this bot, you will need to enable **Entity Handling** in the config file first.
+
+Using the Auto Fishing
+------
+
+The AutoFish bot can automatically fish for you.
+To use this bot, you will need to enable **Entity Handling** in the config file first.
+If you want to get an alert message when the fishing rod was broken, enable **Inventory Handling** in the config file.
+A fishing rod with **Mending enchantment** is strongly recommended.
+
+Steps for using this bot:
+1. Hold a fishing rod and aim towards the sea before login with MCC
+2. Make sure AutoFish is enabled in config file
+3. Login with MCC
+4. Do /useitem and you should see "threw a fishing rod"
+5. To stop fishing, do /useitem again right after the message "threw a fishing rod"
+
 Disclaimer
 ------
 

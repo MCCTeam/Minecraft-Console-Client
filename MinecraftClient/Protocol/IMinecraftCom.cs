@@ -84,11 +84,15 @@ namespace MinecraftClient.Protocol
         /// <param name="data">packet Data</param>
         /// <returns>True if message was successfully sent</returns>
         bool SendPluginChannelPacket(string channel, byte[] data);
-        
+
+        bool SendHeldItemChange(short slot);
+
         bool SendInteractEntityPacket(int EntityID, int type);
         bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand);
         bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z);
 
         bool SendUseItemPacket(int hand);
+
+        bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock);
     }
 }

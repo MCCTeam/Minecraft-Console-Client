@@ -8,7 +8,8 @@ namespace MinecraftClient.Mapping
     public class Entity
     {
         public int ID;
-        public int Type;
+        public int TypeID;
+        public EntityType Type;
         public string Name;
         public Location Location;
         public Entity(int ID, Location location)
@@ -16,17 +17,31 @@ namespace MinecraftClient.Mapping
             this.ID = ID;
             this.Location = location;
         }
-        public Entity(int ID, int Type, Location location)
+        public Entity(int ID, int TypeID, Location location)
         {
             this.ID = ID;
-            this.Type = Type;
-            this.Name = GetMobName(Type);
+            this.TypeID = TypeID;
+            this.Name = GetMobName(TypeID);
             this.Location = location;
         }
-        public Entity(int ID, int Type, string Name, Location location)
+        public Entity(int ID, int TypeID, EntityType type, Location location)
         {
             this.ID = ID;
-            this.Type = Type;
+            this.TypeID = TypeID;
+            this.Type = type;
+            this.Name = GetMobName(TypeID);
+            this.Location = location;
+        }
+        public Entity(int ID, EntityType type, Location location)
+        {
+            this.ID = ID;
+            this.Type = type;
+            this.Location = location;
+        }
+        public Entity(int ID, int TypeID, string Name, Location location)
+        {
+            this.ID = ID;
+            this.TypeID = TypeID;
             this.Name = Name;
             this.Location = location;
         }
@@ -80,7 +95,7 @@ namespace MinecraftClient.Mapping
         }
         public string GetMobName()
         {
-            return GetMobName(Type);
+            return GetMobName(TypeID);
         }
     }
 }
