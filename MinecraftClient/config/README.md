@@ -235,6 +235,7 @@ Using the Auto Attack
 
 The AutoAttack bot allows you to automatically attack mobs around you (precisely within radius of 4 block).
 To use this bot, you will need to enable **Entity Handling** in the config file first.
+**You have been reminded that we will not take any responsible if you got banned by your server while using this bot.**
 
 Using the Auto Fishing
 ------
