@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "debug"; } }
         public override string CMDDesc { get { return "debug [on|off]: toggle debug messages."; } }
 
-        public override string Run(McTcpClient handler, string command)
+        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
             if (hasArg(command))
             {

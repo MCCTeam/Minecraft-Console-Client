@@ -313,8 +313,9 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="command">The command</param>
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        public bool PerformInternalCommand(string command, ref string response_msg)
+        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
             /* Load commands from the 'Commands' namespace */
 
@@ -363,7 +364,7 @@ namespace MinecraftClient
             }
             else if (cmds.ContainsKey(command_name))
             {
-                response_msg = cmds[command_name].Run(this, command);
+                response_msg = cmds[command_name].Run(this, command, localVars);
             }
             else
             {

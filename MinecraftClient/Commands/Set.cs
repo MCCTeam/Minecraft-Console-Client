@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "set"; } }
         public override string CMDDesc { get { return "set varname=value: set a custom %variable%."; } }
 
-        public override string Run(McTcpClient handler, string command)
+        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
             if (hasArg(command))
             {

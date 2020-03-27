@@ -792,11 +792,12 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Replace %variables% with their value
+        /// Replace %variables% with their value from global AppVars
         /// </summary>
         /// <param name="str">String to parse</param>
+        /// <param name="localContext">Optional local variables overriding global variables</param>
         /// <returns>Modifier string</returns>
-        public static string ExpandVars(string str)
+        public static string ExpandVars(string str, Dictionary<string, object> localVars = null)
         {
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < str.Length; i++)
@@ -808,7 +809,7 @@ namespace MinecraftClient
 
                     for (int j = i + 1; j < str.Length; j++)
                     {
-                        if (!char.IsLetterOrDigit(str[j]))
+                        if (!char.IsLetterOrDigit(str[j]) && str[j] != '_')
                         {
                             if (str[j] == '%')
                                 varname_ok = var_name.Length > 0;
@@ -829,7 +830,11 @@ namespace MinecraftClient
                             case "serverip": result.Append(ServerIP); break;
                             case "serverport": result.Append(ServerPort); break;
                             default:
-                                if (AppVars.ContainsKey(varname_lower))
+                                if (localVars != null && localVars.ContainsKey(varname_lower))
+                                {
+                                    result.Append(localVars[varname_lower].ToString());
+                                }
+                                else if (AppVars.ContainsKey(varname_lower))
                                 {
                                     result.Append(AppVars[varname_lower].ToString());
                                 }

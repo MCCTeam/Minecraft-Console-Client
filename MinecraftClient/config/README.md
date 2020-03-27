@@ -1,4 +1,4 @@
-Minecraft Client v1.13.0 for Minecraft 1.4.6 to 1.13.2 - By ORelio & Contributors
+Minecraft Console Client User Manual
 ======
 
 **Thanks for dowloading Minecraft Console Client!**
@@ -17,7 +17,7 @@ On Mac or Linux you need to install the Mono Runtime:
  - On Linux: sudo apt-get install mono-runtime libmono-reflection-cil
 Then, open a terminal in this folder and run "mono MinecraftClient.exe".
 If you cannot authenticate on Mono, you'll need to run "mozroots --import --ask-remove" once.
-If Mono crashes, retry with mono-complete instead of mono-runtime. Mono v4.0 to 4.2 is recommended.
+If Mono crashes, retry with mono-complete instead of mono-runtime. Use at least Mono v4.0.
 
 Using Configuration files & Enabling bots
 ------
@@ -235,7 +235,6 @@ Using the Auto Attack
 
 The AutoAttack bot allows you to automatically attack mobs around you (precisely within radius of 4 block).
 To use this bot, you will need to enable **Entity Handling** in the config file first.
-**You have been reminded that we will not take any responsible if you got banned by your server while using this bot.**
 
 Using the Auto Fishing
 ------
@@ -249,18 +248,20 @@ Steps for using this bot:
 1. Hold a fishing rod and aim towards the sea before login with MCC
 2. Make sure AutoFish is enabled in config file
 3. Login with MCC
-4. Do /useitem and you should see "threw a fishing rod"
-5. To stop fishing, do /useitem again
+4. Do `/useitem` and you should see "threw a fishing rod"
+5. To stop fishing, do `/useitem` again
 
 Disclaimer
 ------
 
-Even if everything should work, I am not responsible of any damage this app could cause to your computer or your server.
+Even if everything should work, We are not responsible for any damage this app could cause to your computer or your server.
 This app does not steal your password. If you don't trust it, don't use it or check & compile from the source code.
 
 Also, remember that when you connect to a server with this program, you will appear where you left the last time.
-This means that you can die if you log in in an unsafe place on a survival server!
+This means that **you can die if you log in in an unsafe place on a survival server!**
 Use the script scheduler bot to send a teleport command after logging in.
+
+You have been reminded that **you may get banned** by your server for using this program. Use accordinly with server rules.
 
 License
 ------
@@ -294,8 +295,8 @@ would not have been possible without the help of talented contributors:
 **Code contributions:**
 
   Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, dbear20, dogwatch, initsuj,
-  JamieSinn, justcool393, lokulin, maxpowa, medxo, Pokechu22, repository, TheMeq, TheSnoozer,
-  vkorn, v1RuX, ZizzyDizzyMC, milutinke
+  JamieSinn, justcool393, lokulin, maxpowa, medxo, milutinke, Pokechu22, ReinforceZwei,
+  repository, TheMeq, TheSnoozer, vkorn, v1RuX, yunusemregul, ZizzyDizzyMC
 
 **Libraries:**
 
@@ -324,5 +325,5 @@ Like Minecraft Console Client? You can buy me a coffee here:
 Code contributions, bug reports and any kind of comments are also highly appreciated :)
 
 +-----------------------------------+
-| © 2012-2019 ORelio & Contributors |
+| © 2012-2020 ORelio & Contributors |
 +-----------------------------------+

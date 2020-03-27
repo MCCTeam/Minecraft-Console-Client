@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "getinventory"; } }
         public override string CMDDesc { get { return "getinventory: Show your inventory."; } }
 
-        public override string Run(McTcpClient handler, string command)
+        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
             Dictionary<int,Item> items = handler.GetPlayerInventory().Items;
             foreach(KeyValuePair<int,Item> a in items)
