@@ -413,6 +413,18 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Get byte array representing a short
+        /// </summary>
+        /// <param name="number">Short to process</param>
+        /// <returns>Array ready to send</returns>
+        public byte[] GetShort(short number)
+        {
+            byte[] theShort = BitConverter.GetBytes(number);
+            Array.Reverse(theShort);
+            return theShort;
+        }
+
+        /// <summary>
         /// Get byte array representing a double
         /// </summary>
         /// <param name="number">Double to process</param>

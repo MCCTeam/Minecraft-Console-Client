@@ -1366,10 +1366,7 @@ namespace MinecraftClient.Protocol.Handlers
             try
             {
                 List<byte> packet = new List<byte>();
-                // short to byte (?
-                byte[] b = BitConverter.GetBytes(slot);
-                Array.Reverse(b);
-                packet.AddRange(b);
+                packet.AddRange(dataTypes.GetShort(slot));
                 SendPacket(PacketOutgoingType.HeldItemChange, packet);
                 return true;
             }
