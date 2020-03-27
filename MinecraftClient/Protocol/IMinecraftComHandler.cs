@@ -128,27 +128,102 @@ namespace MinecraftClient.Protocol
         /// <param name="data">The data from the channel</param>
         void OnPluginChannelMessage(string channel, byte[] data);
 
+        /// <summary>
+        /// Called when a non-living entity has spawned
+        /// </summary>
+        /// <param name="EntityID">Entity ID</param>
+        /// <param name="EntityType">Entity Type ID</param>
+        /// <param name="UUID">Entity UUID</param>
+        /// <param name="location">Entity location</param>
         void OnSpawnEntity(int EntityID, int EntityType, Guid UUID, Location location);
 
+        /// <summary>
+        /// Called when a living entity has spawned
+        /// </summary>
+        /// <param name="EntityID">Entity ID</param>
+        /// <param name="EntityType">Entity Type ID</param>
+        /// <param name="UUID">Entity UUID</param>
+        /// <param name="location">Entity location</param>
         void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location);
 
+        /// <summary>
+        /// Called when a player has spawned
+        /// </summary>
+        /// <param name="EntityID">Entity ID</param>
+        /// <param name="UUID">Entity UUID</param>
+        /// <param name="location">Entity location</param>
+        /// <param name="Yaw">Player head yaw</param>
+        /// <param name="Pitch">Player head pitch</param>
         void OnSpawnPlayer(int EntityID, Guid UUID, Location location, byte Yaw, byte Pitch);
 
+        /// <summary>
+        /// Called when entities have despawned
+        /// </summary>
+        /// <param name="EntityID">List of Entity ID that have despawned</param>
         void OnDestroyEntities(int[] EntityID);
 
+        /// <summary>
+        /// Called when an entity moved by coordinate offset
+        /// </summary>
+        /// <param name="EntityID">Entity ID</param>
+        /// <param name="Dx">X offset</param>
+        /// <param name="Dy">Y offset</param>
+        /// <param name="Dz">Z offset</param>
+        /// <param name="onGround">TRUE if on ground</param>
         void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround);
 
-        void OnEntityProperties(int EntityID, Dictionary<string, Double> prop);
-
-        void OnTimeUpdate(long WorldAge, long TimeOfDay);
-
+        /// <summary>
+        /// Called when an entity moved to fixed coordinates
+        /// </summary>
+        /// <param name="EntityID">Entity ID</param>
+        /// <param name="Dx">X</param>
+        /// <param name="Dy">Y</param>
+        /// <param name="Dz">Z</param>
+        /// <param name="onGround">TRUE if on ground</param>
         void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround);
 
+        /// <summary>
+        /// Called when additional properties have been received for an entity
+        /// </summary>
+        /// <param name="EntityID">Entity ID</param>
+        /// <param name="prop">Dictionary of properties</param>
+        void OnEntityProperties(int EntityID, Dictionary<string, Double> prop);
+
+        /// <summary>
+        /// Called when the world age has been updated
+        /// </summary>
+        /// <param name="WorldAge">World age</param>
+        /// <param name="TimeOfDay">Time of Day</param>
+        void OnTimeUpdate(long WorldAge, long TimeOfDay);
+
+        /// <summary>
+        /// Called when inventory items have been received
+        /// </summary>
+        /// <param name="type">Inventory type</param>
+        /// <param name="itemList">Item list</param>
         void OnWindowItems(int type, Dictionary<int, MinecraftClient.Inventory.Item> itemList);
 
-        void OnSetSlot(byte WindowID, short SlotID, bool Present);
-        void OnSetSlot(byte WindowID, short SlotID, bool Present, int ItemID, byte Count, Dictionary<string, object> NBT);
+        /// <summary>
+        /// Called when a single slot has been cleared inside an inventory
+        /// </summary>
+        /// <param name="WindowID">Inventory ID</param>
+        /// <param name="SlotID">Slot ID</param>
+        void OnSlotClear(byte WindowID, short SlotID);
 
+        /// <summary>
+        /// Called when a single slot has been updated inside an inventory
+        /// </summary>
+        /// <param name="WindowID">Inventory ID</param>
+        /// <param name="SlotID">Slot ID</param>
+        /// <param name="ItemID">Item ID</param>
+        /// <param name="Count">Item Count</param>
+        /// <param name="NBT">Item Metadata</param>
+        void OnSetSlot(byte WindowID, short SlotID, int ItemID, byte Count, Dictionary<string, object> NBT);
+
+        /// <summary>
+        /// Called when the Player entity ID has been received from the server
+        /// </summary>
+        /// <param name="EntityID">Player entity ID</param>
         void SetPlayerEntityID(int EntityID);
     }
 }

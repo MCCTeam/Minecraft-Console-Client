@@ -6,6 +6,9 @@ using System.Text;
 
 namespace MinecraftClient.ChatBots
 {
+    /// <summary>
+    /// The AutoAttack bot will automatically attack any hostile mob close to the player
+    /// </summary>
     class AutoAttack : ChatBot
     {
         private Dictionary<int, Entity> entitiesToAttack = new Dictionary<int, Entity>(); // mobs within attack range
@@ -48,7 +51,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntitySpawn(Entity entity)
         {
-            if (entity.GetMobName() != "")
+            if (entity.IsHostile())
             {
                 entitiesToTrack.Add(entity.ID, entity);
             }
@@ -64,10 +67,9 @@ namespace MinecraftClient.ChatBots
         {
             if (entitiesToTrack.ContainsKey(entity.ID))
             {
-                Double distance = Entity.CalculateDistance(GetCurrentLocation(), entity.Location);
-                if(distance < attackRange)
+                if (GetCurrentLocation().Distance(entity.Location) < attackRange)
                 {
-                    if(!entitiesToAttack.ContainsKey(entity.ID))
+                    if (!entitiesToAttack.ContainsKey(entity.ID))
                         entitiesToAttack.Add(entity.ID, entity);
                 }
             }

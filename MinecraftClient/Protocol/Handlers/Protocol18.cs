@@ -589,7 +589,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 short ItemID = dataTypes.ReadNextShort(packetData);
                                 if (ItemID == -1)
                                 {
-                                    handler.OnSetSlot(WindowID, SlotID, false);
+                                    handler.OnSlotClear(WindowID, SlotID);
                                 }
                                 else
                                 {
@@ -601,7 +601,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     {
                                         NBT = dataTypes.ReadNextNbt(packetData);
                                     }
-                                    handler.OnSetSlot(WindowID, SlotID, true, ItemID, Count, NBT);
+                                    handler.OnSetSlot(WindowID, SlotID, ItemID, Count, NBT);
                                 }
                             }
                             else
@@ -615,11 +615,11 @@ namespace MinecraftClient.Protocol.Handlers
                                     int ItemID = dataTypes.ReadNextVarInt(packetData);
                                     byte Count = dataTypes.ReadNextByte(packetData);
                                     Dictionary<string, object> NBT = dataTypes.ReadNextNbt(packetData);
-                                    handler.OnSetSlot(WindowID, SlotID, Present, ItemID, Count, NBT);
+                                    handler.OnSetSlot(WindowID, SlotID, ItemID, Count, NBT);
                                 }
                                 else
                                 {
-                                    handler.OnSetSlot(WindowID, SlotID, Present);
+                                    handler.OnSlotClear(WindowID, SlotID);
                                 }
                             }
                         }

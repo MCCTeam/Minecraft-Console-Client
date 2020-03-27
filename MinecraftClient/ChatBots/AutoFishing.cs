@@ -8,6 +8,10 @@ using MinecraftClient.Mapping;
 
 namespace MinecraftClient.ChatBots
 {
+    /// <summary>
+    /// The AutoFishing bot semi-automates fishing.
+    /// The player needs to have a fishing rod in hand, then manually send it using the UseItem command.
+    /// </summary>
     class AutoFishing : ChatBot
     {
         private Entity fishingRod;
@@ -32,7 +36,7 @@ namespace MinecraftClient.ChatBots
         {
             if (entity.TypeID == 102)
             {
-                if (Entity.CalculateDistance(GetCurrentLocation(), entity.Location) < 2 && !isFishing)
+                if (GetCurrentLocation().Distance(entity.Location) < 2 && !isFishing)
                 {
                     ConsoleIO.WriteLine("Threw a fishing rod");
                     fishingRod = entity;
@@ -41,6 +45,7 @@ namespace MinecraftClient.ChatBots
                 }
             }
         }
+
         public override void OnEntityDespawn(Entity entity)
         {
             if(entity.TypeID == 102)
@@ -51,6 +56,7 @@ namespace MinecraftClient.ChatBots
                 }
             }
         }
+
         public override void OnEntityMove(Entity entity)
         {
             if (isFishing)
@@ -107,9 +113,14 @@ namespace MinecraftClient.ChatBots
             });
         }
 
+        /// <summary>
+        /// Check whether the player has a fishing rod in inventory
+        /// </summary>
+        /// <returns>TRUE if the player has a fishing rod</returns>
         public bool hasFishingRod()
         {
-            if (!inventoryEnabled) return false;
+            if (!inventoryEnabled)
+                return false;
             int start = 36;
             int end = 44;
             Inventory.Container container = GetPlayerInventory();

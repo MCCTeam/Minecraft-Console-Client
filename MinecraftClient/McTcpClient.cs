@@ -565,6 +565,12 @@ namespace MinecraftClient
             return entityHandlingEnabled;
         }
 
+        /// <summary>
+        /// Enable or disable Entity handling.
+        /// Please note that Enabling will be deferred until next relog.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
         public bool SetEntityHandlingEnabled(bool enabled)
         {
             if (!enabled)
@@ -594,7 +600,6 @@ namespace MinecraftClient
         {
             return playerInventory;
         }
-        // TODO: add command for displaying player inventory
 
         /// <summary>
         /// Called when the server sends a new player location,
@@ -791,8 +796,8 @@ namespace MinecraftClient
         /// <summary>
         /// When received window items from server.
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="itemList"></param>
+        /// <param name="type">Inventory type</param>
+        /// <param name="itemList">Item list</param>
         public void OnWindowItems(int type, Dictionary<int, Inventory.Item> itemList)
         {
             // 0 is player inventory
@@ -800,15 +805,28 @@ namespace MinecraftClient
                 playerInventory.Items = itemList;
         }
 
-        public void OnSetSlot(byte WindowID, short SlotID, bool Present)
+        /// <summary>
+        /// When a slot is cleared inside window items
+        /// </summary>
+        /// <param name="WindowID">Window ID</param>
+        /// <param name="SlotID">Slot ID</param>
+        public void OnSlotClear(byte WindowID, short SlotID)
         {
-            if(WindowID == 0)
+            if (WindowID == 0 && playerInventory.Items.ContainsKey(SlotID))
             {
-                if (playerInventory.Items.ContainsKey(SlotID))
-                    playerInventory.Items.Remove(SlotID);
+                playerInventory.Items.Remove(SlotID);
             }
         }
-        public void OnSetSlot(byte WindowID, short SlotID, bool Present, int ItemID, byte Count, Dictionary<string, object> NBT)
+
+        /// <summary>
+        /// When a slot is set inside window items
+        /// </summary>
+        /// <param name="WindowID">Window ID</param>
+        /// <param name="SlotID">Slot ID</param>
+        /// <param name="ItemID">Item ID</param>
+        /// <param name="Count">Item Count</param>
+        /// <param name="NBT">Item Metadata</param>
+        public void OnSetSlot(byte WindowID, short SlotID, int ItemID, byte Count, Dictionary<string, object> NBT)
         {
             if (WindowID == 0)
             {
@@ -912,8 +930,6 @@ namespace MinecraftClient
                     pitch = null;
                 }
             }
-
-            
         }
 
         /// <summary>
@@ -1275,12 +1291,16 @@ namespace MinecraftClient
         /// <summary>
         /// Set client player's ID for later receiving player's own properties
         /// </summary>
-        /// <param name="EntityID"></param>
+        /// <param name="EntityID">Player Entity ID</param>
         public void SetPlayerEntityID(int EntityID)
         {
             playerEntityID = EntityID;
         }
 
+        /// <summary>
+        /// Use the item currently in the player's hand
+        /// </summary>
+        /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnHand()
         {
             return handler.SendUseItemPacket(0);
@@ -1296,13 +1316,24 @@ namespace MinecraftClient
         {
             return handler.SendInteractEntityPacket(EntityID, type);
         }
-        // not work :(
+
+        /// <summary>
+        /// Place the block at hand in the Minecraft world
+        /// </summary>
+        /// <param name="location">Location to place block to</param>
+        /// <returns>TRUE if successfully placed</returns>
         public bool PlaceBlock(Location location)
         {
+            //WORK IN PROGRESS. MAY NOT WORK YET
             ConsoleIO.WriteLine(location.ToString());
             return handler.SendPlayerBlockPlacement(0, location, 1, 0.5f, 0.5f, 0.5f, false);
         }
 
+        /// <summary>
+        /// Change active slot in the player inventory
+        /// </summary>
+        /// <param name="slot">Slot to activate (0 to 8)</param>
+        /// <returns></returns>
         public bool ChangeSlot(short slot)
         {
             if (slot >= 0 && slot <= 8)

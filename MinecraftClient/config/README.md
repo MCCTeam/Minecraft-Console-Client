@@ -261,7 +261,7 @@ Also, remember that when you connect to a server with this program, you will app
 This means that **you can die if you log in in an unsafe place on a survival server!**
 Use the script scheduler bot to send a teleport command after logging in.
 
-You have been reminded that **you may get banned** by your server for using this program. Use accordinly with server rules.
+We remind you that **you may get banned** by your server for using this program. Use accordingly with server rules.
 
 License
 ------

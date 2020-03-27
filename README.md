@@ -32,15 +32,15 @@ Edit `MinecraftClient.csproj` to set the Build target to `Release` on [line 4](h
 
 ### On Windows
 
-1. Locate MSBuild.exe for .NET 4 inside `C:\Windows\Microsoft.NET\Framework\v4.X.XXXXX`
+1. Locate `MSBuild.exe` for .NET 4 inside `C:\Windows\Microsoft.NET\Framework\v4.X.XXXXX`
 2. Drag and drop `MinecraftClient.csproj` over `MSBuild.exe` to launch the build
-3. If the build succeededs, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
+3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
 
 ### On Mac and Linux
 
 1. Install the [Mono Framework](https://www.mono-project.com/download/stable/#download-lin) if not already installed
 2. Run `msbuild MinecraftClient.csproj` in a terminal
-3. If the build succeededs, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
+3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
 
 ## How to contribute
 
