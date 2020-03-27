@@ -20,6 +20,28 @@ This exe file is a .NET binary which also works on Mac and Linux.
 Check out the [sample configuration files](MinecraftClient/config/) which includes the how-to-use README.
 Help and more info is also available on the [Minecraft Forum thread](http://www.minecraftforum.net/topic/1314800-/).<br/>
 
+## Building from source
+
+First of all, get a [zip of source code](https://github.com/ORelio/Minecraft-Console-Client/archive/master.zip), extract it and navigate to the `MinecraftClient` folder.
+
+Edit `MinecraftClient.csproj` to set the Build target to `Release` on [line 4](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4):
+
+```xml
+<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+```
+
+### On Windows
+
+1. Locate MSBuild.exe for .NET 4 inside `C:\Windows\Microsoft.NET\Framework\v4.X.XXXXX`
+2. Drag and drop `MinecraftClient.csproj` over `MSBuild.exe` to launch the build
+3. If the build succeededs, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
+
+### On Mac and Linux
+
+1. Install the [Mono Framework](https://www.mono-project.com/download/stable/#download-lin) if not already installed
+2. Run `msbuild MinecraftClient.csproj` in a terminal
+3. If the build succeededs, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
+
 ## How to contribute
 
 If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request. The *Indev* branch for contributions to future stable versions is no longer used as MCC is currently distributed as development builds only.

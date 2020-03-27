@@ -239,7 +239,7 @@ namespace MinecraftClient
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command to process</param>
-        /// <param name="localVars">Local variables passed along with the script</param>
+        /// <param name="localVars">Local variables passed along with the internal command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
         new public bool PerformInternalCommand(string command, Dictionary<string, object> localVars = null)
         {
