@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using MinecraftClient.Mapping;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.ChatBots
 {
@@ -124,11 +125,16 @@ namespace MinecraftClient.ChatBots
             int start = 36;
             int end = 44;
             Inventory.Container container = GetPlayerInventory();
-            foreach(KeyValuePair<int,Inventory.Item> a in container.Items)
+
+            foreach (KeyValuePair<int, Item> a in container.Items)
             {
-                if (a.Key < start || a.Key > end) continue;
-                if (a.Value.ID == 622) return true;
+                if (a.Key < start || a.Key > end)
+                    continue;
+
+                if (a.Value.Type == ItemType.FishingRod)
+                    return true;
             }
+
             return false;
         }
     }

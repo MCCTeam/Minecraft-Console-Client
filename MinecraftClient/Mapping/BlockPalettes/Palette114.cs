@@ -5,9 +5,9 @@ namespace MinecraftClient.Mapping.BlockPalettes
 {
     /// <summary>
     /// Defines mappings for Minecraft 1.14.
-    /// Automatically generated using PaletteGenerator.cs
+    /// Automatically generated using BlockPaletteGenerator.cs
     /// </summary>
-    public class Palette114 : PaletteMapping
+    public class Palette114 : BlockPaletteMapping
     {
         private static Dictionary<int, Material> materials = new Dictionary<int, Material>();
 

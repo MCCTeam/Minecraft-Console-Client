@@ -11,9 +11,9 @@ namespace MinecraftClient.Inventory
     public class Item
     {
         /// <summary>
-        /// Item Type ID
+        /// Item Type
         /// </summary>
-        public int ID;
+        public ItemType Type;
 
         /// <summary>
         /// Item Count
@@ -32,6 +32,20 @@ namespace MinecraftClient.Inventory
         public Dictionary<string, object> NBT;
 
         /// <summary>
+        /// Create an item with Type ID, Count and Slot ID
+        /// </summary>
+        /// <param name="ID">Item Type ID</param>
+        /// <param name="Count">Item Count</param>
+        /// <param name="SlotID">Item Slot ID in parent inventory</param>
+        public Item(int id, int count, int slotID)
+        {
+            this.Type = (ItemType)id;
+            this.Count = count;
+            this.SlotID = slotID;
+            this.NBT = new Dictionary<string, object>();
+        }
+
+        /// <summary>
         /// Create an item with Type ID, Count, Slot ID and Metadata
         /// </summary>
         /// <param name="ID">Item Type ID</param>
@@ -40,24 +54,10 @@ namespace MinecraftClient.Inventory
         /// <param name="NBT">Item Metadata</param>
         public Item(int id, int count, int slotID, Dictionary<string, object> nbt)
         {
-            this.ID = id;
+            this.Type = (ItemType)id;
             this.Count = count;
             this.SlotID = slotID;
             this.NBT = nbt;
-        }
-
-        /// <summary>
-        /// Create an item with Type ID, Count and Slot ID
-        /// </summary>
-        /// <param name="ID">Item Type ID</param>
-        /// <param name="Count">Item Count</param>
-        /// <param name="SlotID">Item Slot ID in parent inventory</param>
-        public Item(int id, int count, int slotID)
-        {
-            this.ID = id;
-            this.Count = count;
-            this.SlotID = slotID;
-            this.NBT = new Dictionary<string, object>();
         }
     }
 }

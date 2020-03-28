@@ -13,12 +13,16 @@ namespace MinecraftClient.Commands
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
-            Dictionary<int,Item> items = handler.GetPlayerInventory().Items;
-            foreach(KeyValuePair<int,Item> a in items)
+            List<string> response = new List<string>();
+
+            response.Add("Inventory slots:");
+
+            foreach (KeyValuePair<int, Item> item in handler.GetPlayerInventory().Items)
             {
-                ConsoleIO.WriteLine("Slot: "+a.Key+" ItemID: " + a.Value.ID + ", Count: " + a.Value.Count);
+                response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
             }
-            return "";
+
+            return String.Join("\n", response.ToArray());
         }
     }
 }

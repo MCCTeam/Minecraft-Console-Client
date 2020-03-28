@@ -777,7 +777,7 @@ namespace MinecraftClient
             {
                 ConsoleIO.WriteLineFormatted("§8An Inventory opened: " + inventory.Type + " - " + inventory.Title);
                 foreach (var item in inventory.Items)
-                    ConsoleIO.WriteLineFormatted("§8 - Slot " + item.Key + ": " + item.Value.ID + " x" + item.Value.Count);
+                    ConsoleIO.WriteLineFormatted("§8 - Slot " + item.Key + ": " + item.Value.Type + " x" + item.Value.Count);
             }
         }
 
@@ -813,7 +813,7 @@ namespace MinecraftClient
             {
                 ConsoleIO.WriteLineFormatted("§8Received Window of type " + type);
                 foreach (var item in itemList)
-                    ConsoleIO.WriteLineFormatted("§8 - Slot " + item.Key + ": " + item.Value.ID + " x" + item.Value.Count);
+                    ConsoleIO.WriteLineFormatted("§8 - Slot " + item.Key + ": " + item.Value.Type + " x" + item.Value.Count);
             }
         }
 

@@ -105,12 +105,14 @@
     <Compile Include="Inventory\Container.cs" />
     <Compile Include="Inventory\ContainerType.cs" />
     <Compile Include="Inventory\Item.cs" />
+    <Compile Include="Inventory\ItemType.cs" />
+    <Compile Include="Inventory\ItemTypeGenerator.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette112.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette113.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette114.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette115.cs" />
-    <Compile Include="Mapping\BlockPalettes\PaletteGenerator.cs" />
-    <Compile Include="Mapping\BlockPalettes\PaletteMapping.cs" />
+    <Compile Include="Mapping\BlockPalettes\BlockPaletteGenerator.cs" />
+    <Compile Include="Mapping\BlockPalettes\BlockPaletteMapping.cs" />
     <Compile Include="Mapping\Entity.cs" />
     <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
