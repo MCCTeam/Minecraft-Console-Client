@@ -504,9 +504,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 ContainerTypeOld inventoryType = (ContainerTypeOld)Enum.Parse(typeof(ContainerTypeOld), type);
                                 string title = dataTypes.ReadNextString(packetData);
                                 byte slots = dataTypes.ReadNextByte(packetData);
-                                
                                 Container inventory = new Container(windowID, inventoryType, title);
-
                                 handler.OnInventoryOpen(inventory);
                             }
                             else
@@ -515,7 +513,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 int WindowType = dataTypes.ReadNextVarInt(packetData);
                                 string title = dataTypes.ReadNextString(packetData);
                                 Container inventory = new Container(WindowID, WindowType, title);
-
                                 handler.OnInventoryOpen(inventory);
                             }
                         }
@@ -524,7 +521,6 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetInventoryEnabled())
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
-
                             handler.OnInventoryClose(windowID);
                         }
                         break;

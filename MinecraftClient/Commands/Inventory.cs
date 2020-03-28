@@ -8,8 +8,8 @@ namespace MinecraftClient.Commands
 {
     class GetInventory : Command
     {
-        public override string CMDName { get { return "getinventory"; } }
-        public override string CMDDesc { get { return "getinventory: Show your inventory."; } }
+        public override string CMDName { get { return "inventory"; } }
+        public override string CMDDesc { get { return "inventory: Show your inventory."; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {

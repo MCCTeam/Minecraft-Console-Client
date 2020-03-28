@@ -5,50 +5,123 @@ using System.Text;
 
 namespace MinecraftClient.Inventory
 {
+    /// <summary>
+    /// Represents a Minecraft inventory (player inventory, chest, etc.)
+    /// </summary>
     public class Container
     {
+        /// <summary>
+        /// ID of the container on the server
+        /// </summary>
         public int ID;
+
+        /// <summary>
+        /// Type of container
+        /// </summary>
         public ContainerType Type;
+
+        /// <summary>
+        /// title of container
+        /// </summary>
         public string Title;
+
+        /// <summary>
+        /// Container Items
+        /// </summary>
         public Dictionary<int, Item> Items;
-        
+
+        /// <summary>
+        /// Create an empty container
+        /// </summary>
         public Container() { }
+
+        /// <summary>
+        /// Create an empty container with ID, Type and Title
+        /// </summary>
+        /// <param name="id">Container ID</param>
+        /// <param name="type">Container Type</param>
+        /// <param name="title">Container Title</param>
         public Container(int id, ContainerType type, string title)
         {
             ID = id;
             Type = type;
             Title = title;
+            Items = new Dictionary<int, Item>();
         }
-        public Container(int id, ContainerType type, string title,Dictionary<int,Item> items)
+
+        /// <summary>
+        /// Create a container with ID, Type, Title and Items
+        /// </summary>
+        /// <param name="id">Container ID</param>
+        /// <param name="type">Container Type</param>
+        /// <param name="title">Container Title</param>
+        /// <param name="items">Container Items (key: slot ID, value: item info)</param>
+        public Container(int id, ContainerType type, string title, Dictionary<int, Item> items)
         {
             ID = id;
             Type = type;
             Title = title;
             Items = items;
         }
+
+        /// <summary>
+        /// Create an empty container with ID, Type and Title
+        /// </summary>
+        /// <param name="id">Container ID</param>
+        /// <param name="type">Container Type</param>
+        /// <param name="title">Container title</param>
         public Container(int id, ContainerTypeOld type, string title)
         {
             ID = id;
             Title = title;
             Type = ConvertType.ToNew(type);
+            Items = new Dictionary<int, Item>();
         }
+
+        /// <summary>
+        /// Create an empty container with ID, Type and Title
+        /// </summary>
+        /// <param name="id">Container ID</param>
+        /// <param name="typeID">Container Type</param>
+        /// <param name="title">Container Title</param>
         public Container(int id, int typeID, string title)
         {
             ID = id;
             Type = GetContainerType(typeID);
             Title = title;
+            Items = new Dictionary<int, Item>();
         }
-        // for player inventory because they dont have ID and title
+
+        /// <summary>
+        /// Create an empty container with Type
+        /// </summary>
+        /// <param name="type">Container Type</param>
         public Container(ContainerType type)
         {
+            ID = -1;
             Type = type;
+            Title = null;
+            Items = new Dictionary<int, Item>();
         }
+
+        /// <summary>
+        /// Create an empty container with T^ype and Items
+        /// </summary>
+        /// <param name="type">Container Type</param>
+        /// <param name="items">Container Items (key: slot ID, value: item info)</param>
         public Container(ContainerType type, Dictionary<int, Item> items)
         {
+            ID = -1;
             Type = type;
+            Title = null;
             Items = items;
         }
 
+        /// <summary>
+        /// Get container type from Type ID
+        /// </summary>
+        /// <param name="typeID">Container Type ID</param>
+        /// <returns>Container Type</returns>
         public static ContainerType GetContainerType(int typeID)
         {
             // https://wiki.vg/Inventory didn't state the inventory ID, assume that list start with 0

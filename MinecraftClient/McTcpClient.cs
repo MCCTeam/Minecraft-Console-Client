@@ -772,7 +772,13 @@ namespace MinecraftClient
             {
                 inventories.Add(inventory);
             }
-            ConsoleIO.WriteLine(inventory.Type.ToString());
+
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLineFormatted("§8An Inventory opened: " + inventory.Type + " - " + inventory.Title);
+                foreach (var item in inventory.Items)
+                    ConsoleIO.WriteLineFormatted("§8 - Slot " + item.Key + ": " + item.Value.ID + " x" + item.Value.Count);
+            }
         }
 
         /// <summary>
@@ -797,12 +803,18 @@ namespace MinecraftClient
         /// When received window items from server.
         /// </summary>
         /// <param name="type">Inventory type</param>
-        /// <param name="itemList">Item list</param>
+        /// <param name="itemList">Item list, key = slot ID, value = Item information</param>
         public void OnWindowItems(int type, Dictionary<int, Inventory.Item> itemList)
         {
             // 0 is player inventory
             if (type == 0)
                 playerInventory.Items = itemList;
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLineFormatted("§8Received Window of type " + type);
+                foreach (var item in itemList)
+                    ConsoleIO.WriteLineFormatted("§8 - Slot " + item.Key + ": " + item.Value.ID + " x" + item.Value.Count);
+            }
         }
 
         /// <summary>
@@ -1017,10 +1029,7 @@ namespace MinecraftClient
         /// <summary>
         /// Get a dictionary of online player names and their corresponding UUID
         /// </summary>
-        /// <returns>
-        ///     dictionary of online player whereby
-        ///     UUID represents the key
-        ///     playername represents the value</returns>
+        /// <returns>Dictionay of online players, key is UUID, value is Player name</returns>
         public Dictionary<string, string> GetOnlinePlayersWithUUID()
         {
             Dictionary<string, string> uuid2Player = new Dictionary<string, string>();

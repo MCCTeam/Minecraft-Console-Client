@@ -91,7 +91,7 @@
     <Compile Include="Commands\ChangeSlot.cs" />
     <Compile Include="Commands\Connect.cs" />
     <Compile Include="Commands\Debug.cs" />
-    <Compile Include="Commands\GetInventory.cs" />
+    <Compile Include="Commands\Inventory.cs" />
     <Compile Include="Commands\Look.cs" />
     <Compile Include="Commands\Move.cs" />
     <Compile Include="Commands\Exit.cs" />
