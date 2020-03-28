@@ -21,9 +21,10 @@ namespace MinecraftClient.Inventory
         public int Count;
 
         /// <summary>
-        /// Slot ID in the parent inventory (-1 means not specified)
+        /// Slot ID in the parent inventory
         /// </summary>
-        public int SlotID = -1;
+        /// <remarks>-1 means currently being dragged by mouse</remarks>
+        public int SlotID;
 
         /// <summary>
         /// Item Metadata
@@ -37,12 +38,12 @@ namespace MinecraftClient.Inventory
         /// <param name="Count">Item Count</param>
         /// <param name="SlotID">Item Slot ID in parent inventory</param>
         /// <param name="NBT">Item Metadata</param>
-        public Item(int ID,int Count,int SlotID, Dictionary<string, object> NBT)
+        public Item(int id, int count, int slotID, Dictionary<string, object> nbt)
         {
-            this.ID = ID;
-            this.Count = Count;
-            this.SlotID = SlotID;
-            this.NBT = NBT;
+            this.ID = id;
+            this.Count = count;
+            this.SlotID = slotID;
+            this.NBT = nbt;
         }
 
         /// <summary>
@@ -51,22 +52,12 @@ namespace MinecraftClient.Inventory
         /// <param name="ID">Item Type ID</param>
         /// <param name="Count">Item Count</param>
         /// <param name="SlotID">Item Slot ID in parent inventory</param>
-        public Item(int ID, int Count, int SlotID)
+        public Item(int id, int count, int slotID)
         {
-            this.ID = ID;
-            this.Count = Count;
-            this.SlotID = SlotID;
-        }
-
-        /// <summary>
-        /// Create an item with Type ID and Count
-        /// </summary>
-        /// <param name="ID">Item Type ID</param>
-        /// <param name="Count">Item Count</param>
-        public Item(int ID, int Count)
-        {
-            this.ID = ID;
-            this.Count = Count;
+            this.ID = id;
+            this.Count = count;
+            this.SlotID = slotID;
+            this.NBT = new Dictionary<string, object>();
         }
     }
 }

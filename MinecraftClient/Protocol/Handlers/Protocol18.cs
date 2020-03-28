@@ -566,7 +566,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         byte itemCount = dataTypes.ReadNextByte(packetData);
                                         dataTypes.ReadNextNbt(packetData);
 
-                                        Item item = new Item(itemID, itemCount);
+                                        Item item = new Item(itemID, itemCount, i);
                                         itemsList.Add(i, item);
                                     }
                                 }
