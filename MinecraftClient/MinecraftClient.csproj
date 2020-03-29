@@ -85,6 +85,8 @@
     <Compile Include="ChatBots\ScriptScheduler.cs" />
     <Compile Include="ChatBots\TestBot.cs" />
     <Compile Include="ChatBot.cs" />
+    <Compile Include="ChatBots\VkMessager.cs" />
+    <Compile Include="Clients\VkLongPoolClient.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Commands\Connect.cs" />
     <Compile Include="Commands\Debug.cs" />

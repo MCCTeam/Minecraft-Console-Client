@@ -149,12 +149,18 @@ namespace MinecraftClient
         public static bool AutoRespond_Enabled = false;
         public static string AutoRespond_Matches = "matches.ini";
 
+        //Auto Respond
+        public static bool VkMessager_Enabled = false;
+        public static string VkMessager_VkToken = "";
+        public static string VkMessager_TargetChatId = "";
+        public static string VkMessager_BotCommunityId = "";
+
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, VkMessager };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -190,6 +196,7 @@ namespace MinecraftClient
                                     case "main": pMode = ParseMode.Main; break;
                                     case "mcsettings": pMode = ParseMode.MCSettings; break;
                                     case "scriptscheduler": pMode = ParseMode.ScriptScheduler; break;
+                                    case "vkmessager": pMode = ParseMode.VkMessager; break;
                                     case "remotecontrol": pMode = ParseMode.RemoteControl; break;
                                     case "proxy": pMode = ParseMode.Proxy; break;
                                     case "appvars": pMode = ParseMode.AppVars; break;
@@ -399,6 +406,16 @@ namespace MinecraftClient
                                                 case "public": ChatFormat_Public = new Regex(argValue); break;
                                                 case "private": ChatFormat_Private = new Regex(argValue); break;
                                                 case "tprequest": ChatFormat_TeleportRequest = new Regex(argValue); break;
+                                            }
+                                            break;
+
+                                        case ParseMode.VkMessager:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": VkMessager_Enabled = str2bool(argValue); break;
+                                                case "vktoken": VkMessager_VkToken = argValue; break;
+                                                case "targetchatid": VkMessager_TargetChatId = argValue; break;
+                                                case "botcommunity": VkMessager_BotCommunityId = argValue; break;
                                             }
                                             break;
 
@@ -636,7 +653,13 @@ namespace MinecraftClient
                 + "\r\n"
                 + "[AutoRespond]\r\n"
                 + "enabled=false\r\n"
-                + "matchesfile=matches.ini\r\n", Encoding.UTF8);
+                + "matchesfile=matches.ini\r\n"
+                + "\r\n"
+                + "[VkMessager]\r\n"
+                + "enabled=false\r\n"
+                + "vktoken=\r\n"
+                + "targetcharid=\r\n"
+                + "botcommunityid=\r\n", Encoding.UTF8);
         }
 
         /// <summary>
