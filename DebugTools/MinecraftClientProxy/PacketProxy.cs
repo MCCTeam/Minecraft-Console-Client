@@ -149,6 +149,22 @@ namespace MinecraftClient.Protocol.Handlers
                             g = readNextBool(ref packetData);
                             Console.WriteLine("[C -> S] Location: " + x + ", " + y + ", " + z + ", (look)" + ", " + g);
                             break;
+                        case 0x09:
+                            byte window = readNextByte(ref packetData);
+                            short slot = readNextShort(ref packetData);
+                            byte button = readNextByte(ref packetData);
+                            short action = readNextShort(ref packetData);
+                            int mode = readNextVarInt(ref packetData);
+                            bool slotPresent = readNextBool(ref packetData);
+                            int itemId = -1;
+                            byte itemCount = 0;
+                            if (slotPresent)
+                            {
+                                itemId = readNextVarInt(ref packetData);
+                                itemCount = readNextByte(ref packetData);
+                            }
+                            Console.WriteLine("[C -> S] Window #" + window + " click: #" + slot + " button " + button + " action " + action + " mode " + mode + " item " + itemId + " x" + itemCount);
+                            break;
                     }
                 }
             }
@@ -207,6 +223,19 @@ namespace MinecraftClient.Protocol.Handlers
         {
             byte[] rawValue = readData(1, ref cache);
             return rawValue[0] != 0;
+        }
+
+        private byte readNextByte(ref byte[] cache)
+        {
+            byte[] rawValue = readData(1, ref cache);
+            return rawValue[0];
+        }
+
+        private short readNextShort(ref byte[] cache)
+        {
+            byte[] rawValue = readData(2, ref cache);
+            Array.Reverse(rawValue); //Endianness
+            return BitConverter.ToInt16(rawValue, 0);
         }
 
         private double readNextDouble(ref byte[] cache)

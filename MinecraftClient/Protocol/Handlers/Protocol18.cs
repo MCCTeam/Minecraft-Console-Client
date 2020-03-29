@@ -41,6 +41,7 @@ namespace MinecraftClient.Protocol.Handlers
         private bool autocomplete_received = false;
         private int autocomplete_transaction_id = 0;
         private readonly List<string> autocomplete_result = new List<string>();
+        private readonly Dictionary<int, short> window_actions = new Dictionary<int, short>();
         private bool login_phase = true;
         private int protocolversion;
         private int currentDimension;
@@ -497,23 +498,27 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.OpenWindow:
                         if (handler.GetInventoryEnabled())
                         {
-                            if (protocolversion < MC114Version) // packet changed at 1.14
+                            if (protocolversion < MC114Version)
                             {
+                                // MC 1.13 or lower
                                 byte windowID = dataTypes.ReadNextByte(packetData);
                                 string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
                                 ContainerTypeOld inventoryType = (ContainerTypeOld)Enum.Parse(typeof(ContainerTypeOld), type);
                                 string title = dataTypes.ReadNextString(packetData);
                                 byte slots = dataTypes.ReadNextByte(packetData);
-                                Container inventory = new Container(windowID, inventoryType, title);
-                                handler.OnInventoryOpen(inventory);
+                                Container inventory = new Container(windowID, inventoryType, ChatParser.ParseText(title));
+                                window_actions[windowID] = 0;
+                                handler.OnInventoryOpen(windowID, inventory);
                             }
                             else
                             {
-                                int WindowID = dataTypes.ReadNextVarInt(packetData);
-                                int WindowType = dataTypes.ReadNextVarInt(packetData);
+                                // MC 1.14 or greater
+                                int windowID = dataTypes.ReadNextVarInt(packetData);
+                                int windowType = dataTypes.ReadNextVarInt(packetData);
                                 string title = dataTypes.ReadNextString(packetData);
-                                Container inventory = new Container(WindowID, WindowType, title);
-                                handler.OnInventoryOpen(inventory);
+                                Container inventory = new Container(windowID, windowType, ChatParser.ParseText(title));
+                                window_actions[windowID] = 0;
+                                handler.OnInventoryOpen(windowID, inventory);
                             }
                         }
                         break;
@@ -521,103 +526,32 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetInventoryEnabled())
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
+                            window_actions[windowID] = 0;
                             handler.OnInventoryClose(windowID);
                         }
                         break;
                     case PacketIncomingType.WindowItems:
                         if (handler.GetInventoryEnabled())
                         {
-                            // MC 1.12.2 or lower
-                            if (protocolversion < MC113Version)
+                            byte windowId = dataTypes.ReadNextByte(packetData);
+                            short elements = dataTypes.ReadNextShort(packetData);
+                            Dictionary<int, Item> inventorySlots = new Dictionary<int, Item>();
+                            for (short slotId = 0; slotId < elements; slotId++)
                             {
-                                byte id = dataTypes.ReadNextByte(packetData);
-                                short elements = dataTypes.ReadNextShort(packetData);
-                                Dictionary<int, Item> itemsList = new Dictionary<int, Item>(); // index is SlotID
-
-                                for (int i = 0; i < elements; i++)
-                                {
-                                    short itemID = dataTypes.ReadNextShort(packetData);
-                                    if (itemID == -1) continue;
-                                    byte itemCount = dataTypes.ReadNextByte(packetData);
-                                    short itemDamage = dataTypes.ReadNextShort(packetData);
-                                    Dictionary<string, object> NBT = new Dictionary<string, object>();
-                                    //TODO: Add to the dictionary for the inventory its in using the id
-                                    if (packetData.ToArray().Count() > 0)
-                                    {
-                                        NBT = dataTypes.ReadNextNbt(packetData);
-                                    }
-                                    Item item = new Item(itemID, itemCount, itemDamage, NBT);
-                                    itemsList.Add(i, item);
-                                }
-                                handler.OnWindowItems(id, itemsList);
+                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                if (item != null)
+                                    inventorySlots[slotId] = item;
                             }
-                            else
-                            {
-                                // MC 1.13 after
-                                byte id = dataTypes.ReadNextByte(packetData);
-                                short elements = dataTypes.ReadNextShort(packetData);
-                                Dictionary<int, Item> itemsList = new Dictionary<int, Item>(); // index is SlotID
-                                for (int i = 0; i < elements; i++)
-                                {
-                                    bool haveItem = dataTypes.ReadNextBool(packetData);
-                                    if (haveItem)
-                                    {
-                                        int itemID = dataTypes.ReadNextVarInt(packetData);
-                                        byte itemCount = dataTypes.ReadNextByte(packetData);
-                                        dataTypes.ReadNextNbt(packetData);
-
-                                        Item item = new Item(itemID, itemCount, i);
-                                        itemsList.Add(i, item);
-                                    }
-                                }
-                                handler.OnWindowItems(id, itemsList);
-                            }
+                            handler.OnWindowItems(windowId, inventorySlots);
                         }
                         break;
                     case PacketIncomingType.SetSlot:
-                        if(handler.GetInventoryEnabled())
+                        if (handler.GetInventoryEnabled())
                         {
-                            // MC 1.12.2 or lower
-                            if (protocolversion < MC113Version)
-                            {
-                                byte WindowID = dataTypes.ReadNextByte(packetData);
-                                short SlotID = dataTypes.ReadNextShort(packetData);
-                                short ItemID = dataTypes.ReadNextShort(packetData);
-                                if (ItemID == -1)
-                                {
-                                    handler.OnSlotClear(WindowID, SlotID);
-                                }
-                                else
-                                {
-                                    byte Count = dataTypes.ReadNextByte(packetData);
-                                    short itemDamage = dataTypes.ReadNextShort(packetData); // useless so ignored
-                                    Dictionary<string, object> NBT = new Dictionary<string, object>();
-                                    //TODO: Add to the dictionary for the inventory its in using the id
-                                    if (packetData.ToArray().Count() > 0)
-                                    {
-                                        NBT = dataTypes.ReadNextNbt(packetData);
-                                    }
-                                    handler.OnSetSlot(WindowID, SlotID, ItemID, Count, NBT);
-                                }
-                            }
-                            else
-                            {
-                                // MC 1.13 after
-                                byte WindowID = dataTypes.ReadNextByte(packetData);
-                                short SlotID = dataTypes.ReadNextShort(packetData);
-                                bool Present = dataTypes.ReadNextBool(packetData);
-                                if (Present)
-                                {
-                                    int ItemID = dataTypes.ReadNextVarInt(packetData);
-                                    byte Count = dataTypes.ReadNextByte(packetData);
-                                    Dictionary<string, object> NBT = dataTypes.ReadNextNbt(packetData);
-                                    handler.OnSetSlot(WindowID, SlotID, ItemID, Count, NBT);
-                                }
-                                else
-                                {
-                                    handler.OnSlotClear(WindowID, SlotID);
-                                }
-                            }
+                            byte windowID = dataTypes.ReadNextByte(packetData);
+                            short slotID = dataTypes.ReadNextShort(packetData);
+                            Item item = dataTypes.ReadNextItemSlot(packetData);
+                            handler.OnSetSlot(windowID, slotID, item);
                         }
                         break;
                     case PacketIncomingType.ResourcePackSend:
@@ -1285,7 +1219,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="EntityID"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public bool SendInteractEntityPacket(int EntityID, int type)
+        public bool SendInteractEntity(int EntityID, int type)
         {
             try
             {
@@ -1300,7 +1234,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
         // TODO: Interact at block location (e.g. chest minecart)
-        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand)
+        public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand)
         {
             try
             {
@@ -1318,12 +1252,12 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z)
+        public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z)
         {
             return false;
         }
 
-        public bool SendUseItemPacket(int hand)
+        public bool SendUseItem(int hand)
         {
             try
             {
@@ -1364,6 +1298,46 @@ namespace MinecraftClient.Protocol.Handlers
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetShort(slot));
                 SendPacket(PacketOutgoingType.HeldItemChange, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool SendClickWindow(int windowId, int slotId, Item item)
+        {
+            try
+            {
+                short actionNumber = (short)(window_actions[windowId] + 1);
+                window_actions[windowId] = actionNumber;
+
+                List<byte> packet = new List<byte>();
+                packet.Add((byte)windowId);
+                packet.AddRange(dataTypes.GetShort((short)slotId));
+                packet.Add(0); // Left mouse click
+                packet.AddRange(dataTypes.GetShort(actionNumber));
+
+                // Operation mode = 0 (default)
+                if (protocolversion >= MC19Version)
+                    packet.AddRange(dataTypes.GetVarInt(0));
+                else packet.Add(0);
+
+                packet.AddRange(dataTypes.GetItemSlot(item));
+
+                SendPacket(PacketOutgoingType.ClickWindow, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool SendCloseWindow(int windowId)
+        {
+            try
+            {
+                SendPacket(PacketOutgoingType.CloseWindow, new[] { (byte)windowId });
                 return true;
             }
             catch (SocketException) { return false; }

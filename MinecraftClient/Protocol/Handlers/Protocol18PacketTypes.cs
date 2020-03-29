@@ -306,6 +306,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.HeldItemChange: return 0x17;
                     case PacketOutgoingType.InteractEntity: return 0x02;
                     case PacketOutgoingType.TeleportConfirm: throw new InvalidOperationException("Teleport confirm is not supported in protocol " + protocol);
+                    case PacketOutgoingType.ClickWindow: return 0x0E;
+                    case PacketOutgoingType.CloseWindow: return 0x0D;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1,10 and 1.11
@@ -324,6 +326,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                     case PacketOutgoingType.HeldItemChange: return 0x17;
                     case PacketOutgoingType.InteractEntity: return 0x0A;
+                    case PacketOutgoingType.ClickWindow: return 0x07;
+                    case PacketOutgoingType.CloseWindow: return 0x08;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12
@@ -342,6 +346,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                     case PacketOutgoingType.HeldItemChange: return 0x1A;
                     case PacketOutgoingType.InteractEntity: return 0x0B;
+                    case PacketOutgoingType.ClickWindow: return 0x07;
+                    case PacketOutgoingType.CloseWindow: return 0x08;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1122Version) // 1.12.2
@@ -360,6 +366,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                     case PacketOutgoingType.HeldItemChange: return 0x1F;
                     case PacketOutgoingType.InteractEntity: return 0x0A;
+                    case PacketOutgoingType.ClickWindow: return 0x07;
+                    case PacketOutgoingType.CloseWindow: return 0x08;
                 }
             }
             else if (protocol < Protocol18Handler.MC114Version) // MC 1.13 to 1.13.2
@@ -378,6 +386,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.TeleportConfirm: return 0x00;
                     case PacketOutgoingType.HeldItemChange: return 0x21;
                     case PacketOutgoingType.InteractEntity: return 0x0D;
+                    case PacketOutgoingType.ClickWindow: return 0x08;
+                    case PacketOutgoingType.CloseWindow: return 0x09;
                 }
             }
             else // MC 1.14 to 1.15
@@ -398,6 +408,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.InteractEntity: return 0x0E;
                     case PacketOutgoingType.UseItem: return 0x2D;
                     case PacketOutgoingType.PlayerBlockPlacement: return 0x2C;
+                    case PacketOutgoingType.ClickWindow: return 0x09;
+                    case PacketOutgoingType.CloseWindow: return 0x0A;
                 }
             }
 

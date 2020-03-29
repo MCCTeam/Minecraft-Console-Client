@@ -27,7 +27,7 @@ namespace MinecraftClient
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
-        private static List<Container> inventories = new List<Container>();
+        private static Dictionary<int, Container> inventories = new Dictionary<int, Container>();
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
         private readonly List<string> registeredServerPluginChannels = new List<String>();
@@ -53,7 +53,6 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
-        private Container playerInventory = new Container(ContainerType.PlayerInventory);
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new object();
 
@@ -135,6 +134,12 @@ namespace MinecraftClient
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;
             entityHandlingEnabled = Settings.EntityHandling;
+
+            if (inventoryHandlingEnabled)
+            {
+                inventories.Clear();
+                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+            }
 
             bool retry = false;
             this.sessionid = sessionID;
@@ -550,7 +555,6 @@ namespace MinecraftClient
                 inventoryHandlingEnabled = false;
                 inventoryHandlingRequested = false;
                 inventories.Clear();
-                playerInventory = null;
             }
             return true;
         }
@@ -593,12 +597,33 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get all inventories. ID 0 is the player inventory.
+        /// </summary>
+        /// <returns>All inventories</returns>
+        public Dictionary<int, Container> GetInventories()
+        {
+            return inventories;
+        }
+
+        /// <summary>
+        /// Get client player's inventory items
+        /// </summary>
+        /// <param name="inventoryID">Window ID of the requested inventory</param>
+        /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
+        public Container GetInventory(int inventoryID)
+        {
+            if (inventories.ContainsKey(inventoryID))
+                return inventories[inventoryID];
+            return null;
+        }
+
+        /// <summary>
         /// Get client player's inventory items
         /// </summary>
         /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
         public Container GetPlayerInventory()
         {
-            return playerInventory;
+            return GetInventory(0);
         }
 
         /// <summary>
@@ -765,19 +790,14 @@ namespace MinecraftClient
         /// When an inventory is opened
         /// </summary>
         /// <param name="inventory">Location to reach</param>
-        public void OnInventoryOpen(Container inventory)
+        public void OnInventoryOpen(int inventoryID, Container inventory)
         {
-            //TODO: Handle Inventory
-            if (!inventories.Contains(inventory))
-            {
-                inventories.Add(inventory);
-            }
+            inventories[inventoryID] = inventory;
 
-            if (Settings.DebugMessages)
+            if (inventoryID != 0)
             {
-                ConsoleIO.WriteLineFormatted("§8An Inventory opened: " + inventory.Type + " - " + inventory.Title);
-                foreach (var item in inventory.Items)
-                    ConsoleIO.WriteLineFormatted("§8 - Slot " + item.Key + ": " + item.Value.Type + " x" + item.Value.Count);
+                ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " opened: " + inventory.Title);
+                ConsoleIO.WriteLogLine("Use /inventory to interact with it.");
             }
         }
 
@@ -785,64 +805,42 @@ namespace MinecraftClient
         /// When an inventory is close
         /// </summary>
         /// <param name="inventoryID">Location to reach</param>
-        public void OnInventoryClose(byte inventoryID)
+        public void OnInventoryClose(int inventoryID)
         {
-            for (int i = 0; i < inventories.Count; i++)
-            {
-                Container inventory = inventories[i];
-                if (inventory == null) continue;
-                if (inventory.Type == Container.GetContainerType(inventoryID))
-                {
-                    inventories.Remove(inventory);
-                    return;
-                }
-            }
+            if (inventories.ContainsKey(inventoryID))
+                inventories.Remove(inventoryID);
+
+            if (inventoryID != 0)
+                ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " closed.");
         }
 
         /// <summary>
         /// When received window items from server.
         /// </summary>
-        /// <param name="type">Inventory type</param>
+        /// <param name="inventoryID">Inventory ID</param>
         /// <param name="itemList">Item list, key = slot ID, value = Item information</param>
-        public void OnWindowItems(int type, Dictionary<int, Inventory.Item> itemList)
+        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList)
         {
-            // 0 is player inventory
-            if (type == 0)
-                playerInventory.Items = itemList;
-            if (Settings.DebugMessages)
-            {
-                ConsoleIO.WriteLineFormatted("§8Received Window of type " + type);
-                foreach (var item in itemList)
-                    ConsoleIO.WriteLineFormatted("§8 - Slot " + item.Key + ": " + item.Value.Type + " x" + item.Value.Count);
-            }
-        }
-
-        /// <summary>
-        /// When a slot is cleared inside window items
-        /// </summary>
-        /// <param name="WindowID">Window ID</param>
-        /// <param name="SlotID">Slot ID</param>
-        public void OnSlotClear(byte WindowID, short SlotID)
-        {
-            if (WindowID == 0 && playerInventory.Items.ContainsKey(SlotID))
-            {
-                playerInventory.Items.Remove(SlotID);
-            }
+            if (inventories.ContainsKey(inventoryID))
+                inventories[inventoryID].Items = itemList;
         }
 
         /// <summary>
         /// When a slot is set inside window items
         /// </summary>
-        /// <param name="WindowID">Window ID</param>
-        /// <param name="SlotID">Slot ID</param>
-        /// <param name="ItemID">Item ID</param>
-        /// <param name="Count">Item Count</param>
-        /// <param name="NBT">Item Metadata</param>
-        public void OnSetSlot(byte WindowID, short SlotID, int ItemID, byte Count, Dictionary<string, object> NBT)
+        /// <param name="inventoryID">Window ID</param>
+        /// <param name="slotID">Slot ID</param>
+        /// <param name="item">Item (may be null for empty slot)</param>
+        public void OnSetSlot(byte inventoryID, short slotID, Item item)
         {
-            if (WindowID == 0)
+            if (inventories.ContainsKey(inventoryID))
             {
-                playerInventory.Items[SlotID] = new Inventory.Item(ItemID, Count, SlotID, NBT);
+                if (item == null || item.IsEmpty)
+                {
+                    if (inventories[inventoryID].Items.ContainsKey(slotID))
+                        inventories[inventoryID].Items.Remove(slotID);
+                }
+                else inventories[inventoryID].Items[slotID] = item;
             }
         }
 
@@ -1312,7 +1310,35 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnHand()
         {
-            return handler.SendUseItemPacket(0);
+            return handler.SendUseItem(0);
+        }
+
+        /// <summary>
+        /// Click a slot in the specified window
+        /// </summary>
+        /// <returns>TRUE if the slot was successfully clicked</returns>
+        public bool ClickWindowSlot(int windowId, int slotId)
+        {
+            Item item = null;
+            if (inventories.ContainsKey(windowId) && inventories[windowId].Items.ContainsKey(slotId))
+                item = inventories[windowId].Items[slotId];
+
+            return handler.SendClickWindow(windowId, slotId, item);
+        }
+
+        /// <summary>
+        /// Close the specified inventory window
+        /// </summary>
+        /// <param name="windowId">Window ID</param>
+        /// <returns>TRUE if the window was successfully closed</returns>
+        public bool CloseInventory(int windowId)
+        {
+            if (windowId != 0 && inventories.ContainsKey(windowId))
+            {
+                inventories.Remove(windowId);
+                return handler.SendCloseWindow(windowId);
+            }
+            return false;
         }
 
         /// <summary>
@@ -1320,10 +1346,10 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="EntityID"></param>
         /// <param name="type">0: interact, 1: attack, 2: interact at</param>
-        /// <returns></returns>
+        /// <returns>TRUE if interaction succeeded</returns>
         public bool InteractEntity(int EntityID, int type)
         {
-            return handler.SendInteractEntityPacket(EntityID, type);
+            return handler.SendInteractEntity(EntityID, type);
         }
 
         /// <summary>
@@ -1342,7 +1368,7 @@ namespace MinecraftClient
         /// Change active slot in the player inventory
         /// </summary>
         /// <param name="slot">Slot to activate (0 to 8)</param>
-        /// <returns></returns>
+        /// <returns>TRUE if the slot was changed</returns>
         public bool ChangeSlot(short slot)
         {
             if (slot >= 0 && slot <= 8)

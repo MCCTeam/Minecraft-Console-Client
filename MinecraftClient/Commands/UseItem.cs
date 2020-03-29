@@ -12,8 +12,12 @@ namespace MinecraftClient.Commands
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
-            handler.UseItemOnHand();
-            return "Use an item";
+            if (handler.GetInventoryEnabled())
+            {
+                handler.UseItemOnHand();
+                return "Used an item";
+            }
+            else return "Please enable inventoryhandling in config to use this command.";
         }
     }
 }

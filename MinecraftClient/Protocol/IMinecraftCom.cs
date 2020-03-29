@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MinecraftClient.Crypto;
 using MinecraftClient.Mapping;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Protocol
 {
@@ -98,7 +99,7 @@ namespace MinecraftClient.Protocol
         /// <param name="EntityID">Entity ID to interact with</param>
         /// <param name="type">Type of interaction (0: interact, 1: attack, 2: interact at)</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendInteractEntityPacket(int EntityID, int type);
+        bool SendInteractEntity(int EntityID, int type);
 
         /// <summary>
         /// Send an entity interaction packet to the server.
@@ -110,7 +111,7 @@ namespace MinecraftClient.Protocol
         /// <param name="Z">Z coordinate for "interact at"</param>
         /// <param name="hand">Player hand (0: main hand, 1: off hand)</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand);
+        bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand);
 
         /// <summary>
         /// Send an entity interaction packet to the server.
@@ -121,14 +122,29 @@ namespace MinecraftClient.Protocol
         /// <param name="Y">Y coordinate for "interact at"</param>
         /// <param name="Z">Z coordinate for "interact at"</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z);
+        bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z);
 
         /// <summary>
         /// Send a use item packet to the server
         /// </summary>
         /// <param name="hand">0: main hand, 1: off hand</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendUseItemPacket(int hand);
+        bool SendUseItem(int hand);
+
+        /// <summary>
+        /// Send a click window slot packet to the server
+        /// </summary>
+        /// <param name="windowId">Id of the window being clicked</param>
+        /// <param name="slotId">Id of the clicked slot</param>
+        /// <param name="item">Item in the clicked slot</param>
+        /// <returns>True if packet was successfully sent</returns>
+        bool SendClickWindow(int windowId, int slotId, Item item);
+
+        /// <summary>
+        /// Send a close window packet to the server
+        /// </summary>
+        /// <param name="windowId">Id of the window being closed</param>
+        bool SendCloseWindow(int windowId);
 
         /// <summary>
         /// Send player block placement packet to the server

@@ -8,6 +8,7 @@ using MinecraftClient.Crypto;
 using MinecraftClient.Proxy;
 using System.Security.Cryptography;
 using MinecraftClient.Mapping;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -641,22 +642,32 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendInteractEntityPacket(int EntityID, int type)
+        public bool SendInteractEntity(int EntityID, int type)
         {
             return false; //Currently not implemented
         }
 
-        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand)
+        public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand)
         {
             return false; //Currently not implemented
         }
 
-        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z)
+        public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z)
         {
             return false; //Currently not implemented
         }
 
-        public bool SendUseItemPacket(int hand)
+        public bool SendUseItem(int hand)
+        {
+            return false; //Currently not implemented
+        }
+
+        public bool SendClickWindow(int windowId, int slotId, Item item)
+        {
+            return false; //Currently not implemented
+        }
+
+        public bool SendCloseWindow(int windowId)
         {
             return false; //Currently not implemented
         }

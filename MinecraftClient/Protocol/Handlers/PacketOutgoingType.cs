@@ -23,6 +23,8 @@ namespace MinecraftClient.Protocol.Handlers
         HeldItemChange,
         InteractEntity,
         UseItem,
+        ClickWindow,
+        CloseWindow,
         PlayerBlockPlacement
     }
 }

@@ -21,43 +21,33 @@ namespace MinecraftClient.Inventory
         public int Count;
 
         /// <summary>
-        /// Slot ID in the parent inventory
-        /// </summary>
-        /// <remarks>-1 means currently being dragged by mouse</remarks>
-        public int SlotID;
-
-        /// <summary>
         /// Item Metadata
         /// </summary>
         public Dictionary<string, object> NBT;
 
         /// <summary>
-        /// Create an item with Type ID, Count and Slot ID
+        /// Create an item with Type ID, Count and Metadata
         /// </summary>
         /// <param name="ID">Item Type ID</param>
         /// <param name="Count">Item Count</param>
-        /// <param name="SlotID">Item Slot ID in parent inventory</param>
-        public Item(int id, int count, int slotID)
+        /// <param name="NBT">Item Metadata</param>
+        public Item(int id, int count, Dictionary<string, object> nbt)
         {
             this.Type = (ItemType)id;
             this.Count = count;
-            this.SlotID = slotID;
-            this.NBT = new Dictionary<string, object>();
+            this.NBT = nbt;
         }
 
         /// <summary>
-        /// Create an item with Type ID, Count, Slot ID and Metadata
+        /// Check if the item slot is empty
         /// </summary>
-        /// <param name="ID">Item Type ID</param>
-        /// <param name="Count">Item Count</param>
-        /// <param name="SlotID">Item Slot ID in parent inventory</param>
-        /// <param name="NBT">Item Metadata</param>
-        public Item(int id, int count, int slotID, Dictionary<string, object> nbt)
+        /// <returns>TRUE if the item is empty</returns>
+        public bool IsEmpty
         {
-            this.Type = (ItemType)id;
-            this.Count = count;
-            this.SlotID = slotID;
-            this.NBT = nbt;
+            get
+            {
+                return Type == ItemType.Air || Count == 0;
+            }
         }
     }
 }

@@ -53,12 +53,12 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Called when an inventory is opened
         /// </summary>
-        void OnInventoryOpen(Container inventory);
+        void OnInventoryOpen(int inventoryID, Container inventory);
 
         /// <summary>
         /// Called when an inventory is closed
         /// </summary>
-        void OnInventoryClose(byte inventoryID);
+        void OnInventoryClose(int inventoryID);
 
         /// <summary>
         /// Called when the player respawns, which happens on login, respawn and world change.
@@ -199,26 +199,17 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Called when inventory items have been received
         /// </summary>
-        /// <param name="type">Inventory type</param>
+        /// <param name="inventoryID">Inventory ID</param>
         /// <param name="itemList">Item list</param>
-        void OnWindowItems(int type, Dictionary<int, MinecraftClient.Inventory.Item> itemList);
-
-        /// <summary>
-        /// Called when a single slot has been cleared inside an inventory
-        /// </summary>
-        /// <param name="WindowID">Inventory ID</param>
-        /// <param name="SlotID">Slot ID</param>
-        void OnSlotClear(byte WindowID, short SlotID);
+        void OnWindowItems(byte inventoryID, Dictionary<int, MinecraftClient.Inventory.Item> itemList);
 
         /// <summary>
         /// Called when a single slot has been updated inside an inventory
         /// </summary>
-        /// <param name="WindowID">Inventory ID</param>
-        /// <param name="SlotID">Slot ID</param>
-        /// <param name="ItemID">Item ID</param>
-        /// <param name="Count">Item Count</param>
-        /// <param name="NBT">Item Metadata</param>
-        void OnSetSlot(byte WindowID, short SlotID, int ItemID, byte Count, Dictionary<string, object> NBT);
+        /// <param name="inventoryID">Window ID</param>
+        /// <param name="slotID">Slot ID</param>
+        /// <param name="item">Item (may be null for empty slot)</param>
+        void OnSetSlot(byte inventoryID, short slotID, Item item);
 
         /// <summary>
         /// Called when the Player entity ID has been received from the server
