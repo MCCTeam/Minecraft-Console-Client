@@ -122,18 +122,35 @@ namespace MinecraftClient
 
             //Asking the user to type in missing data such as Username and Password
 
-            if (Settings.Login == "")
-            {
-                Console.Write(ConsoleIO.BasicIO ? "Please type the username or email of your choice.\n" : "Login : ");
-                Settings.Login = Console.ReadLine();
-            }
-            if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
-            {
-                RequestPassword();
-            }
+            ReadCredentials();
 
             startupargs = args;
             InitializeClient();
+        }
+
+        /// <summary>
+        /// Request user to submit credentials.
+        /// </summary>
+        private static void ReadCredentials()
+        {
+            if (Settings.Login == "")
+            {
+                Console.Write(ConsoleIO.BasicIO ? "Please type the username or email of your choice.\n" : "Login : ");
+                var rawCredentials = Console.ReadLine();
+                var credentials = rawCredentials.Split(':');
+                Settings.Login = credentials[0];
+
+                if (credentials.Length > 1)
+                {
+                    Settings.Password = credentials[1];
+                }
+            }
+
+            if (Settings.Password == "" &&
+                (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
+            {
+                RequestPassword();
+            }
         }
 
         /// <summary>
