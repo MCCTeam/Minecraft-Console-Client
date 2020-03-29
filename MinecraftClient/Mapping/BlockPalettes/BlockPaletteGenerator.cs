@@ -6,9 +6,9 @@ using System.IO;
 namespace MinecraftClient.Mapping.BlockPalettes
 {
     /// <summary>
-    /// Generator for MCC Palette mappings
+    /// Generator for MCC Block Palette mappings
     /// </summary>
-    public static class PaletteGenerator
+    public static class BlockPaletteGenerator
     {
         /// <summary>
         /// Generate mapping from Minecraft blocks.jsom

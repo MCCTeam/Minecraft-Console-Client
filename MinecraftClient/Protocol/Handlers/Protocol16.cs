@@ -641,12 +641,41 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
+        public bool SendInteractEntityPacket(int EntityID, int type)
+        {
+            return false; //Currently not implemented
+        }
+
+        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z, int hand)
+        {
+            return false; //Currently not implemented
+        }
+
+        public bool SendInteractEntityPacket(int EntityID, int type, float X, float Y, float Z)
+        {
+            return false; //Currently not implemented
+        }
+
+        public bool SendUseItemPacket(int hand)
+        {
+            return false; //Currently not implemented
+        }
+
+        public bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock)
+        {
+            return false; //Currently not implemented
+        }
+
+        public bool SendHeldItemChange(short slot)
+        {
+            return false; //Currently not implemented
+        }
+
         /// <summary>
         /// Send a plugin channel packet to the server.
         /// </summary>
         /// <param name="channel">Channel to send packet on</param>
         /// <param name="data">packet Data</param>
-
         public bool SendPluginChannelPacket(string channel, byte[] data)
         {
             try {

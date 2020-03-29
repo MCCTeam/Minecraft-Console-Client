@@ -9,8 +9,8 @@ namespace MinecraftClient.Commands
     {
         public override string CMDName { get { return "exit"; } }
         public override string CMDDesc { get { return "exit: disconnect from the server."; } }
-        
-        public override string Run(McTcpClient handler, string command)
+
+        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
             Program.Exit();
             return "";

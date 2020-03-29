@@ -19,6 +19,10 @@ namespace MinecraftClient.Protocol.Handlers
         TabComplete,
         PlayerPosition,
         PlayerPositionAndLook,
-        TeleportConfirm
+        TeleportConfirm,
+        HeldItemChange,
+        InteractEntity,
+        UseItem,
+        PlayerBlockPlacement
     }
 }

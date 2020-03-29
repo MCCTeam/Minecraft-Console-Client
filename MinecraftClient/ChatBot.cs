@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient
 {
@@ -137,6 +138,36 @@ namespace MinecraftClient
         /// <param name="data">The payload for the message</param>
         public virtual void OnPluginMessage(string channel, byte[] data) { }
 
+        /// <summary>
+        /// Called when properties for the Player entity are received from the server
+        /// </summary>
+        /// <param name="prop">Dictionary of player properties</param>
+        public virtual void OnPlayerProperty(Dictionary<string, Double> prop) { }
+
+        /// <summary>
+        /// Called when server TPS are recalculated by MCC based on world time updates
+        /// </summary>
+        /// <param name="tps">New estimated server TPS (between 0 and 20)</param>
+        public virtual void OnServerTpsUpdate(Double tps) { }
+
+        /// <summary>
+        /// Called when an entity moved nearby
+        /// </summary>
+        /// <param name="entity">Entity with updated location</param>
+        public virtual void OnEntityMove(Mapping.Entity entity) { }
+
+        /// <summary>
+        /// Called when an entity spawned nearby
+        /// </summary>
+        /// <param name="entity">New Entity</param>
+        public virtual void OnEntitySpawn(Mapping.Entity entity) { }
+
+        /// <summary>
+        /// Called when an entity despawns/dies nearby
+        /// </summary>
+        /// <param name="entity">Entity wich has just disappeared</param>
+        public virtual void OnEntityDespawn(Mapping.Entity entity) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
@@ -171,11 +202,12 @@ namespace MinecraftClient
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
         /// <param name="command">The command to process</param>
+        /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        protected bool PerformInternalCommand(string command)
+        protected bool PerformInternalCommand(string command, Dictionary<string, object> localVars = null)
         {
             string temp = "";
-            return Handler.PerformInternalCommand(command, ref temp);
+            return Handler.PerformInternalCommand(command, ref temp, localVars);
         }
 
         /// <summary>
@@ -183,10 +215,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="command">The command to process</param>
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        protected bool PerformInternalCommand(string command, ref string response_msg)
+        protected bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
-            return Handler.PerformInternalCommand(command, ref response_msg);
+            return Handler.PerformInternalCommand(command, ref response_msg, localVars);
         }
 
         /// <summary>
@@ -574,9 +607,10 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="filename">File name</param>
         /// <param name="playername">Player name to send error messages, if applicable</param>
-        protected void RunScript(string filename, string playername = "")
+        /// <param name="localVars">Local variables for use in the Script</param>
+        protected void RunScript(string filename, string playername = null, Dictionary<string, object> localVars = null)
         {
-            Handler.BotLoad(new ChatBots.Script(filename, playername));
+            Handler.BotLoad(new ChatBots.Script(filename, playername, localVars));
         }
 
         /// <summary>
@@ -597,6 +631,21 @@ namespace MinecraftClient
         public bool SetTerrainEnabled(bool enabled)
         {
             return Handler.SetTerrainEnabled(enabled);
+        }
+
+        /// <summary>
+        /// Get entity handling status
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>Entity Handling cannot be enabled in runtime (or after joining server)</remarks>
+        public bool GetEntityHandlingEnabled()
+        {
+            return Handler.GetEntityHandlingEnabled();
+        }
+
+        public bool GetInventoryEnabled()
+        {
+            return Handler.GetInventoryEnabled();
         }
 
         /// <summary>
@@ -763,6 +812,41 @@ namespace MinecraftClient
                 }
             }
             return Handler.SendPluginChannelMessage(channel, data, sendEvenIfNotRegistered);
+        }
+
+        protected Double GetServerTPS()
+        {
+            return Handler.GetServerTPS();
+        }
+
+        /// <summary>
+        /// Interact with an entity
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="type">0: interact, 1: attack, 2: interact at</param>
+        /// <returns></returns>
+        protected bool InteractEntity(int EntityID, int type)
+        {
+            return Handler.InteractEntity(EntityID, type);
+        }
+
+        /// <summary>
+        /// Use item currently in the player's hand (active inventory bar slot)
+        /// </summary>
+        /// <returns></returns>
+        protected bool UseItemOnHand()
+        {
+            return Handler.UseItemOnHand();
+        }
+
+        /// <summary>
+        /// Get a copy of the player's inventory
+        /// </summary>
+        /// <returns>Player inventory</returns>
+        protected Container GetPlayerInventory()
+        {
+            Container container = Handler.GetPlayerInventory();
+            return new Container(container.ID, container.Type, container.Title, container.Items);
         }
     }
 }

@@ -388,15 +388,15 @@ namespace MinecraftClient
 
                                 if (command.StartsWith("reco"))
                                 {
-                                    message = new Commands.Reco().Run(null, Settings.ExpandVars(command));
+                                    message = new Commands.Reco().Run(null, Settings.ExpandVars(command), null);
                                 }
                                 else if (command.StartsWith("connect"))
                                 {
-                                    message = new Commands.Connect().Run(null, Settings.ExpandVars(command));
+                                    message = new Commands.Connect().Run(null, Settings.ExpandVars(command), null);
                                 }
                                 else if (command.StartsWith("exit") || command.StartsWith("quit"))
                                 {
-                                    message = new Commands.Exit().Run(null, Settings.ExpandVars(command));
+                                    message = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
                                 }
                                 else if (command.StartsWith("help"))
                                 {

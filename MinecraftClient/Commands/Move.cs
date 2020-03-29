@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "move"; } }
         public override string CMDDesc { get { return "move <on|off|get|up|down|east|west|north|south|x y z>: walk or start walking."; } }
 
-        public override string Run(McTcpClient handler, string command)
+        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
             string[] args = getArgs(command);
             string argStr = getArg(command).Trim().ToLower();

@@ -30,6 +30,17 @@ namespace MinecraftClient.Protocol.Handlers
         OpenWindow,
         WindowItems,
         SetSlot,
+        SpawnEntity,
+        SpawnLivingEntity,
+        SpawnPlayer,
+        DestroyEntities,
+        SetCooldown,
+        EntityPosition,
+        EntityPositionAndRotation,
+        EntityProperties,
+        TimeUpdate,
+        EntityTeleport,
+        EntityStatus,
         UnknownPacket
     }
 }

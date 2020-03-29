@@ -75,6 +75,8 @@
     <Compile Include="AutoTimeout.cs" />
     <Compile Include="ChatBots\Alerts.cs" />
     <Compile Include="ChatBots\AntiAFK.cs" />
+    <Compile Include="ChatBots\AutoAttack.cs" />
+    <Compile Include="ChatBots\AutoFishing.cs" />
     <Compile Include="ChatBots\AutoRespond.cs" />
     <Compile Include="ChatBots\AutoRelog.cs" />
     <Compile Include="ChatBots\ChatLog.cs" />
@@ -88,8 +90,10 @@
     <Compile Include="ChatBots\VkMessager.cs" />
     <Compile Include="Clients\VkLongPoolClient.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Commands\ChangeSlot.cs" />
     <Compile Include="Commands\Connect.cs" />
     <Compile Include="Commands\Debug.cs" />
+    <Compile Include="Commands\Inventory.cs" />
     <Compile Include="Commands\Look.cs" />
     <Compile Include="Commands\Move.cs" />
     <Compile Include="Commands\Exit.cs" />
@@ -99,12 +103,20 @@
     <Compile Include="Commands\Script.cs" />
     <Compile Include="Commands\Send.cs" />
     <Compile Include="Commands\Set.cs" />
+    <Compile Include="Commands\UseItem.cs" />
+    <Compile Include="Inventory\Container.cs" />
+    <Compile Include="Inventory\ContainerType.cs" />
+    <Compile Include="Inventory\Item.cs" />
+    <Compile Include="Inventory\ItemType.cs" />
+    <Compile Include="Inventory\ItemTypeGenerator.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette112.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette113.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette114.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette115.cs" />
-    <Compile Include="Mapping\BlockPalettes\PaletteGenerator.cs" />
-    <Compile Include="Mapping\BlockPalettes\PaletteMapping.cs" />
+    <Compile Include="Mapping\BlockPalettes\BlockPaletteGenerator.cs" />
+    <Compile Include="Mapping\BlockPalettes\BlockPaletteMapping.cs" />
+    <Compile Include="Mapping\Entity.cs" />
+    <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Protocol\Handlers\DataTypes.cs" />
     <Compile Include="Protocol\Handlers\PacketIncomingType.cs" />
@@ -254,9 +266,6 @@
     <Compile Include="Commands\List.cs" />
     <Compile Include="Mapping\Location.cs" />
     <Compile Include="WinAPI\WindowsVersion.cs" />
-    <Compile Include="Protocol\Inventory.cs" />
-    <Compile Include="Protocol\InventoryType.cs" />
-    <Compile Include="Protocol\Item.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

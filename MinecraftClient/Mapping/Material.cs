@@ -4,10 +4,10 @@
     /// Represents Minecraft Materials
     /// </summary>
     /// <remarks>
-    /// Generated from blocks.json using PaletteGenerator.cs.
+    /// Generated from blocks.json using BlockPaletteGenerator.cs.
     /// Typical steps to handle new blocks for newer Minecraft versions:
     /// 1. Generate blocks.json using data reporting on Vanilla Minecraft (https://wiki.vg/Data_Generators)
-    /// 2. Generate temporary MaterialXXX.cs and PaletteXXX.cs using PaletteGenerator.cs
+    /// 2. Generate temporary MaterialXXX.cs and PaletteXXX.cs using BlockPaletteGenerator.cs
     /// 3. Perform a diff with existing versions, add missing entries in Material.cs and MaterialExtensions.cs
     /// 4. If existing state IDs were not randomized by Mojang, simply add missing state entries to Palette113.cs
     /// 5. If existing state IDs were randomized, add a new palette as PaletteXXX.cs into the codebase (worst case)

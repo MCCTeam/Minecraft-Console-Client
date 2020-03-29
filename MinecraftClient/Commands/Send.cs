@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "send"; } }
         public override string CMDDesc { get { return "send <text>: send a chat message or command."; } }
 
-        public override string Run(McTcpClient handler, string command)
+        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
             if (hasArg(command))
             {

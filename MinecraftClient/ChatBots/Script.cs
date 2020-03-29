@@ -25,17 +25,18 @@ namespace MinecraftClient.ChatBots
         private bool csharp;
         private Thread thread;
         private ManualResetEvent tpause;
+        private Dictionary<string, object> localVars;
 
         public Script(string filename)
         {
             ParseArguments(filename);
         }
 
-        public Script(string filename, string ownername)
+        public Script(string filename, string ownername, Dictionary<string, object> localVars)
             : this(filename)
         {
-            if (ownername != "")
-                owner = ownername;
+            this.owner = ownername;
+            this.localVars = localVars;
         }
 
         private void ParseArguments(string argstr)
@@ -135,14 +136,14 @@ namespace MinecraftClient.ChatBots
                 csharp = file.EndsWith(".cs");
                 thread = null;
 
-                if (owner != null)
+                if (!String.IsNullOrEmpty(owner))
                     SendPrivateMessage(owner, "Script '" + file + "' loaded.");
             }
             else
             {
                 LogToConsole("File not found: '" + System.IO.Path.GetFullPath(file) + "'");
 
-                if (owner != null)
+                if (!String.IsNullOrEmpty(owner))
                     SendPrivateMessage(owner, "File not found: '" + file + "'");
                 
                 UnloadBot(); //No need to keep the bot active
@@ -161,7 +162,7 @@ namespace MinecraftClient.ChatBots
                     {
                         try
                         {
-                            CSharpRunner.Run(this, tpause, lines, args);
+                            CSharpRunner.Run(this, tpause, lines, args, localVars);
                         }
                         catch (CSharpException e)
                         {
@@ -198,7 +199,7 @@ namespace MinecraftClient.ChatBots
                         {
                             if (instruction_line[0] != '#' && instruction_line[0] != '/' && instruction_line[1] != '/')
                             {
-                                instruction_line = Settings.ExpandVars(instruction_line);
+                                instruction_line = Settings.ExpandVars(instruction_line, localVars);
                                 string instruction_name = instruction_line.Split(' ')[0];
                                 switch (instruction_name.ToLower())
                                 {
