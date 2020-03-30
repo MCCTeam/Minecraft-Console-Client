@@ -49,7 +49,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityDespawn(Entity entity)
         {
-            if(entity.TypeID == 102)
+            if(entity.TypeID == 102 && isFishing)
             {
                 if(entity.ID == fishingRod.ID)
                 {
