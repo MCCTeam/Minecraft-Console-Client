@@ -32,6 +32,8 @@ namespace MinecraftClient.Commands
                                 else return "Failed to close Inventory #" + inventoryId;
                             case "list":
                                 Container inventory = handler.GetInventory(inventoryId);
+                                if(inventory==null)
+                                    return "Inventory #" + inventoryId + " do not exist";
                                 List<string> response = new List<string>();
                                 response.Add("Inventory #" + inventoryId + " - " + inventory.Title + "§8");
                                 foreach (KeyValuePair<int, Item> item in inventory.Items)
