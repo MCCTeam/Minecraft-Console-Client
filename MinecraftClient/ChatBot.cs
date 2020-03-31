@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
+using MinecraftClient.Clients;
 
 namespace MinecraftClient
 {
@@ -39,6 +40,7 @@ namespace MinecraftClient
         private List<string> registeredPluginChannels = new List<String>();
         private Queue<string> chatQueue = new Queue<string>();
         private DateTime lastMessageSentTime = DateTime.MinValue;
+        private VkLongPoolClient VkLongPoolClientPro { get; set; }
         private McTcpClient Handler
         {
             get
@@ -239,6 +241,19 @@ namespace MinecraftClient
                 else
                     i++;
 
+            return new string(data, 0, idx);
+        }
+
+        protected static string GetVerbatimColor(string text)
+        {
+            if (String.IsNullOrEmpty(text))
+                return String.Empty;
+
+            int idx = 0;
+            var data = new char[text.Length];
+
+            for (int i = 0; i < text.Length; i++)
+                data[idx++] = text[i];
             return new string(data, 0, idx);
         }
 
@@ -573,7 +588,7 @@ namespace MinecraftClient
         protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0)
         {
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Program.Restart(delaySeconds);
+            Form1.Restart(delaySeconds);
         }
 
         /// <summary>
@@ -581,7 +596,7 @@ namespace MinecraftClient
         /// </summary>
         protected void DisconnectAndExit()
         {
-            Program.Exit();
+            Form1.Exit();
         }
 
         /// <summary>
@@ -692,6 +707,19 @@ namespace MinecraftClient
                 time.Hour.ToString("00"),
                 time.Minute.ToString("00"),
                 time.Second.ToString("00"));
+        }
+        protected static string GetTimestampMoscow()
+        {
+            TimeZoneInfo moscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+            DateTime moscowDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, moscowTimeZone);
+
+            return String.Format("{0}-{1}-{2} {3}:{4}:{5}",
+                moscowDateTime.Year.ToString("0000"),
+                moscowDateTime.Month.ToString("00"),
+                moscowDateTime.Day.ToString("00"),
+                moscowDateTime.Hour.ToString("00"),
+                moscowDateTime.Minute.ToString("00"),
+                moscowDateTime.Second.ToString("00"));
         }
 
         /// <summary>
