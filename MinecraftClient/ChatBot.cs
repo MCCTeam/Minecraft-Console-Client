@@ -241,7 +241,24 @@ namespace MinecraftClient
 
             return new string(data, 0, idx);
         }
+		
+		/// <summary>
+        /// Not remove color codes ("§c") from a text message received from the server
+        /// </summary>
+        /// 
+        protected static string GetVerbatimColor(string text)
+        {
+            if (String.IsNullOrEmpty(text))
+                return String.Empty;
 
+            int idx = 0;
+            var data = new char[text.Length];
+
+            for (int i = 0; i < text.Length; i++)
+                data[idx++] = text[i];
+            return new string(data, 0, idx);
+        }
+		
         /// <summary>
         /// Verify that a string contains only a-z A-Z 0-9 and _ characters.
         /// </summary>

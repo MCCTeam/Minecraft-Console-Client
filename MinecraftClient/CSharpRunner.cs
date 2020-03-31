@@ -84,6 +84,7 @@ namespace MinecraftClient
                         "using System.Threading;",
                         "using MinecraftClient;",
                         "using MinecraftClient.Mapping;",
+						"using MinecraftClient.Clients;",
                         String.Join("\n", libs),
                         "namespace ScriptLoader {",
                         "public class Script {",
