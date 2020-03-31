@@ -542,6 +542,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (item != null)
                                     inventorySlots[slotId] = item;
                             }
+                            window_actions[windowId] = 0;
                             handler.OnWindowItems(windowId, inventorySlots);
                         }
                         break;
