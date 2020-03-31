@@ -32,6 +32,7 @@ namespace MinecraftClient.Protocol
         bool GetInventoryEnabled();
         bool SetInventoryEnabled(bool enabled);
         bool GetEntityHandlingEnabled();
+        bool SetEntityHandlingEnabled(bool enabled);
 
         /// <summary>
         /// Called when a server was successfully joined
