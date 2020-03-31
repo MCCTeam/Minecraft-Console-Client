@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.IO;
 
 namespace MinecraftClient.Protocol.Session
@@ -7,6 +8,8 @@ namespace MinecraftClient.Protocol.Session
     [Serializable]
     public class SessionToken
     {
+        private static readonly Regex JwtRegex = new Regex("^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$");
+
         public string ID { get; set; }
         public string PlayerName { get; set; }
         public string PlayerID { get; set; }
@@ -38,7 +41,7 @@ namespace MinecraftClient.Protocol.Session
             session.ClientID = fields[3];
 
             Guid temp;
-            if (!Guid.TryParseExact(session.ID, "N", out temp))
+            if (!JwtRegex.IsMatch(session.ID))
                 throw new InvalidDataException("Invalid session ID");
             if (!ChatBot.IsValidName(session.PlayerName))
                 throw new InvalidDataException("Invalid player name");

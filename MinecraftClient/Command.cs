@@ -11,40 +11,35 @@ namespace MinecraftClient
     /// If inheriting from the 'Command' class and placed in the 'Commands' namespace, the command will be
     /// automatically loaded and available in main chat prompt, scripts, remote control and command help.
     /// </summary>
-
     public abstract class Command
     {
         /// <summary>
         /// The command name
         /// </summary>
-
         public abstract string CMDName { get; }
 
         /// <summary>
         /// Usage message, eg: 'name [args]: do something'
         /// </summary>
-
         public abstract string CMDDesc { get; }
 
         /// <summary>
         /// Perform the command
         /// </summary>
         /// <param name="command">The full command, eg: 'mycommand arg1 arg2'</param>
+        /// <param name="localVars">Local variables passed along with the command (may be null)</param>
         /// <returns>A confirmation/error message, or "" if no message</returns>
-
-        public abstract string Run(McTcpClient handler, string command);
+        public abstract string Run(McTcpClient handler, string command, Dictionary<string, object> localVars);
 
         /// <summary>
         /// Return a list of aliases for this command.
         /// Override this method if you wish to put aliases to the command
         /// </summary>
-
         public virtual IEnumerable<string> getCMDAliases() { return new string[0]; }
 
         /// <summary>
         /// Check if at least one argument has been passed to the command
         /// </summary>
-
         public static bool hasArg(string command)
         {
             int first_space = command.IndexOf(' ');
@@ -55,7 +50,6 @@ namespace MinecraftClient
         /// Extract the argument string from the command
         /// </summary>
         /// <returns>Argument or "" if no argument</returns>
-
         public static string getArg(string command)
         {
             if (hasArg(command))
@@ -69,7 +63,6 @@ namespace MinecraftClient
         /// Extract the arguments as a string array from the command
         /// </summary>
         /// <returns>Argument array or empty array if no arguments</returns>
-
         public static string[] getArgs(string command)
         {
             string[] args = getArg(command).Split(' ');

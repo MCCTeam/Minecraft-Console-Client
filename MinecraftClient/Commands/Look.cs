@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "look"; } }
         public override string CMDDesc { get { return "look <x y z|yaw pitch|up|down|east|west|north|south>: look at direction or coordinates."; } }
 
-        public override string Run(McTcpClient handler, string command)
+        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
             if (handler.GetTerrainEnabled())
             {

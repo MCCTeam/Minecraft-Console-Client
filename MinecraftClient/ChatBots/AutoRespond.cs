@@ -76,8 +76,9 @@ namespace MinecraftClient.ChatBots
             /// <param name="username">Player who have sent the message</param>
             /// <param name="message">Message to match against the regex or match string</param>
             /// <param name="msgType">Type of the message public/private message, or other message</param>
+            /// <param name="localVars">Dictionary to populate with match variables in case of Regex match</param>
             /// <returns>Internal command to run as a response to this user, or null if no match has been detected</returns>
-            public string Match(string username, string message, MessageType msgType)
+            public string Match(string username, string message, MessageType msgType, Dictionary<string, object> localVars)
             {
                 string toSend = null;
 
@@ -99,9 +100,14 @@ namespace MinecraftClient.ChatBots
                     if (regex.IsMatch(message))
                     {
                         Match regexMatch = regex.Match(message);
+                        localVars["match_0"] = regexMatch.Groups[0].Value;
                         for (int i = regexMatch.Groups.Count - 1; i >= 1; i--)
+                        {
                             toSend = toSend.Replace("$" + i, regexMatch.Groups[i].Value);
+                            localVars["match_" + i] = regexMatch.Groups[i].Value;
+                        }
                         toSend = toSend.Replace("$u", username);
+                        localVars["match_u"] = username;
                         return toSend;
                     }
                 }
@@ -109,6 +115,8 @@ namespace MinecraftClient.ChatBots
                 {
                     if (message.ToLower().Contains(match.ToLower()))
                     {
+                        localVars["match_0"] = message;
+                        localVars["match_u"] = username;
                         return toSend.Replace("$u", username);
                     }
                 }
@@ -225,12 +233,13 @@ namespace MinecraftClient.ChatBots
             {
                 foreach (RespondRule rule in respondRules)
                 {
-                    string toPerform = rule.Match(sender, message, msgType);
+                    Dictionary<string, object> localVars = new Dictionary<string, object>();
+                    string toPerform = rule.Match(sender, message, msgType, localVars);
                     if (!String.IsNullOrEmpty(toPerform))
                     {
                         string response = null;
                         LogToConsole(toPerform);
-                        PerformInternalCommand(toPerform, ref response);
+                        PerformInternalCommand(toPerform, ref response, localVars);
                         if (!String.IsNullOrEmpty(response))
                             LogToConsole(response);
                     }

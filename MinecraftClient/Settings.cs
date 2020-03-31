@@ -95,6 +95,7 @@ namespace MinecraftClient
         public static bool DebugMessages = false;
         public static bool ResolveSrvRecords = true;
         public static bool ResolveSrvRecordsShortTimeout = true;
+        public static bool EntityHandling = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -149,12 +150,18 @@ namespace MinecraftClient
         public static bool AutoRespond_Enabled = false;
         public static string AutoRespond_Matches = "matches.ini";
 
+        //Auto Attack
+        public static bool AutoAttack_Enabled = false;
+
+        //Auto Fishing
+        public static bool AutoFishing_Enabled = false;
+
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -195,6 +202,8 @@ namespace MinecraftClient
                                     case "appvars": pMode = ParseMode.AppVars; break;
                                     case "autorespond": pMode = ParseMode.AutoRespond; break;
                                     case "chatformat": pMode = ParseMode.ChatFormat; break;
+                                    case "autoattack": pMode = ParseMode.AutoAttack; break;
+                                    case "autofishing": pMode = ParseMode.AutoFishing; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -230,6 +239,7 @@ namespace MinecraftClient
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
+                                                case "enableentityhandling": EntityHandling = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -447,6 +457,20 @@ namespace MinecraftClient
                                             }
                                             break;
 
+                                        case ParseMode.AutoAttack:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": AutoAttack_Enabled = str2bool(argValue); break;
+                                            }
+                                            break;
+
+                                        case ParseMode.AutoFishing:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": AutoFishing_Enabled = str2bool(argValue); break;
+                                            }
+                                            break;
+
                                         case ParseMode.MCSettings:
                                             switch (argName.ToLower())
                                             {
@@ -548,7 +572,7 @@ namespace MinecraftClient
                 + "showxpbarmessages=true             # Messages displayed above xp bar\r\n"
                 + "showchatlinks=true                 # Show links embedded in chat messages\r\n"
                 + "terrainandmovements=false          # Uses more ram, cpu, bandwidth\r\n"
-                + "inventoryhandling=false            # Toggle inventory handling\r\n"
+                + "inventoryhandling=false            # Toggle inventory handling (experimental, enable only for development)\r\n"
                 + "sessioncache=disk                  # How to retain session tokens. Use 'none', 'memory' or 'disk'\r\n"
                 + "resolvesrvrecords=fast             # Use 'false', 'fast' (5s timeout), or 'true'. Required for joining some servers.\r\n"
                 + "accountlist=accounts.txt           # See README > 'Servers and Accounts file' for more info about this file\r\n"
@@ -558,6 +582,7 @@ namespace MinecraftClient
                 + "debugmessages=false                # Please enable this before submitting bug reports. Thanks!\r\n"
                 + "scriptcache=true                   # Cache compiled scripts for faster load on low-end devices\r\n"
                 + "timestamps=false                   # Prepend timestamps to chat messages\r\n"
+                + "enableentityhandling=false         # Toggle entities handling\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
                 + "# yourvar=yourvalue\r\n"
@@ -636,7 +661,15 @@ namespace MinecraftClient
                 + "\r\n"
                 + "[AutoRespond]\r\n"
                 + "enabled=false\r\n"
-                + "matchesfile=matches.ini\r\n", Encoding.UTF8);
+                + "matchesfile=matches.ini\r\n"
+                + "\r\n"
+                + "[AutoAttack]\r\n"
+                + "# Entity Handling NEED to be enabled first\r\n"
+                + "enabled=false\r\n"
+                + "\r\n"
+                + "[AutoFishing]\r\n"
+                + "# Entity Handling NEED to be enabled first\r\n"
+                + "enabled=false", Encoding.UTF8);
         }
 
         /// <summary>
@@ -759,11 +792,12 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Replace %variables% with their value
+        /// Replace %variables% with their value from global AppVars
         /// </summary>
         /// <param name="str">String to parse</param>
+        /// <param name="localContext">Optional local variables overriding global variables</param>
         /// <returns>Modifier string</returns>
-        public static string ExpandVars(string str)
+        public static string ExpandVars(string str, Dictionary<string, object> localVars = null)
         {
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < str.Length; i++)
@@ -775,7 +809,7 @@ namespace MinecraftClient
 
                     for (int j = i + 1; j < str.Length; j++)
                     {
-                        if (!char.IsLetterOrDigit(str[j]))
+                        if (!char.IsLetterOrDigit(str[j]) && str[j] != '_')
                         {
                             if (str[j] == '%')
                                 varname_ok = var_name.Length > 0;
@@ -796,7 +830,11 @@ namespace MinecraftClient
                             case "serverip": result.Append(ServerIP); break;
                             case "serverport": result.Append(ServerPort); break;
                             default:
-                                if (AppVars.ContainsKey(varname_lower))
+                                if (localVars != null && localVars.ContainsKey(varname_lower))
+                                {
+                                    result.Append(localVars[varname_lower].ToString());
+                                }
+                                else if (AppVars.ContainsKey(varname_lower))
                                 {
                                     result.Append(AppVars[varname_lower].ToString());
                                 }

@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "connect"; } }
         public override string CMDDesc { get { return "connect <server> [account]: connect to the specified server."; } }
 
-        public override string Run(McTcpClient handler, string command)
+        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
             if (hasArg(command))
             {

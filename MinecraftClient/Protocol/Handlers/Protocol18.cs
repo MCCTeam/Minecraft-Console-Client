@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -30,17 +31,17 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC110Version = 210;
         internal const int MC1112Version = 316;
         internal const int MC112Version = 335;
-        internal const int MC1121Version = 338;
         internal const int MC1122Version = 340;
         internal const int MC113Version = 393;
         internal const int MC114Version = 477;
-        internal const int MC1144Version = 498;
         internal const int MC115Version = 573;
+        internal const int MC1152Version = 578;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
         private int autocomplete_transaction_id = 0;
         private readonly List<string> autocomplete_result = new List<string>();
+        private readonly Dictionary<int, short> window_actions = new Dictionary<int, short>();
         private bool login_phase = true;
         private int protocolversion;
         private int currentDimension;
@@ -63,21 +64,27 @@ namespace MinecraftClient.Protocol.Handlers
             this.pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
 
-            if (handler.GetTerrainEnabled() && protocolversion > MC115Version)
+            if (handler.GetTerrainEnabled() && protocolversion > MC1152Version)
             {
                 ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && protocolversion > MC114Version)
+            if (handler.GetInventoryEnabled() && (protocolversion > MC1152Version || protocolversion < MC110Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Inventories are currently not handled for that MC version.");
                 handler.SetInventoryEnabled(false);
             }
 
+            if(handler.GetEntityHandlingEnabled() && protocolversion < MC1122Version)
+            {
+                ConsoleIO.WriteLineFormatted("§8Entities are currently not handled for that MC version.");
+                handler.SetInventoryEnabled(false);
+            }
+
             if (protocolversion >= MC113Version)
             {
-                if (protocolVersion > MC115Version && handler.GetTerrainEnabled())
+                if (protocolVersion > MC1152Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException("Please update block types handling for this Minecraft version. See Material.cs");
                 if (protocolVersion >= MC115Version)
                     Block.Palette = new Palette115();
@@ -192,7 +199,10 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                     case PacketIncomingType.JoinGame:
                         handler.OnGameJoined();
-                        dataTypes.ReadNextInt(packetData);
+                        // by reinforce
+                        // get client player EntityID
+                        int playerEntityID = dataTypes.ReadNextInt(packetData);
+                        handler.SetPlayerEntityID(playerEntityID);
                         dataTypes.ReadNextByte(packetData);
                         if (protocolversion >= MC191Version)
                             this.currentDimension = dataTypes.ReadNextInt(packetData);
@@ -243,7 +253,8 @@ namespace MinecraftClient.Protocol.Handlers
                         float pitch = dataTypes.ReadNextFloat(packetData);
                         byte locMask = dataTypes.ReadNextByte(packetData);
 
-                        if (handler.GetTerrainEnabled())
+                        // entity handling require player pos for distance calculating
+                        if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
                         {
                             if (protocolversion >= MC18Version)
                             {
@@ -487,43 +498,61 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.OpenWindow:
                         if (handler.GetInventoryEnabled())
                         {
-                            byte windowID = dataTypes.ReadNextByte(packetData);
-                            string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
-                            InventoryType inventoryType = (InventoryType)Enum.Parse(typeof(InventoryType), type);
-                            string title = dataTypes.ReadNextString(packetData);
-                            byte slots = dataTypes.ReadNextByte(packetData);
-                            Inventory inventory = new Inventory(windowID, inventoryType, title, slots);
-
-                            handler.OnInventoryOpen(inventory);
+                            if (protocolversion < MC114Version)
+                            {
+                                // MC 1.13 or lower
+                                byte windowID = dataTypes.ReadNextByte(packetData);
+                                string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
+                                ContainerTypeOld inventoryType = (ContainerTypeOld)Enum.Parse(typeof(ContainerTypeOld), type);
+                                string title = dataTypes.ReadNextString(packetData);
+                                byte slots = dataTypes.ReadNextByte(packetData);
+                                Container inventory = new Container(windowID, inventoryType, ChatParser.ParseText(title));
+                                window_actions[windowID] = 0;
+                                handler.OnInventoryOpen(windowID, inventory);
+                            }
+                            else
+                            {
+                                // MC 1.14 or greater
+                                int windowID = dataTypes.ReadNextVarInt(packetData);
+                                int windowType = dataTypes.ReadNextVarInt(packetData);
+                                string title = dataTypes.ReadNextString(packetData);
+                                Container inventory = new Container(windowID, windowType, ChatParser.ParseText(title));
+                                window_actions[windowID] = 0;
+                                handler.OnInventoryOpen(windowID, inventory);
+                            }
                         }
                         break;
                     case PacketIncomingType.CloseWindow:
                         if (handler.GetInventoryEnabled())
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
-
+                            window_actions[windowID] = 0;
                             handler.OnInventoryClose(windowID);
                         }
                         break;
                     case PacketIncomingType.WindowItems:
                         if (handler.GetInventoryEnabled())
                         {
-                            byte id = dataTypes.ReadNextByte(packetData);
+                            byte windowId = dataTypes.ReadNextByte(packetData);
                             short elements = dataTypes.ReadNextShort(packetData);
-
-                            for (int i = 0; i < elements; i++)
+                            Dictionary<int, Item> inventorySlots = new Dictionary<int, Item>();
+                            for (short slotId = 0; slotId < elements; slotId++)
                             {
-                                short itemID = dataTypes.ReadNextShort(packetData);
-                                if (itemID == -1) continue;
-                                byte itemCount = dataTypes.ReadNextByte(packetData);
-                                short itemDamage = dataTypes.ReadNextShort(packetData);
-                                Item item = new Item(itemID, itemCount, itemDamage, 0);
-                                //TODO: Add to the dictionary for the inventory its in using the id
-                                if (packetData.ToArray().Count() > 0)
-                                {
-                                    dataTypes.ReadNextNbt(packetData);
-                                }
+                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                if (item != null)
+                                    inventorySlots[slotId] = item;
                             }
+                            window_actions[windowId] = 0;
+                            handler.OnWindowItems(windowId, inventorySlots);
+                        }
+                        break;
+                    case PacketIncomingType.SetSlot:
+                        if (handler.GetInventoryEnabled())
+                        {
+                            byte windowID = dataTypes.ReadNextByte(packetData);
+                            short slotID = dataTypes.ReadNextShort(packetData);
+                            Item item = dataTypes.ReadNextItemSlot(packetData);
+                            handler.OnSetSlot(windowID, slotID, item);
                         }
                         break;
                     case PacketIncomingType.ResourcePackSend:
@@ -535,6 +564,166 @@ namespace MinecraftClient.Protocol.Handlers
                             responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
                         SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
                         SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
+                        break;
+                    case PacketIncomingType.SpawnEntity:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Guid EntityUUID = Guid.Empty;
+                            if (protocolversion > MC18Version)
+                            {
+                                EntityUUID = dataTypes.ReadNextUUID(packetData);
+                            }
+                            int EntityType = dataTypes.ReadNextVarInt(packetData);
+                            Double X = dataTypes.ReadNextDouble(packetData);
+                            Double Y = dataTypes.ReadNextDouble(packetData);
+                            Double Z = dataTypes.ReadNextDouble(packetData);
+                            byte EntityYaw = dataTypes.ReadNextByte(packetData);
+                            byte EntityPitch = dataTypes.ReadNextByte(packetData);
+                            int Data = dataTypes.ReadNextInt(packetData);
+                            short VelocityX = dataTypes.ReadNextShort(packetData);
+                            short VelocityY = dataTypes.ReadNextShort(packetData);
+                            short VelocityZ = dataTypes.ReadNextShort(packetData);
+
+                            Location EntityLocation = new Location(X, Y, Z);
+
+                            handler.OnSpawnEntity(EntityID, EntityType, EntityUUID, EntityLocation);
+                        }
+                        break;
+                    case PacketIncomingType.SpawnLivingEntity:
+                        if (login_phase) break; // same packet ID with login packet
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Guid EntityUUID = Guid.Empty;
+                            if (protocolversion > MC18Version)
+                            {
+                                EntityUUID = dataTypes.ReadNextUUID(packetData);
+                            }
+                            int EntityType = dataTypes.ReadNextVarInt(packetData);
+                            Double X = dataTypes.ReadNextDouble(packetData);
+                            Double Y = dataTypes.ReadNextDouble(packetData);
+                            Double Z = dataTypes.ReadNextDouble(packetData);
+                            byte EntityYaw = dataTypes.ReadNextByte(packetData);
+                            byte EntityPitch = dataTypes.ReadNextByte(packetData);
+                            byte EntityHeadPitch = dataTypes.ReadNextByte(packetData);
+                            short VelocityX = dataTypes.ReadNextShort(packetData);
+                            short VelocityY = dataTypes.ReadNextShort(packetData);
+                            short VelocityZ = dataTypes.ReadNextShort(packetData);
+
+                            // packet before 1.15 has metadata at the end
+
+                            Location EntityLocation = new Location(X, Y, Z);
+
+                            handler.OnSpawnLivingEntity(EntityID, EntityType, EntityUUID, EntityLocation);
+                        }
+                        break;
+                    case PacketIncomingType.SpawnPlayer:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Guid UUID = dataTypes.ReadNextUUID(packetData);
+                            double X = dataTypes.ReadNextDouble(packetData);
+                            double Y = dataTypes.ReadNextDouble(packetData);
+                            double Z = dataTypes.ReadNextDouble(packetData);
+                            byte Yaw = dataTypes.ReadNextByte(packetData);
+                            byte Pitch = dataTypes.ReadNextByte(packetData);
+
+                            Location EntityLocation = new Location(X, Y, Z);
+
+                            handler.OnSpawnPlayer(EntityID, UUID, EntityLocation, Yaw, Pitch);
+                        }
+                        break;
+                    case PacketIncomingType.DestroyEntities:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityCount = dataTypes.ReadNextVarInt(packetData);
+                            int[] EntitiesList = new int[EntityCount];
+                            for (int i = 0; i < EntityCount; i++)
+                            {
+                                EntitiesList[i] = dataTypes.ReadNextVarInt(packetData);
+                            }
+                            handler.OnDestroyEntities(EntitiesList);
+                        }
+                        break;
+                    case PacketIncomingType.EntityPosition:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            bool OnGround = dataTypes.ReadNextBool(packetData);
+                            DeltaX = DeltaX / (128 * 32);
+                            DeltaY = DeltaY / (128 * 32);
+                            DeltaZ = DeltaZ / (128 * 32);
+                            handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        }
+                        break;
+                    case PacketIncomingType.EntityPositionAndRotation:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            byte _yaw = dataTypes.ReadNextByte(packetData);
+                            byte _pitch = dataTypes.ReadNextByte(packetData);
+                            bool OnGround = dataTypes.ReadNextBool(packetData);
+                            DeltaX = DeltaX / (128 * 32);
+                            DeltaY = DeltaY / (128 * 32);
+                            DeltaZ = DeltaZ / (128 * 32);
+                            handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        }
+                        break;
+                    case PacketIncomingType.EntityProperties:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            int NumberOfProperties = dataTypes.ReadNextInt(packetData);
+                            Dictionary<string, Double> keys = new Dictionary<string, Double>();
+                            for (int i = 0; i < NumberOfProperties; i++)
+                            {
+                                string _key = dataTypes.ReadNextString(packetData);
+                                Double _value = dataTypes.ReadNextDouble(packetData);
+
+
+                                int NumberOfModifiers = dataTypes.ReadNextVarInt(packetData);
+                                for (int j = 0; j < NumberOfModifiers; j++)
+                                {
+                                    dataTypes.ReadNextUUID(packetData);
+                                    Double amount = dataTypes.ReadNextDouble(packetData);
+                                    byte operation = dataTypes.ReadNextByte(packetData);
+                                    switch (operation)
+                                    {
+                                        case 0: _value += amount; break;
+                                        case 1: _value += (amount / 100); break;
+                                        case 2: _value *= amount; break;
+                                    }
+                                }
+                                keys.Add(_key, _value);
+                            }
+                            handler.OnEntityProperties(EntityID, keys);
+                        }
+                        break;
+                    case PacketIncomingType.TimeUpdate:
+                        if (login_phase) break;
+                        long WorldAge = dataTypes.ReadNextLong(packetData);
+                        long TimeOfday = dataTypes.ReadNextLong(packetData);
+                        handler.OnTimeUpdate(WorldAge, TimeOfday);
+                        break;
+                    case PacketIncomingType.EntityTeleport:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Double X = dataTypes.ReadNextDouble(packetData);
+                            Double Y = dataTypes.ReadNextDouble(packetData);
+                            Double Z = dataTypes.ReadNextDouble(packetData);
+                            byte EntityYaw = dataTypes.ReadNextByte(packetData);
+                            byte EntityPitch = dataTypes.ReadNextByte(packetData);
+                            bool OnGround = dataTypes.ReadNextBool(packetData);
+                            handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
+                        }
                         break;
                     default:
                         return false; //Ignored packet
@@ -1023,6 +1212,138 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             return false;
+        }
+        
+        /// <summary>
+        /// Send an Interact Entity Packet to server
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public bool SendInteractEntity(int EntityID, int type)
+        {
+            try
+            {
+                List<byte> fields = new List<byte>();
+                fields.AddRange(dataTypes.GetVarInt(EntityID));
+                fields.AddRange(dataTypes.GetVarInt(type));
+                SendPacket(PacketOutgoingType.InteractEntity, fields);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+        // TODO: Interact at block location (e.g. chest minecart)
+        public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand)
+        {
+            try
+            {
+                List<byte> fields = new List<byte>();
+                fields.AddRange(dataTypes.GetVarInt(EntityID));
+                fields.AddRange(dataTypes.GetVarInt(type));
+                fields.AddRange(dataTypes.GetFloat(X));
+                fields.AddRange(dataTypes.GetFloat(Y));
+                fields.AddRange(dataTypes.GetFloat(Z));
+                fields.AddRange(dataTypes.GetVarInt(hand));
+                SendPacket(PacketOutgoingType.InteractEntity, fields);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+        public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z)
+        {
+            return false;
+        }
+
+        public bool SendUseItem(int hand)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetVarInt(hand));
+                SendPacket(PacketOutgoingType.UseItem, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetVarInt(hand));
+                packet.AddRange(dataTypes.GetLocation(location));
+                packet.AddRange(dataTypes.GetVarInt(face));
+                packet.AddRange(dataTypes.GetFloat(CursorX));
+                packet.AddRange(dataTypes.GetFloat(CursorY));
+                packet.AddRange(dataTypes.GetFloat(CursorZ));
+                packet.Add(Convert.ToByte(insideBlock ? 1 : 0));
+                SendPacket(PacketOutgoingType.PlayerBlockPlacement, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool SendHeldItemChange(short slot)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetShort(slot));
+                SendPacket(PacketOutgoingType.HeldItemChange, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool SendClickWindow(int windowId, int slotId, Item item)
+        {
+            try
+            {
+                short actionNumber = (short)(window_actions[windowId] + 1);
+                window_actions[windowId] = actionNumber;
+
+                List<byte> packet = new List<byte>();
+                packet.Add((byte)windowId);
+                packet.AddRange(dataTypes.GetShort((short)slotId));
+                packet.Add(0); // Left mouse click
+                packet.AddRange(dataTypes.GetShort(actionNumber));
+
+                // Operation mode = 0 (default)
+                if (protocolversion >= MC19Version)
+                    packet.AddRange(dataTypes.GetVarInt(0));
+                else packet.Add(0);
+
+                packet.AddRange(dataTypes.GetItemSlot(item));
+
+                SendPacket(PacketOutgoingType.ClickWindow, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool SendCloseWindow(int windowId)
+        {
+            try
+            {
+                SendPacket(PacketOutgoingType.CloseWindow, new[] { (byte)windowId });
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
         }
     }
 }

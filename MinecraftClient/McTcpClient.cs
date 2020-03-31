@@ -10,6 +10,7 @@ using MinecraftClient.Protocol;
 using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient
 {
@@ -26,7 +27,7 @@ namespace MinecraftClient
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
-        private static List<Inventory> inventories = new List<Inventory>();
+        private static Dictionary<int, Container> inventories = new Dictionary<int, Container>();
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
         private readonly List<string> registeredServerPluginChannels = new List<String>();
@@ -35,6 +36,7 @@ namespace MinecraftClient
         private bool terrainAndMovementsRequested = false;
         private bool inventoryHandlingEnabled;
         private bool inventoryHandlingRequested = false;
+        private bool entityHandlingEnabled;
 
         private object locationLock = new object();
         private bool locationReceived = false;
@@ -51,9 +53,21 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
-        private Inventory playerInventory;
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new object();
+
+        private int playerEntityID;
+        // not really understand the Inventory Class
+        // so I use a Dict instead for player inventory
+        //private Dictionary<int, Inventory.Item> playerItems;
+
+        // Entity handling
+        private Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
+
+        // server TPS
+        private long lastAge = 0;
+        private DateTime lastTime;
+        private Double serverTPS = 0;
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -62,6 +76,13 @@ namespace MinecraftClient
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
         public World GetWorld() { return world; }
+        public Double GetServerTPS() { return serverTPS; }
+
+        // get bots list for unloading them by commands
+        public List<ChatBot> GetLoadedChatBots()
+        {
+            return bots;
+        }
 
         TcpClient client;
         IMinecraftCom handler;
@@ -112,6 +133,13 @@ namespace MinecraftClient
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;
+            entityHandlingEnabled = Settings.EntityHandling;
+
+            if (inventoryHandlingEnabled)
+            {
+                inventories.Clear();
+                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+            }
 
             bool retry = false;
             this.sessionid = sessionID;
@@ -133,6 +161,8 @@ namespace MinecraftClient
                     if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
                     if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
                     if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
+                    if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack()); }
+                    if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
                 }
@@ -288,8 +318,9 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="command">The command</param>
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        public bool PerformInternalCommand(string command, ref string response_msg)
+        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
             /* Load commands from the 'Commands' namespace */
 
@@ -338,7 +369,7 @@ namespace MinecraftClient
             }
             else if (cmds.ContainsKey(command_name))
             {
-                response_msg = cmds[command_name].Run(this, command);
+                response_msg = cmds[command_name].Run(this, command, localVars);
             }
             else
             {
@@ -524,9 +555,75 @@ namespace MinecraftClient
                 inventoryHandlingEnabled = false;
                 inventoryHandlingRequested = false;
                 inventories.Clear();
-                playerInventory = null;
             }
             return true;
+        }
+
+        /// <summary>
+        /// Get entity handling status
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>Entity Handling cannot be enabled in runtime (or after joining server)</remarks>
+        public bool GetEntityHandlingEnabled()
+        {
+            return entityHandlingEnabled;
+        }
+
+        /// <summary>
+        /// Enable or disable Entity handling.
+        /// Please note that Enabling will be deferred until next relog.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetEntityHandlingEnabled(bool enabled)
+        {
+            if (!enabled)
+            {
+                if (entityHandlingEnabled)
+                {
+                    entityHandlingEnabled = false;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Entity Handling cannot be enabled in runtime (or after joining server)
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Get all inventories. ID 0 is the player inventory.
+        /// </summary>
+        /// <returns>All inventories</returns>
+        public Dictionary<int, Container> GetInventories()
+        {
+            return inventories;
+        }
+
+        /// <summary>
+        /// Get client player's inventory items
+        /// </summary>
+        /// <param name="inventoryID">Window ID of the requested inventory</param>
+        /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
+        public Container GetInventory(int inventoryID)
+        {
+            if (inventories.ContainsKey(inventoryID))
+                return inventories[inventoryID];
+            return null;
+        }
+
+        /// <summary>
+        /// Get client player's inventory items
+        /// </summary>
+        /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
+        public Container GetPlayerInventory()
+        {
+            return GetInventory(0);
         }
 
         /// <summary>
@@ -693,12 +790,14 @@ namespace MinecraftClient
         /// When an inventory is opened
         /// </summary>
         /// <param name="inventory">Location to reach</param>
-        public void OnInventoryOpen(Inventory inventory)
+        public void OnInventoryOpen(int inventoryID, Container inventory)
         {
-            //TODO: Handle Inventory
-            if (!inventories.Contains(inventory))
+            inventories[inventoryID] = inventory;
+
+            if (inventoryID != 0)
             {
-                inventories.Add(inventory);
+                ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " opened: " + inventory.Title);
+                ConsoleIO.WriteLogLine("Use /inventory to interact with it.");
             }
         }
 
@@ -706,17 +805,42 @@ namespace MinecraftClient
         /// When an inventory is close
         /// </summary>
         /// <param name="inventoryID">Location to reach</param>
-        public void OnInventoryClose(byte inventoryID)
+        public void OnInventoryClose(int inventoryID)
         {
-            for (int i = 0; i < inventories.Count; i++)
+            if (inventories.ContainsKey(inventoryID))
+                inventories.Remove(inventoryID);
+
+            if (inventoryID != 0)
+                ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " closed.");
+        }
+
+        /// <summary>
+        /// When received window items from server.
+        /// </summary>
+        /// <param name="inventoryID">Inventory ID</param>
+        /// <param name="itemList">Item list, key = slot ID, value = Item information</param>
+        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList)
+        {
+            if (inventories.ContainsKey(inventoryID))
+                inventories[inventoryID].Items = itemList;
+        }
+
+        /// <summary>
+        /// When a slot is set inside window items
+        /// </summary>
+        /// <param name="inventoryID">Window ID</param>
+        /// <param name="slotID">Slot ID</param>
+        /// <param name="item">Item (may be null for empty slot)</param>
+        public void OnSetSlot(byte inventoryID, short slotID, Item item)
+        {
+            if (inventories.ContainsKey(inventoryID))
             {
-                Inventory inventory = inventories[i];
-                if (inventory == null) continue;
-                if (inventory.id == inventoryID)
+                if (item == null || item.IsEmpty)
                 {
-                    inventories.Remove(inventory);
-                    return;
+                    if (inventories[inventoryID].Items.ContainsKey(slotID))
+                        inventories[inventoryID].Items.Remove(slotID);
                 }
+                else inventories[inventoryID].Items[slotID] = item;
             }
         }
 
@@ -903,10 +1027,7 @@ namespace MinecraftClient
         /// <summary>
         /// Get a dictionary of online player names and their corresponding UUID
         /// </summary>
-        /// <returns>
-        ///     dictionary of online player whereby
-        ///     UUID represents the key
-        ///     playername represents the value</returns>
+        /// <returns>Dictionay of online players, key is UUID, value is Player name</returns>
         public Dictionary<string, string> GetOnlinePlayersWithUUID()
         {
             Dictionary<string, string> uuid2Player = new Dictionary<string, string>();
@@ -1016,6 +1137,247 @@ namespace MinecraftClient
                 {
                     bot.OnPluginMessage(channel, data);
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Called when a non-living entity spawned (fishing hook, minecart, etc)
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="TypeID"></param>
+        /// <param name="UUID"></param>
+        /// <param name="location"></param>
+        public void OnSpawnEntity(int EntityID, int TypeID, Guid UUID, Location location)
+        {
+            if (entities.ContainsKey(EntityID)) return;
+            Entity entity = new Entity(EntityID, TypeID, EntityType.NonLivingThings, location);
+            entities.Add(EntityID, entity);
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnEntitySpawn(entity);
+        }
+
+        /// <summary>
+        /// Called when an Entity was created/spawned.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="TypeID"></param>
+        /// <param name="UUID"></param>
+        /// <param name="location"></param>
+        /// <remarks>Cannot determine is a Mob or a Cuty Animal</remarks>
+        public void OnSpawnLivingEntity(int EntityID, int TypeID, Guid UUID, Location location)
+        {
+            if (entities.ContainsKey(EntityID)) return;
+            Entity entity = new Entity(EntityID, TypeID, EntityType.MobAndAnimal, location);
+            entities.Add(EntityID, entity);
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnEntitySpawn(entity);
+        }
+
+        /// <summary>
+        /// Called when a player was spawned/in the render distance
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="UUID"></param>
+        /// <param name="location"></param>
+        /// <param name="Yaw"></param>
+        /// <param name="Pitch"></param>
+        public void OnSpawnPlayer(int EntityID, Guid UUID, Location location, byte Yaw, byte Pitch)
+        {
+            if (entities.ContainsKey(EntityID)) return;
+            Entity entity = new Entity(EntityID, EntityType.Player, location);
+            entities.Add(EntityID, entity);
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnEntitySpawn(entity);
+        }
+
+        /// <summary>
+        /// Called when entities dead/despawn.
+        /// </summary>
+        /// <param name="Entities"></param>
+        public void OnDestroyEntities(int[] Entities)
+        {
+            foreach (int a in Entities)
+            {
+                if (entities.ContainsKey(a))
+                {
+                    foreach (ChatBot bot in bots.ToArray())
+                        bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].TypeID, entities[a].Type, entities[a].Location));
+                    entities.Remove(a);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when an entity's position changed within 8 block of its previous position.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="Dx"></param>
+        /// <param name="Dy"></param>
+        /// <param name="Dz"></param>
+        /// <param name="onGround"></param>
+        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround)
+        {
+            if (entities.ContainsKey(EntityID))
+            {
+                Location L = entities[EntityID].Location;
+                L.X += Dx;
+                L.Y += Dy;
+                L.Z += Dz;
+                entities[EntityID].Location = L;
+
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
+            }
+            
+        }
+        /// <summary>
+        /// Called when an entity moved over 8 block.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
+        /// <param name="Z"></param>
+        /// <param name="onGround"></param>
+        public void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround)
+        {
+            if (entities.ContainsKey(EntityID))
+            {
+                Location location = new Location(X, Y, Z);
+                entities[EntityID].Location = location;
+
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
+            }
+        }
+
+        /// <summary>
+        /// Called when received entity properties from server.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="prop"></param>
+        public void OnEntityProperties(int EntityID, Dictionary<string, Double> prop)
+        {
+            if(EntityID == playerEntityID)
+            {
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnPlayerProperty(prop);
+            }
+        }
+        
+        /// <summary>
+        /// Called when server sent a Time Update packet.
+        /// </summary>
+        /// <param name="WorldAge"></param>
+        /// <param name="TimeOfDay"></param>
+        public void OnTimeUpdate(long WorldAge, long TimeOfDay)
+        {
+            // calculate server tps
+            if (lastAge != 0)
+            {
+                DateTime currentTime = DateTime.Now;
+                long tickDiff = WorldAge - lastAge;
+                Double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
+                lastAge = WorldAge;
+                lastTime = currentTime;
+                if (tps <= 20.0 && tps >= 0.0 && serverTPS != tps)
+                {
+                    serverTPS = tps;
+                    // invoke ChatBot
+                    foreach (ChatBot bot in bots.ToArray())
+                        bot.OnServerTpsUpdate(tps);
+                }
+            }
+            else
+            {
+                lastAge = WorldAge;
+                lastTime = DateTime.Now;
+            }
+            
+        }
+        
+        /// <summary>
+        /// Set client player's ID for later receiving player's own properties
+        /// </summary>
+        /// <param name="EntityID">Player Entity ID</param>
+        public void SetPlayerEntityID(int EntityID)
+        {
+            playerEntityID = EntityID;
+        }
+
+        /// <summary>
+        /// Use the item currently in the player's hand
+        /// </summary>
+        /// <returns>TRUE if the item was successfully used</returns>
+        public bool UseItemOnHand()
+        {
+            return handler.SendUseItem(0);
+        }
+
+        /// <summary>
+        /// Click a slot in the specified window
+        /// </summary>
+        /// <returns>TRUE if the slot was successfully clicked</returns>
+        public bool ClickWindowSlot(int windowId, int slotId)
+        {
+            Item item = null;
+            if (inventories.ContainsKey(windowId) && inventories[windowId].Items.ContainsKey(slotId))
+                item = inventories[windowId].Items[slotId];
+
+            return handler.SendClickWindow(windowId, slotId, item);
+        }
+
+        /// <summary>
+        /// Close the specified inventory window
+        /// </summary>
+        /// <param name="windowId">Window ID</param>
+        /// <returns>TRUE if the window was successfully closed</returns>
+        public bool CloseInventory(int windowId)
+        {
+            if (windowId != 0 && inventories.ContainsKey(windowId))
+            {
+                inventories.Remove(windowId);
+                return handler.SendCloseWindow(windowId);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Interact with an entity
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="type">0: interact, 1: attack, 2: interact at</param>
+        /// <returns>TRUE if interaction succeeded</returns>
+        public bool InteractEntity(int EntityID, int type)
+        {
+            return handler.SendInteractEntity(EntityID, type);
+        }
+
+        /// <summary>
+        /// Place the block at hand in the Minecraft world
+        /// </summary>
+        /// <param name="location">Location to place block to</param>
+        /// <returns>TRUE if successfully placed</returns>
+        public bool PlaceBlock(Location location)
+        {
+            //WORK IN PROGRESS. MAY NOT WORK YET
+            ConsoleIO.WriteLine(location.ToString());
+            return handler.SendPlayerBlockPlacement(0, location, 1, 0.5f, 0.5f, 0.5f, false);
+        }
+
+        /// <summary>
+        /// Change active slot in the player inventory
+        /// </summary>
+        /// <param name="slot">Slot to activate (0 to 8)</param>
+        /// <returns>TRUE if the slot was changed</returns>
+        public bool ChangeSlot(short slot)
+        {
+            if (slot >= 0 && slot <= 8)
+            {
+                return handler.SendHeldItemChange(slot);
+            }
+            else
+            {
+                return false;
             }
         }
     }

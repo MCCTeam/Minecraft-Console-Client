@@ -30,7 +30,7 @@ namespace MinecraftClient
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.15.0";
+        public const string MCHighestVersion = "1.15.2";
         public static readonly string BuildInfo = null;
 
         private static Thread offlinePrompt = null;
@@ -388,15 +388,15 @@ namespace MinecraftClient
 
                                 if (command.StartsWith("reco"))
                                 {
-                                    message = new Commands.Reco().Run(null, Settings.ExpandVars(command));
+                                    message = new Commands.Reco().Run(null, Settings.ExpandVars(command), null);
                                 }
                                 else if (command.StartsWith("connect"))
                                 {
-                                    message = new Commands.Connect().Run(null, Settings.ExpandVars(command));
+                                    message = new Commands.Connect().Run(null, Settings.ExpandVars(command), null);
                                 }
                                 else if (command.StartsWith("exit") || command.StartsWith("quit"))
                                 {
-                                    message = new Commands.Exit().Run(null, Settings.ExpandVars(command));
+                                    message = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
                                 }
                                 else if (command.StartsWith("help"))
                                 {

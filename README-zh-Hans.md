@@ -1,23 +1,27 @@
 我的世界控制台客户端
 ========================
 
-[![Appveyor build status](https://ci.appveyor.com/api/proMinecraftjects/status/github/ORelio/Minecraft-Console-Client?branch=Indev)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
+[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/ORelio/Minecraft-Console-Client?branch=Indev)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
 
-我的世界控制台客户端是个轻量级的程序，它允许你连接至任何我的世界的服务器，
-快速的发送指令和接收聊天信息而不需要开启Java版我的世界游戏。它也提供了多种自动化管理服务器和进行其他操作的可能性。
+我的世界控制台客户端(MCC)是一个轻量级的程序，它允许你连接至任何我的世界服务器，
+简单快速地发送指令和接收聊天信息而不需要开启游戏。它也提供了多种自动化管理服务器和进行其他操作的可能性。
 
-**注意！** MCC仅可以连接到**我的世界Java版**，而**不能连接到我的世界中国版！**
+**注意！** MCC仅可以连接到**我的世界Java版**，而**不能连接到我的世界基岩版/中国版！**
+
+## 正在寻找维护者
+
+由于不再有足够的时间来为新的我的世界版本提供升级和修复错误，开发者正在寻找有开发动力的人来接手该项目。如果您认为您可以接手该项目，请查看 [issues](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) 部分 :)
 
 ## 下载
 
 从这里获得最新的exe文件[开发构建](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)。
-这是个.NET可执行文件，它也能运行于macOS系统和Linux系统。
+这是个.NET可执行文件，它也能运行于Mac OS和Linux系统。
 
 ## 如何使用
 
 
-在此查看[示例配置文件](MinecraftClient/config/) ，其中有基础使用教程 README 文件.
-更多帮助和信息可以从[我的世界官方论坛](http://www.minecraftforum.net/topic/1314800-/)。<br/>中查询。
+在此查看[示例配置文件](MinecraftClient/config/) ，其中有基础使用教程 README 文件。<br>
+更多帮助和信息可以从[我的世界官方论坛](http://www.minecraftforum.net/topic/1314800-/)中查询。
 
 ## 贡献代码
 
@@ -33,5 +37,5 @@ CDDL-1.0许可证的主要条件基本上在列明于下列：
 - 无论如何，在CDDL编码（在CDDl编码里被任何编码引用直接修改会被认为是增建部分于CDDL编码里，所以是被限制于这需求；列子：对math fuction的改进使用快速查阅资料表会让资料表被认为是个增建部分，不管这是否在自己本身的来源编码之中）里，所有案列例如任何修改，改进，或者是增建部分必须使其公开的和自由的在来源中，当然也被限制于CDDL许可证里。
 - 在任何程序（来源或二进制）使用CDDL编码，确认必须要被给于CDDl编码的来源（任何一个项目或作者）。同样的，对CDDL编码（必须分布作为来源）的改进不得移除作为指引来源编码的通知。
 
-更多资讯在 http://qstuff.blogspot.fr/2007/04/why-cddl.html
+更多资讯在 http://qstuff.blogspot.fr/2007/04/why-cddl.html<br>
 完整许可证在 http://opensource.org/licenses/CDDL-1.0
