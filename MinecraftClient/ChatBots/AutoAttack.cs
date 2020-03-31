@@ -82,7 +82,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (attackSpeed != prop["generic.attackSpeed"])
                 {
-                    GetServerTPS();
+                    serverTPS = GetServerTPS();
                     attackSpeed = prop["generic.attackSpeed"];
                     attackCooldownSecond = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
                     attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSecond / 0.1) + 1);
