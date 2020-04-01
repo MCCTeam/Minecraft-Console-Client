@@ -277,6 +277,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x59: return PacketIncomingType.EntityProperties;
                     case 0x57: return PacketIncomingType.EntityTeleport;
                     case 0x1C: return PacketIncomingType.EntityStatus;
+                    case 0x49: return PacketIncomingType.UpdateHealth; // TODO: Add backwards support for this packet
                     default: return PacketIncomingType.UnknownPacket;
                 }
             }

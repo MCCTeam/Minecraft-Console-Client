@@ -11,6 +11,7 @@ using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
+using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -1378,6 +1379,28 @@ namespace MinecraftClient
             else
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Called when client player's health changed, e.g. getting attack
+        /// </summary>
+        /// <param name="health">Player current health</param>
+        public void OnUpdateHealth(float health)
+        {
+            if (Settings.AutoRespawn)
+            {
+                if (health <= 0)
+                {
+                    ConsoleIO.WriteLine("Client player dead.");
+                    ConsoleIO.WriteLine("Respawn after 1 second...");
+                    Task.Factory.StartNew(delegate
+                    {
+                    // wait before respawn
+                    Thread.Sleep(1000);
+                        SendRespawnPacket();
+                    });
+                }
             }
         }
     }
