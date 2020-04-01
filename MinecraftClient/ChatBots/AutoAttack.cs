@@ -24,8 +24,8 @@ namespace MinecraftClient.ChatBots
         {
             if (!GetEntityHandlingEnabled())
             {
-                ConsoleIO.WriteLine("[AutoAttack] Entity Handling is not enabled in the config file!");
-                ConsoleIO.WriteLine("[AutoAttack] This bot will be unloaded.");
+                LogToConsole("Entity Handling is not enabled in the config file!");
+                LogToConsole("This bot will be unloaded.");
                 UnloadBot();
             }
         }

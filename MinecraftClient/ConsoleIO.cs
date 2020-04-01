@@ -384,8 +384,11 @@ namespace MinecraftClient
         /// Write a prefixed log line. Prefix is set in LogPrefix.
         /// </summary>
         /// <param name="text">Text of the log line</param>
-        public static void WriteLogLine(string text)
+        /// <param name="acceptnewlines">Allow line breaks</param>
+        public static void WriteLogLine(string text, bool acceptnewlines = true)
         {
+            if (!acceptnewlines)
+                text = text.Replace('\n', ' ');
             WriteLineFormatted(LogPrefix + text);
         }
 

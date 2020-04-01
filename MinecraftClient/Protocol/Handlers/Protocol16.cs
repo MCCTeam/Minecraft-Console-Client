@@ -41,6 +41,18 @@ namespace MinecraftClient.Protocol.Handlers
                 ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
                 Handler.SetTerrainEnabled(false);
             }
+
+            if (handler.GetInventoryEnabled())
+            {
+                ConsoleIO.WriteLineFormatted("§8Inventories are currently not handled for that MC version.");
+                handler.SetInventoryEnabled(false);
+            }
+
+            if (handler.GetEntityHandlingEnabled())
+            {
+                ConsoleIO.WriteLineFormatted("§8Entities are currently not handled for that MC version.");
+                handler.SetEntityHandlingEnabled(false);
+            }
         }
 
         private Protocol16Handler(TcpClient Client)
@@ -155,7 +167,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x84: readData(11); nbr = readNextShort(); if (nbr > 0) { readData(nbr); } break;
                 case 0x85: if (protocolversion >= 74) { readData(13); } break;
                 case 0xC8:
-                    if (readNextInt() == 2022) { ConsoleIO.WriteLineFormatted("§MCC: You are dead. Type /reco to respawn & reconnect."); }
+                    if (readNextInt() == 2022) { ConsoleIO.WriteLogLine("You are dead. Type /respawn to respawn."); }
                     if (protocolversion >= 72) { readData(4); } else readData(1);
                     break;
                 case 0xC9:

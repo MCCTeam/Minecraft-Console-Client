@@ -11,7 +11,6 @@ using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
-using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -56,6 +55,7 @@ namespace MinecraftClient
         private string sessionid;
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new object();
+        private int respawnTicks = 0;
 
         private int playerEntityID;
         // not really understand the Inventory Class
@@ -279,7 +279,7 @@ namespace MinecraftClient
                                 }
                                 else if (response_msg.Length > 0)
                                 {
-                                    ConsoleIO.WriteLineFormatted("§8MCC: " + response_msg);
+                                    ConsoleIO.WriteLogLine(response_msg);
                                 }
                             }
                             else SendText(text);
@@ -342,7 +342,7 @@ namespace MinecraftClient
                         }
                         catch (Exception e)
                         {
-                            ConsoleIO.WriteLine(e.Message);
+                            ConsoleIO.WriteLogLine(e.Message);
                         }
                     }
                 }
@@ -756,7 +756,7 @@ namespace MinecraftClient
             ConsoleIO.WriteLineFormatted(text, true);
             if (Settings.DisplayChatLinks)
                 foreach (string link in links)
-                    ConsoleIO.WriteLineFormatted("§8MCC: Link: " + link, false);
+                    ConsoleIO.WriteLogLine("Link: " + link, false);
             foreach (ChatBot bot in bots.ToArray())
             {
                 try
@@ -769,7 +769,7 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLineFormatted("§8GetText: Got error from " + bot.ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLogLine("GetText: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
@@ -904,7 +904,7 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLineFormatted("§8Update: Got error from " + bot.ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLogLine("Update: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
@@ -940,6 +940,13 @@ namespace MinecraftClient
                     yaw = null;
                     pitch = null;
                 }
+            }
+
+            if (Settings.AutoRespawn && respawnTicks > 0)
+            {
+                respawnTicks--;
+                if (respawnTicks == 0)
+                    SendRespawnPacket();
             }
         }
 
@@ -1361,7 +1368,8 @@ namespace MinecraftClient
         public bool PlaceBlock(Location location)
         {
             //WORK IN PROGRESS. MAY NOT WORK YET
-            ConsoleIO.WriteLine(location.ToString());
+            if (Settings.DebugMessages)
+                ConsoleIO.WriteLogLine(location.ToString());
             return handler.SendPlayerBlockPlacement(0, location, 1, 0.5f, 0.5f, 0.5f, false);
         }
 
@@ -1388,18 +1396,16 @@ namespace MinecraftClient
         /// <param name="health">Player current health</param>
         public void OnUpdateHealth(float health)
         {
-            if (Settings.AutoRespawn)
+            if (health <= 0)
             {
-                if (health <= 0)
+                if (Settings.AutoRespawn)
                 {
-                    ConsoleIO.WriteLine("Client player dead.");
-                    ConsoleIO.WriteLine("Respawn after 1 second...");
-                    Task.Factory.StartNew(delegate
-                    {
-                    // wait before respawn
-                    Thread.Sleep(1000);
-                        SendRespawnPacket();
-                    });
+                    ConsoleIO.WriteLogLine("You are dead. Automatically respawning after 1 second.");
+                    respawnTicks = 10;
+                }
+                else
+                {
+                    ConsoleIO.WriteLogLine("You are dead. Type /respawn to respawn.");
                 }
             }
         }
