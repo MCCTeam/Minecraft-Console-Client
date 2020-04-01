@@ -725,6 +725,13 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
                         }
                         break;
+                    case PacketIncomingType.UpdateHealth:
+                        float health = dataTypes.ReadNextFloat(packetData);
+                        // don't need them
+                        dataTypes.ReadNextVarInt(packetData);
+                        dataTypes.ReadNextFloat(packetData);
+                        handler.OnUpdateHealth(health);
+                        break;
                     default:
                         return false; //Ignored packet
                 }
