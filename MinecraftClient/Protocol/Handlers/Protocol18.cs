@@ -507,7 +507,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 string title = dataTypes.ReadNextString(packetData);
                                 byte slots = dataTypes.ReadNextByte(packetData);
                                 Container inventory = new Container(windowID, inventoryType, ChatParser.ParseText(title));
-                                window_actions[windowID] = 0;
                                 handler.OnInventoryOpen(windowID, inventory);
                             }
                             else
@@ -517,7 +516,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 int windowType = dataTypes.ReadNextVarInt(packetData);
                                 string title = dataTypes.ReadNextString(packetData);
                                 Container inventory = new Container(windowID, windowType, ChatParser.ParseText(title));
-                                window_actions[windowID] = 0;
                                 handler.OnInventoryOpen(windowID, inventory);
                             }
                         }
@@ -526,7 +524,7 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetInventoryEnabled())
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
-                            window_actions[windowID] = 0;
+                            lock (window_actions) { window_actions[windowID] = 0; }
                             handler.OnInventoryClose(windowID);
                         }
                         break;
@@ -542,7 +540,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (item != null)
                                     inventorySlots[slotId] = item;
                             }
-                            window_actions[windowId] = 0;
                             handler.OnWindowItems(windowId, inventorySlots);
                         }
                         break;
@@ -1317,8 +1314,14 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                short actionNumber = (short)(window_actions[windowId] + 1);
-                window_actions[windowId] = actionNumber;
+                short actionNumber;
+                lock (window_actions)
+                {
+                    if (!window_actions.ContainsKey(windowId))
+                        window_actions[windowId] = 0;
+                    actionNumber = (short)(window_actions[windowId] + 1);
+                    window_actions[windowId] = actionNumber;
+                }
 
                 List<byte> packet = new List<byte>();
                 packet.Add((byte)windowId);

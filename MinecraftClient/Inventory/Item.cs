@@ -49,5 +49,26 @@ namespace MinecraftClient.Inventory
                 return Type == ItemType.Air || Count == 0;
             }
         }
+
+        /// <summary>
+        /// Retrieve item display name from NBT properties. NULL if no display name is defined.
+        /// </summary>
+        public string DisplayName
+        {
+            get
+            {
+                if (NBT != null && NBT.ContainsKey("display"))
+                {
+                    var displayProperties = NBT["display"] as Dictionary<string, object>;
+                    if (displayProperties != null && displayProperties.ContainsKey("Name"))
+                    {
+                        string displayName = displayProperties["Name"] as string;
+                        if (!String.IsNullOrEmpty(displayName))
+                            return MinecraftClient.Protocol.ChatParser.ParseText(displayProperties["Name"].ToString());
+                    }
+                }
+                return null;
+            }
+        }
     }
 }

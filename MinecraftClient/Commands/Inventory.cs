@@ -37,7 +37,12 @@ namespace MinecraftClient.Commands
                                 List<string> response = new List<string>();
                                 response.Add("Inventory #" + inventoryId + " - " + inventory.Title + "§8");
                                 foreach (KeyValuePair<int, Item> item in inventory.Items)
-                                    response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
+                                {
+                                    string displayName = item.Value.DisplayName;
+                                    if (String.IsNullOrEmpty(displayName))
+                                        response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
+                                    else response.Add(String.Format(" #{0}: {1} x{2} - {3}§8", item.Key, item.Value.Type, item.Value.Count, displayName));
+                                }
                                 return String.Join("\n", response.ToArray());
                             case "click":
                                 if (args.Length == 3)

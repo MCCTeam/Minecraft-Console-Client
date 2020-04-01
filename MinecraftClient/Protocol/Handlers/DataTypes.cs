@@ -368,7 +368,11 @@ namespace MinecraftClient.Protocol.Handlers
                 if (cache[0] != 10) // TAG_Compound
                     throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
                 ReadNextByte(cache); // Tag type (TAG_Compound)
-                ReadData(ReadNextUShort(cache), cache); // NBT root name
+
+                // NBT root name
+                string rootName = Encoding.ASCII.GetString(ReadData(ReadNextUShort(cache), cache));
+                if (!String.IsNullOrEmpty(rootName))
+                    NbtData[""] = rootName;
             }
 
             while (true)
@@ -456,6 +460,15 @@ namespace MinecraftClient.Protocol.Handlers
             if (root)
             {
                 bytes.Add(10); // TAG_Compound
+
+                // NBT root name
+                string rootName = null;
+                if (nbt.ContainsKey(""))
+                    rootName = nbt[""] as string;
+                if (rootName == null)
+                    rootName = "";
+                bytes.AddRange(GetUShort((ushort)rootName.Length));
+                bytes.AddRange(Encoding.ASCII.GetBytes(rootName));
             }
 
             foreach (var item in nbt)
@@ -464,9 +477,9 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] fieldNameLength = GetUShort((ushort)item.Key.Length);
                 byte[] fieldName = Encoding.ASCII.GetBytes(item.Key);
                 byte[] fieldData = GetNbtField(item.Value, out fieldType);
+                bytes.Add(fieldType);
                 bytes.AddRange(fieldNameLength);
                 bytes.AddRange(fieldName);
-                bytes.Add(fieldType);
                 bytes.AddRange(fieldData);
             }
 
