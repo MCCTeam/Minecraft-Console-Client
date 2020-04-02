@@ -473,6 +473,10 @@ namespace MinecraftClient.Protocol.Handlers
 
             foreach (var item in nbt)
             {
+                // Skip NBT root name
+                if (item.Key == "" && root)
+                    continue;
+
                 byte fieldType;
                 byte[] fieldNameLength = GetUShort((ushort)item.Key.Length);
                 byte[] fieldName = Encoding.ASCII.GetBytes(item.Key);

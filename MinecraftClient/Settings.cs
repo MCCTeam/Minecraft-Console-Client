@@ -130,6 +130,7 @@ namespace MinecraftClient
         public static bool AutoRelog_Enabled = false;
         public static int AutoRelog_Delay = 10;
         public static int AutoRelog_Retries = 3;
+        public static bool AutoRelog_IgnoreKickMessage = false;
         public static string AutoRelog_KickMessagesFile = "kickmessages.txt";
 
         //Script Scheduler Settings
@@ -363,6 +364,7 @@ namespace MinecraftClient
                                                 case "enabled": AutoRelog_Enabled = str2bool(argValue); break;
                                                 case "delay": AutoRelog_Delay = str2int(argValue); break;
                                                 case "retries": AutoRelog_Retries = str2int(argValue); break;
+                                                case "ignorekickmessage": AutoRelog_IgnoreKickMessage = str2bool(argValue); break;
                                                 case "kickmessagesfile": AutoRelog_KickMessagesFile = argValue; break;
                                             }
                                             break;
@@ -639,6 +641,7 @@ namespace MinecraftClient
                 + "enabled=false\r\n"
                 + "delay=10\r\n"
                 + "retries=3 #-1 = unlimited\r\n"
+                + "ignorekickmessage=false\r\n"
                 + "kickmessagesfile=kickmessages.txt\r\n"
                 + "\r\n"
                 + "[ChatLog]\r\n"

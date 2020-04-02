@@ -33,26 +33,34 @@ namespace MinecraftClient.ChatBots
         public override void Initialize()
         {
             McTcpClient.ReconnectionAttemptsLeft = attempts;
-            if (System.IO.File.Exists(Settings.AutoRelog_KickMessagesFile))
+            if (Settings.AutoRelog_IgnoreKickMessage)
             {
                 if (Settings.DebugMessages)
-                    LogToConsole("Loading messages from file: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
-
-                dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile);
-
-                for (int i = 0; i < dictionary.Length; i++)
-                {
-                    if (Settings.DebugMessages)
-                        LogToConsole("  Loaded message: " + dictionary[i]);
-                    dictionary[i] = dictionary[i].ToLower();
-                }
+                    LogToConsole("Initializing without a kick message file");
             }
             else
             {
-                LogToConsole("File not found: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
+                if (System.IO.File.Exists(Settings.AutoRelog_KickMessagesFile))
+                {
+                    if (Settings.DebugMessages)
+                        LogToConsole("Loading messages from file: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
 
-                if (Settings.DebugMessages)
-                    LogToConsole("  Current directory was: " + System.IO.Directory.GetCurrentDirectory());
+                    dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile);
+
+                    for (int i = 0; i < dictionary.Length; i++)
+                    {
+                        if (Settings.DebugMessages)
+                            LogToConsole("  Loaded message: " + dictionary[i]);
+                        dictionary[i] = dictionary[i].ToLower();
+                    }
+                }
+                else
+                {
+                    LogToConsole("File not found: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
+
+                    if (Settings.DebugMessages)
+                        LogToConsole("  Current directory was: " + System.IO.Directory.GetCurrentDirectory());
+                }
             }
         }
 
@@ -61,7 +69,7 @@ namespace MinecraftClient.ChatBots
             if (reason == DisconnectReason.UserLogout)
             {
                 if (Settings.DebugMessages)
-                    LogToConsole("Ignoring disconnection initiated by User or MCC bot");
+                    LogToConsole("Disconnection initiated by User or MCC bot. Ignoring.");
             }
             else
             {
@@ -70,6 +78,14 @@ namespace MinecraftClient.ChatBots
 
                 if (Settings.DebugMessages)
                     LogToConsole("Got disconnected with message: " + message);
+
+                if (Settings.AutoRelog_IgnoreKickMessage)
+                {
+                    if (Settings.DebugMessages)
+                        LogToConsole("Ignoring kick message, reconnecting anyway.");
+                    ReconnectToTheServer();
+                    return true;
+                }
 
                 foreach (string msg in dictionary)
                 {

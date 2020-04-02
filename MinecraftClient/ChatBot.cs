@@ -572,6 +572,8 @@ namespace MinecraftClient
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
         protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0)
         {
+            if (Settings.DebugMessages)
+                ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart(delaySeconds);
         }
