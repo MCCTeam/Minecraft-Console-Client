@@ -14,7 +14,7 @@ namespace MinecraftClient.ChatBots
     {
         private class TaskDesc
         {
-            public string script_file = null;
+            public string action = null;
             public bool triggerOnFirstLogin = false;
             public bool triggerOnLogin = false;
             public bool triggerOnTime = false;
@@ -77,7 +77,8 @@ namespace MinecraftClient.ChatBots
                                     case "triggeroninterval": current_task.triggerOnInterval = Settings.str2bool(argValue); break;
                                     case "timevalue": try { current_task.triggerOnTime_Times.Add(DateTime.ParseExact(argValue, "HH:mm", CultureInfo.InvariantCulture)); } catch { } break;
                                     case "timeinterval": int interval = 1; int.TryParse(argValue, out interval); current_task.triggerOnInterval_Interval = interval; break;
-                                    case "script": current_task.script_file = argValue; break;
+                                    case "script": current_task.action = "script " + argValue; break; //backward compatibility with older tasks.ini
+                                    case "action": current_task.action = argValue; break;
                                 }
                             }
                         }
@@ -94,16 +95,17 @@ namespace MinecraftClient.ChatBots
 
         private void checkAddTask(TaskDesc current_task)
         {
+            //Check if we built a valid task before adding it
             if (current_task != null)
             {
-                //Check if we built a valid task before adding it
-                if (Script.LookForScript(ref current_task.script_file)) //Check if file exists
+                //Look for a valid action
+                if (!String.IsNullOrWhiteSpace(current_task.action))
                 {
-                    if (current_task.script_file != null
-                        && (current_task.triggerOnLogin
+                    //Look for a valid trigger
+                    if (current_task.triggerOnLogin
                         || current_task.triggerOnFirstLogin
-                        || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0))
-                        || (current_task.triggerOnInterval && current_task.triggerOnInterval_Interval > 0)) //Look for a valid trigger
+                        || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0)
+                        || (current_task.triggerOnInterval && current_task.triggerOnInterval_Interval > 0))
                     {
                         if (Settings.DebugMessages)
                             LogToConsole("Loaded task:\n" + Task2String(current_task));
@@ -117,7 +119,7 @@ namespace MinecraftClient.ChatBots
                 }
                 else if (Settings.DebugMessages)
                 {
-                    LogToConsole("No valid script for task:\n" + Task2String(current_task));
+                    LogToConsole("No action for task:\n" + Task2String(current_task));
                 }
             }
         }
@@ -144,8 +146,8 @@ namespace MinecraftClient.ChatBots
                                     {
                                         task.triggerOnTime_alreadyTriggered = true;
                                         if (Settings.DebugMessages)
-                                            LogToConsole("Time / Running script: " + task.script_file);
-                                        RunScript(task.script_file);
+                                            LogToConsole("Time / Running action: " + task.action);
+                                        PerformInternalCommand(task.action);
                                     }
                                 }
                             }
@@ -160,8 +162,8 @@ namespace MinecraftClient.ChatBots
                             {
                                 task.triggerOnInterval_Interval_Countdown = task.triggerOnInterval_Interval;
                                 if (Settings.DebugMessages)
-                                    LogToConsole("Interval / Running script: " + task.script_file);
-                                RunScript(task.script_file);
+                                    LogToConsole("Interval / Running action: " + task.action);
+                                PerformInternalCommand(task.action);
                             }
                             else task.triggerOnInterval_Interval_Countdown--;
                         }
@@ -174,8 +176,8 @@ namespace MinecraftClient.ChatBots
                         if (task.triggerOnLogin || (firstlogin_done == false && task.triggerOnFirstLogin))
                         {
                             if (Settings.DebugMessages)
-                                LogToConsole("Login / Running script: " + task.script_file);
-                            RunScript(task.script_file);
+                                LogToConsole("Login / Running action: " + task.action);
+                            PerformInternalCommand(task.action);
                         }
                     }
 
@@ -196,14 +198,14 @@ namespace MinecraftClient.ChatBots
         {
             return String.Format(
                 " triggeronfirstlogin = {0}\n triggeronlogin = {1}\n triggerontime = {2}\n "
-                    + "triggeroninterval = {3}\n timevalue = {4}\n timeinterval = {5}\n script = {6}",
+                    + "triggeroninterval = {3}\n timevalue = {4}\n timeinterval = {5}\n action = {6}",
                 task.triggerOnFirstLogin,
                 task.triggerOnLogin,
                 task.triggerOnTime,
                 task.triggerOnInterval,
                 String.Join(", ", task.triggerOnTime_Times),
                 task.triggerOnInterval_Interval,
-                task.script_file
+                task.action
             );
         }
     }
