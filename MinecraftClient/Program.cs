@@ -12,7 +12,7 @@ using MinecraftClient.WinAPI;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2019.
+    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2020.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
@@ -20,6 +20,7 @@ namespace MinecraftClient
     /// Typical steps to update MCC for a new Minecraft version
     ///  - Implement protocol changes (see Protocol18.cs)
     ///  - Handle new block types and states (see Material.cs)
+    ///  - Add new item types for inventories (see ItemType.cs)
     ///  - Mark new version as handled (see ProtocolHandler.cs)
     ///  - Update MCHighestVersion field below (for versionning)
     /// </remarks>

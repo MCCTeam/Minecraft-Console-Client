@@ -386,7 +386,20 @@ namespace MinecraftClient
         public void Disconnect()
         {
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, "");
+            {
+                try
+                {
+                    bot.OnDisconnect(ChatBot.DisconnectReason.UserLogout, "");
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnDisconnect: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
 
             botsOnHold.Clear();
             botsOnHold.AddRange(bots);
@@ -456,6 +469,7 @@ namespace MinecraftClient
         {
             if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
                 handler.SendBrandInfo(Settings.BrandInfo.Trim());
+
             if (Settings.MCSettings_Enabled)
                 handler.SendClientSettings(
                     Settings.MCSettings_Locale,
@@ -465,8 +479,23 @@ namespace MinecraftClient
                     Settings.MCSettings_ChatColors,
                     Settings.MCSettings_Skin_All,
                     Settings.MCSettings_MainHand);
+
             foreach (ChatBot bot in bots.ToArray())
-                bot.AfterGameJoined();
+            {
+                try
+                {
+                    bot.AfterGameJoined();
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("AfterGameJoined: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+
             if (inventoryHandlingRequested)
             {
                 inventoryHandlingRequested = false;
@@ -882,7 +911,20 @@ namespace MinecraftClient
             }
 
             foreach (ChatBot bot in bots.ToArray())
-                will_restart |= bot.OnDisconnect(reason, message);
+            {
+                try
+                {
+                    will_restart |= bot.OnDisconnect(reason, message);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnDisconnect: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
 
             if (!will_restart)
                 Program.HandleFailure();
@@ -893,7 +935,7 @@ namespace MinecraftClient
         /// </summary>
         public void OnUpdate()
         {
-            foreach (var bot in bots.ToArray())
+            foreach (ChatBot bot in bots.ToArray())
             {
                 try
                 {
@@ -1161,7 +1203,20 @@ namespace MinecraftClient
             Entity entity = new Entity(EntityID, TypeID, EntityType.NonLivingThings, location);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnEntitySpawn(entity);
+            {
+                try
+                {
+                    bot.OnEntitySpawn(entity);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnEntitySpawn: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
         }
 
         /// <summary>
@@ -1178,7 +1233,20 @@ namespace MinecraftClient
             Entity entity = new Entity(EntityID, TypeID, EntityType.MobAndAnimal, location);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnEntitySpawn(entity);
+            {
+                try
+                {
+                    bot.OnEntitySpawn(entity);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnEntitySpawn: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
         }
 
         /// <summary>
@@ -1195,7 +1263,20 @@ namespace MinecraftClient
             Entity entity = new Entity(EntityID, EntityType.Player, location);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnEntitySpawn(entity);
+            {
+                try
+                {
+                    bot.OnEntitySpawn(entity);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnEntitySpawn: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
         }
 
         /// <summary>
@@ -1209,7 +1290,20 @@ namespace MinecraftClient
                 if (entities.ContainsKey(a))
                 {
                     foreach (ChatBot bot in bots.ToArray())
-                        bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].TypeID, entities[a].Type, entities[a].Location));
+                    {
+                        try
+                        {
+                            bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].TypeID, entities[a].Type, entities[a].Location));
+                        }
+                        catch (Exception e)
+                        {
+                            if (!(e is ThreadAbortException))
+                            {
+                                ConsoleIO.WriteLogLine("OnEntityDespawn: Got error from " + bot.ToString() + ": " + e.ToString());
+                            }
+                            else throw; //ThreadAbortException should not be caught
+                        }
+                    }
                     entities.Remove(a);
                 }
             }
@@ -1234,7 +1328,20 @@ namespace MinecraftClient
                 entities[EntityID].Location = L;
 
                 foreach (ChatBot bot in bots.ToArray())
-                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
+                {
+                    try
+                    {
+                        bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnEntityMove: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
             }
             
         }
@@ -1254,7 +1361,20 @@ namespace MinecraftClient
                 entities[EntityID].Location = location;
 
                 foreach (ChatBot bot in bots.ToArray())
-                    bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
+                {
+                    try
+                    {
+                        bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnEntityMove: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
             }
         }
 
@@ -1268,7 +1388,20 @@ namespace MinecraftClient
             if(EntityID == playerEntityID)
             {
                 foreach (ChatBot bot in bots.ToArray())
-                    bot.OnPlayerProperty(prop);
+                {
+                    try
+                    {
+                        bot.OnPlayerProperty(prop);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
             }
         }
         
@@ -1292,7 +1425,20 @@ namespace MinecraftClient
                     serverTPS = tps;
                     // invoke ChatBot
                     foreach (ChatBot bot in bots.ToArray())
-                        bot.OnServerTpsUpdate(tps);
+                    {
+                        try
+                        {
+                            bot.OnServerTpsUpdate(tps);
+                        }
+                        catch (Exception e)
+                        {
+                            if (!(e is ThreadAbortException))
+                            {
+                                ConsoleIO.WriteLogLine("OnServerTpsUpdate: Got error from " + bot.ToString() + ": " + e.ToString());
+                            }
+                            else throw; //ThreadAbortException should not be caught
+                        }
+                    }
                 }
             }
             else

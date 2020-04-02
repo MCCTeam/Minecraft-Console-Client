@@ -22,6 +22,7 @@ namespace MinecraftClient.Protocol.Handlers
     ///  - Perform a diff between latest supported version in MCC and new stable version to support on https://wiki.vg/Protocol
     ///  - If there are any changes in packets implemented by MCC, add MCXXXVersion field below and implement new packet layouts
     ///  - If packet IDs were changed, also update getPacketIncomingType() and getPacketOutgoingID() inside Protocol18PacketTypes.cs
+    ///  - Also see Material.cs and ItemType.cs for updating block and item data inside MCC
     /// </remarks>
     class Protocol18Handler : IMinecraftCom
     {
@@ -70,13 +71,13 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && (protocolversion > MC1152Version || protocolversion < MC110Version))
+            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1152Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Inventories are currently not handled for that MC version.");
                 handler.SetInventoryEnabled(false);
             }
 
-            if(handler.GetEntityHandlingEnabled() && protocolversion <= MC1122Version)
+            if (handler.GetEntityHandlingEnabled() && (protocolversion <= MC1122Version || protocolversion > MC1152Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Entities are currently not handled for that MC version.");
                 handler.SetEntityHandlingEnabled(false);

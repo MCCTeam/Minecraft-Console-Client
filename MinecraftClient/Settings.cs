@@ -237,11 +237,12 @@ namespace MinecraftClient
                                                 case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
                                                 case "showchatlinks": DisplayChatLinks = str2bool(argValue); break;
                                                 case "terrainandmovements": TerrainAndMovements = str2bool(argValue); break;
+                                                case "entityhandling": EntityHandling = str2bool(argValue); break;
+                                                case "enableentityhandling": EntityHandling = str2bool(argValue); break;
                                                 case "inventoryhandling": InventoryHandling = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
-                                                case "enableentityhandling": EntityHandling = str2bool(argValue); break;
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
 
                                                 case "botowners":
@@ -576,7 +577,8 @@ namespace MinecraftClient
                 + "showxpbarmessages=true             # Messages displayed above xp bar\r\n"
                 + "showchatlinks=true                 # Show links embedded in chat messages\r\n"
                 + "terrainandmovements=false          # Uses more ram, cpu, bandwidth\r\n"
-                + "inventoryhandling=false            # Toggle inventory handling (experimental, enable only for development)\r\n"
+                + "inventoryhandling=false            # Toggle inventory handling (beta)\r\n"
+                + "entityhandling=false               # Toggle entity handling (beta)\r\n"
                 + "sessioncache=disk                  # How to retain session tokens. Use 'none', 'memory' or 'disk'\r\n"
                 + "resolvesrvrecords=fast             # Use 'false', 'fast' (5s timeout), or 'true'. Required for joining some servers.\r\n"
                 + "accountlist=accounts.txt           # See README > 'Servers and Accounts file' for more info about this file\r\n"
@@ -586,7 +588,6 @@ namespace MinecraftClient
                 + "debugmessages=false                # Please enable this before submitting bug reports. Thanks!\r\n"
                 + "scriptcache=true                   # Cache compiled scripts for faster load on low-end devices\r\n"
                 + "timestamps=false                   # Prepend timestamps to chat messages\r\n"
-                + "enableentityhandling=false         # Toggle entities handling\r\n"
                 + "autorespawn=false                  # Toggle auto respawn if client player was dead (make sure your spawn point is safe)\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
