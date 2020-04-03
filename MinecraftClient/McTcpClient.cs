@@ -58,9 +58,9 @@ namespace MinecraftClient
         private int respawnTicks = 0;
 
         private int playerEntityID;
-        // not really understand the Inventory Class
-        // so I use a Dict instead for player inventory
-        //private Dictionary<int, Inventory.Item> playerItems;
+
+        private float playerHealth;
+        private int playerFoodSaturation;
 
         // Entity handling
         private Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
@@ -78,6 +78,8 @@ namespace MinecraftClient
         public Location GetCurrentLocation() { return location; }
         public World GetWorld() { return world; }
         public Double GetServerTPS() { return serverTPS; }
+        public float GetHealth() { return playerHealth; }
+        public int GetSaturation() { return playerFoodSaturation; }
 
         // get bots list for unloading them by commands
         public List<ChatBot> GetLoadedChatBots()
@@ -1540,8 +1542,10 @@ namespace MinecraftClient
         /// Called when client player's health changed, e.g. getting attack
         /// </summary>
         /// <param name="health">Player current health</param>
-        public void OnUpdateHealth(float health)
+        public void OnUpdateHealth(float health, int Food)
         {
+            playerHealth = health;
+            playerFoodSaturation = Food;
             if (health <= 0)
             {
                 if (Settings.AutoRespawn)
