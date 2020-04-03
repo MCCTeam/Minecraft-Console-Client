@@ -212,7 +212,7 @@ namespace MinecraftClient.Protocol
         /// <param name="item">Item (may be null for empty slot)</param>
         void OnSetSlot(byte inventoryID, short slotID, Item item);
 
-        void OnUpdateHealth(float health);
+        void OnUpdateHealth(float health, int Food);
 
         /// <summary>
         /// Called when the Player entity ID has been received from the server

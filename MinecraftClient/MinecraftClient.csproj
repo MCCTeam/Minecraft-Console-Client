@@ -101,6 +101,7 @@
     <Compile Include="Commands\Script.cs" />
     <Compile Include="Commands\Send.cs" />
     <Compile Include="Commands\Set.cs" />
+    <Compile Include="Commands\Status.cs" />
     <Compile Include="Commands\UseItem.cs" />
     <Compile Include="Inventory\Container.cs" />
     <Compile Include="Inventory\ContainerType.cs" />
