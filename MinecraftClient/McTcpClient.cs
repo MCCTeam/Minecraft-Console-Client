@@ -1542,10 +1542,10 @@ namespace MinecraftClient
         /// Called when client player's health changed, e.g. getting attack
         /// </summary>
         /// <param name="health">Player current health</param>
-        public void OnUpdateHealth(float health, int Food)
+        public void OnUpdateHealth(float health, int food)
         {
             playerHealth = health;
-            playerFoodSaturation = Food;
+            playerFoodSaturation = food;
             if (health <= 0)
             {
                 if (Settings.AutoRespawn)

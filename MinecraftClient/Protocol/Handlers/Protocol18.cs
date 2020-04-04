@@ -725,10 +725,10 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                     case PacketIncomingType.UpdateHealth:
                         float health = dataTypes.ReadNextFloat(packetData);
-                        int Food = dataTypes.ReadNextVarInt(packetData);
+                        int food = dataTypes.ReadNextVarInt(packetData);
                         // Food Saturation, not useful
                         dataTypes.ReadNextFloat(packetData);
-                        handler.OnUpdateHealth(health, Food);
+                        handler.OnUpdateHealth(health, food);
                         break;
                     default:
                         return false; //Ignored packet
