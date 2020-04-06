@@ -1349,6 +1349,11 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
+                lock (window_actions)
+                {
+                    if (window_actions.ContainsKey(windowId))
+                        window_actions[windowId] = 0;
+                }
                 SendPacket(PacketOutgoingType.CloseWindow, new[] { (byte)windowId });
                 return true;
             }
