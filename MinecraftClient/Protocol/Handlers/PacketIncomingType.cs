@@ -42,6 +42,7 @@ namespace MinecraftClient.Protocol.Handlers
         EntityTeleport,
         EntityStatus,
         UpdateHealth,
+        HeldItemChange,
         UnknownPacket
     }
 }

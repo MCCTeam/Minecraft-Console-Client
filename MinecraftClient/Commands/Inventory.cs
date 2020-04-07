@@ -43,6 +43,7 @@ namespace MinecraftClient.Commands
                                         response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
                                     else response.Add(String.Format(" #{0}: {1} x{2} - {3}§8", item.Key, item.Value.Type, item.Value.Count, displayName));
                                 }
+                                response.Add("Your selected hotbar is " + (handler.GetCurrentSlot() + 1));
                                 return String.Join("\n", response.ToArray());
                             case "click":
                                 if (args.Length == 3)
