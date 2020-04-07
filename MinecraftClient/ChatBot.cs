@@ -850,5 +850,15 @@ namespace MinecraftClient
             Container container = Handler.GetPlayerInventory();
             return new Container(container.ID, container.Type, container.Title, container.Items);
         }
+
+        /// <summary>
+        /// Check if player is eating or not
+        /// </summary>
+        /// <remarks>Some bot like AutoAttack need this. We don't want to attack while eating</remarks>
+        /// <returns>True if is eating</returns>
+        protected bool GetIsEating()
+        {
+            return Handler.GetIsEating();
+        }
     }
 }

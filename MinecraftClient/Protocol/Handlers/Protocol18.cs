@@ -730,6 +730,10 @@ namespace MinecraftClient.Protocol.Handlers
                         dataTypes.ReadNextFloat(packetData);
                         handler.OnUpdateHealth(health, food);
                         break;
+                    case PacketIncomingType.HeldItemChange:
+                        byte slot = dataTypes.ReadNextByte(packetData);
+                        handler.OnHeldItemChange(slot);
+                        break;
                     default:
                         return false; //Ignored packet
                 }

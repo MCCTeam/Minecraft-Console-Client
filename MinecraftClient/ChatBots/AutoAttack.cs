@@ -32,20 +32,23 @@ namespace MinecraftClient.ChatBots
 
         public override void Update()
         {
-            if (attackCooldownCounter == 0)
+            if (!GetIsEating())
             {
-                attackCooldownCounter = attackCooldown;
-                if (entitiesToAttack.Count > 0)
+                if (attackCooldownCounter == 0)
                 {
-                    foreach (KeyValuePair<int, Entity> a in entitiesToAttack)
+                    attackCooldownCounter = attackCooldown;
+                    if (entitiesToAttack.Count > 0)
                     {
-                        InteractEntity(a.Key, 1);
+                        foreach (KeyValuePair<int, Entity> a in entitiesToAttack)
+                        {
+                            InteractEntity(a.Key, 1);
+                        }
                     }
                 }
-            }
-            else
-            {
-                attackCooldownCounter--;
+                else
+                {
+                    attackCooldownCounter--;
+                }
             }
         }
 

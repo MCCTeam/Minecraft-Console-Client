@@ -212,7 +212,19 @@ namespace MinecraftClient.Protocol
         /// <param name="item">Item (may be null for empty slot)</param>
         void OnSetSlot(byte inventoryID, short slotID, Item item);
 
+        /// <summary>
+        /// Called when player health or hunger changed.
+        /// </summary>
+        /// <param name="health"></param>
+        /// <param name="food"></param>
         void OnUpdateHealth(float health, int food);
+
+        /// <summary>
+        /// Called when client need to change slot.
+        /// </summary>
+        /// <remarks>Used for setting player slot after joining game</remarks>
+        /// <param name="slot"></param>
+        void OnHeldItemChange(byte slot);
 
         /// <summary>
         /// Called when the Player entity ID has been received from the server
