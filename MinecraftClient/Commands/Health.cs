@@ -7,8 +7,8 @@ namespace MinecraftClient.Commands
 {
     class Health : Command
     {
-        public override string CMDName { get { return "status"; } }
-        public override string CMDDesc { get { return "status: Display Health and Food saturation."; } }
+        public override string CMDName { get { return "health"; } }
+        public override string CMDDesc { get { return "health: Display Health and Food saturation."; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
