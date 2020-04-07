@@ -1599,6 +1599,7 @@ namespace MinecraftClient
         {
             Container inventory = inventories[0];
             bool found = false;
+            LastSlot = CurrentSlot;
             if (inventory.Items.ContainsKey(CurrentSlot + 36) && inventory.Items[CurrentSlot + 36].IsFood())
             {
                 // no need to change slot
@@ -1606,7 +1607,6 @@ namespace MinecraftClient
             }
             else
             {
-                LastSlot = CurrentSlot;
                 for (int i = 36; i <= 44; i++)
                 {
                     if (!inventory.Items.ContainsKey(i)) continue;
