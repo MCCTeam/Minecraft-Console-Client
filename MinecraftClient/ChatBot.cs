@@ -168,6 +168,10 @@ namespace MinecraftClient
         /// <param name="entity">Entity wich has just disappeared</param>
         public virtual void OnEntityDespawn(Mapping.Entity entity) { }
 
+        public virtual void OnHeldItemChange(byte slot) { }
+
+        public virtual void OnHealthUpdate(float health, int food) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
@@ -816,6 +820,10 @@ namespace MinecraftClient
             return Handler.SendPluginChannelMessage(channel, data, sendEvenIfNotRegistered);
         }
 
+        /// <summary>
+        /// Get server current TPS (tick per second)
+        /// </summary>
+        /// <returns>tps</returns>
         protected Double GetServerTPS()
         {
             return Handler.GetServerTPS();
@@ -852,13 +860,13 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Check if player is eating or not
+        /// Change player selected hotbar
         /// </summary>
-        /// <remarks>Some bot like AutoAttack need this. We don't want to attack while eating</remarks>
-        /// <returns>True if is eating</returns>
-        protected bool GetIsEating()
+        /// <param name="slot"></param>
+        /// <returns>True if success</returns>
+        protected bool ChangeSlot(short slot)
         {
-            return Handler.GetIsEating();
+            return Handler.ChangeSlot(slot);
         }
     }
 }

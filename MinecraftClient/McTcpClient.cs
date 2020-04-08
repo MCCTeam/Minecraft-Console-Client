@@ -62,10 +62,7 @@ namespace MinecraftClient
         // player health and hunger
         private float playerHealth;
         private int playerFoodSaturation;
-        private bool Eating = false;
-        private int HungerThreshold = 6;
         private byte CurrentSlot = 0;
-        private byte LastSlot = 0; // for switch back to origin slot after eating
 
         // Entity handling
         private Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
@@ -86,7 +83,6 @@ namespace MinecraftClient
         public float GetHealth() { return playerHealth; }
         public int GetSaturation() { return playerFoodSaturation; }
         public byte GetCurrentSlot() { return CurrentSlot; }
-        public bool GetIsEating() { return Eating; }
 
         // get bots list for unloading them by commands
         public List<ChatBot> GetLoadedChatBots()
@@ -173,6 +169,7 @@ namespace MinecraftClient
                     if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
                     if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack()); }
                     if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
+                    if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
                 }
@@ -1566,61 +1563,15 @@ namespace MinecraftClient
                     ConsoleIO.WriteLogLine("You are dead. Type /respawn to respawn.");
                 }
             }
-            if (Settings.AutoEat)
-            {
-                if (food <= HungerThreshold || (food < 20 && health < 20))
-                {
-                    Eating = true;
-                    FindFoodAndEat();
-                }
-                // keep eating until full
-                if (food < 20 && Eating)
-                {
-                    FindFoodAndEat();
-                }
-                if (food >= 20 && Eating)
-                {
-                    Eating = false;
-                    ChangeSlot(LastSlot);
-                }
-            }
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnHealthUpdate(health, food);
         }
 
         public void OnHeldItemChange(byte slot)
         {
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnHeldItemChange(slot);
             CurrentSlot = slot;
-        }
-
-        /// <summary>
-        /// Try to find food in the hotbar and eat it
-        /// </summary>
-        /// <returns>True if found</returns>
-        public bool FindFoodAndEat()
-        {
-            Container inventory = inventories[0];
-            bool found = false;
-            LastSlot = CurrentSlot;
-            if (inventory.Items.ContainsKey(CurrentSlot + 36) && inventory.Items[CurrentSlot + 36].IsFood())
-            {
-                // no need to change slot
-                found = true;
-            }
-            else
-            {
-                for (int i = 36; i <= 44; i++)
-                {
-                    if (!inventory.Items.ContainsKey(i)) continue;
-                    if (inventory.Items[i].IsFood())
-                    {
-                        int slot = i - 36;
-                        ChangeSlot((short)slot);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            if (found) UseItemOnHand();
-            return found;
         }
     }
 }

@@ -97,7 +97,6 @@ namespace MinecraftClient
         public static bool ResolveSrvRecordsShortTimeout = true;
         public static bool EntityHandling = false;
         public static bool AutoRespawn = false;
-        public static bool AutoEat = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -159,12 +158,16 @@ namespace MinecraftClient
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;
 
+        //Auto Eating
+        public static bool AutoEat_Enabled = false;
+        public static int AutoEat_hungerThreshold = 6;
+
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -207,6 +210,7 @@ namespace MinecraftClient
                                     case "chatformat": pMode = ParseMode.ChatFormat; break;
                                     case "autoattack": pMode = ParseMode.AutoAttack; break;
                                     case "autofishing": pMode = ParseMode.AutoFishing; break;
+                                    case "autoeat": pMode = ParseMode.AutoEat; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -245,7 +249,6 @@ namespace MinecraftClient
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
-                                                case "autoeat": AutoEat = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -478,6 +481,14 @@ namespace MinecraftClient
                                             }
                                             break;
 
+                                        case ParseMode.AutoEat:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": AutoEat_Enabled = str2bool(argValue); break;
+                                                case "threshold": AutoEat_hungerThreshold = str2int(argValue); break;
+                                            }
+                                            break;
+
                                         case ParseMode.MCSettings:
                                             switch (argName.ToLower())
                                             {
@@ -591,7 +602,6 @@ namespace MinecraftClient
                 + "scriptcache=true                   # Cache compiled scripts for faster load on low-end devices\r\n"
                 + "timestamps=false                   # Prepend timestamps to chat messages\r\n"
                 + "autorespawn=false                  # Toggle auto respawn if client player was dead (make sure your spawn point is safe)\r\n"
-                + "autoeat=false                      # Toggle auto eat when player is hungry\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
                 + "# yourvar=yourvalue\r\n"
@@ -679,7 +689,12 @@ namespace MinecraftClient
                 + "\r\n"
                 + "[AutoFishing]\r\n"
                 + "# Entity Handling NEED to be enabled first\r\n"
-                + "enabled=false", Encoding.UTF8);
+                + "enabled=false"
+                + "\r\n"
+                + "[AutoEat]\r\n"
+                + "# Inventory Handling NEED to be enabled first\r\n"
+                + "enabled=false\r\n"
+                + "threshold=6", Encoding.UTF8);
         }
 
         /// <summary>
