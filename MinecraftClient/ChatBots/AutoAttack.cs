@@ -32,7 +32,7 @@ namespace MinecraftClient.ChatBots
 
         public override void Update()
         {
-            if (!GetIsEating())
+            if (!AutoEat.Eating)
             {
                 if (attackCooldownCounter == 0)
                 {
