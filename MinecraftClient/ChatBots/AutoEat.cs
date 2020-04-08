@@ -50,7 +50,7 @@ namespace MinecraftClient.ChatBots
             Container inventory = GetPlayerInventory();
             bool found = false;
             LastSlot = CurrentSlot;
-            if (inventory.Items.ContainsKey(CurrentSlot + 36) && inventory.Items[CurrentSlot + 36].IsFood())
+            if (inventory.Items.ContainsKey(CurrentSlot + 36) && ItemTypeExtensions.IsFood(inventory.Items[CurrentSlot + 36].Type))
             {
                 // no need to change slot
                 found = true;
