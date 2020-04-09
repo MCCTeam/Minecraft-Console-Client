@@ -70,24 +70,5 @@ namespace MinecraftClient.Inventory
                 return null;
             }
         }
-
-        /// <summary>
-        /// Check item is a food
-        /// </summary>
-        /// <returns>True if is a food</returns>
-        public bool IsFood()
-        {
-            // non-poison and stackable food
-            // remarks: auto eat may works with non-stackable food <- not tested
-            int[] foods = { 524, 765, 821, 823, 562, 763, 680, 629, 801, 585, 788, 630, 670, 674, 588, 587, 768, 673, 764, 777, 677, 679, 625, 800, 584, 787, 626, 678, 876, 627 };
-            if (foods.Contains((int)Type))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
     }
 }

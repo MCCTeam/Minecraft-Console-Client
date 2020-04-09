@@ -7,12 +7,7 @@ namespace MinecraftClient.Inventory
 {
     public static class ItemTypeExtensions
     {
-        /**
-         * I see "this" in the MaterialExtensions class method, why need that?
-         * public static bool IsSolid(this Material m)
-         *                            ^^^^
-         */
-        public static bool IsFood(ItemType m)
+        public static bool IsFood(this ItemType m)
         {
             ItemType[] t =
             {
