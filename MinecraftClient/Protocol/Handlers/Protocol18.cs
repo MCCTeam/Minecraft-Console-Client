@@ -685,7 +685,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 string _key = dataTypes.ReadNextString(packetData);
                                 Double _value = dataTypes.ReadNextDouble(packetData);
 
-
+                                List<double> op0 = new List<double>();
+                                List<double> op1 = new List<double>();
+                                List<double> op2 = new List<double>();
                                 int NumberOfModifiers = dataTypes.ReadNextVarInt(packetData);
                                 for (int j = 0; j < NumberOfModifiers; j++)
                                 {
@@ -694,11 +696,14 @@ namespace MinecraftClient.Protocol.Handlers
                                     byte operation = dataTypes.ReadNextByte(packetData);
                                     switch (operation)
                                     {
-                                        case 0: _value += amount; break;
-                                        case 1: _value += (amount / 100); break;
-                                        case 2: _value *= amount; break;
+                                        case 0: op0.Add(amount); break;
+                                        case 1: op1.Add(amount); break;
+                                        case 2: op2.Add(amount + 1); break;
                                     }
                                 }
+                                if (op0.Count > 0) _value += op0.Sum();
+                                if (op1.Count > 0) _value *= 1 + op1.Sum();
+                                if (op2.Count > 0) _value *= op2.Aggregate((a, _x) => a * _x);
                                 keys.Add(_key, _value);
                             }
                             handler.OnEntityProperties(EntityID, keys);
