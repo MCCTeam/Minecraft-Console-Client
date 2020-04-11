@@ -868,10 +868,5 @@ namespace MinecraftClient
         {
             return Handler.ChangeSlot(slot);
         }
-
-        protected byte GetCurrentSlot()
-        {
-            return Handler.GetCurrentSlot();
-        }
     }
 }
