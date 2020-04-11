@@ -3,13 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MinecraftClient.ChatBots
 {
     class AutoEat : ChatBot
     {
         byte LastSlot = 0;
-        byte CurrentSlot;
         public static bool Eating = false;
         private int HungerThreshold = 6;
 
@@ -20,15 +21,22 @@ namespace MinecraftClient.ChatBots
 
         public override void OnHealthUpdate(float health, int food)
         {
-            if (food <= HungerThreshold || (food < 20 && health < 20))
+            if (((food <= HungerThreshold) || (food < 20 && health < 20)) && !Eating)
             {
-                Eating = true;
-                FindFoodAndEat();
+                Eating = FindFoodAndEat();
+                if (!Eating)
+                    ChangeSlot(LastSlot);
             }
             // keep eating until full
             if (food < 20 && Eating)
             {
-                FindFoodAndEat();
+                Task.Factory.StartNew(delegate
+                {
+                    Thread.Sleep(200);
+                    Eating = FindFoodAndEat();
+                    if (!Eating)
+                        ChangeSlot(LastSlot);
+                });
             }
             if (food >= 20 && Eating)
             {
@@ -37,10 +45,6 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public override void OnHeldItemChange(byte slot)
-        {
-            CurrentSlot = slot;
-        }
         /// <summary>
         /// Try to find food in the hotbar and eat it
         /// </summary>
@@ -49,7 +53,9 @@ namespace MinecraftClient.ChatBots
         {
             Container inventory = GetPlayerInventory();
             bool found = false;
-            LastSlot = CurrentSlot;
+            byte CurrentSlot = GetCurrentSlot();
+            if (!Eating)
+                LastSlot = CurrentSlot;
             if (inventory.Items.ContainsKey(CurrentSlot + 36) && inventory.Items[CurrentSlot + 36].Type.IsFood())
             {
                 // no need to change slot
