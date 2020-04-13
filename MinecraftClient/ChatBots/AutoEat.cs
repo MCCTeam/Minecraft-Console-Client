@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MinecraftClient.ChatBots
 {
@@ -13,10 +11,25 @@ namespace MinecraftClient.ChatBots
         byte LastSlot = 0;
         public static bool Eating = false;
         private int HungerThreshold = 6;
+        private int DelayCounter = 0;
 
         public AutoEat(int Threshold)
         {
             HungerThreshold = Threshold;
+        }
+
+        public override void Update()
+        {
+            if (DelayCounter > 0)
+            {
+                DelayCounter--;
+                if (DelayCounter == 0)
+                {
+                    Eating = FindFoodAndEat();
+                    if (!Eating)
+                        ChangeSlot(LastSlot);
+                }
+            }
         }
 
         public override void OnHealthUpdate(float health, int food)
@@ -30,13 +43,8 @@ namespace MinecraftClient.ChatBots
             // keep eating until full
             if (food < 20 && Eating)
             {
-                Task.Factory.StartNew(delegate
-                {
-                    Thread.Sleep(200);
-                    Eating = FindFoodAndEat();
-                    if (!Eating)
-                        ChangeSlot(LastSlot);
-                });
+                // delay 300ms
+                DelayCounter = 3;
             }
             if (food >= 20 && Eating)
             {
