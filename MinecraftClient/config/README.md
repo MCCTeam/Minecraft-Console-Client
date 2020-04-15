@@ -288,10 +288,10 @@ would not have been possible without the help of talented contributors:
 
 **Bug Hunters:**
 
-  1092CQ, ambysdotnet, bearbear12345, c0dei, Cat7373, Darkaegis, dbear20, DigitalSniperz,
-  doranchak, drXor, FantomHD, gerik43, ibspa, iTzMrpitBull, JamieSinn, k3ldon, KenXeiko,
-  link3321, lyze237, mattman00000, Nicconyancat, Pokechu22, ridgewell, Ryan6578, Solethia,
-  TNT-UP, TorchRJ, TRTrident, WeedIsGood, xp9kus, Yoann166
+  1092CQ, ambysdotnet, bearbear12345, c0dei, Cat7373, Chtholly, Darkaegis, dbear20,
+  DigitalSniperz, doranchak, drXor, FantomHD, gerik43, ibspa, iTzMrpitBull, JamieSinn,
+  k3ldon, KenXeiko, link3321, lyze237, mattman00000, Nicconyancat, Pokechu22, ridgewell,
+  Ryan6578, Solethia, TNT-UP, TorchRJ, TRTrident, WeedIsGood, xp9kus, Yoann166
 
 **Code contributions:**
 
