@@ -420,7 +420,7 @@ namespace MinecraftClient.Protocol
                 string result = "";
                 string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
                 int code = DoHTTPSPost("sessionserver.mojang.com", "/session/minecraft/join", json_request, ref result);
-                return (result == "");
+                return (code == 200);
             }
             catch { return false; }
         }
