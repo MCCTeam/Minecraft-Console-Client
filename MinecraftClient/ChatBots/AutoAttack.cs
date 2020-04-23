@@ -18,6 +18,7 @@ namespace MinecraftClient.ChatBots
         private Double attackCooldownSecond;
         private int attackRange = 4;
         private Double serverTPS;
+        private float health = 100;
 
         public override void Initialize()
         {
@@ -31,23 +32,22 @@ namespace MinecraftClient.ChatBots
 
         public override void Update()
         {
-            if (!AutoEat.Eating)
+            if (AutoEat.Eating | health == 0) return;
+
+            if (attackCooldownCounter == 0)
             {
-                if (attackCooldownCounter == 0)
+                attackCooldownCounter = attackCooldown;
+                if (entitiesToAttack.Count > 0)
                 {
-                    attackCooldownCounter = attackCooldown;
-                    if (entitiesToAttack.Count > 0)
+                    foreach (KeyValuePair<int, Entity> a in entitiesToAttack)
                     {
-                        foreach (KeyValuePair<int, Entity> a in entitiesToAttack)
-                        {
-                            InteractEntity(a.Key, 1);
-                        }
+                        InteractEntity(a.Key, 1);
                     }
                 }
-                else
-                {
-                    attackCooldownCounter--;
-                }
+            }
+            else
+            {
+                attackCooldownCounter--;
             }
         }
 
@@ -65,6 +65,11 @@ namespace MinecraftClient.ChatBots
         public override void OnEntityMove(Entity entity)
         {
             handleEntity(entity);
+        }
+
+        public override void OnHealthUpdate(float health, int food)
+        {
+            this.health = health;
         }
 
         public override void OnPlayerProperty(Dictionary<string, double> prop)
