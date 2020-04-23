@@ -12,7 +12,6 @@ namespace MinecraftClient.ChatBots
     class AutoAttack : ChatBot
     {
         private Dictionary<int, Entity> entitiesToAttack = new Dictionary<int, Entity>(); // mobs within attack range
-        private Dictionary<int, Entity> entitiesToTrack = new Dictionary<int, Entity>(); // all mobs in view distance
         private int attackCooldown = 6;
         private int attackCooldownCounter = 6;
         private Double attackSpeed = 4;
@@ -54,28 +53,18 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntitySpawn(Entity entity)
         {
-            if (entity.IsHostile())
-            {
-                entitiesToTrack.Add(entity.ID, entity);
-            }
+            handleEntity(entity);
         }
         public override void OnEntityDespawn(Entity entity)
         {
-            if (entitiesToTrack.ContainsKey(entity.ID))
+            if (entitiesToAttack.ContainsKey(entity.ID))
             {
-                entitiesToTrack.Remove(entity.ID);
+                entitiesToAttack.Remove(entity.ID);
             }
         }
         public override void OnEntityMove(Entity entity)
         {
-            if (entitiesToTrack.ContainsKey(entity.ID))
-            {
-                if (GetCurrentLocation().Distance(entity.Location) < attackRange)
-                {
-                    if (!entitiesToAttack.ContainsKey(entity.ID))
-                        entitiesToAttack.Add(entity.ID, entity);
-                }
-            }
+            handleEntity(entity);
         }
 
         public override void OnPlayerProperty(Dictionary<string, double> prop)
@@ -99,6 +88,28 @@ namespace MinecraftClient.ChatBots
             // re-calculate attack speed
             attackCooldownSecond = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
             attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSecond / 0.1) + 1);
+        }
+
+        public void handleEntity(Entity entity)
+        {
+            if (!entity.IsHostile()) return;
+
+            bool isBeingAttacked = entitiesToAttack.ContainsKey(entity.ID);
+            if (GetCurrentLocation().Distance(entity.Location) < attackRange)
+            {
+                // check to see if entity has not been marked as tracked, and if not, track it.
+                if (!isBeingAttacked)
+                {
+                    entitiesToAttack.Add(entity.ID, entity);
+                }
+            } else
+            {
+                // remove marker on entity to attack it, as it is now out of range
+                if (isBeingAttacked)
+                {
+                    entitiesToAttack.Remove(entity.ID);
+                }
+            }
         }
     }
 }
