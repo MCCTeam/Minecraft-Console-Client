@@ -64,6 +64,8 @@ namespace MinecraftClient.ChatBots
             if (entitiesToTrack.ContainsKey(entity.ID))
             {
                 entitiesToTrack.Remove(entity.ID);
+                if (entitiesToAttack.ContainsKey(entity.ID))
+                    entitiesToAttack.Remove(entity.ID);
             }
         }
         public override void OnEntityMove(Entity entity)
