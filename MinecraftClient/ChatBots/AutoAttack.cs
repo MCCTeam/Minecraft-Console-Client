@@ -32,7 +32,8 @@ namespace MinecraftClient.ChatBots
 
         public override void Update()
         {
-            if (AutoEat.Eating | health == 0) return;
+            if (AutoEat.Eating | health == 0)
+                return;
 
             if (attackCooldownCounter == 0)
             {
@@ -55,6 +56,7 @@ namespace MinecraftClient.ChatBots
         {
             handleEntity(entity);
         }
+
         public override void OnEntityDespawn(Entity entity)
         {
             if (entitiesToAttack.ContainsKey(entity.ID))
@@ -62,6 +64,7 @@ namespace MinecraftClient.ChatBots
                 entitiesToAttack.Remove(entity.ID);
             }
         }
+
         public override void OnEntityMove(Entity entity)
         {
             handleEntity(entity);
@@ -97,7 +100,8 @@ namespace MinecraftClient.ChatBots
 
         public void handleEntity(Entity entity)
         {
-            if (!entity.IsHostile()) return;
+            if (!entity.IsHostile())
+                return;
 
             bool isBeingAttacked = entitiesToAttack.ContainsKey(entity.ID);
             if (GetCurrentLocation().Distance(entity.Location) < attackRange)
@@ -107,7 +111,8 @@ namespace MinecraftClient.ChatBots
                 {
                     entitiesToAttack.Add(entity.ID, entity);
                 }
-            } else
+            }
+            else
             {
                 // remove marker on entity to attack it, as it is now out of range
                 if (isBeingAttacked)
