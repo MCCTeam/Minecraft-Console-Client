@@ -40,9 +40,15 @@ namespace MinecraftClient.ChatBots
                 attackCooldownCounter = attackCooldown;
                 if (entitiesToAttack.Count > 0)
                 {
-                    foreach (KeyValuePair<int, Entity> a in entitiesToAttack)
+                    foreach (KeyValuePair<int, Entity> entity in entitiesToAttack)
                     {
-                        InteractEntity(a.Key, 1);
+                        // check that we are in range once again.
+                        bool shouldAttack = handleEntity(entity.Value);
+                        if (shouldAttack)
+                        {
+                            // hit the entity!
+                            InteractEntity(entity.Key, 1);
+                        }
                     }
                 }
             }
@@ -98,10 +104,16 @@ namespace MinecraftClient.ChatBots
             attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSecond / 0.1) + 1);
         }
 
-        public void handleEntity(Entity entity)
+        /// <summary>
+        /// Checks to see if the entity should be attacked. If it should be attacked, it will add the entity
+        /// To a list of entities to attack every few ticks.
+        /// </summary>
+        /// <param name="entity">The entity to handle</param>
+        /// <returns>If the entity should be attacked</returns>
+        public bool handleEntity(Entity entity)
         {
             if (!entity.IsHostile())
-                return;
+                return false;
 
             bool isBeingAttacked = entitiesToAttack.ContainsKey(entity.ID);
             if (GetCurrentLocation().Distance(entity.Location) < attackRange)
@@ -111,6 +123,8 @@ namespace MinecraftClient.ChatBots
                 {
                     entitiesToAttack.Add(entity.ID, entity);
                 }
+
+                return true;
             }
             else
             {
@@ -119,6 +133,8 @@ namespace MinecraftClient.ChatBots
                 {
                     entitiesToAttack.Remove(entity.ID);
                 }
+
+                return false;
             }
         }
     }
