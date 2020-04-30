@@ -1211,7 +1211,7 @@ namespace MinecraftClient
         public void OnSpawnEntity(int EntityID, int TypeID, Guid UUID, Location location)
         {
             if (entities.ContainsKey(EntityID)) return;
-            Entity entity = new Entity(EntityID, TypeID, EntityType.NonLivingThings, location);
+            Entity entity = new Entity(EntityID, TypeID, EntityType.NonLivingThings, location, UUID);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
             {
@@ -1241,7 +1241,7 @@ namespace MinecraftClient
         public void OnSpawnLivingEntity(int EntityID, int TypeID, Guid UUID, Location location)
         {
             if (entities.ContainsKey(EntityID)) return;
-            Entity entity = new Entity(EntityID, TypeID, EntityType.MobAndAnimal, location);
+            Entity entity = new Entity(EntityID, TypeID, EntityType.MobAndAnimal, location, UUID);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
             {
@@ -1304,7 +1304,7 @@ namespace MinecraftClient
                     {
                         try
                         {
-                            bot.OnEntityDespawn(new Entity(entities[a].ID, entities[a].TypeID, entities[a].Type, entities[a].Location));
+                            bot.OnEntityDespawn(entities[a]);
                         }
                         catch (Exception e)
                         {
@@ -1342,7 +1342,7 @@ namespace MinecraftClient
                 {
                     try
                     {
-                        bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
+                        bot.OnEntityMove(entities[EntityID]);
                     }
                     catch (Exception e)
                     {
@@ -1375,7 +1375,7 @@ namespace MinecraftClient
                 {
                     try
                     {
-                        bot.OnEntityMove(new Entity(entities[EntityID].ID, entities[EntityID].TypeID, entities[EntityID].Type, entities[EntityID].Location));
+                        bot.OnEntityMove(entities[EntityID]);
                     }
                     catch (Exception e)
                     {
