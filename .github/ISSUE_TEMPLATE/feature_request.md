@@ -10,7 +10,7 @@ assignees: ''
 **Prerequisites**
  - [ ] I have read and understood the [user manual](https://github.com/ORelio/Minecraft-Console-Client/tree/master/MinecraftClient/config)
  - [ ] I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)
- - [ ] I tried to [look for similar feature requests](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue) before opening an new one
+ - [ ] I tried to [look for similar feature requests](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
 
 **Feature description**
 A feature request should contain the following items:

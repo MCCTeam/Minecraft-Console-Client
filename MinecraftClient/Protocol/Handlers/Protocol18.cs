@@ -863,7 +863,10 @@ namespace MinecraftClient.Protocol.Handlers
                     login_phase = false;
 
                     if (!pForge.CompleteForgeHandshake())
+                    {
+                        ConsoleIO.WriteLineFormatted("§8Forge Login Handshake did not complete successfully");
                         return false;
+                    }
 
                     StartUpdating();
                     return true; //No need to check session or start encryption
@@ -920,7 +923,10 @@ namespace MinecraftClient.Protocol.Handlers
                     login_phase = false;
 
                     if (!pForge.CompleteForgeHandshake())
+                    {
+                        ConsoleIO.WriteLineFormatted("§8Forge StartEncryption Handshake did not complete successfully");
                         return false;
+                    }
 
                     StartUpdating();
                     return true;

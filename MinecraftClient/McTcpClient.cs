@@ -213,10 +213,15 @@ namespace MinecraftClient
                             timeoutdetector.Start();
                         }
                     }
+                    else
+                    {
+                        Console.WriteLine("Failed to login to this server.");
+                        retry = true;
+                    }
                 }
                 catch (Exception e)
                 {
-                    ConsoleIO.WriteLineFormatted("§8" + e.Message);
+                    ConsoleIO.WriteLineFormatted("§8" + e.GetType().Name + ": " + e.Message);
                     Console.WriteLine("Failed to join this server.");
                     retry = true;
                 }

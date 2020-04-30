@@ -9,7 +9,7 @@ assignees: ''
 
 **Prerequisites**
  - [ ] I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)
- - [ ] I tried to [look for similar issues](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue) before opening an new one
+ - [ ] I tried to [look for similar issues](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
  - [ ] I have set `debugmessages=true` in config to diagnose my issue
  - [ ] I have redacted session tokens and passwords before attaching screenshots
 

@@ -470,7 +470,11 @@ namespace MinecraftClient.Protocol.Handlers
 
                 return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey);
             }
-            else return false;
+            else
+            {
+                ConsoleIO.WriteLineFormatted("§8Invalid response to Handshake packet");
+                return false;
+            }
         }
 
         private bool StartEncryption(string uuid, string username, string sessionID, byte[] token, string serverIDhash, byte[] serverKey)
@@ -486,6 +490,7 @@ namespace MinecraftClient.Protocol.Handlers
                 Console.WriteLine("Checking Session...");
                 if (!ProtocolHandler.SessionCheck(uuid, sessionID, CryptoHandler.getServerHash(serverIDhash, serverKey, secretKey)))
                 {
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, "Failed to check session.");
                     return false;
                 }
             }
@@ -520,7 +525,11 @@ namespace MinecraftClient.Protocol.Handlers
                 encrypted = true;
                 return true;
             }
-            else return false;
+            else
+            {
+                ConsoleIO.WriteLineFormatted("§8Invalid response to StartEncryption packet");
+                return false;
+            }
         }
 
         public bool Login()
@@ -555,9 +564,10 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                         }
                     }
-                    catch
+                    catch (Exception e)
                     {
                         //Connection failed
+                        ConsoleIO.WriteLineFormatted("§8" + e.GetType().Name + ": " + e.Message);
                         return false;
                     }
                 }
