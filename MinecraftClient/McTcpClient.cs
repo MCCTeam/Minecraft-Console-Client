@@ -1271,7 +1271,7 @@ namespace MinecraftClient
         public void OnSpawnPlayer(int EntityID, Guid UUID, Location location, byte Yaw, byte Pitch)
         {
             if (entities.ContainsKey(EntityID)) return;
-            Entity entity = new Entity(EntityID, EntityType.Player, location);
+            Entity entity = new Entity(EntityID, EntityType.Player, location, UUID);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
             {
