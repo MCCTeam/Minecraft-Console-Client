@@ -16,6 +16,11 @@ namespace MinecraftClient.Mapping
         public int ID;
 
         /// <summary>
+        /// UUID of the entity if it is a player.
+        /// </summary>
+        public Guid UUID;
+
+        /// <summary>
         /// Entity type determined by Minecraft Console Client
         /// </summary>
         public EntityType Type;
@@ -80,6 +85,19 @@ namespace MinecraftClient.Mapping
             this.ID = ID;
             this.Type = type;
             this.Location = location;
+        }
+        /// <summary>
+        /// Create a new entity based on Entity ID, Entity Type, location and UUID
+        /// </summary>
+        /// <param name="ID">Entity ID</param>
+        /// <param name="type">Entity Type Enum</param>
+        /// <param name="location">Entity location</param>
+        public Entity(int ID, EntityType type, Location location, Guid uuid)
+        {
+            this.ID = ID;
+            this.Type = type;
+            this.Location = location;
+            this.UUID = uuid;
         }
 
         /// <summary>
