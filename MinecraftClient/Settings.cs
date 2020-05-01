@@ -161,16 +161,13 @@ namespace MinecraftClient
         //Auto Eating
         public static bool AutoEat_Enabled = false;
         public static int AutoEat_hungerThreshold = 6;
-        
-        //Auto Looking
-        public static bool AutoLook_Enabled = false;
 
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoLook };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -214,7 +211,6 @@ namespace MinecraftClient
                                     case "autoattack": pMode = ParseMode.AutoAttack; break;
                                     case "autofishing": pMode = ParseMode.AutoFishing; break;
                                     case "autoeat": pMode = ParseMode.AutoEat; break;
-                                    case "autolook": pMode = ParseMode.AutoLook; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -470,12 +466,6 @@ namespace MinecraftClient
                                                 case "matchesfile": AutoRespond_Matches = argValue; break;
                                             }
                                             break;
-                                        case ParseMode.AutoLook:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": AutoLook_Enabled = str2bool(argValue); break;
-                                            }
-                                            break;
 
                                         case ParseMode.AutoAttack:
                                             switch (argName.ToLower())
@@ -699,17 +689,12 @@ namespace MinecraftClient
                 + "\r\n"
                 + "[AutoFishing]\r\n"
                 + "# Entity Handling NEED to be enabled first\r\n"
-                + "enabled=false\r\n"
+                + "enabled=false"
                 + "\r\n"
                 + "[AutoEat]\r\n"
                 + "# Inventory Handling NEED to be enabled first\r\n"
                 + "enabled=false\r\n"
-                + "threshold=6\r\n"
-                + "\r\n"
-                + "[AutoLook]\r\n"
-                + "# Entity Handling AND Terrain Handling NEEDS to be enabled first\r\n"
-                + "enabled=false"
-                + "\r\n", Encoding.UTF8);
+                + "threshold=6", Encoding.UTF8);
         }
 
         /// <summary>
