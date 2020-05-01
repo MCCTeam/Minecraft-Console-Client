@@ -129,6 +129,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (!server)
                 {
+                    Console.WriteLine(("[C -> S] 0x") + packetID.ToString("x2"));
                     double x, y, z;
                     bool g;
                     switch (packetID)
@@ -164,6 +165,13 @@ namespace MinecraftClient.Protocol.Handlers
                                 itemCount = readNextByte(ref packetData);
                             }
                             Console.WriteLine("[C -> S] Window #" + window + " click: #" + slot + " button " + button + " action " + action + " mode " + mode + " item " + itemId + " x" + itemCount);
+                            break;
+                        case 0x0B:
+                            int EntityID = readNextVarInt(ref packetData);
+                            int ActionID = readNextVarInt(ref packetData);
+                            int JumpBoost = readNextVarInt(ref packetData);
+                            Console.WriteLine(
+                                $"[C -> S] EntityID: {EntityID}, ActionID: {ActionID}, JumpBoost: {JumpBoost}");
                             break;
                     }
                 }
