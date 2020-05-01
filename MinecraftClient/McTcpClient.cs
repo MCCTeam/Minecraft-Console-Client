@@ -389,7 +389,7 @@ namespace MinecraftClient
                 {
                     try
                     {
-                        bot.OnInternalCommand(command_name, response_msg);
+                        bot.OnInternalCommand(command_name, string.Join(" ",Command.getArgs(command)),response_msg);
                     }
                     catch (Exception e)
                     {
