@@ -1358,6 +1358,7 @@ namespace MinecraftClient
             }
             
         }
+        
         /// <summary>
         /// Called when an entity moved over 8 block.
         /// </summary>
@@ -1471,6 +1472,14 @@ namespace MinecraftClient
             playerEntityID = EntityID;
         }
 
+        /// <summary>
+        /// Send the Entity Action packet with the Specified ID
+        /// </summary>
+        /// <returns>TRUE if the item was successfully used</returns>
+        public bool sendEntityAction(ActionType action)
+        {
+            return handler.SendEntityAction(playerEntityID, (int) action);
+        }
         /// <summary>
         /// Use the item currently in the player's hand
         /// </summary>

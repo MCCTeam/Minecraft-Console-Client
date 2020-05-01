@@ -965,6 +965,22 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+        
+        public bool SendEntityAction(int PlayerEntityID, int ActionID)
+        {
+            try
+            {
+                List<byte> fields = new List<byte>();
+                fields.AddRange(dataTypes.GetVarInt(PlayerEntityID));
+                fields.AddRange(dataTypes.GetVarInt(ActionID));
+                fields.AddRange(dataTypes.GetVarInt(0));
+                SendPacket(PacketOutgoingType.EntityAction, fields);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
 
         /// <summary>
         /// Send a respawn packet to the server
