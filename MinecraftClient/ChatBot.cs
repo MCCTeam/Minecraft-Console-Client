@@ -664,6 +664,10 @@ namespace MinecraftClient
         {
             return Handler.GetInventoryEnabled();
         }
+        public Dictionary<int, Container> GetInventories()
+        {
+            return Handler.GetInventories();
+        }
 
         /// <summary>
         /// Get the current Minecraft World
