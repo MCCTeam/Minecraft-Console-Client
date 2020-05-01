@@ -6,6 +6,8 @@ using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
+using MinecraftClient.Mapping;
+using MinecraftClient.WinAPI;
 
 namespace MinecraftClient
 {
@@ -202,6 +204,21 @@ namespace MinecraftClient
             return Handler.SendText(text);
         }
 
+        /// <summary>
+        /// Makes player look at a location
+        /// </summary>
+        /// <param name="locationToLookAt">The location of the block or entity to look at</param>
+        protected void LookAtLocation(Location locationToLookAt)
+        {
+            var myLocation = GetCurrentLocation();
+            var dX = myLocation.X - locationToLookAt.X;
+            var dY = myLocation.Y - locationToLookAt.Y;
+            var dZ =  myLocation.Z - locationToLookAt.Z;
+            var yaw = Math.Atan2(dZ, dX)*180/Math.PI+90;
+            var pitch = (-Math.Atan2(Math.Sqrt(dZ * dZ + dX * dX), dY) + Math.PI)*180/Math.PI-90;
+            if (yaw < 0) yaw += 360;
+            Handler.UpdateLocation(myLocation, (float) yaw, (float) pitch);
+        }
         /// <summary>
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
