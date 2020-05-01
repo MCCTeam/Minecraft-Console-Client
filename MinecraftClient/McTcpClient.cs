@@ -325,6 +325,7 @@ namespace MinecraftClient
             }
             while (true);
         }
+        
 
         /// <summary>
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
@@ -335,6 +336,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
         public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
+            
             /* Load commands from the 'Commands' namespace */
 
             if (cmds.Count == 0)
@@ -383,12 +385,28 @@ namespace MinecraftClient
             else if (cmds.ContainsKey(command_name))
             {
                 response_msg = cmds[command_name].Run(this, command, localVars);
+                foreach (ChatBot bot in bots.ToArray())
+                {
+                    try
+                    {
+                        bot.OnInternalCommand(command_name, response_msg);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnInternalCommand: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
             }
             else
             {
                 response_msg = "Unknown command '" + command_name + "'. Use '" + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + "help' for help.";
                 return false;
             }
+            
             return true;
         }
 
