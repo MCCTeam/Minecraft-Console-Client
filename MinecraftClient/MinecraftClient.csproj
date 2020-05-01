@@ -78,6 +78,7 @@
     <Compile Include="ChatBots\AutoAttack.cs" />
     <Compile Include="ChatBots\AutoEat.cs" />
     <Compile Include="ChatBots\AutoFishing.cs" />
+    <Compile Include="ChatBots\AutoLook.cs" />
     <Compile Include="ChatBots\AutoRespond.cs" />
     <Compile Include="ChatBots\AutoRelog.cs" />
     <Compile Include="ChatBots\ChatLog.cs" />
