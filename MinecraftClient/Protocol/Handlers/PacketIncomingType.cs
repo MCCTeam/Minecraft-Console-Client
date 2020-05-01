@@ -24,6 +24,7 @@ namespace MinecraftClient.Protocol.Handlers
         TabCompleteResult,
         PluginMessage,
         KickPacket,
+
         NetworkCompressionTreshold,
         ResourcePackSend,
         CloseWindow,

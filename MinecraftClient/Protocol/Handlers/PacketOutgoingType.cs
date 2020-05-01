@@ -17,6 +17,7 @@ namespace MinecraftClient.Protocol.Handlers
         ClientSettings,
         PluginMessage,
         TabComplete,
+        EntityAction,
         PlayerPosition,
         PlayerPositionAndLook,
         TeleportConfirm,
