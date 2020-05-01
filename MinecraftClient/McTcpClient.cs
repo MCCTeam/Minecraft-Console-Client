@@ -170,6 +170,8 @@ namespace MinecraftClient
                     if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack()); }
                     if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
                     if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
+                    if (Settings.AutoLook_Enabled) { BotLoad(new ChatBots.AutoLook()); }
+
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
                 }
@@ -1356,6 +1358,7 @@ namespace MinecraftClient
             }
             
         }
+        
         /// <summary>
         /// Called when an entity moved over 8 block.
         /// </summary>
@@ -1469,6 +1472,14 @@ namespace MinecraftClient
             playerEntityID = EntityID;
         }
 
+        /// <summary>
+        /// Send the Entity Action packet with the Specified ID
+        /// </summary>
+        /// <returns>TRUE if the item was successfully used</returns>
+        public bool sendEntityAction(ActionType action)
+        {
+            return handler.SendEntityAction(playerEntityID, (int) action);
+        }
         /// <summary>
         /// Use the item currently in the player's hand
         /// </summary>

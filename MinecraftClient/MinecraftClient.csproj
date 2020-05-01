@@ -78,6 +78,7 @@
     <Compile Include="ChatBots\AutoAttack.cs" />
     <Compile Include="ChatBots\AutoEat.cs" />
     <Compile Include="ChatBots\AutoFishing.cs" />
+    <Compile Include="ChatBots\AutoLook.cs" />
     <Compile Include="ChatBots\AutoRespond.cs" />
     <Compile Include="ChatBots\AutoRelog.cs" />
     <Compile Include="ChatBots\ChatLog.cs" />
@@ -103,6 +104,7 @@
     <Compile Include="Commands\Send.cs" />
     <Compile Include="Commands\Set.cs" />
     <Compile Include="Commands\Health.cs" />
+    <Compile Include="Commands\Sneak.cs" />
     <Compile Include="Commands\UseItem.cs" />
     <Compile Include="Inventory\Container.cs" />
     <Compile Include="Inventory\ContainerType.cs" />
@@ -119,6 +121,7 @@
     <Compile Include="Mapping\Entity.cs" />
     <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
+    <Compile Include="Protocol\Action.cs" />
     <Compile Include="Protocol\Handlers\DataTypes.cs" />
     <Compile Include="Protocol\Handlers\PacketIncomingType.cs" />
     <Compile Include="Protocol\Handlers\PacketOutgoingType.cs" />

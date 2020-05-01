@@ -85,7 +85,15 @@ namespace MinecraftClient.Protocol
         /// <param name="data">packet Data</param>
         /// <returns>True if message was successfully sent</returns>
         bool SendPluginChannelPacket(string channel, byte[] data);
-
+        
+        /// <summary>
+        /// Send Entity Action packet to the server.
+        /// </summary>
+        /// <param name="entityID">PlayerID</param>
+        /// <param name="type">Type of packet to send</param>
+        /// <returns>True if packet was successfully sent</returns>
+        bool SendEntityAction(int EntityID, int type);
+        
         /// <summary>
         /// Send a held item change packet to the server.
         /// </summary>
