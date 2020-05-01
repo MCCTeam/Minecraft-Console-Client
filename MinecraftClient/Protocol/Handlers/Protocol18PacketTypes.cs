@@ -394,7 +394,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.InteractEntity: return 0x0D;
                     case PacketOutgoingType.ClickWindow: return 0x08;
                     case PacketOutgoingType.CloseWindow: return 0x09;
-                    case PacketOutgoingType.EntityAction: return 0x0B;
+                    case PacketOutgoingType.EntityAction: return 0x19;
                 }
             }
             else // MC 1.14 to 1.15
@@ -417,7 +417,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.PlayerBlockPlacement: return 0x2C;
                     case PacketOutgoingType.ClickWindow: return 0x09;
                     case PacketOutgoingType.CloseWindow: return 0x0A;
-                    case PacketOutgoingType.EntityAction: return 0x0B;
+                    case PacketOutgoingType.EntityAction: return 0x19;
                 }
             }
 
