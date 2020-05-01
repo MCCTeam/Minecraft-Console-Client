@@ -10,15 +10,12 @@ namespace MinecraftClient.ChatBots
         private Entity _entityToLookAt;
         public override void Initialize()
         {
-            if (GetEntityHandlingEnabled()) return;
-            LogToConsole("Entity Handling is not enabled in the config file!");
+            if (GetEntityHandlingEnabled() && GetTerrainEnabled()) return;
+            LogToConsole("Entity Handling or Terrain Handling is not enabled in the config file!");
             LogToConsole("This bot will be unloaded.");
             UnloadBot();
         }
-
-        public override void Update()
-        {
-        }
+        
         public override void OnEntityDespawn(Entity entity)
         {
             if (entity == _entityToLookAt)
@@ -32,10 +29,12 @@ namespace MinecraftClient.ChatBots
         }
         public override void OnEntityMove(Entity entity)
         {
-            bool tempBool = HandleEntity(entity);
+            var tempBool = HandleEntity(entity);
+            LogDebugToConsole(tempBool);
             if (!tempBool) return;
             LookAtLocation(entity.Location);
         }
+        
         /// <summary>
         /// Handles an entity, and tracks it if it is closer then the one we are currently tracking
         /// </summary>
