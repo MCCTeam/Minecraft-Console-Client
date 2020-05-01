@@ -214,6 +214,7 @@ namespace MinecraftClient
                                     case "autoattack": pMode = ParseMode.AutoAttack; break;
                                     case "autofishing": pMode = ParseMode.AutoFishing; break;
                                     case "autoeat": pMode = ParseMode.AutoEat; break;
+                                    case "autolook": pMode = ParseMode.AutoLook; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -706,7 +707,7 @@ namespace MinecraftClient
                 + "threshold=6\r\n"
                 + "\r\n"
                 + "[AutoLook]\r\n"
-                + "# Entity Handling NEED to be enabled first\r\n"
+                + "# Entity Handling AND Terrain Handling NEEDS to be enabled first\r\n"
                 + "enabled=false"
                 + "\r\n", Encoding.UTF8);
         }
