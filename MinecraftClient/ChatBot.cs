@@ -156,6 +156,8 @@ namespace MinecraftClient
         /// <param name="entity">Entity with updated location</param>
         public virtual void OnEntityMove(Mapping.Entity entity) { }
 
+        public virtual void OnInternalCommand(string commandName,string commandParams, string Result) { }
+
         /// <summary>
         /// Called when an entity spawned nearby
         /// </summary>
