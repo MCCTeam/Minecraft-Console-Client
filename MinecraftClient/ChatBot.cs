@@ -168,8 +168,17 @@ namespace MinecraftClient
         /// <param name="entity">Entity wich has just disappeared</param>
         public virtual void OnEntityDespawn(Mapping.Entity entity) { }
 
+        /// <summary>
+        /// Called when the player held item has changed
+        /// </summary>
+        /// <param name="slot">New slot ID</param>
         public virtual void OnHeldItemChange(byte slot) { }
 
+        /// <summary>
+        /// Called when the player health has been updated
+        /// </summary>
+        /// <param name="health">New player health</param>
+        /// <param name="food">New food level</param>
         public virtual void OnHealthUpdate(float health, int food) { }
 
         /* =================================================================== */
@@ -683,6 +692,15 @@ namespace MinecraftClient
         protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false)
         {
             return Handler.MoveTo(location, allowUnsafe);
+        }
+
+        /// <summary>
+        /// Look at the specified location
+        /// </summary>
+        /// <param name="location">Location to look at</param>
+        protected void LookAtLocation(Mapping.Location location)
+        {
+            Handler.UpdateLocation(Handler.GetCurrentLocation(), location);
         }
 
         /// <summary>
