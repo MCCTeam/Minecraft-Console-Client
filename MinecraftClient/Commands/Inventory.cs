@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     class Inventory : Command
     {
         public override string CMDName { get { return "inventory"; } }
-        public override string CMDDesc { get { return "inventory <id> <list|close|click <slot>>: Interact with inventories"; } }
+        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|click <slot>>: Interact with inventories"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -20,7 +20,21 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        int inventoryId = int.Parse(args[0]);
+                        int inventoryId;
+                        if (args[0].ToLower() == "player")
+                        {
+                            // player inventory is always ID 0
+                            inventoryId = 0;
+                        }
+                        else if (args[0].ToLower() == "container")
+                        {
+                            List<int> availableIds = handler.GetInventories().Keys.ToList();
+                            availableIds.Remove(0); // remove player inventory ID from list
+                            if (availableIds.Count == 1)
+                                inventoryId = availableIds[0]; // one container, use it
+                            else return "Cannot find container, please retry with explicit ID";
+                        }
+                        else inventoryId = int.Parse(args[0]);
                         string action = args.Length > 1
                             ? args[1].ToLower()
                             : "list";
