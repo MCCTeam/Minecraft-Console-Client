@@ -13,6 +13,7 @@ namespace MinecraftClient.Commands
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
+            Console.WriteLine(command);
             if (sneaking)
             {
                 var result = handler.sendEntityAction(Protocol.ActionType.StopSneaking);
