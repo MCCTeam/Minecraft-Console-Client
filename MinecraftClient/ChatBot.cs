@@ -668,6 +668,20 @@ namespace MinecraftClient
         {
             return Handler.GetInventories();
         }
+        /// <summary>
+        /// Use item in hand
+        /// </summary>
+        protected void UseItemInHand()
+        {
+            Handler.UseItemOnHand();
+        }
+        /// <summary>
+        /// SetSlot
+        /// </summary>
+        protected void SetSlot(int slotNum)
+        {
+            Handler.ChangeSlot((short) slotNum);
+        }
 
         /// <summary>
         /// Get the current Minecraft World
