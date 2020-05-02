@@ -676,9 +676,23 @@ namespace MinecraftClient
             Handler.UseItemOnHand();
         }
         /// <summary>
+        /// start Sneaking
+        /// </summary>
+        protected bool Sneak()
+        {
+            return SendAction(Protocol.ActionType.StartSneaking);
+        }
+        /// <summary>
+        /// Sends UnSneak
+        /// </summary>
+        protected bool UnSneak()
+        {
+            return SendAction(Protocol.ActionType.StopSneaking);
+        }
+        /// <summary>
         /// Send Entity Action
         /// </summary>
-        protected bool SendAction(Protocol.ActionType action)
+        private bool SendAction(Protocol.ActionType action)
         {
             return Handler.sendEntityAction(action);
         }
