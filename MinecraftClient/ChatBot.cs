@@ -676,6 +676,13 @@ namespace MinecraftClient
             Handler.UseItemOnHand();
         }
         /// <summary>
+        /// Send Entity Action
+        /// </summary>
+        protected bool SendAction(Protocol.ActionType action)
+        {
+            return Handler.sendEntityAction(action);
+        }
+        /// <summary>
         /// SetSlot
         /// </summary>
         protected void SetSlot(int slotNum)
