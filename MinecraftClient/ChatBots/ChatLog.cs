@@ -100,11 +100,11 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public override void OnInternalCommand(string commandName,string commandParams, string Result)
+        public override void OnInternalCommand(string commandName,string commandParams, string result)
         {
             if (saveInternal)
             {
-                save(string.Format("Internal {0}({1}): {2}", commandName, commandParams, Result));
+                save(string.Format("Internal {0}({1}): {2}", commandName, commandParams, result));
             }
         }
 
