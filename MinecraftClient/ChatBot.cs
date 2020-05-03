@@ -674,14 +674,14 @@ namespace MinecraftClient
         /// </summary>
         protected bool Sneak(bool on)
         {
-            return SendEntityAction(on ? Protocol.ActionType.StartSneaking : Protocol.ActionType.StopSneaking);
+            return SendEntityAction(on ? Protocol.EntityActionType.StartSneaking : Protocol.EntityActionType.StopSneaking);
         }
         /// <summary>
         /// Send Entity Action
         /// </summary>
-        private bool SendEntityAction(Protocol.ActionType action)
+        private bool SendEntityAction(Protocol.EntityActionType entityAction)
         {
-            return Handler.sendEntityAction(action);
+            return Handler.sendEntityAction(entityAction);
         }
         /// <summary>
         /// SetSlot

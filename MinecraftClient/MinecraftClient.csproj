@@ -120,7 +120,7 @@
     <Compile Include="Mapping\Entity.cs" />
     <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
-    <Compile Include="Protocol\Action.cs" />
+    <Compile Include="Protocol\EntityActionType.cs" />
     <Compile Include="Protocol\Handlers\DataTypes.cs" />
     <Compile Include="Protocol\Handlers\PacketIncomingType.cs" />
     <Compile Include="Protocol\Handlers\PacketOutgoingType.cs" />

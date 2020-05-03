@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MinecraftClient.Protocol
 {
-    public enum ActionType
+    public enum EntityActionType
     {
         StartSneaking,
         StopSneaking,

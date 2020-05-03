@@ -1494,9 +1494,9 @@ namespace MinecraftClient
         /// Send the Entity Action packet with the Specified ID
         /// </summary>
         /// <returns>TRUE if the item was successfully used</returns>
-        public bool sendEntityAction(ActionType action)
+        public bool sendEntityAction(EntityActionType entityAction)
         {
-            return handler.SendEntityAction(playerEntityID, (int) action);
+            return handler.SendEntityAction(playerEntityID, (int) entityAction);
         }
         /// <summary>
         /// Use the item currently in the player's hand

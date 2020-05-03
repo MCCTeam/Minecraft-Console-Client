@@ -16,13 +16,13 @@ namespace MinecraftClient.Commands
             Console.WriteLine(command);
             if (sneaking)
             {
-                var result = handler.sendEntityAction(Protocol.ActionType.StopSneaking);
+                var result = handler.sendEntityAction(Protocol.EntityActionType.StopSneaking);
                 sneaking = false;
                 return  result ? "Success" : "Fail";
             }
             else
             {
-                var result = handler.sendEntityAction(Protocol.ActionType.StartSneaking);
+                var result = handler.sendEntityAction(Protocol.EntityActionType.StartSneaking);
                 sneaking = true;
                 return  result ? "Success" : "Fail";
             }
