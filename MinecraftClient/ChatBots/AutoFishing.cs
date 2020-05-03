@@ -95,7 +95,7 @@ namespace MinecraftClient.ChatBots
         {
             LogToConsole(GetTimestamp() + ": Caught a fish!");
             // retract fishing rod
-            UseItemOnHand();
+            UseItemInHand();
             if (inventoryEnabled)
             {
                 if (!hasFishingRod())
@@ -110,7 +110,7 @@ namespace MinecraftClient.ChatBots
                 // retract fishing rod need some time
                 Thread.Sleep(800);
                 // throw again
-                UseItemOnHand();
+                UseItemInHand();
             });
         }
 
