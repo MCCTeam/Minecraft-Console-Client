@@ -8,7 +8,7 @@ namespace MinecraftClient.Commands
     public class Sneak : Command
     {
         private bool sneaking = false;
-        public override string CMDName { get { return "TSneak"; } }
+        public override string CMDName { get { return "Sneak"; } }
         public override string CMDDesc { get { return "Sneak: Toggles sneaking"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
