@@ -466,7 +466,6 @@ namespace MinecraftClient
                                                 case "matchesfile": AutoRespond_Matches = argValue; break;
                                             }
                                             break;
-
                                         case ParseMode.AutoAttack:
                                             switch (argName.ToLower())
                                             {
@@ -689,12 +688,13 @@ namespace MinecraftClient
                 + "\r\n"
                 + "[AutoFishing]\r\n"
                 + "# Entity Handling NEED to be enabled first\r\n"
-                + "enabled=false"
+                + "enabled=false\r\n"
                 + "\r\n"
                 + "[AutoEat]\r\n"
                 + "# Inventory Handling NEED to be enabled first\r\n"
                 + "enabled=false\r\n"
-                + "threshold=6", Encoding.UTF8);
+                + "threshold=6\r\n"
+                + "\r\n", Encoding.UTF8);
         }
 
         /// <summary>

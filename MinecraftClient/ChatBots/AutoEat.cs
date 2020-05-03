@@ -83,7 +83,7 @@ namespace MinecraftClient.ChatBots
                     }
                 }
             }
-            if (found) UseItemOnHand();
+            if (found) UseItemInHand();
             return found;
         }
     }

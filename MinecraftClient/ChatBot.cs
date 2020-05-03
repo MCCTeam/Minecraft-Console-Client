@@ -156,6 +156,8 @@ namespace MinecraftClient
         /// <param name="entity">Entity with updated location</param>
         public virtual void OnEntityMove(Mapping.Entity entity) { }
 
+        public virtual void OnInternalCommand(string commandName,string commandParams, string Result) { }
+
         /// <summary>
         /// Called when an entity spawned nearby
         /// </summary>
@@ -662,6 +664,32 @@ namespace MinecraftClient
         {
             return Handler.GetInventoryEnabled();
         }
+        public Dictionary<int, Container> GetInventories()
+        {
+            return Handler.GetInventories();
+        }
+
+        /// <summary>
+        /// start Sneaking
+        /// </summary>
+        protected bool Sneak(bool on)
+        {
+            return SendEntityAction(on ? Protocol.EntityActionType.StartSneaking : Protocol.EntityActionType.StopSneaking);
+        }
+        /// <summary>
+        /// Send Entity Action
+        /// </summary>
+        private bool SendEntityAction(Protocol.EntityActionType entityAction)
+        {
+            return Handler.sendEntityAction(entityAction);
+        }
+        /// <summary>
+        /// SetSlot
+        /// </summary>
+        protected void SetSlot(int slotNum)
+        {
+            Handler.ChangeSlot((short) slotNum);
+        }
 
         /// <summary>
         /// Get the current Minecraft World
@@ -862,7 +890,7 @@ namespace MinecraftClient
         /// Use item currently in the player's hand (active inventory bar slot)
         /// </summary>
         /// <returns></returns>
-        protected bool UseItemOnHand()
+        protected bool UseItemInHand()
         {
             return Handler.UseItemOnHand();
         }

@@ -239,6 +239,10 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else return "";
         }
+        public bool SendEntityAction(int PlayerEntityID, int ActionID)
+        {
+            return false;
+        }
 
         private byte[] readNextByteArray()
         {

@@ -12,11 +12,12 @@ namespace MinecraftClient.ChatBots
 
     public class ChatLog : ChatBot
     {
-        public enum MessageFilter { AllText, AllMessages, OnlyChat, OnlyWhispers };
+        public enum MessageFilter { AllText, AllMessages, OnlyChat, OnlyWhispers, OnlyInternalCommands };
         private bool dateandtime;
         private bool saveOther = true;
         private bool saveChat = true;
         private bool savePrivate = true;
+        private bool saveInternal = true;
         private string logfile;
 
         /// <summary>
@@ -52,6 +53,12 @@ namespace MinecraftClient.ChatBots
                     savePrivate = true;
                     saveChat = false;
                     break;
+                case MessageFilter.OnlyInternalCommands:
+                    saveOther = false;
+                    savePrivate = false;
+                    saveChat = false;
+                    saveInternal = true;
+                    break;
             }
             if (String.IsNullOrEmpty(file) || file.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
             {
@@ -68,6 +75,7 @@ namespace MinecraftClient.ChatBots
                 case "messages": return MessageFilter.AllMessages;
                 case "chat": return MessageFilter.OnlyChat;
                 case "private": return MessageFilter.OnlyWhispers;
+                case "internal": return MessageFilter.OnlyInternalCommands;
                 default: return MessageFilter.AllText;
             }
         }
@@ -89,6 +97,14 @@ namespace MinecraftClient.ChatBots
             else if (saveOther)
             {
                 save("Other: " + text);
+            }
+        }
+
+        public override void OnInternalCommand(string commandName,string commandParams, string result)
+        {
+            if (saveInternal)
+            {
+                save(string.Format("Internal {0}({1}): {2}", commandName, commandParams, result));
             }
         }
 

@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.IO;
 using System.Net;
+using MinecraftClient.ChatBots;
 using MinecraftClient.Protocol;
 using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers.Forge;
@@ -170,6 +171,7 @@ namespace MinecraftClient
                     if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack()); }
                     if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
                     if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
+
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
                 }
@@ -324,6 +326,7 @@ namespace MinecraftClient
             }
             while (true);
         }
+        
 
         /// <summary>
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
@@ -334,6 +337,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
         public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
+            
             /* Load commands from the 'Commands' namespace */
 
             if (cmds.Count == 0)
@@ -382,12 +386,28 @@ namespace MinecraftClient
             else if (cmds.ContainsKey(command_name))
             {
                 response_msg = cmds[command_name].Run(this, command, localVars);
+                foreach (ChatBot bot in bots.ToArray())
+                {
+                    try
+                    {
+                        bot.OnInternalCommand(command_name, string.Join(" ",Command.getArgs(command)),response_msg);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnInternalCommand: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
             }
             else
             {
                 response_msg = "Unknown command '" + command_name + "'. Use '" + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + "help' for help.";
                 return false;
             }
+            
             return true;
         }
 
@@ -1356,6 +1376,7 @@ namespace MinecraftClient
             }
             
         }
+        
         /// <summary>
         /// Called when an entity moved over 8 block.
         /// </summary>
@@ -1469,6 +1490,14 @@ namespace MinecraftClient
             playerEntityID = EntityID;
         }
 
+        /// <summary>
+        /// Send the Entity Action packet with the Specified ID
+        /// </summary>
+        /// <returns>TRUE if the item was successfully used</returns>
+        public bool sendEntityAction(EntityActionType entityAction)
+        {
+            return handler.SendEntityAction(playerEntityID, (int) entityAction);
+        }
         /// <summary>
         /// Use the item currently in the player's hand
         /// </summary>
