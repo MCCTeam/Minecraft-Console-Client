@@ -672,16 +672,9 @@ namespace MinecraftClient
         /// <summary>
         /// start Sneaking
         /// </summary>
-        protected bool Sneak()
+        protected bool Sneak(bool on)
         {
-            return SendAction(Protocol.ActionType.StartSneaking);
-        }
-        /// <summary>
-        /// Sends UnSneak
-        /// </summary>
-        protected bool UnSneak()
-        {
-            return SendAction(Protocol.ActionType.StopSneaking);
+            return SendAction(on ? Protocol.ActionType.StartSneaking : Protocol.ActionType.StopSneaking);
         }
         /// <summary>
         /// Send Entity Action
