@@ -674,12 +674,12 @@ namespace MinecraftClient
         /// </summary>
         protected bool Sneak(bool on)
         {
-            return SendAction(on ? Protocol.ActionType.StartSneaking : Protocol.ActionType.StopSneaking);
+            return SendEntityAction(on ? Protocol.ActionType.StartSneaking : Protocol.ActionType.StopSneaking);
         }
         /// <summary>
         /// Send Entity Action
         /// </summary>
-        private bool SendAction(Protocol.ActionType action)
+        private bool SendEntityAction(Protocol.ActionType action)
         {
             return Handler.sendEntityAction(action);
         }
