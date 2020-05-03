@@ -104,7 +104,7 @@ namespace MinecraftClient.ChatBots
         {
             if (saveInternal)
             {
-                save($"Internal {commandName}({commandParams}): {Result}");
+                save(string.Format("Internal {0}({1}): {2}", commandName, commandParams, Result));
             }
         }
 
