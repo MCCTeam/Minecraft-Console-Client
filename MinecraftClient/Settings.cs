@@ -161,9 +161,6 @@ namespace MinecraftClient
         //Auto Eating
         public static bool AutoEat_Enabled = false;
         public static int AutoEat_hungerThreshold = 6;
-        
-        //Auto Looking
-        public static bool AutoLook_Enabled = false;
 
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
