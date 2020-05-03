@@ -12,7 +12,7 @@ namespace MinecraftClient.ChatBots
 
     public class ChatLog : ChatBot
     {
-        public enum MessageFilter { AllText, AllMessages, OnlyChat, OnlyWhispers, OnlyInternal };
+        public enum MessageFilter { AllText, AllMessages, OnlyChat, OnlyWhispers, OnlyInternalCommands };
         private bool dateandtime;
         private bool saveOther = true;
         private bool saveChat = true;
@@ -53,7 +53,7 @@ namespace MinecraftClient.ChatBots
                     savePrivate = true;
                     saveChat = false;
                     break;
-                case MessageFilter.OnlyInternal:
+                case MessageFilter.OnlyInternalCommands:
                     saveOther = false;
                     savePrivate = false;
                     saveChat = false;
@@ -75,7 +75,7 @@ namespace MinecraftClient.ChatBots
                 case "messages": return MessageFilter.AllMessages;
                 case "chat": return MessageFilter.OnlyChat;
                 case "private": return MessageFilter.OnlyWhispers;
-                case "internal": return MessageFilter.OnlyInternal;
+                case "internal": return MessageFilter.OnlyInternalCommands;
                 default: return MessageFilter.AllText;
             }
         }
