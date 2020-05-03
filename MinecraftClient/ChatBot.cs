@@ -668,13 +668,7 @@ namespace MinecraftClient
         {
             return Handler.GetInventories();
         }
-        /// <summary>
-        /// Use item in hand
-        /// </summary>
-        protected void UseItemInHand()
-        {
-            Handler.UseItemOnHand();
-        }
+
         /// <summary>
         /// start Sneaking
         /// </summary>
@@ -903,7 +897,7 @@ namespace MinecraftClient
         /// Use item currently in the player's hand (active inventory bar slot)
         /// </summary>
         /// <returns></returns>
-        protected bool UseItemOnHand()
+        protected bool UseItemInHand()
         {
             return Handler.UseItemOnHand();
         }
