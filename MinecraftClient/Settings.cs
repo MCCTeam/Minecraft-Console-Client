@@ -97,6 +97,7 @@ namespace MinecraftClient
         public static bool ResolveSrvRecordsShortTimeout = true;
         public static bool EntityHandling = false;
         public static bool AutoRespawn = false;
+        public static bool ConsoleIOColor_Enabled = true;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -249,6 +250,7 @@ namespace MinecraftClient
                                                 case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
+                                                case "consoleiocolors": ConsoleIOColor_Enabled = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -601,6 +603,7 @@ namespace MinecraftClient
                 + "scriptcache=true                   # Cache compiled scripts for faster load on low-end devices\r\n"
                 + "timestamps=false                   # Prepend timestamps to chat messages\r\n"
                 + "autorespawn=false                  # Toggle auto respawn if client player was dead (make sure your spawn point is safe)\r\n"
+                + "consoleiocolors=true               # Strips the color codes from output when in BasicIO mode\r\n"
                 + "\r\n"
                 + "[AppVars]\r\n"
                 + "# yourvar=yourvalue\r\n"

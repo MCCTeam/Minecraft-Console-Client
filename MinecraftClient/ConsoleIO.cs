@@ -336,6 +336,14 @@ namespace MinecraftClient
                 }
                 if (BasicIO)
                 {
+                    if (Settings.ConsoleIOColor_Enabled == false)
+                    {
+                        string colorcodes = "0123456789abcdefklmnor";
+                        foreach (char c in colorcodes)
+                        {
+                          str = str.Replace("§"+c, string.Empty);
+                        }
+                    }
                     Console.WriteLine(str);
                     return;
                 }
