@@ -56,6 +56,13 @@ namespace MinecraftClient
         public static bool BasicIO = false;
 
         /// <summary>
+        /// Determines whether to use interactive IO or basic IO.
+        /// Set to true to disable interactive command prompt and use the default Console.Read|Write() methods.
+        /// Color codes are NOT printed when BasicIO_NoColor is enabled.
+        /// </summary>
+        public static bool BasicIO_NoColor = false;
+
+        /// <summary>
         /// Determine whether WriteLineFormatted() should prepend lines with timestamps by default.
         /// </summary>
         public static bool EnableTimestamps = false;
@@ -336,7 +343,7 @@ namespace MinecraftClient
                 }
                 if (BasicIO)
                 {
-                    if (Settings.ConsoleIOColor_Enabled == false)
+                    if (BasicIO_NoColor)
                     {
                         string colorcodes = "0123456789abcdefklmnor";
                         foreach (char c in colorcodes)
