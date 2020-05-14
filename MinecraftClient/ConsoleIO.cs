@@ -345,11 +345,7 @@ namespace MinecraftClient
                 {
                     if (BasicIO_NoColor)
                     {
-                        string colorcodes = "0123456789abcdefklmnor";
-                        foreach (char c in colorcodes)
-                        {
-                          str = str.Replace("§"+c, string.Empty);
-                        }
+                        str = ChatBot.GetVerbatim(str);
                     }
                     Console.WriteLine(str);
                     return;

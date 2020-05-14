@@ -240,7 +240,7 @@ namespace MinecraftClient
         /// <summary>
         /// Remove color codes ("§c") from a text message received from the server
         /// </summary>
-        protected static string GetVerbatim(string text)
+        public static string GetVerbatim(string text)
         {
             if ( String.IsNullOrEmpty(text) )
                 return String.Empty;
