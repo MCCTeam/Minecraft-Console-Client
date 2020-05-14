@@ -59,8 +59,12 @@ namespace MinecraftClient
 
             //Setup ConsoleIO
             ConsoleIO.LogPrefix = "§8[MCC] ";
-            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO")
+            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
             {
+                if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
+                {
+                    ConsoleIO.BasicIO_NoColor = true;
+                }
                 ConsoleIO.BasicIO = true;
                 args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
             }

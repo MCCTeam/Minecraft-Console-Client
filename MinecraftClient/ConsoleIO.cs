@@ -56,6 +56,11 @@ namespace MinecraftClient
         public static bool BasicIO = false;
 
         /// <summary>
+        /// Determines whether not to print color codes in BasicIO mode.
+        /// </summary>
+        public static bool BasicIO_NoColor = false;
+
+        /// <summary>
         /// Determine whether WriteLineFormatted() should prepend lines with timestamps by default.
         /// </summary>
         public static bool EnableTimestamps = false;
@@ -336,6 +341,10 @@ namespace MinecraftClient
                 }
                 if (BasicIO)
                 {
+                    if (BasicIO_NoColor)
+                    {
+                        str = ChatBot.GetVerbatim(str);
+                    }
                     Console.WriteLine(str);
                     return;
                 }
