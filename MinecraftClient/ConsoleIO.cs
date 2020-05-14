@@ -56,9 +56,7 @@ namespace MinecraftClient
         public static bool BasicIO = false;
 
         /// <summary>
-        /// Determines whether to use interactive IO or basic IO.
-        /// Set to true to disable interactive command prompt and use the default Console.Read|Write() methods.
-        /// Color codes are NOT printed when BasicIO_NoColor is enabled.
+        /// Determines whether not to print color codes in BasicIO mode.
         /// </summary>
         public static bool BasicIO_NoColor = false;
 
