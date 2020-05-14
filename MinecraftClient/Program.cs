@@ -59,9 +59,9 @@ namespace MinecraftClient
 
             //Setup ConsoleIO
             ConsoleIO.LogPrefix = "§8[MCC] ";
-            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColors")
+            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
             {
-                if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColors")
+                if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
                 {
                     ConsoleIO.BasicIO_NoColor = true;
                 }
