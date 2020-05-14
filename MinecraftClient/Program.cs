@@ -61,12 +61,13 @@ namespace MinecraftClient
             ConsoleIO.LogPrefix = "§8[MCC] ";
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColors")
             {
+                if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColors")
+                {
+                    ConsoleIO.BasicIO_NoColor = true;
+                }
                 ConsoleIO.BasicIO = true;
                 args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
             }
-            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColors")
-            {
-                ConsoleIO.BasicIO_NoColor = true;
 
             //Take advantage of Windows 10 / Mac / Linux UTF-8 console
             if (isUsingMono || WindowsVersion.WinMajorVersion >= 10)
