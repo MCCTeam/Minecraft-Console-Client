@@ -21,6 +21,7 @@ namespace MinecraftClient.ChatBots
         private DateTime CaughtTime = DateTime.Now;
         private bool inventoryEnabled;
         private bool isFishing = false;
+        private int useItemCounter = 0;
 
         public override void Initialize()
         {
@@ -31,6 +32,18 @@ namespace MinecraftClient.ChatBots
                 UnloadBot();
             }
             inventoryEnabled = GetInventoryEnabled();
+        }
+
+        public override void Update()
+        {
+            if (useItemCounter > 0)
+            {
+                useItemCounter--;
+                if (useItemCounter <= 0)
+                {
+                    UseItemInHand();
+                }
+            }
         }
 
         public override void OnEntitySpawn(Entity entity)
@@ -54,6 +67,10 @@ namespace MinecraftClient.ChatBots
                 if(entity.ID == fishingRod.ID)
                 {
                     isFishing = false;
+                    if (Settings.AutoFishing_Antidespawn)
+                    {
+                        useItemCounter = 5; // 500ms
+                    }
                 }
             }
         }
@@ -104,14 +121,8 @@ namespace MinecraftClient.ChatBots
                     return;
                 }
             }
-            // non-blocking delay
-            Task.Factory.StartNew(delegate
-            {
-                // retract fishing rod need some time
-                Thread.Sleep(800);
-                // throw again
-                UseItemInHand();
-            });
+            // thread-safe
+            useItemCounter = 8; // 800ms
         }
 
         /// <summary>
