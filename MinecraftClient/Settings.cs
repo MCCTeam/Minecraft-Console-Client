@@ -157,6 +157,7 @@ namespace MinecraftClient
 
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;
+        public static bool AutoFishing_Antidespawn = false;
 
         //Auto Eating
         public static bool AutoEat_Enabled = false;
@@ -477,6 +478,7 @@ namespace MinecraftClient
                                             switch (argName.ToLower())
                                             {
                                                 case "enabled": AutoFishing_Enabled = str2bool(argValue); break;
+                                                case "antidespawn": AutoFishing_Antidespawn = str2bool(argValue); break;
                                             }
                                             break;
 
@@ -689,6 +691,7 @@ namespace MinecraftClient
                 + "[AutoFishing]\r\n"
                 + "# Entity Handling NEED to be enabled first\r\n"
                 + "enabled=false\r\n"
+                + "antidespawn=false\r\n"
                 + "\r\n"
                 + "[AutoEat]\r\n"
                 + "# Inventory Handling NEED to be enabled first\r\n"
