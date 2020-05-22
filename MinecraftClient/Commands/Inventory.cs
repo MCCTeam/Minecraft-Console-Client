@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     class Inventory : Command
     {
         public override string CMDName { get { return "inventory"; } }
-        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|click <slot>>: Interact with inventories"; } }
+        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|click <slot> <L|R>>: Interact with inventories"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -60,10 +60,17 @@ namespace MinecraftClient.Commands
                                 if (inventoryId == 0) response.Add("Your selected hotbar is " + (handler.GetCurrentSlot() + 1));
                                 return String.Join("\n", response.ToArray());
                             case "click":
+                                byte buttom = 0;
+                                if (args.Length == 4)
+                                {
+                                    string b = args[3];
+                                    if (b.ToLower() == "r")
+                                        buttom = 1;
+                                }
                                 if (args.Length == 3)
                                 {
                                     int slot = int.Parse(args[2]);
-                                    handler.ClickWindowSlot(inventoryId, slot);
+                                    handler.ClickWindowSlot(inventoryId, slot, buttom);
                                     return "Clicking slot " + slot + " in window #" + inventoryId;
                                 }
                                 else return CMDDesc;

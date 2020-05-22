@@ -688,7 +688,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendClickWindow(int windowId, int slotId, Item item)
+        public bool SendClickWindow(int windowId, int slotId, byte buttom, Item item)
         {
             return false; //Currently not implemented
         }
