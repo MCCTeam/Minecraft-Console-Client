@@ -1511,13 +1511,13 @@ namespace MinecraftClient
         /// Click a slot in the specified window
         /// </summary>
         /// <returns>TRUE if the slot was successfully clicked</returns>
-        public bool ClickWindowSlot(int windowId, int slotId)
+        public bool ClickWindowSlot(int windowId, int slotId, byte buttom)
         {
             Item item = null;
             if (inventories.ContainsKey(windowId) && inventories[windowId].Items.ContainsKey(slotId))
                 item = inventories[windowId].Items[slotId];
 
-            return handler.SendClickWindow(windowId, slotId, item);
+            return handler.SendClickWindow(windowId, slotId, buttom, item);
         }
 
         /// <summary>

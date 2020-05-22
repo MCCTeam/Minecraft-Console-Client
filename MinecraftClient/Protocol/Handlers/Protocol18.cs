@@ -1342,7 +1342,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendClickWindow(int windowId, int slotId, Item item)
+        public bool SendClickWindow(int windowId, int slotId, byte buttom, Item item)
         {
             try
             {
@@ -1358,7 +1358,7 @@ namespace MinecraftClient.Protocol.Handlers
                 List<byte> packet = new List<byte>();
                 packet.Add((byte)windowId);
                 packet.AddRange(dataTypes.GetShort((short)slotId));
-                packet.Add(0); // Left mouse click
+                packet.Add(buttom);
                 packet.AddRange(dataTypes.GetShort(actionNumber));
 
                 // Operation mode = 0 (default)

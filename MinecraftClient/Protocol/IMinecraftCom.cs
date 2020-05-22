@@ -144,9 +144,10 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="windowId">Id of the window being clicked</param>
         /// <param name="slotId">Id of the clicked slot</param>
+        /// <param name="buttom">0 for left click, 1 for right click</param>
         /// <param name="item">Item in the clicked slot</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendClickWindow(int windowId, int slotId, Item item);
+        bool SendClickWindow(int windowId, int slotId, byte buttom, Item item);
 
         /// <summary>
         /// Send a close window packet to the server
