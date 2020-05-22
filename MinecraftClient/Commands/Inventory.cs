@@ -60,18 +60,18 @@ namespace MinecraftClient.Commands
                                 if (inventoryId == 0) response.Add("Your selected hotbar is " + (handler.GetCurrentSlot() + 1));
                                 return String.Join("\n", response.ToArray());
                             case "click":
-                                byte buttom = 0;
-                                if (args.Length == 4)
-                                {
-                                    string b = args[3];
-                                    if (b.ToLower() == "r")
-                                        buttom = 1;
-                                }
-                                if (args.Length == 3)
+                                if (args.Length >= 3)
                                 {
                                     int slot = int.Parse(args[2]);
+                                    byte buttom = 0;
+                                    if (args.Length == 4)
+                                    {
+                                        string b = args[3];
+                                        if (b.ToLower() == "r")
+                                            buttom = 1;
+                                    }
                                     handler.ClickWindowSlot(inventoryId, slot, buttom);
-                                    return "Clicking slot " + slot + " in window #" + inventoryId;
+                                    return buttom + " Clicking slot " + slot + " in window #" + inventoryId;
                                 }
                                 else return CMDDesc;
                             default:
