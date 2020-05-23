@@ -57,7 +57,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (ForgeEnabled())
             {
                 int packetID = -1;
-                List<byte> packetData = new List<byte>();
+                Queue<byte> packetData = new Queue<byte>();
 
                 while (fmlHandshakeState != FMLHandshakeClientState.DONE)
                 {
@@ -83,7 +83,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="packetData">Packet data to read from</param>
         /// <returns>Length from packet data</returns>
-        public int ReadNextVarShort(List<byte> packetData)
+        public int ReadNextVarShort(Queue<byte> packetData)
         {
             if (ForgeEnabled())
             {
@@ -104,7 +104,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">Plugin message data</param>
         /// <param name="currentDimension">Current world dimension</param>
         /// <returns>TRUE if the plugin message was recognized and handled</returns>
-        public bool HandlePluginMessage(string channel, List<byte> packetData, ref int currentDimension)
+        public bool HandlePluginMessage(string channel, Queue<byte> packetData, ref int currentDimension)
         {
             if (ForgeEnabled() && fmlHandshakeState != FMLHandshakeClientState.DONE)
             {

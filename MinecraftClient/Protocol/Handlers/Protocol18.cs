@@ -130,9 +130,9 @@ namespace MinecraftClient.Protocol.Handlers
                 while (socketWrapper.HasDataAvailable())
                 {
                     int packetID = 0;
-                    List<byte> packetData = new List<byte>();
+                    Queue<byte> packetData = new Queue<byte>();
                     ReadNextPacket(ref packetID, packetData);
-                    HandlePacket(packetID, new List<byte>(packetData));
+                    HandlePacket(packetID, new Queue<byte>(packetData));
                 }
             }
             catch (System.IO.IOException) { return false; }
@@ -146,11 +146,13 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="packetID">will contain packet ID</param>
         /// <param name="packetData">will contain raw packet Data</param>
-        internal void ReadNextPacket(ref int packetID, List<byte> packetData)
+        internal void ReadNextPacket(ref int packetID, Queue<byte> packetData)
         {
             packetData.Clear();
             int size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
-            packetData.AddRange(socketWrapper.ReadDataRAW(size)); //Packet contents
+            byte[] rawpacket = socketWrapper.ReadDataRAW(size);//Packet contents
+            for (int i = 0; i < rawpacket.Length; i++)
+                packetData.Enqueue(rawpacket[i]);
 
             //Handle packet decompression
             if (protocolversion >= MC18Version
@@ -162,7 +164,8 @@ namespace MinecraftClient.Protocol.Handlers
                     byte[] toDecompress = packetData.ToArray();
                     byte[] uncompressed = ZlibUtils.Decompress(toDecompress, sizeUncompressed);
                     packetData.Clear();
-                    packetData.AddRange(uncompressed);
+                    for (int i = 0; i < uncompressed.Length; i++)
+                        packetData.Enqueue(uncompressed[i]);
                 }
             }
 
@@ -175,7 +178,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetID">Packet ID</param>
         /// <param name="packetData">Packet contents</param>
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
-        internal bool HandlePacket(int packetID, List<byte> packetData)
+        internal bool HandlePacket(int packetID, Queue<byte> packetData)
         {
             try
             {
@@ -290,7 +293,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 int compressedDataSize = dataTypes.ReadNextInt(packetData);
                                 byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
                                 byte[] decompressed = ZlibUtils.Decompress(compressed);
-                                pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new List<byte>(decompressed));
+                                pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
                             }
                             else
                             {
@@ -358,7 +361,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             int chunkCount;
                             bool hasSkyLight;
-                            List<byte> chunkData = packetData;
+                            Queue<byte> chunkData = packetData;
 
                             //Read global fields
                             if (protocolversion < MC18Version)
@@ -368,7 +371,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 hasSkyLight = dataTypes.ReadNextBool(packetData);
                                 byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
                                 byte[] decompressed = ZlibUtils.Decompress(compressed);
-                                chunkData = new List<byte>(decompressed);
+                                chunkData = new Queue<byte>(decompressed);
                             }
                             else
                             {
@@ -841,7 +844,7 @@ namespace MinecraftClient.Protocol.Handlers
             SendPacket(0x00, login_packet);
 
             int packetID = -1;
-            List<byte> packetData = new List<byte>();
+            Queue<byte> packetData = new Queue<byte>();
             while (true)
             {
                 ReadNextPacket(ref packetID, packetData);
@@ -909,7 +912,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             //Process the next packet
             int packetID = -1;
-            List<byte> packetData = new List<byte>();
+            Queue<byte> packetData = new Queue<byte>();
             while (true)
             {
                 ReadNextPacket(ref packetID, packetData);
@@ -1217,7 +1220,7 @@ namespace MinecraftClient.Protocol.Handlers
             int packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
             if (packetLength > 0) //Read Response length
             {
-                List<byte> packetData = new List<byte>(socketWrapper.ReadDataRAW(packetLength));
+                Queue<byte> packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
                 if (dataTypes.ReadNextVarInt(packetData) == 0x00) //Read Packet ID
                 {
                     string result = dataTypes.ReadNextString(packetData); //Get the Json data

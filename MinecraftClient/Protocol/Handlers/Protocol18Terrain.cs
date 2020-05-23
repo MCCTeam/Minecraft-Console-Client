@@ -38,7 +38,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="chunksContinuous">Are the chunk continuous</param>
         /// <param name="currentDimension">Current dimension type (0 = overworld)</param>
         /// <param name="cache">Cache for reading chunk data</param>
-        public void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, List<byte> cache)
+        public void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache)
         {
             if (protocolversion >= Protocol18Handler.MC19Version)
             {

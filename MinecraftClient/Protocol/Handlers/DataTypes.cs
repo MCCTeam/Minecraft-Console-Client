@@ -34,10 +34,11 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="offset">Amount of bytes to read</param>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The data read from the cache as an array</returns>
-        public byte[] ReadData(int offset, List<byte> cache)
+        public byte[] ReadData(int offset, Queue<byte> cache)
         {
             byte[] result = cache.Take(offset).ToArray();
-            cache.RemoveRange(0, offset);
+            for (int i = 0; i < offset; i++)
+                cache.Dequeue();
             return result;
         }
 
@@ -46,7 +47,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The string</returns>
-        public string ReadNextString(List<byte> cache)
+        public string ReadNextString(Queue<byte> cache)
         {
             int length = ReadNextVarInt(cache);
             if (length > 0)
@@ -60,7 +61,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a boolean from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The boolean value</returns>
-        public bool ReadNextBool(List<byte> cache)
+        public bool ReadNextBool(Queue<byte> cache)
         {
             return ReadNextByte(cache) != 0x00;
         }
@@ -69,7 +70,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a short integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The short integer value</returns>
-        public short ReadNextShort(List<byte> cache)
+        public short ReadNextShort(Queue<byte> cache)
         {
             byte[] rawValue = ReadData(2, cache);
             Array.Reverse(rawValue); //Endianness
@@ -80,7 +81,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read an integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The integer value</returns>
-        public int ReadNextInt(List<byte> cache)
+        public int ReadNextInt(Queue<byte> cache)
         {
             byte[] rawValue = ReadData(4, cache);
             Array.Reverse(rawValue); //Endianness
@@ -91,7 +92,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a long integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned long integer value</returns>
-        public long ReadNextLong(List<byte> cache)
+        public long ReadNextLong(Queue<byte> cache)
         {
             byte[] rawValue = ReadData(8, cache);
             Array.Reverse(rawValue); //Endianness
@@ -102,7 +103,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read an unsigned short integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned short integer value</returns>
-        public ushort ReadNextUShort(List<byte> cache)
+        public ushort ReadNextUShort(Queue<byte> cache)
         {
             byte[] rawValue = ReadData(2, cache);
             Array.Reverse(rawValue); //Endianness
@@ -113,7 +114,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read an unsigned long integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned long integer value</returns>
-        public ulong ReadNextULong(List<byte> cache)
+        public ulong ReadNextULong(Queue<byte> cache)
         {
             byte[] rawValue = ReadData(8, cache);
             Array.Reverse(rawValue); //Endianness
@@ -124,7 +125,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a Location encoded as an ulong field and remove it from the cache
         /// </summary>
         /// <returns>The Location value</returns>
-        public Location ReadNextLocation(List<byte> cache)
+        public Location ReadNextLocation(Queue<byte> cache)
         {
             ulong locEncoded = ReadNextULong(cache);
             int x, y, z;
@@ -153,7 +154,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read several little endian unsigned short integers at once from a cache of bytes and remove them from the cache
         /// </summary>
         /// <returns>The unsigned short integer value</returns>
-        public ushort[] ReadNextUShortsLittleEndian(int amount, List<byte> cache)
+        public ushort[] ReadNextUShortsLittleEndian(int amount, Queue<byte> cache)
         {
             byte[] rawValues = ReadData(2 * amount, cache);
             ushort[] result = new ushort[amount];
@@ -167,7 +168,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The uuid</returns>
-        public Guid ReadNextUUID(List<byte> cache)
+        public Guid ReadNextUUID(Queue<byte> cache)
         {
             byte[] javaUUID = ReadData(16, cache);
             Guid guid;
@@ -199,7 +200,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The byte array</returns>
-        public byte[] ReadNextByteArray(List<byte> cache)
+        public byte[] ReadNextByteArray(Queue<byte> cache)
         {
             int len = protocolversion >= Protocol18Handler.MC18Version
                 ? ReadNextVarInt(cache)
@@ -211,7 +212,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Reads a length-prefixed array of unsigned long integers and removes it from the cache
         /// </summary>
         /// <returns>The unsigned long integer values</returns>
-        public ulong[] ReadNextULongArray(List<byte> cache)
+        public ulong[] ReadNextULongArray(Queue<byte> cache)
         {
             int len = ReadNextVarInt(cache);
             ulong[] result = new ulong[len];
@@ -224,7 +225,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a double from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The double value</returns>
-        public double ReadNextDouble(List<byte> cache)
+        public double ReadNextDouble(Queue<byte> cache)
         {
             byte[] rawValue = ReadData(8, cache);
             Array.Reverse(rawValue); //Endianness
@@ -235,7 +236,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a float from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The float value</returns>
-        public float ReadNextFloat(List<byte> cache)
+        public float ReadNextFloat(Queue<byte> cache)
         {
             byte[] rawValue = ReadData(4, cache);
             Array.Reverse(rawValue); //Endianness
@@ -266,7 +267,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The integer</returns>
-        public int ReadNextVarInt(List<byte> cache)
+        public int ReadNextVarInt(Queue<byte> cache)
         {
             string rawData = BitConverter.ToString(cache.ToArray());
             int i = 0;
@@ -289,7 +290,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The int</returns>
-        public int ReadNextVarShort(List<byte> cache)
+        public int ReadNextVarShort(Queue<byte> cache)
         {
             ushort low = ReadNextUShort(cache);
             byte high = 0;
@@ -305,17 +306,16 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single byte from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The byte that was read</returns>
-        public byte ReadNextByte(List<byte> cache)
+        public byte ReadNextByte(Queue<byte> cache)
         {
-            byte result = cache[0];
-            cache.RemoveAt(0);
+            byte result = cache.Dequeue();
             return result;
         }
 
         /// <summary>
         /// Read an uncompressed Named Binary Tag blob and remove it from the cache
         /// </summary>
-        public Dictionary<string, object> ReadNextNbt(List<byte> cache)
+        public Dictionary<string, object> ReadNextNbt(Queue<byte> cache)
         {
             return ReadNextNbt(cache, true);
         }
@@ -325,7 +325,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="item">Item</param>
         /// <returns>The item that was read or NULL for an empty slot</returns>
-        public Item ReadNextItemSlot(List<byte> cache)
+        public Item ReadNextItemSlot(Queue<byte> cache)
         {
             List<byte> slotData = new List<byte>();
             if (protocolversion > Protocol18Handler.MC113Version)
@@ -357,15 +357,15 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read an uncompressed Named Binary Tag blob and remove it from the cache (internal)
         /// </summary>
-        private Dictionary<string, object> ReadNextNbt(List<byte> cache, bool root)
+        private Dictionary<string, object> ReadNextNbt(Queue<byte> cache, bool root)
         {
             Dictionary<string, object> NbtData = new Dictionary<string, object>();
 
             if (root)
             {
-                if (cache[0] == 0) // TAG_End
+                if (cache.Peek() == 0) // TAG_End
                     return NbtData;
-                if (cache[0] != 10) // TAG_Compound
+                if (cache.Peek() != 10) // TAG_Compound
                     throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
                 ReadNextByte(cache); // Tag type (TAG_Compound)
 
@@ -394,7 +394,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read a single Named Binary Tag field of the specified type and remove it from the cache
         /// </summary>
-        private object ReadNbtField(List<byte> cache, int fieldType)
+        private object ReadNbtField(Queue<byte> cache, int fieldType)
         {
             switch (fieldType)
             {
@@ -424,11 +424,19 @@ namespace MinecraftClient.Protocol.Handlers
                 case 10: // TAG_Compound
                     return ReadNextNbt(cache, false);
                 case 11: // TAG_Int_Array
-                    cache.Insert(0, 3);             // List type = TAG_Int
-                    return ReadNbtField(cache, 9);  // Read as TAG_List
+                    listType = 3;
+                    listLength = ReadNextInt(cache);
+                    listItems = new object[listLength];
+                    for (int i = 0; i < listLength; i++)
+                        listItems[i] = ReadNbtField(cache, listType);
+                    return listItems;
                 case 12: // TAG_Long_Array
-                    cache.Insert(0, 4);             // List type = TAG_Long
-                    return ReadNbtField(cache, 9);  // Read as TAG_List
+                    listType = 4;
+                    listLength = ReadNextInt(cache);
+                    listItems = new object[listLength];
+                    for (int i = 0; i < listLength; i++)
+                        listItems[i] = ReadNbtField(cache, listType);
+                    return listItems;
                 default:
                     throw new System.IO.InvalidDataException("Failed to decode NBT: Unknown field type " + fieldType);
             }
