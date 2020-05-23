@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     class Inventory : Command
     {
         public override string CMDName { get { return "inventory"; } }
-        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|click <slot> <L|R>>: Interact with inventories"; } }
+        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|click <slot> <L|R|M>>: Interact with inventories"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -64,14 +64,23 @@ namespace MinecraftClient.Commands
                                 {
                                     int slot = int.Parse(args[2]);
                                     byte buttom = 0;
+                                    string keyName = "Left";
                                     if (args.Length == 4)
                                     {
                                         string b = args[3];
                                         if (b.ToLower() == "r")
+                                        {
                                             buttom = 1;
+                                            keyName = "Right";
+                                        }
+                                        if (b.ToLower() == "m")
+                                        {
+                                            buttom = 2;
+                                            keyName = "Middle";
+                                        }
                                     }
                                     handler.ClickWindowSlot(inventoryId, slot, buttom);
-                                    return buttom + " Clicking slot " + slot + " in window #" + inventoryId;
+                                    return keyName + " clicking slot " + slot + " in window #" + inventoryId;
                                 }
                                 else return CMDDesc;
                             default:

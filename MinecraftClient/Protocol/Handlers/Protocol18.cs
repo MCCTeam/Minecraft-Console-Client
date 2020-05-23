@@ -1362,9 +1362,12 @@ namespace MinecraftClient.Protocol.Handlers
                 packet.AddRange(dataTypes.GetShort(actionNumber));
 
                 // Operation mode = 0 (default)
+                byte mode = 0;
+                if (buttom == 2) // middle-click mode is 3
+                    mode = 3;
                 if (protocolversion >= MC19Version)
-                    packet.AddRange(dataTypes.GetVarInt(0));
-                else packet.Add(0);
+                    packet.AddRange(dataTypes.GetVarInt(mode));
+                else packet.Add(mode);
 
                 packet.AddRange(dataTypes.GetItemSlot(item));
 
