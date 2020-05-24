@@ -1362,6 +1362,13 @@ namespace MinecraftClient.Protocol.Handlers
                     case WindowActionType.LeftClick: button = 0; break;
                     case WindowActionType.RightClick: button = 1; break;
                     case WindowActionType.MiddleClick: button = 2; mode = 3; break;
+                    case WindowActionType.DropItem: 
+                        button = 0; 
+                        mode = 4;
+                        item = new Item(-1, 0, null);
+                        Container inventory = handler.GetInventory(0);
+                        inventory.Items[slotId].Count--; // server won't update us after dropped
+                        break;
                 }
 
                 List<byte> packet = new List<byte>();

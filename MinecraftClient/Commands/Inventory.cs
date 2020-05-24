@@ -83,6 +83,13 @@ namespace MinecraftClient.Commands
                                     return keyName + " clicking slot " + slot + " in window #" + inventoryId;
                                 }
                                 else return CMDDesc;
+                            case "drop":
+                                if (args.Length >= 3)
+                                {
+                                    int slot = int.Parse(args[2]);
+                                    handler.DoWindowAction(inventoryId, slot, WindowActionType.DropItem);
+                                }
+                                return "Dropped";
                             default:
                                 return CMDDesc;
                         }
