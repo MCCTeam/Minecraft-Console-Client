@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     class Inventory : Command
     {
         public override string CMDName { get { return "inventory"; } }
-        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|drop <slot> <all>|click <slot> <left|right|middle>>: Interact with inventories"; } }
+        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|drop <slot> <1|all>|click <slot> <left|right|middle>>: Interact with inventories"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -65,7 +65,7 @@ namespace MinecraftClient.Commands
                                     int slot = int.Parse(args[2]);
                                     WindowActionType actionType = WindowActionType.LeftClick;
                                     string keyName = "Left";
-                                    if (args.Length == 4)
+                                    if (args.Length >= 4)
                                     {
                                         string b = args[3];
                                         if (b.ToLower()[0] == 'r')
@@ -91,7 +91,7 @@ namespace MinecraftClient.Commands
                                     if (!handler.GetInventory(inventoryId).Items.ContainsKey(slot))
                                         return "No item in slot #" + slot;
                                     WindowActionType actionType = WindowActionType.DropItem;
-                                    if (args.Length == 4)
+                                    if (args.Length >= 4)
                                     {
                                         if (args[3].ToLower() == "all")
                                         {
@@ -100,7 +100,9 @@ namespace MinecraftClient.Commands
                                     }
                                     if (handler.DoWindowAction(inventoryId, slot, actionType))
                                     {
-                                        return "Dropped item from slot #" + slot;
+                                        if (actionType == WindowActionType.DropItemStack)
+                                            return "Dropped whole item stack from slot #" + slot;
+                                        else return "Dropped 1 item from slot #" + slot;
                                     }
                                     else
                                     {
