@@ -36,9 +36,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The data read from the cache as an array</returns>
         public byte[] ReadData(int offset, Queue<byte> cache)
         {
-            byte[] result = cache.Take(offset).ToArray();
+            byte[] result = new byte[offset];
             for (int i = 0; i < offset; i++)
-                cache.Dequeue();
+                result[i] = cache.Dequeue();
             return result;
         }
 
