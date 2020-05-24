@@ -1342,7 +1342,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendClickWindow(int windowId, int slotId, byte buttom, Item item)
+        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item)
         {
             try
             {
@@ -1355,16 +1355,21 @@ namespace MinecraftClient.Protocol.Handlers
                     window_actions[windowId] = actionNumber;
                 }
 
+                byte button = 0;
+                byte mode = 0;
+                switch (action)
+                {
+                    case WindowActionType.LeftClick: button = 0; break;
+                    case WindowActionType.RightClick: button = 1; break;
+                    case WindowActionType.MiddleClick: button = 2; mode = 3; break;
+                }
+
                 List<byte> packet = new List<byte>();
                 packet.Add((byte)windowId);
                 packet.AddRange(dataTypes.GetShort((short)slotId));
-                packet.Add(buttom);
+                packet.Add(button);
                 packet.AddRange(dataTypes.GetShort(actionNumber));
 
-                // Operation mode = 0 (default)
-                byte mode = 0;
-                if (buttom == 2) // middle-click mode is 3
-                    mode = 3;
                 if (protocolversion >= MC19Version)
                     packet.AddRange(dataTypes.GetVarInt(mode));
                 else packet.Add(mode);

@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     class Inventory : Command
     {
         public override string CMDName { get { return "inventory"; } }
-        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|click <slot> <L|R|M>>: Interact with inventories"; } }
+        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|click <slot> <left|right|middle>>: Interact with inventories"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -63,23 +63,23 @@ namespace MinecraftClient.Commands
                                 if (args.Length >= 3)
                                 {
                                     int slot = int.Parse(args[2]);
-                                    byte buttom = 0;
+                                    WindowActionType actionType = WindowActionType.LeftClick;
                                     string keyName = "Left";
                                     if (args.Length == 4)
                                     {
                                         string b = args[3];
-                                        if (b.ToLower() == "r")
+                                        if (b.ToLower()[0] == 'r')
                                         {
-                                            buttom = 1;
+                                            actionType = WindowActionType.RightClick;
                                             keyName = "Right";
                                         }
-                                        if (b.ToLower() == "m")
+                                        if (b.ToLower()[0] == 'm')
                                         {
-                                            buttom = 2;
+                                            actionType = WindowActionType.MiddleClick;
                                             keyName = "Middle";
                                         }
                                     }
-                                    handler.ClickWindowSlot(inventoryId, slot, buttom);
+                                    handler.DoWindowAction(inventoryId, slot, actionType);
                                     return keyName + " clicking slot " + slot + " in window #" + inventoryId;
                                 }
                                 else return CMDDesc;
