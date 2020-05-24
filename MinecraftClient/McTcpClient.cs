@@ -1222,47 +1222,16 @@ namespace MinecraftClient
         }
         
         /// <summary>
-        /// Called when a non-living entity spawned (fishing hook, minecart, etc)
+        /// Called when an entity spawned
         /// </summary>
-        /// <param name="EntityID"></param>
-        /// <param name="TypeID"></param>
-        /// <param name="UUID"></param>
-        /// <param name="location"></param>
-        public void OnSpawnEntity(int EntityID, int TypeID, Guid UUID, Location location)
+        public void OnSpawnEntity(Entity entity)
         {
-            if (entities.ContainsKey(EntityID)) return;
-            Entity entity = new Entity(EntityID, TypeID, EntityType.NonLivingThings, location, UUID);
-            entities.Add(EntityID, entity);
-            foreach (ChatBot bot in bots.ToArray())
-            {
-                try
-                {
-                    bot.OnEntitySpawn(entity);
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        ConsoleIO.WriteLogLine("OnEntitySpawn: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
-                }
-            }
-        }
+            // The entity should not already exist, but if it does, let's consider the previous one is being destroyed
+            if (entities.ContainsKey(entity.ID))
+                OnDestroyEntities(new[] { entity.ID });
 
-        /// <summary>
-        /// Called when an Entity was created/spawned.
-        /// </summary>
-        /// <param name="EntityID"></param>
-        /// <param name="TypeID"></param>
-        /// <param name="UUID"></param>
-        /// <param name="location"></param>
-        /// <remarks>Cannot determine is a Mob or a Cuty Animal</remarks>
-        public void OnSpawnLivingEntity(int EntityID, int TypeID, Guid UUID, Location location)
-        {
-            if (entities.ContainsKey(EntityID)) return;
-            Entity entity = new Entity(EntityID, TypeID, EntityType.MobAndAnimal, location, UUID);
-            entities.Add(EntityID, entity);
+            entities.Add(entity.ID, entity);
+
             foreach (ChatBot bot in bots.ToArray())
             {
                 try

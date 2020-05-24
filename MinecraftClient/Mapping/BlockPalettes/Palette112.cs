@@ -9,7 +9,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
     /// Some blocks previously had different IDs depending on state, they have been merged here
     /// Comments correspond to changed material names since previous MCC versions
     /// </summary>
-    public class Palette112 : BlockPaletteMapping
+    public class Palette112 : BlockPalette
     {
         private static Dictionary<int, Material> materials = new Dictionary<int, Material>()
         {

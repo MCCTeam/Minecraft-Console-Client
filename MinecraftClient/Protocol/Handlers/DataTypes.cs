@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using MinecraftClient.Mapping;
 using MinecraftClient.Crypto;
 using MinecraftClient.Inventory;
+using MinecraftClient.Mapping.EntityPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -321,9 +322,8 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Read a single item slot from a cache of byte and remove it from the cache
+        /// Read a single item slot from a cache of bytes and remove it from the cache
         /// </summary>
-        /// <param name="item">Item</param>
         /// <returns>The item that was read or NULL for an empty slot</returns>
         public Item ReadNextItemSlot(Queue<byte> cache)
         {
@@ -352,6 +352,45 @@ namespace MinecraftClient.Protocol.Handlers
                 Dictionary<string, object> NBT = ReadNextNbt(cache);
                 return new Item(itemID, itemCount, NBT);
             }
+        }
+
+        /// <summary>
+        /// Read entity information from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="entityPalette">Mappings for converting entity type Ids to EntityType</param>
+        /// <param name="living">TRUE for living entities (layout differs)</param>
+        /// <returns>Entity information</returns>
+        public Entity ReadNextEntity(Queue<byte> cache, EntityPalette entityPalette, bool living)
+        {
+            int entityID = ReadNextVarInt(cache);
+            Guid entityUUID = Guid.Empty;
+
+            if (protocolversion > Protocol18Handler.MC18Version)
+            {
+                entityUUID = ReadNextUUID(cache);
+            }
+
+            EntityType entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
+            Double entityX = ReadNextDouble(cache);
+            Double entityY = ReadNextDouble(cache);
+            Double entityZ = ReadNextDouble(cache);
+            byte entityYaw = ReadNextByte(cache);
+            byte entityPitch = ReadNextByte(cache);
+
+            if (living)
+            {
+                byte entityHeadPitch = ReadNextByte(cache);
+            }
+            else
+            {
+                int metadata = ReadNextInt(cache);
+            }
+
+            short velocityX = ReadNextShort(cache);
+            short velocityY = ReadNextShort(cache);
+            short velocityZ = ReadNextShort(cache);
+
+            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ));
         }
 
         /// <summary>

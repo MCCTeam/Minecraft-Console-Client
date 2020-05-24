@@ -46,8 +46,8 @@ namespace MinecraftClient.Protocol.Handlers
                     // Set Cooldown does not exists
                     case 0x03: return PacketIncomingType.TimeUpdate;
                     // Entity handling
-                    case 0x0E: return PacketIncomingType.SpawnEntity; // for non-living entity
-                    case 0x0F: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x0E: return PacketIncomingType.SpawnEntity;
+                    case 0x0F: return PacketIncomingType.SpawnLivingEntity;
                     case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x13: return PacketIncomingType.DestroyEntities;
                     case 0x15: return PacketIncomingType.EntityPosition;
@@ -85,8 +85,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x17: return PacketIncomingType.SetCooldown;
                     case 0x44: return PacketIncomingType.TimeUpdate;
                     // Entity handling
-                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
-                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x00: return PacketIncomingType.SpawnEntity;
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity;
                     case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x30: return PacketIncomingType.DestroyEntities;
                     case 0x25: return PacketIncomingType.EntityPosition;
@@ -122,8 +122,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x17: return PacketIncomingType.SetCooldown;
                     case 0x46: return PacketIncomingType.TimeUpdate;
                     // Entity handling
-                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
-                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x00: return PacketIncomingType.SpawnEntity;
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity;
                     case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x31: return PacketIncomingType.DestroyEntities;
                     case 0x26: return PacketIncomingType.EntityPosition;
@@ -159,8 +159,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x17: return PacketIncomingType.SetCooldown;
                     case 0x47: return PacketIncomingType.TimeUpdate;
                     // Entity handling
-                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
-                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x00: return PacketIncomingType.SpawnEntity;
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity;
                     case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x32: return PacketIncomingType.DestroyEntities;
                     case 0x26: return PacketIncomingType.EntityPosition;
@@ -196,8 +196,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x18: return PacketIncomingType.SetCooldown;
                     case 0x4A: return PacketIncomingType.TimeUpdate;
                     // Entity handling
-                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
-                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x00: return PacketIncomingType.SpawnEntity;
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity;
                     case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x35: return PacketIncomingType.DestroyEntities;
                     case 0x28: return PacketIncomingType.EntityPosition;
@@ -232,8 +232,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x17: return PacketIncomingType.SetCooldown;
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     // Entity handling
-                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
-                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x00: return PacketIncomingType.SpawnEntity;
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity;
                     case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x37: return PacketIncomingType.DestroyEntities;
                     case 0x28: return PacketIncomingType.EntityPosition;
@@ -268,8 +268,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x18: return PacketIncomingType.SetCooldown;
                     case 0x4F: return PacketIncomingType.TimeUpdate;
                     // Entity handling
-                    case 0x00: return PacketIncomingType.SpawnEntity; // for non-living entity
-                    case 0x03: return PacketIncomingType.SpawnLivingEntity; // for living entity
+                    case 0x00: return PacketIncomingType.SpawnEntity;
+                    case 0x03: return PacketIncomingType.SpawnLivingEntity;
                     case 0x05: return PacketIncomingType.SpawnPlayer;
                     case 0x38: return PacketIncomingType.DestroyEntities;
                     case 0x29: return PacketIncomingType.EntityPosition;

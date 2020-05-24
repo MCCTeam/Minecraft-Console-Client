@@ -117,9 +117,15 @@
     <Compile Include="Mapping\BlockPalettes\Palette114.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette115.cs" />
     <Compile Include="Mapping\BlockPalettes\BlockPaletteGenerator.cs" />
-    <Compile Include="Mapping\BlockPalettes\BlockPaletteMapping.cs" />
+    <Compile Include="Mapping\BlockPalettes\BlockPalette.cs" />
     <Compile Include="Mapping\Entity.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPalette113.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPalette.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPalette114.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPalette115.cs" />
     <Compile Include="Mapping\EntityType.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPaletteGenerator.cs" />
+    <Compile Include="Mapping\EntityTypeExtensions.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Protocol\EntityActionType.cs" />
     <Compile Include="Protocol\Handlers\DataTypes.cs" />
@@ -129,6 +135,7 @@
     <Compile Include="Protocol\Handlers\Protocol18PacketTypes.cs" />
     <Compile Include="Protocol\Handlers\Protocol18Terrain.cs" />
     <Compile Include="Protocol\Handlers\SocketWrapper.cs" />
+    <Compile Include="Protocol\DataTypeGenerator.cs" />
     <Compile Include="Protocol\Session\SessionFileMonitor.cs" />
     <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />

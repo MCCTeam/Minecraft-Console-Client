@@ -46,7 +46,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntitySpawn(Entity entity)
         {
-            if (entity.TypeID == 102)
+            if (entity.Type == EntityType.FishingBobber)
             {
                 if (GetCurrentLocation().Distance(entity.Location) < 2 && !isFishing)
                 {
@@ -60,7 +60,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityDespawn(Entity entity)
         {
-            if(entity.TypeID == 102 && isFishing)
+            if (entity.Type == EntityType.FishingBobber)
             {
                 if(entity.ID == fishingRod.ID)
                 {

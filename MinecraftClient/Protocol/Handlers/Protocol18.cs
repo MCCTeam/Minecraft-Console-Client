@@ -9,6 +9,7 @@ using MinecraftClient.Proxy;
 using System.Security.Cryptography;
 using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.BlockPalettes;
+using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Inventory;
 
@@ -50,6 +51,7 @@ namespace MinecraftClient.Protocol.Handlers
         Protocol18Forge pForge;
         Protocol18Terrain pTerrain;
         IMinecraftComHandler handler;
+        EntityPalette entityPalette;
         SocketWrapper socketWrapper;
         DataTypes dataTypes;
         Thread netRead;
@@ -94,6 +96,16 @@ namespace MinecraftClient.Protocol.Handlers
                 else Block.Palette = new Palette113();
             }
             else Block.Palette = new Palette112();
+
+            if (protocolversion >= MC114Version)
+            {
+                if (protocolversion > MC1152Version && handler.GetEntityHandlingEnabled())
+                    throw new NotImplementedException("Please update entity types handling for this Minecraft version. See EntityType.cs");
+                if (protocolversion >= MC115Version)
+                    entityPalette = new EntityPalette115();
+                else entityPalette = new EntityPalette114();
+            }
+            else entityPalette = new EntityPalette113();
         }
 
         /// <summary>
@@ -195,7 +207,7 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
                 // Regular in-game packets
-                switch (Protocol18PacketTypes.GetPacketIncomingType(packetID, protocolversion))
+                else switch (Protocol18PacketTypes.GetPacketIncomingType(packetID, protocolversion))
                 {
                     case PacketIncomingType.KeepAlive:
                         SendPacket(PacketOutgoingType.KeepAlive, packetData);
@@ -569,54 +581,18 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.SpawnEntity:
                         if (handler.GetEntityHandlingEnabled())
                         {
-                            int EntityID = dataTypes.ReadNextVarInt(packetData);
-                            Guid EntityUUID = Guid.Empty;
-                            if (protocolversion > MC18Version)
-                            {
-                                EntityUUID = dataTypes.ReadNextUUID(packetData);
-                            }
-                            int EntityType = dataTypes.ReadNextVarInt(packetData);
-                            Double X = dataTypes.ReadNextDouble(packetData);
-                            Double Y = dataTypes.ReadNextDouble(packetData);
-                            Double Z = dataTypes.ReadNextDouble(packetData);
-                            byte EntityYaw = dataTypes.ReadNextByte(packetData);
-                            byte EntityPitch = dataTypes.ReadNextByte(packetData);
-                            int Data = dataTypes.ReadNextInt(packetData);
-                            short VelocityX = dataTypes.ReadNextShort(packetData);
-                            short VelocityY = dataTypes.ReadNextShort(packetData);
-                            short VelocityZ = dataTypes.ReadNextShort(packetData);
-
-                            Location EntityLocation = new Location(X, Y, Z);
-
-                            handler.OnSpawnEntity(EntityID, EntityType, EntityUUID, EntityLocation);
+                            Entity entity = dataTypes.ReadNextEntity(packetData, entityPalette, false);
+                            handler.OnSpawnEntity(entity);
                         }
                         break;
                     case PacketIncomingType.SpawnLivingEntity:
-                        if (login_phase) break; // same packet ID with login packet
                         if (handler.GetEntityHandlingEnabled())
                         {
-                            int EntityID = dataTypes.ReadNextVarInt(packetData);
-                            Guid EntityUUID = Guid.Empty;
-                            if (protocolversion > MC18Version)
-                            {
-                                EntityUUID = dataTypes.ReadNextUUID(packetData);
-                            }
-                            int EntityType = dataTypes.ReadNextVarInt(packetData);
-                            Double X = dataTypes.ReadNextDouble(packetData);
-                            Double Y = dataTypes.ReadNextDouble(packetData);
-                            Double Z = dataTypes.ReadNextDouble(packetData);
-                            byte EntityYaw = dataTypes.ReadNextByte(packetData);
-                            byte EntityPitch = dataTypes.ReadNextByte(packetData);
-                            byte EntityHeadPitch = dataTypes.ReadNextByte(packetData);
-                            short VelocityX = dataTypes.ReadNextShort(packetData);
-                            short VelocityY = dataTypes.ReadNextShort(packetData);
-                            short VelocityZ = dataTypes.ReadNextShort(packetData);
-
+                            Entity entity = dataTypes.ReadNextEntity(packetData, entityPalette, true);
                             // packet before 1.15 has metadata at the end
-
-                            Location EntityLocation = new Location(X, Y, Z);
-
-                            handler.OnSpawnLivingEntity(EntityID, EntityType, EntityUUID, EntityLocation);
+                            // this is not handled in dataTypes.ReadNextEntity()
+                            // we are simply ignoring leftover data in packet
+                            handler.OnSpawnEntity(entity);
                         }
                         break;
                     case PacketIncomingType.SpawnPlayer:
@@ -713,7 +689,6 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.TimeUpdate:
-                        if (login_phase) break;
                         long WorldAge = dataTypes.ReadNextLong(packetData);
                         long TimeOfday = dataTypes.ReadNextLong(packetData);
                         handler.OnTimeUpdate(WorldAge, TimeOfday);

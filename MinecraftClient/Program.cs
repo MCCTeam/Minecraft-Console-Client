@@ -20,6 +20,7 @@ namespace MinecraftClient
     /// Typical steps to update MCC for a new Minecraft version
     ///  - Implement protocol changes (see Protocol18.cs)
     ///  - Handle new block types and states (see Material.cs)
+    ///  - Add support for new entity types (see EntityType.cs)
     ///  - Add new item types for inventories (see ItemType.cs)
     ///  - Mark new version as handled (see ProtocolHandler.cs)
     ///  - Update MCHighestVersion field below (for versionning)

@@ -131,22 +131,10 @@ namespace MinecraftClient.Protocol
         void OnPluginChannelMessage(string channel, byte[] data);
 
         /// <summary>
-        /// Called when a non-living entity has spawned
+        /// Called when an entity has spawned
         /// </summary>
-        /// <param name="EntityID">Entity ID</param>
-        /// <param name="EntityType">Entity Type ID</param>
-        /// <param name="UUID">Entity UUID</param>
-        /// <param name="location">Entity location</param>
-        void OnSpawnEntity(int EntityID, int EntityType, Guid UUID, Location location);
-
-        /// <summary>
-        /// Called when a living entity has spawned
-        /// </summary>
-        /// <param name="EntityID">Entity ID</param>
-        /// <param name="EntityType">Entity Type ID</param>
-        /// <param name="UUID">Entity UUID</param>
-        /// <param name="location">Entity location</param>
-        void OnSpawnLivingEntity(int EntityID, int EntityType, Guid UUID, Location location);
+        /// <param name="entity">Spawned entity</param>
+        void OnSpawnEntity(Entity entity);
 
         /// <summary>
         /// Called when a player has spawned
@@ -156,7 +144,7 @@ namespace MinecraftClient.Protocol
         /// <param name="location">Entity location</param>
         /// <param name="Yaw">Player head yaw</param>
         /// <param name="Pitch">Player head pitch</param>
-        void OnSpawnPlayer(int EntityID, Guid UUID, Location location, byte Yaw, byte Pitch);
+        void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte yaw, byte pitch);
 
         /// <summary>
         /// Called when entities have despawned
@@ -172,7 +160,7 @@ namespace MinecraftClient.Protocol
         /// <param name="Dy">Y offset</param>
         /// <param name="Dz">Z offset</param>
         /// <param name="onGround">TRUE if on ground</param>
-        void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround);
+        void OnEntityPosition(int entityID, Double dx, Double dy, Double dz,bool onGround);
 
         /// <summary>
         /// Called when an entity moved to fixed coordinates
@@ -182,28 +170,28 @@ namespace MinecraftClient.Protocol
         /// <param name="Dy">Y</param>
         /// <param name="Dz">Z</param>
         /// <param name="onGround">TRUE if on ground</param>
-        void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround);
+        void OnEntityTeleport(int entityID, Double x, Double y, Double z, bool onGround);
 
         /// <summary>
         /// Called when additional properties have been received for an entity
         /// </summary>
         /// <param name="EntityID">Entity ID</param>
         /// <param name="prop">Dictionary of properties</param>
-        void OnEntityProperties(int EntityID, Dictionary<string, Double> prop);
+        void OnEntityProperties(int entityID, Dictionary<string, Double> prop);
 
         /// <summary>
         /// Called when the world age has been updated
         /// </summary>
         /// <param name="WorldAge">World age</param>
         /// <param name="TimeOfDay">Time of Day</param>
-        void OnTimeUpdate(long WorldAge, long TimeOfDay);
+        void OnTimeUpdate(long worldAge, long timeOfDay);
 
         /// <summary>
         /// Called when inventory items have been received
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
         /// <param name="itemList">Item list</param>
-        void OnWindowItems(byte inventoryID, Dictionary<int, MinecraftClient.Inventory.Item> itemList);
+        void OnWindowItems(byte inventoryID, Dictionary<int, Item> itemList);
 
         /// <summary>
         /// Called when a single slot has been updated inside an inventory

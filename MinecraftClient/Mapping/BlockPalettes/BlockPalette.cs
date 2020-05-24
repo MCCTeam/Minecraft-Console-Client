@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MinecraftClient.Mapping.BlockPalettes
 {
-    public abstract class BlockPaletteMapping
+    public abstract class BlockPalette
     {
         /// <summary>
         /// Get mapping dictionary. Must be overriden with proper implementation.
