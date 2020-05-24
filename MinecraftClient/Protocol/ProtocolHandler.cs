@@ -90,7 +90,7 @@ namespace MinecraftClient.Protocol
             {
                 if (protocolversion != 0 && protocolversion != protocolversionTmp)
                     ConsoleIO.WriteLineFormatted("§8Server reports a different version than manually set. Login may not work.");
-                if (protocolversion == 0 && protocolversionTmp == 0)
+                if (protocolversion == 0 && protocolversionTmp <= 1)
                     ConsoleIO.WriteLineFormatted("§8Server does not report its protocol version, autodetection will not work.");
                 if (protocolversion == 0)
                     protocolversion = protocolversionTmp;

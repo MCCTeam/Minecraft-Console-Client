@@ -724,7 +724,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (Exception innerException)
             {
-                if (innerException is SocketException || innerException.InnerException is SocketException)
+                if (innerException is SocketException || innerException.InnerException is SocketException || innerException is ThreadAbortException)
                     throw; //Connection lost rather than invalid data
                 throw new System.IO.InvalidDataException(
                     String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
