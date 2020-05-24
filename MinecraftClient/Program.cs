@@ -245,9 +245,11 @@ namespace MinecraftClient
                     }
                 }
 
-                if (protocolversion == 0)
+                if (protocolversion == 0 || Settings.ServerMayHaveForge)
                 {
-                    Console.WriteLine("Retrieving Server Info...");
+                    if (protocolversion != 0)
+                        Console.WriteLine("Checking if server is running Forge...");
+                    else Console.WriteLine("Retrieving Server Info...");
                     if (!ProtocolHandler.GetServerInfo(Settings.ServerIP, Settings.ServerPort, ref protocolversion, ref forgeInfo))
                     {
                         HandleFailure("Failed to ping this IP.", true, ChatBots.AutoRelog.DisconnectReason.ConnectionLost);

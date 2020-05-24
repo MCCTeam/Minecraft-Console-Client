@@ -28,6 +28,7 @@ namespace MinecraftClient
         public static string ServerIP = "";
         public static ushort ServerPort = 25565;
         public static string ServerVersion = "";
+        public static bool ServerMayHaveForge = true;
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
 
@@ -237,6 +238,7 @@ namespace MinecraftClient
                                                 case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
                                                 case "chatbotlogfile": chatbotLogFile = argValue; break;
                                                 case "mcversion": ServerVersion = argValue; break;
+                                                case "mcforge": ServerMayHaveForge = argValue.ToLower() == "auto" || str2bool(argValue); break;
                                                 case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
                                                 case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
@@ -584,6 +586,7 @@ namespace MinecraftClient
                 + "botowners=Player1,Player2,Player3  # Use name list or myfile.txt with one name per line\r\n"
                 + "botmessagedelay=2                  # Seconds to delay between message a bot makes to avoid accidental spam\r\n"
                 + "mcversion=auto                     # Use 'auto' or '1.X.X' values\r\n"
+                + "mcforge=auto                       # Use 'auto' or 'false'\r\n"
                 + "brandinfo=mcc                      # Use 'mcc','vanilla', or 'none'\r\n"
                 + "chatbotlogfile=                    # Leave empty for no logfile\r\n"
                 + "privatemsgscmdname=tell            # Used by RemoteControl bot\r\n"

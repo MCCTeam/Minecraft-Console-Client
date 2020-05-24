@@ -88,7 +88,12 @@ namespace MinecraftClient.Protocol
                 }
             }, TimeSpan.FromSeconds(Settings.ResolveSrvRecordsShortTimeout ? 10 : 30)))
             {
-                protocolversion = protocolversionTmp;
+                if (protocolversion != 0 && protocolversion != protocolversionTmp)
+                    ConsoleIO.WriteLineFormatted("§8Server reports a different version than manually set. Login may not work.");
+                if (protocolversion == 0 && protocolversionTmp == 0)
+                    ConsoleIO.WriteLineFormatted("§8Server does not report its protocol version, autodetection will not work.");
+                if (protocolversion == 0)
+                    protocolversion = protocolversionTmp;
                 forgeInfo = forgeInfoTmp;
                 return success;
             }
