@@ -111,6 +111,7 @@
     <Compile Include="Inventory\ItemType.cs" />
     <Compile Include="Inventory\ItemTypeExtensions.cs" />
     <Compile Include="Inventory\ItemTypeGenerator.cs" />
+    <Compile Include="Inventory\WindowActionType.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette112.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette113.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette114.cs" />
