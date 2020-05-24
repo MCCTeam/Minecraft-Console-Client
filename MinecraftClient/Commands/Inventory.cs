@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     class Inventory : Command
     {
         public override string CMDName { get { return "inventory"; } }
-        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|click <slot> <left|right|middle>>: Interact with inventories"; } }
+        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|drop <slot> <all>|click <slot> <left|right|middle>>: Interact with inventories"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -87,9 +87,27 @@ namespace MinecraftClient.Commands
                                 if (args.Length >= 3)
                                 {
                                     int slot = int.Parse(args[2]);
-                                    handler.DoWindowAction(inventoryId, slot, WindowActionType.DropItem);
+                                    // check item exist
+                                    if (!handler.GetInventory(inventoryId).Items.ContainsKey(slot))
+                                        return "No item in slot #" + slot;
+                                    WindowActionType actionType = WindowActionType.DropItem;
+                                    if (args.Length == 4)
+                                    {
+                                        if (args[3].ToLower() == "all")
+                                        {
+                                            actionType = WindowActionType.DropItemStack;
+                                        }
+                                    }
+                                    if (handler.DoWindowAction(inventoryId, slot, actionType))
+                                    {
+                                        return "Dropped item from slot #" + slot;
+                                    }
+                                    else
+                                    {
+                                        return "Failed";
+                                    }
                                 }
-                                return "Dropped";
+                                else return CMDDesc;
                             default:
                                 return CMDDesc;
                         }
