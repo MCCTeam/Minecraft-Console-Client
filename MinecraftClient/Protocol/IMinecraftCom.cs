@@ -154,7 +154,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="slot">Id of inventory slot</param>
         /// <param name="item">Id of item </param>
-        bool SendCreativeInventorAction(int slot, Item item);
+        bool SendCreativeInventoryAction(int slot, Item item);
 
         /// <summary>
         /// Send a close window packet to the server
