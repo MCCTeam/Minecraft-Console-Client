@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -689,6 +689,11 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item)
+        {
+            return false; //Currently not implemented
+        }
+
+        public bool SendCreativeInventorAction(int slot, Item item)
         {
             return false; //Currently not implemented
         }
