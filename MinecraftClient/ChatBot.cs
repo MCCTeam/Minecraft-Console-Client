@@ -900,6 +900,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Plays animation
+        /// </summary>
+        /// <param name="animation"> <0|1></param>
+        /// <returns>TRUE animation done</returns>
+        protected bool SendAnimation(int animation)
+        {
+            return Handler.DoAnimation(animation);
+        }
+
+        /// <summary>
         /// Use item currently in the player's hand (active inventory bar slot)
         /// </summary>
         /// <returns></returns>

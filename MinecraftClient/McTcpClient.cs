@@ -1484,6 +1484,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Plays animation
+        /// </summary>
+        /// <param name="animation"> <0|1></param>
+        /// <returns>TRUE if item given successfully</returns>
+        public bool DoAnimation(int animation)
+        {
+            return handler.SendAnimation(animation);
+        }
+
+        /// <summary>
         /// Close the specified inventory window
         /// </summary>
         /// <param name="windowId">Window ID</param>
