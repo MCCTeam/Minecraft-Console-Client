@@ -403,7 +403,10 @@ namespace MinecraftClient.Protocol.Handlers
             if (root)
             {
                 if (cache.Peek() == 0) // TAG_End
+                {
+                    cache.Dequeue();
                     return NbtData;
+                }
                 if (cache.Peek() != 10) // TAG_Compound
                     throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
                 ReadNextByte(cache); // Tag type (TAG_Compound)
