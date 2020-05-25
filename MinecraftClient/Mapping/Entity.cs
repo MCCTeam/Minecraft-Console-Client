@@ -52,26 +52,13 @@ namespace MinecraftClient.Mapping
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
         /// <param name="uuid">Player uuid</param>
-        public Entity(int ID, EntityType type, Location location, Guid uuid)
+        public Entity(int ID, EntityType type, Location location, Guid uuid, name)
         {
             this.ID = ID;
             this.Type = type;
             this.Location = location;
             this.UUID = uuid;
-            this.Name = "";
-            if (type == EntityType.Player)
-            {
-                
-                Dictionary<string, string> uuids = Program.Client.GetOnlinePlayersWithUUID();
-                foreach (KeyValuePair<string, string> keyValue in uuids)
-                {
-                    if (keyValue.Key == uuid.ToString())
-                    {
-                        this.Name = keyValue.Value;
-                        break;
-                    }
-                }
-            }
+            this.Name = name;
         }
     }
 }
