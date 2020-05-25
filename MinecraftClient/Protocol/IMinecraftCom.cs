@@ -157,6 +157,12 @@ namespace MinecraftClient.Protocol
         bool SendCreativeInventoryAction(int slot, Item item);
 
         /// <summary>
+        /// Send animation
+        /// </summary>
+        /// <param name="animation">Number animation</param>
+        bool SenAnimation(int animation);
+
+        /// <summary>
         /// Send a close window packet to the server
         /// </summary>
         /// <param name="windowId">Id of the window being closed</param>
