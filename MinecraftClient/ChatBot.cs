@@ -821,7 +821,7 @@ namespace MinecraftClient
         ///     dictionary of online player whereby
         ///     UUID represents the key
         ///     playername represents the value</returns>
-        public Dictionary<string, string> GetOnlinePlayersWithUUID()
+        protected Dictionary<string, string> GetOnlinePlayersWithUUID()
         {
             return Handler.GetOnlinePlayersWithUUID();
         }
@@ -893,11 +893,11 @@ namespace MinecraftClient
         /// <param name="ItemType"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        protected bool CreativeInventorAction(int slot, ItemType ItemType, int count)
+        protected bool CreativeInventoryAction(int slot, ItemType ItemType, int count)
         {
             Dictionary<string, object> NBT = null;
             Item item = new Item((int)ItemType, count, NBT);
-            return Handler.DoCreativeInventorAction(slot, item);
+            return Handler.DoCreativeInventoryAction(slot, item);
         }
 
         /// <summary>
