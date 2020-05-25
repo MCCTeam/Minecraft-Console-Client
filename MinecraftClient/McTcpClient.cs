@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -242,11 +242,11 @@ namespace MinecraftClient
                     ConsoleIO.WriteLogLine("Waiting 5 seconds (" + ReconnectionAttemptsLeft + " attempts left)...");
                     Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
-                    Program.Restart();
+                    Form1.Restart();
                 }
                 else if (!singlecommand && Settings.interactiveMode)
                 {
-                    Program.HandleFailure();
+                    Form1.HandleFailure();
                 }
             }
         }
@@ -342,7 +342,7 @@ namespace MinecraftClient
 
             if (cmds.Count == 0)
             {
-                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
+                Type[] cmds_classes = Form1.GetTypesInNamespace("MinecraftClient.Commands");
                 foreach (Type type in cmds_classes)
                 {
                     if (type.IsSubclassOf(typeof(Command)))
@@ -958,7 +958,7 @@ namespace MinecraftClient
             }
 
             if (!will_restart)
-                Program.HandleFailure();
+                Form1.HandleFailure();
         }
 
         /// <summary>
@@ -1487,6 +1487,17 @@ namespace MinecraftClient
                 item = inventories[windowId].Items[slotId];
 
             return handler.SendWindowAction(windowId, slotId, action, item);
+        }
+
+        /// <summary>
+        /// Close the specified inventory window
+        /// </summary>
+        /// <param name="slot">Inventory slot</param>
+        /// <param name="item">Item</param>
+        /// <returns>TRUE if the window was successfully closed</returns>
+        public bool DoCreativeInventorAction(int slot, Item item)
+        {
+            return handler.SendCreativeInventorAction(slot, item);
         }
 
         /// <summary>
