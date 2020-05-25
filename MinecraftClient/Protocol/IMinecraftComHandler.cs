@@ -137,13 +137,13 @@ namespace MinecraftClient.Protocol
         void OnSpawnEntity(Entity entity);
 
         /// <summary>
-        /// Called when a player has spawned
+        /// Called when a player spawns or enters the client's render distance
         /// </summary>
-        /// <param name="EntityID">Entity ID</param>
-        /// <param name="UUID">Entity UUID</param>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="uuid">Entity UUID</param>
         /// <param name="location">Entity location</param>
-        /// <param name="Yaw">Player head yaw</param>
-        /// <param name="Pitch">Player head pitch</param>
+        /// <param name="yaw">Player head yaw</param>
+        /// <param name="pitch">Player head pitch</param>
         void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte yaw, byte pitch);
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace MinecraftClient.Protocol
         /// <param name="Dy">Y offset</param>
         /// <param name="Dz">Z offset</param>
         /// <param name="onGround">TRUE if on ground</param>
-        void OnEntityPosition(int entityID, Double dx, Double dy, Double dz,bool onGround);
+        void OnEntityPosition(int entityID, Double dx, Double dy, Double dz, bool onGround);
 
         /// <summary>
         /// Called when an entity moved to fixed coordinates

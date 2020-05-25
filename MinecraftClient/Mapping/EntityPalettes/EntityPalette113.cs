@@ -6,7 +6,7 @@ namespace MinecraftClient.Mapping.EntityPalettes
     /// <summary>
     /// Defines mappings for pre-1.14 entitiy IDs
     /// Pre-1.14 Minecraft has 2 set of ids: One for non-living objects and one for living mobs
-    /// Post-1.14 Minecraft has only one set of ids for all types of entities
+    /// 1.14+ Minecraft has only one set of ids for all types of entities
     /// </summary>
     public class EntityPalette113 : EntityPalette
     {

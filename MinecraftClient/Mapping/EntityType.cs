@@ -9,8 +9,8 @@ namespace MinecraftClient.Mapping
     /// 1. Generate registries.json using data reporting on Vanilla Minecraft (https://wiki.vg/Data_Generators)
     /// 2. Generate temporary EntityTypeXXX.cs and EntityPaletteXXX.cs using EntityPaletteGenerator.cs
     /// 3. Perform a diff with existing versions, add missing entries in EntityType.cs and EntityTypeExtensions.cs
-    /// 4. If existing entity IDs were not randomized by Mojang, simply add missing state entries to the latest existing PaletteXXX.cs
-    /// 5. If existing entity IDs were randomized, add a new palette as PaletteXXX.cs into the codebase (worst case)
+    /// 4. If existing entity IDs were not randomized by Mojang, simply add missing entries to the latest existing EntityPaletteXXX.cs
+    /// 5. If existing entity IDs were randomized, add a new palette as EntityPaletteXXX.cs into the codebase (worst case)
     /// </remarks>
     public enum EntityType
     {

@@ -150,11 +150,14 @@ namespace MinecraftClient.Protocol
         bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item);
 
         /// <summary>
-        /// Send a click window slot packet to the server
+        /// Request Creative Mode item creation into regular/survival Player Inventory
         /// </summary>
-        /// <param name="slot">Id of inventory slot</param>
-        /// <param name="item">Id of item </param>
-        bool SendCreativeInventoryAction(int slot, Item item);
+        /// <remarks>(obviously) requires to be in creative mode</remarks>
+        /// <param name="slot">Destination inventory slot</param>
+        /// <param name="itemType">Item type</param>
+        /// <param name="count">Item count</param>
+        /// <returns>TRUE if item given successfully</returns>
+        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count);
 
         /// <summary>
         /// Send a close window packet to the server

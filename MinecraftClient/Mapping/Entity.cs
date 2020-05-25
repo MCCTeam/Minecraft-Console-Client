@@ -46,12 +46,13 @@ namespace MinecraftClient.Mapping
             this.Location = location;
         }
         /// <summary>
-        /// Create a new entity based on Entity ID, Entity Type, location and UUID
+        /// Create a new entity based on Entity ID, Entity Type, location, name and UUID
         /// </summary>
         /// <param name="ID">Entity ID</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
         /// <param name="uuid">Player uuid</param>
+        /// <param name="name">Player name</param>
         public Entity(int ID, EntityType type, Location location, Guid uuid, string name)
         {
             this.ID = ID;

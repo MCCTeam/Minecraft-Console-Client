@@ -14,9 +14,9 @@ namespace MinecraftClient.Mapping.EntityPalettes
         protected abstract Dictionary<int, EntityType> GetDict();
 
         /// <summary>
-        /// Get mapping dictionary for pre-1.13. May be overriden with proper implementation.
+        /// Get mapping dictionary for pre-1.14 non-living entities.
         /// </summary>
-        /// <returns>Palette dictionary for non-living entities (pre-1.13)</returns>
+        /// <returns>Palette dictionary for non-living entities (pre-1.14)</returns>
         protected virtual Dictionary<int, EntityType> GetDictNonLiving()
         {
             return null;
@@ -34,13 +34,13 @@ namespace MinecraftClient.Mapping.EntityPalettes
 
             if (entityTypesNonLiving != null && !living)
             {
-                //Pre-1.13 non-living entities have a different set of IDs (entityTypesNonLiving != null)
+                //Pre-1.14 non-living entities have a different set of IDs (entityTypesNonLiving != null)
                 if (entityTypesNonLiving.ContainsKey(id))
                     return entityTypesNonLiving[id];
             }
             else
             {
-                //Post-1.13 entities have the same set of IDs regardless of living status
+                //1.14+ entities have the same set of IDs regardless of living status
                 if (entityTypes.ContainsKey(id))
                     return entityTypes[id];
             }

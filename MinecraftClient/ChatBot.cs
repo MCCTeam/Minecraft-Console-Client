@@ -887,17 +887,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Interact with an entity
+        /// Give Creative Mode items into regular/survival Player Inventory
         /// </summary>
-        /// <param name="slot"></param>
-        /// <param name="ItemType"></param>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        protected bool CreativeInventoryAction(int slot, ItemType ItemType, int count)
+        /// <remarks>(obviously) requires to be in creative mode</remarks>
+        /// <param name="slot">Destination inventory slot</param>
+        /// <param name="itemType">Item type</param>
+        /// <param name="count">Item count</param>
+        /// <returns>TRUE if item given successfully</returns>
+        protected bool CreativeGive(int slot, ItemType itemType, int count)
         {
-            Dictionary<string, object> NBT = null;
-            Item item = new Item((int)ItemType, count, NBT);
-            return Handler.DoCreativeInventoryAction(slot, item);
+            return Handler.DoCreativeGive(slot, itemType, count);
         }
 
         /// <summary>

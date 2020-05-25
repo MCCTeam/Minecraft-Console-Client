@@ -215,8 +215,6 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                     case PacketIncomingType.JoinGame:
                         handler.OnGameJoined();
-                        // by reinforce
-                        // get client player EntityID
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
                         handler.SetPlayerEntityID(playerEntityID);
                         dataTypes.ReadNextByte(packetData);
@@ -1377,13 +1375,13 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendCreativeInventoryAction(int slot, Item item)
+        public bool SendCreativeInventoryAction(int slot, ItemType itemType, int count)
         {
             try
             {
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetShort((short)slot));
-                packet.AddRange(dataTypes.GetItemSlot(item));
+                packet.AddRange(dataTypes.GetItemSlot(new Item((int)itemType, count, null)));
 
                 SendPacket(PacketOutgoingType.CreativeInventoryAction, packet);
                 return true;

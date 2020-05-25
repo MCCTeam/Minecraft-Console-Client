@@ -1250,48 +1250,20 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Called when a player was spawned/in the render distance
+        /// Called when a player spawns or enters the client's render distance
         /// </summary>
-        /// <param name="EntityID"></param>
-        /// <param name="UUID"></param>
-        /// <param name="location"></param>
-        /// <param name="Yaw"></param>
-        /// <param name="Pitch"></param>
-        public void OnSpawnPlayer(int EntityID, Guid UUID, Location location, byte Yaw, byte Pitch)
+        public void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte Yaw, byte Pitch)
         {
-            if (entities.ContainsKey(EntityID)) return;
-            string name = "";
-            Dictionary<string, string> uuids = GetOnlinePlayersWithUUID();
-            foreach (KeyValuePair<string, string> keyValue in uuids)
-            {
-                if (keyValue.Key == UUID.ToString())
-                {
-                    name = keyValue.Value;
-                }
-            }
-            Entity entity = new Entity(EntityID, EntityType.Player, location, UUID, name);
-            entities.Add(EntityID, entity);
-            foreach (ChatBot bot in bots.ToArray())
-            {
-                try
-                {
-                    bot.OnEntitySpawn(entity);
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        ConsoleIO.WriteLogLine("OnEntitySpawn: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
-                }
-            }
+            string playerName = null;
+            if (onlinePlayers.ContainsKey(uuid))
+                playerName = onlinePlayers[uuid];
+            Entity playerEntity = new Entity(entityID, EntityType.Player, location, uuid, playerName);
+            OnSpawnEntity(playerEntity);
         }
 
         /// <summary>
         /// Called when entities dead/despawn.
         /// </summary>
-        /// <param name="Entities"></param>
         public void OnDestroyEntities(int[] Entities)
         {
             foreach (int a in Entities)
@@ -1499,14 +1471,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Close the specified inventory window
+        /// Give Creative Mode items into regular/survival Player Inventory
         /// </summary>
-        /// <param name="slot">Inventory slot</param>
-        /// <param name="item">Item</param>
-        /// <returns>TRUE if the window was successfully closed</returns>
-        public bool DoCreativeInventoryAction(int slot, Item item)
+        /// <remarks>(obviously) requires to be in creative mode</remarks>
+        /// <param name="slot">Destination inventory slot</param>
+        /// <param name="itemType">Item type</param>
+        /// <param name="count">Item count</param>
+        /// <returns>TRUE if item given successfully</returns>
+        public bool DoCreativeGive(int slot, ItemType itemType, int count)
         {
-            return handler.SendCreativeInventoryAction(slot, item);
+            return handler.SendCreativeInventoryAction(slot, itemType, count);
         }
 
         /// <summary>
