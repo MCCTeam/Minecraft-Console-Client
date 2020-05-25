@@ -62,7 +62,7 @@ namespace MinecraftClient.Mapping
             if (type == EntityType.Player)
             {
                 
-                Dictionary<string, string> uuids = Form1.Client.GetOnlinePlayersWithUUID();
+                Dictionary<string, string> uuids = Program.Client.GetOnlinePlayersWithUUID();
                 foreach (KeyValuePair<string, string> keyValue in uuids)
                 {
                     if (keyValue.Key == uuid.ToString())
