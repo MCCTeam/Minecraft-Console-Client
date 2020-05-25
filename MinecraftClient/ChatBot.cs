@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -590,7 +590,7 @@ namespace MinecraftClient
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Program.Restart(delaySeconds);
+            Form1.Restart(delaySeconds);
         }
 
         /// <summary>
@@ -598,7 +598,7 @@ namespace MinecraftClient
         /// </summary>
         protected void DisconnectAndExit()
         {
-            Program.Exit();
+            Form1.Exit();
         }
 
         /// <summary>
@@ -821,7 +821,7 @@ namespace MinecraftClient
         ///     dictionary of online player whereby
         ///     UUID represents the key
         ///     playername represents the value</returns>
-        protected Dictionary<string, string> GetOnlinePlayersWithUUID()
+        public Dictionary<string, string> GetOnlinePlayersWithUUID()
         {
             return Handler.GetOnlinePlayersWithUUID();
         }
@@ -884,6 +884,20 @@ namespace MinecraftClient
         protected bool InteractEntity(int EntityID, int type)
         {
             return Handler.InteractEntity(EntityID, type);
+        }
+
+        /// <summary>
+        /// Interact with an entity
+        /// </summary>
+        /// <param name="slot"></param>
+        /// <param name="ItemType"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        protected bool CreativeInventorAction(int slot, ItemType ItemType, int count)
+        {
+            Dictionary<string, object> NBT = null;
+            Item item = new Item((int)ItemType, count, NBT);
+            return Handler.DoCreativeInventorAction(slot, item);
         }
 
         /// <summary>
