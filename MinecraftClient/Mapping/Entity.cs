@@ -68,6 +68,7 @@ namespace MinecraftClient.Mapping
                     if (keyValue.Key == uuid.ToString())
                     {
                         this.Name = keyValue.Value;
+                        break;
                     }
                 }
             }
