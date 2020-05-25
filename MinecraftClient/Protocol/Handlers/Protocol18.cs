@@ -1377,7 +1377,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendCreativeInventorAction(int slot, Item item)
+        public bool SendCreativeInventoryAction(int slot, Item item)
         {
             try
             {
