@@ -52,7 +52,7 @@ namespace MinecraftClient.Mapping
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
         /// <param name="uuid">Player uuid</param>
-        public Entity(int ID, EntityType type, Location location, Guid uuid, name)
+        public Entity(int ID, EntityType type, Location location, Guid uuid, string name)
         {
             this.ID = ID;
             this.Type = type;
