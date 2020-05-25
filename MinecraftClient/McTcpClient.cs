@@ -1512,6 +1512,17 @@ namespace MinecraftClient
         /// <summary>
         /// Close the specified inventory window
         /// </summary>
+        /// <param name="slot">Inventory slot</param>
+        /// <param name="item">Item</param>
+        /// <returns>TRUE if the window was successfully closed</returns>
+        public bool DoAnimation(int animation)
+        {
+            return handler.SenAnimation(animation);
+        }
+
+        /// <summary>
+        /// Close the specified inventory window
+        /// </summary>
         /// <param name="windowId">Window ID</param>
         /// <returns>TRUE if the window was successfully closed</returns>
         public bool CloseInventory(int windowId)
