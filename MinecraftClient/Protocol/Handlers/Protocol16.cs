@@ -698,6 +698,11 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
+        public bool SenAnimation(int number)
+        {
+            return false;
+        }
+
         public bool SendCloseWindow(int windowId)
         {
             return false; //Currently not implemented
