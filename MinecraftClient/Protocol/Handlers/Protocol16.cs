@@ -692,7 +692,10 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false; //Currently not implemented
         }
-
+        public bool SendAnimation(int animation)
+        {
+            return false; //Currently not implemented
+        }
         public bool SendCreativeInventoryAction(int slot, ItemType item, int count)
         {
             return false; //Currently not implemented
