@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     class Inventory : Command
     {
         public override string CMDName { get { return "inventory"; } }
-        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|drop <slot> <1|all>|click <slot> <left|right|middle>>: Interact with inventories"; } }
+        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|drop <slot> <1|all>|click <slot> <left|right|middle>|creative <slot> <item> <count>>: Interact with inventories"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -103,6 +103,25 @@ namespace MinecraftClient.Commands
                                         if (actionType == WindowActionType.DropItemStack)
                                             return "Dropped whole item stack from slot #" + slot;
                                         else return "Dropped 1 item from slot #" + slot;
+                                    }
+                                    else
+                                    {
+                                        return "Failed";
+                                    }
+                                }
+                                else return CMDDesc;
+                            case "creative":
+                                if (args.Length >= 3)
+                                {
+                                    int slot = int.Parse(args[2]);
+                                    ItemType ItemType = (ItemType)int.Parse(args[3]);
+                                    int count = int.Parse(args[4]);
+                                    Dictionary<string, object> NBT = null;
+                                    Item item = new Item((int)ItemType, count, NBT);
+
+                                    if (handler.DoCreativeInventorAction(slot, item))
+                                    {
+                                        return "You have received " + ItemType + " in the slot #" + slot;
                                     }
                                     else
                                     {
