@@ -27,7 +27,7 @@ namespace MinecraftClient
     /// </remarks>
     static class Program
     {
-        private static McTcpClient Client;
+        static McTcpClient Client;
         public static string[] startupargs;
 
         public const string Version = MCHighestVersion;
