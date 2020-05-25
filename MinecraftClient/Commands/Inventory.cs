@@ -121,7 +121,7 @@ namespace MinecraftClient.Commands
 
                                     if (handler.DoCreativeInventorAction(slot, item))
                                     {
-                                        return "You have received " + ItemType + " in the slot #" + slot;
+                                         return "You have received " + ItemType + " x" + count + " in the slot #" + slot;
                                     }
                                     else
                                     {
