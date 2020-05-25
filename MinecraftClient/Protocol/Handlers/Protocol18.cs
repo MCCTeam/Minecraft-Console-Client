@@ -1392,7 +1392,20 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+        public bool SenAnimation(int animation)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetVarInt(animation));
 
+                SendPacket(PacketOutgoingType.Animation, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
         public bool SendCloseWindow(int windowId)
         {
             try
