@@ -104,6 +104,7 @@
     <Compile Include="Commands\Set.cs" />
     <Compile Include="Commands\Health.cs" />
     <Compile Include="Commands\Sneak.cs" />
+    <Compile Include="Commands\Animation.cs" />
     <Compile Include="Commands\UseItem.cs" />
     <Compile Include="Inventory\Container.cs" />
     <Compile Include="Inventory\ContainerType.cs" />
