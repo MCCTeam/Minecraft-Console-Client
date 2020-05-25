@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     class Inventory : Command
     {
         public override string CMDName { get { return "inventory"; } }
-        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|drop <slot> <1|all>|click <slot> <left|right|middle>>: Interact with inventories"; } }
+        public override string CMDDesc { get { return "inventory <<id>|player|container> <list|close|drop <slot> <1|all>|click <slot> <left|right|middle>|creativegive <slot> <itemtype> <count>>: Interact with inventories"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -107,6 +107,32 @@ namespace MinecraftClient.Commands
                                     else
                                     {
                                         return "Failed";
+                                    }
+                                }
+                                else return CMDDesc;
+                            case "creativegive":
+                                if (args.Length >= 3)
+                                {
+                                    int slot = int.Parse(args[2]);
+                                    ItemType ItemType = ItemType.Stone;
+                                    if (Enum.TryParse(args[3], out ItemType))
+                                    {
+                                        int count = int.Parse(args[4]);
+                                        Dictionary<string, object> NBT = null;
+                                        Item item = new Item((int)ItemType, count, NBT);
+
+                                        if (handler.DoCreativeInventoryAction(slot, item))
+                                        {
+                                            return "You have received " + ItemType + " x" + count + " in the slot #" + slot;
+                                        }
+                                        else
+                                        {
+                                            return "Failed";
+                                        }
+                                    }
+                                    else;
+                                    {
+                                        return CMDDesc;
                                     }
                                 }
                                 else return CMDDesc;

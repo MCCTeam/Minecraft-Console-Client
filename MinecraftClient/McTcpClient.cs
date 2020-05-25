@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -1260,7 +1260,16 @@ namespace MinecraftClient
         public void OnSpawnPlayer(int EntityID, Guid UUID, Location location, byte Yaw, byte Pitch)
         {
             if (entities.ContainsKey(EntityID)) return;
-            Entity entity = new Entity(EntityID, EntityType.Player, location, UUID);
+            string name = "";
+            Dictionary<string, string> uuids = GetOnlinePlayersWithUUID();
+            foreach (KeyValuePair<string, string> keyValue in uuids)
+            {
+                if (keyValue.Key == UUID.ToString())
+                {
+                    name = keyValue.Value;
+                }
+            }
+            Entity entity = new Entity(EntityID, EntityType.Player, location, UUID, name);
             entities.Add(EntityID, entity);
             foreach (ChatBot bot in bots.ToArray())
             {
@@ -1487,6 +1496,17 @@ namespace MinecraftClient
                 item = inventories[windowId].Items[slotId];
 
             return handler.SendWindowAction(windowId, slotId, action, item);
+        }
+
+        /// <summary>
+        /// Close the specified inventory window
+        /// </summary>
+        /// <param name="slot">Inventory slot</param>
+        /// <param name="item">Item</param>
+        /// <returns>TRUE if the window was successfully closed</returns>
+        public bool DoCreativeInventoryAction(int slot, Item item)
+        {
+            return handler.SendCreativeInventoryAction(slot, item);
         }
 
         /// <summary>

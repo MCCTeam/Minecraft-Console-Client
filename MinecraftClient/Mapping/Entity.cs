@@ -1,7 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MinecraftClient.Mapping
 {
@@ -19,6 +17,11 @@ namespace MinecraftClient.Mapping
         /// UUID of the entity if it is a player.
         /// </summary>
         public Guid UUID;
+
+        /// <summary>
+        /// Nickname of the entity if it is a player.
+        /// </summary>
+        public string Name;
 
         /// <summary>
         /// Entity type
@@ -48,12 +51,14 @@ namespace MinecraftClient.Mapping
         /// <param name="ID">Entity ID</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
-        public Entity(int ID, EntityType type, Location location, Guid uuid)
+        /// <param name="uuid">Player uuid</param>
+        public Entity(int ID, EntityType type, Location location, Guid uuid, string name)
         {
             this.ID = ID;
             this.Type = type;
             this.Location = location;
             this.UUID = uuid;
+            this.Name = name;
         }
     }
 }

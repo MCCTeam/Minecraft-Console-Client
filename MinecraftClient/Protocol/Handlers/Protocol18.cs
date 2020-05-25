@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -724,7 +724,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (Exception innerException)
             {
-                if (innerException is SocketException || innerException.InnerException is SocketException || innerException is ThreadAbortException)
+                if (innerException is SocketException || innerException.InnerException is SocketException)
                     throw; //Connection lost rather than invalid data
                 throw new System.IO.InvalidDataException(
                     String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
@@ -1370,6 +1370,22 @@ namespace MinecraftClient.Protocol.Handlers
                 packet.AddRange(dataTypes.GetItemSlot(item));
 
                 SendPacket(PacketOutgoingType.ClickWindow, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool SendCreativeInventoryAction(int slot, Item item)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetShort((short)slot));
+                packet.AddRange(dataTypes.GetItemSlot(item));
+
+                SendPacket(PacketOutgoingType.CreativeInventoryAction, packet);
                 return true;
             }
             catch (SocketException) { return false; }

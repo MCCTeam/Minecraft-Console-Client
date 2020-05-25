@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -884,6 +884,20 @@ namespace MinecraftClient
         protected bool InteractEntity(int EntityID, int type)
         {
             return Handler.InteractEntity(EntityID, type);
+        }
+
+        /// <summary>
+        /// Interact with an entity
+        /// </summary>
+        /// <param name="slot"></param>
+        /// <param name="ItemType"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        protected bool CreativeInventoryAction(int slot, ItemType ItemType, int count)
+        {
+            Dictionary<string, object> NBT = null;
+            Item item = new Item((int)ItemType, count, NBT);
+            return Handler.DoCreativeInventoryAction(slot, item);
         }
 
         /// <summary>

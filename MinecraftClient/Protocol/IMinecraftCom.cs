@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -148,6 +148,13 @@ namespace MinecraftClient.Protocol
         /// <param name="item">Item in the clicked slot</param>
         /// <returns>True if packet was successfully sent</returns>
         bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item);
+
+        /// <summary>
+        /// Send a click window slot packet to the server
+        /// </summary>
+        /// <param name="slot">Id of inventory slot</param>
+        /// <param name="item">Id of item </param>
+        bool SendCreativeInventoryAction(int slot, Item item);
 
         /// <summary>
         /// Send a close window packet to the server
