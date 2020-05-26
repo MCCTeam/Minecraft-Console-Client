@@ -418,6 +418,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.ClickWindow: return 0x09;
                     case PacketOutgoingType.CloseWindow: return 0x0A;
                     case PacketOutgoingType.EntityAction: return 0x1B;
+                    case PacketOutgoingType.Animation: return 0x2A;
                 }
             }
 

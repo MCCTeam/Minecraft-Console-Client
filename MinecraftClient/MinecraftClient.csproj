@@ -89,6 +89,7 @@
     <Compile Include="ChatBots\TestBot.cs" />
     <Compile Include="ChatBot.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Commands\Animation.cs" />
     <Compile Include="Commands\ChangeSlot.cs" />
     <Compile Include="Commands\Connect.cs" />
     <Compile Include="Commands\Debug.cs" />

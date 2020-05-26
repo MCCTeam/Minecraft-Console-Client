@@ -27,6 +27,7 @@ namespace MinecraftClient.Protocol.Handlers
         ClickWindow,
         CloseWindow,
         PlayerBlockPlacement,
-        CreativeInventoryAction
+        CreativeInventoryAction,
+        Animation
     }
 }
