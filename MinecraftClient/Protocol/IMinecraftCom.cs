@@ -162,9 +162,10 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Plays animation
         /// </summary>
-        /// <param name="animation"> <0|1></param>
+        /// <param name="animation">0 for left arm, 1 for right arm</param>
+        /// <param name="playerid">Player Entity ID</param>
         /// <returns>TRUE if item given successfully</returns>
-        bool SendAnimation(int animation);
+        bool SendAnimation(int animation, int playerid);
 
         /// <summary>
         /// Send a close window packet to the server

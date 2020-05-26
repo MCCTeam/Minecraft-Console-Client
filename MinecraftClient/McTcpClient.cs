@@ -1490,7 +1490,7 @@ namespace MinecraftClient
         /// <returns>TRUE if animation successfully done</returns>
         public bool DoAnimation(int animation)
         {
-            return handler.SendAnimation(animation);
+            return handler.SendAnimation(animation, playerEntityID);
         }
 
         /// <summary>

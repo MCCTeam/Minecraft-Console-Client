@@ -693,7 +693,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendAnimation(int animation)
+        public bool SendAnimation(int animation, int playerid)
         {
             return false; //Currently not implemented
         }

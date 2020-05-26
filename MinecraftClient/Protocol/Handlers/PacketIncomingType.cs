@@ -8,6 +8,10 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Abstract incoming packet numbering
     /// </summary>
+    /// <remarks>
+    /// Please add new entries at the bottom of the list (but above UnknownPakcket)
+    /// You'll also need to add them to Protocol18PacketTypes for all MC versions since MC 1.7
+    /// </remarks>
     enum PacketIncomingType
     {
         KeepAlive,
@@ -38,11 +42,14 @@ namespace MinecraftClient.Protocol.Handlers
         EntityPosition,
         EntityPositionAndRotation,
         EntityProperties,
-        TimeUpdate,
         EntityTeleport,
-        EntityStatus,
+        TimeUpdate,
         UpdateHealth,
         HeldItemChange,
-        UnknownPacket
+
+        /// <summary>
+        /// Represents a packet not implemented in MCC.
+        /// </summary>
+        UnknownPacket,
     }
 }

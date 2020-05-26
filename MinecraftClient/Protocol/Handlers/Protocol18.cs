@@ -706,9 +706,12 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                     case PacketIncomingType.UpdateHealth:
                         float health = dataTypes.ReadNextFloat(packetData);
-                        int food = dataTypes.ReadNextVarInt(packetData);
-                        // Food Saturation, not useful
-                        dataTypes.ReadNextFloat(packetData);
+                        int food;
+                        if (protocolversion >= MC18Version)
+                            food = dataTypes.ReadNextVarInt(packetData);
+                        else
+                            food = dataTypes.ReadNextShort(packetData);
+                        dataTypes.ReadNextFloat(packetData); // Food Saturation
                         handler.OnUpdateHealth(health, food);
                         break;
                     case PacketIncomingType.HeldItemChange:
@@ -912,6 +915,128 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Disconnect from the server
+        /// </summary>
+        public void Disconnect()
+        {
+            socketWrapper.Disconnect();
+        }
+
+        /// <summary>
+        /// Autocomplete text while typing username or command
+        /// </summary>
+        /// <param name="BehindCursor">Text behind cursor</param>
+        /// <returns>Completed text</returns>
+        IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
+        {
+            if (String.IsNullOrEmpty(BehindCursor))
+                return new string[] { };
+
+            byte[] transaction_id = dataTypes.GetVarInt(autocomplete_transaction_id);
+            byte[] assume_command = new byte[] { 0x00 };
+            byte[] has_position = new byte[] { 0x00 };
+
+            byte[] tabcomplete_packet = new byte[] { };
+
+            if (protocolversion >= MC18Version)
+            {
+                if (protocolversion >= MC113Version)
+                {
+                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, transaction_id);
+                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, dataTypes.GetString(BehindCursor));
+                }
+                else
+                {
+                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, dataTypes.GetString(BehindCursor));
+
+                    if (protocolversion >= MC19Version)
+                    {
+                        tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, assume_command);
+                    }
+
+                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, has_position);
+                }
+            }
+            else
+            {
+                tabcomplete_packet = dataTypes.ConcatBytes(dataTypes.GetString(BehindCursor));
+            }
+
+            autocomplete_received = false;
+            autocomplete_result.Clear();
+            autocomplete_result.Add(BehindCursor);
+            SendPacket(PacketOutgoingType.TabComplete, tabcomplete_packet);
+
+            int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
+            while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
+            if (autocomplete_result.Count > 0)
+                ConsoleIO.WriteLineFormatted("§8" + String.Join(" ", autocomplete_result), false);
+            return autocomplete_result;
+        }
+
+        /// <summary>
+        /// Ping a Minecraft server to get information about the server
+        /// </summary>
+        /// <returns>True if ping was successful</returns>
+        public static bool doPing(string host, int port, ref int protocolversion, ref ForgeInfo forgeInfo)
+        {
+            string version = "";
+            TcpClient tcp = ProxyHandler.newTcpClient(host, port);
+            tcp.ReceiveBufferSize = 1024 * 1024;
+            SocketWrapper socketWrapper = new SocketWrapper(tcp);
+            DataTypes dataTypes = new DataTypes(MC18Version);
+
+            byte[] packet_id = dataTypes.GetVarInt(0);
+            byte[] protocol_version = dataTypes.GetVarInt(-1);
+            byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
+            byte[] next_state = dataTypes.GetVarInt(1);
+            byte[] packet = dataTypes.ConcatBytes(packet_id, protocol_version, dataTypes.GetString(host), server_port, next_state);
+            byte[] tosend = dataTypes.ConcatBytes(dataTypes.GetVarInt(packet.Length), packet);
+
+            socketWrapper.SendDataRAW(tosend);
+
+            byte[] status_request = dataTypes.GetVarInt(0);
+            byte[] request_packet = dataTypes.ConcatBytes(dataTypes.GetVarInt(status_request.Length), status_request);
+
+            socketWrapper.SendDataRAW(request_packet);
+
+            int packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
+            if (packetLength > 0) //Read Response length
+            {
+                Queue<byte> packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
+                if (dataTypes.ReadNextVarInt(packetData) == 0x00) //Read Packet ID
+                {
+                    string result = dataTypes.ReadNextString(packetData); //Get the Json data
+
+                    if (!String.IsNullOrEmpty(result) && result.StartsWith("{") && result.EndsWith("}"))
+                    {
+                        Json.JSONData jsonData = Json.ParseJson(result);
+                        if (jsonData.Type == Json.JSONData.DataType.Object && jsonData.Properties.ContainsKey("version"))
+                        {
+                            Json.JSONData versionData = jsonData.Properties["version"];
+
+                            //Retrieve display name of the Minecraft version
+                            if (versionData.Properties.ContainsKey("name"))
+                                version = versionData.Properties["name"].StringValue;
+
+                            //Retrieve protocol version number for handling this server
+                            if (versionData.Properties.ContainsKey("protocol"))
+                                protocolversion = dataTypes.Atoi(versionData.Properties["protocol"].StringValue);
+
+                            // Check for forge on the server.
+                            Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);
+
+                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + (forgeInfo != null ? ", with Forge)." : ")."));
+
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Get max length for chat messages
         /// </summary>
         /// <returns>Max length, in characters</returns>
@@ -1103,128 +1228,6 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-
-        /// <summary>
-        /// Disconnect from the server
-        /// </summary>
-        public void Disconnect()
-        {
-            socketWrapper.Disconnect();
-        }
-
-        /// <summary>
-        /// Autocomplete text while typing username or command
-        /// </summary>
-        /// <param name="BehindCursor">Text behind cursor</param>
-        /// <returns>Completed text</returns>
-        IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
-        {
-            if (String.IsNullOrEmpty(BehindCursor))
-                return new string[] { };
-
-            byte[] transaction_id = dataTypes.GetVarInt(autocomplete_transaction_id);
-            byte[] assume_command = new byte[] { 0x00 };
-            byte[] has_position = new byte[] { 0x00 };
-
-            byte[] tabcomplete_packet = new byte[] { };
-
-            if (protocolversion >= MC18Version)
-            {
-                if (protocolversion >= MC113Version)
-                {
-                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, transaction_id);
-                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, dataTypes.GetString(BehindCursor));
-                }
-                else
-                {
-                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, dataTypes.GetString(BehindCursor));
-
-                    if (protocolversion >= MC19Version)
-                    {
-                        tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, assume_command);
-                    }
-
-                    tabcomplete_packet = dataTypes.ConcatBytes(tabcomplete_packet, has_position);
-                }
-            }
-            else
-            {
-                tabcomplete_packet = dataTypes.ConcatBytes(dataTypes.GetString(BehindCursor));
-            }
-
-            autocomplete_received = false;
-            autocomplete_result.Clear();
-            autocomplete_result.Add(BehindCursor);
-            SendPacket(PacketOutgoingType.TabComplete, tabcomplete_packet);
-
-            int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
-            while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
-            if (autocomplete_result.Count > 0)
-                ConsoleIO.WriteLineFormatted("§8" + String.Join(" ", autocomplete_result), false);
-            return autocomplete_result;
-        }
-
-        /// <summary>
-        /// Ping a Minecraft server to get information about the server
-        /// </summary>
-        /// <returns>True if ping was successful</returns>
-        public static bool doPing(string host, int port, ref int protocolversion, ref ForgeInfo forgeInfo)
-        {
-            string version = "";
-            TcpClient tcp = ProxyHandler.newTcpClient(host, port);
-            tcp.ReceiveBufferSize = 1024 * 1024;
-            SocketWrapper socketWrapper = new SocketWrapper(tcp);
-            DataTypes dataTypes = new DataTypes(MC18Version);
-
-            byte[] packet_id = dataTypes.GetVarInt(0);
-            byte[] protocol_version = dataTypes.GetVarInt(-1);
-            byte[] server_port = BitConverter.GetBytes((ushort)port); Array.Reverse(server_port);
-            byte[] next_state = dataTypes.GetVarInt(1);
-            byte[] packet = dataTypes.ConcatBytes(packet_id, protocol_version, dataTypes.GetString(host), server_port, next_state);
-            byte[] tosend = dataTypes.ConcatBytes(dataTypes.GetVarInt(packet.Length), packet);
-
-            socketWrapper.SendDataRAW(tosend);
-
-            byte[] status_request = dataTypes.GetVarInt(0);
-            byte[] request_packet = dataTypes.ConcatBytes(dataTypes.GetVarInt(status_request.Length), status_request);
-
-            socketWrapper.SendDataRAW(request_packet);
-
-            int packetLength = dataTypes.ReadNextVarIntRAW(socketWrapper);
-            if (packetLength > 0) //Read Response length
-            {
-                Queue<byte> packetData = new Queue<byte>(socketWrapper.ReadDataRAW(packetLength));
-                if (dataTypes.ReadNextVarInt(packetData) == 0x00) //Read Packet ID
-                {
-                    string result = dataTypes.ReadNextString(packetData); //Get the Json data
-
-                    if (!String.IsNullOrEmpty(result) && result.StartsWith("{") && result.EndsWith("}"))
-                    {
-                        Json.JSONData jsonData = Json.ParseJson(result);
-                        if (jsonData.Type == Json.JSONData.DataType.Object && jsonData.Properties.ContainsKey("version"))
-                        {
-                            Json.JSONData versionData = jsonData.Properties["version"];
-
-                            //Retrieve display name of the Minecraft version
-                            if (versionData.Properties.ContainsKey("name"))
-                                version = versionData.Properties["name"].StringValue;
-
-                            //Retrieve protocol version number for handling this server
-                            if (versionData.Properties.ContainsKey("protocol"))
-                                protocolversion = dataTypes.Atoi(versionData.Properties["protocol"].StringValue);
-
-                            // Check for forge on the server.
-                            Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);
-
-                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + (forgeInfo != null ? ", with Forge)." : ")."));
-
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
         
         /// <summary>
         /// Send an Interact Entity Packet to server
@@ -1246,6 +1249,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+
         // TODO: Interact at block location (e.g. chest minecart)
         public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand)
         {
@@ -1272,6 +1276,11 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool SendUseItem(int hand)
         {
+            if (protocolversion < MC19Version)
+                return false; // Packet does not exist prior to MC 1.9
+                // According to https://wiki.vg/index.php?title=Protocol&oldid=5486#Player_Block_Placement
+                // MC 1.7 does this using Player Block Placement with special values
+                // TODO once Player Block Placement is implemented for older versions
             try
             {
                 List<byte> packet = new List<byte>();
@@ -1286,6 +1295,8 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock)
         {
+            if (protocolversion < MC114Version)
+                return false; // NOT IMPLEMENTED for older MC versions
             try
             {
                 List<byte> packet = new List<byte>();
@@ -1296,6 +1307,7 @@ namespace MinecraftClient.Protocol.Handlers
                 packet.AddRange(dataTypes.GetFloat(CursorY));
                 packet.AddRange(dataTypes.GetFloat(CursorZ));
                 packet.Add(Convert.ToByte(insideBlock ? 1 : 0));
+
                 SendPacket(PacketOutgoingType.PlayerBlockPlacement, packet);
                 return true;
             }
@@ -1382,7 +1394,6 @@ namespace MinecraftClient.Protocol.Handlers
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetShort((short)slot));
                 packet.AddRange(dataTypes.GetItemSlot(new Item((int)itemType, count, null)));
-
                 SendPacket(PacketOutgoingType.CreativeInventoryAction, packet);
                 return true;
             }
@@ -1391,14 +1402,27 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendAnimation(int animation)
+        public bool SendAnimation(int animation, int playerid)
         {
             try
             {
                 if (animation == 0 || animation == 1)
                 {
                     List<byte> packet = new List<byte>();
-                    packet.AddRange(dataTypes.GetVarInt(animation));
+
+                    if (protocolversion < MC18Version)
+                    {
+                        packet.AddRange(dataTypes.GetInt(playerid));
+                        packet.Add((byte)1); // Swing arm
+                    }
+                    else if (protocolversion < MC19Version)
+                    {
+                        // No fields in 1.8.X
+                    }
+                    else // MC 1.9+
+                    {
+                        packet.AddRange(dataTypes.GetVarInt(animation));
+                    }
 
                     SendPacket(PacketOutgoingType.Animation, packet);
                     return true;

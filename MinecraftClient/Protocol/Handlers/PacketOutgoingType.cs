@@ -8,6 +8,10 @@ namespace MinecraftClient.Protocol.Handlers
     /// <summary>
     /// Abstract outgoing packet numbering
     /// </summary>
+    /// /// <remarks>
+    /// Please add new entries at the bottom of the list
+    /// You'll also need to add them to Protocol18PacketTypes for all MC versions since MC 1.7
+    /// </remarks>
     enum PacketOutgoingType
     {
         KeepAlive,
@@ -28,6 +32,6 @@ namespace MinecraftClient.Protocol.Handlers
         CloseWindow,
         PlayerBlockPlacement,
         CreativeInventoryAction,
-        Animation
+        Animation,
     }
 }
