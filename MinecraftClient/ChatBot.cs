@@ -899,7 +899,17 @@ namespace MinecraftClient
         {
             return Handler.DoAnimation(animation);
         }
-
+        
+        /// <summary>
+        /// Place block
+        /// </summary>
+        /// <param name="location">Block location</param>
+        /// <returns></returns>
+        protected bool SendPlaceBlock(Location location)
+        {
+            return Handler.PlaceBlock(location);
+        }
+        
         /// <summary>
         /// Use item currently in the player's hand (active inventory bar slot)
         /// </summary>
