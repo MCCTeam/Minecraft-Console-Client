@@ -1484,10 +1484,10 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Plays animation
+        /// Plays animation (Player arm swing)
         /// </summary>
-        /// <param name="animation"> <0|1></param>
-        /// <returns>TRUE if item given successfully</returns>
+        /// <param name="animation">0 for left arm, 1 for right arm</param>
+        /// <returns>TRUE if animation successfully done</returns>
         public bool DoAnimation(int animation)
         {
             return handler.SendAnimation(animation);

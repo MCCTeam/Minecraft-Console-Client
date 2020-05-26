@@ -722,8 +722,8 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (Exception innerException)
             {
-                if (innerException is SocketException || innerException.InnerException is SocketException)
-                    throw; //Connection lost rather than invalid data
+                if (innerException is ThreadAbortException || innerException is SocketException || innerException.InnerException is SocketException)
+                    throw; //Thread abort or Connection lost rather than invalid data
                 throw new System.IO.InvalidDataException(
                     String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
                         Protocol18PacketTypes.GetPacketIncomingType(packetID, protocolversion),
@@ -762,7 +762,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Send a packet to the server.  Packet ID, compression, and encryption will be handled automatically.
+        /// Send a packet to the server. Packet ID, compression, and encryption will be handled automatically.
         /// </summary>
         /// <param name="packet">packet type</param>
         /// <param name="packetData">packet Data</param>
@@ -772,7 +772,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Send a packet to the server.  Compression and encryption will be handled automatically.
+        /// Send a packet to the server. Compression and encryption will be handled automatically.
         /// </summary>
         /// <param name="packetID">packet ID</param>
         /// <param name="packetData">packet Data</param>

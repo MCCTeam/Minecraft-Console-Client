@@ -8,7 +8,7 @@ namespace MinecraftClient.Commands
     public class Animation : Command
     {
         public override string CMDName { get { return "animation"; } }
-        public override string CMDDesc { get { return "animation <<mainhand|offhand>|<0|1>>"; } }
+        public override string CMDDesc { get { return "animation <mainhand|offhand>"; } }
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
