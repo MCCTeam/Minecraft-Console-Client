@@ -207,7 +207,16 @@ namespace MinecraftClient.Protocol
         /// <param name="health"></param>
         /// <param name="food"></param>
         void OnUpdateHealth(float health, int food);
-
+        
+        /// <summary>
+        /// Called when explosion.
+        /// </summary>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
+        /// <param name="Z"></param>
+        /// <param name="strength"></param>
+        void OnExplosion(float X, float Y, float Z, float strength);
+        
         /// <summary>
         /// Called when client need to change slot.
         /// </summary>
