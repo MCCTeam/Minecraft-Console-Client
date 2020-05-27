@@ -12,6 +12,7 @@ using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Inventory;
+using System.Windows.Forms.VisualStyles;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -420,12 +421,12 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.PlayerListUpdate:
                         if (protocolversion >= MC18Version)
                         {
-                            int action = dataTypes.ReadNextVarInt(packetData);
+                            int action2 = dataTypes.ReadNextVarInt(packetData);
                             int numActions = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < numActions; i++)
                             {
                                 Guid uuid = dataTypes.ReadNextUUID(packetData);
-                                switch (action)
+                                switch (action2)
                                 {
                                     case 0x00: //Player Join
                                         string name = dataTypes.ReadNextString(packetData);
@@ -444,8 +445,11 @@ namespace MinecraftClient.Protocol.Handlers
                                         handler.OnPlayerJoin(uuid, name);
                                         break;
                                     case 0x01: //Update gamemode
+                                        int gamemode = dataTypes.ReadNextVarInt(packetData);
+                                        handler.OnGamemodeUpdate(uuid, gamemode);
+                                        break;
                                     case 0x02: //Update latency
-                                        dataTypes.ReadNextVarInt(packetData);
+                                        int ping = dataTypes.ReadNextVarInt(packetData);
                                         break;
                                     case 0x03: //Update display name
                                         if (dataTypes.ReadNextBool(packetData))
@@ -720,6 +724,7 @@ namespace MinecraftClient.Protocol.Handlers
                             float Explosionz = dataTypes.ReadNextFloat(packetData);
                             float Explosionstrength = dataTypes.ReadNextFloat(packetData);
                             int ExplosionRecordCount = dataTypes.ReadNextInt(packetData);
+                            Array array = dataTypes.ReadNextByteArray(packetData);
 
                             handler.OnExplosion(Explosionx, Explosiony, Explosionz, Explosionstrength, ExplosionRecordCount);
                             break;
