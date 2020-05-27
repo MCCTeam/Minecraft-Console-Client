@@ -192,7 +192,9 @@ namespace MinecraftClient
         /// <param name="z">z location</param>
         /// <param name="recordcount">blocks blown up</param>
         public virtual void OnExplosion(float x, float y, float z, float strength, int recordcount) { }
-        
+
+        public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
@@ -600,7 +602,7 @@ namespace MinecraftClient
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Program.Restart(delaySeconds);
+            Form1.Restart(delaySeconds);
         }
 
         /// <summary>
@@ -608,7 +610,7 @@ namespace MinecraftClient
         /// </summary>
         protected void DisconnectAndExit()
         {
-            Program.Exit();
+            Form1.Exit();
         }
 
         /// <summary>
@@ -668,6 +670,15 @@ namespace MinecraftClient
         public bool GetEntityHandlingEnabled()
         {
             return Handler.GetEntityHandlingEnabled();
+        }
+
+        public bool GetInventoryEnabled()
+        {
+            return Handler.GetInventoryEnabled();
+        }
+        public Dictionary<int, Container> GetInventories()
+        {
+            return Handler.GetInventories();
         }
 
         /// <summary>
@@ -888,28 +899,27 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Give Creative Mode items into regular/survival Player Inventory
+        /// Interact with an entity
         /// </summary>
-        /// <remarks>(obviously) requires to be in creative mode</remarks>
-        /// <param name="slot">Destination inventory slot</param>
-        /// <param name="itemType">Item type</param>
-        /// <param name="count">Item count</param>
-        /// <returns>TRUE if item given successfully</returns>
-        protected bool CreativeGive(int slot, ItemType itemType, int count)
+        /// <param name="slot"></param>
+        /// <param name="ItemType"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        protected bool CreativeInventoryGive(int slot, ItemType ItemType, int count)
         {
-            return Handler.DoCreativeGive(slot, itemType, count);
+            return Handler.DoCreativeGive(slot, ItemType, count);
         }
 
         /// <summary>
-        /// Plays animation (Player arm swing)
+        /// Send animation
         /// </summary>
-        /// <param name="animation">0 for left arm, 1 for right arm</param>
-        /// <returns>TRUE if animation successfully done</returns>
+        /// <param name="animation"> 0 or 1</param>
+        /// <returns></returns>
         protected bool SendAnimation(int animation)
         {
             return Handler.DoAnimation(animation);
         }
-        
+
         /// <summary>
         /// Place block
         /// </summary>
@@ -919,7 +929,7 @@ namespace MinecraftClient
         {
             return Handler.PlaceBlock(location);
         }
-        
+
         /// <summary>
         /// Use item currently in the player's hand (active inventory bar slot)
         /// </summary>
@@ -930,16 +940,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Check inventory handling enable status
-        /// </summary>
-        /// <returns></returns>
-        public bool GetInventoryEnabled()
-        {
-            return Handler.GetInventoryEnabled();
-        }
-
-        /// <summary>
-        /// Get the player's inventory. Do not write to it, will not have any effect server-side.
+        /// Get a copy of the player's inventory
         /// </summary>
         /// <returns>Player inventory</returns>
         protected Container GetPlayerInventory()
@@ -949,28 +950,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Get all inventories, player and container(s). Do not write to them. Will not have any effect server-side.
+        /// Change player selected hotbar
         /// </summary>
-        /// <returns>All inventories</returns>
-        public Dictionary<int, Container> GetInventories()
-        {
-            return Handler.GetInventories();
-        }
-
-        /// <summary>
-        /// Change player selected hotbar slot
-        /// </summary>
-        /// <param name="slot">0-8</param>
+        /// <param name="slot"></param>
         /// <returns>True if success</returns>
         protected bool ChangeSlot(short slot)
         {
             return Handler.ChangeSlot(slot);
         }
 
-        /// <summary>
-        /// Get current player selected hotbar slot
-        /// </summary>
-        /// <returns>0-8</returns>
         protected byte GetCurrentSlot()
         {
             return Handler.GetCurrentSlot();
