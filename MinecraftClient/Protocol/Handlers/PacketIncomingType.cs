@@ -46,6 +46,7 @@ namespace MinecraftClient.Protocol.Handlers
         TimeUpdate,
         UpdateHealth,
         HeldItemChange,
+        Explosion,
 
         /// <summary>
         /// Represents a packet not implemented in MCC.
