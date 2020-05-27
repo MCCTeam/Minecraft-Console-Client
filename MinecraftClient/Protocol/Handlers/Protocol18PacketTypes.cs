@@ -60,6 +60,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x03: return PacketIncomingType.TimeUpdate;
                     case 0x06: return PacketIncomingType.UpdateHealth;
                     case 0x09: return PacketIncomingType.HeldItemChange;
+                    case 0x26: return PacketIncomingType.Explosion;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1.10 and 1.11
