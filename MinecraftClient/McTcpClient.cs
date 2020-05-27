@@ -1573,7 +1573,13 @@ namespace MinecraftClient
             foreach (ChatBot bot in bots.ToArray())
                 bot.OnHealthUpdate(health, food);
         }
-
+        
+        public void OnExplosion(float x, float y, float z, float strength)
+        {
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnExplosion(x, y, z, strength);
+        }
+        
         public void OnHeldItemChange(byte slot)
         {
             foreach (ChatBot bot in bots.ToArray())
