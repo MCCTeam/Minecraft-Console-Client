@@ -719,14 +719,12 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnUpdateHealth(health, food);
                         break;
                     case PacketIncomingType.Explosion:
-                            float Explosionx = dataTypes.ReadNextFloat(packetData);
-                            float Explosiony = dataTypes.ReadNextFloat(packetData);
-                            float Explosionz = dataTypes.ReadNextFloat(packetData);
+                            Location explodelocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
                             float Explosionstrength = dataTypes.ReadNextFloat(packetData);
                             int ExplosionRecordCount = dataTypes.ReadNextInt(packetData);
                             Array array = dataTypes.ReadNextByteArray(packetData);
 
-                            handler.OnExplosion(Explosionx, Explosiony, Explosionz, Explosionstrength, ExplosionRecordCount);
+                            handler.OnExplosion(explodelocation, Explosionstrength, ExplosionRecordCount);
                             break;
                         case PacketIncomingType.HeldItemChange:
                         byte slot = dataTypes.ReadNextByte(packetData);
