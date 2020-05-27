@@ -215,7 +215,8 @@ namespace MinecraftClient.Protocol
         /// <param name="Y"></param>
         /// <param name="Z"></param>
         /// <param name="strength"></param>
-        void OnExplosion(float X, float Y, float Z, float strength);
+        /// <param name="ExplosionRecordCount"></param>
+        void OnExplosion(float X, float Y, float Z, float strength, int ExplosionRecordCount);
         
         /// <summary>
         /// Called when client need to change slot.
