@@ -191,7 +191,7 @@ namespace MinecraftClient
         /// <param name="y">y location</param>
         /// <param name="z">z location</param>
         /// <param name="recordcount">blocks blown up</param>
-        public virtual void OnExplosion(float x, float y, float z, float strength, int recordcount) { }
+        public virtual void OnExplosion(Location explode, float strength, int recordcount) { }
 
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
 
@@ -602,15 +602,15 @@ namespace MinecraftClient
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Form1.Restart(delaySeconds);
+            Program.Restart(delaySeconds);
         }
-
++
         /// <summary>
         /// Disconnect from the server and exit the program
         /// </summary>
         protected void DisconnectAndExit()
         {
-            Form1.Exit();
+            Program.Exit();
         }
 
         /// <summary>
