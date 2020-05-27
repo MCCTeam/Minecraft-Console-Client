@@ -242,11 +242,11 @@ namespace MinecraftClient
                     ConsoleIO.WriteLogLine("Waiting 5 seconds (" + ReconnectionAttemptsLeft + " attempts left)...");
                     Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
-                    Form1.Restart();
+                    Program.Restart();
                 }
                 else if (!singlecommand && Settings.interactiveMode)
                 {
-                    Form1.HandleFailure();
+                    Program.HandleFailure();
                 }
             }
         }
@@ -342,7 +342,7 @@ namespace MinecraftClient
 
             if (cmds.Count == 0)
             {
-                Type[] cmds_classes = Form1.GetTypesInNamespace("MinecraftClient.Commands");
+                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
                 foreach (Type type in cmds_classes)
                 {
                     if (type.IsSubclassOf(typeof(Command)))
@@ -958,7 +958,7 @@ namespace MinecraftClient
             }
 
             if (!will_restart)
-                Form1.HandleFailure();
+                Program.HandleFailure();
         }
 
         /// <summary>
@@ -1589,10 +1589,10 @@ namespace MinecraftClient
                 bot.OnHealthUpdate(health, food);
         }
 
-        public void OnExplosion(float x, float y, float z, float strength, int ExplosionRecordCount)
+        public void OnExplosion(Location explode, float strength, int ExplosionRecordCount)
         {
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnExplosion(x, y, z, strength, ExplosionRecordCount);
+                bot.OnExplosion(explode, strength, ExplosionRecordCount);
         }
 
         public void OnHeldItemChange(byte slot)
