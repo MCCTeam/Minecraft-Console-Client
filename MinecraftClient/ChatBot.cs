@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient
 {
