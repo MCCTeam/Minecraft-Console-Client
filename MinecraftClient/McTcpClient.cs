@@ -1574,10 +1574,10 @@ namespace MinecraftClient
                 bot.OnHealthUpdate(health, food);
         }
         
-        public void OnExplosion(float x, float y, float z, float strength)
+        public void OnExplosion(float x, float y, float z, float strength, int ExplosionRecordCount)
         {
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnExplosion(x, y, z, strength);
+                bot.OnExplosion(x, y, z, strength, ExplosionRecordCount);
         }
         
         public void OnHeldItemChange(byte slot)
