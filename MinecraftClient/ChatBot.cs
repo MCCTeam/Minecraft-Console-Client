@@ -183,6 +183,14 @@ namespace MinecraftClient
         /// <param name="food">New food level</param>
         public virtual void OnHealthUpdate(float health, int food) { }
 
+        /// <summary>
+        /// Called when explosion
+        /// </summary>
+        /// <param name="x">x location</param>
+        /// <param name="y">y location</param>
+        /// <param name="z">z location</param>
+        public virtual void OnExplosion(float x, float y, float z, float strength) { 
+        
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
