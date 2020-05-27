@@ -242,11 +242,11 @@ namespace MinecraftClient
                     ConsoleIO.WriteLogLine("Waiting 5 seconds (" + ReconnectionAttemptsLeft + " attempts left)...");
                     Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
-                    Program.Restart();
+                    Form1.Restart();
                 }
                 else if (!singlecommand && Settings.interactiveMode)
                 {
-                    Program.HandleFailure();
+                    Form1.HandleFailure();
                 }
             }
         }
@@ -342,7 +342,7 @@ namespace MinecraftClient
 
             if (cmds.Count == 0)
             {
-                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
+                Type[] cmds_classes = Form1.GetTypesInNamespace("MinecraftClient.Commands");
                 foreach (Type type in cmds_classes)
                 {
                     if (type.IsSubclassOf(typeof(Command)))
@@ -958,7 +958,7 @@ namespace MinecraftClient
             }
 
             if (!will_restart)
-                Program.HandleFailure();
+                Form1.HandleFailure();
         }
 
         /// <summary>
@@ -1262,6 +1262,27 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Called when a player gamemode update
+        /// </summary>
+        public void OnGamemodeUpdate(Guid uuid, int gamemode)
+        {
+            string playerName = null;
+            if (onlinePlayers.ContainsKey(uuid))
+            {
+                playerName = onlinePlayers[uuid];
+                foreach (Entity ent in entities.Values)
+                {
+                    if (ent.UUID == uuid)
+                    {
+                        ent.Gamemode = gamemode;
+                    }
+                }
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnGamemodeUpdate(playerName, uuid, gamemode);
+            }
+        }
+
+        /// <summary>
         /// Called when entities dead/despawn.
         /// </summary>
         public void OnDestroyEntities(int[] Entities)
@@ -1529,7 +1550,8 @@ namespace MinecraftClient
             //WORK IN PROGRESS. MAY NOT WORK YET
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(location.ToString());
-            return handler.SendPlayerBlockPlacement(0, location, 1, 0.5f, 0.5f, 0.5f, false);
+            Location placelocation = new Location(location.X, location.Y - 1, location.Z);
+            return handler.SendPlayerBlockPlacement(0, placelocation, 1, 0.5f, 0.5f, 0.5f, false);
         }
 
         /// <summary>
@@ -1549,7 +1571,7 @@ namespace MinecraftClient
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Called when client player's health changed, e.g. getting attack
         /// </summary>
@@ -1573,13 +1595,13 @@ namespace MinecraftClient
             foreach (ChatBot bot in bots.ToArray())
                 bot.OnHealthUpdate(health, food);
         }
-        
+
         public void OnExplosion(float x, float y, float z, float strength, int ExplosionRecordCount)
         {
             foreach (ChatBot bot in bots.ToArray())
                 bot.OnExplosion(x, y, z, strength, ExplosionRecordCount);
         }
-        
+
         public void OnHeldItemChange(byte slot)
         {
             foreach (ChatBot bot in bots.ToArray())
