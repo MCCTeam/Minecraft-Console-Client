@@ -714,7 +714,16 @@ namespace MinecraftClient.Protocol.Handlers
                         dataTypes.ReadNextFloat(packetData); // Food Saturation
                         handler.OnUpdateHealth(health, food);
                         break;
-                    case PacketIncomingType.HeldItemChange:
+                    case PacketIncomingType.Explosion:
+                            float Explosionx = dataTypes.ReadNextFloat(packetData);
+                            float Explosiony = dataTypes.ReadNextFloat(packetData);
+                            float Explosionz = dataTypes.ReadNextFloat(packetData);
+                            float Explosionstrength = dataTypes.ReadNextFloat(packetData);
+                            int ExplosionRecordCount = dataTypes.ReadNextInt(packetData);
+
+                            handler.OnExplosion(Explosionx, Explosiony, Explosionz, Explosionstrength, ExplosionRecordCount);
+                            break;
+                        case PacketIncomingType.HeldItemChange:
                         byte slot = dataTypes.ReadNextByte(packetData);
                         handler.OnHeldItemChange(slot);
                         break;
@@ -1427,7 +1436,7 @@ namespace MinecraftClient.Protocol.Handlers
                     SendPacket(PacketOutgoingType.Animation, packet);
                     return true;
                 }
-                else;
+                else
                 {
                     return false;
                 }
@@ -1436,7 +1445,6 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-
         public bool SendCloseWindow(int windowId)
         {
             try
