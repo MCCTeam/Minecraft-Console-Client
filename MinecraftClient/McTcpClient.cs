@@ -1270,18 +1270,8 @@ namespace MinecraftClient
             if (onlinePlayers.ContainsKey(uuid))
             {
                 playerName = onlinePlayers[uuid];
-                if (playerName != string.Empty & uuid != Guid.Empty)
-                {
-                    foreach (Entity ent in entities.Values)
-                    {
-                        if (ent.UUID == uuid)
-                        {
-                            ent.Gamemode = gamemode;
-                        }
-                    }
-                    foreach (ChatBot bot in bots.ToArray())
-                        bot.OnGamemodeUpdate(playerName, uuid, gamemode);
-                }
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnGamemodeUpdate(playerName, uuid, gamemode);
             }
         }
 
