@@ -604,7 +604,7 @@ namespace MinecraftClient
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart(delaySeconds);
         }
-+
+        
         /// <summary>
         /// Disconnect from the server and exit the program
         /// </summary>
