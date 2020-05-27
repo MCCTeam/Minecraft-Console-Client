@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -98,6 +98,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x44: return PacketIncomingType.TimeUpdate;
                     case 0x3E: return PacketIncomingType.UpdateHealth;
                     case 0x37: return PacketIncomingType.HeldItemChange;
+                    case 0x1C: return PacketIncomingType.Explosion;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12.0
@@ -136,6 +137,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x46: return PacketIncomingType.TimeUpdate;
                     case 0x40: return PacketIncomingType.UpdateHealth;
                     case 0x39: return PacketIncomingType.HeldItemChange;
+                    case 0x1C: return PacketIncomingType.Explosion;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1122Version) // MC 1.12.2
@@ -174,6 +176,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x47: return PacketIncomingType.TimeUpdate;
                     case 0x41: return PacketIncomingType.UpdateHealth;
                     case 0x3A: return PacketIncomingType.HeldItemChange;
+                    case 0x1C: return PacketIncomingType.Explosion;
                 }
             }
             else if (protocol < Protocol18Handler.MC114Version) // MC 1.13 to 1.13.2
@@ -212,6 +215,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x4A: return PacketIncomingType.TimeUpdate;
                     case 0x44: return PacketIncomingType.UpdateHealth;
                     case 0x3D: return PacketIncomingType.HeldItemChange;
+                    case 0x1E: return PacketIncomingType.Explosion;
                 }
             }
             else if (protocol < Protocol18Handler.MC115Version) // MC 1.14 to 1.14.4
@@ -250,6 +254,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     case 0x48: return PacketIncomingType.UpdateHealth;
                     case 0x3F: return PacketIncomingType.HeldItemChange;
+                    case 0x1C: return PacketIncomingType.Explosion;
                 }
             }
             else // MC 1.15
