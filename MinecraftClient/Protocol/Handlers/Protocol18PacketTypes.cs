@@ -288,6 +288,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x4F: return PacketIncomingType.TimeUpdate;
                     case 0x49: return PacketIncomingType.UpdateHealth;
                     case 0x40: return PacketIncomingType.HeldItemChange;
+                    case 0x1D: return PacketIncomingType.Explosion;
                 }
             }
 
