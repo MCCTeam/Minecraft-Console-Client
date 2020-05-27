@@ -189,7 +189,7 @@ namespace MinecraftClient
         /// <param name="x">x location</param>
         /// <param name="y">y location</param>
         /// <param name="z">z location</param>
-        public virtual void OnExplosion(float x, float y, float z, float strength) { 
+        public virtual void OnExplosion(float x, float y, float z, float strength) { }
         
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
