@@ -717,7 +717,10 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false; //Currently not implemented
         }
-
+        public bool SendPlayerDigging(int status, Location location, byte face)
+        {
+            return false; //Currently not implemented
+        }
         /// <summary>
         /// Send a plugin channel packet to the server.
         /// </summary>
