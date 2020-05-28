@@ -1558,14 +1558,6 @@ namespace MinecraftClient
             Location placelocation = new Location(location.X, location.Y, location.Z);
             return handler.SendPlayerDigging(status, placelocation, 1);
         }
-        public bool PlayerDigging(int status, Location location, byte Face)
-        {
-            //WORK IN PROGRESS. MAY NOT WORK YET
-            if (Settings.DebugMessages)
-                ConsoleIO.WriteLogLine(location.ToString());
-            Location placelocation = new Location(location.X, location.Y, location.Z);
-            return handler.SendPlayerDigging(status, placelocation, 1);
-        }
 
         /// <summary>
         /// Change active slot in the player inventory
