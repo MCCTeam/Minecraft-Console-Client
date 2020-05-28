@@ -701,6 +701,10 @@ namespace MinecraftClient
         {
             return Handler.sendEntityAction(entityAction);
         }
+        protected void PlayerDigging(int status, Location location, byte face)
+        {
+            Handler.PlayerDigging(status, location, face);
+        }
         /// <summary>
         /// SetSlot
         /// </summary>
