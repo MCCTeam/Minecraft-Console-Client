@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
-            return "Health: " + handler.GetHealth() + ", Saturation: " + handler.GetSaturation() + ", Level:" + handler.GetLevel() + ", TotalExperience: " + handler.GetTotalExperience();
+            return "Health: " + handler.GetHealth() + ", Saturation: " + handler.GetSaturation() + ", Level: " + handler.GetLevel() + ", TotalExperience: " + handler.GetTotalExperience();
         }
     }
 }
