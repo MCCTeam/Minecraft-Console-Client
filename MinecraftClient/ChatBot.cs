@@ -914,9 +914,9 @@ namespace MinecraftClient
         /// <param name="ItemType"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        protected bool CreativeInventoryGive(int slot, ItemType ItemType, int count)
+        protected bool CreativeInventoryGive(int slot, ItemType itemtype, int count)
         {
-            return Handler.DoCreativeGive(slot, ItemType, count);
+            return Handler.DoCreativeGive(slot, itemtype, count);
         }
 
         /// <summary>
