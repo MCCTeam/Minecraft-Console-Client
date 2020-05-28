@@ -1550,7 +1550,14 @@ namespace MinecraftClient
             Location placelocation = new Location(location.X, location.Y - 1, location.Z);
             return handler.SendPlayerBlockPlacement(0, placelocation, 1, 0.5f, 0.5f, 0.5f, false);
         }
-        
+        public bool PlayerDigging(int status, Location location, byte Face)
+        {
+            //WORK IN PROGRESS. MAY NOT WORK YET
+            if (Settings.DebugMessages)
+                ConsoleIO.WriteLogLine(location.ToString());
+            Location placelocation = new Location(location.X, location.Y, location.Z);
+            return handler.SendPlayerDigging(status, placelocation, 1);
+        }
         public bool PlayerDigging(int status, Location location, byte Face)
         {
             //WORK IN PROGRESS. MAY NOT WORK YET
