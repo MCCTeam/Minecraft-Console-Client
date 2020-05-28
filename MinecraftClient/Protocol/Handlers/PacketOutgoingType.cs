@@ -33,5 +33,6 @@ namespace MinecraftClient.Protocol.Handlers
         PlayerBlockPlacement,
         CreativeInventoryAction,
         Animation,
+        PlayerDigging,
     }
 }
