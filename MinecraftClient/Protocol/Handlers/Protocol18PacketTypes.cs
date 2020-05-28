@@ -59,7 +59,9 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x18: return PacketIncomingType.EntityTeleport;
                     case 0x03: return PacketIncomingType.TimeUpdate;
                     case 0x06: return PacketIncomingType.UpdateHealth;
+                    case 0x1F: return PacketIncomingType.SetExperience;
                     case 0x09: return PacketIncomingType.HeldItemChange;
+                    case 0x1C: return PacketIncomingType.Explosion;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1.10 and 1.11
@@ -97,8 +99,9 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x49: return PacketIncomingType.EntityTeleport;
                     case 0x44: return PacketIncomingType.TimeUpdate;
                     case 0x3E: return PacketIncomingType.UpdateHealth;
+                    case 0x3D: return PacketIncomingType.SetExperience;
                     case 0x37: return PacketIncomingType.HeldItemChange;
-                    case 0x1C: return PacketIncomingType.Explosion;
+                    case 0x27: return PacketIncomingType.Explosion;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12.0
@@ -136,6 +139,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x4B: return PacketIncomingType.EntityTeleport;
                     case 0x46: return PacketIncomingType.TimeUpdate;
                     case 0x40: return PacketIncomingType.UpdateHealth;
+                    case 0x3F: return PacketIncomingType.SetExperience;
                     case 0x39: return PacketIncomingType.HeldItemChange;
                     case 0x1C: return PacketIncomingType.Explosion;
                 }
@@ -175,6 +179,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x4C: return PacketIncomingType.EntityTeleport;
                     case 0x47: return PacketIncomingType.TimeUpdate;
                     case 0x41: return PacketIncomingType.UpdateHealth;
+                    case 0x40: return PacketIncomingType.SetExperience;
                     case 0x3A: return PacketIncomingType.HeldItemChange;
                     case 0x1C: return PacketIncomingType.Explosion;
                 }
@@ -214,6 +219,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x50: return PacketIncomingType.EntityTeleport;
                     case 0x4A: return PacketIncomingType.TimeUpdate;
                     case 0x44: return PacketIncomingType.UpdateHealth;
+                    case 0x43: return PacketIncomingType.SetExperience;
                     case 0x3D: return PacketIncomingType.HeldItemChange;
                     case 0x1E: return PacketIncomingType.Explosion;
                 }
@@ -253,6 +259,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x56: return PacketIncomingType.EntityTeleport;
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     case 0x48: return PacketIncomingType.UpdateHealth;
+                    case 0x47: return PacketIncomingType.SetExperience;
                     case 0x3F: return PacketIncomingType.HeldItemChange;
                     case 0x1C: return PacketIncomingType.Explosion;
                 }
@@ -292,6 +299,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x57: return PacketIncomingType.EntityTeleport;
                     case 0x4F: return PacketIncomingType.TimeUpdate;
                     case 0x49: return PacketIncomingType.UpdateHealth;
+                    case 0x48: return PacketIncomingType.SetExperience;
                     case 0x40: return PacketIncomingType.HeldItemChange;
                     case 0x1D: return PacketIncomingType.Explosion;
                 }
