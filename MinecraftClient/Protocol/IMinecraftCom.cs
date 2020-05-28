@@ -185,5 +185,7 @@ namespace MinecraftClient.Protocol
         /// <param name="insideBlock">TRUE if inside block</param>
         /// <returns>True if packet was successfully sent</returns>
         bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock);
+        
+        bool SendPlayerDigging(int status, Location location, byte face);
     }
 }
