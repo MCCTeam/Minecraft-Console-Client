@@ -1597,6 +1597,8 @@ namespace MinecraftClient
         {
             playerLevel = Level;
             playerTotalExperience = TotalExperience;
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnSetExperience(Experiencebar, Level, TotalExperience);
         }
 
         public void OnExplosion(Location explode, float strength, int ExplosionRecordCount)
