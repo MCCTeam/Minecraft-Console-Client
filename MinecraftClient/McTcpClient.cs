@@ -63,6 +63,8 @@ namespace MinecraftClient
         // player health and hunger
         private float playerHealth;
         private int playerFoodSaturation;
+        private int playerLevel;
+        private int playerTotalExperience;
         private byte CurrentSlot = 0;
 
         // Entity handling
@@ -83,6 +85,8 @@ namespace MinecraftClient
         public Double GetServerTPS() { return serverTPS; }
         public float GetHealth() { return playerHealth; }
         public int GetSaturation() { return playerFoodSaturation; }
+        public int GetLevel() { return playerLevel; }
+        public int GetTotalExperience() { return playerTotalExperience; }
         public byte GetCurrentSlot() { return CurrentSlot; }
 
         // get bots list for unloading them by commands
@@ -1587,6 +1591,12 @@ namespace MinecraftClient
             }
             foreach (ChatBot bot in bots.ToArray())
                 bot.OnHealthUpdate(health, food);
+        }
+
+        public void OnSetExperience(float Experiencebar, int Level, int TotalExperience)
+        {
+            playerLevel = Level;
+            playerTotalExperience = TotalExperience;
         }
 
         public void OnExplosion(Location explode, float strength, int ExplosionRecordCount)
