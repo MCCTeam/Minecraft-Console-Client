@@ -608,7 +608,7 @@ namespace MinecraftClient
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Form1.Restart(delaySeconds);
+            Program.Restart(delaySeconds);
         }
 
         /// <summary>
@@ -616,7 +616,7 @@ namespace MinecraftClient
         /// </summary>
         protected void DisconnectAndExit()
         {
-            Form1.Exit();
+            Program.Exit();
         }
 
         /// <summary>
