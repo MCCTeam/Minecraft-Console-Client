@@ -671,11 +671,20 @@ namespace MinecraftClient
         {
             return Handler.GetEntityHandlingEnabled();
         }
-
+        
+        /// <summary>
+        /// Check inventory handling enable status
+        /// </summary>
+        /// <returns></returns>
         public bool GetInventoryEnabled()
         {
             return Handler.GetInventoryEnabled();
         }
+
+        /// Get all inventories, player and container(s). Do not write to them. Will not have any effect server-side.
+        /// </summary>
+        /// <param name="slot"></param>
+        /// <returns>All inventories</returns>
         public Dictionary<int, Container> GetInventories()
         {
             return Handler.GetInventories();
@@ -940,7 +949,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Get a copy of the player's inventory
+        /// Get the player's inventory. Do not write to it, will not have any effect server-side.
         /// </summary>
         /// <returns>Player inventory</returns>
         protected Container GetPlayerInventory()
