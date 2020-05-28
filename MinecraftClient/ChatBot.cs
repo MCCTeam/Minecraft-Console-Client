@@ -7,6 +7,7 @@ using System.Threading;
 using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using MinecraftClient.Protocol.Handlers;
 
 namespace MinecraftClient
 {
@@ -187,12 +188,17 @@ namespace MinecraftClient
         /// <summary>
         /// Called when explosion
         /// </summary>
-        /// <param name="x">x location</param>
-        /// <param name="y">y location</param>
-        /// <param name="z">z location</param>
+        /// <param name="explode">Explode location</param>
         /// <param name="recordcount">blocks blown up</param>
         public virtual void OnExplosion(Location explode, float strength, int recordcount) { }
 
+        /// <summary>
+        /// Called when experience updates
+        /// </summary>
+        /// <param name="Experiencebar">Between 0 and 1</param>
+        /// <param name="Level">Level</param>
+        /// <param name="TotalExperience">Total Experience</param>
+        public virtual void OnSetExpience(float Experiencebar, int Level, int TotalExperience) { }
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
 
         /* =================================================================== */
@@ -602,15 +608,15 @@ namespace MinecraftClient
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Program.Restart(delaySeconds);
+            Form1.Restart(delaySeconds);
         }
-        
+
         /// <summary>
         /// Disconnect from the server and exit the program
         /// </summary>
         protected void DisconnectAndExit()
         {
-            Program.Exit();
+            Form1.Exit();
         }
 
         /// <summary>
@@ -671,20 +677,11 @@ namespace MinecraftClient
         {
             return Handler.GetEntityHandlingEnabled();
         }
-        
-        /// <summary>
-        /// Check inventory handling enable status
-        /// </summary>
-        /// <returns></returns>
+
         public bool GetInventoryEnabled()
         {
             return Handler.GetInventoryEnabled();
         }
-
-        /// Get all inventories, player and container(s). Do not write to them. Will not have any effect server-side.
-        /// </summary>
-        /// <param name="slot"></param>
-        /// <returns>All inventories</returns>
         public Dictionary<int, Container> GetInventories()
         {
             return Handler.GetInventories();
@@ -886,7 +883,6 @@ namespace MinecraftClient
             }
             return Handler.SendPluginChannelMessage(channel, data, sendEvenIfNotRegistered);
         }
-
         /// <summary>
         /// Get server current TPS (tick per second)
         /// </summary>
@@ -914,16 +910,16 @@ namespace MinecraftClient
         /// <param name="ItemType"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        protected bool CreativeInventoryGive(int slot, ItemType itemtype, int count)
+        protected bool CreativeInventoryGive(int slot, ItemType ItemType, int count)
         {
-            return Handler.DoCreativeGive(slot, itemtype, count);
+            return Handler.DoCreativeGive(slot, ItemType, count);
         }
 
         /// <summary>
-        /// Plays animation (Player arm swing)
+        /// Send animation
         /// </summary>
-        /// <param name="animation">0 for left arm, 1 for right arm</param>
-        /// <returns>TRUE if animation successfully done</returns>
+        /// <param name="animation"> 0 or 1</param>
+        /// <returns></returns>
         protected bool SendAnimation(int animation)
         {
             return Handler.DoAnimation(animation);
@@ -949,7 +945,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Get the player's inventory. Do not write to it, will not have any effect server-side.
+        /// Get a copy of the player's inventory
         /// </summary>
         /// <returns>Player inventory</returns>
         protected Container GetPlayerInventory()
