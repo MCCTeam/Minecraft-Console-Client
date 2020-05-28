@@ -220,6 +220,8 @@ namespace MinecraftClient.Protocol
 
         void OnGamemodeUpdate(Guid uuid, int gamemode);
 
+        void OnSetExperience(float Experiencebar, int Level, int TotalExperience);
+
         /// <summary>
         /// Called when client need to change slot.
         /// </summary>
