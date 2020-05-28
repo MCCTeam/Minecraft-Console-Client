@@ -216,7 +216,7 @@ namespace MinecraftClient.Protocol
         /// <param name="Z"></param>
         /// <param name="strength"></param>
         /// <param name="ExplosionRecordCount"></param>
-        void OnExplosion(float X, float Y, float Z, float strength, int ExplosionRecordCount);
+        void OnExplosion(Location explode, float strength, int ExplosionRecordCount);
 
         void OnGamemodeUpdate(Guid uuid, int gamemode);
 
