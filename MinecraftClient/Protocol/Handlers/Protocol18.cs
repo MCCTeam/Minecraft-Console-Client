@@ -13,6 +13,7 @@ using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Inventory;
 using System.Windows.Forms.VisualStyles;
+using Org.BouncyCastle.Crypto.Utilities;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -717,6 +718,12 @@ namespace MinecraftClient.Protocol.Handlers
                             food = dataTypes.ReadNextShort(packetData);
                         dataTypes.ReadNextFloat(packetData); // Food Saturation
                         handler.OnUpdateHealth(health, food);
+                        break;
+                    case PacketIncomingType.SetExperience:
+                        float experiencebar = dataTypes.ReadNextFloat(packetData);
+                        int level = dataTypes.ReadNextInt(packetData);
+                        int totalexperience = dataTypes.ReadNextInt(packetData);
+                        handler.OnSetExperience(experiencebar, level, totalexperience);
                         break;
                     case PacketIncomingType.Explosion:
                             Location explodelocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
