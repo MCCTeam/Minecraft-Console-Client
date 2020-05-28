@@ -198,7 +198,7 @@ namespace MinecraftClient
         /// <param name="Experiencebar">Between 0 and 1</param>
         /// <param name="Level">Level</param>
         /// <param name="TotalExperience">Total Experience</param>
-        public virtual void OnSetExpience(float Experiencebar, int Level, int TotalExperience) { }
+        public virtual void OnSetExperience(float Experiencebar, int Level, int TotalExperience) { }
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
 
         /* =================================================================== */
