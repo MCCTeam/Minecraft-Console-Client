@@ -210,534 +210,534 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 // Regular in-game packets
                 else switch (Protocol18PacketTypes.GetPacketIncomingType(packetID, protocolversion))
-                    {
-                        case PacketIncomingType.KeepAlive:
-                            SendPacket(PacketOutgoingType.KeepAlive, packetData);
-                            handler.OnServerKeepAlive();
-                            break;
-                        case PacketIncomingType.JoinGame:
-                            handler.OnGameJoined();
-                            int playerEntityID = dataTypes.ReadNextInt(packetData);
-                            handler.SetPlayerEntityID(playerEntityID);
-                            dataTypes.ReadNextByte(packetData);
-                            if (protocolversion >= MC191Version)
-                                this.currentDimension = dataTypes.ReadNextInt(packetData);
-                            else
-                                this.currentDimension = (sbyte)dataTypes.ReadNextByte(packetData);
-                            if (protocolversion < MC114Version)
-                                dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
-                            if (protocolversion >= MC115Version)
-                                dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
-                            dataTypes.ReadNextByte(packetData);
-                            dataTypes.ReadNextString(packetData);
-                            if (protocolversion >= MC114Version)
-                                dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
-                            if (protocolversion >= MC18Version)
-                                dataTypes.ReadNextBool(packetData);           // Reduced debug info - 1.8 and above
-                            if (protocolversion >= MC115Version)
-                                dataTypes.ReadNextBool(packetData);           // Enable respawn screen - 1.15 and above
-                            break;
-                        case PacketIncomingType.ChatMessage:
-                            string message = dataTypes.ReadNextString(packetData);
-                            try
-                            {
-                                //Hide system messages or xp bar messages?
-                                byte messageType = dataTypes.ReadNextByte(packetData);
-                                if ((messageType == 1 && !Settings.DisplaySystemMessages)
-                                    || (messageType == 2 && !Settings.DisplayXPBarMessages))
-                                    break;
-                            }
-                            catch (ArgumentOutOfRangeException) { /* No message type */ }
-                            handler.OnTextReceived(message, true);
-                            break;
-                        case PacketIncomingType.Respawn:
+                {
+                    case PacketIncomingType.KeepAlive:
+                        SendPacket(PacketOutgoingType.KeepAlive, packetData);
+                        handler.OnServerKeepAlive();
+                        break;
+                    case PacketIncomingType.JoinGame:
+                        handler.OnGameJoined();
+                        int playerEntityID = dataTypes.ReadNextInt(packetData);
+                        handler.SetPlayerEntityID(playerEntityID);
+                        dataTypes.ReadNextByte(packetData);
+                        if (protocolversion >= MC191Version)
                             this.currentDimension = dataTypes.ReadNextInt(packetData);
-                            if (protocolversion < MC114Version)
-                                dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
-                            if (protocolversion >= MC115Version)
-                                dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
-                            dataTypes.ReadNextByte(packetData);
-                            dataTypes.ReadNextString(packetData);
-                            handler.OnRespawn();
-                            break;
-                        case PacketIncomingType.PlayerPositionAndLook:
-                            // These always need to be read, since we need the field after them for teleport confirm
-                            double x = dataTypes.ReadNextDouble(packetData);
-                            double y = dataTypes.ReadNextDouble(packetData);
-                            double z = dataTypes.ReadNextDouble(packetData);
-                            float yaw = dataTypes.ReadNextFloat(packetData);
-                            float pitch = dataTypes.ReadNextFloat(packetData);
-                            byte locMask = dataTypes.ReadNextByte(packetData);
+                        else
+                            this.currentDimension = (sbyte)dataTypes.ReadNextByte(packetData);
+                        if (protocolversion < MC114Version)
+                            dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
+                        if (protocolversion >= MC115Version)
+                            dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
+                        dataTypes.ReadNextByte(packetData);
+                        dataTypes.ReadNextString(packetData);
+                        if (protocolversion >= MC114Version)
+                            dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
+                        if (protocolversion >= MC18Version)
+                            dataTypes.ReadNextBool(packetData);           // Reduced debug info - 1.8 and above
+                        if (protocolversion >= MC115Version)
+                            dataTypes.ReadNextBool(packetData);           // Enable respawn screen - 1.15 and above
+                        break;
+                    case PacketIncomingType.ChatMessage:
+                        string message = dataTypes.ReadNextString(packetData);
+                        try
+                        {
+                            //Hide system messages or xp bar messages?
+                            byte messageType = dataTypes.ReadNextByte(packetData);
+                            if ((messageType == 1 && !Settings.DisplaySystemMessages)
+                                || (messageType == 2 && !Settings.DisplayXPBarMessages))
+                                break;
+                        }
+                        catch (ArgumentOutOfRangeException) { /* No message type */ }
+                        handler.OnTextReceived(message, true);
+                        break;
+                    case PacketIncomingType.Respawn:
+                        this.currentDimension = dataTypes.ReadNextInt(packetData);
+                        if (protocolversion < MC114Version)
+                            dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
+                        if (protocolversion >= MC115Version)
+                            dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
+                        dataTypes.ReadNextByte(packetData);
+                        dataTypes.ReadNextString(packetData);
+                        handler.OnRespawn();
+                        break;
+                    case PacketIncomingType.PlayerPositionAndLook:
+                        // These always need to be read, since we need the field after them for teleport confirm
+                        double x = dataTypes.ReadNextDouble(packetData);
+                        double y = dataTypes.ReadNextDouble(packetData);
+                        double z = dataTypes.ReadNextDouble(packetData);
+                        float yaw = dataTypes.ReadNextFloat(packetData);
+                        float pitch = dataTypes.ReadNextFloat(packetData);
+                        byte locMask = dataTypes.ReadNextByte(packetData);
 
-                            // entity handling require player pos for distance calculating
-                            if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
-                            {
-                                if (protocolversion >= MC18Version)
-                                {
-                                    Location location = handler.GetCurrentLocation();
-                                    location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
-                                    location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
-                                    location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
-                                    handler.UpdateLocation(location, yaw, pitch);
-                                }
-                                else handler.UpdateLocation(new Location(x, y, z), yaw, pitch);
-                            }
-
-                            if (protocolversion >= MC19Version)
-                            {
-                                int teleportID = dataTypes.ReadNextVarInt(packetData);
-                                // Teleport confirm packet
-                                SendPacket(PacketOutgoingType.TeleportConfirm, dataTypes.GetVarInt(teleportID));
-                            }
-                            break;
-                        case PacketIncomingType.ChunkData:
-                            if (handler.GetTerrainEnabled())
-                            {
-                                int chunkX = dataTypes.ReadNextInt(packetData);
-                                int chunkZ = dataTypes.ReadNextInt(packetData);
-                                bool chunksContinuous = dataTypes.ReadNextBool(packetData);
-                                ushort chunkMask = protocolversion >= MC19Version
-                                    ? (ushort)dataTypes.ReadNextVarInt(packetData)
-                                    : dataTypes.ReadNextUShort(packetData);
-                                if (protocolversion < MC18Version)
-                                {
-                                    ushort addBitmap = dataTypes.ReadNextUShort(packetData);
-                                    int compressedDataSize = dataTypes.ReadNextInt(packetData);
-                                    byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
-                                    byte[] decompressed = ZlibUtils.Decompress(compressed);
-                                    pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
-                                }
-                                else
-                                {
-                                    if (protocolversion >= MC114Version)
-                                        dataTypes.ReadNextNbt(packetData);  // Heightmaps - 1.14 and above
-                                    if (protocolversion >= MC115Version && chunksContinuous)
-                                        dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
-                                    int dataSize = dataTypes.ReadNextVarInt(packetData);
-                                    pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
-                                }
-                            }
-                            break;
-                        case PacketIncomingType.MultiBlockChange:
-                            if (handler.GetTerrainEnabled())
-                            {
-                                int chunkX = dataTypes.ReadNextInt(packetData);
-                                int chunkZ = dataTypes.ReadNextInt(packetData);
-                                int recordCount = protocolversion < MC18Version
-                                    ? (int)dataTypes.ReadNextShort(packetData)
-                                    : dataTypes.ReadNextVarInt(packetData);
-
-                                for (int i = 0; i < recordCount; i++)
-                                {
-                                    byte locationXZ;
-                                    ushort blockIdMeta;
-                                    int blockY;
-
-                                    if (protocolversion < MC18Version)
-                                    {
-                                        blockIdMeta = dataTypes.ReadNextUShort(packetData);
-                                        blockY = (ushort)dataTypes.ReadNextByte(packetData);
-                                        locationXZ = dataTypes.ReadNextByte(packetData);
-                                    }
-                                    else
-                                    {
-                                        locationXZ = dataTypes.ReadNextByte(packetData);
-                                        blockY = (ushort)dataTypes.ReadNextByte(packetData);
-                                        blockIdMeta = (ushort)dataTypes.ReadNextVarInt(packetData);
-                                    }
-
-                                    int blockX = locationXZ >> 4;
-                                    int blockZ = locationXZ & 0x0F;
-                                    Block block = new Block(blockIdMeta);
-                                    handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
-                                }
-                            }
-                            break;
-                        case PacketIncomingType.BlockChange:
-                            if (handler.GetTerrainEnabled())
-                            {
-                                if (protocolversion < MC18Version)
-                                {
-                                    int blockX = dataTypes.ReadNextInt(packetData);
-                                    int blockY = dataTypes.ReadNextByte(packetData);
-                                    int blockZ = dataTypes.ReadNextInt(packetData);
-                                    short blockId = (short)dataTypes.ReadNextVarInt(packetData);
-                                    byte blockMeta = dataTypes.ReadNextByte(packetData);
-                                    handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
-                                }
-                                else handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
-                            }
-                            break;
-                        case PacketIncomingType.MapChunkBulk:
-                            if (protocolversion < MC19Version && handler.GetTerrainEnabled())
-                            {
-                                int chunkCount;
-                                bool hasSkyLight;
-                                Queue<byte> chunkData = packetData;
-
-                                //Read global fields
-                                if (protocolversion < MC18Version)
-                                {
-                                    chunkCount = dataTypes.ReadNextShort(packetData);
-                                    int compressedDataSize = dataTypes.ReadNextInt(packetData);
-                                    hasSkyLight = dataTypes.ReadNextBool(packetData);
-                                    byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
-                                    byte[] decompressed = ZlibUtils.Decompress(compressed);
-                                    chunkData = new Queue<byte>(decompressed);
-                                }
-                                else
-                                {
-                                    hasSkyLight = dataTypes.ReadNextBool(packetData);
-                                    chunkCount = dataTypes.ReadNextVarInt(packetData);
-                                }
-
-                                //Read chunk records
-                                int[] chunkXs = new int[chunkCount];
-                                int[] chunkZs = new int[chunkCount];
-                                ushort[] chunkMasks = new ushort[chunkCount];
-                                ushort[] addBitmaps = new ushort[chunkCount];
-                                for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
-                                {
-                                    chunkXs[chunkColumnNo] = dataTypes.ReadNextInt(packetData);
-                                    chunkZs[chunkColumnNo] = dataTypes.ReadNextInt(packetData);
-                                    chunkMasks[chunkColumnNo] = dataTypes.ReadNextUShort(packetData);
-                                    addBitmaps[chunkColumnNo] = protocolversion < MC18Version
-                                        ? dataTypes.ReadNextUShort(packetData)
-                                        : (ushort)0;
-                                }
-
-                                //Process chunk records
-                                for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
-                                    pTerrain.ProcessChunkColumnData(chunkXs[chunkColumnNo], chunkZs[chunkColumnNo], chunkMasks[chunkColumnNo], addBitmaps[chunkColumnNo], hasSkyLight, true, currentDimension, chunkData);
-                            }
-                            break;
-                        case PacketIncomingType.UnloadChunk:
-                            if (protocolversion >= MC19Version && handler.GetTerrainEnabled())
-                            {
-                                int chunkX = dataTypes.ReadNextInt(packetData);
-                                int chunkZ = dataTypes.ReadNextInt(packetData);
-                                handler.GetWorld()[chunkX, chunkZ] = null;
-                            }
-                            break;
-                        case PacketIncomingType.PlayerListUpdate:
+                        // entity handling require player pos for distance calculating
+                        if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
+                        {
                             if (protocolversion >= MC18Version)
                             {
-                                int action2 = dataTypes.ReadNextVarInt(packetData);
-                                int numActions = dataTypes.ReadNextVarInt(packetData);
-                                for (int i = 0; i < numActions; i++)
+                                Location location = handler.GetCurrentLocation();
+                                location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
+                                location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
+                                location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
+                                handler.UpdateLocation(location, yaw, pitch);
+                            }
+                            else handler.UpdateLocation(new Location(x, y, z), yaw, pitch);
+                        }
+
+                        if (protocolversion >= MC19Version)
+                        {
+                            int teleportID = dataTypes.ReadNextVarInt(packetData);
+                            // Teleport confirm packet
+                            SendPacket(PacketOutgoingType.TeleportConfirm, dataTypes.GetVarInt(teleportID));
+                        }
+                        break;
+                    case PacketIncomingType.ChunkData:
+                        if (handler.GetTerrainEnabled())
+                        {
+                            int chunkX = dataTypes.ReadNextInt(packetData);
+                            int chunkZ = dataTypes.ReadNextInt(packetData);
+                            bool chunksContinuous = dataTypes.ReadNextBool(packetData);
+                            ushort chunkMask = protocolversion >= MC19Version
+                                ? (ushort)dataTypes.ReadNextVarInt(packetData)
+                                : dataTypes.ReadNextUShort(packetData);
+                            if (protocolversion < MC18Version)
+                            {
+                                ushort addBitmap = dataTypes.ReadNextUShort(packetData);
+                                int compressedDataSize = dataTypes.ReadNextInt(packetData);
+                                byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
+                                byte[] decompressed = ZlibUtils.Decompress(compressed);
+                                pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
+                            }
+                            else
+                            {
+                                if (protocolversion >= MC114Version)
+                                    dataTypes.ReadNextNbt(packetData);  // Heightmaps - 1.14 and above
+                                if (protocolversion >= MC115Version && chunksContinuous)
+                                    dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
+                                int dataSize = dataTypes.ReadNextVarInt(packetData);
+                                pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
+                            }
+                        }
+                        break;
+                    case PacketIncomingType.MultiBlockChange:
+                        if (handler.GetTerrainEnabled())
+                        {
+                            int chunkX = dataTypes.ReadNextInt(packetData);
+                            int chunkZ = dataTypes.ReadNextInt(packetData);
+                            int recordCount = protocolversion < MC18Version
+                                ? (int)dataTypes.ReadNextShort(packetData)
+                                : dataTypes.ReadNextVarInt(packetData);
+
+                            for (int i = 0; i < recordCount; i++)
+                            {
+                                byte locationXZ;
+                                ushort blockIdMeta;
+                                int blockY;
+
+                                if (protocolversion < MC18Version)
                                 {
-                                    Guid uuid = dataTypes.ReadNextUUID(packetData);
-                                    switch (action2)
-                                    {
-                                        case 0x00: //Player Join
-                                            string name = dataTypes.ReadNextString(packetData);
-                                            int propNum = dataTypes.ReadNextVarInt(packetData);
-                                            for (int p = 0; p < propNum; p++)
-                                            {
-                                                string key = dataTypes.ReadNextString(packetData);
-                                                string val = dataTypes.ReadNextString(packetData);
-                                                if (dataTypes.ReadNextBool(packetData))
-                                                    dataTypes.ReadNextString(packetData);
-                                            }
-                                            dataTypes.ReadNextVarInt(packetData);
-                                            dataTypes.ReadNextVarInt(packetData);
+                                    blockIdMeta = dataTypes.ReadNextUShort(packetData);
+                                    blockY = (ushort)dataTypes.ReadNextByte(packetData);
+                                    locationXZ = dataTypes.ReadNextByte(packetData);
+                                }
+                                else
+                                {
+                                    locationXZ = dataTypes.ReadNextByte(packetData);
+                                    blockY = (ushort)dataTypes.ReadNextByte(packetData);
+                                    blockIdMeta = (ushort)dataTypes.ReadNextVarInt(packetData);
+                                }
+
+                                int blockX = locationXZ >> 4;
+                                int blockZ = locationXZ & 0x0F;
+                                Block block = new Block(blockIdMeta);
+                                handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
+                            }
+                        }
+                        break;
+                    case PacketIncomingType.BlockChange:
+                        if (handler.GetTerrainEnabled())
+                        {
+                            if (protocolversion < MC18Version)
+                            {
+                                int blockX = dataTypes.ReadNextInt(packetData);
+                                int blockY = dataTypes.ReadNextByte(packetData);
+                                int blockZ = dataTypes.ReadNextInt(packetData);
+                                short blockId = (short)dataTypes.ReadNextVarInt(packetData);
+                                byte blockMeta = dataTypes.ReadNextByte(packetData);
+                                handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
+                            }
+                            else handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                        }
+                        break;
+                    case PacketIncomingType.MapChunkBulk:
+                        if (protocolversion < MC19Version && handler.GetTerrainEnabled())
+                        {
+                            int chunkCount;
+                            bool hasSkyLight;
+                            Queue<byte> chunkData = packetData;
+
+                            //Read global fields
+                            if (protocolversion < MC18Version)
+                            {
+                                chunkCount = dataTypes.ReadNextShort(packetData);
+                                int compressedDataSize = dataTypes.ReadNextInt(packetData);
+                                hasSkyLight = dataTypes.ReadNextBool(packetData);
+                                byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
+                                byte[] decompressed = ZlibUtils.Decompress(compressed);
+                                chunkData = new Queue<byte>(decompressed);
+                            }
+                            else
+                            {
+                                hasSkyLight = dataTypes.ReadNextBool(packetData);
+                                chunkCount = dataTypes.ReadNextVarInt(packetData);
+                            }
+
+                            //Read chunk records
+                            int[] chunkXs = new int[chunkCount];
+                            int[] chunkZs = new int[chunkCount];
+                            ushort[] chunkMasks = new ushort[chunkCount];
+                            ushort[] addBitmaps = new ushort[chunkCount];
+                            for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
+                            {
+                                chunkXs[chunkColumnNo] = dataTypes.ReadNextInt(packetData);
+                                chunkZs[chunkColumnNo] = dataTypes.ReadNextInt(packetData);
+                                chunkMasks[chunkColumnNo] = dataTypes.ReadNextUShort(packetData);
+                                addBitmaps[chunkColumnNo] = protocolversion < MC18Version
+                                    ? dataTypes.ReadNextUShort(packetData)
+                                    : (ushort)0;
+                            }
+
+                            //Process chunk records
+                            for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
+                                pTerrain.ProcessChunkColumnData(chunkXs[chunkColumnNo], chunkZs[chunkColumnNo], chunkMasks[chunkColumnNo], addBitmaps[chunkColumnNo], hasSkyLight, true, currentDimension, chunkData);
+                        }
+                        break;
+                    case PacketIncomingType.UnloadChunk:
+                        if (protocolversion >= MC19Version && handler.GetTerrainEnabled())
+                        {
+                            int chunkX = dataTypes.ReadNextInt(packetData);
+                            int chunkZ = dataTypes.ReadNextInt(packetData);
+                            handler.GetWorld()[chunkX, chunkZ] = null;
+                        }
+                        break;
+                    case PacketIncomingType.PlayerListUpdate:
+                        if (protocolversion >= MC18Version)
+                        {
+                            int action2 = dataTypes.ReadNextVarInt(packetData);
+                            int numActions = dataTypes.ReadNextVarInt(packetData);
+                            for (int i = 0; i < numActions; i++)
+                            {
+                                Guid uuid = dataTypes.ReadNextUUID(packetData);
+                                switch (action2)
+                                {
+                                    case 0x00: //Player Join
+                                        string name = dataTypes.ReadNextString(packetData);
+                                        int propNum = dataTypes.ReadNextVarInt(packetData);
+                                        for (int p = 0; p < propNum; p++)
+                                        {
+                                            string key = dataTypes.ReadNextString(packetData);
+                                            string val = dataTypes.ReadNextString(packetData);
                                             if (dataTypes.ReadNextBool(packetData))
                                                 dataTypes.ReadNextString(packetData);
-                                            handler.OnPlayerJoin(uuid, name);
-                                            break;
-                                        case 0x01: //Update gamemode
-                                            int gamemode = dataTypes.ReadNextVarInt(packetData);
-                                            handler.OnGamemodeUpdate(uuid, gamemode);
-                                            break;
-                                        case 0x02: //Update latency
-                                            int ping = dataTypes.ReadNextVarInt(packetData);
-                                            break;
-                                        case 0x03: //Update display name
-                                            if (dataTypes.ReadNextBool(packetData))
-                                                dataTypes.ReadNextString(packetData);
-                                            break;
-                                        case 0x04: //Player Leave
-                                            handler.OnPlayerLeave(uuid);
-                                            break;
-                                        default:
-                                            //Unknown player list item type
-                                            break;
-                                    }
+                                        }
+                                        dataTypes.ReadNextVarInt(packetData);
+                                        dataTypes.ReadNextVarInt(packetData);
+                                        if (dataTypes.ReadNextBool(packetData))
+                                            dataTypes.ReadNextString(packetData);
+                                        handler.OnPlayerJoin(uuid, name);
+                                        break;
+                                    case 0x01: //Update gamemode
+                                        int gamemode = dataTypes.ReadNextVarInt(packetData);
+                                        handler.OnGamemodeUpdate(uuid, gamemode);
+                                        break;
+                                    case 0x02: //Update latency
+                                        int ping = dataTypes.ReadNextVarInt(packetData);
+                                        break;
+                                    case 0x03: //Update display name
+                                        if (dataTypes.ReadNextBool(packetData))
+                                            dataTypes.ReadNextString(packetData);
+                                        break;
+                                    case 0x04: //Player Leave
+                                        handler.OnPlayerLeave(uuid);
+                                        break;
+                                    default:
+                                        //Unknown player list item type
+                                        break;
                                 }
                             }
-                            else //MC 1.7.X does not provide UUID in tab-list updates
-                            {
-                                string name = dataTypes.ReadNextString(packetData);
-                                bool online = dataTypes.ReadNextBool(packetData);
-                                short ping = dataTypes.ReadNextShort(packetData);
-                                Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
-                                if (online)
-                                    handler.OnPlayerJoin(FakeUUID, name);
-                                else handler.OnPlayerLeave(FakeUUID);
-                            }
-                            break;
-                        case PacketIncomingType.TabCompleteResult:
+                        }
+                        else //MC 1.7.X does not provide UUID in tab-list updates
+                        {
+                            string name = dataTypes.ReadNextString(packetData);
+                            bool online = dataTypes.ReadNextBool(packetData);
+                            short ping = dataTypes.ReadNextShort(packetData);
+                            Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
+                            if (online)
+                                handler.OnPlayerJoin(FakeUUID, name);
+                            else handler.OnPlayerLeave(FakeUUID);
+                        }
+                        break;
+                    case PacketIncomingType.TabCompleteResult:
+                        if (protocolversion >= MC113Version)
+                        {
+                            autocomplete_transaction_id = dataTypes.ReadNextVarInt(packetData);
+                            dataTypes.ReadNextVarInt(packetData); // Start of text to replace
+                            dataTypes.ReadNextVarInt(packetData); // Length of text to replace
+                        }
+
+                        int autocomplete_count = dataTypes.ReadNextVarInt(packetData);
+                        autocomplete_result.Clear();
+
+                        for (int i = 0; i < autocomplete_count; i++)
+                        {
+                            autocomplete_result.Add(dataTypes.ReadNextString(packetData));
                             if (protocolversion >= MC113Version)
                             {
-                                autocomplete_transaction_id = dataTypes.ReadNextVarInt(packetData);
-                                dataTypes.ReadNextVarInt(packetData); // Start of text to replace
-                                dataTypes.ReadNextVarInt(packetData); // Length of text to replace
+                                // Skip optional tooltip for each tab-complete result
+                                if (dataTypes.ReadNextBool(packetData))
+                                    dataTypes.ReadNextString(packetData);
                             }
+                        }
 
-                            int autocomplete_count = dataTypes.ReadNextVarInt(packetData);
-                            autocomplete_result.Clear();
-
-                            for (int i = 0; i < autocomplete_count; i++)
+                        autocomplete_received = true;
+                        break;
+                    case PacketIncomingType.PluginMessage:
+                        String channel = dataTypes.ReadNextString(packetData);
+                        // Length is unneeded as the whole remaining packetData is the entire payload of the packet.
+                        if (protocolversion < MC18Version)
+                            pForge.ReadNextVarShort(packetData);
+                        handler.OnPluginChannelMessage(channel, packetData.ToArray());
+                        return pForge.HandlePluginMessage(channel, packetData, ref currentDimension);
+                    case PacketIncomingType.KickPacket:
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(dataTypes.ReadNextString(packetData)));
+                        return false;
+                    case PacketIncomingType.NetworkCompressionTreshold:
+                        if (protocolversion >= MC18Version && protocolversion < MC19Version)
+                            compression_treshold = dataTypes.ReadNextVarInt(packetData);
+                        break;
+                    case PacketIncomingType.OpenWindow:
+                        if (handler.GetInventoryEnabled())
+                        {
+                            if (protocolversion < MC114Version)
                             {
-                                autocomplete_result.Add(dataTypes.ReadNextString(packetData));
-                                if (protocolversion >= MC113Version)
-                                {
-                                    // Skip optional tooltip for each tab-complete result
-                                    if (dataTypes.ReadNextBool(packetData))
-                                        dataTypes.ReadNextString(packetData);
-                                }
-                            }
-
-                            autocomplete_received = true;
-                            break;
-                        case PacketIncomingType.PluginMessage:
-                            String channel = dataTypes.ReadNextString(packetData);
-                            // Length is unneeded as the whole remaining packetData is the entire payload of the packet.
-                            if (protocolversion < MC18Version)
-                                pForge.ReadNextVarShort(packetData);
-                            handler.OnPluginChannelMessage(channel, packetData.ToArray());
-                            return pForge.HandlePluginMessage(channel, packetData, ref currentDimension);
-                        case PacketIncomingType.KickPacket:
-                            handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, ChatParser.ParseText(dataTypes.ReadNextString(packetData)));
-                            return false;
-                        case PacketIncomingType.NetworkCompressionTreshold:
-                            if (protocolversion >= MC18Version && protocolversion < MC19Version)
-                                compression_treshold = dataTypes.ReadNextVarInt(packetData);
-                            break;
-                        case PacketIncomingType.OpenWindow:
-                            if (handler.GetInventoryEnabled())
-                            {
-                                if (protocolversion < MC114Version)
-                                {
-                                    // MC 1.13 or lower
-                                    byte windowID = dataTypes.ReadNextByte(packetData);
-                                    string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
-                                    ContainerTypeOld inventoryType = (ContainerTypeOld)Enum.Parse(typeof(ContainerTypeOld), type);
-                                    string title = dataTypes.ReadNextString(packetData);
-                                    byte slots = dataTypes.ReadNextByte(packetData);
-                                    Container inventory = new Container(windowID, inventoryType, ChatParser.ParseText(title));
-                                    handler.OnInventoryOpen(windowID, inventory);
-                                }
-                                else
-                                {
-                                    // MC 1.14 or greater
-                                    int windowID = dataTypes.ReadNextVarInt(packetData);
-                                    int windowType = dataTypes.ReadNextVarInt(packetData);
-                                    string title = dataTypes.ReadNextString(packetData);
-                                    Container inventory = new Container(windowID, windowType, ChatParser.ParseText(title));
-                                    handler.OnInventoryOpen(windowID, inventory);
-                                }
-                            }
-                            break;
-                        case PacketIncomingType.CloseWindow:
-                            if (handler.GetInventoryEnabled())
-                            {
+                                // MC 1.13 or lower
                                 byte windowID = dataTypes.ReadNextByte(packetData);
-                                lock (window_actions) { window_actions[windowID] = 0; }
-                                handler.OnInventoryClose(windowID);
+                                string type = dataTypes.ReadNextString(packetData).Replace("minecraft:", "").ToUpper();
+                                ContainerTypeOld inventoryType = (ContainerTypeOld)Enum.Parse(typeof(ContainerTypeOld), type);
+                                string title = dataTypes.ReadNextString(packetData);
+                                byte slots = dataTypes.ReadNextByte(packetData);
+                                Container inventory = new Container(windowID, inventoryType, ChatParser.ParseText(title));
+                                handler.OnInventoryOpen(windowID, inventory);
                             }
-                            break;
-                        case PacketIncomingType.WindowItems:
-                            if (handler.GetInventoryEnabled())
-                            {
-                                byte windowId = dataTypes.ReadNextByte(packetData);
-                                short elements = dataTypes.ReadNextShort(packetData);
-                                Dictionary<int, Item> inventorySlots = new Dictionary<int, Item>();
-                                for (short slotId = 0; slotId < elements; slotId++)
-                                {
-                                    Item item = dataTypes.ReadNextItemSlot(packetData);
-                                    if (item != null)
-                                        inventorySlots[slotId] = item;
-                                }
-                                handler.OnWindowItems(windowId, inventorySlots);
-                            }
-                            break;
-                        case PacketIncomingType.SetSlot:
-                            if (handler.GetInventoryEnabled())
-                            {
-                                byte windowID = dataTypes.ReadNextByte(packetData);
-                                short slotID = dataTypes.ReadNextShort(packetData);
-                                Item item = dataTypes.ReadNextItemSlot(packetData);
-                                handler.OnSetSlot(windowID, slotID, item);
-                            }
-                            break;
-                        case PacketIncomingType.ResourcePackSend:
-                            string url = dataTypes.ReadNextString(packetData);
-                            string hash = dataTypes.ReadNextString(packetData);
-                            //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
-                            byte[] responseHeader = new byte[0];
-                            if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
-                                responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
-                            SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
-                            SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
-                            break;
-                        case PacketIncomingType.SpawnEntity:
-                            if (handler.GetEntityHandlingEnabled())
-                            {
-                                Entity entity = dataTypes.ReadNextEntity(packetData, entityPalette, false);
-                                handler.OnSpawnEntity(entity);
-                            }
-                            break;
-                        case PacketIncomingType.SpawnLivingEntity:
-                            if (handler.GetEntityHandlingEnabled())
-                            {
-                                Entity entity = dataTypes.ReadNextEntity(packetData, entityPalette, true);
-                                // packet before 1.15 has metadata at the end
-                                // this is not handled in dataTypes.ReadNextEntity()
-                                // we are simply ignoring leftover data in packet
-                                handler.OnSpawnEntity(entity);
-                            }
-                            break;
-                        case PacketIncomingType.SpawnPlayer:
-                            if (handler.GetEntityHandlingEnabled())
-                            {
-                                int EntityID = dataTypes.ReadNextVarInt(packetData);
-                                Guid UUID = dataTypes.ReadNextUUID(packetData);
-                                double X = dataTypes.ReadNextDouble(packetData);
-                                double Y = dataTypes.ReadNextDouble(packetData);
-                                double Z = dataTypes.ReadNextDouble(packetData);
-                                byte Yaw = dataTypes.ReadNextByte(packetData);
-                                byte Pitch = dataTypes.ReadNextByte(packetData);
-
-                                Location EntityLocation = new Location(X, Y, Z);
-
-                                handler.OnSpawnPlayer(EntityID, UUID, EntityLocation, Yaw, Pitch);
-                            }
-                            break;
-                        case PacketIncomingType.DestroyEntities:
-                            if (handler.GetEntityHandlingEnabled())
-                            {
-                                int EntityCount = dataTypes.ReadNextVarInt(packetData);
-                                int[] EntitiesList = new int[EntityCount];
-                                for (int i = 0; i < EntityCount; i++)
-                                {
-                                    EntitiesList[i] = dataTypes.ReadNextVarInt(packetData);
-                                }
-                                handler.OnDestroyEntities(EntitiesList);
-                            }
-                            break;
-                        case PacketIncomingType.EntityPosition:
-                            if (handler.GetEntityHandlingEnabled())
-                            {
-                                int EntityID = dataTypes.ReadNextVarInt(packetData);
-                                Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                                Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                                Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                                bool OnGround = dataTypes.ReadNextBool(packetData);
-                                DeltaX = DeltaX / (128 * 32);
-                                DeltaY = DeltaY / (128 * 32);
-                                DeltaZ = DeltaZ / (128 * 32);
-                                handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
-                            }
-                            break;
-                        case PacketIncomingType.EntityPositionAndRotation:
-                            if (handler.GetEntityHandlingEnabled())
-                            {
-                                int EntityID = dataTypes.ReadNextVarInt(packetData);
-                                Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                                Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                                Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
-                                byte _yaw = dataTypes.ReadNextByte(packetData);
-                                byte _pitch = dataTypes.ReadNextByte(packetData);
-                                bool OnGround = dataTypes.ReadNextBool(packetData);
-                                DeltaX = DeltaX / (128 * 32);
-                                DeltaY = DeltaY / (128 * 32);
-                                DeltaZ = DeltaZ / (128 * 32);
-                                handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
-                            }
-                            break;
-                        case PacketIncomingType.EntityProperties:
-                            if (handler.GetEntityHandlingEnabled())
-                            {
-                                int EntityID = dataTypes.ReadNextVarInt(packetData);
-                                int NumberOfProperties = dataTypes.ReadNextInt(packetData);
-                                Dictionary<string, Double> keys = new Dictionary<string, Double>();
-                                for (int i = 0; i < NumberOfProperties; i++)
-                                {
-                                    string _key = dataTypes.ReadNextString(packetData);
-                                    Double _value = dataTypes.ReadNextDouble(packetData);
-
-                                    List<double> op0 = new List<double>();
-                                    List<double> op1 = new List<double>();
-                                    List<double> op2 = new List<double>();
-                                    int NumberOfModifiers = dataTypes.ReadNextVarInt(packetData);
-                                    for (int j = 0; j < NumberOfModifiers; j++)
-                                    {
-                                        dataTypes.ReadNextUUID(packetData);
-                                        Double amount = dataTypes.ReadNextDouble(packetData);
-                                        byte operation = dataTypes.ReadNextByte(packetData);
-                                        switch (operation)
-                                        {
-                                            case 0: op0.Add(amount); break;
-                                            case 1: op1.Add(amount); break;
-                                            case 2: op2.Add(amount + 1); break;
-                                        }
-                                    }
-                                    if (op0.Count > 0) _value += op0.Sum();
-                                    if (op1.Count > 0) _value *= 1 + op1.Sum();
-                                    if (op2.Count > 0) _value *= op2.Aggregate((a, _x) => a * _x);
-                                    keys.Add(_key, _value);
-                                }
-                                handler.OnEntityProperties(EntityID, keys);
-                            }
-                            break;
-                        case PacketIncomingType.TimeUpdate:
-                            long WorldAge = dataTypes.ReadNextLong(packetData);
-                            long TimeOfday = dataTypes.ReadNextLong(packetData);
-                            handler.OnTimeUpdate(WorldAge, TimeOfday);
-                            break;
-                        case PacketIncomingType.EntityTeleport:
-                            if (handler.GetEntityHandlingEnabled())
-                            {
-                                int EntityID = dataTypes.ReadNextVarInt(packetData);
-                                Double X = dataTypes.ReadNextDouble(packetData);
-                                Double Y = dataTypes.ReadNextDouble(packetData);
-                                Double Z = dataTypes.ReadNextDouble(packetData);
-                                byte EntityYaw = dataTypes.ReadNextByte(packetData);
-                                byte EntityPitch = dataTypes.ReadNextByte(packetData);
-                                bool OnGround = dataTypes.ReadNextBool(packetData);
-                                handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
-                            }
-                            break;
-                        case PacketIncomingType.UpdateHealth:
-                            float health = dataTypes.ReadNextFloat(packetData);
-                            int food;
-                            if (protocolversion >= MC18Version)
-                                food = dataTypes.ReadNextVarInt(packetData);
                             else
-                                food = dataTypes.ReadNextShort(packetData);
-                            dataTypes.ReadNextFloat(packetData); // Food Saturation
-                            handler.OnUpdateHealth(health, food);
-                            break;
-                        case PacketIncomingType.SetExperience:
-                            float experiencebar = dataTypes.ReadNextFloat(packetData);
-                            int level = dataTypes.ReadNextVarInt(packetData);
-                            int totalexperience = dataTypes.ReadNextVarInt(packetData);
-                            handler.OnSetExperience(experiencebar, level, totalexperience);
-                            break;
-                        case PacketIncomingType.Explosion:
-                            Location explodelocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
-                            float Explosionstrength = dataTypes.ReadNextFloat(packetData);
-                            int ExplosionRecordCount = dataTypes.ReadNextInt(packetData);
-                            handler.OnExplosion(explodelocation, Explosionstrength, ExplosionRecordCount);
-                            break;
-                        case PacketIncomingType.HeldItemChange:
-                            byte slot = dataTypes.ReadNextByte(packetData);
-                            handler.OnHeldItemChange(slot);
-                            break;
-                        default:
-                            return false; //Ignored packet
-                    }
+                            {
+                                // MC 1.14 or greater
+                                int windowID = dataTypes.ReadNextVarInt(packetData);
+                                int windowType = dataTypes.ReadNextVarInt(packetData);
+                                string title = dataTypes.ReadNextString(packetData);
+                                Container inventory = new Container(windowID, windowType, ChatParser.ParseText(title));
+                                handler.OnInventoryOpen(windowID, inventory);
+                            }
+                        }
+                        break;
+                    case PacketIncomingType.CloseWindow:
+                        if (handler.GetInventoryEnabled())
+                        {
+                            byte windowID = dataTypes.ReadNextByte(packetData);
+                            lock (window_actions) { window_actions[windowID] = 0; }
+                            handler.OnInventoryClose(windowID);
+                        }
+                        break;
+                    case PacketIncomingType.WindowItems:
+                        if (handler.GetInventoryEnabled())
+                        {
+                            byte windowId = dataTypes.ReadNextByte(packetData);
+                            short elements = dataTypes.ReadNextShort(packetData);
+                            Dictionary<int, Item> inventorySlots = new Dictionary<int, Item>();
+                            for (short slotId = 0; slotId < elements; slotId++)
+                            {
+                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                if (item != null)
+                                    inventorySlots[slotId] = item;
+                            }
+                            handler.OnWindowItems(windowId, inventorySlots);
+                        }
+                        break;
+                    case PacketIncomingType.SetSlot:
+                        if (handler.GetInventoryEnabled())
+                        {
+                            byte windowID = dataTypes.ReadNextByte(packetData);
+                            short slotID = dataTypes.ReadNextShort(packetData);
+                            Item item = dataTypes.ReadNextItemSlot(packetData);
+                            handler.OnSetSlot(windowID, slotID, item);
+                        }
+                        break;
+                    case PacketIncomingType.ResourcePackSend:
+                        string url = dataTypes.ReadNextString(packetData);
+                        string hash = dataTypes.ReadNextString(packetData);
+                        //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
+                        byte[] responseHeader = new byte[0];
+                        if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
+                            responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
+                        SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
+                        SendPacket(PacketOutgoingType.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
+                        break;
+                    case PacketIncomingType.SpawnEntity:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            Entity entity = dataTypes.ReadNextEntity(packetData, entityPalette, false);
+                            handler.OnSpawnEntity(entity);
+                        }
+                        break;
+                    case PacketIncomingType.SpawnLivingEntity:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            Entity entity = dataTypes.ReadNextEntity(packetData, entityPalette, true);
+                            // packet before 1.15 has metadata at the end
+                            // this is not handled in dataTypes.ReadNextEntity()
+                            // we are simply ignoring leftover data in packet
+                            handler.OnSpawnEntity(entity);
+                        }
+                        break;
+                    case PacketIncomingType.SpawnPlayer:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Guid UUID = dataTypes.ReadNextUUID(packetData);
+                            double X = dataTypes.ReadNextDouble(packetData);
+                            double Y = dataTypes.ReadNextDouble(packetData);
+                            double Z = dataTypes.ReadNextDouble(packetData);
+                            byte Yaw = dataTypes.ReadNextByte(packetData);
+                            byte Pitch = dataTypes.ReadNextByte(packetData);
+
+                            Location EntityLocation = new Location(X, Y, Z);
+
+                            handler.OnSpawnPlayer(EntityID, UUID, EntityLocation, Yaw, Pitch);
+                        }
+                        break;
+                    case PacketIncomingType.DestroyEntities:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityCount = dataTypes.ReadNextVarInt(packetData);
+                            int[] EntitiesList = new int[EntityCount];
+                            for (int i = 0; i < EntityCount; i++)
+                            {
+                                EntitiesList[i] = dataTypes.ReadNextVarInt(packetData);
+                            }
+                            handler.OnDestroyEntities(EntitiesList);
+                        }
+                        break;
+                    case PacketIncomingType.EntityPosition:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            bool OnGround = dataTypes.ReadNextBool(packetData);
+                            DeltaX = DeltaX / (128 * 32);
+                            DeltaY = DeltaY / (128 * 32);
+                            DeltaZ = DeltaZ / (128 * 32);
+                            handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        }
+                        break;
+                    case PacketIncomingType.EntityPositionAndRotation:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Double DeltaX = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaY = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            Double DeltaZ = Convert.ToDouble(dataTypes.ReadNextShort(packetData));
+                            byte _yaw = dataTypes.ReadNextByte(packetData);
+                            byte _pitch = dataTypes.ReadNextByte(packetData);
+                            bool OnGround = dataTypes.ReadNextBool(packetData);
+                            DeltaX = DeltaX / (128 * 32);
+                            DeltaY = DeltaY / (128 * 32);
+                            DeltaZ = DeltaZ / (128 * 32);
+                            handler.OnEntityPosition(EntityID, DeltaX, DeltaY, DeltaZ, OnGround);
+                        }
+                        break;
+                    case PacketIncomingType.EntityProperties:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            int NumberOfProperties = dataTypes.ReadNextInt(packetData);
+                            Dictionary<string, Double> keys = new Dictionary<string, Double>();
+                            for (int i = 0; i < NumberOfProperties; i++)
+                            {
+                                string _key = dataTypes.ReadNextString(packetData);
+                                Double _value = dataTypes.ReadNextDouble(packetData);
+
+                                List<double> op0 = new List<double>();
+                                List<double> op1 = new List<double>();
+                                List<double> op2 = new List<double>();
+                                int NumberOfModifiers = dataTypes.ReadNextVarInt(packetData);
+                                for (int j = 0; j < NumberOfModifiers; j++)
+                                {
+                                    dataTypes.ReadNextUUID(packetData);
+                                    Double amount = dataTypes.ReadNextDouble(packetData);
+                                    byte operation = dataTypes.ReadNextByte(packetData);
+                                    switch (operation)
+                                    {
+                                        case 0: op0.Add(amount); break;
+                                        case 1: op1.Add(amount); break;
+                                        case 2: op2.Add(amount + 1); break;
+                                    }
+                                }
+                                if (op0.Count > 0) _value += op0.Sum();
+                                if (op1.Count > 0) _value *= 1 + op1.Sum();
+                                if (op2.Count > 0) _value *= op2.Aggregate((a, _x) => a * _x);
+                                keys.Add(_key, _value);
+                            }
+                            handler.OnEntityProperties(EntityID, keys);
+                        }
+                        break;
+                    case PacketIncomingType.TimeUpdate:
+                        long WorldAge = dataTypes.ReadNextLong(packetData);
+                        long TimeOfday = dataTypes.ReadNextLong(packetData);
+                        handler.OnTimeUpdate(WorldAge, TimeOfday);
+                        break;
+                    case PacketIncomingType.EntityTeleport:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int EntityID = dataTypes.ReadNextVarInt(packetData);
+                            Double X = dataTypes.ReadNextDouble(packetData);
+                            Double Y = dataTypes.ReadNextDouble(packetData);
+                            Double Z = dataTypes.ReadNextDouble(packetData);
+                            byte EntityYaw = dataTypes.ReadNextByte(packetData);
+                            byte EntityPitch = dataTypes.ReadNextByte(packetData);
+                            bool OnGround = dataTypes.ReadNextBool(packetData);
+                            handler.OnEntityTeleport(EntityID, X, Y, Z, OnGround);
+                        }
+                        break;
+                    case PacketIncomingType.UpdateHealth:
+                        float health = dataTypes.ReadNextFloat(packetData);
+                        int food;
+                        if (protocolversion >= MC18Version)
+                            food = dataTypes.ReadNextVarInt(packetData);
+                        else
+                            food = dataTypes.ReadNextShort(packetData);
+                        dataTypes.ReadNextFloat(packetData); // Food Saturation
+                        handler.OnUpdateHealth(health, food);
+                        break;
+                    case PacketIncomingType.SetExperience:
+                        float experiencebar = dataTypes.ReadNextFloat(packetData);
+                        int level = dataTypes.ReadNextVarInt(packetData);
+                        int totalexperience = dataTypes.ReadNextVarInt(packetData);
+                        handler.OnSetExperience(experiencebar, level, totalexperience);
+                        break;
+                    case PacketIncomingType.Explosion:
+                        Location explodelocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
+                        float Explosionstrength = dataTypes.ReadNextFloat(packetData);
+                        int ExplosionRecordCount = dataTypes.ReadNextInt(packetData);
+                        handler.OnExplosion(explodelocation, Explosionstrength, ExplosionRecordCount);
+                        break;
+                    case PacketIncomingType.HeldItemChange:
+                        byte slot = dataTypes.ReadNextByte(packetData);
+                        handler.OnHeldItemChange(slot);
+                        break;
+                    default:
+                        return false; //Ignored packet
+                }
                 return true; //Packet processed
             }
             catch (Exception innerException)
