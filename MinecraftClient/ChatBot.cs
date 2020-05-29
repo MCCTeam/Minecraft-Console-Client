@@ -957,7 +957,10 @@ namespace MinecraftClient
             Container container = Handler.GetPlayerInventory();
             return new Container(container.ID, container.Type, container.Title, container.Items);
         }
-
+        protected bool WindowAction(int inventoryId, int slot, WindowActionType actionType)
+        {
+            return Handler.DoWindowAction(inventoryId, slot, actionType);
+        }
         /// <summary>
         /// Change player selected hotbar
         /// </summary>
