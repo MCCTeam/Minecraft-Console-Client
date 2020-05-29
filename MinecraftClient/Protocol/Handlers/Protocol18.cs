@@ -12,8 +12,6 @@ using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Inventory;
-using System.Windows.Forms.VisualStyles;
-using Org.BouncyCastle.Crypto.Utilities;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -422,12 +420,12 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.PlayerListUpdate:
                         if (protocolversion >= MC18Version)
                         {
-                            int action2 = dataTypes.ReadNextVarInt(packetData);
+                            int action = dataTypes.ReadNextVarInt(packetData);
                             int numActions = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < numActions; i++)
                             {
                                 Guid uuid = dataTypes.ReadNextUUID(packetData);
-                                switch (action2)
+                                switch (action)
                                 {
                                     case 0x00: //Player Join
                                         string name = dataTypes.ReadNextString(packetData);
@@ -450,7 +448,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         handler.OnGamemodeUpdate(uuid, gamemode);
                                         break;
                                     case 0x02: //Update latency
-                                        int ping = dataTypes.ReadNextVarInt(packetData);
+                                        dataTypes.ReadNextVarInt(packetData);
                                         break;
                                     case 0x03: //Update display name
                                         if (dataTypes.ReadNextBool(packetData))
