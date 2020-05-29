@@ -191,10 +191,10 @@ namespace MinecraftClient
         public virtual void OnHealthUpdate(float health, int food) { }
 
         /// <summary>
-        /// Called when explosion
+        /// Called when an explosion occurs on the server
         /// </summary>
-        /// <param name="explode">Explode location</param>
-        /// <param name="recordcount">blocks blown up</param>
+        /// <param name="explode">Explosion location</param>
+        /// <param name="recordcount">Amount of blocks blown up</param>
         public virtual void OnExplosion(Location explode, float strength, int recordcount) { }
 
         /// <summary>
@@ -920,25 +920,36 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Interact with an entity
+        /// Give Creative Mode items into regular/survival Player Inventory
         /// </summary>
-        /// <param name="slot"></param>
-        /// <param name="ItemType"></param>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        protected bool CreativeInventoryGive(int slot, ItemType ItemType, int count)
+        /// <remarks>(obviously) requires to be in creative mode</remarks>Interact with an entity
+        /// </summary>
+        /// <param name="slot">Destination inventory slot</param>
+        /// <param name="ItemType">Item type</param>
+        /// <param name="count">Item count</param>
+        /// <returns>TRUE if item given successfully</returns>
+        protected bool CreativeGive(int slot, ItemType itemType, int count)
         {
-            return Handler.DoCreativeGive(slot, ItemType, count);
+            return Handler.DoCreativeGive(slot, itemType, count);
         }
 
         /// <summary>
-        /// Send animation
+        /// Plays animation (Player arm swing)
         /// </summary>
-        /// <param name="animation"> 0 or 1</param>
+        /// <param name="animation">0 for left arm, 1 for right arm</param>
         /// <returns></returns>
         protected bool SendAnimation(int animation)
         {
             return Handler.DoAnimation(animation);
+        }
+
+        /// <summary>
+        /// Use item currently in the player's hand (active inventory bar slot)
+        /// </summary>
+        /// <returns>TRUE if successful</returns>
+        protected bool UseItemInHand()
+        {
+            return Handler.UseItemOnHand();
         }
 
         /// <summary>
@@ -961,24 +972,6 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Get all inventories, player and container(s). Do not write to them. Will not have any effect server-side.
-        /// </summary>
-        /// <returns>All inventories</returns>
-        public Dictionary<int, Container> GetInventories()
-        {
-            return Handler.GetInventories();
-        }
-
-        /// <summary>
-        /// Use item currently in the player's hand (active inventory bar slot)
-        /// </summary>
-        /// <returns>TRUE if successful</returns>
-        protected bool UseItemInHand()
-        {
-            return Handler.UseItemOnHand();
-        }
-
-        /// <summary>
         /// Get the player's inventory. Do not write to it, will not have any effect server-side.
         /// </summary>
         /// <returns>Player inventory</returns>
@@ -986,6 +979,15 @@ namespace MinecraftClient
         {
             Container container = Handler.GetPlayerInventory();
             return new Container(container.ID, container.Type, container.Title, container.Items);
+        }
+
+        /// <summary>
+        /// Get all inventories, player and container(s). Do not write to them. Will not have any effect server-side.
+        /// </summary>
+        /// <returns>All inventories</returns>
+        public Dictionary<int, Container> GetInventories()
+        {
+            return Handler.GetInventories();
         }
 
         /// <summary>
