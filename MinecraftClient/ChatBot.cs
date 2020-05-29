@@ -7,7 +7,6 @@ using System.Threading;
 using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
-using MinecraftClient.Protocol.Handlers;
 
 namespace MinecraftClient
 {
@@ -158,7 +157,13 @@ namespace MinecraftClient
         /// <param name="entity">Entity with updated location</param>
         public virtual void OnEntityMove(Mapping.Entity entity) { }
 
-        public virtual void OnInternalCommand(string commandName,string commandParams, string Result) { }
+        /// <summary>
+        /// Called after an internal MCC command has been performed
+        /// </summary>
+        /// <param name="commandName">MCC Command Name</param>
+        /// <param name="commandParams">MCC Command Parameters</param>
+        /// <param name="Result">MCC command result</param>
+        public virtual void OnInternalCommand(string commandName, string commandParams, string Result) { }
 
         /// <summary>
         /// Called when an entity spawned nearby
@@ -199,6 +204,13 @@ namespace MinecraftClient
         /// <param name="Level">Level</param>
         /// <param name="TotalExperience">Total Experience</param>
         public virtual void OnSetExperience(float Experiencebar, int Level, int TotalExperience) { }
+
+        /// <summary>
+        /// Called when the Game Mode has been updated for a player
+        /// </summary>
+        /// <param name="playername">Player Name</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
 
         /* =================================================================== */
@@ -678,15 +690,6 @@ namespace MinecraftClient
             return Handler.GetEntityHandlingEnabled();
         }
 
-        public bool GetInventoryEnabled()
-        {
-            return Handler.GetInventoryEnabled();
-        }
-        public Dictionary<int, Container> GetInventories()
-        {
-            return Handler.GetInventories();
-        }
-
         /// <summary>
         /// start Sneaking
         /// </summary>
@@ -694,6 +697,7 @@ namespace MinecraftClient
         {
             return SendEntityAction(on ? Protocol.EntityActionType.StartSneaking : Protocol.EntityActionType.StopSneaking);
         }
+
         /// <summary>
         /// Send Entity Action
         /// </summary>
@@ -701,10 +705,18 @@ namespace MinecraftClient
         {
             return Handler.sendEntityAction(entityAction);
         }
-        protected void PlayerDigging(int status, Location location, byte face)
+
+        /// <summary>
+        /// Dig block - WORK IN PROGRESS - MAY NOT WORK
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="location"></param>
+        /// <param name="face"></param>
+        protected void DigBlock(int status, Location location, byte face)
         {
-            Handler.PlayerDigging(status, location, face);
+            Handler.DigBlock(status, location, face);
         }
+
         /// <summary>
         /// SetSlot
         /// </summary>
@@ -940,16 +952,34 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Check inventory handling enable status
+        /// </summary>
+        /// <returns>TRUE if inventory handling is enabled</returns>
+        public bool GetInventoryEnabled()
+        {
+            return Handler.GetInventoryEnabled();
+        }
+
+        /// <summary>
+        /// Get all inventories, player and container(s). Do not write to them. Will not have any effect server-side.
+        /// </summary>
+        /// <returns>All inventories</returns>
+        public Dictionary<int, Container> GetInventories()
+        {
+            return Handler.GetInventories();
+        }
+
+        /// <summary>
         /// Use item currently in the player's hand (active inventory bar slot)
         /// </summary>
-        /// <returns></returns>
+        /// <returns>TRUE if successful</returns>
         protected bool UseItemInHand()
         {
             return Handler.UseItemOnHand();
         }
 
         /// <summary>
-        /// Get a copy of the player's inventory
+        /// Get the player's inventory. Do not write to it, will not have any effect server-side.
         /// </summary>
         /// <returns>Player inventory</returns>
         protected Container GetPlayerInventory()
@@ -957,20 +987,33 @@ namespace MinecraftClient
             Container container = Handler.GetPlayerInventory();
             return new Container(container.ID, container.Type, container.Title, container.Items);
         }
+
+        /// <summary>
+        /// Perform inventory action
+        /// </summary>
+        /// <param name="inventoryId">Inventory ID</param>
+        /// <param name="slot">Slot ID</param>
+        /// <param name="actionType">Action Type</param>
+        /// <returns>TRUE in case of success</returns>
         protected bool WindowAction(int inventoryId, int slot, WindowActionType actionType)
         {
             return Handler.DoWindowAction(inventoryId, slot, actionType);
         }
+
         /// <summary>
-        /// Change player selected hotbar
+        /// Change player selected hotbar slot
         /// </summary>
-        /// <param name="slot"></param>
+        /// <param name="slot">0-8</param>
         /// <returns>True if success</returns>
         protected bool ChangeSlot(short slot)
         {
             return Handler.ChangeSlot(slot);
         }
 
+        /// <summary>
+        /// Get current player selected hotbar slot
+        /// </summary>
+        /// <returns>0-8</returns>
         protected byte GetCurrentSlot()
         {
             return Handler.GetCurrentSlot();

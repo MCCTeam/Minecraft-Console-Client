@@ -1550,9 +1550,15 @@ namespace MinecraftClient
             Location placelocation = new Location(location.X, location.Y - 1, location.Z);
             return handler.SendPlayerBlockPlacement(0, placelocation, 1, 0.5f, 0.5f, 0.5f, false);
         }
-        public bool PlayerDigging(int status, Location location, byte Face)
+
+        /// <summary>
+        /// Dig block - WORK IN PROGRESS - MAY NOT WORK YET
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="location"></param>
+        /// <param name="face"></param>
+        public bool DigBlock(int status, Location location, byte Face)
         {
-            //WORK IN PROGRESS. MAY NOT WORK YET
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(location.ToString());
             Location placelocation = new Location(location.X, location.Y, location.Z);
