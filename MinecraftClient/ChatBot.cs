@@ -899,6 +899,7 @@ namespace MinecraftClient
             }
             return Handler.SendPluginChannelMessage(channel, data, sendEvenIfNotRegistered);
         }
+
         /// <summary>
         /// Get server current TPS (tick per second)
         /// </summary>
@@ -913,7 +914,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="EntityID"></param>
         /// <param name="type">0: interact, 1: attack, 2: interact at</param>
-        /// <returns></returns>
+        /// <returns>TRUE in case of success</returns>
         protected bool InteractEntity(int EntityID, int type)
         {
             return Handler.InteractEntity(EntityID, type);
@@ -922,10 +923,10 @@ namespace MinecraftClient
         /// <summary>
         /// Give Creative Mode items into regular/survival Player Inventory
         /// </summary>
-        /// <remarks>(obviously) requires to be in creative mode</remarks>Interact with an entity
+        /// <remarks>(obviously) requires to be in creative mode</remarks>
         /// </summary>
         /// <param name="slot">Destination inventory slot</param>
-        /// <param name="ItemType">Item type</param>
+        /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
         /// <returns>TRUE if item given successfully</returns>
         protected bool CreativeGive(int slot, ItemType itemType, int count)
@@ -937,7 +938,7 @@ namespace MinecraftClient
         /// Plays animation (Player arm swing)
         /// </summary>
         /// <param name="animation">0 for left arm, 1 for right arm</param>
-        /// <returns></returns>
+        /// <returns>TRUE in case of success</returns>
         protected bool SendAnimation(int animation)
         {
             return Handler.DoAnimation(animation);
@@ -953,6 +954,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Check inventory handling enable status
+        /// </summary>
+        /// <returns>TRUE if inventory handling is enabled</returns>
+        public bool GetInventoryEnabled()
+        {
+            return Handler.GetInventoryEnabled();
+        }
+
+        /// <summary>
         /// Place block
         /// </summary>
         /// <param name="location">Block location</param>
@@ -960,15 +970,6 @@ namespace MinecraftClient
         protected bool SendPlaceBlock(Location location)
         {
             return Handler.PlaceBlock(location);
-        }
-
-        /// <summary>
-        /// Check inventory handling enable status
-        /// </summary>
-        /// <returns>TRUE if inventory handling is enabled</returns>
-        public bool GetInventoryEnabled()
-        {
-            return Handler.GetInventoryEnabled();
         }
 
         /// <summary>
