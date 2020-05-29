@@ -185,5 +185,14 @@ namespace MinecraftClient.Protocol
         /// <param name="insideBlock">TRUE if inside block</param>
         /// <returns>True if packet was successfully sent</returns>
         bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock);
+
+        /// <summary>
+        /// Send player blog digging packet to the server
+        /// </summary>
+        /// <param name="status">0 to start diffing, 1 to cancel, 2 to finish ( https://wiki.vg/Protocol#Player_Digging )</param>
+        /// <param name="location">Location</param>
+        /// <param name="face">Block face: 0 = bottom, 1 = top, etc (see wiki)</param>
+        /// <returns>True if packet was succcessfully sent</returns>
+        bool SendPlayerDigging(int status, Location location, byte face);
     }
 }

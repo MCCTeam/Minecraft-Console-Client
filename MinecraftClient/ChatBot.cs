@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient
 {
@@ -156,7 +157,13 @@ namespace MinecraftClient
         /// <param name="entity">Entity with updated location</param>
         public virtual void OnEntityMove(Mapping.Entity entity) { }
 
-        public virtual void OnInternalCommand(string commandName,string commandParams, string Result) { }
+        /// <summary>
+        /// Called after an internal MCC command has been performed
+        /// </summary>
+        /// <param name="commandName">MCC Command Name</param>
+        /// <param name="commandParams">MCC Command Parameters</param>
+        /// <param name="Result">MCC command result</param>
+        public virtual void OnInternalCommand(string commandName, string commandParams, string Result) { }
 
         /// <summary>
         /// Called when an entity spawned nearby
@@ -182,6 +189,29 @@ namespace MinecraftClient
         /// <param name="health">New player health</param>
         /// <param name="food">New food level</param>
         public virtual void OnHealthUpdate(float health, int food) { }
+
+        /// <summary>
+        /// Called when an explosion occurs on the server
+        /// </summary>
+        /// <param name="explode">Explosion location</param>
+        /// <param name="recordcount">Amount of blocks blown up</param>
+        public virtual void OnExplosion(Location explode, float strength, int recordcount) { }
+
+        /// <summary>
+        /// Called when experience updates
+        /// </summary>
+        /// <param name="Experiencebar">Between 0 and 1</param>
+        /// <param name="Level">Level</param>
+        /// <param name="TotalExperience">Total Experience</param>
+        public virtual void OnSetExperience(float Experiencebar, int Level, int TotalExperience) { }
+
+        /// <summary>
+        /// Called when the Game Mode has been updated for a player
+        /// </summary>
+        /// <param name="playername">Player Name</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
+        public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
@@ -667,6 +697,7 @@ namespace MinecraftClient
         {
             return SendEntityAction(on ? Protocol.EntityActionType.StartSneaking : Protocol.EntityActionType.StopSneaking);
         }
+
         /// <summary>
         /// Send Entity Action
         /// </summary>
@@ -674,6 +705,18 @@ namespace MinecraftClient
         {
             return Handler.sendEntityAction(entityAction);
         }
+
+        /// <summary>
+        /// Dig block - WORK IN PROGRESS - MAY NOT WORK
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="location"></param>
+        /// <param name="face"></param>
+        protected void DigBlock(int status, Location location, byte face)
+        {
+            Handler.DigBlock(status, location, face);
+        }
+
         /// <summary>
         /// SetSlot
         /// </summary>
@@ -871,7 +914,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="EntityID"></param>
         /// <param name="type">0: interact, 1: attack, 2: interact at</param>
-        /// <returns></returns>
+        /// <returns>TRUE in case of success</returns>
         protected bool InteractEntity(int EntityID, int type)
         {
             return Handler.InteractEntity(EntityID, type);
@@ -881,6 +924,7 @@ namespace MinecraftClient
         /// Give Creative Mode items into regular/survival Player Inventory
         /// </summary>
         /// <remarks>(obviously) requires to be in creative mode</remarks>
+        /// </summary>
         /// <param name="slot">Destination inventory slot</param>
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
@@ -894,7 +938,7 @@ namespace MinecraftClient
         /// Plays animation (Player arm swing)
         /// </summary>
         /// <param name="animation">0 for left arm, 1 for right arm</param>
-        /// <returns>TRUE if animation successfully done</returns>
+        /// <returns>TRUE in case of success</returns>
         protected bool SendAnimation(int animation)
         {
             return Handler.DoAnimation(animation);
@@ -903,7 +947,7 @@ namespace MinecraftClient
         /// <summary>
         /// Use item currently in the player's hand (active inventory bar slot)
         /// </summary>
-        /// <returns></returns>
+        /// <returns>TRUE if successful</returns>
         protected bool UseItemInHand()
         {
             return Handler.UseItemOnHand();
@@ -912,10 +956,20 @@ namespace MinecraftClient
         /// <summary>
         /// Check inventory handling enable status
         /// </summary>
-        /// <returns></returns>
+        /// <returns>TRUE if inventory handling is enabled</returns>
         public bool GetInventoryEnabled()
         {
             return Handler.GetInventoryEnabled();
+        }
+
+        /// <summary>
+        /// Place block
+        /// </summary>
+        /// <param name="location">Block location</param>
+        /// <returns></returns>
+        protected bool SendPlaceBlock(Location location)
+        {
+            return Handler.PlaceBlock(location);
         }
 
         /// <summary>
@@ -935,6 +989,18 @@ namespace MinecraftClient
         public Dictionary<int, Container> GetInventories()
         {
             return Handler.GetInventories();
+        }
+
+        /// <summary>
+        /// Perform inventory action
+        /// </summary>
+        /// <param name="inventoryId">Inventory ID</param>
+        /// <param name="slot">Slot ID</param>
+        /// <param name="actionType">Action Type</param>
+        /// <returns>TRUE in case of success</returns>
+        protected bool WindowAction(int inventoryId, int slot, WindowActionType actionType)
+        {
+            return Handler.DoWindowAction(inventoryId, slot, actionType);
         }
 
         /// <summary>

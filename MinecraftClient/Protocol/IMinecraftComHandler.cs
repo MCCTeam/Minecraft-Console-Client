@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -207,6 +207,29 @@ namespace MinecraftClient.Protocol
         /// <param name="health"></param>
         /// <param name="food"></param>
         void OnUpdateHealth(float health, int food);
+
+        /// <summary>
+        /// Called when and explosion occurs on the server
+        /// </summary>
+        /// <param name="location">Explosion location</param>
+        /// <param name="strength">Explosion strength</param>
+        /// <param name="affectedBlocks">Amount of affected blocks</param>
+        void OnExplosion(Location location, float strength, int affectedBlocks);
+
+        /// <summary>
+        /// Called when a player's game mode has changed
+        /// </summary>
+        /// <param name="uuid">Affected player's UUID</param>
+        /// <param name="gamemode">New game mode</param>
+        void OnGamemodeUpdate(Guid uuid, int gamemode);
+
+        /// <summary>
+        /// Called when Experience bar is updated
+        /// </summary>
+        /// <param name="Experiencebar">Experience bar level</param>
+        /// <param name="Level">Player Level</param>
+        /// <param name="TotalExperience">Total experience</param>
+        void OnSetExperience(float Experiencebar, int Level, int TotalExperience);
 
         /// <summary>
         /// Called when client need to change slot.

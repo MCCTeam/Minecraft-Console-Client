@@ -63,6 +63,8 @@ namespace MinecraftClient
         // player health and hunger
         private float playerHealth;
         private int playerFoodSaturation;
+        private int playerLevel;
+        private int playerTotalExperience;
         private byte CurrentSlot = 0;
 
         // Entity handling
@@ -83,6 +85,8 @@ namespace MinecraftClient
         public Double GetServerTPS() { return serverTPS; }
         public float GetHealth() { return playerHealth; }
         public int GetSaturation() { return playerFoodSaturation; }
+        public int GetLevel() { return playerLevel; }
+        public int GetTotalExperience() { return playerTotalExperience; }
         public byte GetCurrentSlot() { return CurrentSlot; }
 
         // get bots list for unloading them by commands
@@ -1262,6 +1266,23 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Called when the Game Mode has been updated for a player
+        /// </summary>
+        /// <param name="playername">Player Name</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
+        public void OnGamemodeUpdate(Guid uuid, int gamemode)
+        {
+            string playerName = null;
+            if (onlinePlayers.ContainsKey(uuid))
+            {
+                playerName = onlinePlayers[uuid];
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnGamemodeUpdate(playerName, uuid, gamemode);
+            }
+        }
+
+        /// <summary>
         /// Called when entities dead/despawn.
         /// </summary>
         public void OnDestroyEntities(int[] Entities)
@@ -1529,7 +1550,22 @@ namespace MinecraftClient
             //WORK IN PROGRESS. MAY NOT WORK YET
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(location.ToString());
-            return handler.SendPlayerBlockPlacement(0, location, 1, 0.5f, 0.5f, 0.5f, false);
+            Location placelocation = new Location(location.X, location.Y - 1, location.Z);
+            return handler.SendPlayerBlockPlacement(0, placelocation, 1, 0.5f, 0.5f, 0.5f, false);
+        }
+
+        /// <summary>
+        /// Dig block - WORK IN PROGRESS - MAY NOT WORK YET
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="location"></param>
+        /// <param name="face"></param>
+        public bool DigBlock(int status, Location location, byte Face)
+        {
+            if (Settings.DebugMessages)
+                ConsoleIO.WriteLogLine(location.ToString());
+            Location placelocation = new Location(location.X, location.Y, location.Z);
+            return handler.SendPlayerDigging(status, placelocation, 1);
         }
 
         /// <summary>
@@ -1549,7 +1585,7 @@ namespace MinecraftClient
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Called when client player's health changed, e.g. getting attack
         /// </summary>
@@ -1574,6 +1610,38 @@ namespace MinecraftClient
                 bot.OnHealthUpdate(health, food);
         }
 
+        /// <summary>
+        /// Called when experience updates
+        /// </summary>
+        /// <param name="Experiencebar">Between 0 and 1</param>
+        /// <param name="Level">Level</param>
+        /// <param name="TotalExperience">Total Experience</param>
+        public void OnSetExperience(float Experiencebar, int Level, int TotalExperience)
+        {
+            playerLevel = Level;
+            playerTotalExperience = TotalExperience;
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnSetExperience(Experiencebar, Level, TotalExperience);
+        }
+
+        /// <summary>
+        /// Called when and explosion occurs on the server
+        /// </summary>
+        /// <param name="location">Explosion location</param>
+        /// <param name="strength">Explosion strength</param>
+        /// <param name="affectedBlocks">Amount of affected blocks</param>
+        public void OnExplosion(Location location, float strength, int affectedBlocks)
+        {
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnExplosion(explode, strength, ExplosionRecordCount);
+        }
+
+        /// <summary>
+        /// Called when Experience bar is updated
+        /// </summary>
+        /// <param name="Experiencebar">Experience bar level</param>
+        /// <param name="Level">Player Level</param>
+        /// <param name="TotalExperience">Total experience</param>
         public void OnHeldItemChange(byte slot)
         {
             foreach (ChatBot bot in bots.ToArray())

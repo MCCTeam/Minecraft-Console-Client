@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
 
         public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
         {
-            return "Health: " + handler.GetHealth() + ", Saturation: " + handler.GetSaturation();
+            return "Health: " + handler.GetHealth() + ", Saturation: " + handler.GetSaturation() + ", Level: " + handler.GetLevel() + ", TotalExperience: " + handler.GetTotalExperience();
         }
     }
 }

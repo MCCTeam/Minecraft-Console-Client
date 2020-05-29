@@ -444,6 +444,9 @@ namespace MinecraftClient.Protocol.Handlers
                                         handler.OnPlayerJoin(uuid, name);
                                         break;
                                     case 0x01: //Update gamemode
+                                        int gamemode = dataTypes.ReadNextVarInt(packetData);
+                                        handler.OnGamemodeUpdate(uuid, gamemode);
+                                        break;
                                     case 0x02: //Update latency
                                         dataTypes.ReadNextVarInt(packetData);
                                         break;
@@ -713,6 +716,18 @@ namespace MinecraftClient.Protocol.Handlers
                             food = dataTypes.ReadNextShort(packetData);
                         dataTypes.ReadNextFloat(packetData); // Food Saturation
                         handler.OnUpdateHealth(health, food);
+                        break;
+                    case PacketIncomingType.SetExperience:
+                        float experiencebar = dataTypes.ReadNextFloat(packetData);
+                        int level = dataTypes.ReadNextVarInt(packetData);
+                        int totalexperience = dataTypes.ReadNextVarInt(packetData);
+                        handler.OnSetExperience(experiencebar, level, totalexperience);
+                        break;
+                    case PacketIncomingType.Explosion:
+                        Location explodelocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
+                        float Explosionstrength = dataTypes.ReadNextFloat(packetData);
+                        int ExplosionRecordCount = dataTypes.ReadNextInt(packetData);
+                        handler.OnExplosion(explodelocation, Explosionstrength, ExplosionRecordCount);
                         break;
                     case PacketIncomingType.HeldItemChange:
                         byte slot = dataTypes.ReadNextByte(packetData);
@@ -1066,7 +1081,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-        
+
         public bool SendEntityAction(int PlayerEntityID, int ActionID)
         {
             try
@@ -1228,7 +1243,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-        
+
         /// <summary>
         /// Send an Interact Entity Packet to server
         /// </summary>
@@ -1278,9 +1293,9 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (protocolversion < MC19Version)
                 return false; // Packet does not exist prior to MC 1.9
-                // According to https://wiki.vg/index.php?title=Protocol&oldid=5486#Player_Block_Placement
-                // MC 1.7 does this using Player Block Placement with special values
-                // TODO once Player Block Placement is implemented for older versions
+                              // According to https://wiki.vg/index.php?title=Protocol&oldid=5486#Player_Block_Placement
+                              // MC 1.7 does this using Player Block Placement with special values
+                              // TODO once Player Block Placement is implemented for older versions
             try
             {
                 List<byte> packet = new List<byte>();
@@ -1292,7 +1307,24 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+        
+        public bool SendPlayerDigging(int status, Location location, byte face)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetVarInt(status));
+                packet.AddRange(dataTypes.GetLocation(location));
+                packet.AddRange(dataTypes.GetVarInt(face));
 
+                SendPacket(PacketOutgoingType.PlayerDigging, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+        
         public bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock)
         {
             if (protocolversion < MC114Version)
@@ -1350,8 +1382,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case WindowActionType.LeftClick: button = 0; break;
                     case WindowActionType.RightClick: button = 1; break;
                     case WindowActionType.MiddleClick: button = 2; mode = 3; break;
-                    case WindowActionType.DropItem: 
-                        button = 0; 
+                    case WindowActionType.DropItem:
+                        button = 0;
                         mode = 4;
                         item = new Item(-1, 0, null);
                         Container inventory = handler.GetInventory(windowId);
@@ -1427,7 +1459,7 @@ namespace MinecraftClient.Protocol.Handlers
                     SendPacket(PacketOutgoingType.Animation, packet);
                     return true;
                 }
-                else;
+                else
                 {
                     return false;
                 }
@@ -1436,7 +1468,6 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-
         public bool SendCloseWindow(int windowId)
         {
             try
