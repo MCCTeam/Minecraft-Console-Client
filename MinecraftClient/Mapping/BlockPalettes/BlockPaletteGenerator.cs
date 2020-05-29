@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Text;
 
 namespace MinecraftClient.Mapping.BlockPalettes
 {
@@ -11,7 +12,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
     public static class BlockPaletteGenerator
     {
         /// <summary>
-        /// Generate mapping from Minecraft blocks.jsom
+        /// Generate mapping from Minecraft blocks.json
         /// </summary>
         /// <param name="blocksJsonFile">path to blocks.json</param>
         /// <param name="outputClass">output path for blocks.cs</param>
@@ -23,7 +24,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
             HashSet<int> knownStates = new HashSet<int>();
             Dictionary<string, HashSet<int>> blocks = new Dictionary<string, HashSet<int>>();
 
-            Json.JSONData palette = Json.ParseJson(File.ReadAllText(blocksJsonFile));
+            Json.JSONData palette = Json.ParseJson(File.ReadAllText(blocksJsonFile, Encoding.UTF8));
             foreach (KeyValuePair<string, Json.JSONData> item in palette.Properties)
             {
                 //minecraft:item_name => ItemName

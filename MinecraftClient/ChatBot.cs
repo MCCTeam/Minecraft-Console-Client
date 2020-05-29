@@ -791,7 +791,7 @@ namespace MinecraftClient
             {
                 //Read all lines from file, remove lines with no text, convert to lowercase,
                 //remove duplicate entries, convert to a string array, and return the result.
-                return File.ReadAllLines(file)
+                return File.ReadAllLines(file, Encoding.UTF8)
                         .Where(line => !String.IsNullOrWhiteSpace(line))
                         .Select(line => line.ToLower())
                         .Distinct().ToArray();

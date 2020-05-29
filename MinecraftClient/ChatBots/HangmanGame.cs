@@ -143,7 +143,7 @@ namespace MinecraftClient.ChatBots
         {
             if (System.IO.File.Exists(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR))
             {
-                string[] dico = System.IO.File.ReadAllLines(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR);
+                string[] dico = System.IO.File.ReadAllLines(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR, Encoding.UTF8);
                 return dico[new Random().Next(dico.Length)];
             }
             else

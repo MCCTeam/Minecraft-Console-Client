@@ -399,7 +399,7 @@ namespace MinecraftClient
         {
             string[] lines = null;
             ChatBots.Script.LookForScript(ref script);
-            try { lines = File.ReadAllLines(script); }
+            try { lines = File.ReadAllLines(script, Encoding.UTF8); }
             catch (Exception e) { throw new CSharpException(CSErrorType.FileReadError, e); }
             return CSharpRunner.Run(this, tickHandler, lines, args, localVars);
         }

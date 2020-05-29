@@ -1633,7 +1633,7 @@ namespace MinecraftClient
         public void OnExplosion(Location location, float strength, int affectedBlocks)
         {
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnExplosion(explode, strength, ExplosionRecordCount);
+                bot.OnExplosion(location, strength, affectedBlocks);
         }
 
         /// <summary>

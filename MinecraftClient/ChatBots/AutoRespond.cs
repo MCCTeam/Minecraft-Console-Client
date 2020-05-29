@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MinecraftClient.ChatBots
@@ -143,7 +144,7 @@ namespace MinecraftClient.ChatBots
                 if (Settings.DebugMessages)
                     LogToConsole("Loading matches from file: " + System.IO.Path.GetFullPath(matchesFile));
 
-                foreach (string lineRAW in File.ReadAllLines(matchesFile))
+                foreach (string lineRAW in File.ReadAllLines(matchesFile, Encoding.UTF8))
                 {
                     string line = lineRAW.Split('#')[0].Trim();
                     if (line.Length > 0)

@@ -47,7 +47,7 @@ namespace MinecraftClient.ChatBots
                 if (Settings.DebugMessages)
                     LogToConsole("Loading tasks from '" + System.IO.Path.GetFullPath(tasksfile) + "'");
                 TaskDesc current_task = null;
-                String[] lines = System.IO.File.ReadAllLines(tasksfile);
+                String[] lines = System.IO.File.ReadAllLines(tasksfile, Encoding.UTF8);
                 foreach (string lineRAW in lines)
                 {
                     string line = lineRAW.Split('#')[0].Trim();

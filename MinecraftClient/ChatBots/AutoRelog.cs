@@ -45,7 +45,7 @@ namespace MinecraftClient.ChatBots
                     if (Settings.DebugMessages)
                         LogToConsole("Loading messages from file: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
 
-                    dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile);
+                    dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile, Encoding.UTF8);
 
                     for (int i = 0; i < dictionary.Length; i++)
                     {
