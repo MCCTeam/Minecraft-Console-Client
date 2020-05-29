@@ -1266,8 +1266,11 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Called when a player gamemode update
+        /// Called when the Game Mode has been updated for a player
         /// </summary>
+        /// <param name="playername">Player Name</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
         public void OnGamemodeUpdate(Guid uuid, int gamemode)
         {
             string playerName = null;
@@ -1607,6 +1610,12 @@ namespace MinecraftClient
                 bot.OnHealthUpdate(health, food);
         }
 
+        /// <summary>
+        /// Called when experience updates
+        /// </summary>
+        /// <param name="Experiencebar">Between 0 and 1</param>
+        /// <param name="Level">Level</param>
+        /// <param name="TotalExperience">Total Experience</param>
         public void OnSetExperience(float Experiencebar, int Level, int TotalExperience)
         {
             playerLevel = Level;
@@ -1615,12 +1624,24 @@ namespace MinecraftClient
                 bot.OnSetExperience(Experiencebar, Level, TotalExperience);
         }
 
-        public void OnExplosion(Location explode, float strength, int ExplosionRecordCount)
+        /// <summary>
+        /// Called when and explosion occurs on the server
+        /// </summary>
+        /// <param name="location">Explosion location</param>
+        /// <param name="strength">Explosion strength</param>
+        /// <param name="affectedBlocks">Amount of affected blocks</param>
+        public void OnExplosion(Location location, float strength, int affectedBlocks)
         {
             foreach (ChatBot bot in bots.ToArray())
                 bot.OnExplosion(explode, strength, ExplosionRecordCount);
         }
 
+        /// <summary>
+        /// Called when Experience bar is updated
+        /// </summary>
+        /// <param name="Experiencebar">Experience bar level</param>
+        /// <param name="Level">Player Level</param>
+        /// <param name="TotalExperience">Total experience</param>
         public void OnHeldItemChange(byte slot)
         {
             foreach (ChatBot bot in bots.ToArray())
