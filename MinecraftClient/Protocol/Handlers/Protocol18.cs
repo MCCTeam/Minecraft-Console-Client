@@ -724,10 +724,11 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnSetExperience(experiencebar, level, totalexperience);
                         break;
                     case PacketIncomingType.Explosion:
-                        Location explodelocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
-                        float Explosionstrength = dataTypes.ReadNextFloat(packetData);
-                        int ExplosionRecordCount = dataTypes.ReadNextInt(packetData);
-                        handler.OnExplosion(explodelocation, Explosionstrength, ExplosionRecordCount);
+                        Location explosionLocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
+                        float explosionStrength = dataTypes.ReadNextFloat(packetData);
+                        int explosionBlockCount = dataTypes.ReadNextInt(packetData);
+                        // Ignoring additional fields (records, pushback)
+                        handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
                         break;
                     case PacketIncomingType.HeldItemChange:
                         byte slot = dataTypes.ReadNextByte(packetData);

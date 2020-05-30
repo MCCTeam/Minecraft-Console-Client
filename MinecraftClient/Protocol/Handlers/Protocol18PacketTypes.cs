@@ -61,7 +61,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x06: return PacketIncomingType.UpdateHealth;
                     case 0x1F: return PacketIncomingType.SetExperience;
                     case 0x09: return PacketIncomingType.HeldItemChange;
-                    case 0x1C: return PacketIncomingType.Explosion;
+                    case 0x27: return PacketIncomingType.Explosion;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1.10 and 1.11
@@ -101,7 +101,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x3E: return PacketIncomingType.UpdateHealth;
                     case 0x3D: return PacketIncomingType.SetExperience;
                     case 0x37: return PacketIncomingType.HeldItemChange;
-                    case 0x27: return PacketIncomingType.Explosion;
+                    case 0x1C: return PacketIncomingType.Explosion;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12.0
