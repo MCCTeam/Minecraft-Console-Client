@@ -448,7 +448,8 @@ namespace MinecraftClient.Protocol.Handlers
                                         handler.OnGamemodeUpdate(uuid, gamemode);
                                         break;
                                     case 0x02: //Update latency
-                                        dataTypes.ReadNextVarInt(packetData);
+                                        int latency = dataTypes.ReadNextVarInt(packetData);
+                                        handler.OnLatencyUpdate(uuid, latency); //Update latency;
                                         break;
                                     case 0x03: //Update display name
                                         if (dataTypes.ReadNextBool(packetData))
