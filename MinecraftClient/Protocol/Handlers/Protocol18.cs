@@ -1391,6 +1391,8 @@ namespace MinecraftClient.Protocol.Handlers
                         Container inventory = handler.GetInventory(windowId);
                         if (inventory.Items.ContainsKey(slotId))
                             inventory.Items[slotId].Count--; // server won't update us after dropped
+                        if (inventory.Items[slotId].Count == 0)
+                            inventory.Items.Remove(slotId);
                         break;
                     case WindowActionType.DropItemStack:
                         button = 1;
