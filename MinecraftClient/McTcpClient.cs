@@ -1635,7 +1635,23 @@ namespace MinecraftClient
             foreach (ChatBot bot in bots.ToArray())
                 bot.OnExplosion(location, strength, affectedBlocks);
         }
-
+        
+        /// <summary>
+        /// Called when Latency is updated
+        /// </summary>
+        /// <param name="uuid">player uuid</param>
+        /// <param name="latency">Latency</param>
+        public void OnLatencyUpdate(Guid uuid, int latency)
+        {
+            string playerName = null;
+            if (onlinePlayers.ContainsKey(uuid))
+            {
+                playerName = onlinePlayers[uuid];
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnLatencyUpdate(playerName, uuid, latency);
+            }
+        }
+        
         /// <summary>
         /// Called when Experience bar is updated
         /// </summary>
