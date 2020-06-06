@@ -57,7 +57,7 @@ namespace MinecraftClient.WinAPI
             {
                 Thread t = new Thread(new ThreadStart(delegate
                 {
-                    HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create("http://skins.minecraft.net/MinecraftSkins/" + playerName + ".png");
+                    HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create("https://minotar.net/helm/" + playerName + "/100.png");
                     try
                     {
                         using (HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse())
