@@ -212,6 +212,14 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
+        
+        /// <summary>
+        /// Called when the Latency has been updated for a player
+        /// </summary>
+        /// <param name="playername">Player Name</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="latency">Latency.</param>
+        public virtual void OnLatencyUpdate(string playername, Guid uuid, int latency) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */

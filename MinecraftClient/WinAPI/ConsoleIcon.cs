@@ -24,6 +24,32 @@ namespace MinecraftClient.WinAPI
         /// <summary>
         /// Asynchronously download the player's skin and set the head as console icon
         /// </summary>
+        public enum WinMessages : uint
+        {
+            /// <summary>
+            /// An application sends the WM_SETICON message to associate a new large or small icon with a window. 
+            /// The system displays the large icon in the ALT+TAB dialog box, and the small icon in the window caption. 
+            /// </summary>
+            SETICON = 0x0080,
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, IntPtr lParam);
+
+
+        private static void SetWindowIcon(System.Drawing.Icon icon)
+        {
+            IntPtr mwHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+            IntPtr result01 = SendMessage(mwHandle, (int)WinMessages.SETICON, 0, icon.Handle);
+            IntPtr result02 = SendMessage(mwHandle, (int)WinMessages.SETICON, 1, icon.Handle);
+        }
+        
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetConsoleIcon(IntPtr hIcon);
+
+        /// <summary>
+        /// Asynchronously download the player's skin and set the head as console icon
+        /// </summary>
 
         public static void setPlayerIconAsync(string playerName)
         {
@@ -31,7 +57,7 @@ namespace MinecraftClient.WinAPI
             {
                 Thread t = new Thread(new ThreadStart(delegate
                 {
-                    HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create("http://skins.minecraft.net/MinecraftSkins/" + playerName + ".png");
+                    HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create("https://minotar.net/helm/" + playerName + "/100.png");
                     try
                     {
                         using (HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse())
@@ -40,6 +66,7 @@ namespace MinecraftClient.WinAPI
                             {
                                 Bitmap skin = new Bitmap(Image.FromStream(httpWebReponse.GetResponseStream())); //Read skin from network
                                 skin = skin.Clone(new Rectangle(8, 8, 8, 8), skin.PixelFormat); //Crop skin
+                                SetWindowIcon(Icon.FromHandle(skin.GetHicon()));
                                 SetConsoleIcon(skin.GetHicon()); //Set skin as icon
                             }
                             catch (ArgumentException) { /* Invalid image in HTTP response */ }

@@ -222,7 +222,14 @@ namespace MinecraftClient.Protocol
         /// <param name="uuid">Affected player's UUID</param>
         /// <param name="gamemode">New game mode</param>
         void OnGamemodeUpdate(Guid uuid, int gamemode);
-
+        
+        /// <summary>
+        /// Called when a player's latency has changed
+        /// </summary>
+        /// <param name="uuid">Affected player's UUID</param>
+        /// <param name="latency">latency</param>
+        void OnLatencyUpdate(Guid uuid, int latency);
+        
         /// <summary>
         /// Called when Experience bar is updated
         /// </summary>
