@@ -17,7 +17,7 @@ namespace MinecraftClient
     public static class Settings
     {
         //Minecraft Console Client client information used for BrandInfo setting
-        private const string MCCBrandInfo = "Minecraft-Console-Client/" + Form1.Version;
+        private const string MCCBrandInfo = "Minecraft-Console-Client/" + Program.Version;
 
         //Main Settings.
         //Login: Username or email adress used as login for Minecraft/Mojang account
@@ -564,7 +564,7 @@ namespace MinecraftClient
         /// <param name="settingsfile">File to (over)write</param>
         public static void WriteDefaultSettings(string settingsfile)
         {
-            System.IO.File.WriteAllText(settingsfile, "# Minecraft Console Client v" + Form1.Version + "\r\n"
+            System.IO.File.WriteAllText(settingsfile, "# Minecraft Console Client v" + Program.Version + "\r\n"
                 + "# Startup Config File\r\n"
                 + "\r\n"
                 + "[Main]\r\n"
