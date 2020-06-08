@@ -858,6 +858,7 @@ namespace MinecraftClient
                         switch (varname_lower)
                         {
                             case "username": result.Append(Username); break;
+                            case "login": result.Append(Login); break;
                             case "serverip": result.Append(ServerIP); break;
                             case "serverport": result.Append(ServerPort); break;
                             default:
