@@ -111,7 +111,7 @@ Any line beginning with "#" is ignored and treated as a comment.
 Allowed instructions are given in "Internal commands" section.
 
 Application variables defined using the 'set' command or [AppVars] INI section can be used.
-The following read-only variables can also be used: %username%, %serverip%, %serverport%
+The following read-only variables can also be used: %username%, %login%, %serverip%, %serverport%
 
 How to write a C# script
 ------
