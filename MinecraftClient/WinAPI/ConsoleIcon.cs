@@ -56,7 +56,6 @@ namespace MinecraftClient.WinAPI
                             try
                             {
                                 Bitmap skin = new Bitmap(Image.FromStream(httpWebReponse.GetResponseStream())); //Read skin from network
-                                skin = skin.Clone(new Rectangle(8, 8, 8, 8), skin.PixelFormat); //Crop skin
                                 SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
                                 SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
                             }
@@ -65,11 +64,7 @@ namespace MinecraftClient.WinAPI
                     }
                     catch (WebException) //Skin not found? Reset to default icon
                     {
-                        try
-                        {
-                            SetConsoleIcon(Icon.ExtractAssociatedIcon(Application.ExecutablePath).Handle);
-                        }
-                        catch { }
+                        revertToMCCIcon();
                     }
                 }
                 ));
@@ -79,15 +74,18 @@ namespace MinecraftClient.WinAPI
         }
 
         /// <summary>
-        /// Set the icon back to the default CMD icon
+        /// Set the icon back to the default MCC icon
         /// </summary>
-        public static void revertToCMDIcon()
+        public static void revertToMCCIcon()
         {
             if (!Program.isUsingMono) //Windows Only
             {
                 try
                 {
-                    SetConsoleIcon(Icon.ExtractAssociatedIcon(Environment.SystemDirectory + "\\cmd.exe").Handle);
+                    //Icon defaultIcon = Icon.ExtractAssociatedIcon(Environment.SystemDirectory + "\\cmd.exe");
+                    Icon defaultIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+                    SetWindowIcon(Icon.FromHandle(defaultIcon.Handle)); // Windows 10+ (New console)
+                    SetConsoleIcon(defaultIcon.Handle); // Windows 8 and lower (Older console)
                 }
                 catch { }
             }
