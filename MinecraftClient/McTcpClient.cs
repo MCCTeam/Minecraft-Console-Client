@@ -1664,5 +1664,20 @@ namespace MinecraftClient
                 bot.OnHeldItemChange(slot);
             CurrentSlot = slot;
         }
+        
+        public void ChangeGamemode(int gamemode, Guid uuid)
+        {
+            string playerName = null;
+            if (onlinePlayers.ContainsKey(uuid))
+            {
+                playerName = onlinePlayers[uuid];
+                this.gamemode = gamemode;
+            }
+        }
+        
+        public void ChangeGamemode(int gamemode)
+        {
+            this.gamemode = gamemode;
+        }
     }
 }
