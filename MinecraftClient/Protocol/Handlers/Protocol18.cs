@@ -217,7 +217,7 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnGameJoined();
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
                         handler.SetPlayerEntityID(playerEntityID);
-                        dataTypes.ReadNextByte(packetData);
+                        handler.ChangeGamemode(dataTypes.ReadNextByte(packetData));
                         if (protocolversion >= MC191Version)
                             this.currentDimension = dataTypes.ReadNextInt(packetData);
                         else
@@ -437,7 +437,7 @@ namespace MinecraftClient.Protocol.Handlers
                                             if (dataTypes.ReadNextBool(packetData))
                                                 dataTypes.ReadNextString(packetData);
                                         }
-                                        dataTypes.ReadNextVarInt(packetData);
+                                        handler.ChangeGamemode(dataTypes.ReadNextVarInt(packetData), uuid);
                                         dataTypes.ReadNextVarInt(packetData);
                                         if (dataTypes.ReadNextBool(packetData))
                                             dataTypes.ReadNextString(packetData);
@@ -446,6 +446,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     case 0x01: //Update gamemode
                                         int gamemode = dataTypes.ReadNextVarInt(packetData);
                                         handler.OnGamemodeUpdate(uuid, gamemode);
+                                            handler.ChangeGamemode(gamemode, uuid);
                                         break;
                                     case 0x02: //Update latency
                                         int latency = dataTypes.ReadNextVarInt(packetData);
@@ -725,11 +726,10 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnSetExperience(experiencebar, level, totalexperience);
                         break;
                     case PacketIncomingType.Explosion:
-                        Location explosionLocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
-                        float explosionStrength = dataTypes.ReadNextFloat(packetData);
-                        int explosionBlockCount = dataTypes.ReadNextInt(packetData);
-                        // Ignoring additional fields (records, pushback)
-                        handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
+                        Location explodelocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
+                        float Explosionstrength = dataTypes.ReadNextFloat(packetData);
+                        int ExplosionRecordCount = dataTypes.ReadNextInt(packetData);
+                        handler.OnExplosion(explodelocation, Explosionstrength, ExplosionRecordCount);
                         break;
                     case PacketIncomingType.HeldItemChange:
                         byte slot = dataTypes.ReadNextByte(packetData);
@@ -1363,7 +1363,6 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-
         public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item)
         {
             try
