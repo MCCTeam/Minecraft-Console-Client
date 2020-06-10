@@ -250,6 +250,12 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="EntityID">Player entity ID</param>
         void SetPlayerEntityID(int EntityID);
+        
+        /// <summary>
+        /// Called when Gamemode has changed
+        /// </summary>
+        /// <param name="gamemode">Gamemode</param>
+        /// <param name="uuid">Player uuid</param>
         void ChangeGamemode(int gamemode, Guid uuid);
         void ChangeGamemode(int gamemode);
     }
