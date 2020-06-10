@@ -729,8 +729,8 @@ namespace MinecraftClient.Protocol.Handlers
                         Location explodelocation = new Location(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
                         float Explosionstrength = dataTypes.ReadNextFloat(packetData);
                         int ExplosionRecordCount = dataTypes.ReadNextInt(packetData);
-                        handler.OnExplosion(explodelocation, Explosionstrength, ExplosionRecordCount);
                         // Ignoring additional fields (records, pushback)
+                        handler.OnExplosion(explodelocation, Explosionstrength, ExplosionRecordCount);
                         break;
                     case PacketIncomingType.HeldItemChange:
                         byte slot = dataTypes.ReadNextByte(packetData);
