@@ -1670,7 +1670,7 @@ namespace MinecraftClient
             string playerName = null;
             if (onlinePlayers.ContainsKey(uuid))
             {
-                playerName = onlinePlayers[uuid];
+                if (onlinePlayers[uuid] == username)
                 this.gamemode = gamemode;
             }
         }
