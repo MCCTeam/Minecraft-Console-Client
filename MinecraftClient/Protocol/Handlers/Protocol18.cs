@@ -573,6 +573,9 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.ResourcePackSend:
                         string url = dataTypes.ReadNextString(packetData);
                         string hash = dataTypes.ReadNextString(packetData);
+                        // Ignore invalid length hash string
+                        if (hash.Length != 40)
+                            break;
                         //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
                         byte[] responseHeader = new byte[0];
                         if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
