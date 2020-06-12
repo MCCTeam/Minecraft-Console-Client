@@ -1667,12 +1667,9 @@ namespace MinecraftClient
         
         public void ChangeGamemode(int gamemode, Guid uuid)
         {
-            string playerName = null;
             if (onlinePlayers.ContainsKey(uuid))
-            {
                 if (onlinePlayers[uuid] == username)
-                this.gamemode = gamemode;
-            }
+                    this.gamemode = gamemode;
         }
         
         public void ChangeGamemode(int gamemode)
