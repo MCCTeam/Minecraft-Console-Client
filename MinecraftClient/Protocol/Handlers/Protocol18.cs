@@ -217,7 +217,7 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnGameJoined();
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
                         handler.SetPlayerEntityID(playerEntityID);
-                        handler.ChangeGamemode(dataTypes.ReadNextByte(packetData));
+                        handler.OnGamemodeUpdate(Guid.Empty, dataTypes.ReadNextByte(packetData));
                         if (protocolversion >= MC191Version)
                             this.currentDimension = dataTypes.ReadNextInt(packetData);
                         else
@@ -437,16 +437,14 @@ namespace MinecraftClient.Protocol.Handlers
                                             if (dataTypes.ReadNextBool(packetData))
                                                 dataTypes.ReadNextString(packetData);
                                         }
-                                        handler.ChangeGamemode(dataTypes.ReadNextVarInt(packetData), uuid);
+                                        handler.OnGamemodeUpdate(uuid, dataTypes.ReadNextVarInt(packetData));
                                         dataTypes.ReadNextVarInt(packetData);
                                         if (dataTypes.ReadNextBool(packetData))
                                             dataTypes.ReadNextString(packetData);
                                         handler.OnPlayerJoin(uuid, name);
                                         break;
                                     case 0x01: //Update gamemode
-                                        int gamemode = dataTypes.ReadNextVarInt(packetData);
-                                        handler.OnGamemodeUpdate(uuid, gamemode);
-                                            handler.ChangeGamemode(gamemode, uuid);
+                                        handler.OnGamemodeUpdate(uuid, dataTypes.ReadNextVarInt(packetData));
                                         break;
                                     case 0x02: //Update latency
                                         int latency = dataTypes.ReadNextVarInt(packetData);
