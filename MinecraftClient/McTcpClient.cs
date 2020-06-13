@@ -57,6 +57,7 @@ namespace MinecraftClient
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new object();
         private int respawnTicks = 0;
+        private int gamemode = 0;
 
         private int playerEntityID;
 
@@ -88,6 +89,7 @@ namespace MinecraftClient
         public int GetLevel() { return playerLevel; }
         public int GetTotalExperience() { return playerTotalExperience; }
         public byte GetCurrentSlot() { return CurrentSlot; }
+        public int GetGamemode() { return gamemode; }
 
         // get bots list for unloading them by commands
         public List<ChatBot> GetLoadedChatBots()
@@ -1269,14 +1271,20 @@ namespace MinecraftClient
         /// Called when the Game Mode has been updated for a player
         /// </summary>
         /// <param name="playername">Player Name</param>
-        /// <param name="uuid">Player UUID</param>
+        /// <param name="uuid">Player UUID (Empty for initial gamemode on login)</param>
         /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
         public void OnGamemodeUpdate(Guid uuid, int gamemode)
         {
-            string playerName = null;
+            // Initial gamemode on login
+            if (uuid == Guid.Empty)
+                this.gamemode = gamemode;
+
+            // Further regular gamemode change events
             if (onlinePlayers.ContainsKey(uuid))
             {
-                playerName = onlinePlayers[uuid];
+                string playerName = onlinePlayers[uuid];
+                if (playerName == this.username)
+                    this.gamemode = gamemode;
                 foreach (ChatBot bot in bots.ToArray())
                     bot.OnGamemodeUpdate(playerName, uuid, gamemode);
             }

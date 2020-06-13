@@ -42,10 +42,14 @@ namespace MinecraftClient.Commands
                                 ItemType itemType = ItemType.Stone;
                                 if (Enum.TryParse(args[2], out itemType))
                                 {
-                                    int count = int.Parse(args[3]);
-                                    if (handler.DoCreativeGive(slot, itemType, count))
-                                        return "Requested " + itemType + " x" + count + " in slot #" + slot;
-                                    else return "Failed to request Creative Give";
+                                    if (handler.GetGamemode() == 1)
+                                    {
+                                        int count = int.Parse(args[3]);
+                                        if (handler.DoCreativeGive(slot, itemType, count))
+                                            return "Requested " + itemType + " x" + count + " in slot #" + slot;
+                                        else return "Failed to request Creative Give";
+                                    }
+                                    else return "You need Gamemode Creative";
                                 }
                                 else
                                 {

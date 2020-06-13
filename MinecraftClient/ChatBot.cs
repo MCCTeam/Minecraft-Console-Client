@@ -837,7 +837,16 @@ namespace MinecraftClient
         {
             return Handler.GetUsername();
         }
-
+        
+        /// <summary>
+        /// Return the Gamemode of the current account
+        /// </summary>
+        /// <returns>Username of the current account</returns>
+        protected int GetGamemode()
+        {
+            return Handler.GetGamemode();
+        }
+        
         /// <summary>
         /// Return the UserUUID of the current account
         /// </summary>
