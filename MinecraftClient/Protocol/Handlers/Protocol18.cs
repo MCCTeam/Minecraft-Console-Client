@@ -572,7 +572,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.ResourcePackSend:
                         string url = dataTypes.ReadNextString(packetData);
                         string hash = dataTypes.ReadNextString(packetData);
-                        // Ignore invalid length hash string
+                        // Some server plugins may send invalid resource packs to probe the client and we need to ignore them (issue #1056)
                         if (hash.Length != 40)
                             break;
                         //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory

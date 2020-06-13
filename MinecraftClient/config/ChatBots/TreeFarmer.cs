@@ -26,25 +26,25 @@ public class TreeFarmer : ChatBot
             case Material.OakLog:
                 // Tree has grown, dig 4 blocks
                 ChangeSlot(0);
-                PlayerDigging(0, sapling, 1);
+                DigBlock(0, sapling, 1);
                 Thread.Sleep(100);
-                PlayerDigging(2, sapling, 1);
+                DigBlock(2, sapling, 1);
                 // 1
-                PlayerDigging(0, new Location(sapling.X, sapling.Y + 1, sapling.Z), 1);
+                DigBlock(0, new Location(sapling.X, sapling.Y + 1, sapling.Z), 1);
                 Thread.Sleep(100);
-                PlayerDigging(2, new Location(sapling.X, sapling.Y + 1, sapling.Z), 1);
+                DigBlock(2, new Location(sapling.X, sapling.Y + 1, sapling.Z), 1);
                 // 2
-                PlayerDigging(0, new Location(sapling.X, sapling.Y + 2, sapling.Z), 1);
+                DigBlock(0, new Location(sapling.X, sapling.Y + 2, sapling.Z), 1);
                 Thread.Sleep(100);
-                PlayerDigging(2, new Location(sapling.X, sapling.Y + 2, sapling.Z), 1);
+                DigBlock(2, new Location(sapling.X, sapling.Y + 2, sapling.Z), 1);
                 // 3
-                PlayerDigging(0, new Location(sapling.X, sapling.Y + 3, sapling.Z), 1);
+                DigBlock(0, new Location(sapling.X, sapling.Y + 3, sapling.Z), 1);
                 Thread.Sleep(100);
-                PlayerDigging(2, new Location(sapling.X, sapling.Y + 3, sapling.Z), 1);
+                DigBlock(2, new Location(sapling.X, sapling.Y + 3, sapling.Z), 1);
                 // 4
-                PlayerDigging(0, new Location(sapling.X, sapling.Y + 4, sapling.Z), 1);
+                DigBlock(0, new Location(sapling.X, sapling.Y + 4, sapling.Z), 1);
                 Thread.Sleep(100);
-                PlayerDigging(2, new Location(sapling.X, sapling.Y + 4, sapling.Z), 1);
+                DigBlock(2, new Location(sapling.X, sapling.Y + 4, sapling.Z), 1);
                 break;
             case Material.Air:
                 // No tree, plant something
