@@ -1615,7 +1615,20 @@ namespace MinecraftClient
                 }
             }
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnHealthUpdate(health, food);
+            {
+                try
+                {
+                    bot.OnHealthUpdate(health, food);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
         }
 
         /// <summary>
@@ -1629,7 +1642,20 @@ namespace MinecraftClient
             playerLevel = Level;
             playerTotalExperience = TotalExperience;
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnSetExperience(Experiencebar, Level, TotalExperience);
+            {
+                try
+                {
+                    bot.OnSetExperience(Experiencebar, Level, TotalExperience);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
         }
 
         /// <summary>
@@ -1641,7 +1667,20 @@ namespace MinecraftClient
         public void OnExplosion(Location location, float strength, int affectedBlocks)
         {
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnExplosion(location, strength, affectedBlocks);
+            {
+                try
+                {
+                    bot.OnExplosion(location, strength, affectedBlocks);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
         }
         
         /// <summary>
@@ -1656,7 +1695,20 @@ namespace MinecraftClient
             {
                 playerName = onlinePlayers[uuid];
                 foreach (ChatBot bot in bots.ToArray())
-                    bot.OnLatencyUpdate(playerName, uuid, latency);
+                {
+                    try
+                    {
+                        bot.OnLatencyUpdate(playerName, uuid, latency);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
             }
         }
         
@@ -1669,7 +1721,20 @@ namespace MinecraftClient
         public void OnHeldItemChange(byte slot)
         {
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnHeldItemChange(slot);
+            {
+                try
+                {
+                    bot.OnHeldItemChange(slot);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
             CurrentSlot = slot;
         }
     }
