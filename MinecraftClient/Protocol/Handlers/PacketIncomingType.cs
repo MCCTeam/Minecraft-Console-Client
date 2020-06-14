@@ -48,7 +48,8 @@ namespace MinecraftClient.Protocol.Handlers
         SetExperience,
         HeldItemChange,
         Explosion,
-
+        MapData,
+        
         /// <summary>
         /// Represents a packet not implemented in MCC.
         /// </summary>
