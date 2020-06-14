@@ -546,6 +546,12 @@ namespace MinecraftClient
         /// </summary>
         public void OnRespawn()
         {
+            if (inventoryHandlingEnabled)
+            {
+                inventories.Clear();
+                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+            }
+
             if (terrainAndMovementsRequested)
             {
                 terrainAndMovementsEnabled = true;
