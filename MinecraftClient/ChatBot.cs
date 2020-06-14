@@ -730,7 +730,7 @@ namespace MinecraftClient
         /// </summary>
         protected void SetSlot(int slotNum)
         {
-            Handler.ChangeSlot((short) slotNum);
+            Handler.ChangeSlot((short)slotNum);
         }
 
         /// <summary>
@@ -757,11 +757,12 @@ namespace MinecraftClient
         /// Move to the specified location
         /// </summary>
         /// <param name="location">Location to reach</param>
-        /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
+        /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
+        /// <param name="allowSmallTeleport">Allow non-vanilla small teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false)
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
         {
-            return Handler.MoveTo(location, allowUnsafe);
+            return Handler.MoveTo(location, allowUnsafe, allowSmallTeleport);
         }
 
         /// <summary>
