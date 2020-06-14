@@ -46,7 +46,12 @@ namespace MinecraftClient.Protocol
         /// <param name="text">Text received from the server</param>
         /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
         void OnTextReceived(string text, bool isJson);
-
+        
+        /// <summary>
+        /// This method is called when the protocol handler receives a title
+        /// </summary>
+        void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json);
+        
         /// <summary>
         /// Called when receiving a connection keep-alive from the server
         /// </summary>
