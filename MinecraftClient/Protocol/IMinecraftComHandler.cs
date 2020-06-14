@@ -244,7 +244,17 @@ namespace MinecraftClient.Protocol
         /// <remarks>Used for setting player slot after joining game</remarks>
         /// <param name="slot"></param>
         void OnHeldItemChange(byte slot);
-
+        
+        /// <summary>
+        /// Called map data
+        /// </summary>
+        /// <param name="mapid"></param>
+        /// /// <param name="scale"></param>
+        /// /// <param name="trackingposition"></param>
+        /// /// <param name="locked"></param>
+        /// /// <param name="iconcount"></param>
+        void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount);
+        
         /// <summary>
         /// Called when the Player entity ID has been received from the server
         /// </summary>
