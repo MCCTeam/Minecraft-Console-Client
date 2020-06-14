@@ -384,7 +384,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                                 handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
                             }
-                            break
+                            break;
                     case PacketIncomingType.MultiBlockChange:
                         if (handler.GetTerrainEnabled())
                         {
