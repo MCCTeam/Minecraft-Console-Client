@@ -1035,13 +1035,9 @@ namespace MinecraftClient
         /// <param name="teleportlocation">Teleport location</param>
         public bool SendTeleport(Location teleportlocation)
         {
-            if (gamemode == 1)
-            {
-                UpdateLocation(teleportlocation, teleportlocation); // Update yaw and pitch to look at next step
-                handler.SendLocationUpdate(teleportlocation, Movement.IsOnGround(world, location), yaw, pitch);
-                return true;
-            }
-            else { return false; }
+            UpdateLocation(teleportlocation, teleportlocation); // Update yaw and pitch to look at next step
+            handler.SendLocationUpdate(teleportlocation, Movement.IsOnGround(world, location), yaw, pitch);
+            return true;
         }
         
         /// <summary>
