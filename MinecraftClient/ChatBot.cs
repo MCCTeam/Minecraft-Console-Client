@@ -220,6 +220,16 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="latency">Latency.</param>
         public virtual void OnLatencyUpdate(string playername, Guid uuid, int latency) { }
+        
+        /// <summary>
+        /// Called map data
+        /// </summary>
+        /// <param name="mapid"></param>
+        /// <param name="scale"></param>
+        /// <param name="trackingposition"></param>
+        /// <param name="locked"></param>
+        /// <param name="iconcount"></param>
+        public virtual void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
