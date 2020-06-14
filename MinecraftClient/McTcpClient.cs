@@ -860,6 +860,25 @@ namespace MinecraftClient
             }
         }
 
+        public void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json)
+        {
+            foreach (ChatBot bot in bots.ToArray())
+            {
+                try
+                {
+                    bot.OnTitle(action, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("GetText: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+        }
+        
         /// <summary>
         /// Received a connection keep-alive from the server
         /// </summary>
