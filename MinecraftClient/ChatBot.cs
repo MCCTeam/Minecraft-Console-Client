@@ -1042,9 +1042,9 @@ namespace MinecraftClient
         /// Send a Teleports the player to the server
         /// </summary>
         /// <param name="teleportlocation">Teleport location</param>
-        protected void Teleport(Location location)
+        protected bool Teleport(Location location)
         {
-            Handler.SendTeleport(location);
+            return Handler.SendTeleport(location);
         }
     }
 }
