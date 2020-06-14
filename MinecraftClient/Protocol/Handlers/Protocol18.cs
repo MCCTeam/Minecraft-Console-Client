@@ -328,6 +328,63 @@ namespace MinecraftClient.Protocol.Handlers
                             int iconcount = dataTypes.ReadNextVarInt(packetData);
                             handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
                             break;
+                    case PacketIncomingType.Title:
+                            if (protocolversion >= MC18Version)
+                            {
+                                int action2 = dataTypes.ReadNextVarInt(packetData);
+                                string titletext = String.Empty;
+                                string subtitletext = String.Empty;
+                                string actionbartext = String.Empty;
+                                string json = String.Empty;
+                                int fadein = -1;
+                                int stay = -1;
+                                int fadeout = -1;
+                                if (protocolversion >= MC110Version)
+                                {
+                                    if (action2 == 0)
+                                    {
+                                        json = titletext;
+                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 1)
+                                    {
+                                        json = subtitletext;
+                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 2)
+                                    {
+                                        json = actionbartext;
+                                        actionbartext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 3)
+                                    {
+                                        fadein = dataTypes.ReadNextInt(packetData);
+                                        stay = dataTypes.ReadNextInt(packetData);
+                                        fadeout = dataTypes.ReadNextInt(packetData);
+                                    }
+                                }
+                                else
+                                {
+                                    if (action2 == 0)
+                                    {
+                                        json = titletext;
+                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 1)
+                                    {
+                                        json = subtitletext;
+                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 2)
+                                    {
+                                        fadein = dataTypes.ReadNextInt(packetData);
+                                        stay = dataTypes.ReadNextInt(packetData);
+                                        fadeout = dataTypes.ReadNextInt(packetData);
+                                    }
+                                }
+                                handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
+                            }
+                            break
                     case PacketIncomingType.MultiBlockChange:
                         if (handler.GetTerrainEnabled())
                         {
