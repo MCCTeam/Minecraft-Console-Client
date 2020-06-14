@@ -212,7 +212,7 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
-        
+
         /// <summary>
         /// Called when the Latency has been updated for a player
         /// </summary>
@@ -280,14 +280,14 @@ namespace MinecraftClient
         /// </summary>
         public static string GetVerbatim(string text)
         {
-            if ( String.IsNullOrEmpty(text) )
+            if (String.IsNullOrEmpty(text))
                 return String.Empty;
 
             int idx = 0;
             var data = new char[text.Length];
 
-            for ( int i = 0; i < text.Length; i++ )
-                if ( text[i] != '§' )
+            for (int i = 0; i < text.Length; i++)
+                if (text[i] != '§')
                     data[idx++] = text[i];
                 else
                     i++;
@@ -307,7 +307,7 @@ namespace MinecraftClient
                 if (!((c >= 'a' && c <= 'z')
                         || (c >= 'A' && c <= 'Z')
                         || (c >= '0' && c <= '9')
-                        || c == '_') )
+                        || c == '_'))
                     return false;
 
             return true;
@@ -628,7 +628,7 @@ namespace MinecraftClient
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
             McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Program.Restart(delaySeconds);
+            Form1.Restart(delaySeconds);
         }
 
         /// <summary>
@@ -636,7 +636,7 @@ namespace MinecraftClient
         /// </summary>
         protected void DisconnectAndExit()
         {
-            Program.Exit();
+            Form1.Exit();
         }
 
         /// <summary>
@@ -730,7 +730,7 @@ namespace MinecraftClient
         /// </summary>
         protected void SetSlot(int slotNum)
         {
-            Handler.ChangeSlot((short) slotNum);
+            Handler.ChangeSlot((short)slotNum);
         }
 
         /// <summary>
@@ -837,7 +837,7 @@ namespace MinecraftClient
         {
             return Handler.GetUsername();
         }
-        
+
         /// <summary>
         /// Return the Gamemode of the current account
         /// </summary>
@@ -846,7 +846,7 @@ namespace MinecraftClient
         {
             return Handler.GetGamemode();
         }
-        
+
         /// <summary>
         /// Return the UserUUID of the current account
         /// </summary>
@@ -1037,6 +1037,14 @@ namespace MinecraftClient
         protected byte GetCurrentSlot()
         {
             return Handler.GetCurrentSlot();
+        }
+        /// <summary>
+        /// Send a Teleports the player to the server
+        /// </summary>
+        /// <param name="teleportlocation">Teleport location</param>
+        protected void Teleport(Location location)
+        {
+            Handler.SendTeleport(location);
         }
     }
 }
