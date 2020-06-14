@@ -62,7 +62,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x1F: return PacketIncomingType.SetExperience;
                     case 0x09: return PacketIncomingType.HeldItemChange;
                     case 0x27: return PacketIncomingType.Explosion;
-                    case 0x83: return PacketIncomingType.MapData;
+                    case 0x34: return PacketIncomingType.MapData;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1.10 and 1.11
@@ -103,7 +103,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x3D: return PacketIncomingType.SetExperience;
                     case 0x37: return PacketIncomingType.HeldItemChange;
                     case 0x1C: return PacketIncomingType.Explosion;
-                    case 0x83: return PacketIncomingType.MapData;
+                    case 0x24: return PacketIncomingType.MapData;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12.0
@@ -144,7 +144,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x3F: return PacketIncomingType.SetExperience;
                     case 0x39: return PacketIncomingType.HeldItemChange;
                     case 0x1C: return PacketIncomingType.Explosion;
-                    case 0x83: return PacketIncomingType.MapData;
+                    case 0x24: return PacketIncomingType.MapData;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1122Version) // MC 1.12.2
@@ -185,7 +185,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x40: return PacketIncomingType.SetExperience;
                     case 0x3A: return PacketIncomingType.HeldItemChange;
                     case 0x1C: return PacketIncomingType.Explosion;
-                    case 0x83: return PacketIncomingType.MapData;
+                    case 0x25: return PacketIncomingType.MapData;
                 }
             }
             else if (protocol < Protocol18Handler.MC114Version) // MC 1.13 to 1.13.2
@@ -226,7 +226,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x43: return PacketIncomingType.SetExperience;
                     case 0x3D: return PacketIncomingType.HeldItemChange;
                     case 0x1E: return PacketIncomingType.Explosion;
-                    case 0x83: return PacketIncomingType.MapData;
+                    case 0x26: return PacketIncomingType.MapData;
                 }
             }
             else if (protocol < Protocol18Handler.MC115Version) // MC 1.14 to 1.14.4
