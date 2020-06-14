@@ -148,12 +148,6 @@ namespace MinecraftClient
             inventoryHandlingEnabled = Settings.InventoryHandling;
             entityHandlingEnabled = Settings.EntityHandling;
 
-            if (inventoryHandlingEnabled)
-            {
-                inventories.Clear();
-                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
-            }
-
             bool retry = false;
             this.sessionid = sessionID;
             this.uuid = uuid;
@@ -516,6 +510,12 @@ namespace MinecraftClient
                     Settings.MCSettings_ChatColors,
                     Settings.MCSettings_Skin_All,
                     Settings.MCSettings_MainHand);
+
+            if (inventoryHandlingEnabled)
+            {
+                inventories.Clear();
+                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+            }
 
             foreach (ChatBot bot in bots.ToArray())
             {
