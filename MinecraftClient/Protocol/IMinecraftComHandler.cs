@@ -254,10 +254,10 @@ namespace MinecraftClient.Protocol
         /// Called map data
         /// </summary>
         /// <param name="mapid"></param>
-        /// /// <param name="scale"></param>
-        /// /// <param name="trackingposition"></param>
-        /// /// <param name="locked"></param>
-        /// /// <param name="iconcount"></param>
+        /// <param name="scale"></param>
+        /// <param name="trackingposition"></param>
+        /// <param name="locked"></param>
+        /// <param name="iconcount"></param>
         void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount);
         
         /// <summary>
