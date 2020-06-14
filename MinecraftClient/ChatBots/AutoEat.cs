@@ -34,6 +34,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnHealthUpdate(float health, int food)
         {
+            if (health <= 0) return; // player dead
             if (((food <= HungerThreshold) || (food < 20 && health < 20)) && !Eating)
             {
                 Eating = FindFoodAndEat();

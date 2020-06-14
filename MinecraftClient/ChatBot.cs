@@ -996,7 +996,7 @@ namespace MinecraftClient
         protected Container GetPlayerInventory()
         {
             Container container = Handler.GetPlayerInventory();
-            return new Container(container.ID, container.Type, container.Title, container.Items);
+            return container == null ? null : new Container(container.ID, container.Type, container.Title, container.Items);
         }
 
         /// <summary>
