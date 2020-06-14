@@ -1028,7 +1028,20 @@ namespace MinecraftClient
                     SendRespawnPacket();
             }
         }
-
+        
+        /// <summary>
+        /// Send a Teleports the player to the server
+        /// </summary>
+        /// <param name="teleportlocation">Teleport location</param>
+        public void SendTeleport(Location teleportlocation)
+        {
+            if (gamemode == 1)
+            {
+                UpdateLocation(teleportlocation, teleportlocation); // Update yaw and pitch to look at next step
+                handler.SendLocationUpdate(teleportlocation, Movement.IsOnGround(world, location), yaw, pitch);
+            }
+        }
+        
         /// <summary>
         /// Send a chat message or command to the server
         /// </summary>
