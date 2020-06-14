@@ -230,6 +230,7 @@ namespace MinecraftClient
         /// <param name="locked"></param>
         /// <param name="iconcount"></param>
         public virtual void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount) { }
+        public virtual void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
