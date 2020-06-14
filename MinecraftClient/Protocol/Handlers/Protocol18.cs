@@ -320,7 +320,11 @@ namespace MinecraftClient.Protocol.Handlers
                             int mapid = dataTypes.ReadNextVarInt(packetData);
                             byte scale = dataTypes.ReadNextByte(packetData);
                             bool trackingposition = dataTypes.ReadNextBool(packetData);
-                            bool locked = dataTypes.ReadNextBool(packetData);
+                            bool locked = false;
+                            if (protocolversion >= MC114Version)
+                            {
+                                locked = dataTypes.ReadNextBool(packetData);
+                            }
                             int iconcount = dataTypes.ReadNextVarInt(packetData);
                             handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
                             break;
