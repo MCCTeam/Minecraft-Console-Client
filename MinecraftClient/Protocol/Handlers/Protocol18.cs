@@ -256,11 +256,6 @@ namespace MinecraftClient.Protocol.Handlers
                             dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
                         dataTypes.ReadNextByte(packetData);
                         dataTypes.ReadNextString(packetData);
-                        if (handler.GetInventoryEnabled())
-                        {
-                            Container inventory2 = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
-                            handler.OnInventoryOpen(0, inventory2);
-                        }
                         handler.OnRespawn();
                         break;
                     case PacketIncomingType.PlayerPositionAndLook:
