@@ -800,23 +800,23 @@ namespace MinecraftClient
         public bool MoveTo(Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
         {
             lock (locationLock)
+            {
+                if (allowSmallTeleport && location.DistanceSquared(this.location) <= 16)
                 {
-                    if (allowSmallTeleport && location.DistanceSquared(this.location) <= 16)
-                    {
-                        // Allow small teleport within a range of 4 blocks. 1-step path to the desired location without checking anything
-                        path = null;
-                        steps = new Queue<Location>(new[] { location });
-                        return true;
-                    }
-                    else
-                    {
-                        // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
-                        if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
-                            path = new Queue<Location>(new[] { location });
-                        else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
-                        return path != null;
-                    }
+                    // Allow small teleport within a range of 4 blocks. 1-step path to the desired location without checking anything
+                    path = null;
+                    steps = new Queue<Location>(new[] { location });
+                    return true;
                 }
+                else
+                {
+                    // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
+                    if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
+                        path = new Queue<Location>(new[] { location });
+                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
+                    return path != null;
+                }
+            }
         }
 
         /// <summary>
