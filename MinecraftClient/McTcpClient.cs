@@ -790,14 +790,30 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false)
+        /// <summary>
+        /// Move to the specified location
+        /// </summary>
+        /// <param name="location">Location to reach</param>
+        /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
+        /// /// <param name="allowSmallTeleport">Allow small teleport to locations</param>
+        /// <returns>True if a path has been found</returns>
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
         {
-            lock (locationLock)
+            if (allowSmallTeleport)
             {
-                if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
-                    path = new Queue<Location>(new[] { location });
-                else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
-                return path != null;
+                UpdateLocation(location, location); // Update yaw and pitch to look at next step
+                handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yaw, pitch);
+                return true;
+            }
+            else
+            {
+                lock (locationLock)
+                {
+                    if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
+                        path = new Queue<Location>(new[] { location });
+                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
+                    return path != null;
+                }
             }
         }
 
@@ -1027,17 +1043,6 @@ namespace MinecraftClient
                 if (respawnTicks == 0)
                     SendRespawnPacket();
             }
-        }
-        
-        /// <summary>
-        /// Send a Teleports the player to the server
-        /// </summary>
-        /// <param name="teleportlocation">Teleport location</param>
-        public bool SendTeleport(Location teleportlocation)
-        {
-            UpdateLocation(teleportlocation, teleportlocation); // Update yaw and pitch to look at next step
-            handler.SendLocationUpdate(teleportlocation, Movement.IsOnGround(world, location), yaw, pitch);
-            return true;
         }
         
         /// <summary>
