@@ -1774,31 +1774,31 @@ namespace MinecraftClient
             }
             CurrentSlot = slot;
         }
-    }
-    
-    /// <summary>
-    /// Called map data
-    /// </summary>
-    /// <param name="mapid"></param>
-    /// <param name="scale"></param>
-    /// <param name="trackingposition"></param>
-    /// <param name="locked"></param>
-    /// <param name="iconcount"></param>
-    public void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount)
-    {
-        foreach (ChatBot bot in bots.ToArray())
+        
+        /// <summary>
+        /// Called map data
+        /// </summary>
+        /// <param name="mapid"></param>
+        /// <param name="scale"></param>
+        /// <param name="trackingposition"></param>
+        /// <param name="locked"></param>
+        /// <param name="iconcount"></param>
+        public void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount)
         {
-        try
-        {
-        bot.OnMapData(mapid, scale, trackingposition, locked, iconcount);
-        }
-        catch (Exception e)
-        {
-        if (!(e is ThreadAbortException))
+            foreach (ChatBot bot in bots.ToArray())
             {
-                ConsoleIO.WriteLogLine("OnMapData: Got error from " + bot.ToString() + ": " + e.ToString());
-            }
-            else throw; //ThreadAbortException should not be caught
+                try
+                {
+                    bot.OnMapData(mapid, scale, trackingposition, locked, iconcount);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnMapData: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
             }
         }
     }
