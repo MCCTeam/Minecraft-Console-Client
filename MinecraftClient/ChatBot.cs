@@ -763,7 +763,16 @@ namespace MinecraftClient
         {
             return Handler.MoveTo(location, allowUnsafe);
         }
-
+        
+        /// <summary>
+        /// Send a Teleports the player to the server
+        /// </summary>
+        /// <param name="teleportlocation">Teleport location</param>
+        protected bool TeleportToLocation(Location location)
+        {
+            return Handler.SendTeleport(location);
+        }
+        
         /// <summary>
         /// Look at the specified location
         /// </summary>
@@ -1037,14 +1046,6 @@ namespace MinecraftClient
         protected byte GetCurrentSlot()
         {
             return Handler.GetCurrentSlot();
-        }
-        /// <summary>
-        /// Send a Teleports the player to the server
-        /// </summary>
-        /// <param name="teleportlocation">Teleport location</param>
-        protected bool Teleport(Location location)
-        {
-            return Handler.SendTeleport(location);
         }
     }
 }
