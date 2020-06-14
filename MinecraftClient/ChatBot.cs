@@ -759,9 +759,9 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false)
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
         {
-            return Handler.MoveTo(location, allowUnsafe);
+            return Handler.MoveTo(location, allowUnsafe, allowSmallTeleport);
         }
         
         /// <summary>
