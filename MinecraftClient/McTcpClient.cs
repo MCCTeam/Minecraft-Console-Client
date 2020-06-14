@@ -1033,13 +1033,15 @@ namespace MinecraftClient
         /// Send a Teleports the player to the server
         /// </summary>
         /// <param name="teleportlocation">Teleport location</param>
-        public void SendTeleport(Location teleportlocation)
+        public bool SendTeleport(Location teleportlocation)
         {
             if (gamemode == 1)
             {
                 UpdateLocation(teleportlocation, teleportlocation); // Update yaw and pitch to look at next step
                 handler.SendLocationUpdate(teleportlocation, Movement.IsOnGround(world, location), yaw, pitch);
+                return true;
             }
+            else { return false; }
         }
         
         /// <summary>
