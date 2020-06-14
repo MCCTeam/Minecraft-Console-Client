@@ -799,22 +799,24 @@ namespace MinecraftClient
         /// <returns>True if a path has been found</returns>
         public bool MoveTo(Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
         {
-            if (allowSmallTeleport)
-            {
-                UpdateLocation(location, location); // Update yaw and pitch to look at next step
-                handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yaw, pitch);
-                return true;
-            }
-            else
-            {
-                lock (locationLock)
+            lock (locationLock)
                 {
-                    if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
-                        path = new Queue<Location>(new[] { location });
-                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
-                    return path != null;
+                    if (allowSmallTeleport && location.DistanceSquared(this.location) <= 16)
+                    {
+                        // Allow small teleport within a range of 4 blocks. 1-step path to the desired location without checking anything
+                        path = null;
+                        steps = new Queue<Location>(new[] { location });
+                        return true;
+                    }
+                    else
+                    {
+                        // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
+                        if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
+                            path = new Queue<Location>(new[] { location });
+                        else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
+                        return path != null;
+                    }
                 }
-            }
         }
 
         /// <summary>
