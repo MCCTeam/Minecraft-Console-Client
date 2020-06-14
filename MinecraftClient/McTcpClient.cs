@@ -1624,7 +1624,7 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLogLine("OnHealthUpdate: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
@@ -1651,7 +1651,7 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLogLine("OnSetExperience: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
@@ -1676,7 +1676,7 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLogLine("OnExplosion: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
@@ -1704,7 +1704,7 @@ namespace MinecraftClient
                     {
                         if (!(e is ThreadAbortException))
                         {
-                            ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                            ConsoleIO.WriteLogLine("OnLatencyUpdate: Got error from " + bot.ToString() + ": " + e.ToString());
                         }
                         else throw; //ThreadAbortException should not be caught
                     }
@@ -1730,7 +1730,7 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                        ConsoleIO.WriteLogLine("OnHeldItemChange: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
