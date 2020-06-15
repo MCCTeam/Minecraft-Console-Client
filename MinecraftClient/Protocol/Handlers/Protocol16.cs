@@ -652,7 +652,12 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (SocketException) { return false; }
         }
-
+        
+        public bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4)
+        {
+            return false; //Currently not implemented
+        }
+        
         public bool SendBrandInfo(string brandInfo)
         {
             return false; //Only supported since MC 1.7
