@@ -996,9 +996,9 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Block location</param>
         /// <returns></returns>
-        protected bool SendPlaceBlock(Location location)
+        protected bool SendPlaceBlock(Location location, int face)
         {
-            return Handler.PlaceBlock(location);
+            return Handler.PlaceBlock(location, face);
         }
 
         /// <summary>
