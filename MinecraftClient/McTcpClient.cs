@@ -1586,13 +1586,20 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Location to place block to</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool PlaceBlock(Location location)
+        public bool PlaceBlock(Location location, int face)
         {
-            //WORK IN PROGRESS. MAY NOT WORK YET
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(location.ToString());
-            Location placelocation = new Location(location.X, location.Y - 1, location.Z);
-            return handler.SendPlayerBlockPlacement(0, placelocation, 1, 0.5f, 0.5f, 0.5f, false);
+            Location placelocation;
+            if (face == 1)
+            {
+                placelocation = new Location(location.X, location.Y - 1, location.Z);
+            }
+            else
+            {
+                placelocation = location;
+            }
+            return handler.SendPlayerBlockPlacement(0, placelocation, face, 0.5f, 0.5f, 0.5f, false);
         }
 
         /// <summary>
