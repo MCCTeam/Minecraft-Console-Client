@@ -1050,5 +1050,14 @@ namespace MinecraftClient
         {
             return Handler.GetCurrentSlot();
         }
+        
+        /// <summary>
+        /// Clean all inventory
+        /// </summary>
+        /// <returns>TRUE if the uccessfully clear</returns>
+        protected bool ClearInventories()
+        {
+            return Handler.ClearInventories();
+        }
     }
 }
