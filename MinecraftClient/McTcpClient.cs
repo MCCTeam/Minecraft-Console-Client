@@ -1573,7 +1573,22 @@ namespace MinecraftClient
             }
             return false;
         }
-
+        
+        /// <summary>
+        /// Clean all inventory
+        /// </summary>
+        /// <returns>TRUE if the uccessfully clear</returns>
+        public bool ClearInventories()
+        {
+            if (inventoryHandlingEnabled)
+            {
+                inventories.Clear();
+                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+                return true;
+            }
+            else { return false;  }
+        }
+        
         /// <summary>
         /// Interact with an entity
         /// </summary>
