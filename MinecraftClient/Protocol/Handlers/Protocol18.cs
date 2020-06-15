@@ -1558,5 +1558,22 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+        public bool SendUpdateSign(Location sign, string line1, string line2, string line3, string line4)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetLocation(sign));
+                packet.AddRange(dataTypes.GetString(line1));
+                packet.AddRange(dataTypes.GetString(line2));
+                packet.AddRange(dataTypes.GetString(line3));
+                packet.AddRange(dataTypes.GetString(line4));
+                SendPacket(PacketOutgoingType.UpdateSign, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
     }
 }
