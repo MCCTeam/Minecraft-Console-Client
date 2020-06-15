@@ -1815,5 +1815,9 @@ namespace MinecraftClient
                 }
             }
         }
+        public bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
+        {
+            return handler.SendUpdateSign(location, line1, line2, line3, line4);
+        }
     }
 }
