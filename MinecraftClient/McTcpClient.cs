@@ -1595,6 +1595,22 @@ namespace MinecraftClient
             {
                 placelocation = new Location(location.X, location.Y - 1, location.Z);
             }
+            else if (face == 2)
+            {
+                placelocation = new Location(location.X, location.Y, location.Z + 1);
+            }
+            else if (face == 3)
+            {
+                placelocation = new Location(location.X, location.Y, location.Z - 1);
+            }
+            else if (face == 4)
+            {
+                placelocation = new Location(location.X + 1, location.Y, location.Z);
+            }
+            else if (face == 5)
+            {
+                placelocation = new Location(location.X - 1, location.Y, location.Z);
+            }
             else
             {
                 placelocation = location;
