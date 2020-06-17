@@ -1525,9 +1525,9 @@ namespace MinecraftClient
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
         /// <returns>TRUE if item given successfully</returns>
-        public bool DoCreativeGive(int slot, ItemType itemType, int count)
+        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> NBT)
         {
-            return handler.SendCreativeInventoryAction(slot, itemType, count);
+            return handler.SendCreativeInventoryAction(slot, itemType, count, NBT);
         }
 
         /// <summary>
