@@ -157,7 +157,7 @@ namespace MinecraftClient.Protocol
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
         /// <returns>TRUE if item given successfully</returns>
-        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count);
+        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> NBT);
 
         /// <summary>
         /// Plays animation
