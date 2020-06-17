@@ -703,7 +703,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendCreativeInventoryAction(int slot, ItemType item, int count)
+        public bool SendCreativeInventoryAction(int slot, ItemType item, int count, Dictionary<string, object> NBT)
         {
             return false; //Currently not implemented
         }
