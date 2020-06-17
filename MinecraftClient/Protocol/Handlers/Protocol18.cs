@@ -1493,13 +1493,13 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendCreativeInventoryAction(int slot, ItemType itemType, int count)
+        public bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> NBT)
         {
             try
             {
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetShort((short)slot));
-                packet.AddRange(dataTypes.GetItemSlot(new Item((int)itemType, count, null)));
+                packet.AddRange(dataTypes.GetItemSlot(new Item((int)itemType, count, NBT)));
                 SendPacket(PacketOutgoingType.CreativeInventoryAction, packet);
                 return true;
             }
