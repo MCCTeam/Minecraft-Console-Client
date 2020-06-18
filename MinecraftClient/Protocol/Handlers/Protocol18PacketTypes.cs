@@ -360,7 +360,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x10;
                     case PacketOutgoingType.Animation: return 0x0A;
                     case PacketOutgoingType.PlayerDigging: return 0x07;
-                    case PacketOutgoingType.BlockAction: return 0x24;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1,10 and 1.11
@@ -387,7 +386,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x18;
                     case PacketOutgoingType.Animation: return 0x1A;
                     case PacketOutgoingType.PlayerDigging: return 0x13;
-                    case PacketOutgoingType.BlockAction: return 0x0A;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12
@@ -414,7 +412,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x1B;
                     case PacketOutgoingType.Animation: return 0x1D;
                     case PacketOutgoingType.PlayerDigging: return 0x14;
-                    case PacketOutgoingType.BlockAction: return 0x0A;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1122Version) // 1.12.2
@@ -441,7 +438,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x1B;
                     case PacketOutgoingType.Animation: return 0x1D;
                     case PacketOutgoingType.PlayerDigging: return 0x14;
-                    case PacketOutgoingType.BlockAction: return 0x0A;
                 }
             }
             else if (protocol < Protocol18Handler.MC114Version) // MC 1.13 to 1.13.2
@@ -468,7 +464,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x24;
                     case PacketOutgoingType.Animation: return 0x27;
                     case PacketOutgoingType.PlayerDigging: return 0x18;
-                    case PacketOutgoingType.BlockAction: return 0x0A;
                 }
             }
             else // MC 1.14 to 1.15
@@ -495,7 +490,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x26;
                     case PacketOutgoingType.Animation: return 0x2A;
                     case PacketOutgoingType.PlayerDigging: return 0x1A;
-                    case PacketOutgoingType.BlockAction: return 0x0B;
                 }
             }
 
