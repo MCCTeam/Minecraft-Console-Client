@@ -1284,7 +1284,13 @@ namespace MinecraftClient
             Entity playerEntity = new Entity(entityID, EntityType.Player, location, uuid, playerName);
             OnSpawnEntity(playerEntity);
         }
-
+        
+        public void OnEntityEquipment(int entityid, int slot, Item item)
+        {
+            foreach (ChatBot bot in bots.ToArray())
+                bot.OnEntityEquipment(entityid, slot, item);
+        }
+        
         /// <summary>
         /// Called when the Game Mode has been updated for a player
         /// </summary>
