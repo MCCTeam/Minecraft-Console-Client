@@ -57,6 +57,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x17: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x20: return PacketIncomingType.EntityProperties;
                     case 0x18: return PacketIncomingType.EntityTeleport;
+                    case 0x12: return PacketIncomingType.EntityVelocity;
+                    case 0x13: return PacketIncomingType.EntityEquipment;
                     case 0x03: return PacketIncomingType.TimeUpdate;
                     case 0x06: return PacketIncomingType.UpdateHealth;
                     case 0x1F: return PacketIncomingType.SetExperience;
@@ -99,6 +101,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x26: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x4A: return PacketIncomingType.EntityProperties;
                     case 0x49: return PacketIncomingType.EntityTeleport;
+                    case 0x3B: return PacketIncomingType.EntityVelocity;
+                    case 0x3C: return PacketIncomingType.EntityEquipment;
                     case 0x44: return PacketIncomingType.TimeUpdate;
                     case 0x3E: return PacketIncomingType.UpdateHealth;
                     case 0x3D: return PacketIncomingType.SetExperience;
@@ -141,6 +145,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x27: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x4D: return PacketIncomingType.EntityProperties;
                     case 0x4B: return PacketIncomingType.EntityTeleport;
+                    case 0x3D: return PacketIncomingType.EntityVelocity;
+                    case 0x3E: return PacketIncomingType.EntityEquipment;
                     case 0x46: return PacketIncomingType.TimeUpdate;
                     case 0x40: return PacketIncomingType.UpdateHealth;
                     case 0x3F: return PacketIncomingType.SetExperience;
@@ -183,6 +189,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x27: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x4E: return PacketIncomingType.EntityProperties;
                     case 0x4C: return PacketIncomingType.EntityTeleport;
+                    case 0x3E: return PacketIncomingType.EntityVelocity;
+                    case 0x3F: return PacketIncomingType.EntityEquipment;
                     case 0x47: return PacketIncomingType.TimeUpdate;
                     case 0x41: return PacketIncomingType.UpdateHealth;
                     case 0x40: return PacketIncomingType.SetExperience;
@@ -225,6 +233,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x29: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x52: return PacketIncomingType.EntityProperties;
                     case 0x50: return PacketIncomingType.EntityTeleport;
+                    case 0x41: return PacketIncomingType.EntityVelocity;
+                    case 0x42: return PacketIncomingType.EntityEquipment;
                     case 0x4A: return PacketIncomingType.TimeUpdate;
                     case 0x44: return PacketIncomingType.UpdateHealth;
                     case 0x43: return PacketIncomingType.SetExperience;
@@ -267,9 +277,11 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x29: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x58: return PacketIncomingType.EntityProperties;
                     case 0x56: return PacketIncomingType.EntityTeleport;
+                    case 0x46: return PacketIncomingType.EntityVelocity;
+                    case 0x46: return PacketIncomingType.EntityEquipment;
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     case 0x48: return PacketIncomingType.UpdateHealth;
-                    case 0x47: return PacketIncomingType.SetExperience;
+                    case 0x45: return PacketIncomingType.SetExperience;
                     case 0x3F: return PacketIncomingType.HeldItemChange;
                     case 0x1C: return PacketIncomingType.Explosion;
                     case 0x26: return PacketIncomingType.MapData;
@@ -309,6 +321,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x2A: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x59: return PacketIncomingType.EntityProperties;
                     case 0x57: return PacketIncomingType.EntityTeleport;
+                    case 0x46: return PacketIncomingType.EntityVelocity;
+                    case 0x47: return PacketIncomingType.EntityEquipment;
                     case 0x4F: return PacketIncomingType.TimeUpdate;
                     case 0x49: return PacketIncomingType.UpdateHealth;
                     case 0x48: return PacketIncomingType.SetExperience;
@@ -360,6 +374,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x10;
                     case PacketOutgoingType.Animation: return 0x0A;
                     case PacketOutgoingType.PlayerDigging: return 0x07;
+                    case PacketOutgoingType.UpdateSign: return 0x12;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1,10 and 1.11
@@ -386,6 +401,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x18;
                     case PacketOutgoingType.Animation: return 0x1A;
                     case PacketOutgoingType.PlayerDigging: return 0x13;
+                    case PacketOutgoingType.UpdateSign: return 0x19;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12
@@ -412,6 +428,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x1B;
                     case PacketOutgoingType.Animation: return 0x1D;
                     case PacketOutgoingType.PlayerDigging: return 0x14;
+                    case PacketOutgoingType.UpdateSign: return 0x1C;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1122Version) // 1.12.2
@@ -438,6 +455,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x1B;
                     case PacketOutgoingType.Animation: return 0x1D;
                     case PacketOutgoingType.PlayerDigging: return 0x14;
+                    case PacketOutgoingType.UpdateSign: return 0x1C;
                 }
             }
             else if (protocol < Protocol18Handler.MC114Version) // MC 1.13 to 1.13.2
@@ -464,6 +482,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x24;
                     case PacketOutgoingType.Animation: return 0x27;
                     case PacketOutgoingType.PlayerDigging: return 0x18;
+                    case PacketOutgoingType.UpdateSign: return 0x26;
                 }
             }
             else // MC 1.14 to 1.15
@@ -490,6 +509,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.CreativeInventoryAction: return 0x26;
                     case PacketOutgoingType.Animation: return 0x2A;
                     case PacketOutgoingType.PlayerDigging: return 0x1A;
+                    case PacketOutgoingType.UpdateSign: return 0x29;
                 }
             }
 
