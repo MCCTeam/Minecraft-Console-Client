@@ -144,10 +144,10 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Called when an entity has spawned
         /// </summary>
-        /// <param name="entity">Entity</param>
+        /// <param name="entityid">Entity id</param>
         /// <param name="slot">Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)/param>
         /// <param name="item">Item/param>
-        void OEntityEquipment(Entity entity, int slot, Item item);
+        void OnEntityEquipment(int entityid, int slot, Item item);
         
         /// <summary>
         /// Called when a player spawns or enters the client's render distance
