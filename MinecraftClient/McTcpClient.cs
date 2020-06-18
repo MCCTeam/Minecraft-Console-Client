@@ -1291,13 +1291,15 @@ namespace MinecraftClient
             {
                 try
                 {
-                    bot.OnEntityEquipment(entityid, slot, item);
+                    if (entities.ContainsKey(entityid))
+                        bot.OnEntityEquipment(entities[entityid], slot, item);
                 }
                 catch (Exception e)
                 {
                     try
                     {
-                        bot.OnEntityEquipment(entityid, slot, new Item(0, 0, null));
+                        if (entities.ContainsKey(entityid))
+                            bot.OnEntityEquipment(entities[entityid], slot, new Item(0, 0, null));
                     }
                     catch (Exception e2)
                     {
