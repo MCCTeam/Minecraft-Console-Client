@@ -43,6 +43,8 @@ namespace MinecraftClient.Protocol.Handlers
         EntityPositionAndRotation,
         EntityProperties,
         EntityTeleport,
+        EntityEquipment,
+        EntityVelocity,
         TimeUpdate,
         UpdateHealth,
         SetExperience,
