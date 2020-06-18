@@ -1288,7 +1288,20 @@ namespace MinecraftClient
         public void OnEntityEquipment(int entityid, int slot, Item item)
         {
             foreach (ChatBot bot in bots.ToArray())
-                bot.OnEntityEquipment(entityid, slot, item);
+            {
+                try
+                {
+                    bot.OnEntityEquipment(entityid, slot, item);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnEntityEquipment: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
         }
         
         /// <summary>
