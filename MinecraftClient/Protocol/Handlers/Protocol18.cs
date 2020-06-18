@@ -658,6 +658,15 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnSpawnEntity(entity);
                         }
                         break;
+                    case PacketIncomingType.EntityEquipment:
+                            if (handler.GetEntityHandlingEnabled())
+                            {
+                                int entityid = dataTypes.ReadNextVarInt(packetData);
+                                int slot2 = dataTypes.ReadNextVarInt(packetData);
+                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                handler.OnEntityEquipment(entityid, slot2, item);
+                            }
+                            break;
                     case PacketIncomingType.SpawnLivingEntity:
                         if (handler.GetEntityHandlingEnabled())
                         {
