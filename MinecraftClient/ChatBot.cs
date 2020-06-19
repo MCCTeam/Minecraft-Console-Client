@@ -1060,6 +1060,15 @@ namespace MinecraftClient
         {
             return Handler.ClearInventories();
         }
+        
+        /// <summary>
+        /// Update sign text
+        /// </summary>
+        /// <param name="location"> sign location</param>
+        /// <param name="line1"> text one</param>
+        /// <param name="line2"> text two</param>
+        /// <param name="line3"> text three</param>
+        /// <param name="line4"> text1 four</param>
         protected bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
             return Handler.UpdateSign(location, line1, line2, line3, line4);
