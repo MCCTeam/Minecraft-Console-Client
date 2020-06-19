@@ -978,7 +978,7 @@ namespace MinecraftClient
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
         /// <returns>TRUE if item given successfully</returns>
-        protected bool CreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> NBT)
+        protected bool CreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> NBT = null)
         {
             return Handler.DoCreativeGive(slot, itemType, count, NBT);
         }
