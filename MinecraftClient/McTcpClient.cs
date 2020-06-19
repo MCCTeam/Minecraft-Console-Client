@@ -1296,11 +1296,19 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (!(e2 is ThreadAbortException))
+                    try
                     {
-                        ConsoleIO.WriteLogLine("OnEntityEquipment: Got error from " + bot.ToString() + ": " + e.ToString());
+                        if (entities.ContainsKey(entityid))
+                         bot.OnEntityEquipment(entityid, slot, new Item(0, 0, null));
                     }
-                    else throw; //ThreadAbortException should not be caught
+                    catch (Exception e)
+                    {
+                        if (!(e2 is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnEntityEquipment: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
                 }
             }
         }
