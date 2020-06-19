@@ -230,7 +230,26 @@ namespace MinecraftClient
         /// <param name="locked"></param>
         /// <param name="iconcount"></param>
         public virtual void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount) { }
+        
+        /// <summary>
+        /// Called title event
+        /// </summary>
+        /// <param name="action"> 0 = set title, 1 = set subtitle, 3 = set action bar, 4 = set times and display, 4 = hide, 5 = reset</param>
+        /// <param name="titletext"> title text</param>
+        /// <param name="subtitletext"> suntitle text</param>
+        /// <param name="actionbartext"> action bar text</param>
+        /// <param name="fadein"> Fade In</param>
+        /// <param name="stay"> Stay</param>
+        /// <param name="fadeout"> Fade Out</param>
+        /// <param name="json"> json text</param>
         public virtual void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json) { }
+
+        /// <summary>
+        /// Called on Entity Equipment
+        /// </summary>
+        /// <param name="entity"> Entity</param>
+        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
+        /// <param name="item"> Item)</param>
         public virtual void OnEntityEquipment(Entity entity, int slot, Item item) { }
 
         /* =================================================================== */
