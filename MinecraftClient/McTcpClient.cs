@@ -1840,6 +1840,17 @@ namespace MinecraftClient
                 }
             }
         }
+        
+        /// <summary>
+        /// Received some Title from the server
+        /// <param name="action"> 0 = set title, 1 = set subtitle, 3 = set action bar, 4 = set times and display, 4 = hide, 5 = reset</param>
+        /// <param name="titletext"> title text</param>
+        /// <param name="subtitletext"> suntitle text</param>
+        /// <param name="actionbartext"> action bar text</param>
+        /// <param name="fadein"> Fade In</param>
+        /// <param name="stay"> Stay</param>
+        /// <param name="fadeout"> Fade Out</param>
+        /// <param name="json"> json text</param>
         public void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json)
         {
             foreach (ChatBot bot in bots.ToArray())
