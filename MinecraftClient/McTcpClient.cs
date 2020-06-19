@@ -1866,6 +1866,15 @@ namespace MinecraftClient
                 }
             }
         }
+        
+        /// <summary>
+        /// Update sign text
+        /// </summary>
+        /// <param name="location"> sign location</param>
+        /// <param name="line1"> text one</param>
+        /// <param name="line2"> text two</param>
+        /// <param name="line3"> text three</param>
+        /// <param name="line4"> text1 four</param>
         public bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
             if (line1.Length <= 23 & line2.Length <= 23 & line3.Length <= 23 & line4.Length <= 23)
