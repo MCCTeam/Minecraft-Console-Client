@@ -232,8 +232,7 @@ namespace MinecraftClient
         public virtual void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount) { }
         
         /// <summary>
-        /// Called title event
-        /// </summary>
+        /// Received some Title from the server
         /// <param name="action"> 0 = set title, 1 = set subtitle, 3 = set action bar, 4 = set times and display, 4 = hide, 5 = reset</param>
         /// <param name="titletext"> title text</param>
         /// <param name="subtitletext"> suntitle text</param>
