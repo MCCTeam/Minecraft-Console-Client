@@ -1552,8 +1552,9 @@ namespace MinecraftClient
         /// <param name="slot">Destination inventory slot</param>
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
+        /// <param name="NBT">Item NBT</param>
         /// <returns>TRUE if item given successfully</returns>
-        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> NBT)
+        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> NBT = null)
         {
             return handler.SendCreativeInventoryAction(slot, itemType, count, NBT);
         }
