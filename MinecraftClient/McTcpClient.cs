@@ -1613,29 +1613,30 @@ namespace MinecraftClient
         /// Place the block at hand in the Minecraft world
         /// </summary>
         /// <param name="location">Location to place block to</param>
+        /// <param name="blockface">Block face</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool PlaceBlock(Location location, int face)
+        public bool PlaceBlock(Location location, int blockface)
         {
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(location.ToString());
             Location placelocation;
-            if (face == 1)
+            if (blockface == 1)
             {
                 placelocation = new Location(location.X, location.Y - 1, location.Z);
             }
-            else if (face == 2)
+            else if (blockface == 2)
             {
                 placelocation = new Location(location.X, location.Y, location.Z + 1);
             }
-            else if (face == 3)
+            else if (blockface == 3)
             {
                 placelocation = new Location(location.X, location.Y, location.Z - 1);
             }
-            else if (face == 4)
+            else if (blockface == 4)
             {
                 placelocation = new Location(location.X + 1, location.Y, location.Z);
             }
-            else if (face == 5)
+            else if (blockface == 5)
             {
                 placelocation = new Location(location.X - 1, location.Y, location.Z);
             }
@@ -1643,7 +1644,7 @@ namespace MinecraftClient
             {
                 placelocation = location;
             }
-            return handler.SendPlayerBlockPlacement(0, placelocation, face, 0.5f, 0.5f, 0.5f, false);
+            return handler.SendPlayerBlockPlacement(0, placelocation, blockface, 0.5f, 0.5f, 0.5f, false);
         }
 
         /// <summary>
