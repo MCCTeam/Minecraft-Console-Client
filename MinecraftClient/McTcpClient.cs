@@ -1797,7 +1797,7 @@ namespace MinecraftClient
         }
         
         /// <summary>
-        /// Called when OnHeldItemChange
+        /// Called when held item change
         /// </summary>
         /// <param name="slot"> item slot</param>
         public void OnHeldItemChange(byte slot)
