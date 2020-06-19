@@ -1285,6 +1285,12 @@ namespace MinecraftClient
             OnSpawnEntity(playerEntity);
         }
         
+        /// <summary>
+        /// Called on Entity Equipment
+        /// </summary>
+        /// <param name="entityid"> Entity ID</param>
+        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
+        /// <param name="item"> Item)</param>
         public void OnEntityEquipment(int entityid, int slot, Item item)
         {
             foreach (ChatBot bot in bots.ToArray())
@@ -1299,9 +1305,9 @@ namespace MinecraftClient
                     try
                     {
                         if (entities.ContainsKey(entityid))
-                         bot.OnEntityEquipment(entityid, slot, new Item(0, 0, null));
+                            bot.OnEntityEquipment(entities[entityid], slot, new Item(0, 0, null));
                     }
-                    catch (Exception e)
+                    catch (Exception e2)
                     {
                         if (!(e2 is ThreadAbortException))
                         {
