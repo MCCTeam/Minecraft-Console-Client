@@ -1868,7 +1868,9 @@ namespace MinecraftClient
         }
         public bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
-            return handler.SendUpdateSign(location, line1, line2, line3, line4);
+            if (line1.Length <= 23 & line2.Length <= 23 & line3.Length <= 23 & line4.Length <= 23)
+                return handler.SendUpdateSign(location, line1, line2, line3, line4);
+            else { return false; }
         }
     }
 }
