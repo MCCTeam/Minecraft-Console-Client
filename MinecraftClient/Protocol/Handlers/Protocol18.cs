@@ -664,8 +664,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 int entityid = dataTypes.ReadNextVarInt(packetData);
                                 int slot2 = dataTypes.ReadNextVarInt(packetData);
                                 Item item = dataTypes.ReadNextItemSlot(packetData);
-                                if (item.IsEmpty)
-                                    item = new Item(0, 0, null);
                                 handler.OnEntityEquipment(entityid, slot2, item);
                             }
                             break;
