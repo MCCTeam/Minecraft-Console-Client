@@ -1797,11 +1797,9 @@ namespace MinecraftClient
         }
         
         /// <summary>
-        /// Called when Experience bar is updated
+        /// Called when OnHeldItemChange
         /// </summary>
-        /// <param name="Experiencebar">Experience bar level</param>
-        /// <param name="Level">Player Level</param>
-        /// <param name="TotalExperience">Total experience</param>
+        /// <param name="slot"> item slot</param>
         public void OnHeldItemChange(byte slot)
         {
             foreach (ChatBot bot in bots.ToArray())
