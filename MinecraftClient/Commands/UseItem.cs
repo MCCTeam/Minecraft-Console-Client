@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "useitem"; } }
         public override string CMDDesc { get { return "useitem: Use (left click) an item on the hand"; } }
 
-        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
             if (handler.GetInventoryEnabled())
             {

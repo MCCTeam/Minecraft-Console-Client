@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "useblock"; } }
         public override string CMDDesc { get { return "useblock <x> <y> <z>: use block"; } }
 
-        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
             if (!handler.GetTerrainEnabled()) return "Please enable TerrainHandling in the config file first.";
             if (hasArg(command))

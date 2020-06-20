@@ -32,15 +32,15 @@ namespace MinecraftClient
         public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost, UserLogout };
 
         //Handler will be automatically set on bot loading, don't worry about this
-        public void SetHandler(McTcpClient handler) { this._handler = handler; }
+        public void SetHandler(McClient handler) { this._handler = handler; }
         protected void SetMaster(ChatBot master) { this.master = master; }
         protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
-        private McTcpClient _handler = null;
+        private McClient _handler = null;
         private ChatBot master = null;
         private List<string> registeredPluginChannels = new List<String>();
         private Queue<string> chatQueue = new Queue<string>();
         private DateTime lastMessageSentTime = DateTime.MinValue;
-        private McTcpClient Handler
+        private McClient Handler
         {
             get
             {
@@ -657,7 +657,7 @@ namespace MinecraftClient
         {
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
-            McTcpClient.ReconnectionAttemptsLeft = ExtraAttempts;
+            McClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart(delaySeconds);
         }
 

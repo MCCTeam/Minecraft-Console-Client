@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "health"; } }
         public override string CMDDesc { get { return "health: Display Health and Food saturation."; } }
 
-        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
             return "Health: " + handler.GetHealth() + ", Saturation: " + handler.GetSaturation() + ", Level: " + handler.GetLevel() + ", TotalExperience: " + handler.GetTotalExperience();
         }

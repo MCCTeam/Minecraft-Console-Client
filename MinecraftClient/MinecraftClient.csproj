@@ -255,7 +255,7 @@
     <Compile Include="Crypto\IAesStream.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="McTcpClient.cs" />
+    <Compile Include="McClient.cs" />
     <Compile Include="Protocol\Handlers\Compression\ZlibStream.cs" />
     <Compile Include="Protocol\Handlers\Protocol18.cs" />
     <Compile Include="Protocol\Handlers\Protocol16.cs" />

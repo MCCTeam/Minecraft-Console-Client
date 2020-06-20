@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "changeslot"; } }
         public override string CMDDesc { get { return "changeslot <1-9>: Change hotbar"; } }
 
-        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
             if (!handler.GetInventoryEnabled()) return "Please enable InventoryHandling in the config file first.";
             if (hasArg(command))

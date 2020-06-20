@@ -18,7 +18,7 @@ namespace MinecraftClient
     /// <summary>
     /// The main client class, used to connect to a Minecraft server.
     /// </summary>
-    public class McTcpClient : IMinecraftComHandler
+    public class McClient : IMinecraftComHandler
     {
         public static int ReconnectionAttemptsLeft = 0;
 
@@ -111,7 +111,7 @@ namespace MinecraftClient
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        public McTcpClient(string username, string uuid, string sessionID, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
+        public McClient(string username, string uuid, string sessionID, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, false, "");
         }
@@ -126,7 +126,7 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
-        public McTcpClient(string username, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
+        public McClient(string username, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
         {
             StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, true, command);
         }
@@ -1302,7 +1302,7 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (!(e2 is ThreadAbortException))
+                    if (!(e is ThreadAbortException))
                     {
                         ConsoleIO.WriteLogLine("OnEntityEquipment: Got error from " + bot.ToString() + ": " + e.ToString());
                     }

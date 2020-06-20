@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CMDName { get { return "Sneak"; } }
         public override string CMDDesc { get { return "Sneak: Toggles sneaking"; } }
 
-        public override string Run(McTcpClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
             if (sneaking)
             {
