@@ -214,6 +214,12 @@ namespace MinecraftClient
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
         
         /// <summary>
+        /// Called when the player join
+        /// </summary>
+        /// <param name="entity">Player entity</param>
+        public virtual void OnPlayerJoin(Entity entity) { }
+        
+        /// <summary>
         /// Called when the Latency has been updated for a player
         /// </summary>
         /// <param name="playername">Player Name</param>
