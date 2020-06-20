@@ -1015,52 +1015,22 @@ namespace MinecraftClient
         /// Place the block at hand in the Minecraft world
         /// </summary>
         /// <param name="location">Location to place block to</param>
-        /// <param name="blockface">Block face</param>
+        /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool PlaceBlock(Location location, int blockface)
+        public bool PlaceBlock(Location location, Direction blockFace)
         {
-            if (Settings.DebugMessages)
-                ConsoleIO.WriteLogLine(location.ToString());
-            Location placelocation;
-            if (blockface == 1)
-            {
-                placelocation = new Location(location.X, location.Y - 1, location.Z);
-            }
-            else if (blockface == 2)
-            {
-                placelocation = new Location(location.X, location.Y, location.Z + 1);
-            }
-            else if (blockface == 3)
-            {
-                placelocation = new Location(location.X, location.Y, location.Z - 1);
-            }
-            else if (blockface == 4)
-            {
-                placelocation = new Location(location.X + 1, location.Y, location.Z);
-            }
-            else if (blockface == 5)
-            {
-                placelocation = new Location(location.X - 1, location.Y, location.Z);
-            }
-            else
-            {
-                placelocation = location;
-            }
-            return handler.SendPlayerBlockPlacement(0, placelocation, blockface, 0.5f, 0.5f, 0.5f, false);
+            return handler.SendPlayerBlockPlacement(0, location, blockFace);
         }
 
         /// <summary>
-        /// Dig block - WORK IN PROGRESS - MAY NOT WORK YET
+        /// Dig block. This method needs to be called at least twice: Once to begin digging, then a second time to finish digging
         /// </summary>
-        /// <param name="status"></param>
-        /// <param name="location"></param>
-        /// <param name="face"></param>
-        public bool DigBlock(int status, Location location, byte Face)
+        /// <param name="status">0 to start digging, 1 to cancel, 2 to finish ( https://wiki.vg/Protocol#Player_Digging )</param>
+        /// <param name="location">Location of block to dig</param>
+        /// <param name="blockFace">Block face (e.g. Direction.Up when digging from above)</param>
+        public bool DigBlock(int status, Location location, Direction blockFace)
         {
-            if (Settings.DebugMessages)
-                ConsoleIO.WriteLogLine(location.ToString());
-            Location placelocation = new Location(location.X, location.Y, location.Z);
-            return handler.SendPlayerDigging(status, placelocation, 1);
+            return handler.SendPlayerDigging(status, location, blockFace);
         }
 
         /// <summary>

@@ -745,14 +745,14 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Dig block - WORK IN PROGRESS - MAY NOT WORK
+        /// Dig block
         /// </summary>
-        /// <param name="status"></param>
-        /// <param name="location"></param>
-        /// <param name="face"></param>
-        protected void DigBlock(int status, Location location, byte face)
+        /// <param name="status">0 to start digging, 1 to cancel, 2 to finish ( https://wiki.vg/Protocol#Player_Digging )</param>
+        /// <param name="location">Location</param>
+        /// <param name="face">Block face</param>
+        protected void DigBlock(int status, Location location, Direction blockFace)
         {
-            Handler.DigBlock(status, location, face);
+            Handler.DigBlock(status, location, blockFace);
         }
 
         /// <summary>
@@ -1015,9 +1015,9 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Block location</param>
         /// <returns></returns>
-        protected bool SendPlaceBlock(Location location, int face)
+        protected bool SendPlaceBlock(Location location, Direction blockFace)
         {
-            return Handler.PlaceBlock(location, face);
+            return Handler.PlaceBlock(location, blockFace);
         }
 
         /// <summary>

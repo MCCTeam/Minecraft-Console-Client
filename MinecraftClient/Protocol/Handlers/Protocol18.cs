@@ -1390,15 +1390,14 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
         
-        public bool SendPlayerDigging(int status, Location location, byte face)
+        public bool SendPlayerDigging(int status, Location location, Direction face)
         {
             try
             {
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetVarInt(status));
                 packet.AddRange(dataTypes.GetLocation(location));
-                packet.AddRange(dataTypes.GetVarInt(face));
-
+                packet.AddRange(dataTypes.GetVarInt(dataTypes.GetBlockFace(face)));
                 SendPacket(PacketOutgoingType.PlayerDigging, packet);
                 return true;
             }
@@ -1406,8 +1405,8 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-        
-        public bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock)
+
+        public bool SendPlayerBlockPlacement(int hand, Location location, Direction face)
         {
             if (protocolversion < MC114Version)
                 return false; // NOT IMPLEMENTED for older MC versions
@@ -1416,12 +1415,11 @@ namespace MinecraftClient.Protocol.Handlers
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetVarInt(hand));
                 packet.AddRange(dataTypes.GetLocation(location));
-                packet.AddRange(dataTypes.GetVarInt(face));
-                packet.AddRange(dataTypes.GetFloat(CursorX));
-                packet.AddRange(dataTypes.GetFloat(CursorY));
-                packet.AddRange(dataTypes.GetFloat(CursorZ));
-                packet.Add(Convert.ToByte(insideBlock ? 1 : 0));
-
+                packet.AddRange(dataTypes.GetVarInt(dataTypes.GetBlockFace(face)));
+                packet.AddRange(dataTypes.GetFloat(0.5f)); // cursorX
+                packet.AddRange(dataTypes.GetFloat(0.5f)); // cursorY
+                packet.AddRange(dataTypes.GetFloat(0.5f)); // cursorZ
+                packet.Add(0); // insideBlock = false;
                 SendPacket(PacketOutgoingType.PlayerBlockPlacement, packet);
                 return true;
             }

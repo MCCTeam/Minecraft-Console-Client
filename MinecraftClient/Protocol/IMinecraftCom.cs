@@ -179,21 +179,27 @@ namespace MinecraftClient.Protocol
         /// <param name="hand">0: main hand, 1: off hand</param>
         /// <param name="location">Location to place block at</param>
         /// <param name="face">Block face</param>
-        /// <param name="CursorX">Cursor X</param>
-        /// <param name="CursorY">Cursor Y</param>
-        /// <param name="CursorZ">Cursor Z</param>
-        /// <param name="insideBlock">TRUE if inside block</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock);
+        bool SendPlayerBlockPlacement(int hand, Location location, Direction face);
 
         /// <summary>
         /// Send player blog digging packet to the server
         /// </summary>
-        /// <param name="status">0 to start diffing, 1 to cancel, 2 to finish ( https://wiki.vg/Protocol#Player_Digging )</param>
+        /// <param name="status">0 to start digging, 1 to cancel, 2 to finish ( https://wiki.vg/Protocol#Player_Digging )</param>
         /// <param name="location">Location</param>
-        /// <param name="face">Block face: 0 = bottom, 1 = top, etc (see wiki)</param>
+        /// <param name="face">Block face</param>
         /// <returns>True if packet was succcessfully sent</returns>
-        bool SendPlayerDigging(int status, Location location, byte face);
+        bool SendPlayerDigging(int status, Location location, Direction face);
+
+        /// <summary>
+        /// Change text on a sign
+        /// </summary>
+        /// <param name="location">Location of Sign block</param>
+        /// <param name="line1">New line 1</param>
+        /// <param name="line2">New line 2</param>
+        /// <param name="line3">New line 3</param>
+        /// <param name="line4">New line 4</param>
+        /// <returns>True if packet was succcessfully sent</returns>
         bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4);
     }
 }

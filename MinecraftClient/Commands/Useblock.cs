@@ -22,7 +22,7 @@ namespace MinecraftClient.Commands
                     int x = Convert.ToInt32(args[0]);
                     int y = Convert.ToInt32(args[1]);
                     int z = Convert.ToInt32(args[2]);
-                    handler.PlaceBlock(new Location(x, y, z), 0);
+                    handler.PlaceBlock(new Location(x, y, z), Direction.Down);
                 }
                 else { return CMDDesc;  }
             }

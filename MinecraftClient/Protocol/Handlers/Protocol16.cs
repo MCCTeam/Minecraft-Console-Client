@@ -713,7 +713,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendPlayerBlockPlacement(int hand, Location location, int face, float CursorX, float CursorY, float CursorZ, bool insideBlock)
+        public bool SendPlayerBlockPlacement(int hand, Location location, Direction face)
         {
             return false; //Currently not implemented
         }
@@ -723,7 +723,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendPlayerDigging(int status, Location location, byte face)
+        public bool SendPlayerDigging(int status, Location location, Direction face)
         {
             return false; //Currently not implemented
         }

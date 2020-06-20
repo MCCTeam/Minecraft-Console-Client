@@ -829,6 +829,25 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Get protocol block face from Direction
+        /// </summary>
+        /// <param name="direction">Direction</param>
+        /// <returns>Block face byte enum</returns>
+        public byte GetBlockFace(Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.Down: return 0;
+                case Direction.Up: return 1;
+                case Direction.North: return 2;
+                case Direction.South: return 3;
+                case Direction.West: return 4;
+                case Direction.East: return 5;
+                default: throw new NotImplementedException("Unknown direction: " + direction.ToString());
+            }
+        }
+
+        /// <summary>
         /// Easily append several byte arrays
         /// </summary>
         /// <param name="bytes">Bytes to append</param>
