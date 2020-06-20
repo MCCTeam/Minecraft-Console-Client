@@ -953,11 +953,11 @@ namespace MinecraftClient
         /// <param name="slot">Destination inventory slot</param>
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
-        /// <param name="NBT">Item NBT</param>
+        /// <param name="nbt">Item NBT</param>
         /// <returns>TRUE if item given successfully</returns>
-        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> NBT = null)
+        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> nbt = null)
         {
-            return handler.SendCreativeInventoryAction(slot, itemType, count, NBT);
+            return handler.SendCreativeInventoryAction(slot, itemType, count, nbt);
         }
 
         /// <summary>
@@ -1023,14 +1023,25 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Dig block. This method needs to be called at least twice: Once to begin digging, then a second time to finish digging
+        /// Attempt to dig a block at the specified location
         /// </summary>
-        /// <param name="status">0 to start digging, 1 to cancel, 2 to finish ( https://wiki.vg/Protocol#Player_Digging )</param>
         /// <param name="location">Location of block to dig</param>
-        /// <param name="blockFace">Block face (e.g. Direction.Up when digging from above)</param>
-        public bool DigBlock(int status, Location location, Direction blockFace)
+        public bool DigBlock(Location location)
         {
-            return handler.SendPlayerDigging(status, location, blockFace);
+            if (GetTerrainEnabled())
+            {
+                // TODO select best face from current player location
+                Direction blockFace = Direction.Down;
+
+                // Look at block before attempting to break it
+                UpdateLocation(GetCurrentLocation(), location);
+
+                // Send dig start and dig end, will need to wait for server response to know dig result
+                // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
+                return handler.SendPlayerDigging(0, location, blockFace)
+                    && handler.SendPlayerDigging(2, location, blockFace);
+            }
+            else return false;
         }
 
         /// <summary>
@@ -1045,25 +1056,21 @@ namespace MinecraftClient
                 CurrentSlot = Convert.ToByte(slot);
                 return handler.SendHeldItemChange(slot);
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         /// <summary>
         /// Update sign text
         /// </summary>
-        /// <param name="location"> sign location</param>
-        /// <param name="line1"> text one</param>
-        /// <param name="line2"> text two</param>
-        /// <param name="line3"> text three</param>
-        /// <param name="line4"> text1 four</param>
+        /// <param name="location">sign location</param>
+        /// <param name="line1">text one</param>
+        /// <param name="line2">text two</param>
+        /// <param name="line3">text three</param>
+        /// <param name="line4">text1 four</param>
         public bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
-            if (line1.Length <= 23 & line2.Length <= 23 & line3.Length <= 23 & line4.Length <= 23)
-                return handler.SendUpdateSign(location, line1, line2, line3, line4);
-            else { return false; }
+            // TODO Open sign editor first https://wiki.vg/Protocol#Open_Sign_Editor
+            return handler.SendUpdateSign(location, line1, line2, line3, line4);
         }
 
         #endregion

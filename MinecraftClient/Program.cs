@@ -27,7 +27,7 @@ namespace MinecraftClient
     /// </remarks>
     static class Program
     {
-        private static McClient Client;
+        private static McClient client;
         public static string[] startupargs;
 
         public const string Version = MCHighestVersion;
@@ -264,9 +264,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            Client = new McClient(session.PlayerName, session.PlayerID, session.ID, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
+                            client = new McClient(session.PlayerName, session.PlayerID, session.ID, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
                         }
-                        else Client = new McClient(session.PlayerName, session.PlayerID, session.ID, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
+                        else client = new McClient(session.PlayerName, session.PlayerID, session.ID, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")
@@ -309,7 +309,7 @@ namespace MinecraftClient
         {
             new Thread(new ThreadStart(delegate
             {
-                if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
+                if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
                 if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (delaySeconds > 0)
                 {
@@ -328,7 +328,7 @@ namespace MinecraftClient
         {
             new Thread(new ThreadStart(delegate
             {
-                if (Client != null) { Client.Disconnect(); ConsoleIO.Reset(); }
+                if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
                 if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
                 Environment.Exit(0);

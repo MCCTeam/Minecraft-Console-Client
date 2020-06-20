@@ -1500,13 +1500,13 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> NBT)
+        public bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> nbt)
         {
             try
             {
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetShort((short)slot));
-                packet.AddRange(dataTypes.GetItemSlot(new Item((int)itemType, count, NBT)));
+                packet.AddRange(dataTypes.GetItemSlot(new Item((int)itemType, count, nbt)));
                 SendPacket(PacketOutgoingType.CreativeInventoryAction, packet);
                 return true;
             }
@@ -1549,6 +1549,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+
         public bool SendCloseWindow(int windowId)
         {
             try
@@ -1565,10 +1566,20 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+
         public bool SendUpdateSign(Location sign, string line1, string line2, string line3, string line4)
         {
             try
             {
+                if (line1.Length > 23)
+                    line1 = line1.Substring(0, 23);
+                if (line2.Length > 23)
+                    line2 = line1.Substring(0, 23);
+                if (line3.Length > 23)
+                    line3 = line1.Substring(0, 23);
+                if (line4.Length > 23)
+                    line4 = line1.Substring(0, 23);
+
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetLocation(sign));
                 packet.AddRange(dataTypes.GetString(line1));

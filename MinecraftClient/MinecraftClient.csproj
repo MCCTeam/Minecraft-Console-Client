@@ -93,6 +93,7 @@
     <Compile Include="Commands\ChangeSlot.cs" />
     <Compile Include="Commands\Connect.cs" />
     <Compile Include="Commands\Debug.cs" />
+    <Compile Include="Commands\Dig.cs" />
     <Compile Include="Commands\Inventory.cs" />
     <Compile Include="Commands\Look.cs" />
     <Compile Include="Commands\Move.cs" />

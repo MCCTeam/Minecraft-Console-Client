@@ -156,8 +156,9 @@ namespace MinecraftClient.Protocol
         /// <param name="slot">Destination inventory slot</param>
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
+        /// <param name="nbt">Optional item NBT</param>
         /// <returns>TRUE if item given successfully</returns>
-        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> NBT);
+        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> nbt);
 
         /// <summary>
         /// Plays animation
@@ -183,7 +184,7 @@ namespace MinecraftClient.Protocol
         bool SendPlayerBlockPlacement(int hand, Location location, Direction face);
 
         /// <summary>
-        /// Send player blog digging packet to the server
+        /// Send player blog digging packet to the server. This packet needs to be called at least twice: Once to begin digging, then a second time to finish digging
         /// </summary>
         /// <param name="status">0 to start digging, 1 to cancel, 2 to finish ( https://wiki.vg/Protocol#Player_Digging )</param>
         /// <param name="location">Location</param>

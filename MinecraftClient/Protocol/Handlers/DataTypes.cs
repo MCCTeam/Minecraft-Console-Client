@@ -336,8 +336,8 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     int itemID = ReadNextVarInt(cache);
                     byte itemCount = ReadNextByte(cache);
-                    Dictionary<string, object> NBT = ReadNextNbt(cache);
-                    return new Item(itemID, itemCount, NBT);
+                    Dictionary<string, object> nbt = ReadNextNbt(cache);
+                    return new Item(itemID, itemCount, nbt);
                 }
                 else return null;
             }
@@ -349,8 +349,8 @@ namespace MinecraftClient.Protocol.Handlers
                     return null;
                 byte itemCount = ReadNextByte(cache);
                 short itemDamage = ReadNextShort(cache);
-                Dictionary<string, object> NBT = ReadNextNbt(cache);
-                return new Item(itemID, itemCount, NBT);
+                Dictionary<string, object> nbt = ReadNextNbt(cache);
+                return new Item(itemID, itemCount, nbt);
             }
         }
 
@@ -398,14 +398,14 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         private Dictionary<string, object> ReadNextNbt(Queue<byte> cache, bool root)
         {
-            Dictionary<string, object> NbtData = new Dictionary<string, object>();
+            Dictionary<string, object> nbtData = new Dictionary<string, object>();
 
             if (root)
             {
                 if (cache.Peek() == 0) // TAG_End
                 {
                     cache.Dequeue();
-                    return NbtData;
+                    return nbtData;
                 }
                 if (cache.Peek() != 10) // TAG_Compound
                     throw new System.IO.InvalidDataException("Failed to decode NBT: Does not start with TAG_Compound");
@@ -414,7 +414,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // NBT root name
                 string rootName = Encoding.ASCII.GetString(ReadData(ReadNextUShort(cache), cache));
                 if (!String.IsNullOrEmpty(rootName))
-                    NbtData[""] = rootName;
+                    nbtData[""] = rootName;
             }
 
             while (true)
@@ -422,14 +422,14 @@ namespace MinecraftClient.Protocol.Handlers
                 int fieldType = ReadNextByte(cache);
 
                 if (fieldType == 0) // TAG_End
-                    return NbtData;
+                    return nbtData;
 
                 int fieldNameLength = ReadNextUShort(cache);
                 string fieldName = Encoding.ASCII.GetString(ReadData(fieldNameLength, cache));
                 object fieldValue = ReadNbtField(cache, fieldType);
 
                 // This will override previous tags with the same name
-                NbtData[fieldName] = fieldValue;
+                nbtData[fieldName] = fieldValue;
             }
         }
 

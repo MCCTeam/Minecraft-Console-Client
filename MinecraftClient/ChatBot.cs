@@ -745,14 +745,12 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Dig block
+        /// Attempt to dig a block at the specified location
         /// </summary>
-        /// <param name="status">0 to start digging, 1 to cancel, 2 to finish ( https://wiki.vg/Protocol#Player_Digging )</param>
         /// <param name="location">Location</param>
-        /// <param name="face">Block face</param>
-        protected void DigBlock(int status, Location location, Direction blockFace)
+        protected bool DigBlock(Location location)
         {
-            Handler.DigBlock(status, location, blockFace);
+            return Handler.DigBlock(location);
         }
 
         /// <summary>
@@ -977,9 +975,9 @@ namespace MinecraftClient
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
         /// <returns>TRUE if item given successfully</returns>
-        protected bool CreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> NBT = null)
+        protected bool CreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> nbt = null)
         {
-            return Handler.DoCreativeGive(slot, itemType, count, NBT);
+            return Handler.DoCreativeGive(slot, itemType, count, nbt);
         }
 
         /// <summary>
