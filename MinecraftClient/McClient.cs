@@ -1450,6 +1450,7 @@ namespace MinecraftClient
                 playerName = onlinePlayers[uuid];
             Entity playerEntity = new Entity(entityID, EntityType.Player, location, uuid, playerName);
             OnSpawnEntity(playerEntity);
+            DispatchBotEvent(bot => bot.OnPlayerJoin(playerEntity));
         }
 
         /// <summary>
