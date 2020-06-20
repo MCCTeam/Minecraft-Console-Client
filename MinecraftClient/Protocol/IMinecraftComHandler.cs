@@ -272,6 +272,6 @@ namespace MinecraftClient.Protocol
         /// Called when the Player entity ID has been received from the server
         /// </summary>
         /// <param name="EntityID">Player entity ID</param>
-        void SetPlayerEntityID(int EntityID);
+        void OnReceivePlayerEntityID(int EntityID);
     }
 }

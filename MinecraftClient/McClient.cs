@@ -326,7 +326,6 @@ namespace MinecraftClient
             }
             while (true);
         }
-        
 
         /// <summary>
         /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
@@ -337,7 +336,6 @@ namespace MinecraftClient
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
         public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
-            
             /* Load commands from the 'Commands' namespace */
 
             if (cmds.Count == 0)
@@ -454,479 +452,6 @@ namespace MinecraftClient
 
             if (client != null)
                 client.Close();
-        }
-
-        /// <summary>
-        /// Load a new bot
-        /// </summary>
-        public void BotLoad(ChatBot b, bool init = true)
-        {
-            b.SetHandler(this);
-            bots.Add(b);
-            if (init)
-                b.Initialize();
-            if (this.handler != null)
-                b.AfterGameJoined();
-            Settings.SingleCommand = "";
-        }
-
-        /// <summary>
-        /// Unload a bot
-        /// </summary>
-        public void BotUnLoad(ChatBot b)
-        {
-            bots.RemoveAll(item => object.ReferenceEquals(item, b));
-
-            // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
-            var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
-            foreach (var entry in botRegistrations)
-            {
-                UnregisterPluginChannel(entry.Key, b);
-            }
-        }
-
-        /// <summary>
-        /// Clear bots
-        /// </summary>
-        public void BotClear()
-        {
-            bots.Clear();
-        }
-
-        /// <summary>
-        /// Called when a server was successfully joined
-        /// </summary>
-        public void OnGameJoined()
-        {
-            if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
-                handler.SendBrandInfo(Settings.BrandInfo.Trim());
-
-            if (Settings.MCSettings_Enabled)
-                handler.SendClientSettings(
-                    Settings.MCSettings_Locale,
-                    Settings.MCSettings_RenderDistance,
-                    Settings.MCSettings_Difficulty,
-                    Settings.MCSettings_ChatMode,
-                    Settings.MCSettings_ChatColors,
-                    Settings.MCSettings_Skin_All,
-                    Settings.MCSettings_MainHand);
-
-            if (inventoryHandlingEnabled)
-            {
-                inventories.Clear();
-                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
-            }
-
-            foreach (ChatBot bot in bots.ToArray())
-            {
-                try
-                {
-                    bot.AfterGameJoined();
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        ConsoleIO.WriteLogLine("AfterGameJoined: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
-                }
-            }
-
-            if (inventoryHandlingRequested)
-            {
-                inventoryHandlingRequested = false;
-                inventoryHandlingEnabled = true;
-                ConsoleIO.WriteLogLine("Inventory handling is now enabled.");
-            }
-        }
-
-        /// <summary>
-        /// Called when the player respawns, which happens on login, respawn and world change.
-        /// </summary>
-        public void OnRespawn()
-        {
-            if (inventoryHandlingEnabled)
-            {
-                inventories.Clear();
-                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
-            }
-
-            if (terrainAndMovementsRequested)
-            {
-                terrainAndMovementsEnabled = true;
-                terrainAndMovementsRequested = false;
-                ConsoleIO.WriteLogLine("Terrain and Movements is now enabled.");
-            }
-
-            if (terrainAndMovementsEnabled)
-            {
-                world.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Get Terrain and Movements status.
-        /// </summary>
-        public bool GetTerrainEnabled()
-        {
-            return terrainAndMovementsEnabled;
-        }
-
-        /// <summary>
-        /// Get Inventory Handling Mode
-        /// </summary>
-        public bool GetInventoryEnabled()
-        {
-            return inventoryHandlingEnabled;
-        }
-
-        /// <summary>
-        /// Enable or disable Terrain and Movements.
-        /// Please note that Enabling will be deferred until next relog, respawn or world change.
-        /// </summary>
-        /// <param name="enabled">Enabled</param>
-        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
-        public bool SetTerrainEnabled(bool enabled)
-        {
-            if (enabled)
-            {
-                if (!terrainAndMovementsEnabled)
-                {
-                    terrainAndMovementsRequested = true;
-                    return false;
-                }
-            }
-            else
-            {
-                terrainAndMovementsEnabled = false;
-                terrainAndMovementsRequested = false;
-                locationReceived = false;
-                world.Clear();
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Enable or disable Inventories.
-        /// Please note that Enabling will be deferred until next relog.
-        /// </summary>
-        /// <param name="enabled">Enabled</param>
-        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
-        public bool SetInventoryEnabled(bool enabled)
-        {
-            if (enabled)
-            {
-                if (!inventoryHandlingEnabled)
-                {
-                    inventoryHandlingRequested = true;
-                    return false;
-                }
-            }
-            else
-            {
-                inventoryHandlingEnabled = false;
-                inventoryHandlingRequested = false;
-                inventories.Clear();
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Get entity handling status
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>Entity Handling cannot be enabled in runtime (or after joining server)</remarks>
-        public bool GetEntityHandlingEnabled()
-        {
-            return entityHandlingEnabled;
-        }
-
-        /// <summary>
-        /// Enable or disable Entity handling.
-        /// Please note that Enabling will be deferred until next relog.
-        /// </summary>
-        /// <param name="enabled">Enabled</param>
-        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
-        public bool SetEntityHandlingEnabled(bool enabled)
-        {
-            if (!enabled)
-            {
-                if (entityHandlingEnabled)
-                {
-                    entityHandlingEnabled = false;
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                // Entity Handling cannot be enabled in runtime (or after joining server)
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Get all inventories. ID 0 is the player inventory.
-        /// </summary>
-        /// <returns>All inventories</returns>
-        public Dictionary<int, Container> GetInventories()
-        {
-            return inventories;
-        }
-
-        /// <summary>
-        /// Get client player's inventory items
-        /// </summary>
-        /// <param name="inventoryID">Window ID of the requested inventory</param>
-        /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
-        public Container GetInventory(int inventoryID)
-        {
-            if (inventories.ContainsKey(inventoryID))
-                return inventories[inventoryID];
-            return null;
-        }
-
-        /// <summary>
-        /// Get client player's inventory items
-        /// </summary>
-        /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
-        public Container GetPlayerInventory()
-        {
-            return GetInventory(0);
-        }
-
-        /// <summary>
-        /// Called when the server sends a new player location,
-        /// or if a ChatBot whishes to update the player's location.
-        /// </summary>
-        /// <param name="location">The new location</param>
-        /// <param name="relative">If true, the location is relative to the current location</param>
-        public void UpdateLocation(Location location, bool relative)
-        {
-            lock (locationLock)
-            {
-                if (relative)
-                {
-                    this.location += location;
-                }
-                else this.location = location;
-                locationReceived = true;
-            }
-        }
-
-        /// <summary>
-        /// Called when the server sends a new player location,
-        /// or if a ChatBot whishes to update the player's location.
-        /// </summary>
-        /// <param name="location">The new location</param>
-        /// <param name="yaw">Yaw to look at</param>
-        /// <param name="pitch">Pitch to look at</param>
-        public void UpdateLocation(Location location, float yaw, float pitch)
-        {
-            this.yaw = yaw;
-            this.pitch = pitch;
-            UpdateLocation(location, false);
-        }
-
-        /// <summary>
-        /// Called when the server sends a new player location,
-        /// or if a ChatBot whishes to update the player's location.
-        /// </summary>
-        /// <param name="location">The new location</param>
-        /// <param name="lookAtLocation">Block coordinates to look at</param>
-        public void UpdateLocation(Location location, Location lookAtLocation)
-        {
-            double dx = lookAtLocation.X - (location.X - 0.5);
-            double dy = lookAtLocation.Y - (location.Y + 1);
-            double dz = lookAtLocation.Z - (location.Z - 0.5);
-
-            double r = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-
-            float yaw = Convert.ToSingle(-Math.Atan2(dx, dz) / Math.PI * 180);
-            float pitch = Convert.ToSingle(-Math.Asin(dy / r) / Math.PI * 180);
-            if (yaw < 0) yaw += 360;
-
-            UpdateLocation(location, yaw, pitch);
-        }
-
-        /// <summary>
-        /// Called when the server sends a new player location,
-        /// or if a ChatBot whishes to update the player's location.
-        /// </summary>
-        /// <param name="location">The new location</param>
-        /// <param name="direction">Direction to look at</param>
-        public void UpdateLocation(Location location, Direction direction)
-        {
-            float yaw = 0;
-            float pitch = 0;
-
-            switch (direction)
-            {
-                case Direction.Up:
-                    pitch = -90;
-                    break;
-                case Direction.Down:
-                    pitch = 90;
-                    break;
-                case Direction.East:
-                    yaw = 270;
-                    break;
-                case Direction.West:
-                    yaw = 90;
-                    break;
-                case Direction.North:
-                    yaw = 180;
-                    break;
-                case Direction.South:
-                    break;
-                default:
-                    throw new ArgumentException("Unknown direction", "direction");
-            }
-
-            UpdateLocation(location, yaw, pitch);
-        }
-
-        /// <summary>
-        /// Move to the specified location
-        /// </summary>
-        /// <param name="location">Location to reach</param>
-        /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
-        /// <param name="allowSmallTeleport">Allow non-vanilla small teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
-        /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
-        {
-            lock (locationLock)
-            {
-                if (allowSmallTeleport && location.DistanceSquared(this.location) <= 16)
-                {
-                    // Allow small teleport within a range of 4 blocks. 1-step path to the desired location without checking anything
-                    path = null;
-                    steps = new Queue<Location>(new[] { location });
-                    return true;
-                }
-                else
-                {
-                    // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
-                    if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
-                        path = new Queue<Location>(new[] { location });
-                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
-                    return path != null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Received some text from the server
-        /// </summary>
-        /// <param name="text">Text received</param>
-        /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
-        public void OnTextReceived(string text, bool isJson)
-        {
-            lock (lastKeepAliveLock)
-            {
-                lastKeepAlive = DateTime.Now;
-            }
-            List<string> links = new List<string>();
-            string json = null;
-            if (isJson)
-            {
-                json = text;
-                text = ChatParser.ParseText(json, links);
-            }
-            ConsoleIO.WriteLineFormatted(text, true);
-            if (Settings.DisplayChatLinks)
-                foreach (string link in links)
-                    ConsoleIO.WriteLogLine("Link: " + link, false);
-            foreach (ChatBot bot in bots.ToArray())
-            {
-                try
-                {
-                    bot.GetText(text);
-                    if (bots.Contains(bot))
-                        bot.GetText(text, json);
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        ConsoleIO.WriteLogLine("GetText: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Received a connection keep-alive from the server
-        /// </summary>
-        public void OnServerKeepAlive()
-        {
-            lock (lastKeepAliveLock)
-            {
-                lastKeepAlive = DateTime.Now;
-            }
-        }
-
-        /// <summary>
-        /// When an inventory is opened
-        /// </summary>
-        /// <param name="inventory">Location to reach</param>
-        public void OnInventoryOpen(int inventoryID, Container inventory)
-        {
-            inventories[inventoryID] = inventory;
-
-            if (inventoryID != 0)
-            {
-                ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " opened: " + inventory.Title);
-                ConsoleIO.WriteLogLine("Use /inventory to interact with it.");
-            }
-        }
-
-        /// <summary>
-        /// When an inventory is close
-        /// </summary>
-        /// <param name="inventoryID">Location to reach</param>
-        public void OnInventoryClose(int inventoryID)
-        {
-            if (inventories.ContainsKey(inventoryID))
-                inventories.Remove(inventoryID);
-
-            if (inventoryID != 0)
-                ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " closed.");
-        }
-
-        /// <summary>
-        /// When received window items from server.
-        /// </summary>
-        /// <param name="inventoryID">Inventory ID</param>
-        /// <param name="itemList">Item list, key = slot ID, value = Item information</param>
-        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList)
-        {
-            if (inventories.ContainsKey(inventoryID))
-                inventories[inventoryID].Items = itemList;
-        }
-
-        /// <summary>
-        /// When a slot is set inside window items
-        /// </summary>
-        /// <param name="inventoryID">Window ID</param>
-        /// <param name="slotID">Slot ID</param>
-        /// <param name="item">Item (may be null for empty slot)</param>
-        public void OnSetSlot(byte inventoryID, short slotID, Item item)
-        {
-            if (inventories.ContainsKey(inventoryID))
-            {
-                if (item == null || item.IsEmpty)
-                {
-                    if (inventories[inventoryID].Items.ContainsKey(slotID))
-                        inventories[inventoryID].Items.Remove(slotID);
-                }
-                else inventories[inventoryID].Items[slotID] = item;
-            }
         }
 
         /// <summary>
@@ -1047,6 +572,245 @@ namespace MinecraftClient
             }
         }
 
+        #region Management: Load/Unload ChatBots and Enable/Disable settings
+
+        /// <summary>
+        /// Load a new bot
+        /// </summary>
+        public void BotLoad(ChatBot b, bool init = true)
+        {
+            b.SetHandler(this);
+            bots.Add(b);
+            if (init)
+                b.Initialize();
+            if (this.handler != null)
+                b.AfterGameJoined();
+            Settings.SingleCommand = "";
+        }
+
+        /// <summary>
+        /// Unload a bot
+        /// </summary>
+        public void BotUnLoad(ChatBot b)
+        {
+            bots.RemoveAll(item => object.ReferenceEquals(item, b));
+
+            // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
+            var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
+            foreach (var entry in botRegistrations)
+            {
+                UnregisterPluginChannel(entry.Key, b);
+            }
+        }
+
+        /// <summary>
+        /// Clear bots
+        /// </summary>
+        public void BotClear()
+        {
+            bots.Clear();
+        }
+
+        /// <summary>
+        /// Get Terrain and Movements status.
+        /// </summary>
+        public bool GetTerrainEnabled()
+        {
+            return terrainAndMovementsEnabled;
+        }
+
+        /// <summary>
+        /// Get Inventory Handling Mode
+        /// </summary>
+        public bool GetInventoryEnabled()
+        {
+            return inventoryHandlingEnabled;
+        }
+
+        /// <summary>
+        /// Enable or disable Terrain and Movements.
+        /// Please note that Enabling will be deferred until next relog, respawn or world change.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetTerrainEnabled(bool enabled)
+        {
+            if (enabled)
+            {
+                if (!terrainAndMovementsEnabled)
+                {
+                    terrainAndMovementsRequested = true;
+                    return false;
+                }
+            }
+            else
+            {
+                terrainAndMovementsEnabled = false;
+                terrainAndMovementsRequested = false;
+                locationReceived = false;
+                world.Clear();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Enable or disable Inventories.
+        /// Please note that Enabling will be deferred until next relog.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetInventoryEnabled(bool enabled)
+        {
+            if (enabled)
+            {
+                if (!inventoryHandlingEnabled)
+                {
+                    inventoryHandlingRequested = true;
+                    return false;
+                }
+            }
+            else
+            {
+                inventoryHandlingEnabled = false;
+                inventoryHandlingRequested = false;
+                inventories.Clear();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Get entity handling status
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>Entity Handling cannot be enabled in runtime (or after joining server)</remarks>
+        public bool GetEntityHandlingEnabled()
+        {
+            return entityHandlingEnabled;
+        }
+
+        /// <summary>
+        /// Enable or disable Entity handling.
+        /// Please note that Enabling will be deferred until next relog.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetEntityHandlingEnabled(bool enabled)
+        {
+            if (!enabled)
+            {
+                if (entityHandlingEnabled)
+                {
+                    entityHandlingEnabled = false;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Entity Handling cannot be enabled in runtime (or after joining server)
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Getters: Retrieve data for use in other methods or ChatBots
+
+        /// <summary>
+        /// Get all inventories. ID 0 is the player inventory.
+        /// </summary>
+        /// <returns>All inventories</returns>
+        public Dictionary<int, Container> GetInventories()
+        {
+            return inventories;
+        }
+
+        /// <summary>
+        /// Get client player's inventory items
+        /// </summary>
+        /// <param name="inventoryID">Window ID of the requested inventory</param>
+        /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
+        public Container GetInventory(int inventoryID)
+        {
+            if (inventories.ContainsKey(inventoryID))
+                return inventories[inventoryID];
+            return null;
+        }
+
+        /// <summary>
+        /// Get client player's inventory items
+        /// </summary>
+        /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
+        public Container GetPlayerInventory()
+        {
+            return GetInventory(0);
+        }
+
+        /// <summary>
+        /// Get a set of online player names
+        /// </summary>
+        /// <returns>Online player names</returns>
+        public string[] GetOnlinePlayers()
+        {
+            lock (onlinePlayers)
+            {
+                return onlinePlayers.Values.Distinct().ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Get a dictionary of online player names and their corresponding UUID
+        /// </summary>
+        /// <returns>Dictionay of online players, key is UUID, value is Player name</returns>
+        public Dictionary<string, string> GetOnlinePlayersWithUUID()
+        {
+            Dictionary<string, string> uuid2Player = new Dictionary<string, string>();
+            lock (onlinePlayers)
+            {
+                foreach (Guid key in onlinePlayers.Keys)
+                {
+                    uuid2Player.Add(key.ToString(), onlinePlayers[key]);
+                }
+            }
+            return uuid2Player;
+        }
+
+        #endregion
+
+        #region Action methods: Perform an action on the Server
+
+        /// <summary>
+        /// Move to the specified location
+        /// </summary>
+        /// <param name="location">Location to reach</param>
+        /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
+        /// <param name="allowSmallTeleport">Allow non-vanilla small teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <returns>True if a path has been found</returns>
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
+        {
+            lock (locationLock)
+            {
+                if (allowSmallTeleport && location.DistanceSquared(this.location) <= 16)
+                {
+                    // Allow small teleport within a range of 4 blocks. 1-step path to the desired location without checking anything
+                    path = null;
+                    steps = new Queue<Location>(new[] { location });
+                    return true;
+                }
+                else
+                {
+                    // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
+                    if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
+                        path = new Queue<Location>(new[] { location });
+                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
+                    return path != null;
+                }
+            }
+        }
+
         /// <summary>
         /// Send a chat message or command to the server
         /// </summary>
@@ -1086,64 +850,6 @@ namespace MinecraftClient
         public bool SendRespawnPacket()
         {
             return handler.SendRespawnPacket();
-        }
-
-        /// <summary>
-        /// Triggered when a new player joins the game
-        /// </summary>
-        /// <param name="uuid">UUID of the player</param>
-        /// <param name="name">Name of the player</param>
-        public void OnPlayerJoin(Guid uuid, string name)
-        {
-            //Ignore placeholders eg 0000tab# from TabListPlus
-            if (!ChatBot.IsValidName(name))
-                return;
-
-            lock (onlinePlayers)
-            {
-                onlinePlayers[uuid] = name;
-            }
-        }
-
-        /// <summary>
-        /// Triggered when a player has left the game
-        /// </summary>
-        /// <param name="uuid">UUID of the player</param>
-        public void OnPlayerLeave(Guid uuid)
-        {
-            lock (onlinePlayers)
-            {
-                onlinePlayers.Remove(uuid);
-            }
-        }
-
-        /// <summary>
-        /// Get a set of online player names
-        /// </summary>
-        /// <returns>Online player names</returns>
-        public string[] GetOnlinePlayers()
-        {
-            lock (onlinePlayers)
-            {
-                return onlinePlayers.Values.Distinct().ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Get a dictionary of online player names and their corresponding UUID
-        /// </summary>
-        /// <returns>Dictionay of online players, key is UUID, value is Player name</returns>
-        public Dictionary<string, string> GetOnlinePlayersWithUUID()
-        {
-            Dictionary<string, string> uuid2Player = new Dictionary<string, string>();
-            lock (onlinePlayers)
-            {
-                foreach (Guid key in onlinePlayers.Keys)
-                {
-                    uuid2Player.Add(key.ToString(), onlinePlayers[key]);
-                }
-            }
-            return uuid2Player;
         }
 
         /// <summary>
@@ -1210,317 +916,14 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Called when a plugin channel message was sent from the server.
-        /// </summary>
-        /// <param name="channel">The channel the message was sent on</param>
-        /// <param name="data">The data from the channel</param>
-        public void OnPluginChannelMessage(string channel, byte[] data)
-        {
-            if (channel == "REGISTER")
-            {
-                string[] channels = Encoding.UTF8.GetString(data).Split('\0');
-                foreach (string chan in channels)
-                {
-                    if (!registeredServerPluginChannels.Contains(chan))
-                    {
-                        registeredServerPluginChannels.Add(chan);
-                    }
-                }
-            }
-            if (channel == "UNREGISTER")
-            {
-                string[] channels = Encoding.UTF8.GetString(data).Split('\0');
-                foreach (string chan in channels)
-                {
-                    registeredServerPluginChannels.Remove(chan);
-                }
-            }
-
-            if (registeredBotPluginChannels.ContainsKey(channel))
-            {
-                foreach (ChatBot bot in registeredBotPluginChannels[channel])
-                {
-                    bot.OnPluginMessage(channel, data);
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Called when an entity spawned
-        /// </summary>
-        public void OnSpawnEntity(Entity entity)
-        {
-            // The entity should not already exist, but if it does, let's consider the previous one is being destroyed
-            if (entities.ContainsKey(entity.ID))
-                OnDestroyEntities(new[] { entity.ID });
-
-            entities.Add(entity.ID, entity);
-
-            foreach (ChatBot bot in bots.ToArray())
-            {
-                try
-                {
-                    bot.OnEntitySpawn(entity);
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        ConsoleIO.WriteLogLine("OnEntitySpawn: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
-                }
-            }
-        }
-
-        /// <summary>
-        /// Called when a player spawns or enters the client's render distance
-        /// </summary>
-        public void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte Yaw, byte Pitch)
-        {
-            string playerName = null;
-            if (onlinePlayers.ContainsKey(uuid))
-                playerName = onlinePlayers[uuid];
-            Entity playerEntity = new Entity(entityID, EntityType.Player, location, uuid, playerName);
-            OnSpawnEntity(playerEntity);
-        }
-        
-        /// <summary>
-        /// Called on Entity Equipment
-        /// </summary>
-        /// <param name="entityid"> Entity ID</param>
-        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
-        /// <param name="item"> Item)</param>
-        public void OnEntityEquipment(int entityid, int slot, Item item)
-        {
-            foreach (ChatBot bot in bots.ToArray())
-            {
-                try
-                {
-                    if (entities.ContainsKey(entityid))
-                        bot.OnEntityEquipment(entities[entityid], slot, item);
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        ConsoleIO.WriteLogLine("OnEntityEquipment: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Called when the Game Mode has been updated for a player
-        /// </summary>
-        /// <param name="playername">Player Name</param>
-        /// <param name="uuid">Player UUID (Empty for initial gamemode on login)</param>
-        /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
-        public void OnGamemodeUpdate(Guid uuid, int gamemode)
-        {
-            // Initial gamemode on login
-            if (uuid == Guid.Empty)
-                this.gamemode = gamemode;
-
-            // Further regular gamemode change events
-            if (onlinePlayers.ContainsKey(uuid))
-            {
-                string playerName = onlinePlayers[uuid];
-                if (playerName == this.username)
-                    this.gamemode = gamemode;
-                foreach (ChatBot bot in bots.ToArray())
-                    bot.OnGamemodeUpdate(playerName, uuid, gamemode);
-            }
-        }
-
-        /// <summary>
-        /// Called when entities dead/despawn.
-        /// </summary>
-        public void OnDestroyEntities(int[] Entities)
-        {
-            foreach (int a in Entities)
-            {
-                if (entities.ContainsKey(a))
-                {
-                    foreach (ChatBot bot in bots.ToArray())
-                    {
-                        try
-                        {
-                            bot.OnEntityDespawn(entities[a]);
-                        }
-                        catch (Exception e)
-                        {
-                            if (!(e is ThreadAbortException))
-                            {
-                                ConsoleIO.WriteLogLine("OnEntityDespawn: Got error from " + bot.ToString() + ": " + e.ToString());
-                            }
-                            else throw; //ThreadAbortException should not be caught
-                        }
-                    }
-                    entities.Remove(a);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Called when an entity's position changed within 8 block of its previous position.
-        /// </summary>
-        /// <param name="EntityID"></param>
-        /// <param name="Dx"></param>
-        /// <param name="Dy"></param>
-        /// <param name="Dz"></param>
-        /// <param name="onGround"></param>
-        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz,bool onGround)
-        {
-            if (entities.ContainsKey(EntityID))
-            {
-                Location L = entities[EntityID].Location;
-                L.X += Dx;
-                L.Y += Dy;
-                L.Z += Dz;
-                entities[EntityID].Location = L;
-
-                foreach (ChatBot bot in bots.ToArray())
-                {
-                    try
-                    {
-                        bot.OnEntityMove(entities[EntityID]);
-                    }
-                    catch (Exception e)
-                    {
-                        if (!(e is ThreadAbortException))
-                        {
-                            ConsoleIO.WriteLogLine("OnEntityMove: Got error from " + bot.ToString() + ": " + e.ToString());
-                        }
-                        else throw; //ThreadAbortException should not be caught
-                    }
-                }
-            }
-            
-        }
-        
-        /// <summary>
-        /// Called when an entity moved over 8 block.
-        /// </summary>
-        /// <param name="EntityID"></param>
-        /// <param name="X"></param>
-        /// <param name="Y"></param>
-        /// <param name="Z"></param>
-        /// <param name="onGround"></param>
-        public void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround)
-        {
-            if (entities.ContainsKey(EntityID))
-            {
-                Location location = new Location(X, Y, Z);
-                entities[EntityID].Location = location;
-
-                foreach (ChatBot bot in bots.ToArray())
-                {
-                    try
-                    {
-                        bot.OnEntityMove(entities[EntityID]);
-                    }
-                    catch (Exception e)
-                    {
-                        if (!(e is ThreadAbortException))
-                        {
-                            ConsoleIO.WriteLogLine("OnEntityMove: Got error from " + bot.ToString() + ": " + e.ToString());
-                        }
-                        else throw; //ThreadAbortException should not be caught
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Called when received entity properties from server.
-        /// </summary>
-        /// <param name="EntityID"></param>
-        /// <param name="prop"></param>
-        public void OnEntityProperties(int EntityID, Dictionary<string, Double> prop)
-        {
-            if(EntityID == playerEntityID)
-            {
-                foreach (ChatBot bot in bots.ToArray())
-                {
-                    try
-                    {
-                        bot.OnPlayerProperty(prop);
-                    }
-                    catch (Exception e)
-                    {
-                        if (!(e is ThreadAbortException))
-                        {
-                            ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
-                        }
-                        else throw; //ThreadAbortException should not be caught
-                    }
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Called when server sent a Time Update packet.
-        /// </summary>
-        /// <param name="WorldAge"></param>
-        /// <param name="TimeOfDay"></param>
-        public void OnTimeUpdate(long WorldAge, long TimeOfDay)
-        {
-            // calculate server tps
-            if (lastAge != 0)
-            {
-                DateTime currentTime = DateTime.Now;
-                long tickDiff = WorldAge - lastAge;
-                Double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
-                lastAge = WorldAge;
-                lastTime = currentTime;
-                if (tps <= 20.0 && tps >= 0.0 && serverTPS != tps)
-                {
-                    serverTPS = tps;
-                    // invoke ChatBot
-                    foreach (ChatBot bot in bots.ToArray())
-                    {
-                        try
-                        {
-                            bot.OnServerTpsUpdate(tps);
-                        }
-                        catch (Exception e)
-                        {
-                            if (!(e is ThreadAbortException))
-                            {
-                                ConsoleIO.WriteLogLine("OnServerTpsUpdate: Got error from " + bot.ToString() + ": " + e.ToString());
-                            }
-                            else throw; //ThreadAbortException should not be caught
-                        }
-                    }
-                }
-            }
-            else
-            {
-                lastAge = WorldAge;
-                lastTime = DateTime.Now;
-            }
-            
-        }
-        
-        /// <summary>
-        /// Set client player's ID for later receiving player's own properties
-        /// </summary>
-        /// <param name="EntityID">Player Entity ID</param>
-        public void SetPlayerEntityID(int EntityID)
-        {
-            playerEntityID = EntityID;
-        }
-
-        /// <summary>
         /// Send the Entity Action packet with the Specified ID
         /// </summary>
         /// <returns>TRUE if the item was successfully used</returns>
-        public bool sendEntityAction(EntityActionType entityAction)
+        public bool SendEntityAction(EntityActionType entityAction)
         {
-            return handler.SendEntityAction(playerEntityID, (int) entityAction);
+            return handler.SendEntityAction(playerEntityID, (int)entityAction);
         }
+
         /// <summary>
         /// Use the item currently in the player's hand
         /// </summary>
@@ -1581,7 +984,7 @@ namespace MinecraftClient
             }
             return false;
         }
-        
+
         /// <summary>
         /// Clean all inventory
         /// </summary>
@@ -1594,9 +997,9 @@ namespace MinecraftClient
                 inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
                 return true;
             }
-            else { return false;  }
+            else { return false; }
         }
-        
+
         /// <summary>
         /// Interact with an entity
         /// </summary>
@@ -1675,6 +1078,630 @@ namespace MinecraftClient
             else
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Update sign text
+        /// </summary>
+        /// <param name="location"> sign location</param>
+        /// <param name="line1"> text one</param>
+        /// <param name="line2"> text two</param>
+        /// <param name="line3"> text three</param>
+        /// <param name="line4"> text1 four</param>
+        public bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
+        {
+            if (line1.Length <= 23 & line2.Length <= 23 & line3.Length <= 23 & line4.Length <= 23)
+                return handler.SendUpdateSign(location, line1, line2, line3, line4);
+            else { return false; }
+        }
+
+        #endregion
+
+        #region Event handlers: An event occurs on the Server
+
+        /// <summary>
+        /// Called when a server was successfully joined
+        /// </summary>
+        public void OnGameJoined()
+        {
+            if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
+                handler.SendBrandInfo(Settings.BrandInfo.Trim());
+
+            if (Settings.MCSettings_Enabled)
+                handler.SendClientSettings(
+                    Settings.MCSettings_Locale,
+                    Settings.MCSettings_RenderDistance,
+                    Settings.MCSettings_Difficulty,
+                    Settings.MCSettings_ChatMode,
+                    Settings.MCSettings_ChatColors,
+                    Settings.MCSettings_Skin_All,
+                    Settings.MCSettings_MainHand);
+
+            if (inventoryHandlingEnabled)
+            {
+                inventories.Clear();
+                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+            }
+
+            foreach (ChatBot bot in bots.ToArray())
+            {
+                try
+                {
+                    bot.AfterGameJoined();
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("AfterGameJoined: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+
+            if (inventoryHandlingRequested)
+            {
+                inventoryHandlingRequested = false;
+                inventoryHandlingEnabled = true;
+                ConsoleIO.WriteLogLine("Inventory handling is now enabled.");
+            }
+        }
+
+        /// <summary>
+        /// Called when the player respawns, which happens on login, respawn and world change.
+        /// </summary>
+        public void OnRespawn()
+        {
+            if (inventoryHandlingEnabled)
+            {
+                inventories.Clear();
+                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+            }
+
+            if (terrainAndMovementsRequested)
+            {
+                terrainAndMovementsEnabled = true;
+                terrainAndMovementsRequested = false;
+                ConsoleIO.WriteLogLine("Terrain and Movements is now enabled.");
+            }
+
+            if (terrainAndMovementsEnabled)
+            {
+                world.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
+        /// </summary>
+        /// <param name="location">The new location</param>
+        /// <param name="relative">If true, the location is relative to the current location</param>
+        public void UpdateLocation(Location location, bool relative)
+        {
+            lock (locationLock)
+            {
+                if (relative)
+                {
+                    this.location += location;
+                }
+                else this.location = location;
+                locationReceived = true;
+            }
+        }
+
+        /// <summary>
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
+        /// </summary>
+        /// <param name="location">The new location</param>
+        /// <param name="yaw">Yaw to look at</param>
+        /// <param name="pitch">Pitch to look at</param>
+        public void UpdateLocation(Location location, float yaw, float pitch)
+        {
+            this.yaw = yaw;
+            this.pitch = pitch;
+            UpdateLocation(location, false);
+        }
+
+        /// <summary>
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
+        /// </summary>
+        /// <param name="location">The new location</param>
+        /// <param name="lookAtLocation">Block coordinates to look at</param>
+        public void UpdateLocation(Location location, Location lookAtLocation)
+        {
+            double dx = lookAtLocation.X - (location.X - 0.5);
+            double dy = lookAtLocation.Y - (location.Y + 1);
+            double dz = lookAtLocation.Z - (location.Z - 0.5);
+
+            double r = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+
+            float yaw = Convert.ToSingle(-Math.Atan2(dx, dz) / Math.PI * 180);
+            float pitch = Convert.ToSingle(-Math.Asin(dy / r) / Math.PI * 180);
+            if (yaw < 0) yaw += 360;
+
+            UpdateLocation(location, yaw, pitch);
+        }
+
+        /// <summary>
+        /// Called when the server sends a new player location,
+        /// or if a ChatBot whishes to update the player's location.
+        /// </summary>
+        /// <param name="location">The new location</param>
+        /// <param name="direction">Direction to look at</param>
+        public void UpdateLocation(Location location, Direction direction)
+        {
+            float yaw = 0;
+            float pitch = 0;
+
+            switch (direction)
+            {
+                case Direction.Up:
+                    pitch = -90;
+                    break;
+                case Direction.Down:
+                    pitch = 90;
+                    break;
+                case Direction.East:
+                    yaw = 270;
+                    break;
+                case Direction.West:
+                    yaw = 90;
+                    break;
+                case Direction.North:
+                    yaw = 180;
+                    break;
+                case Direction.South:
+                    break;
+                default:
+                    throw new ArgumentException("Unknown direction", "direction");
+            }
+
+            UpdateLocation(location, yaw, pitch);
+        }
+
+        /// <summary>
+        /// Received some text from the server
+        /// </summary>
+        /// <param name="text">Text received</param>
+        /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
+        public void OnTextReceived(string text, bool isJson)
+        {
+            lock (lastKeepAliveLock)
+            {
+                lastKeepAlive = DateTime.Now;
+            }
+            List<string> links = new List<string>();
+            string json = null;
+            if (isJson)
+            {
+                json = text;
+                text = ChatParser.ParseText(json, links);
+            }
+            ConsoleIO.WriteLineFormatted(text, true);
+            if (Settings.DisplayChatLinks)
+                foreach (string link in links)
+                    ConsoleIO.WriteLogLine("Link: " + link, false);
+            foreach (ChatBot bot in bots.ToArray())
+            {
+                try
+                {
+                    bot.GetText(text);
+                    if (bots.Contains(bot))
+                        bot.GetText(text, json);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("GetText: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+        }
+
+        /// <summary>
+        /// Received a connection keep-alive from the server
+        /// </summary>
+        public void OnServerKeepAlive()
+        {
+            lock (lastKeepAliveLock)
+            {
+                lastKeepAlive = DateTime.Now;
+            }
+        }
+
+        /// <summary>
+        /// When an inventory is opened
+        /// </summary>
+        /// <param name="inventory">Location to reach</param>
+        public void OnInventoryOpen(int inventoryID, Container inventory)
+        {
+            inventories[inventoryID] = inventory;
+
+            if (inventoryID != 0)
+            {
+                ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " opened: " + inventory.Title);
+                ConsoleIO.WriteLogLine("Use /inventory to interact with it.");
+            }
+        }
+
+        /// <summary>
+        /// When an inventory is close
+        /// </summary>
+        /// <param name="inventoryID">Location to reach</param>
+        public void OnInventoryClose(int inventoryID)
+        {
+            if (inventories.ContainsKey(inventoryID))
+                inventories.Remove(inventoryID);
+
+            if (inventoryID != 0)
+                ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " closed.");
+        }
+
+        /// <summary>
+        /// When received window items from server.
+        /// </summary>
+        /// <param name="inventoryID">Inventory ID</param>
+        /// <param name="itemList">Item list, key = slot ID, value = Item information</param>
+        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList)
+        {
+            if (inventories.ContainsKey(inventoryID))
+                inventories[inventoryID].Items = itemList;
+        }
+
+        /// <summary>
+        /// When a slot is set inside window items
+        /// </summary>
+        /// <param name="inventoryID">Window ID</param>
+        /// <param name="slotID">Slot ID</param>
+        /// <param name="item">Item (may be null for empty slot)</param>
+        public void OnSetSlot(byte inventoryID, short slotID, Item item)
+        {
+            if (inventories.ContainsKey(inventoryID))
+            {
+                if (item == null || item.IsEmpty)
+                {
+                    if (inventories[inventoryID].Items.ContainsKey(slotID))
+                        inventories[inventoryID].Items.Remove(slotID);
+                }
+                else inventories[inventoryID].Items[slotID] = item;
+            }
+        }
+
+        /// <summary>
+        /// Set client player's ID for later receiving player's own properties
+        /// </summary>
+        /// <param name="EntityID">Player Entity ID</param>
+        public void OnReceivePlayerEntityID(int EntityID)
+        {
+            playerEntityID = EntityID;
+        }
+
+        /// <summary>
+        /// Triggered when a new player joins the game
+        /// </summary>
+        /// <param name="uuid">UUID of the player</param>
+        /// <param name="name">Name of the player</param>
+        public void OnPlayerJoin(Guid uuid, string name)
+        {
+            //Ignore placeholders eg 0000tab# from TabListPlus
+            if (!ChatBot.IsValidName(name))
+                return;
+
+            lock (onlinePlayers)
+            {
+                onlinePlayers[uuid] = name;
+            }
+        }
+
+        /// <summary>
+        /// Triggered when a player has left the game
+        /// </summary>
+        /// <param name="uuid">UUID of the player</param>
+        public void OnPlayerLeave(Guid uuid)
+        {
+            lock (onlinePlayers)
+            {
+                onlinePlayers.Remove(uuid);
+            }
+        }
+
+        /// <summary>
+        /// Called when a plugin channel message was sent from the server.
+        /// </summary>
+        /// <param name="channel">The channel the message was sent on</param>
+        /// <param name="data">The data from the channel</param>
+        public void OnPluginChannelMessage(string channel, byte[] data)
+        {
+            if (channel == "REGISTER")
+            {
+                string[] channels = Encoding.UTF8.GetString(data).Split('\0');
+                foreach (string chan in channels)
+                {
+                    if (!registeredServerPluginChannels.Contains(chan))
+                    {
+                        registeredServerPluginChannels.Add(chan);
+                    }
+                }
+            }
+            if (channel == "UNREGISTER")
+            {
+                string[] channels = Encoding.UTF8.GetString(data).Split('\0');
+                foreach (string chan in channels)
+                {
+                    registeredServerPluginChannels.Remove(chan);
+                }
+            }
+
+            if (registeredBotPluginChannels.ContainsKey(channel))
+            {
+                foreach (ChatBot bot in registeredBotPluginChannels[channel])
+                {
+                    bot.OnPluginMessage(channel, data);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when an entity spawned
+        /// </summary>
+        public void OnSpawnEntity(Entity entity)
+        {
+            // The entity should not already exist, but if it does, let's consider the previous one is being destroyed
+            if (entities.ContainsKey(entity.ID))
+                OnDestroyEntities(new[] { entity.ID });
+
+            entities.Add(entity.ID, entity);
+
+            foreach (ChatBot bot in bots.ToArray())
+            {
+                try
+                {
+                    bot.OnEntitySpawn(entity);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnEntitySpawn: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when a player spawns or enters the client's render distance
+        /// </summary>
+        public void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte Yaw, byte Pitch)
+        {
+            string playerName = null;
+            if (onlinePlayers.ContainsKey(uuid))
+                playerName = onlinePlayers[uuid];
+            Entity playerEntity = new Entity(entityID, EntityType.Player, location, uuid, playerName);
+            OnSpawnEntity(playerEntity);
+        }
+
+        /// <summary>
+        /// Called on Entity Equipment
+        /// </summary>
+        /// <param name="entityid"> Entity ID</param>
+        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
+        /// <param name="item"> Item)</param>
+        public void OnEntityEquipment(int entityid, int slot, Item item)
+        {
+            foreach (ChatBot bot in bots.ToArray())
+            {
+                try
+                {
+                    if (entities.ContainsKey(entityid))
+                        bot.OnEntityEquipment(entities[entityid], slot, item);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnEntityEquipment: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when the Game Mode has been updated for a player
+        /// </summary>
+        /// <param name="playername">Player Name</param>
+        /// <param name="uuid">Player UUID (Empty for initial gamemode on login)</param>
+        /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
+        public void OnGamemodeUpdate(Guid uuid, int gamemode)
+        {
+            // Initial gamemode on login
+            if (uuid == Guid.Empty)
+                this.gamemode = gamemode;
+
+            // Further regular gamemode change events
+            if (onlinePlayers.ContainsKey(uuid))
+            {
+                string playerName = onlinePlayers[uuid];
+                if (playerName == this.username)
+                    this.gamemode = gamemode;
+                foreach (ChatBot bot in bots.ToArray())
+                    bot.OnGamemodeUpdate(playerName, uuid, gamemode);
+            }
+        }
+
+        /// <summary>
+        /// Called when entities dead/despawn.
+        /// </summary>
+        public void OnDestroyEntities(int[] Entities)
+        {
+            foreach (int a in Entities)
+            {
+                if (entities.ContainsKey(a))
+                {
+                    foreach (ChatBot bot in bots.ToArray())
+                    {
+                        try
+                        {
+                            bot.OnEntityDespawn(entities[a]);
+                        }
+                        catch (Exception e)
+                        {
+                            if (!(e is ThreadAbortException))
+                            {
+                                ConsoleIO.WriteLogLine("OnEntityDespawn: Got error from " + bot.ToString() + ": " + e.ToString());
+                            }
+                            else throw; //ThreadAbortException should not be caught
+                        }
+                    }
+                    entities.Remove(a);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when an entity's position changed within 8 block of its previous position.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="Dx"></param>
+        /// <param name="Dy"></param>
+        /// <param name="Dz"></param>
+        /// <param name="onGround"></param>
+        public void OnEntityPosition(int EntityID, Double Dx, Double Dy, Double Dz, bool onGround)
+        {
+            if (entities.ContainsKey(EntityID))
+            {
+                Location L = entities[EntityID].Location;
+                L.X += Dx;
+                L.Y += Dy;
+                L.Z += Dz;
+                entities[EntityID].Location = L;
+
+                foreach (ChatBot bot in bots.ToArray())
+                {
+                    try
+                    {
+                        bot.OnEntityMove(entities[EntityID]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnEntityMove: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Called when an entity moved over 8 block.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
+        /// <param name="Z"></param>
+        /// <param name="onGround"></param>
+        public void OnEntityTeleport(int EntityID, Double X, Double Y, Double Z, bool onGround)
+        {
+            if (entities.ContainsKey(EntityID))
+            {
+                Location location = new Location(X, Y, Z);
+                entities[EntityID].Location = location;
+
+                foreach (ChatBot bot in bots.ToArray())
+                {
+                    try
+                    {
+                        bot.OnEntityMove(entities[EntityID]);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnEntityMove: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when received entity properties from server.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="prop"></param>
+        public void OnEntityProperties(int EntityID, Dictionary<string, Double> prop)
+        {
+            if (EntityID == playerEntityID)
+            {
+                foreach (ChatBot bot in bots.ToArray())
+                {
+                    try
+                    {
+                        bot.OnPlayerProperty(prop);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            ConsoleIO.WriteLogLine("OnPlayerProperty: Got error from " + bot.ToString() + ": " + e.ToString());
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when server sent a Time Update packet.
+        /// </summary>
+        /// <param name="WorldAge"></param>
+        /// <param name="TimeOfDay"></param>
+        public void OnTimeUpdate(long WorldAge, long TimeOfDay)
+        {
+            // calculate server tps
+            if (lastAge != 0)
+            {
+                DateTime currentTime = DateTime.Now;
+                long tickDiff = WorldAge - lastAge;
+                Double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
+                lastAge = WorldAge;
+                lastTime = currentTime;
+                if (tps <= 20.0 && tps >= 0.0 && serverTPS != tps)
+                {
+                    serverTPS = tps;
+                    // invoke ChatBot
+                    foreach (ChatBot bot in bots.ToArray())
+                    {
+                        try
+                        {
+                            bot.OnServerTpsUpdate(tps);
+                        }
+                        catch (Exception e)
+                        {
+                            if (!(e is ThreadAbortException))
+                            {
+                                ConsoleIO.WriteLogLine("OnServerTpsUpdate: Got error from " + bot.ToString() + ": " + e.ToString());
+                            }
+                            else throw; //ThreadAbortException should not be caught
+                        }
+                    }
+                }
+            }
+            else
+            {
+                lastAge = WorldAge;
+                lastTime = DateTime.Now;
             }
         }
 
@@ -1766,7 +1793,7 @@ namespace MinecraftClient
                 }
             }
         }
-        
+
         /// <summary>
         /// Called when Latency is updated
         /// </summary>
@@ -1795,7 +1822,7 @@ namespace MinecraftClient
                 }
             }
         }
-        
+
         /// <summary>
         /// Called when held item change
         /// </summary>
@@ -1819,7 +1846,7 @@ namespace MinecraftClient
             }
             CurrentSlot = slot;
         }
-        
+
         /// <summary>
         /// Called map data
         /// </summary>
@@ -1846,7 +1873,7 @@ namespace MinecraftClient
                 }
             }
         }
-        
+
         /// <summary>
         /// Received some Title from the server
         /// <param name="action"> 0 = set title, 1 = set subtitle, 3 = set action bar, 4 = set times and display, 4 = hide, 5 = reset</param>
@@ -1875,20 +1902,7 @@ namespace MinecraftClient
                 }
             }
         }
-        
-        /// <summary>
-        /// Update sign text
-        /// </summary>
-        /// <param name="location"> sign location</param>
-        /// <param name="line1"> text one</param>
-        /// <param name="line2"> text two</param>
-        /// <param name="line3"> text three</param>
-        /// <param name="line4"> text1 four</param>
-        public bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
-        {
-            if (line1.Length <= 23 & line2.Length <= 23 & line3.Length <= 23 & line4.Length <= 23)
-                return handler.SendUpdateSign(location, line1, line2, line3, line4);
-            else { return false; }
-        }
+
+        #endregion
     }
 }

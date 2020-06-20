@@ -15,14 +15,14 @@ namespace MinecraftClient.Commands
         {
             if (sneaking)
             {
-                var result = handler.sendEntityAction(Protocol.EntityActionType.StopSneaking);
+                var result = handler.SendEntityAction(Protocol.EntityActionType.StopSneaking);
                 if (result)
                     sneaking = false;
                 return  result ? "You aren't sneaking anymore" : "Fail";
             }
             else
             {
-                var result = handler.sendEntityAction(Protocol.EntityActionType.StartSneaking);
+                var result = handler.SendEntityAction(Protocol.EntityActionType.StartSneaking);
                 if (result)
                     sneaking = true;
                 return  result ? "You are sneaking now" : "Fail";

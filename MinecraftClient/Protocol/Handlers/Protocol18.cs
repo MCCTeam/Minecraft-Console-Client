@@ -216,7 +216,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.JoinGame:
                         handler.OnGameJoined();
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
-                        handler.SetPlayerEntityID(playerEntityID);
+                        handler.OnReceivePlayerEntityID(playerEntityID);
                         handler.OnGamemodeUpdate(Guid.Empty, dataTypes.ReadNextByte(packetData));
                         if (protocolversion >= MC191Version)
                             this.currentDimension = dataTypes.ReadNextInt(packetData);

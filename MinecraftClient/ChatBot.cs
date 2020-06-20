@@ -741,7 +741,7 @@ namespace MinecraftClient
         /// </summary>
         private bool SendEntityAction(Protocol.EntityActionType entityAction)
         {
-            return Handler.sendEntityAction(entityAction);
+            return Handler.SendEntityAction(entityAction);
         }
 
         /// <summary>
