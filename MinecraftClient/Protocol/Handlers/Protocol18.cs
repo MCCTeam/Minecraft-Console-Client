@@ -316,6 +316,75 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                         }
                         break;
+                    case PacketIncomingType.MapData:
+                            int mapid = dataTypes.ReadNextVarInt(packetData);
+                            byte scale = dataTypes.ReadNextByte(packetData);
+                            bool trackingposition = dataTypes.ReadNextBool(packetData);
+                            bool locked = false;
+                            if (protocolversion >= MC114Version)
+                            {
+                                locked = dataTypes.ReadNextBool(packetData);
+                            }
+                            int iconcount = dataTypes.ReadNextVarInt(packetData);
+                            handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
+                            break;
+                    case PacketIncomingType.Title:
+                            if (protocolversion >= MC18Version)
+                            {
+                                int action2 = dataTypes.ReadNextVarInt(packetData);
+                                string titletext = String.Empty;
+                                string subtitletext = String.Empty;
+                                string actionbartext = String.Empty;
+                                string json = String.Empty;
+                                int fadein = -1;
+                                int stay = -1;
+                                int fadeout = -1;
+                                if (protocolversion >= MC110Version)
+                                {
+                                    if (action2 == 0)
+                                    {
+                                        json = titletext;
+                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 1)
+                                    {
+                                        json = subtitletext;
+                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 2)
+                                    {
+                                        json = actionbartext;
+                                        actionbartext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 3)
+                                    {
+                                        fadein = dataTypes.ReadNextInt(packetData);
+                                        stay = dataTypes.ReadNextInt(packetData);
+                                        fadeout = dataTypes.ReadNextInt(packetData);
+                                    }
+                                }
+                                else
+                                {
+                                    if (action2 == 0)
+                                    {
+                                        json = titletext;
+                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 1)
+                                    {
+                                        json = subtitletext;
+                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 2)
+                                    {
+                                        fadein = dataTypes.ReadNextInt(packetData);
+                                        stay = dataTypes.ReadNextInt(packetData);
+                                        fadeout = dataTypes.ReadNextInt(packetData);
+                                    }
+                                }
+                                handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
+                            }
+                            break;
                     case PacketIncomingType.MultiBlockChange:
                         if (handler.GetTerrainEnabled())
                         {
@@ -589,6 +658,15 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnSpawnEntity(entity);
                         }
                         break;
+                    case PacketIncomingType.EntityEquipment:
+                            if (handler.GetEntityHandlingEnabled())
+                            {
+                                int entityid = dataTypes.ReadNextVarInt(packetData);
+                                int slot2 = dataTypes.ReadNextVarInt(packetData);
+                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                handler.OnEntityEquipment(entityid, slot2, item);
+                            }
+                            break;
                     case PacketIncomingType.SpawnLivingEntity:
                         if (handler.GetEntityHandlingEnabled())
                         {
@@ -1424,13 +1502,13 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendCreativeInventoryAction(int slot, ItemType itemType, int count)
+        public bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> NBT)
         {
             try
             {
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetShort((short)slot));
-                packet.AddRange(dataTypes.GetItemSlot(new Item((int)itemType, count, null)));
+                packet.AddRange(dataTypes.GetItemSlot(new Item((int)itemType, count, NBT)));
                 SendPacket(PacketOutgoingType.CreativeInventoryAction, packet);
                 return true;
             }
@@ -1483,6 +1561,23 @@ namespace MinecraftClient.Protocol.Handlers
                         window_actions[windowId] = 0;
                 }
                 SendPacket(PacketOutgoingType.CloseWindow, new[] { (byte)windowId });
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+        public bool SendUpdateSign(Location sign, string line1, string line2, string line3, string line4)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetLocation(sign));
+                packet.AddRange(dataTypes.GetString(line1));
+                packet.AddRange(dataTypes.GetString(line2));
+                packet.AddRange(dataTypes.GetString(line3));
+                packet.AddRange(dataTypes.GetString(line4));
+                SendPacket(PacketOutgoingType.UpdateSign, packet);
                 return true;
             }
             catch (SocketException) { return false; }

@@ -43,12 +43,16 @@ namespace MinecraftClient.Protocol.Handlers
         EntityPositionAndRotation,
         EntityProperties,
         EntityTeleport,
+        EntityEquipment,
+        EntityVelocity,
         TimeUpdate,
         UpdateHealth,
         SetExperience,
         HeldItemChange,
         Explosion,
-
+        MapData,
+        Title,
+        
         /// <summary>
         /// Represents a packet not implemented in MCC.
         /// </summary>

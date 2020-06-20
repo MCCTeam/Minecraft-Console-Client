@@ -859,7 +859,7 @@ namespace MinecraftClient
                 }
             }
         }
-
+        
         /// <summary>
         /// Received a connection keep-alive from the server
         /// </summary>
@@ -1284,7 +1284,33 @@ namespace MinecraftClient
             Entity playerEntity = new Entity(entityID, EntityType.Player, location, uuid, playerName);
             OnSpawnEntity(playerEntity);
         }
-
+        
+        /// <summary>
+        /// Called on Entity Equipment
+        /// </summary>
+        /// <param name="entityid"> Entity ID</param>
+        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
+        /// <param name="item"> Item)</param>
+        public void OnEntityEquipment(int entityid, int slot, Item item)
+        {
+            foreach (ChatBot bot in bots.ToArray())
+            {
+                try
+                {
+                    if (entities.ContainsKey(entityid))
+                        bot.OnEntityEquipment(entities[entityid], slot, item);
+                }
+                catch (Exception e)
+                {
+                    if (!(e2 is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnEntityEquipment: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+        }
+        
         /// <summary>
         /// Called when the Game Mode has been updated for a player
         /// </summary>
@@ -1524,10 +1550,11 @@ namespace MinecraftClient
         /// <param name="slot">Destination inventory slot</param>
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
+        /// <param name="NBT">Item NBT</param>
         /// <returns>TRUE if item given successfully</returns>
-        public bool DoCreativeGive(int slot, ItemType itemType, int count)
+        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> NBT = null)
         {
-            return handler.SendCreativeInventoryAction(slot, itemType, count);
+            return handler.SendCreativeInventoryAction(slot, itemType, count, NBT);
         }
 
         /// <summary>
@@ -1554,7 +1581,22 @@ namespace MinecraftClient
             }
             return false;
         }
-
+        
+        /// <summary>
+        /// Clean all inventory
+        /// </summary>
+        /// <returns>TRUE if the uccessfully clear</returns>
+        public bool ClearInventories()
+        {
+            if (inventoryHandlingEnabled)
+            {
+                inventories.Clear();
+                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+                return true;
+            }
+            else { return false;  }
+        }
+        
         /// <summary>
         /// Interact with an entity
         /// </summary>
@@ -1570,14 +1612,38 @@ namespace MinecraftClient
         /// Place the block at hand in the Minecraft world
         /// </summary>
         /// <param name="location">Location to place block to</param>
+        /// <param name="blockface">Block face</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool PlaceBlock(Location location)
+        public bool PlaceBlock(Location location, int blockface)
         {
-            //WORK IN PROGRESS. MAY NOT WORK YET
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLogLine(location.ToString());
-            Location placelocation = new Location(location.X, location.Y - 1, location.Z);
-            return handler.SendPlayerBlockPlacement(0, placelocation, 1, 0.5f, 0.5f, 0.5f, false);
+            Location placelocation;
+            if (blockface == 1)
+            {
+                placelocation = new Location(location.X, location.Y - 1, location.Z);
+            }
+            else if (blockface == 2)
+            {
+                placelocation = new Location(location.X, location.Y, location.Z + 1);
+            }
+            else if (blockface == 3)
+            {
+                placelocation = new Location(location.X, location.Y, location.Z - 1);
+            }
+            else if (blockface == 4)
+            {
+                placelocation = new Location(location.X + 1, location.Y, location.Z);
+            }
+            else if (blockface == 5)
+            {
+                placelocation = new Location(location.X - 1, location.Y, location.Z);
+            }
+            else
+            {
+                placelocation = location;
+            }
+            return handler.SendPlayerBlockPlacement(0, placelocation, blockface, 0.5f, 0.5f, 0.5f, false);
         }
 
         /// <summary>
@@ -1731,11 +1797,9 @@ namespace MinecraftClient
         }
         
         /// <summary>
-        /// Called when Experience bar is updated
+        /// Called when held item change
         /// </summary>
-        /// <param name="Experiencebar">Experience bar level</param>
-        /// <param name="Level">Player Level</param>
-        /// <param name="TotalExperience">Total experience</param>
+        /// <param name="slot"> item slot</param>
         public void OnHeldItemChange(byte slot)
         {
             foreach (ChatBot bot in bots.ToArray())
@@ -1754,6 +1818,77 @@ namespace MinecraftClient
                 }
             }
             CurrentSlot = slot;
+        }
+        
+        /// <summary>
+        /// Called map data
+        /// </summary>
+        /// <param name="mapid"></param>
+        /// <param name="scale"></param>
+        /// <param name="trackingposition"></param>
+        /// <param name="locked"></param>
+        /// <param name="iconcount"></param>
+        public void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount)
+        {
+            foreach (ChatBot bot in bots.ToArray())
+            {
+                try
+                {
+                    bot.OnMapData(mapid, scale, trackingposition, locked, iconcount);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnMapData: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Received some Title from the server
+        /// <param name="action"> 0 = set title, 1 = set subtitle, 3 = set action bar, 4 = set times and display, 4 = hide, 5 = reset</param>
+        /// <param name="titletext"> title text</param>
+        /// <param name="subtitletext"> suntitle text</param>
+        /// <param name="actionbartext"> action bar text</param>
+        /// <param name="fadein"> Fade In</param>
+        /// <param name="stay"> Stay</param>
+        /// <param name="fadeout"> Fade Out</param>
+        /// <param name="json"> json text</param>
+        public void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json)
+        {
+            foreach (ChatBot bot in bots.ToArray())
+            {
+                try
+                {
+                    bot.OnTitle(action, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        ConsoleIO.WriteLogLine("OnTitle: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Update sign text
+        /// </summary>
+        /// <param name="location"> sign location</param>
+        /// <param name="line1"> text one</param>
+        /// <param name="line2"> text two</param>
+        /// <param name="line3"> text three</param>
+        /// <param name="line4"> text1 four</param>
+        public bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
+        {
+            if (line1.Length <= 23 & line2.Length <= 23 & line3.Length <= 23 & line4.Length <= 23)
+                return handler.SendUpdateSign(location, line1, line2, line3, line4);
+            else { return false; }
         }
     }
 }

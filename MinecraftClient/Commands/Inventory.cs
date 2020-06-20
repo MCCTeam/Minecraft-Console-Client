@@ -45,7 +45,7 @@ namespace MinecraftClient.Commands
                                     if (handler.GetGamemode() == 1)
                                     {
                                         int count = int.Parse(args[3]);
-                                        if (handler.DoCreativeGive(slot, itemType, count))
+                                        if (handler.DoCreativeGive(slot, itemType, count, null))
                                             return "Requested " + itemType + " x" + count + " in slot #" + slot;
                                         else return "Failed to request Creative Give";
                                     }

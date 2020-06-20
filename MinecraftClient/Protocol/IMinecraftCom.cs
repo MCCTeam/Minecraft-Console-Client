@@ -157,7 +157,7 @@ namespace MinecraftClient.Protocol
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
         /// <returns>TRUE if item given successfully</returns>
-        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count);
+        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> NBT);
 
         /// <summary>
         /// Plays animation
@@ -194,5 +194,6 @@ namespace MinecraftClient.Protocol
         /// <param name="face">Block face: 0 = bottom, 1 = top, etc (see wiki)</param>
         /// <returns>True if packet was succcessfully sent</returns>
         bool SendPlayerDigging(int status, Location location, byte face);
+        bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4);
     }
 }

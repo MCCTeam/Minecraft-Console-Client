@@ -34,5 +34,6 @@ namespace MinecraftClient.Protocol.Handlers
         CreativeInventoryAction,
         Animation,
         PlayerDigging,
+        UpdateSign,
     }
 }

@@ -220,6 +220,36 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="latency">Latency.</param>
         public virtual void OnLatencyUpdate(string playername, Guid uuid, int latency) { }
+        
+        /// <summary>
+        /// Called map data
+        /// </summary>
+        /// <param name="mapid"></param>
+        /// <param name="scale"></param>
+        /// <param name="trackingposition"></param>
+        /// <param name="locked"></param>
+        /// <param name="iconcount"></param>
+        public virtual void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount) { }
+        
+        /// <summary>
+        /// Received some Title from the server
+        /// <param name="action"> 0 = set title, 1 = set subtitle, 3 = set action bar, 4 = set times and display, 4 = hide, 5 = reset</param>
+        /// <param name="titletext"> title text</param>
+        /// <param name="subtitletext"> suntitle text</param>
+        /// <param name="actionbartext"> action bar text</param>
+        /// <param name="fadein"> Fade In</param>
+        /// <param name="stay"> Stay</param>
+        /// <param name="fadeout"> Fade Out</param>
+        /// <param name="json"> json text</param>
+        public virtual void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json) { }
+
+        /// <summary>
+        /// Called on Entity Equipment
+        /// </summary>
+        /// <param name="entity"> Entity</param>
+        /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
+        /// <param name="item"> Item)</param>
+        public virtual void OnEntityEquipment(Entity entity, int slot, Item item) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
@@ -947,9 +977,9 @@ namespace MinecraftClient
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
         /// <returns>TRUE if item given successfully</returns>
-        protected bool CreativeGive(int slot, ItemType itemType, int count)
+        protected bool CreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> NBT = null)
         {
-            return Handler.DoCreativeGive(slot, itemType, count);
+            return Handler.DoCreativeGive(slot, itemType, count, NBT);
         }
 
         /// <summary>
@@ -985,9 +1015,9 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Block location</param>
         /// <returns></returns>
-        protected bool SendPlaceBlock(Location location)
+        protected bool SendPlaceBlock(Location location, int face)
         {
-            return Handler.PlaceBlock(location);
+            return Handler.PlaceBlock(location, face);
         }
 
         /// <summary>
@@ -1038,6 +1068,28 @@ namespace MinecraftClient
         protected byte GetCurrentSlot()
         {
             return Handler.GetCurrentSlot();
+        }
+        
+        /// <summary>
+        /// Clean all inventory
+        /// </summary>
+        /// <returns>TRUE if the uccessfully clear</returns>
+        protected bool ClearInventories()
+        {
+            return Handler.ClearInventories();
+        }
+        
+        /// <summary>
+        /// Update sign text
+        /// </summary>
+        /// <param name="location"> sign location</param>
+        /// <param name="line1"> text one</param>
+        /// <param name="line2"> text two</param>
+        /// <param name="line3"> text three</param>
+        /// <param name="line4"> text1 four</param>
+        protected bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
+        {
+            return Handler.UpdateSign(location, line1, line2, line3, line4);
         }
     }
 }
