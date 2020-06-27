@@ -788,22 +788,14 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowSmallTeleport">Allow non-vanilla small teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
-        /// <param name="oldSmallTeleport">Allow non-vanilla small teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowSmallTeleport = false, bool oldSmallTeleport = false)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
         {
             lock (locationLock)
             {
-                if (allowSmallTeleport && !oldSmallTeleport && location.DistanceSquared(this.location) <= 16)
+                if (allowSmallTeleport && location.DistanceSquared(this.location) <= 32)
                 {
-                    // Allow small teleport within a range of 4 blocks. 1-step path to the desired location without checking anything
-                    path = null;
-                    steps = new Queue<Location>(new[] { location });
-                    return true;
-                }
-                else if (allowSmallTeleport && oldSmallTeleport && location.DistanceSquared(this.location) <= 32)
-                {
-                    // Allow small teleport within a range of 4 blocks. 1-step path to the desired location without checking anything
+                    // Allow small teleport within a range of 8 blocks. 1-step path to the desired location without checking anything
                     UpdateLocation(location, location); // Update yaw and pitch to look at next step
                     handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yaw, pitch);
                     return true;

@@ -788,9 +788,9 @@ namespace MinecraftClient
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowSmallTeleport">Allow non-vanilla small teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowSmallTeleport = false, bool oldSmallTeleport = false)
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
         {
-            return Handler.MoveTo(location, allowUnsafe, allowSmallTeleport, oldSmallTeleport);
+            return Handler.MoveTo(location, allowUnsafe, allowSmallTeleport);
         }
 
         /// <summary>
