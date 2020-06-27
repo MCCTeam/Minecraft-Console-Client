@@ -793,11 +793,11 @@ namespace MinecraftClient
         {
             lock (locationLock)
             {
-                if (allowSmallTeleport && location.DistanceSquared(this.location) <= 16)
+                if (allowSmallTeleport && location.DistanceSquared(this.location) <= 32)
                 {
-                    // Allow small teleport within a range of 4 blocks. 1-step path to the desired location without checking anything
-                    path = null;
-                    steps = new Queue<Location>(new[] { location });
+                    // Allow small teleport within a range of 8 blocks. 1-step path to the desired location without checking anything
+                    UpdateLocation(location, location); // Update yaw and pitch to look at next step
+                    handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yaw, pitch);
                     return true;
                 }
                 else
