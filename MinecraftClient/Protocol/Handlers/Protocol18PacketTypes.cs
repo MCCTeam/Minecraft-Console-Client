@@ -288,7 +288,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x4F: return PacketIncomingType.Title;
                 }
             }
-            else if (protocol <= Protocol18Handler.MC1152Version) // MC 1.15 to 1.15.2
+            else // MC 1.15
             {
                 switch (packetID)
                 {
@@ -330,48 +330,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x1D: return PacketIncomingType.Explosion;
                     case 0x27: return PacketIncomingType.MapData;
                     case 0x50: return PacketIncomingType.Title;
-                }
-            } else {
-                switch (packetID)
-                {
-                    case 0x20: return PacketIncomingType.KeepAlive;
-                    case 0x25: return PacketIncomingType.JoinGame;
-                    case 0x0E: return PacketIncomingType.ChatMessage;
-                    case 0x3A: return PacketIncomingType.Respawn;
-                    case 0x35: return PacketIncomingType.PlayerPositionAndLook;
-                    case 0x21: return PacketIncomingType.ChunkData;
-                    case 0x0F: return PacketIncomingType.MultiBlockChange;
-                    case 0x0B: return PacketIncomingType.BlockChange;
-                    // MapChunkBulk does not exist since 1.9
-                    case 0x1D: return PacketIncomingType.UnloadChunk;
-                    case 0x33: return PacketIncomingType.PlayerListUpdate;
-                    case 0x10: return PacketIncomingType.TabCompleteResult;
-                    case 0x18: return PacketIncomingType.PluginMessage;
-                    case 0x1A: return PacketIncomingType.KickPacket;
-                    // NetworkCompressionTreshold does not exist since 1.9
-                    case 0x39: return PacketIncomingType.ResourcePackSend;
-                    case 0x13: return PacketIncomingType.CloseWindow;
-                    case 0x2E: return PacketIncomingType.OpenWindow;
-                    case 0x14: return PacketIncomingType.WindowItems;
-                    case 0x16: return PacketIncomingType.SetSlot;
-                    case 0x00: return PacketIncomingType.SpawnEntity;
-                    case 0x02: return PacketIncomingType.SpawnLivingEntity;
-                    case 0x04: return PacketIncomingType.SpawnPlayer;
-                    case 0x37: return PacketIncomingType.DestroyEntities;
-                    case 0x17: return PacketIncomingType.SetCooldown;
-                    case 0x28: return PacketIncomingType.EntityPosition;
-                    case 0x29: return PacketIncomingType.EntityPositionAndRotation;
-                    case 0x58: return PacketIncomingType.EntityProperties;
-                    case 0x56: return PacketIncomingType.EntityTeleport;
-                    case 0x46: return PacketIncomingType.EntityVelocity;
-                    case 0x47: return PacketIncomingType.EntityEquipment;
-                    case 0x4E: return PacketIncomingType.TimeUpdate;
-                    case 0x49: return PacketIncomingType.UpdateHealth;
-                    case 0x48: return PacketIncomingType.SetExperience;
-                    case 0x3F: return PacketIncomingType.HeldItemChange;
-                    case 0x1C: return PacketIncomingType.Explosion;
-                    case 0x26: return PacketIncomingType.MapData;
-                    case 0x4F: return PacketIncomingType.Title;
                 }
             }
 
@@ -527,7 +485,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.UpdateSign: return 0x26;
                 }
             }
-            else if (protocol <= Protocol18Handler.MC1152Version) //MC 1.14 to 1.15.2
+            else // MC 1.14 to 1.15
             {
                 switch (packet)
                 {
@@ -552,33 +510,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.Animation: return 0x2A;
                     case PacketOutgoingType.PlayerDigging: return 0x1A;
                     case PacketOutgoingType.UpdateSign: return 0x29;
-                }
-            }
-            else
-            {
-                switch (packet)
-                {
-                    case PacketOutgoingType.KeepAlive: return 0x10;
-                    case PacketOutgoingType.ResourcePackStatus: return 0x20;
-                    case PacketOutgoingType.ChatMessage: return 0x03;
-                    case PacketOutgoingType.ClientStatus: return 0x04;
-                    case PacketOutgoingType.ClientSettings: return 0x05;
-                    case PacketOutgoingType.PluginMessage: return 0x0B;
-                    case PacketOutgoingType.TabComplete: return 0x06;
-                    case PacketOutgoingType.EntityAction: return 0x1C;
-                    case PacketOutgoingType.PlayerPosition: return 0x12;
-                    case PacketOutgoingType.PlayerPositionAndLook: return 0x13;
-                    case PacketOutgoingType.TeleportConfirm: return 0x00;
-                    case PacketOutgoingType.HeldItemChange: return 0x24;
-                    case PacketOutgoingType.InteractEntity: return 0x0E;
-                    case PacketOutgoingType.UseItem: return 0x2E;
-                    case PacketOutgoingType.ClickWindow: return 0x09;
-                    case PacketOutgoingType.CloseWindow: return 0x0A;
-                    case PacketOutgoingType.PlayerBlockPlacement: return 0x2C;
-                    case PacketOutgoingType.CreativeInventoryAction: return 0x27;
-                    case PacketOutgoingType.Animation: return 0x2B;
-                    case PacketOutgoingType.PlayerDigging: return 0x1B;
-                    case PacketOutgoingType.UpdateSign: return 0x2A;
                 }
             }
 
