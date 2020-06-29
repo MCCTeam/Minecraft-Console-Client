@@ -38,6 +38,8 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC114Version = 477;
         internal const int MC115Version = 573;
         internal const int MC1152Version = 578;
+        internal const int MC116Version = 735;
+        internal const int MC1161Version = 736;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -218,22 +220,51 @@ namespace MinecraftClient.Protocol.Handlers
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
                         handler.OnReceivePlayerEntityID(playerEntityID);
                         handler.OnGamemodeUpdate(Guid.Empty, dataTypes.ReadNextByte(packetData));
-                        if (protocolversion >= MC191Version)
+
+                        if (protocolversion >= MC116Version)
+                        {
+                            dataTypes.ReadNextByte(packetData);                       // Previous Gamemode - 1.16 and above
+                            int worldCount = dataTypes.ReadNextVarInt(packetData);    // World Count - 1.16 and above
+                            for (int i = 0; i < worldCount; i++)
+                                dataTypes.ReadNextString(packetData);                 // World Names - 1.16 and above
+                            dataTypes.ReadNextNbt(packetData);                        // Dimension Codec - 1.16 and above
+                        }
+
+                        //Current dimension - String identifier in 1.16, varInt below 1.16, byte below 1.9.1
+                        if (protocolversion >= MC116Version)
+                        {
+                            // TODO handle dimensions for 1.16+, needed for terrain handling
+                            dataTypes.ReadNextString(packetData);
+                            this.currentDimension = 0;
+                        }
+                        else if (protocolversion >= MC191Version)
                             this.currentDimension = dataTypes.ReadNextInt(packetData);
                         else
                             this.currentDimension = (sbyte)dataTypes.ReadNextByte(packetData);
+
                         if (protocolversion < MC114Version)
                             dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
+                        if (protocolversion >= MC116Version)
+                            dataTypes.ReadNextString(packetData);         // World Name - 1.16 and above
                         if (protocolversion >= MC115Version)
                             dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
-                        dataTypes.ReadNextByte(packetData);
-                        dataTypes.ReadNextString(packetData);
+
+                        dataTypes.ReadNextByte(packetData);               // Max Players
+
+                        if (protocolversion < MC116Version)
+                            dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
                         if (protocolversion >= MC114Version)
                             dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
                         if (protocolversion >= MC18Version)
                             dataTypes.ReadNextBool(packetData);           // Reduced debug info - 1.8 and above
                         if (protocolversion >= MC115Version)
                             dataTypes.ReadNextBool(packetData);           // Enable respawn screen - 1.15 and above
+
+                        if (protocolversion >= MC116Version)
+                        {
+                            dataTypes.ReadNextBool(packetData);           // Is Debug - 1.16 and above
+                            dataTypes.ReadNextBool(packetData);           // Is Flat - 1.16 and above
+                        }
                         break;
                     case PacketIncomingType.ChatMessage:
                         string message = dataTypes.ReadNextString(packetData);
@@ -249,13 +280,34 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnTextReceived(message, true);
                         break;
                     case PacketIncomingType.Respawn:
-                        this.currentDimension = dataTypes.ReadNextInt(packetData);
+                        if (protocolversion >= MC116Version)
+                        {
+                            // TODO handle dimensions for 1.16+, needed for terrain handling
+                            dataTypes.ReadNextString(packetData);
+                            this.currentDimension = 0;
+                        }
+                        else
+                        {
+                            // 1.15 and below
+                            this.currentDimension = dataTypes.ReadNextInt(packetData);
+                        }
+                        if (protocolversion >= MC116Version)
+                            dataTypes.ReadNextString(packetData);         // World Name - 1.16 and above
                         if (protocolversion < MC114Version)
                             dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
                         if (protocolversion >= MC115Version)
                             dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
-                        dataTypes.ReadNextByte(packetData);
-                        dataTypes.ReadNextString(packetData);
+                        dataTypes.ReadNextByte(packetData);               // Gamemode
+                        if (protocolversion >= MC116Version)
+                            dataTypes.ReadNextByte(packetData);           // Previous Game mode - 1.16 and above
+                        if (protocolversion < MC116Version)
+                            dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
+                        if (protocolversion >= MC116Version)
+                        {
+                            dataTypes.ReadNextBool(packetData);           // Is Debug - 1.16 and above
+                            dataTypes.ReadNextBool(packetData);           // Is Flat - 1.16 and above
+                            dataTypes.ReadNextBool(packetData);           // Copy metadata - 1.16 and above
+                        }
                         handler.OnRespawn();
                         break;
                     case PacketIncomingType.PlayerPositionAndLook:
@@ -1389,7 +1441,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-        
+
         public bool SendPlayerDigging(int status, Location location, Direction face)
         {
             try
