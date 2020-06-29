@@ -225,7 +225,7 @@ namespace MinecraftClient.Protocol.Handlers
               if (protocolversion >= MC116Version)
                 dataTypes.ReadNextVarInt(packetData);         // World Count - 1.16 and above
               if (protocolversion >= MC116Version)
-                dataTypes.ReadNextVarIntArray(packetData);    // World Names - 1.16 and above
+                dataTypes.ReadNextString(packetData);         // World Names - 1.16 and above
               if (protocolversion >= MC116Version)
                 dataTypes.ReadNextNbt(packetData);            // Dimension Codec - 1.16 and above
               if (protocolversion >= MC191Version)
@@ -241,7 +241,7 @@ namespace MinecraftClient.Protocol.Handlers
               if (protocolversion >= MC115Version)
                 dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
 
-              dataTypes.ReadNextByte(packetData);               // Max Players
+              dataTypes.ReadNextByte(packetData);             // Max Players
 
               if (protocolversion < MC116Version)
                 dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below

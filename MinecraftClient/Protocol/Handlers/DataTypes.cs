@@ -285,27 +285,6 @@ namespace MinecraftClient.Protocol.Handlers
     }
 
     /// <summary>
-    /// Read an integer from a cache of bytes and remove it from the cache
-    /// </summary>
-    /// <param name="cache">Cache of bytes to read from</param>
-    /// <returns>The integer</returns>
-    public int[] ReadNextVarIntArray(Queue<byte> cache)
-    {
-      string rawData = BitConverter.ToString(cache);
-      int i = 0;
-      int j = 0;
-      int k = 0;
-      while (true)
-      {
-        k = ReadNextByte(cache);
-        i |= (k & 0x7F) << j++ * 7;
-        if (j > 5) throw new OverflowException("VarInt too big " + rawData);
-        if ((k & 0x80) != 128) break;
-      }
-      return i;
-    }
-
-    /// <summary>
     /// Read an "extended short", which is actually an int of some kind, from the cache of bytes.
     /// This is only done with forge.  It looks like it's a normal short, except that if the high
     /// bit is set, it has an extra byte.
