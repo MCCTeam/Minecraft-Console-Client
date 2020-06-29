@@ -221,40 +221,43 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnReceivePlayerEntityID(playerEntityID);
                         handler.OnGamemodeUpdate(Guid.Empty, dataTypes.ReadNextByte(packetData));
                         if (protocolversion >= MC116Version)
-                            dataTypes.ReadNextByte(packetData);                     // Previous Gamemode - 1.16 and above
+                            dataTypes.ReadNextByte(packetData);           // Previous Gamemode - 1.16 and above
                         if (protocolversion >= MC116Version)
-                            dataTypes.ReadNextVarInt(packetData);                 // World Count - 1.16 and above
+                            dataTypes.ReadNextVarInt(packetData);         // World Count - 1.16 and above
                         if (protocolversion >= MC116Version)
-                            dataTypes.ReadNextString(packetData);                 // World Names - 1.16 and above
+                            dataTypes.ReadNextString(packetData);         // World Names - 1.16 and above
                         if (protocolversion >= MC116Version)
-                            dataTypes.ReadNextNbt(packetData);                        // Dimension Codec - 1.16 and above
+                            dataTypes.ReadNextNbt(packetData);            // Dimension Codec - 1.16 and above
+
+                        //Current dimension - String identifier in 1.16, number below 1.16
                         if (protocolversion >= MC191Version)
                             this.currentDimension = dataTypes.ReadNextInt(packetData);
                         else if (protocolversion >= MC116Version)
-                            this.currentDimension = dataTypes.ReadNextString(packetData); //In 1.16 it was changed to "Identifier" which seems to be a string
+                            this.currentDimension = dataTypes.ReadNextString(packetData);
                         else
                             this.currentDimension = (sbyte)dataTypes.ReadNextByte(packetData);
-                        if (protocolversion < MC114Version)
-                            dataTypes.ReadNextByte(packetData);                     // Difficulty - 1.13 and below
-                        if (protocolversion >= MC116Version)
-                            dataTypes.ReadNextString(packetData);                 // World Name - 1.16 and above
-                        if (protocolversion >= MC115Version)
-                            dataTypes.ReadNextLong(packetData);                     // Hashed world seed - 1.15 and above
 
-                        dataTypes.ReadNextByte(packetData);                         // Max Players
+                        if (protocolversion < MC114Version)
+                            dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
+                        if (protocolversion >= MC116Version)
+                            dataTypes.ReadNextString(packetData);         // World Name - 1.16 and above
+                        if (protocolversion >= MC115Version)
+                            dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
+
+                        dataTypes.ReadNextByte(packetData);               // Max Players
 
                         if (protocolversion < MC116Version)
-                            dataTypes.ReadNextString(packetData);                 // Level Type - 1.15 and below
+                            dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
                         if (protocolversion >= MC114Version)
-                            dataTypes.ReadNextVarInt(packetData);                 // View distance - 1.14 and above
+                            dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
                         if (protocolversion >= MC18Version)
-                            dataTypes.ReadNextBool(packetData);                     // Reduced debug info - 1.8 and above
+                            dataTypes.ReadNextBool(packetData);           // Reduced debug info - 1.8 and above
                         if (protocolversion >= MC115Version)
-                            dataTypes.ReadNextBool(packetData);                     // Enable respawn screen - 1.15 and above
+                            dataTypes.ReadNextBool(packetData);           // Enable respawn screen - 1.15 and above
                         if (protocolversion >= MC116Version)
-                            dataTypes.ReadNextBool(packetData);                     // Is Debug - 1.16 and above
+                            dataTypes.ReadNextBool(packetData);           // Is Debug - 1.16 and above
                         if (protocolversion >= MC116Version)
-                            dataTypes.ReadNextBool(packetData);                     // Is Flat - 1.16 and above
+                            dataTypes.ReadNextBool(packetData);           // Is Flat - 1.16 and above
                         break;
                     case PacketIncomingType.ChatMessage:
                         string message = dataTypes.ReadNextString(packetData);
@@ -1314,14 +1317,14 @@ namespace MinecraftClient.Protocol.Handlers
                 try
                 {
                     SendPacket(packetType, dataTypes.ConcatBytes(
-                            dataTypes.GetDouble(location.X),
-                            dataTypes.GetDouble(location.Y),
-                            protocolversion < MC18Version
-                                ? dataTypes.GetDouble(location.Y + 1.62)
-                                : new byte[0],
-                            dataTypes.GetDouble(location.Z),
-                            yawpitch,
-                            new byte[] { onGround ? (byte)1 : (byte)0 }));
+                        dataTypes.GetDouble(location.X),
+                        dataTypes.GetDouble(location.Y),
+                        protocolversion < MC18Version
+                            ? dataTypes.GetDouble(location.Y + 1.62)
+                            : new byte[0],
+                        dataTypes.GetDouble(location.Z),
+                        yawpitch,
+                        new byte[] { onGround ? (byte)1 : (byte)0 }));
                     return true;
                 }
                 catch (SocketException) { return false; }
