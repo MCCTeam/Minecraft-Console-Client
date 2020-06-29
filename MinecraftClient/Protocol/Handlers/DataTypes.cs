@@ -286,7 +286,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         /// <summary>
         /// Read an "extended short", which is actually an int of some kind, from the cache of bytes.
-        /// This is only done with forge.    It looks like it's a normal short, except that if the high
+        /// This is only done with forge.  It looks like it's a normal short, except that if the high
         /// bit is set, it has an extra byte.
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
@@ -615,7 +615,7 @@ namespace MinecraftClient.Protocol.Handlers
                     subsequentItemsBytes.AddRange(GetNbtField(item, out subsequentItemType));
                     if (subsequentItemType != firstItemType)
                         throw new System.IO.InvalidDataException(
-                                "GetNbt: Cannot encode object[] list with mixed types: " + firstItemTypeString + ", " + item.GetType().Name + " into NBT!");
+                            "GetNbt: Cannot encode object[] list with mixed types: " + firstItemTypeString + ", " + item.GetType().Name + " into NBT!");
                 }
 
                 // Build NBT list: type, length, item array
