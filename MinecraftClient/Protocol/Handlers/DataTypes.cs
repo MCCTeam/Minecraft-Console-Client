@@ -204,8 +204,8 @@ namespace MinecraftClient.Protocol.Handlers
         public byte[] ReadNextByteArray(Queue<byte> cache)
         {
             int len = protocolversion >= Protocol18Handler.MC18Version
-                    ? ReadNextVarInt(cache)
-                    : ReadNextShort(cache);
+                ? ReadNextVarInt(cache)
+                : ReadNextShort(cache);
             return ReadData(len, cache);
         }
 

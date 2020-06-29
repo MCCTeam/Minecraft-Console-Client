@@ -263,7 +263,7 @@ namespace MinecraftClient.Protocol.Handlers
                             //Hide system messages or xp bar messages?
                             byte messageType = dataTypes.ReadNextByte(packetData);
                             if ((messageType == 1 && !Settings.DisplaySystemMessages)
-                                    || (messageType == 2 && !Settings.DisplayXPBarMessages))
+                                || (messageType == 2 && !Settings.DisplayXPBarMessages))
                                 break;
                         }
                         catch (ArgumentOutOfRangeException) { /* No message type */ }
@@ -330,8 +330,8 @@ namespace MinecraftClient.Protocol.Handlers
                             int chunkZ = dataTypes.ReadNextInt(packetData);
                             bool chunksContinuous = dataTypes.ReadNextBool(packetData);
                             ushort chunkMask = protocolversion >= MC19Version
-                                    ? (ushort)dataTypes.ReadNextVarInt(packetData)
-                                    : dataTypes.ReadNextUShort(packetData);
+                                ? (ushort)dataTypes.ReadNextVarInt(packetData)
+                                : dataTypes.ReadNextUShort(packetData);
                             if (protocolversion < MC18Version)
                             {
                                 ushort addBitmap = dataTypes.ReadNextUShort(packetData);
@@ -343,7 +343,7 @@ namespace MinecraftClient.Protocol.Handlers
                             else
                             {
                                 if (protocolversion >= MC114Version)
-                                    dataTypes.ReadNextNbt(packetData);    // Heightmaps - 1.14 and above
+                                    dataTypes.ReadNextNbt(packetData);  // Heightmaps - 1.14 and above
                                 if (protocolversion >= MC115Version && chunksContinuous)
                                     dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
                                 int dataSize = dataTypes.ReadNextVarInt(packetData);
@@ -352,82 +352,82 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.MapData:
-                        int mapid = dataTypes.ReadNextVarInt(packetData);
-                        byte scale = dataTypes.ReadNextByte(packetData);
-                        bool trackingposition = dataTypes.ReadNextBool(packetData);
-                        bool locked = false;
-                        if (protocolversion >= MC114Version)
-                        {
-                            locked = dataTypes.ReadNextBool(packetData);
-                        }
-                        int iconcount = dataTypes.ReadNextVarInt(packetData);
-                        handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
-                        break;
+                            int mapid = dataTypes.ReadNextVarInt(packetData);
+                            byte scale = dataTypes.ReadNextByte(packetData);
+                            bool trackingposition = dataTypes.ReadNextBool(packetData);
+                            bool locked = false;
+                            if (protocolversion >= MC114Version)
+                            {
+                                locked = dataTypes.ReadNextBool(packetData);
+                            }
+                            int iconcount = dataTypes.ReadNextVarInt(packetData);
+                            handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
+                            break;
                     case PacketIncomingType.Title:
-                        if (protocolversion >= MC18Version)
-                        {
-                            int action2 = dataTypes.ReadNextVarInt(packetData);
-                            string titletext = String.Empty;
-                            string subtitletext = String.Empty;
-                            string actionbartext = String.Empty;
-                            string json = String.Empty;
-                            int fadein = -1;
-                            int stay = -1;
-                            int fadeout = -1;
-                            if (protocolversion >= MC110Version)
+                            if (protocolversion >= MC18Version)
                             {
-                                if (action2 == 0)
+                                int action2 = dataTypes.ReadNextVarInt(packetData);
+                                string titletext = String.Empty;
+                                string subtitletext = String.Empty;
+                                string actionbartext = String.Empty;
+                                string json = String.Empty;
+                                int fadein = -1;
+                                int stay = -1;
+                                int fadeout = -1;
+                                if (protocolversion >= MC110Version)
                                 {
-                                    json = titletext;
-                                    titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    if (action2 == 0)
+                                    {
+                                        json = titletext;
+                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 1)
+                                    {
+                                        json = subtitletext;
+                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 2)
+                                    {
+                                        json = actionbartext;
+                                        actionbartext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 3)
+                                    {
+                                        fadein = dataTypes.ReadNextInt(packetData);
+                                        stay = dataTypes.ReadNextInt(packetData);
+                                        fadeout = dataTypes.ReadNextInt(packetData);
+                                    }
                                 }
-                                else if (action2 == 1)
+                                else
                                 {
-                                    json = subtitletext;
-                                    subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    if (action2 == 0)
+                                    {
+                                        json = titletext;
+                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 1)
+                                    {
+                                        json = subtitletext;
+                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 2)
+                                    {
+                                        fadein = dataTypes.ReadNextInt(packetData);
+                                        stay = dataTypes.ReadNextInt(packetData);
+                                        fadeout = dataTypes.ReadNextInt(packetData);
+                                    }
                                 }
-                                else if (action2 == 2)
-                                {
-                                    json = actionbartext;
-                                    actionbartext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                }
-                                else if (action2 == 3)
-                                {
-                                    fadein = dataTypes.ReadNextInt(packetData);
-                                    stay = dataTypes.ReadNextInt(packetData);
-                                    fadeout = dataTypes.ReadNextInt(packetData);
-                                }
+                                handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
                             }
-                            else
-                            {
-                                if (action2 == 0)
-                                {
-                                    json = titletext;
-                                    titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                }
-                                else if (action2 == 1)
-                                {
-                                    json = subtitletext;
-                                    subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                }
-                                else if (action2 == 2)
-                                {
-                                    fadein = dataTypes.ReadNextInt(packetData);
-                                    stay = dataTypes.ReadNextInt(packetData);
-                                    fadeout = dataTypes.ReadNextInt(packetData);
-                                }
-                            }
-                            handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
-                        }
-                        break;
+                            break;
                     case PacketIncomingType.MultiBlockChange:
                         if (handler.GetTerrainEnabled())
                         {
                             int chunkX = dataTypes.ReadNextInt(packetData);
                             int chunkZ = dataTypes.ReadNextInt(packetData);
                             int recordCount = protocolversion < MC18Version
-                                    ? (int)dataTypes.ReadNextShort(packetData)
-                                    : dataTypes.ReadNextVarInt(packetData);
+                                ? (int)dataTypes.ReadNextShort(packetData)
+                                : dataTypes.ReadNextVarInt(packetData);
 
                             for (int i = 0; i < recordCount; i++)
                             {
@@ -504,8 +504,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 chunkZs[chunkColumnNo] = dataTypes.ReadNextInt(packetData);
                                 chunkMasks[chunkColumnNo] = dataTypes.ReadNextUShort(packetData);
                                 addBitmaps[chunkColumnNo] = protocolversion < MC18Version
-                                        ? dataTypes.ReadNextUShort(packetData)
-                                        : (ushort)0;
+                                    ? dataTypes.ReadNextUShort(packetData)
+                                    : (ushort)0;
                             }
 
                             //Process chunk records
@@ -694,14 +694,14 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.EntityEquipment:
-                        if (handler.GetEntityHandlingEnabled())
-                        {
-                            int entityid = dataTypes.ReadNextVarInt(packetData);
-                            int slot2 = dataTypes.ReadNextVarInt(packetData);
-                            Item item = dataTypes.ReadNextItemSlot(packetData);
-                            handler.OnEntityEquipment(entityid, slot2, item);
-                        }
-                        break;
+                            if (handler.GetEntityHandlingEnabled())
+                            {
+                                int entityid = dataTypes.ReadNextVarInt(packetData);
+                                int slot2 = dataTypes.ReadNextVarInt(packetData);
+                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                handler.OnEntityEquipment(entityid, slot2, item);
+                            }
+                            break;
                     case PacketIncomingType.SpawnLivingEntity:
                         if (handler.GetEntityHandlingEnabled())
                         {
@@ -860,13 +860,13 @@ namespace MinecraftClient.Protocol.Handlers
                 if (innerException is ThreadAbortException || innerException is SocketException || innerException.InnerException is SocketException)
                     throw; //Thread abort or Connection lost rather than invalid data
                 throw new System.IO.InvalidDataException(
-                        String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
-                                Protocol18PacketTypes.GetPacketIncomingType(packetID, protocolversion),
-                                packetID,
-                                protocolversion,
-                                login_phase,
-                                innerException.GetType()),
-                        innerException);
+                    String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
+                        Protocol18PacketTypes.GetPacketIncomingType(packetID, protocolversion),
+                        packetID,
+                        protocolversion,
+                        login_phase,
+                        innerException.GetType()),
+                    innerException);
             }
         }
 
@@ -1175,8 +1175,8 @@ namespace MinecraftClient.Protocol.Handlers
         public int GetMaxChatMessageLength()
         {
             return protocolversion > MC110Version
-                    ? 256
-                    : 100;
+                ? 256
+                : 100;
         }
 
         /// <summary>
@@ -1271,8 +1271,8 @@ namespace MinecraftClient.Protocol.Handlers
                 fields.AddRange(dataTypes.GetString(language));
                 fields.Add(viewDistance);
                 fields.AddRange(protocolversion >= MC19Version
-                        ? dataTypes.GetVarInt(chatMode)
-                        : new byte[] { chatMode });
+                    ? dataTypes.GetVarInt(chatMode)
+                    : new byte[] { chatMode });
                 fields.Add(chatColors ? (byte)1 : (byte)0);
                 if (protocolversion < MC18Version)
                 {
@@ -1317,8 +1317,8 @@ namespace MinecraftClient.Protocol.Handlers
                             dataTypes.GetDouble(location.X),
                             dataTypes.GetDouble(location.Y),
                             protocolversion < MC18Version
-                                    ? dataTypes.GetDouble(location.Y + 1.62)
-                                    : new byte[0],
+                                ? dataTypes.GetDouble(location.Y + 1.62)
+                                : new byte[0],
                             dataTypes.GetDouble(location.Z),
                             yawpitch,
                             new byte[] { onGround ? (byte)1 : (byte)0 }));
@@ -1410,9 +1410,9 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (protocolversion < MC19Version)
                 return false; // Packet does not exist prior to MC 1.9
-                                            // According to https://wiki.vg/index.php?title=Protocol&oldid=5486#Player_Block_Placement
-                                            // MC 1.7 does this using Player Block Placement with special values
-                                            // TODO once Player Block Placement is implemented for older versions
+                              // According to https://wiki.vg/index.php?title=Protocol&oldid=5486#Player_Block_Placement
+                              // MC 1.7 does this using Player Block Placement with special values
+                              // TODO once Player Block Placement is implemented for older versions
             try
             {
                 List<byte> packet = new List<byte>();
