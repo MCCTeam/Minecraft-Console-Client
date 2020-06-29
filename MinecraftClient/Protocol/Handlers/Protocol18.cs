@@ -280,7 +280,7 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnTextReceived(message, true);
                         break;
                     case PacketIncomingType.Respawn:
-                        if (protocolversion < MC116Version)
+                        if (protocolversion >= MC116Version)
                         {
                             // TODO handle dimensions for 1.16+, needed for terrain handling
                             dataTypes.ReadNextString(packetData);
