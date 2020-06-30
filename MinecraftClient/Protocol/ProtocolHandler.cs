@@ -29,34 +29,44 @@ namespace MinecraftClient.Protocol
         /// <returns>TRUE if a Minecraft Service was found.</returns>
         public static bool MinecraftServiceLookup(ref string domain, ref ushort port)
         {
+            bool foundService = false;
+            string domainVal = domain;
+            ushort portVal = port;
+
             if (!String.IsNullOrEmpty(domain) && domain.Any(c => char.IsLetter(c)))
             {
-                try
+                AutoTimeout.Perform(() =>
                 {
-                    Console.WriteLine("Resolving {0}...", domain);
-                    Heijden.DNS.Response response = new Heijden.DNS.Resolver().Query("_minecraft._tcp." + domain, Heijden.DNS.QType.SRV);
-                    Heijden.DNS.RecordSRV[] srvRecords = response.RecordsSRV;
-                    if (srvRecords != null && srvRecords.Any())
+                    try
                     {
-                        //Order SRV records by priority and weight, then randomly
-                        Heijden.DNS.RecordSRV result = srvRecords
-                            .OrderBy(record => record.PRIORITY)
-                            .ThenByDescending(record => record.WEIGHT)
-                            .ThenBy(record => Guid.NewGuid())
-                            .First();
-                        string target = result.TARGET.Trim('.');
-                        ConsoleIO.WriteLineFormatted(String.Format("§8Found server {0}:{1} for domain {2}", target, result.PORT, domain));
-                        domain = target;
-                        port = result.PORT;
-                        return true;
+                        Console.WriteLine("Resolving {0}...", domainVal);
+                        Heijden.DNS.Response response = new Heijden.DNS.Resolver().Query("_minecraft._tcp." + domainVal, Heijden.DNS.QType.SRV);
+                        Heijden.DNS.RecordSRV[] srvRecords = response.RecordsSRV;
+                        if (srvRecords != null && srvRecords.Any())
+                        {
+                            //Order SRV records by priority and weight, then randomly
+                            Heijden.DNS.RecordSRV result = srvRecords
+                                .OrderBy(record => record.PRIORITY)
+                                .ThenByDescending(record => record.WEIGHT)
+                                .ThenBy(record => Guid.NewGuid())
+                                .First();
+                            string target = result.TARGET.Trim('.');
+                            ConsoleIO.WriteLineFormatted(String.Format("§8Found server {0}:{1} for domain {2}", target, result.PORT, domainVal));
+                            domainVal = target;
+                            portVal = result.PORT;
+                            foundService = true;
+                        }
                     }
-                }
-                catch (Exception e)
-                {
-                    ConsoleIO.WriteLineFormatted(String.Format("§8Failed to perform SRV lookup for {0}\n{1}: {2}", domain, e.GetType().FullName, e.Message));
-                }
+                    catch (Exception e)
+                    {
+                        ConsoleIO.WriteLineFormatted(String.Format("§8Failed to perform SRV lookup for {0}\n{1}: {2}", domainVal, e.GetType().FullName, e.Message));
+                    }
+                }, TimeSpan.FromSeconds(Settings.ResolveSrvRecordsShortTimeout ? 10 : 30));
             }
-            return false;
+
+            domain = domainVal;
+            port = portVal;
+            return foundService;
         }
 
         /// <summary>
