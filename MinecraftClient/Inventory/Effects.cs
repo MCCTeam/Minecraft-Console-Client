@@ -43,6 +43,5 @@ namespace MinecraftClient.Inventory
         DolphinsGrace = 30,
         BadOmen = 31,
         HerooftheVillage = 32,
-
     }
 }
