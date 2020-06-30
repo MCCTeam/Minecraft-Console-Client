@@ -110,6 +110,7 @@
     <Compile Include="Commands\UseItem.cs" />
     <Compile Include="Inventory\Container.cs" />
     <Compile Include="Inventory\ContainerType.cs" />
+    <Compile Include="Inventory\Effects.cs" />
     <Compile Include="Inventory\Item.cs" />
     <Compile Include="Inventory\ItemType.cs" />
     <Compile Include="Inventory\ItemTypeExtensions.cs" />
