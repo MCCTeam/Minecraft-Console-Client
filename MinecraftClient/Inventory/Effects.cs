@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace MinecraftClient.Inventory
 {
-    public enum Effect
+    /// <summary>
+    /// Represents a Minecraft effects
+    /// </summary>
+    public enum Effects
     {
         Speed = 1,
         Slowness = 2,
