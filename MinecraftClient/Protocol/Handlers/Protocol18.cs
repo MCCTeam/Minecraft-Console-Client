@@ -12,6 +12,9 @@ using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Inventory;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.Diagnostics;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -369,74 +372,74 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.MapData:
-                        int mapid = dataTypes.ReadNextVarInt(packetData);
-                        byte scale = dataTypes.ReadNextByte(packetData);
-                        bool trackingposition = dataTypes.ReadNextBool(packetData);
-                        bool locked = false;
-                        if (protocolversion >= MC114Version)
-                        {
-                            locked = dataTypes.ReadNextBool(packetData);
-                        }
-                        int iconcount = dataTypes.ReadNextVarInt(packetData);
-                        handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
-                        break;
+                            int mapid = dataTypes.ReadNextVarInt(packetData);
+                            byte scale = dataTypes.ReadNextByte(packetData);
+                            bool trackingposition = dataTypes.ReadNextBool(packetData);
+                            bool locked = false;
+                            if (protocolversion >= MC114Version)
+                            {
+                                locked = dataTypes.ReadNextBool(packetData);
+                            }
+                            int iconcount = dataTypes.ReadNextVarInt(packetData);
+                            handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
+                            break;
                     case PacketIncomingType.Title:
-                        if (protocolversion >= MC18Version)
-                        {
-                            int action2 = dataTypes.ReadNextVarInt(packetData);
-                            string titletext = String.Empty;
-                            string subtitletext = String.Empty;
-                            string actionbartext = String.Empty;
-                            string json = String.Empty;
-                            int fadein = -1;
-                            int stay = -1;
-                            int fadeout = -1;
-                            if (protocolversion >= MC110Version)
+                            if (protocolversion >= MC18Version)
                             {
-                                if (action2 == 0)
+                                int action2 = dataTypes.ReadNextVarInt(packetData);
+                                string titletext = String.Empty;
+                                string subtitletext = String.Empty;
+                                string actionbartext = String.Empty;
+                                string json = String.Empty;
+                                int fadein = -1;
+                                int stay = -1;
+                                int fadeout = -1;
+                                if (protocolversion >= MC110Version)
                                 {
-                                    json = titletext;
-                                    titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    if (action2 == 0)
+                                    {
+                                        json = titletext;
+                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 1)
+                                    {
+                                        json = subtitletext;
+                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 2)
+                                    {
+                                        json = actionbartext;
+                                        actionbartext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 3)
+                                    {
+                                        fadein = dataTypes.ReadNextInt(packetData);
+                                        stay = dataTypes.ReadNextInt(packetData);
+                                        fadeout = dataTypes.ReadNextInt(packetData);
+                                    }
                                 }
-                                else if (action2 == 1)
+                                else
                                 {
-                                    json = subtitletext;
-                                    subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    if (action2 == 0)
+                                    {
+                                        json = titletext;
+                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 1)
+                                    {
+                                        json = subtitletext;
+                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                    }
+                                    else if (action2 == 2)
+                                    {
+                                        fadein = dataTypes.ReadNextInt(packetData);
+                                        stay = dataTypes.ReadNextInt(packetData);
+                                        fadeout = dataTypes.ReadNextInt(packetData);
+                                    }
                                 }
-                                else if (action2 == 2)
-                                {
-                                    json = actionbartext;
-                                    actionbartext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                }
-                                else if (action2 == 3)
-                                {
-                                    fadein = dataTypes.ReadNextInt(packetData);
-                                    stay = dataTypes.ReadNextInt(packetData);
-                                    fadeout = dataTypes.ReadNextInt(packetData);
-                                }
+                                handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
                             }
-                            else
-                            {
-                                if (action2 == 0)
-                                {
-                                    json = titletext;
-                                    titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                }
-                                else if (action2 == 1)
-                                {
-                                    json = subtitletext;
-                                    subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                }
-                                else if (action2 == 2)
-                                {
-                                    fadein = dataTypes.ReadNextInt(packetData);
-                                    stay = dataTypes.ReadNextInt(packetData);
-                                    fadeout = dataTypes.ReadNextInt(packetData);
-                                }
-                            }
-                            handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
-                        }
-                        break;
+                            break;
                     case PacketIncomingType.MultiBlockChange:
                         if (handler.GetTerrainEnabled())
                         {
@@ -711,14 +714,14 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.EntityEquipment:
-                        if (handler.GetEntityHandlingEnabled())
-                        {
-                            int entityid = dataTypes.ReadNextVarInt(packetData);
-                            int slot2 = dataTypes.ReadNextVarInt(packetData);
-                            Item item = dataTypes.ReadNextItemSlot(packetData);
-                            handler.OnEntityEquipment(entityid, slot2, item);
-                        }
-                        break;
+                            if (handler.GetEntityHandlingEnabled())
+                            {
+                                int entityid = dataTypes.ReadNextVarInt(packetData);
+                                int slot2 = dataTypes.ReadNextVarInt(packetData);
+                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                handler.OnEntityEquipment(entityid, slot2, item);
+                            }
+                            break;
                     case PacketIncomingType.SpawnLivingEntity:
                         if (handler.GetEntityHandlingEnabled())
                         {
@@ -880,6 +883,13 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.HeldItemChange:
                         byte slot = dataTypes.ReadNextByte(packetData);
                         handler.OnHeldItemChange(slot);
+                        break;
+                    case PacketIncomingType.ScoreboardObjective:
+                        string objectivename = dataTypes.ReadNextString(packetData);
+                        byte mode = dataTypes.ReadNextByte(packetData);
+                        string objectivevalue = dataTypes.ReadNextString(packetData);
+                        int type2 = dataTypes.ReadNextVarInt(packetData);
+                        handler.OnScoreboardObjective(objectivename, mode, objectivevalue, type2);
                         break;
                     default:
                         return false; //Ignored packet
