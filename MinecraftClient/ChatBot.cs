@@ -1053,7 +1053,7 @@ namespace MinecraftClient
         /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
+        public bool SendPlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
             return Handler.PlaceBlock(location, blockFace, hand);
         }
