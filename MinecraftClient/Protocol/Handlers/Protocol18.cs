@@ -1441,8 +1441,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-
-        // TODO: Interact at block location (e.g. chest minecart)
+        
         public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand)
         {
             try
@@ -1461,6 +1460,23 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+        
+        public bool SendInteractEntity(int EntityID, int type, int hand)
+        {
+            try
+            {
+                List<byte> fields = new List<byte>();
+                fields.AddRange(dataTypes.GetVarInt(EntityID));
+                fields.AddRange(dataTypes.GetVarInt(type));
+                fields.AddRange(dataTypes.GetVarInt(hand));
+                SendPacket(PacketOutgoingType.InteractEntity, fields);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+        
         public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z)
         {
             return false;
