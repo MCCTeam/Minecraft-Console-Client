@@ -714,14 +714,14 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case PacketIncomingType.EntityEquipment:
-                            if (handler.GetEntityHandlingEnabled())
-                            {
-                                int entityid = dataTypes.ReadNextVarInt(packetData);
-                                int slot2 = dataTypes.ReadNextVarInt(packetData);
-                                Item item = dataTypes.ReadNextItemSlot(packetData);
-                                handler.OnEntityEquipment(entityid, slot2, item);
-                            }
-                            break;
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int entityid = dataTypes.ReadNextVarInt(packetData);
+                            int slot2 = dataTypes.ReadNextVarInt(packetData);
+                            Item item = dataTypes.ReadNextItemSlot(packetData);
+                            handler.OnEntityEquipment(entityid, slot2, item);
+                        }
+                        break;
                     case PacketIncomingType.SpawnLivingEntity:
                         if (handler.GetEntityHandlingEnabled())
                         {
@@ -902,7 +902,9 @@ namespace MinecraftClient.Protocol.Handlers
                         string objectivename2 = dataTypes.ReadNextString(packetData);
                         int value = -1;
                         if (action3 != 1)
+                        {
                             value = dataTypes.ReadNextVarInt(packetData);
+                        }
                         handler.OnUpdateScore(entityname, action3, objectivename2, value);
                         break;
                     default:
@@ -1116,6 +1118,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Completed text</returns>
         IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
         {
+
             if (String.IsNullOrEmpty(BehindCursor))
                 return new string[] { };
 
