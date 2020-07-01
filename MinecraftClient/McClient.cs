@@ -1008,7 +1008,18 @@ namespace MinecraftClient
         /// <returns>TRUE if interaction succeeded</returns>
         public bool InteractEntity(int EntityID, int type)
         {
-            return handler.SendInteractEntity(EntityID, type);
+            if (entities.ContainsKey(EntityID))
+            {
+                if (type == 0)
+                {
+                    return handler.SendInteractEntity(EntityID, type, 0);
+                }
+                else
+                {
+                    return handler.SendInteractEntity(EntityID, type);
+                }
+            }
+            else { return false; }
         }
 
         /// <summary>
