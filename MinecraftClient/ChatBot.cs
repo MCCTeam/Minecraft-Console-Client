@@ -260,6 +260,15 @@ namespace MinecraftClient
         /// <param name="duration">effect duration</param>
         /// <param name="flags">effect flags</param>
         public virtual void OnEntityEffect(Entity entity, Effects effect, int amplifier, int duration, byte flags) { }
+        
+        /// <summary>
+        /// Called when coreboardObjective
+        /// </summary>
+        /// <param name="objectivename">objective name</param>
+        /// <param name="mode">0 to create the scoreboard. 1 to remove the scoreboard. 2 to update the display text.</param>
+        /// <param name="objectivevalue">Only if mode is 0 or 2. The text to be displayed for the score</param>
+        /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
+        public virtual void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
