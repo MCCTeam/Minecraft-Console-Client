@@ -1023,7 +1023,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
         /// <returns>TRUE if animation successfully done</returns>
-        public bool DoAnimation(Hand hand = Hand.MainHand)
+        public bool SendAnimation(Hand hand = Hand.MainHand)
         {
             return Handler.DoAnimation((int)hand);
         }
