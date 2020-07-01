@@ -727,6 +727,15 @@ namespace MinecraftClient
         {
             return inventories;
         }
+        
+        /// <summary>
+        /// Get all Entityes
+        /// </summary>
+        /// <returns>All inventories</returns>
+        public Dictionary<int, Entity> GetEntities()
+        {
+            return entities;
+        }
 
         /// <summary>
         /// Get client player's inventory items
