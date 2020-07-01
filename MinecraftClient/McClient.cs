@@ -1711,7 +1711,9 @@ namespace MinecraftClient
         /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
         public void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type)
         {
-            DispatchBotEvent(bot => bot.OnScoreboardObjective(objectivename, mode, objectivevalue, type));
+            string json = objectivevalue;
+            objectivevalue = ChatParser.ParseText(objectivevalue);
+            DispatchBotEvent(bot => bot.OnScoreboardObjective(objectivename, mode, objectivevalue, type, json));
         }
         #endregion
     }
