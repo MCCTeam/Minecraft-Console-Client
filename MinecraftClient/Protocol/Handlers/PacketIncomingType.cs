@@ -54,6 +54,7 @@ namespace MinecraftClient.Protocol.Handlers
         MapData,
         Title,
         ScoreboardObjective,
+        UpdateScore,
 
         /// <summary>
         /// Represents a packet not implemented in MCC.
