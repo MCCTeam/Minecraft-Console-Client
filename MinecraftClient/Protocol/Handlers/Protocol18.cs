@@ -896,6 +896,15 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         handler.OnScoreboardObjective(objectivename, mode, objectivevalue, type2);
                         break;
+                    case PacketIncomingType.UpdateScore:
+                        string entityname = dataTypes.ReadNextString(packetData);
+                        byte action3 = dataTypes.ReadNextByte(packetData);
+                        string objectivename2 = dataTypes.ReadNextString(packetData);
+                        int value = -1;
+                        if (action3 != 1)
+                            value = dataTypes.ReadNextVarInt(packetData);
+                        handler.OnUpdateScore(entityname, action3, objectivename2, value);
+                        break;
                     default:
                         return false; //Ignored packet
                 }
