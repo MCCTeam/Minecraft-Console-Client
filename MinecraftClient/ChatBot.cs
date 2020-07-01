@@ -1021,11 +1021,11 @@ namespace MinecraftClient
         /// <summary>
         /// Plays animation (Player arm swing)
         /// </summary>
-        /// <param name="animation">0 for left arm, 1 for right arm</param>
-        /// <returns>TRUE in case of success</returns>
-        protected bool SendAnimation(int animation)
+        /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
+        /// <returns>TRUE if animation successfully done</returns>
+        public bool DoAnimation(Hand hand = Hand.MainHand)
         {
-            return Handler.DoAnimation(animation);
+            return handler.SendAnimation((int)hand, playerEntityID);
         }
 
         /// <summary>
