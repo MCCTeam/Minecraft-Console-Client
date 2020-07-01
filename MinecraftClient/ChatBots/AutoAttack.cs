@@ -46,7 +46,7 @@ namespace MinecraftClient.ChatBots
                         bool shouldAttack = handleEntity(entity.Value);
                         if (shouldAttack)
                         {
-                            DoAnimation(Hand.MainHand); // Hit Animation
+                            SendAnimation(Inventory.Hand.MainHand); // Hit Animation
                             InteractEntity(entity.Key, 1); // hit the entity!
                         }
                     }
