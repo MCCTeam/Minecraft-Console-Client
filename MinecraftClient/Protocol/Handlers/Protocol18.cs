@@ -12,7 +12,6 @@ using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Inventory;
-using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Diagnostics;
 
