@@ -1155,9 +1155,13 @@ namespace MinecraftClient.Protocol.Handlers
             SendPacket(PacketOutgoingType.TabComplete, tabcomplete_packet);
 
             int wait_left = 50; //do not wait more than 5 seconds (50 * 100 ms)
-            while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
-            if (autocomplete_result.Count > 0)
-                ConsoleIO.WriteLineFormatted("§8" + String.Join(" ", autocomplete_result), false);
+            Thread t1 = new Thread(new ThreadStart(delegate
+            {
+                while (wait_left > 0 && !autocomplete_received) { System.Threading.Thread.Sleep(100); wait_left--; }
+                if (autocomplete_result.Count > 0)
+                    ConsoleIO.WriteLineFormatted("§8" + String.Join(" ", autocomplete_result), false);
+            }));
+            t1.Start();
             return autocomplete_result;
         }
 
