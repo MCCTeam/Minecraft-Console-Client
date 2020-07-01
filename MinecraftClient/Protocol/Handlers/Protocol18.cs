@@ -887,8 +887,13 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.ScoreboardObjective:
                         string objectivename = dataTypes.ReadNextString(packetData);
                         byte mode = dataTypes.ReadNextByte(packetData);
-                        string objectivevalue = dataTypes.ReadNextString(packetData);
-                        int type2 = dataTypes.ReadNextVarInt(packetData);
+                        string objectivevalue = String.Empty;
+                        int type2 = -1;
+                        if (mode == 0 || mode == 2)
+                        {
+                            objectivevalue = dataTypes.ReadNextString(packetData);
+                            type2 = dataTypes.ReadNextVarInt(packetData);
+                        }
                         handler.OnScoreboardObjective(objectivename, mode, objectivevalue, type2);
                         break;
                     default:
