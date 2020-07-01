@@ -722,7 +722,7 @@ namespace MinecraftClient
         /// <summary>
         /// Get all inventories. ID 0 is the player inventory.
         /// </summary>
-        /// <returns>All Entityes</returns>
+        /// <returns>All inventories</returns>
         public Dictionary<int, Container> GetInventories()
         {
             return inventories;
@@ -731,7 +731,7 @@ namespace MinecraftClient
         /// <summary>
         /// Get all Entityes
         /// </summary>
-        /// <returns>All inventories</returns>
+        /// <returns>All Entities</returns>
         public Dictionary<int, Entity> GetEntities()
         {
             return entities;
