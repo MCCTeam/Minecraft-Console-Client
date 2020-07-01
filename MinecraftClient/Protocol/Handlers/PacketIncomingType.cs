@@ -53,7 +53,8 @@ namespace MinecraftClient.Protocol.Handlers
         Explosion,
         MapData,
         Title,
-        
+        ScoreboardObjective,
+
         /// <summary>
         /// Represents a packet not implemented in MCC.
         /// </summary>
