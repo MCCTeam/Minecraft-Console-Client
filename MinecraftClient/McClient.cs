@@ -1014,14 +1014,15 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="EntityID"></param>
         /// <param name="type">0: interact, 1: attack, 2: interact at</param>
+        /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
         /// <returns>TRUE if interaction succeeded</returns>
-        public bool InteractEntity(int EntityID, int type)
+        public bool InteractEntity(int EntityID, int type, Hand hand = Hand.MainHand)
         {
             if (entities.ContainsKey(EntityID))
             {
                 if (type == 0)
                 {
-                    return handler.SendInteractEntity(EntityID, type, 0);
+                    return handler.SendInteractEntity(EntityID, type, (int)hand);
                 }
                 else
                 {
