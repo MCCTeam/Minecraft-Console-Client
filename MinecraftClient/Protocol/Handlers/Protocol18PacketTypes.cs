@@ -68,6 +68,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x34: return PacketIncomingType.MapData;
                     case 0x45: return PacketIncomingType.Title;
                     case 0x3B: return PacketIncomingType.ScoreboardObjective;
+                    case 0x3C: return PacketIncomingType.UpdateScore;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1.10 and 1.11
@@ -114,6 +115,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x24: return PacketIncomingType.MapData;
                     case 0x45: return PacketIncomingType.Title;
                     case 0x3F: return PacketIncomingType.ScoreboardObjective;
+                    case 0x42: return PacketIncomingType.UpdateScore;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12.0
@@ -160,6 +162,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x24: return PacketIncomingType.MapData;
                     case 0x47: return PacketIncomingType.Title;
                     case 0x41: return PacketIncomingType.ScoreboardObjective;
+                    case 0x44: return PacketIncomingType.UpdateScore;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1122Version) // MC 1.12.2
@@ -206,6 +209,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x25: return PacketIncomingType.MapData;
                     case 0x48: return PacketIncomingType.Title;
                     case 0x42: return PacketIncomingType.ScoreboardObjective;
+                    case 0x45: return PacketIncomingType.UpdateScore;
                 }
             }
             else if (protocol < Protocol18Handler.MC114Version) // MC 1.13 to 1.13.2
@@ -252,6 +256,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x26: return PacketIncomingType.MapData;
                     case 0x4B: return PacketIncomingType.Title;
                     case 0x45: return PacketIncomingType.ScoreboardObjective;
+                    case 0x48: return PacketIncomingType.UpdateScore;
                 }
             }
             else if (protocol < Protocol18Handler.MC115Version) // MC 1.14 to 1.14.4
@@ -298,6 +303,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x26: return PacketIncomingType.MapData;
                     case 0x4F: return PacketIncomingType.Title;
                     case 0x49: return PacketIncomingType.ScoreboardObjective;
+                    case 0x4C: return PacketIncomingType.UpdateScore;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1152Version) // MC 1.15 to 1.15.2
@@ -344,6 +350,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x27: return PacketIncomingType.MapData;
                     case 0x50: return PacketIncomingType.Title;
                     case 0x4A: return PacketIncomingType.ScoreboardObjective;
+                    case 0x4D: return PacketIncomingType.UpdateScore;
+
                 }
             } else {
                 switch (packetID)
@@ -388,6 +396,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x26: return PacketIncomingType.MapData;
                     case 0x4F: return PacketIncomingType.Title;
                     case 0x4A: return PacketIncomingType.ScoreboardObjective;
+                    case 0x4D: return PacketIncomingType.UpdateScore;
                 }
             }
 
