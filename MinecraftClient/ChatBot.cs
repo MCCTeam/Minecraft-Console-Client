@@ -250,6 +250,16 @@ namespace MinecraftClient
         /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
         public virtual void OnEntityEquipment(Entity entity, int slot, Item item) { }
+        
+        /// <summary>
+        /// Called when the Entity use effects
+        /// </summary>
+        /// <param name="entityid">entity ID</param>
+        /// <param name="effect">effect id</param>
+        /// <param name="amplifier">effect amplifier</param>
+        /// <param name="duration">effect duration</param>
+        /// <param name="flags">effect flags</param>
+        public virtual void OnEntityEffect(Entity entity, Effects effect, int amplifier, int duration, byte flags) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
