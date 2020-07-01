@@ -12,6 +12,8 @@ using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Inventory;
+using System.Windows.Forms;
+using System.Data.SqlClient;
 using System.Diagnostics;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -382,62 +384,62 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
                             break;
                     case PacketIncomingType.Title:
-                            if (protocolversion >= MC18Version)
+                        if (protocolversion >= MC18Version)
+                        {
+                            int action2 = dataTypes.ReadNextVarInt(packetData);
+                            string titletext = String.Empty;
+                            string subtitletext = String.Empty;
+                            string actionbartext = String.Empty;
+                            string json = String.Empty;
+                            int fadein = -1;
+                            int stay = -1;
+                            int fadeout = -1;
+                            if (protocolversion >= MC110Version)
                             {
-                                int action2 = dataTypes.ReadNextVarInt(packetData);
-                                string titletext = String.Empty;
-                                string subtitletext = String.Empty;
-                                string actionbartext = String.Empty;
-                                string json = String.Empty;
-                                int fadein = -1;
-                                int stay = -1;
-                                int fadeout = -1;
-                                if (protocolversion >= MC110Version)
+                                if (action2 == 0)
                                 {
-                                    if (action2 == 0)
-                                    {
-                                        json = titletext;
-                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                    }
-                                    else if (action2 == 1)
-                                    {
-                                        json = subtitletext;
-                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                    }
-                                    else if (action2 == 2)
-                                    {
-                                        json = actionbartext;
-                                        actionbartext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                    }
-                                    else if (action2 == 3)
-                                    {
-                                        fadein = dataTypes.ReadNextInt(packetData);
-                                        stay = dataTypes.ReadNextInt(packetData);
-                                        fadeout = dataTypes.ReadNextInt(packetData);
-                                    }
+                                    json = titletext;
+                                    titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
                                 }
-                                else
+                                else if (action2 == 1)
                                 {
-                                    if (action2 == 0)
-                                    {
-                                        json = titletext;
-                                        titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                    }
-                                    else if (action2 == 1)
-                                    {
-                                        json = subtitletext;
-                                        subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                    }
-                                    else if (action2 == 2)
-                                    {
-                                        fadein = dataTypes.ReadNextInt(packetData);
-                                        stay = dataTypes.ReadNextInt(packetData);
-                                        fadeout = dataTypes.ReadNextInt(packetData);
-                                    }
+                                    json = subtitletext;
+                                    subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
                                 }
-                                handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
+                                else if (action2 == 2)
+                                {
+                                    json = actionbartext;
+                                    actionbartext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                }
+                                else if (action2 == 3)
+                                {
+                                    fadein = dataTypes.ReadNextInt(packetData);
+                                    stay = dataTypes.ReadNextInt(packetData);
+                                    fadeout = dataTypes.ReadNextInt(packetData);
+                                }
                             }
-                            break;
+                            else
+                            {
+                                if (action2 == 0)
+                                {
+                                    json = titletext;
+                                    titletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                }
+                                else if (action2 == 1)
+                                {
+                                    json = subtitletext;
+                                    subtitletext = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                }
+                                else if (action2 == 2)
+                                {
+                                    fadein = dataTypes.ReadNextInt(packetData);
+                                    stay = dataTypes.ReadNextInt(packetData);
+                                    fadeout = dataTypes.ReadNextInt(packetData);
+                                }
+                            }
+                            handler.OnTitle(action2, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json);
+                        }
+                        break;
                     case PacketIncomingType.MultiBlockChange:
                         if (handler.GetTerrainEnabled())
                         {
@@ -720,7 +722,7 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnEntityEquipment(entityid, slot2, item);
                         }
                         break;
-                    case PacketIncomingType.SpawnLivingEntity:
+                   case PacketIncomingType.SpawnLivingEntity:
                         if (handler.GetEntityHandlingEnabled())
                         {
                             Entity entity = dataTypes.ReadNextEntity(packetData, entityPalette, true);
@@ -1441,7 +1443,8 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-        
+
+        // TODO: Interact at block location (e.g. chest minecart)
         public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z, int hand)
         {
             try
@@ -1460,7 +1463,6 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-        
         public bool SendInteractEntity(int EntityID, int type, int hand)
         {
             try
@@ -1476,7 +1478,6 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
-        
         public bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z)
         {
             return false;
