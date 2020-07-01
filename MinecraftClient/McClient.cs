@@ -1038,9 +1038,9 @@ namespace MinecraftClient
         /// <param name="location">Location to place block to</param>
         /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
         /// <returns>TRUE if successfully placed</returns>
-        public bool PlaceBlock(Location location, Direction blockFace)
+        public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return handler.SendPlayerBlockPlacement(0, location, blockFace);
+            return handler.SendPlayerBlockPlacement((int)hand, location, blockFace);
         }
 
         /// <summary>
