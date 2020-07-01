@@ -745,6 +745,20 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnSpawnPlayer(EntityID, UUID, EntityLocation, Yaw, Pitch);
                         }
                         break;
+                    case PacketIncomingType.EntityEffect:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int entityid = dataTypes.ReadNextVarInt(packetData);
+                            Inventory.Effects effect = Effects.Speed;
+                            if (Enum.TryParse(dataTypes.ReadNextByte(packetData).ToString(), out effect))
+                            {
+                                int amplifier = dataTypes.ReadNextByte(packetData);
+                                int duration = dataTypes.ReadNextVarInt(packetData);
+                                byte flags = dataTypes.ReadNextByte(packetData);
+                                handler.OnEntityEffect(entityid, effect, amplifier, duration, flags);
+                            }
+                        }
+                        break;
                     case PacketIncomingType.DestroyEntities:
                         if (handler.GetEntityHandlingEnabled())
                         {
