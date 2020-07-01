@@ -269,6 +269,15 @@ namespace MinecraftClient
         /// <param name="objectivevalue">Only if mode is 0 or 2. The text to be displayed for the score</param>
         /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
         public virtual void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type, string json) { }
+        
+        /// <summary>
+        /// Called when DisplayScoreboard
+        /// </summary>
+        /// <param name="entityname">The entity whose score this is. For players, this is their username; for other entities, it is their UUID.</param>
+        /// <param name="action">0 to create/update an item. 1 to remove an item.</param>
+        /// <param name="objectivename">The name of the objective the score belongs to</param>
+        /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
+        public virtual void OnUpdateScore(string entityname, byte action, string objectivename, int value) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
