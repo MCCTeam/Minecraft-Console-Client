@@ -1055,7 +1055,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully placed</returns>
         public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return handler.PlaceBlock((int)hand, location, blockFace);
+            return Handler.PlaceBlock(location, blockFace, hand);
         }
 
         /// <summary>
