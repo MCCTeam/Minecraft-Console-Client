@@ -273,5 +273,15 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="EntityID">Player entity ID</param>
         void OnReceivePlayerEntityID(int EntityID);
+        
+        /// <summary>
+        /// Called when the Entity use effects
+        /// </summary>
+        /// <param name="entityid">entity ID</param>
+        /// <param name="effect">effect id</param>
+        /// <param name="amplifier">effect amplifier</param>
+        /// <param name="duration">effect duration</param>
+        /// <param name="flags">effect flags</param>
+        void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags);
     }
 }
