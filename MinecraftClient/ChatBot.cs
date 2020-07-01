@@ -799,6 +799,15 @@ namespace MinecraftClient
                 return Handler.GetWorld();
             return null;
         }
+        
+        /// <summary>
+        /// Get all Entityes
+        /// </summary>
+        /// <returns>All Entities</returns>
+        protected Dictionary<int, Entity> GetEntities()
+        {
+            return Handler.GetEntities();
+        }
 
         /// <summary>
         /// Get the current location of the player
