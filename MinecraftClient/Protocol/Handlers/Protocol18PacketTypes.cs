@@ -59,6 +59,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x18: return PacketIncomingType.EntityTeleport;
                     case 0x12: return PacketIncomingType.EntityVelocity;
                     case 0x04: return PacketIncomingType.EntityEquipment;
+                    case 0x1E: return PacketIncomingType.EntityEffect;
                     case 0x03: return PacketIncomingType.TimeUpdate;
                     case 0x06: return PacketIncomingType.UpdateHealth;
                     case 0x1F: return PacketIncomingType.SetExperience;
@@ -103,6 +104,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x49: return PacketIncomingType.EntityTeleport;
                     case 0x3B: return PacketIncomingType.EntityVelocity;
                     case 0x3C: return PacketIncomingType.EntityEquipment;
+                    case 0x4B: return PacketIncomingType.EntityEffect;
                     case 0x44: return PacketIncomingType.TimeUpdate;
                     case 0x3E: return PacketIncomingType.UpdateHealth;
                     case 0x3D: return PacketIncomingType.SetExperience;
@@ -147,6 +149,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x4B: return PacketIncomingType.EntityTeleport;
                     case 0x3D: return PacketIncomingType.EntityVelocity;
                     case 0x3E: return PacketIncomingType.EntityEquipment;
+                    case 0x4E: return PacketIncomingType.EntityEffect;
                     case 0x46: return PacketIncomingType.TimeUpdate;
                     case 0x40: return PacketIncomingType.UpdateHealth;
                     case 0x3F: return PacketIncomingType.SetExperience;
@@ -191,6 +194,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x4C: return PacketIncomingType.EntityTeleport;
                     case 0x3E: return PacketIncomingType.EntityVelocity;
                     case 0x3F: return PacketIncomingType.EntityEquipment;
+                    case 0x4F: return PacketIncomingType.EntityEffect;
                     case 0x47: return PacketIncomingType.TimeUpdate;
                     case 0x41: return PacketIncomingType.UpdateHealth;
                     case 0x40: return PacketIncomingType.SetExperience;
@@ -235,6 +239,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x50: return PacketIncomingType.EntityTeleport;
                     case 0x41: return PacketIncomingType.EntityVelocity;
                     case 0x42: return PacketIncomingType.EntityEquipment;
+                    case 0x53: return PacketIncomingType.EntityEffect;
                     case 0x4A: return PacketIncomingType.TimeUpdate;
                     case 0x44: return PacketIncomingType.UpdateHealth;
                     case 0x43: return PacketIncomingType.SetExperience;
@@ -279,6 +284,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x56: return PacketIncomingType.EntityTeleport;
                     case 0x41: return PacketIncomingType.EntityVelocity;
                     case 0x42: return PacketIncomingType.EntityEquipment;
+                    case 0x59: return PacketIncomingType.EntityEffect;
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     case 0x48: return PacketIncomingType.UpdateHealth;
                     case 0x45: return PacketIncomingType.SetExperience;
@@ -323,6 +329,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x57: return PacketIncomingType.EntityTeleport;
                     case 0x46: return PacketIncomingType.EntityVelocity;
                     case 0x47: return PacketIncomingType.EntityEquipment;
+                    case 0x5A: return PacketIncomingType.EntityEffect;
                     case 0x4F: return PacketIncomingType.TimeUpdate;
                     case 0x49: return PacketIncomingType.UpdateHealth;
                     case 0x48: return PacketIncomingType.SetExperience;
@@ -365,6 +372,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x56: return PacketIncomingType.EntityTeleport;
                     case 0x46: return PacketIncomingType.EntityVelocity;
                     case 0x47: return PacketIncomingType.EntityEquipment;
+                    case 0x5A: return PacketIncomingType.EntityEffect;
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     case 0x49: return PacketIncomingType.UpdateHealth;
                     case 0x48: return PacketIncomingType.SetExperience;
