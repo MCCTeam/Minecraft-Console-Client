@@ -1446,6 +1446,15 @@ namespace MinecraftClient
             entities.Add(entity.ID, entity);
             DispatchBotEvent(bot => bot.OnEntitySpawn(entity));
         }
+        
+        /// <summary>
+        /// Called when an entity effects
+        /// </summary>
+        public void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags)
+        {
+            if (entities.ContainsKey(entityid))
+                DispatchBotEvent(bot => bot.OnEntityEffect(entities[entityid], effect, amplifier, duration, flags));
+        }
 
         /// <summary>
         /// Called when a player spawns or enters the client's render distance
