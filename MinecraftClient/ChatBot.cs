@@ -997,10 +997,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="EntityID"></param>
         /// <param name="type">0: interact, 1: attack, 2: interact at</param>
+        /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
         /// <returns>TRUE in case of success</returns>
-        protected bool InteractEntity(int EntityID, int type)
+        protected bool InteractEntity(int EntityID, int type, Hand hand = Hand.MainHand)
         {
-            return Handler.InteractEntity(EntityID, type);
+            return Handler.InteractEntity(EntityID, type, hand);
         }
 
         /// <summary>
