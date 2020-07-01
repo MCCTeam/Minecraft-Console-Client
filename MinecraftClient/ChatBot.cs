@@ -1025,7 +1025,7 @@ namespace MinecraftClient
         /// <returns>TRUE if animation successfully done</returns>
         public bool DoAnimation(Hand hand = Hand.MainHand)
         {
-            return handler.SendAnimation((int)hand, playerEntityID);
+            return Handler.DoAnimation((int)hand);
         }
 
         /// <summary>
