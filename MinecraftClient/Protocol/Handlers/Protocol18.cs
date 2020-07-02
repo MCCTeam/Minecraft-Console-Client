@@ -1708,19 +1708,23 @@ namespace MinecraftClient.Protocol.Handlers
         
         public bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
         {
-            try
+            if (protocolversion <= MC113Version)
             {
-                List<byte> packet = new List<byte>();
-                packet.AddRange(dataTypes.GetLocation(location));
-                packet.AddRange(dataTypes.GetString(command));
-                packet.AddRange(dataTypes.GetVarInt((int)mode));
-                packet.Add((byte)flags);
-                SendPacket(PacketOutgoingType.UpdateSign, packet);
-                return true;
+                try
+                {
+                    List<byte> packet = new List<byte>();
+                    packet.AddRange(dataTypes.GetLocation(location));
+                    packet.AddRange(dataTypes.GetString(command));
+                    packet.AddRange(dataTypes.GetVarInt((int)mode));
+                    packet.Add((byte)flags);
+                    SendPacket(PacketOutgoingType.UpdateSign, packet);
+                    return true;
+                }
+                catch (SocketException) { return false; }
+                catch (System.IO.IOException) { return false; }
+                catch (ObjectDisposedException) { return false; }
             }
-            catch (SocketException) { return false; }
-            catch (System.IO.IOException) { return false; }
-            catch (ObjectDisposedException) { return false; }
+            else { return false;  }
         }
     }
 }
