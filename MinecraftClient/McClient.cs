@@ -802,7 +802,7 @@ namespace MinecraftClient
         {
             lock (locationLock)
             {
-                if (allowSmallTeleport && location.DistanceSquared(this.location) <= 32)
+                if (allowSmallTeleport)
                 {
                     // Allow small teleport within a range of 8 blocks. 1-step path to the desired location without checking anything
                     UpdateLocation(location, location); // Update yaw and pitch to look at next step
