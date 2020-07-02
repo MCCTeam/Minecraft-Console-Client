@@ -442,6 +442,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.Animation: return 0x0A;
                     case PacketOutgoingType.PlayerDigging: return 0x07;
                     case PacketOutgoingType.UpdateSign: return 0x12;
+                    case PacketOutgoingType.UpdateCommandBlock: return 0x20;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1,10 and 1.11
@@ -469,6 +470,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.Animation: return 0x1A;
                     case PacketOutgoingType.PlayerDigging: return 0x13;
                     case PacketOutgoingType.UpdateSign: return 0x19;
+                    case PacketOutgoingType.UpdateCommandBlock: return 0x20;
                 }
             }
             else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12
@@ -496,6 +498,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.Animation: return 0x1D;
                     case PacketOutgoingType.PlayerDigging: return 0x14;
                     case PacketOutgoingType.UpdateSign: return 0x1C;
+                    case PacketOutgoingType.UpdateCommandBlock: return 0x20;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1122Version) // 1.12.2
@@ -523,6 +526,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.Animation: return 0x1D;
                     case PacketOutgoingType.PlayerDigging: return 0x14;
                     case PacketOutgoingType.UpdateSign: return 0x1C;
+                    case PacketOutgoingType.UpdateCommandBlock: return 0x20;
                 }
             }
             else if (protocol < Protocol18Handler.MC114Version) // MC 1.13 to 1.13.2
@@ -550,6 +554,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.Animation: return 0x27;
                     case PacketOutgoingType.PlayerDigging: return 0x18;
                     case PacketOutgoingType.UpdateSign: return 0x26;
+                    case PacketOutgoingType.UpdateCommandBlock: return 0x22;
                 }
             }
             else if (protocol <= Protocol18Handler.MC1152Version) //MC 1.14 to 1.15.2
@@ -577,6 +582,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.Animation: return 0x2A;
                     case PacketOutgoingType.PlayerDigging: return 0x1A;
                     case PacketOutgoingType.UpdateSign: return 0x29;
+                    case PacketOutgoingType.UpdateCommandBlock: return 0x24;
                 }
             }
             else
@@ -604,6 +610,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.Animation: return 0x2B;
                     case PacketOutgoingType.PlayerDigging: return 0x1B;
                     case PacketOutgoingType.UpdateSign: return 0x2A;
+                    case PacketOutgoingType.UpdateCommandBlock: return 0x24;
                 }
             }
 
