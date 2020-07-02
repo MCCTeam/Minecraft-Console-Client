@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Data;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -26,13 +26,13 @@ namespace MinecraftClient.ChatBots
 
         public Options()
         {
-            path_mail = Path.GetFullPath(@"\mails.txt");             // Path where the mail file is saved. You can also apply a normal path like @"C:\Users\SampleUser\Desktop"
-            path_setting = Path.GetFullPath(@"\options.txt");        // Path where the settings are saved
-            interval_sendmail = 100;                                 // Intervall atempting to send mails / do a respawn [in 100 ms] -> eg. 100 * 100ms = 10 sec
-            maxSavedMails = 2000;                                    // How many mails you want to safe
-            maxSavedMails_Player = 3;                                // How many mails can be sent per player
-            daysTosaveMsg = 30;                                      // After how many days the message should get deleted
-            debug_msg = true;                                        // Disable debug Messages for a cleaner console
+            path_mail = AppDomain.CurrentDomain.BaseDirectory + "\\mails.txt";          // Path where the mail file is saved. You can also apply a normal path like @"C:\Users\SampleUser\Desktop"
+            path_setting = AppDomain.CurrentDomain.BaseDirectory + "\\options.txt";     // Path where the settings are saved
+            interval_sendmail = 100;                                                    // Intervall atempting to send mails / do a respawn [in 100 ms] -> eg. 100 * 100ms = 10 sec
+            maxSavedMails = 2000;                                                       // How many mails you want to safe
+            maxSavedMails_Player = 3;                                                   // How many mails can be sent per player
+            daysTosaveMsg = 30;                                                         // After how many days the message should get deleted
+            debug_msg = true;                                                           // Disable debug Messages for a cleaner console
 
             timevar_100ms = 0;
             lastReset = DateTime.UtcNow;
@@ -389,7 +389,7 @@ namespace MinecraftClient.ChatBots
 
                 if (options.debug_msg)
                 {
-                    LogToConsole(sender + " changed daystosavemsg to " + Convert.ToString(options.daysTosaveMsg));
+                    LogToConsole(sender + " changed daystosavemsg to: " + Convert.ToString(options.daysTosaveMsg));
                 }
             }
 
@@ -401,7 +401,7 @@ namespace MinecraftClient.ChatBots
 
                 if (options.debug_msg)
                 {
-                    LogToConsole(sender + " changed intervalsendmail to " + Convert.ToString(options.interval_sendmail));
+                    LogToConsole(sender + " changed intervalsendmail to: " + Convert.ToString(options.interval_sendmail));
                 }
             }
 
@@ -413,7 +413,7 @@ namespace MinecraftClient.ChatBots
 
                 if (options.debug_msg)
                 {
-                    LogToConsole(sender + " changed maxsavedmails to " + Convert.ToString(options.maxSavedMails));
+                    LogToConsole(sender + " changed maxsavedmails to: " + Convert.ToString(options.maxSavedMails));
                 }
             }
 
@@ -425,13 +425,13 @@ namespace MinecraftClient.ChatBots
 
                 if (options.debug_msg)
                 {
-                    LogToConsole(sender + " changed maxmailsperplayer to " + Convert.ToString(options.maxSavedMails_Player));
+                    LogToConsole(sender + " changed maxmailsperplayer to: " + Convert.ToString(options.maxSavedMails_Player));
                 }
             }
 
             if (message.Contains("listsettings"))
             {
-                SendPrivateMessage(sender, "debugmsg: " + Convert.ToString(options.debug_msg) + "; daystosavemsg: " + Convert.ToString(options.daysTosaveMsg) + "; intervalsendmail: " + Convert.ToString(options.interval_sendmail) + "; maxsavedmails: " + Convert.ToString(options.maxSavedMails) + "; maxsavedmails_player: " + Convert.ToString(options.maxSavedMails_Player));
+                SendPrivateMessage(sender, "debugmsg: " + Convert.ToString(options.debug_msg) + "; daystosavemsg: " + Convert.ToString(options.daysTosaveMsg) + "; intervalsendmail: " + Convert.ToString(options.interval_sendmail) + "; maxsavedmails: " + Convert.ToString(options.maxSavedMails) + "; maxsavedmails_player: " + Convert.ToString(options.maxSavedMails_Player + "; messagepath: " + options.path_mail + "; settingspath: " + options.path_setting));
             }
         }
 
@@ -518,7 +518,7 @@ namespace MinecraftClient.ChatBots
 
             if (options.debug_msg)
             {
-                LogToConsole("Saved mails to File! \n" + "Location: " + options.path_mail + "\n Time: " + Convert.ToString(DateTime.UtcNow));
+                LogToConsole("Saved mails to File!"  + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
         }
 
@@ -536,7 +536,7 @@ namespace MinecraftClient.ChatBots
 
             if (options.debug_msg)
             {
-                LogToConsole("Loaded mails from File! \n" + "Location: " + options.path_mail + "\n Time: " + Convert.ToString(DateTime.UtcNow));
+                LogToConsole("Loaded mails from File!" + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
         }
 
@@ -554,7 +554,7 @@ namespace MinecraftClient.ChatBots
 
             if (options.debug_msg)
             {
-                LogToConsole("Saved options to File! \n" + "Location: " + options.path_setting + "\n Time: " + Convert.ToString(DateTime.UtcNow));
+                LogToConsole("Saved options to File! " + "Location: " + options.path_setting + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
         }
 
@@ -572,7 +572,7 @@ namespace MinecraftClient.ChatBots
 
             if (options.debug_msg)
             {
-                LogToConsole("Loaded options from File! \n" + "Location: " + options.path_setting + "\n Time: " + Convert.ToString(DateTime.UtcNow));
+                LogToConsole("Loaded options from File! " + "Location: " + options.path_setting + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
         }
 
