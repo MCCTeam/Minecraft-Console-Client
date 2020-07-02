@@ -269,7 +269,7 @@ namespace MinecraftClient.ChatBots
                 {
                     LogToConsole("Respawning! \n Performed by: " + sender);
                 }
-                PerformInternalCommand("/respawn");
+                PerformInternalCommand("respawn");
             }
 
             if (message.Contains("deliver"))
