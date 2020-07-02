@@ -1089,5 +1089,54 @@ namespace MinecraftClient
         {
             return Handler.UpdateSign(location, line1, line2, line3, line4);
         }
+
+        /// <summary>
+        /// Register a command in command prompt
+        /// </summary>
+        /// <param name="CMDName">Name of the command</param>
+        /// <param name="CMDDesc">Description/usage of the command</param>
+        /// <param name="Run">Method for handling the command</param>
+        /// <returns>True if successfully registered</returns>
+        protected bool RegisterChatBotCommand(string CMDName, string CMDDesc, CommandRunner Run)
+        {
+            return Handler.RegisterCommand(CMDName, CMDDesc, Run);
+        }
+    }
+
+    /// <summary>
+    /// Command runner definition.
+    /// Returned string will be the output of the command
+    /// </summary>
+    /// <param name="command">Full command</param>
+    /// <param name="args">Arguments in the command</param>
+    /// <returns></returns>
+    public delegate string CommandRunner(string command, string[] args);
+
+    /// <summary>
+    /// Command class with constructor for creating command for ChatBots.
+    /// </summary>
+    public class ChatBotCommand : Command
+    {
+        public CommandRunner Runner;
+
+        public override string CMDName { get; }
+        public override string CMDDesc { get; }
+        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        {
+            return this.Runner(command, getArgs(command));
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="CMDName">Name of the command</param>
+        /// <param name="CMDDesc">Description/usage of the command</param>
+        /// <param name="runner">Method for handling the command</param>
+        public ChatBotCommand(string CMDName, string CMDDesc, CommandRunner runner)
+        {
+            this.CMDName = CMDName;
+            this.CMDDesc = CMDDesc;
+            this.Runner = runner;
+        }
     }
 }

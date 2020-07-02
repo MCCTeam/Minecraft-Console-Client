@@ -25,6 +25,7 @@ namespace MinecraftClient
         private static readonly List<string> cmd_names = new List<string>();
         private static readonly Dictionary<string, Command> cmds = new Dictionary<string, Command>();
         private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
+        private static bool CommandLoaded = false;
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
@@ -338,7 +339,7 @@ namespace MinecraftClient
         {
             /* Load commands from the 'Commands' namespace */
 
-            if (cmds.Count == 0)
+            if (!CommandLoaded)
             {
                 Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
                 foreach (Type type in cmds_classes)
@@ -359,6 +360,7 @@ namespace MinecraftClient
                         }
                     }
                 }
+                CommandLoaded = true;
             }
 
             /* Process the provided command */
@@ -571,6 +573,30 @@ namespace MinecraftClient
                     SendRespawnPacket();
             }
         }
+
+        /// <summary>
+        /// Register a command prompt command
+        /// </summary>
+        /// <param name="CMDName">Name of the command</param>
+        /// <param name="CMDDesc">Description/usage of the command</param>
+        /// <param name="runner">Method for handling the command</param>
+        /// <returns>True if successfully registered</returns>
+        public bool RegisterCommand(string CMDName, string CMDDesc, CommandRunner runner)
+        {
+            if (cmds.ContainsKey(CMDName.ToLower()))
+            {
+                return false;
+            }
+            else
+            {
+                Command cmd = new ChatBotCommand(CMDName, CMDDesc, runner);
+                cmds.Add(CMDName.ToLower(), cmd);
+                cmd_names.Add(CMDName.ToLower());
+                return true;
+            }
+        }
+
+        
 
         #region Management: Load/Unload ChatBots and Enable/Disable settings
 
