@@ -275,11 +275,10 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             //Hide system messages or xp bar messages?
                             byte messageType = dataTypes.ReadNextByte(packetData);
-                            if ((messageType == 1 && !Settings.DisplaySystemMessages))
+                            if ((messageType == 1 && !Settings.DisplaySystemMessages)
+                                || (messageType == 2 && !Settings.DisplayXPBarMessages))
                                 break;
-                            if (messageType == 2 && !Settings.DisplayXPBarMessages)
-                                handler.OnXPBarMessages(message, true);
-                            }
+                        }
                         catch (ArgumentOutOfRangeException) { /* No message type */ }
                         handler.OnTextReceived(message, true);
                         break;
