@@ -1093,7 +1093,18 @@ namespace MinecraftClient
             // TODO Open sign editor first https://wiki.vg/Protocol#Open_Sign_Editor
             return handler.SendUpdateSign(location, line1, line2, line3, line4);
         }
-
+        
+        /// <summary>
+        /// Update command block
+        /// </summary>
+        /// <param name="location">command block location</param>
+        /// <param name="command">command</param>
+        /// <param name="mode">command block mode</param>
+        /// <param name="flags">command block flags</param>
+        public bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
+        {
+            return handler.UpdateCommandBlock(location, command, mode, flags);
+        }
         #endregion
 
         #region Event handlers: An event occurs on the Server
