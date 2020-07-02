@@ -211,5 +211,14 @@ namespace MinecraftClient.Protocol
         /// <param name="line4">New line 4</param>
         /// <returns>True if packet was succcessfully sent</returns>
         bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4);
+        
+        /// <summary>
+        /// Update command block
+        /// </summary>
+        /// <param name="location">command block location</param>
+        /// <param name="command">command</param>
+        /// <param name="mode">command block mode</param>
+        /// <param name="flags">command block flags</param>
+        bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags);
     }
 }
