@@ -1314,7 +1314,26 @@ namespace MinecraftClient
             DispatchBotEvent(bot => bot.GetText(text));
             DispatchBotEvent(bot => bot.GetText(text, json));
         }
-
+        
+        /// <summary>
+        /// Received some text from the server
+        /// </summary>
+        /// <param name="text">Text received</param>
+        /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
+        public void OnXPBarMessages(string text, bool isJson)
+        {
+            List<string> links = new List<string>();
+            string json = null;
+            if (isJson)
+            {
+                json = text;
+                text = ChatParser.ParseText(json, links);
+            }
+            ConsoleIO.WriteLineFormatted(text, true);
+            DispatchBotEvent(bot => bot.OnXPBarMessages(text));
+            DispatchBotEvent(bot => bot.OnXPBarMessages(text, json));
+        }
+        
         /// <summary>
         /// Received a connection keep-alive from the server
         /// </summary>
