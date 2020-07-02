@@ -139,7 +139,7 @@ namespace MinecraftClient.ChatBots
             if (options.timevar_100ms == options.interval_sendmail)
             {
                 DeliverMail();
-                PerformInternalCommand("/respawn");
+                PerformInternalCommand("respawn");
 
                 if ((DateTime.Now - options.lastReset).TotalDays > options.daysTosaveMsg)
                 {
