@@ -26,8 +26,8 @@ namespace MinecraftClient.ChatBots
 
         public Options()
         {
-            path_mail = AppDomain.CurrentDomain.BaseDirectory + "\\mails.txt";          // Path where the mail file is saved. You can also apply a normal path like @"C:\Users\SampleUser\Desktop"
-            path_setting = AppDomain.CurrentDomain.BaseDirectory + "\\options.txt";     // Path where the settings are saved
+            path_mail = AppDomain.CurrentDomain.BaseDirectory + "mails.txt";          // Path where the mail file is saved. You can also apply a normal path like @"C:\Users\SampleUser\Desktop"
+            path_setting = AppDomain.CurrentDomain.BaseDirectory + "options.txt";     // Path where the settings are saved
             interval_sendmail = 100;                                                    // Intervall atempting to send mails / do a respawn [in 100 ms] -> eg. 100 * 100ms = 10 sec
             maxSavedMails = 2000;                                                       // How many mails you want to safe
             maxSavedMails_Player = 3;                                                   // How many mails can be sent per player
@@ -160,16 +160,15 @@ namespace MinecraftClient.ChatBots
             string message = "";
             string username = "";
 
-
-
             text = GetVerbatim(text);
 
-
-
-            if (IsPrivateMessage(text, ref message, ref username) && username.ToLower() != options.botname)
+            if (IsPrivateMessage(text, ref message, ref username))
             {
-                message = message.ToLower();
-                cmd_reader(message, username, isMessageFromMod(username));
+                if(username.ToLower() != options.botname.ToLower())
+                {
+                    message = message.ToLower();
+                    cmd_reader(message, username, isMessageFromMod(username));
+                }
             }
 
         }
@@ -377,7 +376,7 @@ namespace MinecraftClient.ChatBots
                         LogToConsole(sender + ": Turned Console Log off!");
                     }
                 }
-                SendPrivateMessage(sender, "Settings changed!");
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
                 SaveOptionsToFile();
             }
 
@@ -385,7 +384,7 @@ namespace MinecraftClient.ChatBots
             {
                 options.daysTosaveMsg = getIntInCommand(message, "daystosavemsg");
                 SaveOptionsToFile();
-                SendPrivateMessage(sender, "Settings changed!");
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
 
                 if (options.debug_msg)
                 {
@@ -397,7 +396,7 @@ namespace MinecraftClient.ChatBots
             {
                 options.interval_sendmail = getIntInCommand(message, "intervalsendmail");
                 SaveOptionsToFile();
-                SendPrivateMessage(sender, "Settings changed!");
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
 
                 if (options.debug_msg)
                 {
@@ -409,7 +408,7 @@ namespace MinecraftClient.ChatBots
             {
                 options.maxSavedMails = getIntInCommand(message, "maxsavedmails");
                 SaveOptionsToFile();
-                SendPrivateMessage(sender, "Settings changed!");
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
 
                 if (options.debug_msg)
                 {
@@ -421,12 +420,64 @@ namespace MinecraftClient.ChatBots
             {
                 options.maxSavedMails_Player = getIntInCommand(message, "maxmailsperplayer");
                 SaveOptionsToFile();
-                SendPrivateMessage(sender, "Settings changed!");
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
 
                 if (options.debug_msg)
                 {
                     LogToConsole(sender + " changed maxmailsperplayer to: " + Convert.ToString(options.maxSavedMails_Player));
                 }
+            }
+
+            if (message.Contains("changemailpath"))
+            {
+                string path = "";
+                for (int i = message.IndexOf("changemailpath") + "changemailpath".Length + 1; i < message.Length; i++)
+                {
+                    if (message[i] != Convert.ToChar(" "))
+                    {
+                        path += message[i];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                options.path_mail = AppDomain.CurrentDomain.BaseDirectory + path;
+                SendPrivateMessage(sender, "Settings changed!");
+                SaveOptionsToFile();
+                GetOptionsFromFile();
+
+                if (options.debug_msg)
+                {
+                    LogToConsole(sender + " changed mailpath to: " + Convert.ToString(options.path_mail));
+                }
+
+            }
+
+            if (message.Contains("changesettingspath"))
+            {
+                string path = "";
+                for (int i = message.IndexOf("changesettingspath") + "changesettingspath".Length + 1; i < message.Length; i++)
+                {
+                    if (message[i] != Convert.ToChar(" "))
+                    {
+                        path += message[i];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                options.path_setting = AppDomain.CurrentDomain.BaseDirectory + path;
+                SendPrivateMessage(sender, "Settings changed!");
+                SaveOptionsToFile();
+                GetOptionsFromFile();
+
+                if(options.debug_msg)
+                {
+                    LogToConsole(sender + " changed settingsspath to: " + Convert.ToString(options.path_setting));
+                }
+
             }
 
             if (message.Contains("listsettings"))
@@ -509,7 +560,6 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void SaveMailsToFile()
         {
-
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(options.path_mail, FileMode.Create, FileAccess.Write);
 
@@ -527,7 +577,6 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void GetMailsFromFile()
         {
-
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(options.path_mail, FileMode.Open, FileAccess.Read);
 
@@ -545,7 +594,6 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void SaveOptionsToFile()
         {
-
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(options.path_setting, FileMode.Create, FileAccess.Write);
 
