@@ -158,6 +158,9 @@ namespace MinecraftClient
 
             if (!singlecommand)
             {
+                /* Load commands from Commands namespace */
+                LoadCommands();
+
                 if (botsOnHold.Count == 0)
                 {
                     if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
@@ -337,32 +340,6 @@ namespace MinecraftClient
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
         public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
-            /* Load commands from the 'Commands' namespace */
-
-            if (!CommandLoaded)
-            {
-                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
-                foreach (Type type in cmds_classes)
-                {
-                    if (type.IsSubclassOf(typeof(Command)))
-                    {
-                        try
-                        {
-                            Command cmd = (Command)Activator.CreateInstance(type);
-                            cmds[cmd.CMDName.ToLower()] = cmd;
-                            cmd_names.Add(cmd.CMDName.ToLower());
-                            foreach (string alias in cmd.getCMDAliases())
-                                cmds[alias.ToLower()] = cmd;
-                        }
-                        catch (Exception e)
-                        {
-                            ConsoleIO.WriteLogLine(e.Message);
-                        }
-                    }
-                }
-                CommandLoaded = true;
-            }
-
             /* Process the provided command */
 
             string command_name = command.Split(' ')[0].ToLower();
@@ -409,6 +386,35 @@ namespace MinecraftClient
             }
             
             return true;
+        }
+
+        public void LoadCommands()
+        {
+            /* Load commands from the 'Commands' namespace */
+
+            if (!CommandLoaded)
+            {
+                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
+                foreach (Type type in cmds_classes)
+                {
+                    if (type.IsSubclassOf(typeof(Command)))
+                    {
+                        try
+                        {
+                            Command cmd = (Command)Activator.CreateInstance(type);
+                            cmds[cmd.CMDName.ToLower()] = cmd;
+                            cmd_names.Add(cmd.CMDName.ToLower());
+                            foreach (string alias in cmd.getCMDAliases())
+                                cmds[alias.ToLower()] = cmd;
+                        }
+                        catch (Exception e)
+                        {
+                            ConsoleIO.WriteLogLine(e.Message);
+                        }
+                    }
+                }
+                CommandLoaded = true;
+            }
         }
 
         /// <summary>
