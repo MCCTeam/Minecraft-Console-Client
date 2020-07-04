@@ -131,6 +131,15 @@ namespace MinecraftClient.Protocol
         /// <param name="Z">Z coordinate for "interact at"</param>
         /// <returns>True if packet was successfully sent</returns>
         bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z);
+        
+        /// <summary>
+        /// Send an entity interaction packet to the server.
+        /// </summary>
+        /// <param name="EntityID">Entity ID to interact with</param>
+        /// <param name="type">Type of interaction (0: interact, 1: attack, 2: interact at)</param>
+        /// <param name="hand">Only if Type is interact or interact at; 0: main hand, 1: off hand</param>
+        /// <returns>True if packet was successfully sent</returns>
+        bool SendInteractEntity(int EntityID, int type, int hand);
 
         /// <summary>
         /// Send a use item packet to the server
@@ -202,5 +211,14 @@ namespace MinecraftClient.Protocol
         /// <param name="line4">New line 4</param>
         /// <returns>True if packet was succcessfully sent</returns>
         bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4);
+        
+        /// <summary>
+        /// Update command block
+        /// </summary>
+        /// <param name="location">command block location</param>
+        /// <param name="command">command</param>
+        /// <param name="mode">command block mode</param>
+        /// <param name="flags">command block flags</param>
+        bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags);
     }
 }

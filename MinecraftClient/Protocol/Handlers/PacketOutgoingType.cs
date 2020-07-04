@@ -35,5 +35,6 @@ namespace MinecraftClient.Protocol.Handlers
         Animation,
         PlayerDigging,
         UpdateSign,
+        UpdateCommandBlock,
     }
 }

@@ -120,7 +120,7 @@ namespace MinecraftClient
         /// <param name="text">Text from the server</param>
         /// <param name="json">Raw JSON from the server. This parameter will be NULL on MC 1.5 or lower!</param>
         public virtual void GetText(string text, string json) { }
-
+        
         /// <summary>
         /// Is called when the client has been disconnected fom the server
         /// </summary>
@@ -250,6 +250,34 @@ namespace MinecraftClient
         /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
         public virtual void OnEntityEquipment(Entity entity, int slot, Item item) { }
+        
+        /// <summary>
+        /// Called when the Entity use effects
+        /// </summary>
+        /// <param name="entityid">entity ID</param>
+        /// <param name="effect">effect id</param>
+        /// <param name="amplifier">effect amplifier</param>
+        /// <param name="duration">effect duration</param>
+        /// <param name="flags">effect flags</param>
+        public virtual void OnEntityEffect(Entity entity, Effects effect, int amplifier, int duration, byte flags) { }
+        
+        /// <summary>
+        /// Called when coreboardObjective
+        /// </summary>
+        /// <param name="objectivename">objective name</param>
+        /// <param name="mode">0 to create the scoreboard. 1 to remove the scoreboard. 2 to update the display text.</param>
+        /// <param name="objectivevalue">Only if mode is 0 or 2. The text to be displayed for the score</param>
+        /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
+        public virtual void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type, string json) { }
+        
+        /// <summary>
+        /// Called when DisplayScoreboard
+        /// </summary>
+        /// <param name="entityname">The entity whose score this is. For players, this is their username; for other entities, it is their UUID.</param>
+        /// <param name="action">0 to create/update an item. 1 to remove an item.</param>
+        /// <param name="objectivename">The name of the objective the score belongs to</param>
+        /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
+        public virtual void OnUpdateScore(string entityname, byte action, string objectivename, int value) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
@@ -771,6 +799,15 @@ namespace MinecraftClient
                 return Handler.GetWorld();
             return null;
         }
+        
+        /// <summary>
+        /// Get all Entityes
+        /// </summary>
+        /// <returns>All Entities</returns>
+        protected Dictionary<int, Entity> GetEntities()
+        {
+            return Handler.GetEntities();
+        }
 
         /// <summary>
         /// Get the current location of the player
@@ -960,10 +997,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="EntityID"></param>
         /// <param name="type">0: interact, 1: attack, 2: interact at</param>
+        /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
         /// <returns>TRUE in case of success</returns>
-        protected bool InteractEntity(int EntityID, int type)
+        protected bool InteractEntity(int EntityID, int type, Hand hand = Hand.MainHand)
         {
-            return Handler.InteractEntity(EntityID, type);
+            return Handler.InteractEntity(EntityID, type, hand);
         }
 
         /// <summary>
@@ -983,11 +1021,11 @@ namespace MinecraftClient
         /// <summary>
         /// Plays animation (Player arm swing)
         /// </summary>
-        /// <param name="animation">0 for left arm, 1 for right arm</param>
-        /// <returns>TRUE in case of success</returns>
-        protected bool SendAnimation(int animation)
+        /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
+        /// <returns>TRUE if animation successfully done</returns>
+        public bool SendAnimation(Hand hand = Hand.MainHand)
         {
-            return Handler.DoAnimation(animation);
+            return Handler.DoAnimation((int)hand);
         }
 
         /// <summary>
@@ -1009,13 +1047,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Place block
+        /// Place the block at hand in the Minecraft world
         /// </summary>
-        /// <param name="location">Block location</param>
-        /// <returns></returns>
-        protected bool SendPlaceBlock(Location location, Direction blockFace)
+        /// <param name="location">Location to place block to</param>
+        /// <param name="blockFace">Block face (e.g. Direction.Down when clicking on the block below to place this block)</param>
+        /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
+        /// <returns>TRUE if successfully placed</returns>
+        public bool SendPlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return Handler.PlaceBlock(location, blockFace);
+            return Handler.PlaceBlock(location, blockFace, hand);
         }
 
         /// <summary>
@@ -1089,6 +1129,18 @@ namespace MinecraftClient
         {
             return Handler.UpdateSign(location, line1, line2, line3, line4);
         }
+        
+        /// <summary>
+        /// Update command block
+        /// </summary>
+        /// <param name="location">command block location</param>
+        /// <param name="command">command</param>
+        /// <param name="mode">command block mode</param>
+        /// <param name="flags">command block flags</param>
+        protected bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
+        {
+            return Handler.UpdateCommandBlock(location, command, mode, flags);
+        }
 
         /// <summary>
         /// Register a command in command prompt
@@ -1101,42 +1153,42 @@ namespace MinecraftClient
         {
             return Handler.RegisterCommand(CMDName, CMDDesc, Run);
         }
-    }
-
-    /// <summary>
-    /// Command runner definition.
-    /// Returned string will be the output of the command
-    /// </summary>
-    /// <param name="command">Full command</param>
-    /// <param name="args">Arguments in the command</param>
-    /// <returns></returns>
-    public delegate string CommandRunner(string command, string[] args);
-
-    /// <summary>
-    /// Command class with constructor for creating command for ChatBots.
-    /// </summary>
-    public class ChatBotCommand : Command
-    {
-        public CommandRunner Runner;
-
-        public override string CMDName { get; }
-        public override string CMDDesc { get; }
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
-        {
-            return this.Runner(command, getArgs(command));
-        }
 
         /// <summary>
-        /// Constructor
+        /// Command runner definition.
+        /// Returned string will be the output of the command
         /// </summary>
-        /// <param name="CMDName">Name of the command</param>
-        /// <param name="CMDDesc">Description/usage of the command</param>
-        /// <param name="runner">Method for handling the command</param>
-        public ChatBotCommand(string CMDName, string CMDDesc, CommandRunner runner)
+        /// <param name="command">Full command</param>
+        /// <param name="args">Arguments in the command</param>
+        /// <returns></returns>
+        public delegate string CommandRunner(string command, string[] args);
+
+        /// <summary>
+        /// Command class with constructor for creating command for ChatBots.
+        /// </summary>
+        public class ChatBotCommand : Command
         {
-            this.CMDName = CMDName;
-            this.CMDDesc = CMDDesc;
-            this.Runner = runner;
+            public CommandRunner Runner;
+
+            public override string CMDName { get; }
+            public override string CMDDesc { get; }
+            public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+            {
+                return this.Runner(command, getArgs(command));
+            }
+
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            /// <param name="CMDName">Name of the command</param>
+            /// <param name="CMDDesc">Description/usage of the command</param>
+            /// <param name="runner">Method for handling the command</param>
+            public ChatBotCommand(string CMDName, string CMDDesc, CommandRunner runner)
+            {
+                this.CMDName = CMDName;
+                this.CMDDesc = CMDDesc;
+                this.Runner = runner;
+            }
         }
     }
 }

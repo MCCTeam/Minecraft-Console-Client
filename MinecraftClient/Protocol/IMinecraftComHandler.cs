@@ -273,5 +273,33 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="EntityID">Player entity ID</param>
         void OnReceivePlayerEntityID(int EntityID);
+        
+        /// <summary>
+        /// Called when the Entity use effects
+        /// </summary>
+        /// <param name="entityid">entity ID</param>
+        /// <param name="effect">effect id</param>
+        /// <param name="amplifier">effect amplifier</param>
+        /// <param name="duration">effect duration</param>
+        /// <param name="flags">effect flags</param>
+        void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags);
+        
+        /// <summary>
+        /// Called when coreboardObjective
+        /// </summary>
+        /// <param name="objectivename">objective name</param>
+        /// <param name="mode">0 to create the scoreboard. 1 to remove the scoreboard. 2 to update the display text.</param>
+        /// <param name="objectivevalue">Only if mode is 0 or 2. The text to be displayed for the score</param>
+        /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
+        void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type);
+        
+        /// <summary>
+        /// Called when DisplayScoreboard
+        /// </summary>
+        /// <param name="entityname">The entity whose score this is. For players, this is their username; for other entities, it is their UUID.</param>
+        /// <param name="action">0 to create/update an item. 1 to remove an item.</param>
+        /// <param name="objectivename">The name of the objective the score belongs to</param>
+        /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
+        void OnUpdateScore(string entityname, byte action, string objectivename, int value);
     }
 }

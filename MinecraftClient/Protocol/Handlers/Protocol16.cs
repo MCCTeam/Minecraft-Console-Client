@@ -687,7 +687,17 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false; //Currently not implemented
         }
-
+        
+        public bool SendInteractEntity(int EntityID, int type, int hand)
+        {
+            return false; //Currently not implemented
+        }
+        
+        public bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
+        {
+            return false;  //Currently not implemented
+        }
+        
         public bool SendUseItem(int hand)
         {
             return false; //Currently not implemented

@@ -45,6 +45,7 @@ namespace MinecraftClient.Protocol.Handlers
         EntityTeleport,
         EntityEquipment,
         EntityVelocity,
+        EntityEffect,
         TimeUpdate,
         UpdateHealth,
         SetExperience,
@@ -52,7 +53,9 @@ namespace MinecraftClient.Protocol.Handlers
         Explosion,
         MapData,
         Title,
-        
+        ScoreboardObjective,
+        UpdateScore,
+
         /// <summary>
         /// Represents a packet not implemented in MCC.
         /// </summary>
