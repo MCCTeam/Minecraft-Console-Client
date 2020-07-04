@@ -25,6 +25,7 @@ namespace MinecraftClient
         private static readonly List<string> cmd_names = new List<string>();
         private static readonly Dictionary<string, Command> cmds = new Dictionary<string, Command>();
         private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
+        private static bool CommandLoaded = false;
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
@@ -157,6 +158,9 @@ namespace MinecraftClient
 
             if (!singlecommand)
             {
+                /* Load commands from Commands namespace */
+                LoadCommands();
+
                 if (botsOnHold.Count == 0)
                 {
                     if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
@@ -336,31 +340,6 @@ namespace MinecraftClient
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
         public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
-            /* Load commands from the 'Commands' namespace */
-
-            if (cmds.Count == 0)
-            {
-                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
-                foreach (Type type in cmds_classes)
-                {
-                    if (type.IsSubclassOf(typeof(Command)))
-                    {
-                        try
-                        {
-                            Command cmd = (Command)Activator.CreateInstance(type);
-                            cmds[cmd.CMDName.ToLower()] = cmd;
-                            cmd_names.Add(cmd.CMDName.ToLower());
-                            foreach (string alias in cmd.getCMDAliases())
-                                cmds[alias.ToLower()] = cmd;
-                        }
-                        catch (Exception e)
-                        {
-                            ConsoleIO.WriteLogLine(e.Message);
-                        }
-                    }
-                }
-            }
-
             /* Process the provided command */
 
             string command_name = command.Split(' ')[0].ToLower();
@@ -407,6 +386,35 @@ namespace MinecraftClient
             }
             
             return true;
+        }
+
+        public void LoadCommands()
+        {
+            /* Load commands from the 'Commands' namespace */
+
+            if (!CommandLoaded)
+            {
+                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
+                foreach (Type type in cmds_classes)
+                {
+                    if (type.IsSubclassOf(typeof(Command)))
+                    {
+                        try
+                        {
+                            Command cmd = (Command)Activator.CreateInstance(type);
+                            cmds[cmd.CMDName.ToLower()] = cmd;
+                            cmd_names.Add(cmd.CMDName.ToLower());
+                            foreach (string alias in cmd.getCMDAliases())
+                                cmds[alias.ToLower()] = cmd;
+                        }
+                        catch (Exception e)
+                        {
+                            ConsoleIO.WriteLogLine(e.Message);
+                        }
+                    }
+                }
+                CommandLoaded = true;
+            }
         }
 
         /// <summary>
@@ -571,6 +579,30 @@ namespace MinecraftClient
                     SendRespawnPacket();
             }
         }
+
+        /// <summary>
+        /// Register a command prompt command
+        /// </summary>
+        /// <param name="CMDName">Name of the command</param>
+        /// <param name="CMDDesc">Description/usage of the command</param>
+        /// <param name="runner">Method for handling the command</param>
+        /// <returns>True if successfully registered</returns>
+        public bool RegisterCommand(string CMDName, string CMDDesc, CommandRunner runner)
+        {
+            if (cmds.ContainsKey(CMDName.ToLower()))
+            {
+                return false;
+            }
+            else
+            {
+                Command cmd = new ChatBotCommand(CMDName, CMDDesc, runner);
+                cmds.Add(CMDName.ToLower(), cmd);
+                cmd_names.Add(CMDName.ToLower());
+                return true;
+            }
+        }
+
+        
 
         #region Management: Load/Unload ChatBots and Enable/Disable settings
 
