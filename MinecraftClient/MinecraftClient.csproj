@@ -123,6 +123,8 @@
     <Compile Include="Mapping\BlockPalettes\Palette115.cs" />
     <Compile Include="Mapping\BlockPalettes\BlockPaletteGenerator.cs" />
     <Compile Include="Mapping\BlockPalettes\BlockPalette.cs" />
+    <Compile Include="Mapping\CommandBlockFlags.cs" />
+    <Compile Include="Mapping\CommandBlockMode.cs" />
     <Compile Include="Mapping\Entity.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette113.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette.cs" />

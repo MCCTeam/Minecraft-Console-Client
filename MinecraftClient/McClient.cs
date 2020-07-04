@@ -581,28 +581,26 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Register a command prompt command
+        /// Register a custom console command
         /// </summary>
-        /// <param name="CMDName">Name of the command</param>
-        /// <param name="CMDDesc">Description/usage of the command</param>
-        /// <param name="runner">Method for handling the command</param>
+        /// <param name="cmdName">Name of the command</param>
+        /// <param name="cmdDesc">Description/usage of the command</param>
+        /// <param name="callback">Method for handling the command</param>
         /// <returns>True if successfully registered</returns>
-        public bool RegisterCommand(string CMDName, string CMDDesc, CommandRunner runner)
+        public bool RegisterCommand(string cmdName, string cmdDesc, ChatBot.CommandRunner callback)
         {
-            if (cmds.ContainsKey(CMDName.ToLower()))
+            if (cmds.ContainsKey(cmdName.ToLower()))
             {
                 return false;
             }
             else
             {
-                Command cmd = new ChatBotCommand(CMDName, CMDDesc, runner);
-                cmds.Add(CMDName.ToLower(), cmd);
-                cmd_names.Add(CMDName.ToLower());
+                Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, callback);
+                cmds.Add(cmdName.ToLower(), cmd);
+                cmd_names.Add(cmdName.ToLower());
                 return true;
             }
         }
-
-        
 
         #region Management: Load/Unload ChatBots and Enable/Disable settings
 
@@ -828,15 +826,15 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
-        /// <param name="allowSmallTeleport">Allow non-vanilla small teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false)
         {
             lock (locationLock)
             {
-                if (allowSmallTeleport)
+                if (allowDirectTeleport)
                 {
-                    // Allow small teleport within a range of 8 blocks. 1-step path to the desired location without checking anything
+                    // 1-step path to the desired location without checking anything
                     UpdateLocation(location, location); // Update yaw and pitch to look at next step
                     handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yaw, pitch);
                     return true;

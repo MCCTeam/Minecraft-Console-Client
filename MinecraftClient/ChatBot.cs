@@ -823,11 +823,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
-        /// <param name="allowSmallTeleport">Allow non-vanilla small teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <param name="allowDirectTeleport">Allow non-vanilla teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowSmallTeleport = false)
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false)
         {
-            return Handler.MoveTo(location, allowUnsafe, allowSmallTeleport);
+            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport);
         }
 
         /// <summary>
@@ -1145,13 +1145,13 @@ namespace MinecraftClient
         /// <summary>
         /// Register a command in command prompt
         /// </summary>
-        /// <param name="CMDName">Name of the command</param>
-        /// <param name="CMDDesc">Description/usage of the command</param>
-        /// <param name="Run">Method for handling the command</param>
+        /// <param name="cmdName">Name of the command</param>
+        /// <param name="cmdDesc">Description/usage of the command</param>
+        /// <param name="callback">Method for handling the command</param>
         /// <returns>True if successfully registered</returns>
-        protected bool RegisterChatBotCommand(string CMDName, string CMDDesc, CommandRunner Run)
+        protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, CommandRunner callback)
         {
-            return Handler.RegisterCommand(CMDName, CMDDesc, Run);
+            return Handler.RegisterCommand(cmdName, cmdDesc, callback);
         }
 
         /// <summary>
@@ -1160,7 +1160,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="command">Full command</param>
         /// <param name="args">Arguments in the command</param>
-        /// <returns></returns>
+        /// <returns>Command result to display to the user</returns>
         public delegate string CommandRunner(string command, string[] args);
 
         /// <summary>
@@ -1170,24 +1170,28 @@ namespace MinecraftClient
         {
             public CommandRunner Runner;
 
-            public override string CMDName { get; }
-            public override string CMDDesc { get; }
+            private readonly string _cmdName;
+            private readonly string _cmdDesc;
+
+            public override string CMDName { get { return _cmdName; } }
+            public override string CMDDesc { get { return _cmdDesc; } }
+
             public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
             {
                 return this.Runner(command, getArgs(command));
             }
 
             /// <summary>
-            /// Constructor
+            /// ChatBotCommand Constructor
             /// </summary>
             /// <param name="CMDName">Name of the command</param>
             /// <param name="CMDDesc">Description/usage of the command</param>
             /// <param name="runner">Method for handling the command</param>
-            public ChatBotCommand(string CMDName, string CMDDesc, CommandRunner runner)
+            public ChatBotCommand(string cmdName, string cmdDesc, CommandRunner callback)
             {
-                this.CMDName = CMDName;
-                this.CMDDesc = CMDDesc;
-                this.Runner = runner;
+                this._cmdName = cmdName;
+                this._cmdDesc = cmdDesc;
+                this.Runner = callback;
             }
         }
     }
