@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Data;
-using System.Data.SqlClient;
-using System.Text;
-using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
@@ -24,21 +20,19 @@ namespace MinecraftClient.ChatBots
         public int maxSavedMails_Player { get; set; }
         public int daysTosaveMsg { get; set; }
         public bool debug_msg { get; set; }
-        public string[] moderator = new string[1];
+        public string[] moderator = new string[0];
         public DateTime lastReset { get; set; }
         public int timevar_100ms { get; set; }
 
         public Options()
         {
-            path_mail = Path.GetFullPath(@"\mails.txt");             // Path where the mail file is saved. You can also apply a normal path like @"C:\Users\SampleUser\Desktop"
-            path_setting = Path.GetFullPath(@"\options.txt");        // Path where the settings are saved
-            botname = "Chatie";                                      // Ingamename of the bot
-            moderator[0] = "daenges";                                // Enter your own MC name. !!! CAUTION !!! Who you give mod previliges!
-            interval_sendmail = 100;                                 // Intervall atempting to send mails / do a respawn [in 100 ms] -> eg. 100 * 100ms = 10 sec
-            maxSavedMails = 2000;                                    // How many mails you want to safe
-            maxSavedMails_Player = 3;                                // How many mails can be sent per player
-            daysTosaveMsg = 30;                                      // After how many days the message should get deleted
-            debug_msg = true;                                        // Disable debug Messages for a cleaner console
+            path_mail = AppDomain.CurrentDomain.BaseDirectory + "mails.txt";          // Path where the mail file is saved. You can also apply a normal path like @"C:\Users\SampleUser\Desktop"
+            path_setting = AppDomain.CurrentDomain.BaseDirectory + "options.txt";     // Path where the settings are saved
+            interval_sendmail = 100;                                                    // Intervall atempting to send mails / do a respawn [in 100 ms] -> eg. 100 * 100ms = 10 sec
+            maxSavedMails = 2000;                                                       // How many mails you want to safe
+            maxSavedMails_Player = 3;                                                   // How many mails can be sent per player
+            daysTosaveMsg = 30;                                                         // After how many days the message should get deleted
+            debug_msg = true;                                                           // Disable debug Messages for a cleaner console
 
             timevar_100ms = 0;
             lastReset = DateTime.UtcNow;
@@ -134,6 +128,7 @@ namespace MinecraftClient.ChatBots
 
             deleteOldMails();
             options.lastReset = DateTime.UtcNow;
+            options.botname = GetUsername();
         }
 
         /// <summary>
@@ -144,7 +139,7 @@ namespace MinecraftClient.ChatBots
             if (options.timevar_100ms == options.interval_sendmail)
             {
                 DeliverMail();
-                PerformInternalCommand("/respawn");
+                PerformInternalCommand("respawn");
 
                 if ((DateTime.Now - options.lastReset).TotalDays > options.daysTosaveMsg)
                 {
@@ -165,16 +160,15 @@ namespace MinecraftClient.ChatBots
             string message = "";
             string username = "";
 
-
-
             text = GetVerbatim(text);
 
-
-
-            if (IsPrivateMessage(text, ref message, ref username) && username.ToLower() != options.botname)
+            if (IsPrivateMessage(text, ref message, ref username))
             {
-                message = message.ToLower();
-                cmd_reader(message, username, isMessageFromMod(username));
+                if(username.ToLower() != options.botname.ToLower())
+                {
+                    message = message.ToLower();
+                    cmd_reader(message, username, isMessageFromMod(username));
+                }
             }
 
         }
@@ -209,9 +203,13 @@ namespace MinecraftClient.ChatBots
                         }
                     }
 
-                    if (sender != string.Empty && destination != string.Empty && content != string.Empty)
+                    if (IsValidName(sender) && IsValidName(destination) && content != string.Empty)
                     {
                         AddMail(sender, destination, content);
+                    }
+                    else
+                    {
+                        SendPrivateMessage(sender, "Something went wrong!");
                     }
                 }
                 else
@@ -221,118 +219,292 @@ namespace MinecraftClient.ChatBots
                 clearLogged_msg();
             }
 
-            if (isMod)
+            if (isMod || options.moderator.Length == 0) // Delete the safe file of the bot to reset all mods || 2. otion to get the owner as a moderator.
             {
+                mod_Commands(message, sender);
+            }
+        }
 
-                // These commands can be exploited easily and may cause huge damage.
+        private void mod_Commands(string message, string sender)
+        {
 
-                
-                if (message.Contains("getmails"))
+
+            // These commands can be exploited easily and may cause huge damage.
+
+
+            if (message.Contains("getmails"))
+            {
+                if (options.debug_msg)
                 {
-                    if (options.debug_msg)
-                    {
-                        LogToConsole("Listing all Messages. \n Performed by: " + sender);
-                    }
-                    GetMailsFromFile();
-                    foreach (Message m in logged_msg)
-                    {
-                        LogToConsole(m.GetSender() + " " + m.GetDestination() + " " + m.GetContent() + " " + Convert.ToString(m.GetTimeStamp()));
-                    }
-
-                    clearLogged_msg();
+                    LogToConsole("Listing all Messages. \n Performed by: " + sender);
+                }
+                GetMailsFromFile();
+                foreach (Message m in logged_msg)
+                {
+                    LogToConsole(m.GetSender() + " " + m.GetDestination() + " " + m.GetContent() + " " + Convert.ToString(m.GetTimeStamp()));
                 }
 
-                /*
-                 // Only uncomment for testing reasons 
-                 
-                if (message.Contains("clearmails"))
+                clearLogged_msg();
+            }
+
+            /*
+             // Only uncomment for testing reasons 
+
+            if (message.Contains("clearmails"))
+            {
+                if (debug_msg)
                 {
-                    if (debug_msg)
-                    {
-                        LogToConsole("Clearing Messages.");
-                    }
-                    clearSavedMails();
+                    LogToConsole("Clearing Messages.");
                 }
-                */
-                
-                
+                clearSavedMails();
+            }
+            */
 
-                if (message.Contains("respawn"))
+
+
+            if (message.Contains("respawn"))
+            {
+                if (options.debug_msg)
                 {
-                    if (options.debug_msg)
+                    LogToConsole("Respawning! \n Performed by: " + sender);
+                }
+                PerformInternalCommand("respawn");
+            }
+
+            if (message.Contains("deliver"))
+            {
+                if (options.debug_msg)
+                {
+                    LogToConsole("Sending Mails! \n Performed by: " + sender);
+                }
+                DeliverMail();
+            }
+
+            if (message.Contains("reconnect"))
+            {
+                if (options.debug_msg)
+                {
+                    LogToConsole("Reconnecting! \n Performed by: " + sender);
+                }
+                SaveMailsToFile();
+                SaveOptionsToFile();
+                ReconnectToTheServer();
+            }
+
+            if (message.Contains("deleteoldmails"))
+            {
+                if (options.debug_msg)
+                {
+                    LogToConsole("Deleting old mails! \n Performed by: " + sender);
+                }
+                deleteOldMails();
+                SaveMailsToFile();
+            }
+
+            if (message.Contains("addmod"))
+            {
+                string name = "";
+
+                for (int i = message.IndexOf("addMod") + 7; i < message.Length; i++)
+                {
+                    if (message[i] != Convert.ToChar(" "))
                     {
-                        LogToConsole("Respawning! \n Performed by: " + sender);
+                        name += message[i];
                     }
-                    PerformInternalCommand("/respawn");
+                    else
+                    {
+                        break;
+                    }
                 }
 
-                if (message.Contains("deliver"))
+                addMod(name);
+                SendPrivateMessage(sender, name + "is now Moderator.");
+                SaveOptionsToFile();
+
+                if (options.debug_msg)
                 {
-                    if (options.debug_msg)
-                    {
-                        LogToConsole("Sending Mails! \n Performed by: " + sender);
-                    }
-                    DeliverMail();
-                }
-
-                if (message.Contains("reconnect"))
-                {
-                    if (options.debug_msg)
-                    {
-                        LogToConsole("Reconnecting! \n Performed by: " + sender);
-                    }
-                    ReconnectToTheServer();
-                }
-
-                if (message.Contains("addmod"))
-                {
-                    string name = "";
-
-                    for (int i = message.IndexOf("addMod") + 7; i < message.Length; i++)
-                    {
-                        if (message[i] != Convert.ToChar(" "))
-                        {
-                            name += message[i];
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    addMod(name);
-
-                    if (options.debug_msg)
-                    {
-                        LogToConsole("Added " + name + " as moderator! \n Performed by: " + sender);
-                    }
-                }
-
-                if (message.Contains("removemod"))
-                {
-                    string name = "";
-                   
-
-                    for (int i = message.IndexOf("addMod") + 7; i < message.Length; i++)
-                    {
-                        if (message[i] != Convert.ToChar(" "))
-                        {
-                            name += message[i];
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    removeMod(name);
-
-                    if (options.debug_msg)
-                    {
-                        LogToConsole("Removed " + name + " as moderator! \n Performed by: " + sender);
-                    }
+                    LogToConsole("Added " + name + " as moderator! \n Performed by: " + sender);
                 }
             }
+
+            if (message.Contains("removemod"))
+            {
+                string name = "";
+
+
+                for (int i = message.IndexOf("addMod") + 7; i < message.Length; i++)
+                {
+                    if (message[i] != Convert.ToChar(" "))
+                    {
+                        name += message[i];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                removeMod(name);
+                SendPrivateMessage(sender, name + "is no Moderator anymmore.");
+                SaveOptionsToFile();
+
+                if (options.debug_msg)
+                {
+                    LogToConsole("Removed " + name + " as moderator! \n Performed by: " + sender);
+                }
+            }
+
+            //////////////////////////////
+            // Change options through mc chat
+            //////////////////////////////
+
+            if (message.Contains("toggledebug"))
+            {
+                if (options.debug_msg)
+                {
+                    options.debug_msg = false;
+                    if (options.debug_msg)
+                    {
+                        LogToConsole(sender + ": Turned Console Log off!");
+                    }
+                }
+                else
+                {
+                    options.debug_msg = true;
+                    if (options.debug_msg)
+                    {
+                        LogToConsole(sender + ": Turned Console Log off!");
+                    }
+                }
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
+                SaveOptionsToFile();
+            }
+
+            if (message.Contains("daystosavemsg"))
+            {
+                options.daysTosaveMsg = getIntInCommand(message, "daystosavemsg");
+                SaveOptionsToFile();
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
+
+                if (options.debug_msg)
+                {
+                    LogToConsole(sender + " changed daystosavemsg to: " + Convert.ToString(options.daysTosaveMsg));
+                }
+            }
+
+            if (message.Contains("intervalsendmail"))
+            {
+                options.interval_sendmail = getIntInCommand(message, "intervalsendmail");
+                SaveOptionsToFile();
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
+
+                if (options.debug_msg)
+                {
+                    LogToConsole(sender + " changed intervalsendmail to: " + Convert.ToString(options.interval_sendmail));
+                }
+            }
+
+            if (message.Contains("maxsavedmails"))
+            {
+                options.maxSavedMails = getIntInCommand(message, "maxsavedmails");
+                SaveOptionsToFile();
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
+
+                if (options.debug_msg)
+                {
+                    LogToConsole(sender + " changed maxsavedmails to: " + Convert.ToString(options.maxSavedMails));
+                }
+            }
+
+            if (message.Contains("maxmailsperplayer"))
+            {
+                options.maxSavedMails_Player = getIntInCommand(message, "maxmailsperplayer");
+                SaveOptionsToFile();
+                SendPrivateMessage(sender, "Settings changed! Rejoin to apply!");
+
+                if (options.debug_msg)
+                {
+                    LogToConsole(sender + " changed maxmailsperplayer to: " + Convert.ToString(options.maxSavedMails_Player));
+                }
+            }
+
+            if (message.Contains("changemailpath"))
+            {
+                string path = "";
+                for (int i = message.IndexOf("changemailpath") + "changemailpath".Length + 1; i < message.Length; i++)
+                {
+                    if (message[i] != Convert.ToChar(" "))
+                    {
+                        path += message[i];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                options.path_mail = AppDomain.CurrentDomain.BaseDirectory + path;
+                SendPrivateMessage(sender, "Settings changed!");
+                SaveOptionsToFile();
+                GetOptionsFromFile();
+
+                if (options.debug_msg)
+                {
+                    LogToConsole(sender + " changed mailpath to: " + Convert.ToString(options.path_mail));
+                }
+
+            }
+
+            if (message.Contains("changesettingspath"))
+            {
+                string path = "";
+                for (int i = message.IndexOf("changesettingspath") + "changesettingspath".Length + 1; i < message.Length; i++)
+                {
+                    if (message[i] != Convert.ToChar(" "))
+                    {
+                        path += message[i];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                options.path_setting = AppDomain.CurrentDomain.BaseDirectory + path;
+                SendPrivateMessage(sender, "Settings changed!");
+                SaveOptionsToFile();
+                GetOptionsFromFile();
+
+                if(options.debug_msg)
+                {
+                    LogToConsole(sender + " changed settingsspath to: " + Convert.ToString(options.path_setting));
+                }
+
+            }
+
+            if (message.Contains("listsettings"))
+            {
+                SendPrivateMessage(sender, "debugmsg: " + Convert.ToString(options.debug_msg) + "; daystosavemsg: " + Convert.ToString(options.daysTosaveMsg) + "; intervalsendmail: " + Convert.ToString(options.interval_sendmail) + "; maxsavedmails: " + Convert.ToString(options.maxSavedMails) + "; maxsavedmails_player: " + Convert.ToString(options.maxSavedMails_Player + "; messagepath: " + options.path_mail + "; settingspath: " + options.path_setting));
+            }
+        }
+
+
+        /// <summary>
+        /// Get the number after a certain word in the message.
+        /// </summary>
+        public int getIntInCommand(string message, string searched)
+        {
+            string num = "";
+            for (int i = message.IndexOf(searched) + searched.Length + 1; i < message.Length; i++)
+            {
+                if (message[i] != Convert.ToChar(" "))
+                {
+                    num += message[i];
+                }
+                else
+                {
+                    return Int32.Parse(num);
+                }
+            }
+            return Int32.Parse(num);
         }
 
         /// <summary>
@@ -388,7 +560,6 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void SaveMailsToFile()
         {
-
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(options.path_mail, FileMode.Create, FileAccess.Write);
 
@@ -397,7 +568,7 @@ namespace MinecraftClient.ChatBots
 
             if (options.debug_msg)
             {
-                LogToConsole("Saved mails to File! \n" + "Location: " + options.path_mail + "\n Time: " + Convert.ToString(DateTime.UtcNow));
+                LogToConsole("Saved mails to File!"  + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
         }
 
@@ -406,7 +577,6 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void GetMailsFromFile()
         {
-
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(options.path_mail, FileMode.Open, FileAccess.Read);
 
@@ -415,7 +585,7 @@ namespace MinecraftClient.ChatBots
 
             if (options.debug_msg)
             {
-                LogToConsole("Loaded mails from File! \n" + "Location: " + options.path_mail + "\n Time: " + Convert.ToString(DateTime.UtcNow));
+                LogToConsole("Loaded mails from File!" + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
         }
 
@@ -424,7 +594,6 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void SaveOptionsToFile()
         {
-
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(options.path_setting, FileMode.Create, FileAccess.Write);
 
@@ -433,7 +602,7 @@ namespace MinecraftClient.ChatBots
 
             if (options.debug_msg)
             {
-                LogToConsole("Saved options to File! \n" + "Location: " + options.path_setting + "\n Time: " + Convert.ToString(DateTime.UtcNow));
+                LogToConsole("Saved options to File! " + "Location: " + options.path_setting + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
         }
 
@@ -451,7 +620,7 @@ namespace MinecraftClient.ChatBots
 
             if (options.debug_msg)
             {
-                LogToConsole("Loaded options from File! \n" + "Location: " + options.path_setting + "\n Time: " + Convert.ToString(DateTime.UtcNow));
+                LogToConsole("Loaded options from File! " + "Location: " + options.path_setting + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
         }
 
@@ -481,7 +650,7 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void DeliverMail()
         {
-            LogToConsole("Looking for mails to send:");
+            LogToConsole("Looking for mails to send: " + DateTime.UtcNow); // Can not be disabled to indicate, that the script is still running. 
             GetMailsFromFile();
 
             foreach(string Player in GetOnlinePlayers())
