@@ -708,7 +708,7 @@ namespace MinecraftClient
                 + "[Mail]\r\n"
                 + "# Let the bot act like a mail plugin\r\n"
                 + "enabled=false\r\n"
-                , Encoding.UTF8);
+                "\r\n", Encoding.UTF8);
         }
 
         /// <summary>
