@@ -175,6 +175,7 @@ namespace MinecraftClient
                     if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack()); }
                     if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
                     if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
+                    if (Settings.Mail_Enabled) { BotLoad(new ChatBots.Mail()); }
 
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
