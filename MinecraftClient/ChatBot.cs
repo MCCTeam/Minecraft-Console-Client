@@ -727,6 +727,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Run a script from a file using a Scripting bot
+        /// </summary>
+        /// <param name="bot">ChatBot class</param>
+        protected void RunScript(ChatBot bot)
+        {
+            Handler.BotLoad(bot);
+        }
+        
+        /// <summary>
         /// Check whether Terrain and Movements is enabled.
         /// </summary>
         /// <returns>Enable status.</returns>
