@@ -107,7 +107,6 @@ namespace MinecraftClient.ChatBots
         {
             logged_msg = new Message[0];
             options = new Options();
-            debug_msg = Settings.DebugMessages;
         }
         
 
@@ -124,6 +123,8 @@ namespace MinecraftClient.ChatBots
             {
                 GetOptionsFromFile();
             }
+            
+            options.debug_msg = Settings.DebugMessages;
 
             if (!File.Exists(options.path_mail))
             {
