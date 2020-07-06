@@ -9,6 +9,18 @@ namespace MinecraftClient.Mapping.BlockPalettes
     /// <summary>
     /// Generator for MCC Block Palette mappings
     /// </summary>
+    /// <remarks>
+    /// Example for generating MaterialXXX.cs and PaletteXXX.cs from blocks.json:
+    ///
+    /// MinecraftClient.Mapping.BlockPalettes.BlockPaletteGenerator.JsonToClass(
+    ///     @"C:\Path\To\blocks.json",
+    ///     @"C:\Path\To\Output\PaletteXXX.cs",
+    ///     @"C:\Path\To\Output\MaterialXXX.cs"
+    /// );
+    ///
+    /// Place the above example inside the Main() method of Program.cs, adjust paths then compile and run.
+    /// Do not forget to remove the temporay call to JsonToClass() from Main() once you are done.
+    /// </remarks>
     public static class BlockPaletteGenerator
     {
         /// <summary>
