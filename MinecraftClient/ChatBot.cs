@@ -727,6 +727,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Load an additional ChatBot
+        /// </summary>
+        /// <param name="chatBot">ChatBot to load</param>
+        protected void BotLoad(ChatBot chatBot)
+        {
+            Handler.BotLoad(chatBot);
+        }
+
+        /// <summary>
         /// Check whether Terrain and Movements is enabled.
         /// </summary>
         /// <returns>Enable status.</returns>
