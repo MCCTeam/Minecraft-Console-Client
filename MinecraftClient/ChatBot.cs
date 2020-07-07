@@ -279,6 +279,8 @@ namespace MinecraftClient
         /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
         public virtual void OnUpdateScore(string entityname, byte action, string objectivename, int value) { }
 
+        public virtual void OnInventoryUpdate(int inventoryId) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */

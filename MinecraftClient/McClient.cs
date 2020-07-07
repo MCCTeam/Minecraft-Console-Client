@@ -996,6 +996,9 @@ namespace MinecraftClient
                         // Check if cursor have item (slot -1)
                         if (playerInventory.Items.ContainsKey(-1))
                         {
+                            // When item on cursor and clicking slot 0, nothing will happen
+                            if (slotId == 0) break;
+
                             // Check target slot also have item?
                             if (inventory.Items.ContainsKey(slotId))
                             {
@@ -1026,6 +1029,9 @@ namespace MinecraftClient
                             // Check target slot have item?
                             if (inventory.Items.ContainsKey(slotId))
                             {
+                                // When taking item from slot 0, server will update us
+                                if (slotId == 0) break;
+
                                 // Put target slot item to cursor
                                 playerInventory.Items[-1] = inventory.Items[slotId];
                                 inventory.Items.Remove(slotId);
@@ -1036,6 +1042,9 @@ namespace MinecraftClient
                         // Check if cursor have item (slot -1)
                         if (playerInventory.Items.ContainsKey(-1))
                         {
+                            // When item on cursor and clicking slot 0, nothing will happen
+                            if (slotId == 0) break;
+
                             // Check target slot have item?
                             if (inventory.Items.ContainsKey(slotId))
                             {
@@ -1068,6 +1077,12 @@ namespace MinecraftClient
                             // Check target slot have item?
                             if (inventory.Items.ContainsKey(slotId))
                             {
+                                if (slotId == 0)
+                                {
+                                    // no matter how many item in slot 0, only 1 will be taken out
+                                    // Also server will update us
+                                    break;
+                                }
                                 if (inventory.Items[slotId].Count == 1)
                                 {
                                     // Only 1 item count. Put it to cursor
@@ -1076,14 +1091,12 @@ namespace MinecraftClient
                                 }
                                 else
                                 {
-                                    ConsoleIO.WriteLine("At divide item");
                                     // Take half of the item stack to cursor
                                     if (inventory.Items[slotId].Count % 2 == 0)
                                     {
                                         // Can be evenly divided
                                         Item itemTmp = inventory.Items[slotId];
                                         playerInventory.Items[-1] = new Item((int)itemTmp.Type, itemTmp.Count / 2, itemTmp.NBT);
-                                        ConsoleIO.WriteLine("Item put into cursor: " + playerInventory.Items[-1].Type.ToString());
                                         inventory.Items[slotId].Count = itemTmp.Count / 2;
                                     }
                                     else
@@ -1531,7 +1544,10 @@ namespace MinecraftClient
         public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList)
         {
             if (inventories.ContainsKey(inventoryID))
+            {
                 inventories[inventoryID].Items = itemList;
+                DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
+            }
         }
 
         /// <summary>
@@ -1562,6 +1578,7 @@ namespace MinecraftClient
                     else inventories[inventoryID].Items[slotID] = item;
                 }
             }
+            DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
         }
 
         /// <summary>
