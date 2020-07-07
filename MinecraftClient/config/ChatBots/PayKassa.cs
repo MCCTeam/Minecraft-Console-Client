@@ -76,4 +76,26 @@ internal class PayKassaSCI
             return new string[] { urlresponse, hash };
         }
     }
+	
+    public string[] sci_confirm_order(string private_hash)
+    {
+        using (WebClient web = new WebClient())
+        {
+            string url = "https://paykassa.pro/sci/0.4/index.php?func=sci_confirm_order&sci_id" + _merchant_id + "&sci_id=" + _merchant_id + "&sci_key=" + _merchant_password + "&private_hash=" + private_hash + "&test=true";
+            string response = web.DownloadString(url);
+            Console.WriteLine(response);
+            string error =Regex.Match(response, "\"error\":(.*),\"message\"").Groups[1].Value;
+
+            string message = Regex.Match(response, "\"message\":\"(.*)\",\"data\"").Groups[1].Value;
+
+            string transaction = Regex.Match(response, "\"transaction\":\"(.*)\",").Groups[1].Value;
+            string shop_id = Regex.Match(response, "\"shop_id\":\"(.*)\",").Groups[1].Value;
+            string order_id = Regex.Match(response, "\"order_id\":\"(.*)\",").Groups[1].Value;
+            string amount = Regex.Match(response, "\"amount\":\"(.*)\",").Groups[1].Value;
+            string currency = Regex.Match(response, "\"currency\":\"(.*)\",").Groups[1].Value;
+            string system = Regex.Match(response, "\"system\":\"(.*)\",").Groups[1].Value;
+            string hash = Regex.Match(response, "\"hash\":\"(.*)\",").Groups[1].Value;
+            return new string[] { error.ToString(), message, transaction, shop_id, order_id, amount, currency, system, hash };
+        }
+    }
 }
