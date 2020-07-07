@@ -13,7 +13,6 @@ MCC.LoadBot(new PayKassaBot(merchant_id, merchant_password));
 public class PayKassaBot : ChatBot
 {
     private PayKassaSCI paykassa { get; set; }
-    private readonly string ChatId;
 
     /// <summary>
     /// This bot forwarding messages between Minecraft and VKonrakte chats.
