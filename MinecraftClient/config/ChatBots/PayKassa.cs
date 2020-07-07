@@ -26,6 +26,7 @@ public class PayKassaBot : ChatBot
     {
         paykassa = new PayKassaSCI(merchant_id, merchant_password);
     }
+	
 }
 
 /// <summary>
