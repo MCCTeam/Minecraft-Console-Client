@@ -1511,7 +1511,8 @@ namespace MinecraftClient
         /// <summary>
         /// When an inventory is opened
         /// </summary>
-        /// <param name="inventory">Location to reach</param>
+        /// <param name="inventory">The inventory</param>
+        /// <param name="inventoryID">Inventory ID</param>
         public void OnInventoryOpen(int inventoryID, Container inventory)
         {
             inventories[inventoryID] = inventory;
@@ -1520,20 +1521,24 @@ namespace MinecraftClient
             {
                 ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " opened: " + inventory.Title);
                 ConsoleIO.WriteLogLine("Use /inventory to interact with it.");
+                DispatchBotEvent(bot => bot.OnInventoryOpen(inventoryID));
             }
         }
 
         /// <summary>
         /// When an inventory is close
         /// </summary>
-        /// <param name="inventoryID">Location to reach</param>
+        /// <param name="inventoryID">Inventory ID</param>
         public void OnInventoryClose(int inventoryID)
         {
             if (inventories.ContainsKey(inventoryID))
                 inventories.Remove(inventoryID);
 
             if (inventoryID != 0)
+            {
                 ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " closed.");
+                DispatchBotEvent(bot => bot.OnInventoryClose(inventoryID));
+            }
         }
 
         /// <summary>
