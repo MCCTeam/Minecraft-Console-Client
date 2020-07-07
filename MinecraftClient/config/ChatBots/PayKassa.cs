@@ -46,7 +46,7 @@ internal class PayKassaSCI
 	
     public enum SystemID
     {
-        Payeer= 1,
+        Payeer = 1,
         PerfectMoney = 2,
         AdvCash = 4,
         Berty = 7,
