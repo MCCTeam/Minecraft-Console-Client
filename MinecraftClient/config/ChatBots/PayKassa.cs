@@ -64,7 +64,7 @@ internal class PayKassaSCI
 
     }
 
-    public string sci_create_order(float ammount, string currency, string order_id, string comment, SystemID systemID)
+    public string[] sci_create_order(float ammount, string currency, string order_id, string comment, SystemID systemID)
     {
         using (WebClient web = new WebClient())
         {
@@ -72,15 +72,8 @@ internal class PayKassaSCI
             string response = web.DownloadString(url);
             string urlresponse = Regex.Match(response, "{\"url\":\"(.*)\",\"method\"").Groups[1].Value;
             urlresponse = urlresponse.Replace(@"\/", "/");
-            if (urlresponse != string.Empty)
-            {
-                return urlresponse;
-
-            }
-            else
-            {
-                return string.Empty;
-            }
+            string hash = Regex.Match(response, "\"hash\":\"(.*)\"}}}").Groups[1].Value;
+            return new string[] { urlresponse, hash };
         }
     }
 }
