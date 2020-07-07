@@ -43,12 +43,32 @@ internal class PayKassaSCI
         this._merchant_id = merchant_id;
         this._merchant_password = merchant_password;
     }
+	
+    public enum SystemID
+    {
+        Payeer= 1,
+        PerfectMoney = 2,
+        AdvCash = 4,
+        Berty = 7,
+        BitCoin = 11,
+        Ethereum = 12,
+        LiteCoin = 14,
+        DogeCoin = 15,
+        Dash = 16,
+        BitcoinCash = 18,
+        Zcash = 19,
+        EthereumClassic = 21,
+        Ripple = 22,
+        TRON = 27,
+        Stellar = 28,
 
-    public string sci_create_order(float ammount, string currency, string order_id, string comment, string system_id)
+    }
+
+    public string sci_create_order(float ammount, string currency, string order_id, string comment, SystemID systemID)
     {
         using (WebClient web = new WebClient())
         {
-            string url = "https://paykassa.pro/sci/0.4/index.php?func=sci_create_order&sci_id" + _merchant_id + "&sci_id=" + _merchant_id + "&sci_key=" + _merchant_password + "&order_id=" + order_id + "&amount=" + ammount + "&currency=" + currency + "&system=" + system_id + "&comment=" + comment;
+            string url = "https://paykassa.pro/sci/0.4/index.php?func=sci_create_order&sci_id" + _merchant_id + "&sci_id=" + _merchant_id + "&sci_key=" + _merchant_password + "&order_id=" + order_id + "&amount=" + ammount + "&currency=" + currency + "&system=" + (int)systemID + "&comment=" + comment;
             string response = web.DownloadString(url);
             string urlresponse = Regex.Match(response, "{\"url\":\"(.*)\",\"method\"").Groups[1].Value;
             urlresponse = urlresponse.Replace(@"\/", "/");
