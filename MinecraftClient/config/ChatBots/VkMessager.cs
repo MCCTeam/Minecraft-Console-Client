@@ -113,14 +113,20 @@ internal class VkLongPoolClient
         LastTs = Convert.ToInt32(data.Properties["response"].Properties["ts"].StringValue);
     }
 
-    public void SendMessage(string chatId, string text, int sticker_id = 0, int random_id = 0)
+    public void SendMessage(string chatId, string text, int random_id = 0)
     {
 	if (random_id == 0)
 		random_id = LastTs;
-	if (sticker_id != 0)
-		CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&sticker_id=" + sticker_id + "&message=" + text);
-	else 
-		CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text);
+		
+	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text);
+    }
+	
+    public void SendSticker(string chatId, int sticker_id, int random_id = 0)
+    {
+	if (random_id == 0)
+		random_id = LastTs;
+		
+	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&sticker_id=" + sticker_id);
     }
 
     private void StartLongPoolAsync()
