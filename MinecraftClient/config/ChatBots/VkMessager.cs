@@ -115,7 +115,7 @@ internal class VkLongPoolClient
 
     public void SendMessage(string chatId, string text)
     {
-        CallVkMethod("messages.send", "peer_id=" + chatId + "&message=" + text);
+    	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + LastTs  + "&message=" + text);
     }
 
     private void StartLongPoolAsync()
@@ -164,7 +164,7 @@ internal class VkLongPoolClient
     }
     private string CallVkMethod(string methodName, string data)
     {
-        var url = String.Format("https://api.vk.com/method/{0}?v=5.80&access_token={1}&{2}", methodName, Token, data);
+        var url = String.Format("https://api.vk.com/method/{0}?v=5.120&access_token={1}&{2}", methodName, Token, data);
         var jsonResult = SenderWebClient.DownloadString(url);
 
         return jsonResult;
