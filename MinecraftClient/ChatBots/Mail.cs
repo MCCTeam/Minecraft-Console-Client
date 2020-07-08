@@ -705,10 +705,7 @@ namespace MinecraftClient.ChatBots
                 SaveMailsToFile();
                 SaveOptionsToFile();
 
-                if (options.debug_msg)
-                {
-                    LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
-                }
+                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
            
 
@@ -757,10 +754,7 @@ namespace MinecraftClient.ChatBots
                 options.path_setting = AppDomain.CurrentDomain.BaseDirectory + "options.txt";
                 SaveOptionsToFile();
 
-                if (options.debug_msg)
-                {
-                    LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
-                }
+                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_setting + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
 
             if (options.debug_msg && !error)
