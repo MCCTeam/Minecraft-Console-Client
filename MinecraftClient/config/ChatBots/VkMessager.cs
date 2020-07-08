@@ -154,7 +154,7 @@ internal class VkLongPoolClient
             var msgData = str.Properties["object"].Properties;
 
             var userId = msgData["from_id"].StringValue;
-			var peer_id = msgData["peer_id"].StringValue;
+	    var peer_id = msgData["peer_id"].StringValue;
             var msgText = msgData["text"].StringValue;
 
             messages.Add(new Tuple<string, string, string>(userId, peer_id, msgText));
