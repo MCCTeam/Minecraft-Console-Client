@@ -97,7 +97,7 @@ internal class VkLongPoolClient
     private WebClient ReceiverWebClient { get; set; }
     private WebClient SenderWebClient { get; set; }
     private string Token { get; set; }
-    private string LastTs { get; set; }
+    private int LastTs { get; set; }
     private string Server { get; set; }
     private string Key { get; set; }
     private Action<string, string, string> OnMessageReceivedCallback { get; set; }
@@ -110,12 +110,17 @@ internal class VkLongPoolClient
 
         Key = data.Properties["response"].Properties["key"].StringValue;
         Server = data.Properties["response"].Properties["server"].StringValue;
-        LastTs = data.Properties["response"].Properties["ts"].StringValue;
+        LastTs = Convert.ToInt32(data.Properties["response"].Properties["ts"].StringValue);
     }
 
-    public void SendMessage(string chatId, string text)
+    public void SendMessage(string chatId, string text, int sticker_id = 0, int random_id = 0)
     {
-    	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + LastTs  + "&message=" + text);
+	if (random_id == 0)
+		random_id = LastTs;
+	if (sticker_id != 0)
+		CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&sticker_id=" + sticker_id + "&message=" + text);
+	else 
+		CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text);
     }
 
     private void StartLongPoolAsync()
@@ -143,7 +148,7 @@ internal class VkLongPoolClient
 	if (data.Properties.ContainsKey("failed")) // Update Key on Server Error
 		Init();
         
-        LastTs = data.Properties["ts"].StringValue;
+        LastTs = Convert.ToInt32(data.Properties["ts"].StringValue);
 
         var updates = data.Properties["updates"].DataArray;
         var messages = new List<Tuple<string, string, string>>();
