@@ -140,8 +140,8 @@ internal class VkLongPoolClient
     private IEnumerable<Tuple<string, string, string>> ProcessResponse(string jsonData)
     {
         var data = Json.ParseJson(jsonData);
-		if (data.Properties.ContainsKey("failed")) // Update Key on Server Error
-			Init();
+	if (data.Properties.ContainsKey("failed")) // Update Key on Server Error
+		Init();
         
         LastTs = data.Properties["ts"].StringValue;
 
