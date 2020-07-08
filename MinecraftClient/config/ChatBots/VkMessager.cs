@@ -128,7 +128,15 @@ internal class VkLongPoolClient
 		
 	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&sticker_id=" + sticker_id);
     }
-
+    
+    public void OnlineGroup(bool enable = true)
+    {
+	if (enable)
+		CallVkMethod("groups.enableOnline", "group_id=" + BotCommunityId);
+	else
+		CallVkMethod("groups.disableOnline", "group_id=" + BotCommunityId);
+    }
+	
     private void StartLongPoolAsync()
     {
         Task.Factory.StartNew(() =>
