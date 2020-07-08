@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Data;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -19,10 +19,12 @@ namespace MinecraftClient.ChatBots
         public int maxSavedMails { get; set; }
         public int maxSavedMails_Player { get; set; }
         public int daysTosaveMsg { get; set; }
+        public int timevar_100ms { get; set; }
         public bool debug_msg { get; set; }
+        public bool auto_respawn { get; set; }
         public string[] moderator = new string[0];
         public DateTime lastReset { get; set; }
-        public int timevar_100ms { get; set; }
+        
 
         public Options()
         {
@@ -33,6 +35,8 @@ namespace MinecraftClient.ChatBots
             maxSavedMails_Player = 3;                                                   // How many mails can be sent per player
             daysTosaveMsg = 30;                                                         // After how many days the message should get deleted
             debug_msg = Settings.DebugMessages;                                         // Disable debug Messages for a cleaner console
+            //moderator = Settings.Bots_Owners.ToArray();                               // May confuse users at first start, because bot won't answer due to the preconfigured bot owners
+            auto_respawn = true;
 
             timevar_100ms = 0;
             lastReset = DateTime.UtcNow;
@@ -123,13 +127,12 @@ namespace MinecraftClient.ChatBots
             {
                 GetOptionsFromFile();
             }
-            
-            options.debug_msg = Settings.DebugMessages;
 
             if (!File.Exists(options.path_mail))
             {
                 SaveMailsToFile();
             }
+            options.debug_msg = Settings.DebugMessages;
 
             deleteOldMails();
             options.lastReset = DateTime.UtcNow;
@@ -144,7 +147,11 @@ namespace MinecraftClient.ChatBots
             if (options.timevar_100ms == options.interval_sendmail)
             {
                 DeliverMail();
-                PerformInternalCommand("respawn");
+
+                if (options.auto_respawn)
+                {
+                    PerformInternalCommand("respawn");
+                }
 
                 if ((DateTime.Now - options.lastReset).TotalDays > options.daysTosaveMsg)
                 {
@@ -173,8 +180,6 @@ namespace MinecraftClient.ChatBots
                 {
                     message = message.ToLower();
                     cmd_reader(message, username);
-
-
                 }
                 else
                 {
@@ -193,6 +198,9 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void cmd_reader(string message, string sender)
         {
+            /// <summary>
+            /// Send Mails.
+            /// </summary>
             if (message.Contains("sendmail"))
             {
                     string content = "";
@@ -222,6 +230,10 @@ namespace MinecraftClient.ChatBots
                         SendPrivateMessage(sender, "Something went wrong!");
                     }
             }
+
+            /// <summary>
+            /// Send anonymous mails.
+            /// </summary>
             if (message.Contains("tellonym"))
             {
                 string content = "";
@@ -253,13 +265,19 @@ namespace MinecraftClient.ChatBots
             }
         }
 
+        /// <summary>
+        /// Mod only commands.
+        /// </summary>
         private void mod_Commands(string message, string sender)
         {
 
-
+            ////////////////////////////////////////////////////////////////////
             // These commands can be exploited easily and may cause huge damage.
+            ////////////////////////////////////////////////////////////////////
 
-
+            /// <summary>
+            /// Send all mails in the console.
+            /// </summary>
             if (message.Contains("getmails"))
             {
                 if (options.debug_msg)
@@ -276,7 +294,10 @@ namespace MinecraftClient.ChatBots
             }
 
             // Only uncomment for testing reasons: !! HUGE DAMAGE !!
-            
+
+            /// <summary>
+            /// Clear the mail file.
+            /// </summary>
             /*
             if (message.Contains("clearmails"))
             {
@@ -284,7 +305,10 @@ namespace MinecraftClient.ChatBots
                 clearSavedMails();
             }
             */
-            
+
+            /// <summary>
+            /// Let the bot respawn manually.
+            /// </summary>
             if (message.Contains("respawn"))
             {
                 if (options.debug_msg)
@@ -294,6 +318,9 @@ namespace MinecraftClient.ChatBots
                 PerformInternalCommand("respawn");
             }
 
+            /// <summary>
+            /// Deliver mails manually.
+            /// </summary>
             if (message.Contains("deliver"))
             {
                 if (options.debug_msg)
@@ -303,6 +330,9 @@ namespace MinecraftClient.ChatBots
                 DeliverMail();
             }
 
+            /// <summary>
+            /// Reconnect to the server.
+            /// </summary>
             if (message.Contains("reconnect"))
             {
                 if (options.debug_msg)
@@ -314,6 +344,9 @@ namespace MinecraftClient.ChatBots
                 ReconnectToTheServer();
             }
 
+            /// <summary>
+            /// Manually clear mails older than 30 days.
+            /// </summary>
             if (message.Contains("deleteoldmails"))
             {
                 if (options.debug_msg)
@@ -324,6 +357,9 @@ namespace MinecraftClient.ChatBots
                 SaveMailsToFile();
             }
 
+            /// <summary>
+            /// Add a moderator.
+            /// </summary>
             if (message.Contains("addmod"))
             {
                 string name = "";
@@ -350,6 +386,9 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
+            /// <summary>
+            /// Remove a moderator.
+            /// </summary>
             if (message.Contains("removemod"))
             {
                 string name = "";
@@ -381,6 +420,9 @@ namespace MinecraftClient.ChatBots
             // Change options through mc chat
             //////////////////////////////
 
+            /// <summary>
+            /// Toggles if debug messages are sent.
+            /// </summary>
             if (message.Contains("toggledebug"))
             {
                 if (options.debug_msg)
@@ -403,6 +445,9 @@ namespace MinecraftClient.ChatBots
                 SaveOptionsToFile();
             }
 
+            /// <summary>
+            /// How many days until the mails are deleted?
+            /// </summary>
             if (message.Contains("daystosavemsg"))
             {
                 options.daysTosaveMsg = getIntInCommand(message, "daystosavemsg");
@@ -415,6 +460,9 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
+            /// <summary>
+            /// Frequency of the bot trying to deliver mails.
+            /// </summary>
             if (message.Contains("intervalsendmail"))
             {
                 options.interval_sendmail = getIntInCommand(message, "intervalsendmail");
@@ -427,6 +475,9 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
+            /// <summary>
+            /// Maximum of mails that are safed.
+            /// </summary>
             if (message.Contains("maxsavedmails"))
             {
                 options.maxSavedMails = getIntInCommand(message, "maxsavedmails");
@@ -439,6 +490,9 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
+            /// <summary>
+            /// Maximum of mails that are safed per player.
+            /// </summary>
             if (message.Contains("maxmailsperplayer"))
             {
                 options.maxSavedMails_Player = getIntInCommand(message, "maxmailsperplayer");
@@ -451,6 +505,10 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
+            /// <summary>
+            /// Change the mail path to:
+            /// application-path\ + entry 
+            /// </summary>
             if (message.Contains("changemailpath"))
             {
                 string path = "";
@@ -477,6 +535,10 @@ namespace MinecraftClient.ChatBots
 
             }
 
+            /// <summary>
+            /// Change the mail path to:
+            /// application-path\ + entry 
+            /// </summary>
             if (message.Contains("changesettingspath"))
             {
                 string path = "";
@@ -503,9 +565,35 @@ namespace MinecraftClient.ChatBots
 
             }
 
+            /// <summary>
+            /// List all settings. 
+            /// </summary>
+            if (message.Contains("toggleautorespawn"))
+            {
+                if (options.auto_respawn)
+                {
+                    options.auto_respawn = false;
+                }
+                else
+                {
+                    options.auto_respawn = true;
+                }
+
+                SendPrivateMessage(sender, "Settings changed!");
+                SaveOptionsToFile();
+
+                if (options.debug_msg)
+                {
+                    LogToConsole(sender + " changed maxsavedmails to: " + Convert.ToString(options.auto_respawn));
+                }
+            }
+
+            /// <summary>
+            /// List all settings. 
+            /// </summary>
             if (message.Contains("listsettings"))
             {
-                SendPrivateMessage(sender, "debugmsg: " + Convert.ToString(options.debug_msg) + "; daystosavemsg: " + Convert.ToString(options.daysTosaveMsg) + "; intervalsendmail: " + Convert.ToString(options.interval_sendmail) + "; maxsavedmails: " + Convert.ToString(options.maxSavedMails) + "; maxsavedmails_player: " + Convert.ToString(options.maxSavedMails_Player + "; messagepath: " + options.path_mail + "; settingspath: " + options.path_setting));
+                SendPrivateMessage(sender, "debugmsg: " + Convert.ToString(options.debug_msg) + "; daystosavemsg: " + Convert.ToString(options.daysTosaveMsg) + "; intervalsendmail: " + Convert.ToString(options.interval_sendmail) + "; maxsavedmails: " + Convert.ToString(options.maxSavedMails) + "; maxsavedmails_player: " + Convert.ToString(options.maxSavedMails_Player) + "; messagepath: " + options.path_mail + "; settingspath: " + options.path_setting + "; sutorespawn: " + Convert.ToString(options.auto_respawn));
             }
         }
 
@@ -600,12 +688,31 @@ namespace MinecraftClient.ChatBots
         public void GetMailsFromFile()
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(options.path_mail, FileMode.Open, FileAccess.Read);
+            bool error = false;
 
-            logged_msg = (Message[])formatter.Deserialize(stream);
-            stream.Close();
+            // Tries to access file and creates a new one, if path doesn't exist, to avoid issues.
 
-            if (options.debug_msg)
+            try
+            {
+                FileStream stream = new FileStream(options.path_mail, FileMode.Open, FileAccess.Read);
+                logged_msg = (Message[])formatter.Deserialize(stream);
+                stream.Close();
+            }
+            catch (Exception)
+            {
+                error = true;
+                options.path_mail = AppDomain.CurrentDomain.BaseDirectory + "mails.txt";
+                SaveMailsToFile();
+                SaveOptionsToFile();
+
+                if (options.debug_msg)
+                {
+                    LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
+                }
+            }
+           
+
+            if (options.debug_msg && !error)
             {
                 LogToConsole("Loaded mails from File!" + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
@@ -633,14 +740,30 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void GetOptionsFromFile()
         {
-
             BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(options.path_setting, FileMode.Open, FileAccess.Read);
+            bool error = false;
 
-            options = (Options)formatter.Deserialize(stream);
-            stream.Close();
+            // Tries to access file and creates a new one, if path doesn't exist, to avoid issues.
 
-            if (options.debug_msg)
+            try
+            {
+                FileStream stream = new FileStream(options.path_setting, FileMode.Open, FileAccess.Read);
+                options = (Options)formatter.Deserialize(stream);
+                stream.Close();
+            }
+            catch (Exception)
+            {
+                error = true;
+                options.path_setting = AppDomain.CurrentDomain.BaseDirectory + "options.txt";
+                SaveOptionsToFile();
+
+                if (options.debug_msg)
+                {
+                    LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + Convert.ToString(DateTime.UtcNow));
+                }
+            }
+
+            if (options.debug_msg && !error)
             {
                 LogToConsole("Loaded options from File! " + "Location: " + options.path_setting + " Time: " + Convert.ToString(DateTime.UtcNow));
             }
