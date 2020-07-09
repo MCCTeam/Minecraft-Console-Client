@@ -324,14 +324,14 @@ namespace MinecraftClient
         /// <summary>
         /// Disconnect the current client from the server and exit the app
         /// </summary>
-        public static void Exit()
+        public static void Exit(int exitcode = 0)
         {
             new Thread(new ThreadStart(delegate
             {
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
                 if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
-                Environment.Exit(0);
+                Environment.Exit(exitcode);
             })).Start();
         }
 
@@ -421,7 +421,20 @@ namespace MinecraftClient
                     offlinePrompt.Start();
                 }
             }
-            else Exit();
+            else
+            {
+                // Not in interactive mode, just exit and let the calling script handle the failure
+                if (disconnectReason.HasValue)
+                {
+                    // Return distinct exit codes for known failures.
+                    if (disconnectReason.Value == ChatBot.DisconnectReason.UserLogout) Exit(1);
+                    if (disconnectReason.Value == ChatBot.DisconnectReason.InGameKick) Exit(2);
+                    if (disconnectReason.Value == ChatBot.DisconnectReason.ConnectionLost) Exit(3);
+                    if (disconnectReason.Value == ChatBot.DisconnectReason.LoginRejected) Exit(4);
+                }
+                Exit();
+            }
+
         }
 
         /// <summary>
