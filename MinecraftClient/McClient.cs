@@ -1112,6 +1112,41 @@ namespace MinecraftClient
                             }
                         }
                         break;
+                    case WindowActionType.ShiftClick:
+                        if (inventory.Items.ContainsKey(slotId))
+                        {
+                            /* Target slot have item */
+
+                            // Cursor have item or not doesn't matter
+                            switch (inventory.Type)
+                            {
+                                case ContainerType.PlayerInventory: // Shift click within player inventory
+                                    // If hotbar already have same item, will put on it first until every stack are full
+                                    // If no more same item , will put on the first empty slot (smaller slot id)
+                                    // If inventory full, item will not move
+                                    if (slotId < 36)
+                                    {
+                                        // Clicked slot is on upper side inventory, put it to hotbar
+                                        foreach(KeyValuePair<int, Item> _item in playerInventory.Items)
+                                        {
+                                            if (_item.Key < 35) continue;
+
+                                            if (_item.Value.Type == inventory.Items[slotId].Type && _item.Value.Count < 64)
+                                            {
+                                                // 
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Clicked slot is on hotbar, put it to upper inventory
+
+                                        
+                                    }
+                                    break;
+                            }
+                        }
+                        break;
                     case WindowActionType.DropItem:
                         if (inventory.Items.ContainsKey(slotId))
                             inventory.Items[slotId].Count--;

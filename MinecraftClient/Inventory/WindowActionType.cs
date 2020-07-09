@@ -10,6 +10,7 @@ namespace MinecraftClient.Inventory
         LeftClick,
         RightClick,
         MiddleClick,
+        ShiftClick,
         DropItem,
         DropItemStack
     }
