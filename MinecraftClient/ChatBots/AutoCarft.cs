@@ -9,21 +9,86 @@ namespace MinecraftClient.ChatBots
 {
     class AutoCarft : ChatBot
     {
-        private bool waitingForResult = false;
-        private int inventoryInUse;
+        private bool waitingForUpdate = false;
+        private int inventoryInUse = -2;
+        private int index = 0;
+        private Recipe recipeInUse;
+
+        private int updateDebounce = 0;
+
+        private bool craftingFailed = false;
 
         private enum ActionType
         {
-            MoveTo,
+            LeftClick,
+            ShiftClick,
             WaitForUpdate,
+            ResetCraftArea,
             Repeat
         }
 
         private class ActionStep
         {
-            public ActionType Action;
-            public int Slot;
-            public int InventoryID;
+            public ActionType ActionType;
+            public int Slot = -2;
+            public int InventoryID = -2;
+            public ItemType ItemType;
+
+            public ActionStep(ActionType actionType)
+            {
+                ActionType = actionType;
+            }
+            public ActionStep(ActionType actionType, int inventoryID)
+            {
+                ActionType = actionType;
+                InventoryID = inventoryID;
+            }
+            public ActionStep(ActionType actionType, int inventoryID, int slot)
+            {
+                ActionType = actionType;
+                Slot = slot;
+                InventoryID = inventoryID;
+            }
+            public ActionStep(ActionType actionType, int inventoryID, ItemType itemType)
+            {
+                ActionType = actionType;
+                InventoryID = inventoryID;
+                ItemType = itemType;
+            }
+        }
+
+        private List<ActionStep> actionSteps = new List<ActionStep>();
+
+        private class Recipe
+        {
+            public ItemType ResultItem;
+            public ContainerType CraftingAreaType;
+            public Dictionary<int, ItemType> Materials;
+
+            public Recipe(Dictionary<int, ItemType> materials, ItemType resultItem, ContainerType type)
+            {
+                Materials = materials;
+                ResultItem = resultItem;
+                CraftingAreaType = type;
+            }
+
+            public static Recipe ConvertToCraftingTable(Recipe recipe)
+            {
+                if (recipe.CraftingAreaType == ContainerType.PlayerInventory)
+                {
+                    if (recipe.Materials.ContainsKey(4))
+                    {
+                        recipe.Materials[5] = recipe.Materials[4];
+                        recipe.Materials.Remove(4);
+                    }
+                    if (recipe.Materials.ContainsKey(3))
+                    {
+                        recipe.Materials[4] = recipe.Materials[3];
+                        recipe.Materials.Remove(3);
+                    }
+                }
+                return recipe;
+            }
         }
 
         public override void Initialize()
@@ -55,64 +120,134 @@ namespace MinecraftClient.ChatBots
 
         public string CraftCommand(string command, string[] args)
         {
-            Dictionary<int, ItemType> recipe = new Dictionary<int, ItemType>
+            Dictionary<int, ItemType> materials = new Dictionary<int, ItemType>
             {
-                { 1, ItemType.Stone }
+                { 1, ItemType.Coal },
+                { 3, ItemType.Stick }
             };
-            var inventory = GetInventories()[0];
-            int slotToPut = -2;
-            int slotToTake = -2;
+            Recipe recipe = new Recipe(materials, ItemType.StoneButton, ContainerType.PlayerInventory);
             inventoryInUse = 0;
-            foreach (KeyValuePair<int, ItemType> slot in recipe)
+
+            recipeInUse = recipe;
+            craftingFailed = false;
+            waitingForUpdate = false;
+            index = 0;
+
+            var inventory = GetInventories()[inventoryInUse];
+            foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
             {
-                slotToPut = slot.Key + 1;
-                slotToTake = -2;
-                // Find material in our inventory
-                foreach (KeyValuePair<int, Item> item in inventory.Items)
-                {
-                    if (slot.Value == item.Value.Type)
-                    {
-                        slotToTake = item.Key;
-                        break;
-                    }
-                }
-                if (slotToTake != -2)
-                {
-                    // move found material to correct crafting slot
-                    WindowAction(0, slotToTake, WindowActionType.LeftClick);
-                    WindowAction(0, slotToPut, WindowActionType.LeftClick);
-                }
+                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Value));
+                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Key));
             }
-            if (slotToPut != -2 && slotToTake != -2)
+            if (actionSteps.Count > 0)
             {
-                waitingForResult = true;
-                // Now wait for server to update the slot 0, craft result
-                return "Waiting for result";
+                actionSteps.Add(new ActionStep(ActionType.WaitForUpdate, inventoryInUse, 0));
+                actionSteps.Add(new ActionStep(ActionType.ShiftClick, inventoryInUse, 0));
+                actionSteps.Add(new ActionStep(ActionType.WaitForUpdate, inventoryInUse));
+                actionSteps.Add(new ActionStep(ActionType.Repeat));
+                HandleNextStep();
+                return "AutoCraft start!";
             }
-            else return "Failed before waiting for result";
+            else return "AutoCraft cannot be started. Check your available materials";
         }
 
         public override void OnInventoryUpdate(int inventoryId)
         {
-            ConsoleIO.WriteLine("Inventory " + inventoryId + " is being updated");
-            if (waitingForResult && inventoryInUse == inventoryId)
+            if (waitingForUpdate && inventoryInUse == inventoryId)
             {
-                var inventory = GetInventories()[inventoryId];
-                if (inventory.Items.ContainsKey(0))
+                updateDebounce = 2;
+            }
+        }
+
+        public override void Update()
+        {
+            if (updateDebounce > 0)
+            {
+                updateDebounce--;
+                if (updateDebounce <= 0)
+                    InventoryUpdateFinished();
+            }
+        }
+
+        private void InventoryUpdateFinished()
+        {
+            waitingForUpdate = false;
+            HandleNextStep();
+        }
+
+        private void HandleNextStep()
+        {
+            while (actionSteps.Count > 0)
+            {
+                if (waitingForUpdate) break;
+                ActionStep step = actionSteps[index];
+                index++;
+                switch (step.ActionType)
                 {
-                    // slot 0 have item, click on it
-                    WindowAction(0, 0, WindowActionType.LeftClick);
-                    // Now wait for server to update our inventory
-                    ConsoleIO.WriteLine("Crafting success");
+                    case ActionType.LeftClick:
+                        if (step.Slot != -2)
+                        {
+                            WindowAction(step.InventoryID, step.Slot, WindowActionType.LeftClick);
+                        }
+                        else
+                        {
+                            int[] slots = GetInventories()[step.InventoryID].SearchItem(step.ItemType);
+                            if (slots.Count() > 0)
+                            {
+                                int ignoredSlot;
+                                if (recipeInUse.CraftingAreaType == ContainerType.PlayerInventory)
+                                    ignoredSlot = 9;
+                                else
+                                    ignoredSlot = 10;
+                                slots = slots.Where(slot => slot >= ignoredSlot).ToArray();
+                                if (slots.Count() > 0)
+                                    WindowAction(step.InventoryID, slots[0], WindowActionType.LeftClick);
+                                else
+                                    craftingFailed = true;
+                            }
+                            else craftingFailed = true;
+                        }
+                        break;
+
+                    case ActionType.ShiftClick:
+                        if (step.Slot == 0)
+                        {
+                            WindowAction(step.InventoryID, step.Slot, WindowActionType.ShiftClick);
+                        }
+                        else craftingFailed = true;
+                        break;
+
+                    case ActionType.WaitForUpdate:
+                        if (step.InventoryID != -2)
+                        {
+                            waitingForUpdate = true;
+                        }
+                        else craftingFailed = true;
+                        break;
+
+                    case ActionType.ResetCraftArea:
+                        if (step.InventoryID != -2)
+                            CloseInventory(step.InventoryID);
+                        else
+                            craftingFailed = true;
+                        break;
+
+                    case ActionType.Repeat:
+                        index = 0;
+                        break;
                 }
-                else if (inventory.Items.ContainsKey(-1))
-                {
-                    // Server have updated our cursor to the item we want to take out from craft result
-                    // Now put the item back to our inventory
-                    WindowAction(0, 37, WindowActionType.LeftClick);
-                    ConsoleIO.WriteLine("Moved crafted item to inventory");
-                    waitingForResult = false;
-                }
+                HandleError();
+            }
+            
+        }
+
+        private void HandleError()
+        {
+            if (craftingFailed)
+            {
+                actionSteps.Clear();
+                CloseInventory(inventoryInUse);
+                ConsoleIO.WriteLogLine("Crafting aborted! Check your available materials.");
             }
         }
     }

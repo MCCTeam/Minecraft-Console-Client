@@ -1182,6 +1182,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Close a opened inventory
+        /// </summary>
+        /// <param name="inventoryID"></param>
+        /// <returns>True if success</returns>
+        protected bool CloseInventory(int inventoryID)
+        {
+            return Handler.CloseInventory(inventoryID);
+        }
+
+        /// <summary>
         /// Command runner definition.
         /// Returned string will be the output of the command
         /// </summary>

@@ -1113,6 +1113,7 @@ namespace MinecraftClient
                         }
                         break;
                     case WindowActionType.ShiftClick:
+                        if (slotId == 0) break;
                         if (inventory.Items.ContainsKey(slotId))
                         {
                             /* Target slot have item */
@@ -1192,11 +1193,13 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="windowId">Window ID</param>
         /// <returns>TRUE if the window was successfully closed</returns>
+        /// <remarks>Sending close window for inventory 0 can cause server to update our inventory if there are any item in the crafting area</remarks>
         public bool CloseInventory(int windowId)
         {
-            if (windowId != 0 && inventories.ContainsKey(windowId))
+            if (inventories.ContainsKey(windowId))
             {
-                inventories.Remove(windowId);
+                if (windowId != 0)
+                    inventories.Remove(windowId);
                 return handler.SendCloseWindow(windowId);
             }
             return false;
