@@ -153,5 +153,24 @@ namespace MinecraftClient.Inventory
                 default: return ContainerType.Unknown;
             }
         }
+
+        /// <summary>
+        /// Search an item in the container
+        /// </summary>
+        /// <param name="itemType">The item to search</param>
+        /// <returns>An array of slot ID</returns>
+        public int[] SearchItem(ItemType itemType)
+        {
+            List<int> result = new List<int>();
+            if (Items != null)
+            {
+                foreach (var item in Items)
+                {
+                    if (item.Value.Type == itemType)
+                        result.Add(item.Key);
+                }
+            }
+            return result.ToArray();
+        }
     }
 }
