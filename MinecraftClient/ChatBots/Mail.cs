@@ -375,14 +375,16 @@ namespace MinecraftClient.ChatBots
                         break;
                     }
                 }
-
-                addMod(name);
-                SendPrivateMessage(sender, name + "is now Moderator.");
-                SaveOptionsToFile();
-
-                if (options.debug_msg)
+                if (IsValidName(name))
                 {
-                    LogToConsole("Added " + name + " as moderator! \n Performed by: " + sender);
+                    addMod(name);
+                    SendPrivateMessage(sender, name + "is now Moderator.");
+                    SaveOptionsToFile();
+
+                    if (options.debug_msg)
+                    {
+                        LogToConsole("Added " + name + " as moderator! \n Performed by: " + sender);
+                    }
                 }
             }
 
@@ -413,6 +415,24 @@ namespace MinecraftClient.ChatBots
                 if (options.debug_msg)
                 {
                     LogToConsole("Removed " + name + " as moderator! \n Performed by: " + sender);
+                }
+            }
+
+            /// <summary>
+            /// List moderators to console.
+            /// </summary>
+            if (message.Contains("getmoderator"))
+            {
+                LogToConsole("Moderators are:");
+
+                foreach (string name in options.moderator)
+                {
+                    LogToConsole(name);
+                }
+
+                if (options.debug_msg)
+                {
+                    LogToConsole("Listed all moderators \n Performed by: " + sender + " Time: " + Convert.ToString(DateTime.UtcNow));
                 }
             }
 
@@ -450,7 +470,7 @@ namespace MinecraftClient.ChatBots
             /// </summary>
             if (message.Contains("daystosavemsg"))
             {
-                options.daysTosaveMsg = getIntInCommand(message, "daystosavemsg");
+                options.daysTosaveMsg = getIntInCommand(message, "daystosavemsg", options.daysTosaveMsg);
                 SaveOptionsToFile();
                 SendPrivateMessage(sender, "Settings changed!");
 
@@ -465,7 +485,7 @@ namespace MinecraftClient.ChatBots
             /// </summary>
             if (message.Contains("intervalsendmail"))
             {
-                options.interval_sendmail = getIntInCommand(message, "intervalsendmail");
+                options.interval_sendmail = getIntInCommand(message, "intervalsendmail", options.interval_sendmail);
                 SaveOptionsToFile();
                 SendPrivateMessage(sender, "Settings changed!");
 
@@ -480,7 +500,7 @@ namespace MinecraftClient.ChatBots
             /// </summary>
             if (message.Contains("maxsavedmails"))
             {
-                options.maxSavedMails = getIntInCommand(message, "maxsavedmails");
+                options.maxSavedMails = getIntInCommand(message, "maxsavedmails", options.maxSavedMails);
                 SaveOptionsToFile();
                 SendPrivateMessage(sender, "Settings changed!");
 
@@ -495,7 +515,7 @@ namespace MinecraftClient.ChatBots
             /// </summary>
             if (message.Contains("maxmailsperplayer"))
             {
-                options.maxSavedMails_Player = getIntInCommand(message, "maxmailsperplayer");
+                options.maxSavedMails_Player = getIntInCommand(message, "maxmailsperplayer", options.maxSavedMails_Player);
                 SaveOptionsToFile();
                 SendPrivateMessage(sender, "Settings changed!");
 
@@ -591,16 +611,17 @@ namespace MinecraftClient.ChatBots
             /// <summary>
             /// List all settings. 
             /// </summary>
-            if (message.Contains("listsettings"))
+            if (message.Contains("getsettings"))
             {
                 SendPrivateMessage(sender, "debugmsg: " + Convert.ToString(options.debug_msg) + "; daystosavemsg: " + Convert.ToString(options.daysTosaveMsg) + "; intervalsendmail: " + Convert.ToString(options.interval_sendmail) + "; maxsavedmails: " + Convert.ToString(options.maxSavedMails) + "; maxsavedmails_player: " + Convert.ToString(options.maxSavedMails_Player) + "; messagepath: " + options.path_mail + "; settingspath: " + options.path_setting + "; sutorespawn: " + Convert.ToString(options.auto_respawn));
+                LogToConsole("debugmsg: " + Convert.ToString(options.debug_msg) + "; daystosavemsg: " + Convert.ToString(options.daysTosaveMsg) + "; intervalsendmail: " + Convert.ToString(options.interval_sendmail) + "; maxsavedmails: " + Convert.ToString(options.maxSavedMails) + "; maxsavedmails_player: " + Convert.ToString(options.maxSavedMails_Player) + "; messagepath: " + options.path_mail + "; settingspath: " + options.path_setting + "; sutorespawn: " + Convert.ToString(options.auto_respawn));
             }
         }
 
         /// <summary>
         /// Get the number after a certain word in the message.
         /// </summary>
-        public int getIntInCommand(string message, string searched)
+        public int getIntInCommand(string message, string searched, int currentvalue)
         {
             string num = "";
             for (int i = message.IndexOf(searched) + searched.Length + 1; i < message.Length; i++)
@@ -611,10 +632,24 @@ namespace MinecraftClient.ChatBots
                 }
                 else
                 {
-                    return Int32.Parse(num);
+                    try
+                    {
+                        return Int32.Parse(num);
+                    }
+                    catch (Exception)
+                    {
+                        return currentvalue;
+                    }
                 }
             }
-            return Int32.Parse(num);
+            try
+            {
+                return Int32.Parse(num);
+            }
+            catch (Exception)
+            {
+                return currentvalue;
+            }
         }
 
         /// <summary>
