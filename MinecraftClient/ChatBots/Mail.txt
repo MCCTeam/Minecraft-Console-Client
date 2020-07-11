@@ -1,0 +1,107 @@
+Commands of the ConsoleClient Mailbot
++++++++++++++++++++++++++++++++++++++
+
+All commands are executed via sending
+a private message to the bot account.
+Options and Mails can be resetted by
+deleting their safe files.
+
+
+- COMMANDS FOR EVERYONE -
+
+
+sendmail [DESTINATION] [TEXT] 
+=> Saves the text and destination to a file.
+
+tellonym [DESTINATION] [TEXT]
+=> Saves the text and destination to a file,
+	but delivers it without naming the sender.
+
+
+- COMMANDS FOR MODERATORS -
+
+getmails
+=> Sends all mails in the console.
+
+respawn
+=> Do a manual Respawn, after the bot died.
+
+updatemails
+=> Delivers, clears and saves mails to file.
+
+reconnect
+=> Let the bot reconnect to the server.
+
+addmod [NAME]
+=> Adds the mentioned player to the moderator group.
+	A moderator can add another moderator.
+	If no moderator is set, everybody has moderation rights,
+	if you leave the code line 38 uncommented.
+	At first start whether at a new installation, or after
+	deleting the option file, add yourself as a moderator,
+	otherwise everybody will have moderator rights.
+	
+getmoderator
+=> List all moderators in the console.
+
+toggledebug
+=> Turn debugmessages On/Off.
+
+daystosavemsg [NUMBER]
+=> Number of days, after that the messages are deleted.
+
+intervallsendmail [NUMBER]
+=> The (intervall * 100ms) after that the bot automatically
+	respawns and tries to send mails.
+	
+maxsavedmails [NUMBER]
+=> Total amount of safed messages. If the amount is reached
+	further requests get denied.
+	
+maxmailsperplayer [NUMBER]
+=> How many mails can a single player send. (Avoids spamming.)
+
+changemailpath [PATH] / changesettingspath [PATH]
+=> Changes the place, where the settings or the mails are safed,
+	relative to the running application. Will be changed back to
+	normal, if path doesn't exist. Can be used to link 2 bots to
+	one file. Make sure both instances are in the same folder.
+	
+toggleautorespawn
+=> Turns autorespawn, which is executed at "intervallsendmail" 
+	On/Off.
+	
+getsettings
+=> Sends you all settings and logs them to console.
+
+importmoderator
+=> Imports the botowners from the config file and adds them as
+	moderator.
+	
+resettimer
+=> Resets the sending timer to 0. Useful if you put several bots
+	on one file. 
+
+
++++++++++++++
+Mail Network
++++++++++++++
+
+To set up a network of two or more bots you first need to launch
+several instances with the bot activated. It works best if all 
+instances are launched in the same folder (from the same .exe).
+First set the mail path to one file. This path is set relative to
+the .exe (e.g. (.exe PATH)\samplefile.txt => changemailpath 
+\sample.txt). If you launch two instances from one .exe they 
+should syncronize automatically to the same file. If you want 
+different settings for each bot, change the option path. REMEMBER
+to create subfolder before changing the path. The Bot won't
+create folders on its own.
+For configuration I would recommend to let the bots join a 
+private server and to configure them through minecraft chat 
+there, because if no moderator is safed, everybody has 
+moderation rights. A good interval for the bots would be
+(botcount = minutes) and you go to each bot and reset the 
+timer after one minute so that each minute one bot synchronize
+its data. (Must be done after every restart.)
+All settings can be resetted by deleting the safe file. 
