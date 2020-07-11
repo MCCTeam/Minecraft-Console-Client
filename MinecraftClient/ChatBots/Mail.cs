@@ -23,6 +23,7 @@ namespace MinecraftClient.ChatBots
         public bool debug_msg { get; set; }
         public bool auto_respawn { get; set; }
         public string[] moderator = new string[0];
+        public string[] ignored = new string[0];
         public DateTime lastReset { get; set; }
         
 
@@ -167,24 +168,34 @@ namespace MinecraftClient.ChatBots
 
             if (IsPrivateMessage(text, ref message, ref username))
             {
-                Message[] msg_array = getMailsFromFile();
-
-                if (username.ToLower() != options.botname.ToLower() && getSentMessagesByUser(username) < options.maxSavedMails_Player && msg_array.Length < options.maxSavedMails)
+                if (!isIgnored(username))
                 {
-                    message = message.ToLower();
-                    cmd_reader(message, username);
+                    Message[] msg_array = getMailsFromFile();
+
+                    if (username.ToLower() != options.botname.ToLower() && getSentMessagesByUser(username) < options.maxSavedMails_Player && msg_array.Length < options.maxSavedMails)
+                    {
+                        message = message.ToLower();
+                        cmd_reader(message, username);
+                    }
+                    else
+                    {
+                        if (message.Contains("sendmail") || message.Contains("tellonym"))
+                        {
+                            SendPrivateMessage(username, "Couldn't save Message. Limit reached!");
+                        }
+                    }
+
+                    if (isModerator(username) || options.moderator.Length == 0) // Delete the safe file of the bot to reset all mods || 2. otion to get the owner as a moderator.
+                    {
+                        mod_Commands(message, username);
+                    }
                 }
                 else
                 {
-                    if (message.Contains("sendmail") || message.Contains("tellonym"))
+                    if (options.debug_msg)
                     {
-                        SendPrivateMessage(username, "Couldn't save Message. Limit reached!");
+                        LogToConsole(username + " is ignored!");
                     }
-                }
-
-                if (isModerator(username) || options.moderator.Length == 0) // Delete the safe file of the bot to reset all mods || 2. otion to get the owner as a moderator.
-                {                  
-                    mod_Commands(message, username);                    
                 }
             }
         }
@@ -326,7 +337,7 @@ namespace MinecraftClient.ChatBots
             }
 
             /// <summary>
-            /// Manually clear mails older than 30 days.
+            /// Update all mails.
             /// </summary>
             if (message.Contains("updatemails"))
             {
@@ -344,7 +355,7 @@ namespace MinecraftClient.ChatBots
             {
                 string name = "";
 
-                for (int i = message.IndexOf("addMod") + 7; i < message.Length; i++)
+                for (int i = message.IndexOf("addMod") + "addmod".Length + 1; i < message.Length; i++)
                 {
                     if (message[i] != Convert.ToChar(" "))
                     {
@@ -355,9 +366,9 @@ namespace MinecraftClient.ChatBots
                         break;
                     }
                 }
-                if (IsValidName(name))
+                if (IsValidName(name) && !isModerator(name))
                 {
-                    addMod(name);
+                    options.moderator = addMember(name, options.moderator);
                     SendPrivateMessage(sender, name + "is now Moderator.");
                     SaveOptionsToFile();
 
@@ -365,6 +376,10 @@ namespace MinecraftClient.ChatBots
                     {
                         LogToConsole("Added " + name + " as moderator! \n Performed by: " + sender);
                     }
+                }
+                else
+                {
+                    SendPrivateMessage(sender, "Person doesn't exist or is already moderator.");
                 }
             }
 
@@ -376,7 +391,7 @@ namespace MinecraftClient.ChatBots
                 string name = "";
 
 
-                for (int i = message.IndexOf("addMod") + 7; i < message.Length; i++)
+                for (int i = message.IndexOf("addMod") + "removemod".Length + 1; i < message.Length; i++)
                 {
                     if (message[i] != Convert.ToChar(" "))
                     {
@@ -388,13 +403,20 @@ namespace MinecraftClient.ChatBots
                     }
                 }
 
-                removeMod(name);
-                SendPrivateMessage(sender, name + "is no Moderator anymmore.");
-                SaveOptionsToFile();
-
-                if (options.debug_msg)
+                if (IsValidName(name) && isModerator(name))
                 {
-                    LogToConsole("Removed " + name + " as moderator! \n Performed by: " + sender);
+                    options.moderator = removeMember(name, options.moderator);
+                    SendPrivateMessage(sender, name + "is no Moderator anymmore.");
+                    SaveOptionsToFile();
+
+                    if (options.debug_msg)
+                    {
+                        LogToConsole("Removed " + name + " as moderator! \n Performed by: " + sender);
+                    }
+                }
+                else
+                {
+                    SendPrivateMessage(sender, "Person doesn't exist or is no moderator.");
                 }
             }
 
@@ -413,6 +435,96 @@ namespace MinecraftClient.ChatBots
                 if (options.debug_msg)
                 {
                     LogToConsole("Listed all moderators \n Performed by: " + sender + " Time: " + DateTime.UtcNow + " UTC");
+                }
+            }
+
+            /// <summary>
+            /// Add an ignored player.
+            /// </summary>
+            if (message.Contains("addignored"))
+            {
+                string name = "";
+
+                for (int i = message.IndexOf("addignored") + "addignored".Length + 1; i < message.Length; i++)
+                {
+                    if (message[i] != Convert.ToChar(" "))
+                    {
+                        name += message[i];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                if (IsValidName(name) && !isModerator(name))
+                {
+                    options.ignored = addMember(name, options.ignored);
+                    SendPrivateMessage(sender, name + "is now ignored.");
+                    SaveOptionsToFile();
+
+                    if (options.debug_msg)
+                    {
+                        LogToConsole("Added " + name + " as ignored! Performed by: " + sender);
+                    }
+                }
+                else
+                {
+                    SendPrivateMessage(sender, "Person doesn't exist or is already ignored.");
+                }
+            }
+
+            /// <summary>
+            /// Remove an ignored player.
+            /// </summary>
+            if (message.Contains("removeignored"))
+            {
+                string name = "";
+
+
+                for (int i = message.IndexOf("removeignored") + "removeignored".Length + 1; i < message.Length; i++)
+                {
+                    if (message[i] != Convert.ToChar(" "))
+                    {
+                        name += message[i];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (IsValidName(name) && isIgnored(name))
+                {
+                    options.ignored = removeMember(name, options.ignored);
+                    SendPrivateMessage(sender, name + " is not ignored anymmore.");
+                    SaveOptionsToFile();
+
+                    if (options.debug_msg)
+                    {
+                        LogToConsole("Removed " + name + " as ignored! Performed by: " + sender);
+                    }
+                }
+                else
+                {
+                    SendPrivateMessage(sender, "Person doesn't exist or is not ignored.");
+                }
+            }
+
+            /// <summary>
+            /// List ignored to console.
+            /// </summary>
+            if (message.Contains("getignored"))
+            {
+                LogToConsole("Ignored are:");
+
+                foreach (string name in options.ignored)
+                {
+                    LogToConsole(name);
+                }
+
+                if (options.debug_msg)
+                {
+                    LogToConsole("Listed all ignored Performed by: " + sender + " Time: " + DateTime.UtcNow + " UTC");
                 }
             }
 
@@ -535,7 +647,7 @@ namespace MinecraftClient.ChatBots
             }
 
             /// <summary>
-            /// Change the mail path to:
+            /// Change the settings path to:
             /// application-path\ + entry 
             /// </summary>
             if (message.Contains("changesettingspath"))
@@ -565,7 +677,7 @@ namespace MinecraftClient.ChatBots
             }
 
             /// <summary>
-            /// List all settings. 
+            /// Toggle the internal auto respawn.
             /// </summary>
             if (message.Contains("toggleautorespawn"))
             {
@@ -594,7 +706,7 @@ namespace MinecraftClient.ChatBots
             {
                 foreach(string mod_name in Settings.Bots_Owners.ToArray())
                 {
-                    addMod(mod_name);
+                    options.moderator = addMember(mod_name, options.moderator);
                     if (options.debug_msg)
                     {
                         LogToConsole(mod_name);
@@ -665,6 +777,15 @@ namespace MinecraftClient.ChatBots
         }
 
         /// <summary>
+        /// Check if player is ignored.
+        /// </summary>
+        public bool isIgnored(string name)
+        {
+            if (options.ignored.Contains(name.ToLower())) { return true; }
+            else { return false; }
+        }
+
+        /// <summary>
         /// Clear the messages in ram.
         /// </summary>
         public void clearLogged_msg()
@@ -673,44 +794,48 @@ namespace MinecraftClient.ChatBots
         }
 
         /// <summary>
-        /// Add a player who can moderate the bot.
+        /// Add a player to the given list.
         /// </summary>
-        public void addMod(string name)
+        public string[] addMember(string name, string[] name_array)
         {
-            if (!isModerator(name))
-            {
-                string[] temp = options.moderator;
-                options.moderator = new string[options.moderator.Length + 1];
+            
+            string[] temp = name_array;
+            name_array = new string[name_array.Length + 1];
 
-                for (int i = 0; i < temp.Length; i++)
-                {
-                    options.moderator[i] = temp[i];
-                }
-                options.moderator[options.moderator.Length - 1] = name;
-            }
-            else
+            for (int i = 0; i < temp.Length; i++)
             {
-                if(options.debug_msg)
-                {
-                    LogToConsole("This name is already in the moderator list.");
-                }
+                name_array[i] = temp[i];
             }
+            name_array[name_array.Length - 1] = name.ToLower();
+            
+            return name_array;
         }
 
         /// <summary>
-        /// Remove a player from the moderator list.
+        /// Remove a player from the given list.
         /// </summary>
-        public void removeMod(string name)
+        public string[] removeMember(string name, string[] name_array)
         {
-
-            for (int i = 0; i < options.moderator.Length; i++)
+           
+            for (int i = 0; i < name_array.Length; i++)
             {
-                if (options.moderator[i] == name)
+                if (name_array[i] == name)
                 {
-                    options.moderator[i] = string.Empty;
+                    name_array[i] = string.Empty;
                 }
             }
-            options.moderator = options.moderator.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+            name_array = name_array.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+            
+            return name_array;
+        }
+
+        /// <summary>
+        /// Test if the sender is in the moderator list.
+        /// </summary>
+        public bool isModerator(string player)
+        {
+            if (options.moderator.Contains(player.ToLower())) { return true; }
+            else { return false; }
         }
 
         /// <summary>
@@ -942,15 +1067,6 @@ namespace MinecraftClient.ChatBots
             }
 
             return mailcount;
-        }
-
-        /// <summary>
-        /// Test if the sender is in the moderator list.
-        /// </summary>
-        public bool isModerator(string player)
-        {
-            if (options.moderator.Contains(player)) { return true; }
-            else { return false;  }
         }
 
         /// <summary>
