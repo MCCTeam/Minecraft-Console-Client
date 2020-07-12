@@ -18,6 +18,8 @@ namespace MinecraftClient.ChatBots
 
         private bool craftingFailed = false;
 
+        private List<ActionStep> actionSteps = new List<ActionStep>();
+
         private enum ActionType
         {
             LeftClick,
@@ -27,11 +29,31 @@ namespace MinecraftClient.ChatBots
             Repeat
         }
 
+        /// <summary>
+        /// Represent a single action step of the whole crafting process
+        /// </summary>
         private class ActionStep
         {
+            /// <summary>
+            /// The action type of this action step
+            /// </summary>
             public ActionType ActionType;
+
+            /// <summary>
+            /// For storing data needed for processing
+            /// </summary>
+            /// <remarks>-2 mean not used</remarks>
             public int Slot = -2;
+
+            /// <summary>
+            /// For storing data needed for processing
+            /// </summary>
+            /// <remarks>-2 mean not used</remarks>
             public int InventoryID = -2;
+
+            /// <summary>
+            /// For storing data needed for processing
+            /// </summary>
             public ItemType ItemType;
 
             public ActionStep(ActionType actionType)
@@ -57,12 +79,25 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private List<ActionStep> actionSteps = new List<ActionStep>();
-
+        /// <summary>
+        /// Represent a crafting recipe
+        /// </summary>
         private class Recipe
         {
+            /// <summary>
+            /// The results item of this recipe
+            /// </summary>
             public ItemType ResultItem;
+
+            /// <summary>
+            /// Crafting table required for this recipe, playerInventory or Crafting
+            /// </summary>
             public ContainerType CraftingAreaType;
+
+            /// <summary>
+            /// Materials needed and their position
+            /// </summary>
+            /// <remarks>position start with 1, from left to right, top to bottom</remarks>
             public Dictionary<int, ItemType> Materials;
 
             public Recipe(Dictionary<int, ItemType> materials, ItemType resultItem, ContainerType type)
@@ -72,6 +107,12 @@ namespace MinecraftClient.ChatBots
                 CraftingAreaType = type;
             }
 
+            /// <summary>
+            /// Convert the position of a defined recipe from playerInventory to Crafting
+            /// </summary>
+            /// <param name="recipe"></param>
+            /// <returns>Converted recipe</returns>
+            /// <remarks>so that it can be used in crafting table</remarks>
             public static Recipe ConvertToCraftingTable(Recipe recipe)
             {
                 if (recipe.CraftingAreaType == ContainerType.PlayerInventory)
@@ -94,57 +135,43 @@ namespace MinecraftClient.ChatBots
         public override void Initialize()
         {
             RegisterChatBotCommand("craft", "craft", CraftCommand);
-            RegisterChatBotCommand("open", "open", Open);
-            RegisterChatBotCommand("place", "place", Place);
-        }
-
-        public string Open(string command, string[] args)
-        {
-            double x = -258;
-            double y = 64;
-            double z = -187;
-            Location l = new Location(x, y, z);
-            SendPlaceBlock(l, Direction.Up);
-            SendAnimation();
-            return "Try to open";
-        }
-
-        public string Place(string command, string[] args)
-        {
-            double x = Convert.ToDouble(args[0]);
-            double y = Convert.ToDouble(args[1]);
-            double z = Convert.ToDouble(args[2]);
-            SendPlaceBlock(new Location(x, y, z), Direction.Down);
-            return "Try place";
         }
 
         public string CraftCommand(string command, string[] args)
         {
+            /* Define crafting recipe */
+            // TODO: make a dedicated config file for user to set their own recipe
             Dictionary<int, ItemType> materials = new Dictionary<int, ItemType>
             {
-                { 1, ItemType.Coal },
-                { 3, ItemType.Stick }
+                { 1, ItemType.OakPlanks }, { 2, ItemType.OakPlanks }, { 3, ItemType.OakPlanks },
+                { 4, ItemType.Cobblestone }, { 5, ItemType.IronIngot }, { 6, ItemType.Cobblestone },
+                { 7, ItemType.Cobblestone }, { 8, ItemType.Redstone }, { 9, ItemType.Cobblestone }
             };
-            Recipe recipe = new Recipe(materials, ItemType.StoneButton, ContainerType.PlayerInventory);
-            inventoryInUse = 0;
+            Recipe recipe = new Recipe(materials, ItemType.StoneButton, ContainerType.Crafting);
+            inventoryInUse = 1;
 
             recipeInUse = recipe;
             craftingFailed = false;
             waitingForUpdate = false;
             index = 0;
-
-            var inventory = GetInventories()[inventoryInUse];
+            
             foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
             {
+                // Steps for moving items from inventory to crafting area
                 actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Value));
                 actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Key));
             }
             if (actionSteps.Count > 0)
             {
+                // Wait for server to send us the crafting result
                 actionSteps.Add(new ActionStep(ActionType.WaitForUpdate, inventoryInUse, 0));
+                // Put item back to inventory. (Using shift-click can take all item at once)
                 actionSteps.Add(new ActionStep(ActionType.ShiftClick, inventoryInUse, 0));
+                // We need to wait for server to update us after taking item from crafting result
                 actionSteps.Add(new ActionStep(ActionType.WaitForUpdate, inventoryInUse));
+                // Repeat the whole process again
                 actionSteps.Add(new ActionStep(ActionType.Repeat));
+                // Start crafting
                 HandleNextStep();
                 return "AutoCraft start!";
             }
@@ -155,6 +182,8 @@ namespace MinecraftClient.ChatBots
         {
             if (waitingForUpdate && inventoryInUse == inventoryId)
             {
+                // Because server might send us a LOT of update at once, even there is only a single slot updated.
+                // Using this to make sure we don't do things before inventory update finish
                 updateDebounce = 2;
             }
         }
@@ -246,6 +275,10 @@ namespace MinecraftClient.ChatBots
             if (craftingFailed)
             {
                 actionSteps.Clear();
+                // Closing inventory can make server to update our inventory
+                // Useful when
+                // - There are some items left in the crafting area
+                // - Resynchronize player inventory if using crafting table
                 CloseInventory(inventoryInUse);
                 ConsoleIO.WriteLogLine("Crafting aborted! Check your available materials.");
             }
