@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="AutoTimeout.cs" />
     <Compile Include="Commands\Entitycmd.cs" />
+    <Compile Include="Commands\Entitycmd.cs" />
     <Compile Include="ChatBots\Alerts.cs" />
     <Compile Include="ChatBots\AntiAFK.cs" />
     <Compile Include="ChatBots\AutoAttack.cs" />
