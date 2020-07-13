@@ -293,11 +293,11 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x58: return PacketIncomingType.EntityProperties;
                     case 0x56: return PacketIncomingType.EntityTeleport;
                     case 0x41: return PacketIncomingType.EntityVelocity;
-                    case 0x42: return PacketIncomingType.EntityEquipment;
+                    case 0x46: return PacketIncomingType.EntityEquipment;
                     case 0x59: return PacketIncomingType.EntityEffect;
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     case 0x48: return PacketIncomingType.UpdateHealth;
-                    case 0x45: return PacketIncomingType.SetExperience;
+                    case 0x47: return PacketIncomingType.SetExperience;
                     case 0x3F: return PacketIncomingType.HeldItemChange;
                     case 0x1C: return PacketIncomingType.Explosion;
                     case 0x26: return PacketIncomingType.MapData;
