@@ -98,6 +98,7 @@ internal class VkLongPoolClient
     private WebClient SenderWebClient { get; set; }
     private string Token { get; set; }
     private int LastTs { get; set; }
+    private int lastrand;
     private string Server { get; set; }
     private string Key { get; set; }
     private Action<string, string, string> OnMessageReceivedCallback { get; set; }
@@ -111,12 +112,16 @@ internal class VkLongPoolClient
         Key = data.Properties["response"].Properties["key"].StringValue;
         Server = data.Properties["response"].Properties["server"].StringValue;
         LastTs = Convert.ToInt32(data.Properties["response"].Properties["ts"].StringValue);
+	lastrand = LastTs + 1;
     }
 
     public void SendMessage(string chatId, string text, int random_id = 0)
     {
 	if (random_id == 0)
-		random_id = LastTs;
+	{
+	    random_id = lastrand;
+	    lastrand++;
+	}
 		
 	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text);
     }
@@ -124,7 +129,10 @@ internal class VkLongPoolClient
     public void SendSticker(string chatId, int sticker_id, int random_id = 0)
     {
 	if (random_id == 0)
-		random_id = LastTs;
+	{
+            random_id = lastrand;
+	    lastrand++;
+	}
 		
 	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&sticker_id=" + sticker_id);
     }
@@ -163,7 +171,8 @@ internal class VkLongPoolClient
 		Init();
         
         LastTs = Convert.ToInt32(data.Properties["ts"].StringValue);
-
+        lastrand = LastTs + 1;
+	    
         var updates = data.Properties["updates"].DataArray;
         var messages = new List<Tuple<string, string, string>>();
         foreach (var str in updates)
