@@ -158,7 +158,13 @@ namespace MinecraftClient.ChatBots
 
         public override void Initialize()
         {
+            if (!GetInventoryEnabled())
+            {
+                ConsoleIO.WriteLogLine("Inventory handling is disabled. AutoCraft will be unloaded");
+                UnloadBot();
+            }
             RegisterChatBotCommand("autocraft", "auto craft", CommandHandler);
+            LoadConfig();
         }
 
         public string CommandHandler(string cmd, string[] args)
@@ -244,16 +250,16 @@ namespace MinecraftClient.ChatBots
                     Directory.CreateDirectory(@"autocraft");
                 }
                 WriteDefaultConfig();
-                ConsoleIO.WriteLogLine("No config found. Writing a new one.");
+                ConsoleIO.WriteLogLine("[AutoCraft] No config found. Writing a new one.");
             }
             try
             {
                 ParseConfig();
-                ConsoleIO.WriteLogLine("Successfully loaded");
+                ConsoleIO.WriteLogLine("[AutoCraft] Successfully loaded");
             }
             catch (Exception e)
             {
-                ConsoleIO.WriteLogLine("Error while parsing config: \n" + e.Message);
+                ConsoleIO.WriteLogLine("[AutoCraft] Error while parsing config: \n" + e.Message);
             }
         }
 
