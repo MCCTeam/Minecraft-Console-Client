@@ -10,18 +10,38 @@ namespace MinecraftClient.ChatBots
 {
     class AutoCarft : ChatBot
     {
+        private bool waitingForMaterials = false;
         private bool waitingForUpdate = false;
+        private bool waitingForTable = false;
         private bool craftingFailed = false;
         private int inventoryInUse = -2;
         private int index = 0;
         private Recipe recipeInUse;
         private List<ActionStep> actionSteps = new List<ActionStep>();
 
+        private Location tableLocation = new Location();
+        private bool abortOnFailure = true;
+        private int updateDebounceValue = 2;
         private int updateDebounce = 0;
+        private int updateTimeoutValue = 10;
+        private int updateTimeout = 0;
+        private string timeoutAction = "unspecified";
 
         private string configPath = @"autocraft\config.ini";
 
         private Dictionary<string, Recipe> recipes = new Dictionary<string, Recipe>();
+
+        private void resetVar()
+        {
+            craftingFailed = false;
+            waitingForTable = false;
+            waitingForUpdate = false;
+            waitingForMaterials = false;
+            inventoryInUse = -2;
+            index = 0;
+            recipeInUse = null;
+            actionSteps.Clear();
+        }
 
         private enum ActionType
         {
@@ -138,83 +158,79 @@ namespace MinecraftClient.ChatBots
 
         public override void Initialize()
         {
-            RegisterChatBotCommand("craft", "craft", CraftCommand);
-            RegisterChatBotCommand("open", "open", Open);
             RegisterChatBotCommand("autocraft", "auto craft", CommandHandler);
         }
 
         public string CommandHandler(string cmd, string[] args)
         {
-            switch (args[0])
+            if (args.Length > 0)
+            {
+                switch (args[0])
+                {
+                    case "load":
+                        LoadConfig();
+                        return "";
+                    case "list":
+                        string names = string.Join(", ", recipes.Keys.ToList());
+                        return String.Format("Total {0} recipes loaded: {1}", recipes.Count, names);
+                    case "reload":
+                        recipes.Clear();
+                        LoadConfig();
+                        return "";
+                    case "resetcfg":
+                        WriteDefaultConfig();
+                        return "Resetting your config to the default";
+                    case "start":
+                        if (args.Length >= 2)
+                        {
+                            string name = args[1];
+                            if (recipes.ContainsKey(name))
+                            {
+                                resetVar();
+                                PrepareCrafting(recipes[name]);
+                                return "";
+                            }
+                            else return "Specified recipe name do not exist. Check your config file.";
+                        }
+                        else return "Please specify the recipe name you want to carft.";
+                    case "stop":
+                        StopCrafting();
+                        return "AutoCraft stopped";
+                    case "help":
+                        return GetCommandHelp(args.Length >= 2 ? args[1] : "");
+                    default:
+                        return GetHelp();
+                }
+            }
+            else return GetHelp();
+        }
+
+        private string GetHelp()
+        {
+            return "Auto-crafting bot. Available commands: load, list, reload, resetcfg, start, stop, help. Use /autocraft help <cmd name> for more information";
+        }
+
+        private string GetCommandHelp(string cmd)
+        {
+            switch (cmd.ToLower())
             {
                 case "load":
-                    LoadConfig();
-                    return "";
+                    return "Load the config from default location.";
                 case "list":
-                    string names = string.Join(", ", recipes.Keys.ToList());
-                    return String.Format("Total {0} recipes loaded: {1}", recipes.Count, names);
+                    return "List loaded recipes name.";
                 case "reload":
-                    recipes.Clear();
-                    LoadConfig();
-                    return "";
+                    return "Reload the config from default location.";
+                case "resetcfg":
+                    return "Write the default example config to default location.";
+                case "start":
+                    return "Start the crafting. Usage: /autocraft start <recipe name>";
+                case "stop":
+                    return "Stop the current running crafting process";
+                case "help":
+                    return "Get the command description. Usage: /autocraft help <command name>";
+                default:
+                    return GetHelp();
             }
-            return "";
-        }
-
-        public string Open(string cmd, string[] args)
-        {
-            double x = Convert.ToDouble(args[0]);
-            double y = Convert.ToDouble(args[1]);
-            double z = Convert.ToDouble(args[2]);
-            SendPlaceBlock(new Location(x, y, z), .5f, .5f, .5f, Direction.Up);
-            return "ok";
-        }
-
-        public string CraftCommand(string command, string[] args)
-        {
-            /* Define crafting recipe */
-            // TODO: make a dedicated config file for user to set their own recipe
-            Dictionary<int, ItemType> materials = new Dictionary<int, ItemType>
-            {
-                { 1, ItemType.OakPlanks }, { 2, ItemType.OakPlanks }, { 3, ItemType.OakPlanks },
-                { 4, ItemType.Cobblestone }, { 5, ItemType.IronIngot }, { 6, ItemType.Cobblestone },
-                { 7, ItemType.Cobblestone }, { 8, ItemType.Redstone }, { 9, ItemType.Cobblestone }
-            };
-            Recipe recipe = new Recipe(materials, ItemType.StoneButton, ContainerType.Crafting);
-            inventoryInUse = 1;
-
-            recipeInUse = recipe;
-            craftingFailed = false;
-            waitingForUpdate = false;
-            index = 0;
-            
-            foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
-            {
-                // Steps for moving items from inventory to crafting area
-                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Value));
-                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Key));
-            }
-            if (actionSteps.Count > 0)
-            {
-                // Wait for server to send us the crafting result
-                actionSteps.Add(new ActionStep(ActionType.WaitForUpdate, inventoryInUse, 0));
-                // Put item back to inventory. (Using shift-click can take all item at once)
-                actionSteps.Add(new ActionStep(ActionType.ShiftClick, inventoryInUse, 0));
-                // We need to wait for server to update us after taking item from crafting result
-                actionSteps.Add(new ActionStep(ActionType.WaitForUpdate, inventoryInUse));
-                // Repeat the whole process again
-                actionSteps.Add(new ActionStep(ActionType.Repeat));
-                // Start crafting
-                HandleNextStep();
-                return "AutoCraft start!";
-            }
-            else return "AutoCraft cannot be started. Check your available materials";
-        }
-
-        public string LoadConfigRunner(string command, string[] args)
-        {
-            LoadConfig();
-            return "ok";
         }
 
         #region Config handling
@@ -247,18 +263,20 @@ namespace MinecraftClient.ChatBots
             {
                 "[autocraft]",
                 "# A vaild autocraft config must begin with [autocraft]",
-                "# You can define multiple recipe in the config file",
-                "# This is a example of how to define a recipe",
+                "",
+                "tablelocation=0,65,0   # Location of the crafting table if you intended to use it. Terrain and movements must be enabled. Format: x,y,z",
+                "onfailure=abort        # What to do on crafting failure, abort or wait",
+                "updatedebounce=2       # DO NOT change this unless you know what you are doing. Value must be larger than 0, usually between 1-3",
+                "",
+                "# You can define multiple recipe in a single config file",
+                "# This is an example of how to define a recipe",
                 "[recipe]",
-                "# name could be whatever you like. This must be in the first place",
-                "name=whatever",
-                "# crafting table type: player or table",
-                "type=player",
-                "# the resulting item",
-                "result=StoneButton",
+                "name=whatever          # name could be whatever you like. This must be in the first place",
+                "type=player            # crafting table type: player or table",
+                "result=StoneButton     # the resulting item",
+                "",
                 "# define slots with their deserved item",
-                "# slot start with 1, count from top to bottom, left to right",
-                "slot1=Stone",
+                "slot1=Stone            # slot start with 1, count from left to right, top to bottom",
                 "# For the naming of the items, please see",
                 "# https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs"
             };
@@ -296,9 +314,8 @@ namespace MinecraftClient.ChatBots
                 string value = line.Substring(key.Length + 1);
                 switch (session)
                 {
-                    case "recipe":
-                        parseRecipe(key, value);
-                        break;
+                    case "recipe": parseRecipe(key, value); break;
+                    case "autocraft": parseMain(key, value); break;
                 }
             }
 
@@ -321,6 +338,29 @@ namespace MinecraftClient.ChatBots
             }
 
             #region Local method for parsing different session of config
+
+            void parseMain(string key, string value)
+            {
+                switch (key)
+                {
+                    case "tablelocation":
+                        string[] values = value.Split(',');
+                        if (values.Length == 3)
+                        {
+                            tableLocation.X = Convert.ToInt32(values[0]);
+                            tableLocation.Y = Convert.ToInt32(values[1]);
+                            tableLocation.Z = Convert.ToInt32(values[2]);
+                        }
+                        else throw new Exception("Invaild config format");
+                        break;
+                    case "onfailure":
+                        abortOnFailure = value.ToLower() == "abort" ? true : false;
+                        break;
+                    case "updatedebounce":
+                        updateDebounceValue = Convert.ToInt32(value);
+                        break;
+                }
+            }
 
             void parseRecipe(string key, string value)
             {
@@ -392,11 +432,27 @@ namespace MinecraftClient.ChatBots
 
         public override void OnInventoryUpdate(int inventoryId)
         {
-            if (waitingForUpdate && inventoryInUse == inventoryId)
+            if ((waitingForUpdate && inventoryInUse == inventoryId) || (waitingForMaterials && inventoryInUse == inventoryId))
             {
                 // Because server might send us a LOT of update at once, even there is only a single slot updated.
                 // Using this to make sure we don't do things before inventory update finish
-                updateDebounce = 2;
+                updateDebounce = updateDebounceValue;
+            }
+        }
+
+        public override void OnInventoryOpen(int inventoryId)
+        {
+            if (waitingForTable)
+            {
+                if (GetInventories()[inventoryId].Type == ContainerType.Crafting)
+                {
+                    waitingForTable = false;
+                    ClearTimeout();
+                    // After table opened, we need to wait for server to update table inventory items
+                    waitingForUpdate = true;
+                    inventoryInUse = inventoryId;
+                    PrepareCrafting(recipeInUse);
+                }
             }
         }
 
@@ -408,19 +464,112 @@ namespace MinecraftClient.ChatBots
                 if (updateDebounce <= 0)
                     InventoryUpdateFinished();
             }
+            if (updateTimeout > 0)
+            {
+                updateTimeout--;
+                if (updateTimeout <= 0)
+                    HandleUpdateTimeout();
+            }
         }
 
         private void InventoryUpdateFinished()
         {
-            waitingForUpdate = false;
-            HandleNextStep();
+            if (waitingForUpdate || waitingForMaterials)
+            {
+                if (waitingForUpdate)
+                    waitingForUpdate = false;
+                if (waitingForMaterials)
+                {
+                    waitingForMaterials = false;
+                    craftingFailed = false;
+                }
+                HandleNextStep();
+            }
+        }
+
+        private void OpenTable(Location location)
+        {
+            SendPlaceBlock(location, Direction.Up);
+        }
+
+        private void PrepareCrafting(string name)
+        {
+            PrepareCrafting(recipes[name]);
+        }
+        private void PrepareCrafting(Recipe recipe)
+        {
+            /* Define crafting recipe */
+            // TODO: make a dedicated config file for user to set their own recipe
+            //Dictionary<int, ItemType> materials = new Dictionary<int, ItemType>
+            //{
+            //    { 1, ItemType.OakPlanks }, { 2, ItemType.OakPlanks }, { 3, ItemType.OakPlanks },
+            //    { 4, ItemType.Cobblestone }, { 5, ItemType.IronIngot }, { 6, ItemType.Cobblestone },
+            //    { 7, ItemType.Cobblestone }, { 8, ItemType.Redstone }, { 9, ItemType.Cobblestone }
+            //};
+            //Recipe recipe = new Recipe(materials, ItemType.StoneButton, ContainerType.Crafting);
+            //inventoryInUse = 1;
+
+            recipeInUse = recipe;
+            if (recipeInUse.CraftingAreaType == ContainerType.PlayerInventory)
+                inventoryInUse = 0;
+            else
+            {
+                var inventories = GetInventories();
+                foreach (var inventory in inventories)
+                    if (inventory.Value.Type == ContainerType.Crafting)
+                        inventoryInUse = inventory.Key;
+                if (inventoryInUse == -2)
+                {
+                    // table required but not found. Try to open one
+                    OpenTable(tableLocation);
+                    waitingForTable = true;
+                    SetTimeout("table not found");
+                    return;
+                }
+            }
+
+            foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
+            {
+                // Steps for moving items from inventory to crafting area
+                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Value));
+                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Key));
+            }
+            if (actionSteps.Count > 0)
+            {
+                // Wait for server to send us the crafting result
+                actionSteps.Add(new ActionStep(ActionType.WaitForUpdate, inventoryInUse, 0));
+                // Put item back to inventory. (Using shift-click can take all item at once)
+                actionSteps.Add(new ActionStep(ActionType.ShiftClick, inventoryInUse, 0));
+                // We need to wait for server to update us after taking item from crafting result
+                actionSteps.Add(new ActionStep(ActionType.WaitForUpdate, inventoryInUse));
+                // Repeat the whole process again
+                actionSteps.Add(new ActionStep(ActionType.Repeat));
+                // Start crafting
+                ConsoleIO.WriteLogLine("AutoCraft start!");
+                HandleNextStep();
+            }
+            else ConsoleIO.WriteLogLine("AutoCraft cannot be started. Check your available materials");
+        }
+
+        private void StopCrafting()
+        {
+            actionSteps.Clear();
+            // Closing inventory can make server to update our inventory
+            // Useful when
+            // - There are some items left in the crafting area
+            // - Resynchronize player inventory if using crafting table
+            if (GetInventories().ContainsKey(inventoryInUse))
+            {
+                CloseInventory(inventoryInUse);
+                ConsoleIO.WriteLogLine("Inventory #" + inventoryInUse + " was closed by AutoCraft");
+            }
         }
 
         private void HandleNextStep()
         {
             while (actionSteps.Count > 0)
             {
-                if (waitingForUpdate) break;
+                if (waitingForUpdate || waitingForMaterials || craftingFailed) break;
                 ActionStep step = actionSteps[index];
                 index++;
                 switch (step.ActionType)
@@ -486,14 +635,36 @@ namespace MinecraftClient.ChatBots
         {
             if (craftingFailed)
             {
-                actionSteps.Clear();
-                // Closing inventory can make server to update our inventory
-                // Useful when
-                // - There are some items left in the crafting area
-                // - Resynchronize player inventory if using crafting table
-                CloseInventory(inventoryInUse);
-                ConsoleIO.WriteLogLine("Crafting aborted! Check your available materials.");
+                if (abortOnFailure)
+                {
+                    StopCrafting();
+                    ConsoleIO.WriteLogLine("Crafting aborted! Check your available materials.");
+                }
+                else
+                {
+                    waitingForMaterials = true;
+                    // Even though crafting failed, action step index will still increase
+                    // we want to do that failed step again so decrease index by 1
+                    index--;
+                    ConsoleIO.WriteLogLine("Crafting failed! Waiting for more materials");
+                }
             }
+        }
+
+        private void HandleUpdateTimeout()
+        {
+            ConsoleIO.WriteLogLine("Action timeout! Reason: " + timeoutAction);
+        }
+
+        private void SetTimeout(string reason = "unspecified")
+        {
+            updateTimeout = updateTimeoutValue;
+            timeoutAction = reason;
+        }
+
+        private void ClearTimeout()
+        {
+            updateTimeout = 0;
         }
 
         #endregion
