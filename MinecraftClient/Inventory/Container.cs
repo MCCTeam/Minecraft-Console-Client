@@ -172,5 +172,19 @@ namespace MinecraftClient.Inventory
             }
             return result.ToArray();
         }
+
+        public int[] GetEmpytSlot()
+        {
+            List<int> result = new List<int>();
+            for (int i = 0; i < Type.SlotCount(); i++)
+            {
+                result.Add(i);
+            }
+            foreach (var item in Items)
+            {
+                result.Remove(item.Key);
+            }
+            return result.ToArray();
+        }
     }
 }
