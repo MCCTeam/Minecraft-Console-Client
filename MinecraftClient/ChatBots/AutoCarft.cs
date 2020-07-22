@@ -498,23 +498,21 @@ namespace MinecraftClient.ChatBots
             SendPlaceBlock(location, Direction.Up);
         }
 
+        /// <summary>
+        /// Prepare the crafting action steps by the given recipe name and start crafting
+        /// </summary>
+        /// <param name="recipe">Name of the recipe to craft</param>
         private void PrepareCrafting(string name)
         {
             PrepareCrafting(recipes[name]);
         }
+
+        /// <summary>
+        /// Prepare the crafting action steps by the given recipe and start crafting
+        /// </summary>
+        /// <param name="recipe">Recipe to craft</param>
         private void PrepareCrafting(Recipe recipe)
         {
-            /* Define crafting recipe */
-            // TODO: make a dedicated config file for user to set their own recipe
-            //Dictionary<int, ItemType> materials = new Dictionary<int, ItemType>
-            //{
-            //    { 1, ItemType.OakPlanks }, { 2, ItemType.OakPlanks }, { 3, ItemType.OakPlanks },
-            //    { 4, ItemType.Cobblestone }, { 5, ItemType.IronIngot }, { 6, ItemType.Cobblestone },
-            //    { 7, ItemType.Cobblestone }, { 8, ItemType.Redstone }, { 9, ItemType.Cobblestone }
-            //};
-            //Recipe recipe = new Recipe(materials, ItemType.StoneButton, ContainerType.Crafting);
-            //inventoryInUse = 1;
-
             recipeInUse = recipe;
             if (recipeInUse.CraftingAreaType == ContainerType.PlayerInventory)
                 inventoryInUse = 0;
@@ -557,6 +555,9 @@ namespace MinecraftClient.ChatBots
             else ConsoleIO.WriteLogLine("AutoCraft cannot be started. Check your available materials");
         }
 
+        /// <summary>
+        /// Stop the crafting process by clearing crafting action steps and close the inventory
+        /// </summary>
         private void StopCrafting()
         {
             actionSteps.Clear();
@@ -571,6 +572,9 @@ namespace MinecraftClient.ChatBots
             }
         }
 
+        /// <summary>
+        /// Handle next crafting action step
+        /// </summary>
         private void HandleNextStep()
         {
             while (actionSteps.Count > 0)
@@ -637,6 +641,9 @@ namespace MinecraftClient.ChatBots
             
         }
 
+        /// <summary>
+        /// Handle any crafting error after a step was processed
+        /// </summary>
         private void HandleError()
         {
             if (craftingFailed)
@@ -654,6 +661,11 @@ namespace MinecraftClient.ChatBots
                     index--;
                     ConsoleIO.WriteLogLine("Crafting failed! Waiting for more materials");
                 }
+                if (actionSteps[index - 1].ActionType == ActionType.LeftClick && actionSteps[index - 1].ItemType != ItemType.Air)
+                {
+                    // Inform user the missing meterial name
+                    ConsoleIO.WriteLogLine("Missing material: " + actionSteps[index - 1].ItemType.ToString());
+                }
             }
         }
 
@@ -662,12 +674,19 @@ namespace MinecraftClient.ChatBots
             ConsoleIO.WriteLogLine("Action timeout! Reason: " + timeoutAction);
         }
 
+        /// <summary>
+        /// Set the timeout. Used to detect the failure of open crafting table
+        /// </summary>
+        /// <param name="reason">The reason to display if timeout</param>
         private void SetTimeout(string reason = "unspecified")
         {
             updateTimeout = updateTimeoutValue;
             timeoutAction = reason;
         }
 
+        /// <summary>
+        /// Clear the timeout
+        /// </summary>
         private void ClearTimeout()
         {
             updateTimeout = 0;
