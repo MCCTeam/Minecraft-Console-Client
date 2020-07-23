@@ -491,7 +491,6 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string daysToSaveMessage(string cmd, string[] args)
         {
-
             try
             {
                 options.daysTosaveMsg = Int32.Parse(args[0]);
@@ -649,28 +648,49 @@ namespace MinecraftClient.ChatBots
                     LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
                 }
             }
-            catch (Exception) // If, by any reason, the file couldn't be safed, the programm creates a new one and pastes all data in the console for debug use.
+            catch (Exception) // If, by any reason, the file couldn't be safed:
             {
-                LogToConsole("Something went wrong! Coudln't save cache to file! Replaced the File with an empty one." + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
-
-                LogToConsole("Pasting File in Console.");
-                LogToConsole("Sender;   Destination;    Content;    isAnonymous;    Creation Date;");
-                foreach (Message msg in getMailsFromFile())
+                try // Try if changing the path fix it!
                 {
-                    LogToConsole(msg.GetSender() + "; " + msg.GetDestination() + "; " + msg.GetContent() + "; " + msg.isAnonymous() + "; " + msg.GetTimeStamp());
-                }
+                    options.path_mail = AppDomain.CurrentDomain.BaseDirectory + "mails.txt";
+                    SaveOptionsToFile();
 
-                LogToConsole("Pasting Cache in Console.");
-                foreach (Message msg in logged_msg)
+                    LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
+
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    FileStream stream = new FileStream(options.path_mail, FileMode.Create, FileAccess.Write);
+
+                    formatter.Serialize(stream, msg_array);
+                    stream.Close();
+
+                    if (options.debug_msg)
+                    {
+                        LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
+                    }
+                }
+                catch (Exception) // If even this can not be done, create a new mail file. (If any strange character can't be safed.)
                 {
-                    LogToConsole(msg.GetSender() + "; " + msg.GetDestination() + "; " + msg.GetContent() + "; " + msg.isAnonymous() + "; " + msg.GetTimeStamp());
+                    LogToConsole("Something went wrong! Coudln't save cache to file! Creating new file." + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
+
+                    LogToConsole("Pasting File in Console.");
+                    LogToConsole("Sender;   Destination;    Content;    isAnonymous;    Creation Date;");
+                    foreach (Message msg in getMailsFromFile())
+                    {
+                        LogToConsole(msg.GetSender() + "; " + msg.GetDestination() + "; " + msg.GetContent() + "; " + msg.isAnonymous() + "; " + msg.GetTimeStamp());
+                    }
+
+                    LogToConsole("Pasting Cache in Console.");
+                    foreach (Message msg in logged_msg)
+                    {
+                        LogToConsole(msg.GetSender() + "; " + msg.GetDestination() + "; " + msg.GetContent() + "; " + msg.isAnonymous() + "; " + msg.GetTimeStamp());
+                    }
+
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    FileStream stream = new FileStream(options.path_mail, FileMode.Create, FileAccess.Write);
+
+                    formatter.Serialize(stream, new Message[0]);
+                    stream.Close();
                 }
-
-                BinaryFormatter formatter = new BinaryFormatter();
-                FileStream stream = new FileStream(options.path_mail, FileMode.Create, FileAccess.Write);
-
-                formatter.Serialize(stream, new Message[0]);
-                stream.Close();
             }
         }
 
