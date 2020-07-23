@@ -166,6 +166,7 @@ namespace MinecraftClient
 
         //AutoCraft
         public static bool AutoCraft_Enabled = false;
+        public static string AutoCraft_configFile = @"autocraft\config.ini";
 
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
@@ -500,6 +501,7 @@ namespace MinecraftClient
                                             switch (argName.ToLower())
                                             {
                                                 case "enabled": AutoCraft_Enabled = str2bool(argValue); break;
+                                                case "configfile": AutoCraft_configFile = argValue; break;
                                             }
                                             break;
 
@@ -716,6 +718,7 @@ namespace MinecraftClient
                 + "# Inventory Handling NEED to be enabled first\r\n"
                 + "# Enable terrainandmovements if you need to use crafting table\r\n"
                 + "enabled=false\r\n"
+                + "configfile=autocraft\\config.ini\r\n"
                 + "\r\n", Encoding.UTF8);
         }
 

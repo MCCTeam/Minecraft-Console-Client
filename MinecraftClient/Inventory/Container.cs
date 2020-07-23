@@ -173,7 +173,12 @@ namespace MinecraftClient.Inventory
             return result.ToArray();
         }
 
-        public int[] GetEmpytSlot()
+        /// <summary>
+        /// List empty slots in the container
+        /// </summary>
+        /// <returns>An array of slot ID</returns>
+        /// <remarks>Also depending on the container type, some empty slots cannot be used e.g. armor slots. This might cause issues.</remarks>
+        public int[] GetEmpytSlots()
         {
             List<int> result = new List<int>();
             for (int i = 0; i < Type.SlotCount(); i++)
