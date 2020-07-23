@@ -344,11 +344,18 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string changeMailPath(string cmd, string[] args)
         {
-            options.path_mail = AppDomain.CurrentDomain.BaseDirectory + args[0];
-            SaveOptionsToFile();
-            GetOptionsFromFile();
+            if (args.Length > 0)
+            {
+                options.path_mail = AppDomain.CurrentDomain.BaseDirectory + args[0];
+                SaveOptionsToFile();
+                GetOptionsFromFile();
 
-            return "Changed mailpath to: " + (options.path_mail).ToString();
+                return "Changed mailpath to: " + (options.path_mail).ToString();
+            }
+            else
+            {
+                return "Your path shall not pass!";
+            }
         }
 
         /// <summary>
@@ -356,11 +363,18 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string changeSettingsPath(string cmd, string[] args)
         {
-            options.path_setting = AppDomain.CurrentDomain.BaseDirectory + args[0];
-            SaveOptionsToFile();
-            GetOptionsFromFile();
+            if (args.Length > 0)
+            {
+                options.path_setting = AppDomain.CurrentDomain.BaseDirectory + args[0];
+                SaveOptionsToFile();
+                GetOptionsFromFile();
 
-            return "Changed settingsspath to: " + options.path_setting;
+                return "Changed settingsspath to: " + options.path_setting;
+            }
+            else
+            {
+                return "Your path shall not pass!";
+            }
         }
 
         /// <summary>
@@ -426,18 +440,16 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string addIgnored(string cmd, string[] args)
         {
-            if (IsValidName(args[0]))
+            if (args.Length > 0 && IsValidName(args[0]))
             {
                 options.ignored = addMember(args[0], options.ignored);
                 SaveOptionsToFile();
 
-                
                 return "Added " + args[0] + " as ignored!";
-                
             }
             else
             {
-                return "Enter a valid name.";
+                return "Your name shall not pass!";
             }
         }
 
@@ -446,17 +458,16 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string removeIgnored(string cmd, string[] args)
         {
-
-            if (IsValidName(args[0]))
+            if (args.Length > 0 && IsValidName(args[0]))
             {
-                options.ignored = removeMember(args[0], options.ignored);
-                SaveOptionsToFile();
+                    options.ignored = removeMember(args[0], options.ignored);
+                    SaveOptionsToFile();
 
-                return "Removed " + args[0] + " as ignored!";
+                    return "Removed " + args[0] + " as ignored!";
             }
             else
             {
-                return "Enter a valid name!";
+                return "Your name shall not pass!";
             }
         }
 
