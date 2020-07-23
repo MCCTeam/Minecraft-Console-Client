@@ -80,7 +80,13 @@ importmoderator
 	
 resettimer
 => Resets the sending timer to 0. Useful if you put several bots
-	on one file. 
+	on one file.
+	
+addignored [NAME] / removeignored [NAME]
+=> Add / Remove an ignored Player. The bot won't interact with it.
+
+getignored
+=> Lists ignored players to Console.
 
 
 +++++++++++++
