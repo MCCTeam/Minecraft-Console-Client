@@ -175,7 +175,7 @@ namespace MinecraftClient
                     if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack()); }
                     if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
                     if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
-                    if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCarft()); }
+                    if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
 
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
@@ -1181,7 +1181,7 @@ namespace MinecraftClient
                                 }
                                 if (inventory.Items[slotId].Count > 0)
                                 {
-                                    int[] emptySlots = inventory.GetEmpytSlot();
+                                    int[] emptySlots = inventory.GetEmpytSlots();
                                     int emptySlot = -2;
                                     foreach (int slot in emptySlots)
                                     {
@@ -1227,7 +1227,7 @@ namespace MinecraftClient
                                 }
                                 if (inventory.Items[slotId].Count > 0)
                                 {
-                                    int[] emptySlots = inventory.GetEmpytSlot();
+                                    int[] emptySlots = inventory.GetEmpytSlots();
                                     int emptySlot = -2;
                                     foreach (int slot in emptySlots)
                                     {
