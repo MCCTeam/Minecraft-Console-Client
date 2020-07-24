@@ -22,6 +22,8 @@ namespace MinecraftClient.ChatBots
         public int timevar_100ms { get; set; }
         public bool debug_msg { get; set; }
         public bool auto_respawn { get; set; }
+        public bool allow_sendmail { get; set; }
+        public bool allow_receivemail { get; set; }
         public string[] ignored = new string[0];
         public DateTime lastReset { get; set; }
         
@@ -36,6 +38,8 @@ namespace MinecraftClient.ChatBots
             daysTosaveMsg = 30;                                                         // After how many days the message should get deleted
             debug_msg = Settings.DebugMessages;                                         // Disable debug Messages for a cleaner console
             auto_respawn = true;                                                        // Toggle the internal autorespawn
+            allow_sendmail = true;                                                      // Enable the continious mail sending
+            allow_receivemail = true;
 
             timevar_100ms = 0;
             lastReset = DateTime.UtcNow;
@@ -126,7 +130,8 @@ namespace MinecraftClient.ChatBots
             RegisterChatBotCommand("maxmailsperplayer", "How many mails can the individual player send", maxMailsPerPlayer);
             RegisterChatBotCommand("maxsavedmails", "How many mails should be safed at all", maxSavedMails);
             RegisterChatBotCommand("intervalsendmail", "How long should the bot wait until sending mails", intervalSendMail);
-            
+            RegisterChatBotCommand("togglemailsending", "Turn the mail sending on / off", toggleMailSending);
+            RegisterChatBotCommand("togglemailreceiving", "Turn listening to mail commands on / off", toggleMailReceiving);
         }
         
         /// <summary>
@@ -158,7 +163,10 @@ namespace MinecraftClient.ChatBots
         {
             if (options.timevar_100ms == options.interval_sendmail)
             {
-                update_and_send_mails();
+                if (options.allow_sendmail)
+                {
+                    update_and_send_mails();
+                }
 
                 if (options.auto_respawn)
                 {
@@ -175,36 +183,46 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void GetText(string text)
         {
-            string message = "";
-            string username = "";
-
-            text = GetVerbatim(text);
-
-            if (IsPrivateMessage(text, ref message, ref username))
+            if (options.allow_receivemail) // Should the bot react to any message?
             {
-                if (!isIgnored(username))
-                {
-                    Message[] msg_array = getMailsFromFile();
+                string message = "";
+                string username = "";
 
-                    if (username.ToLower() != options.botname.ToLower() && getSentMessagesByUser(username) < options.maxSavedMails_Player && msg_array.Length < options.maxSavedMails)
+                text = GetVerbatim(text);
+
+                if (IsPrivateMessage(text, ref message, ref username))
+                {
+                    if (!isIgnored(username))
                     {
-                        message = message.ToLower();
-                        cmd_reader(message, username);
+                        Message[] msg_array = getMailsFromFile();
+
+                        if (username.ToLower() != options.botname.ToLower() && getSentMessagesByUser(username) < options.maxSavedMails_Player && msg_array.Length < options.maxSavedMails)
+                        {
+                            message = message.ToLower();
+                            cmd_reader(message, username);
+                        }
+                        else
+                        {
+                            if (message.Contains("sendmail") || message.Contains("tellonym"))
+                            {
+                                SendPrivateMessage(username, "Couldn't save Message. Limit reached!");
+                            }
+                        }
                     }
                     else
                     {
-                        if (message.Contains("sendmail") || message.Contains("tellonym"))
+                        if (options.debug_msg)
                         {
-                            SendPrivateMessage(username, "Couldn't save Message. Limit reached!");
+                            LogToConsole(username + " is ignored!");
                         }
                     }
                 }
-                else
+            }
+            else
+            {
+                if (options.debug_msg)
                 {
-                    if (options.debug_msg)
-                    {
-                        LogToConsole(username + " is ignored!");
-                    }
+                    LogToConsole("Receive Mails is turned off!");
                 }
             }
         }
@@ -217,15 +235,15 @@ namespace MinecraftClient.ChatBots
             /// <summary>
             /// Send Mails.
             /// </summary>
-            if (message.Contains("sendmail"))
+            if (message.Contains("mail"))
             {
                     string content = "";
                     string destination = "";
                     bool destination_ended = false;
 
-                    for (int i = message.IndexOf("sendmail") + "sendmail".Length + 1; i < message.Length; i++) // -> get first letter of the name.
+                    for (int i = message.IndexOf("mail") + "mail".Length + 1; i < message.Length; i++) // -> get first letter of the name.
                     {
-                        if (message[i] != Convert.ToChar(" ") && !destination_ended)
+                        if (message[i].ToString() != " " && !destination_ended)
                         {
                             destination += message[i]; // extract destination
                         }
@@ -259,7 +277,7 @@ namespace MinecraftClient.ChatBots
 
                 for (int i = message.IndexOf("tellonym") + "tellonym".Length + 1; i < message.Length; i++) // -> get first letter of the name.
                 {
-                    if (message[i] != Convert.ToChar(" ") && !destination_ended)
+                    if (message[i].ToString() != " " && !destination_ended)
                     {
                         destination += message[i]; // extract destination
                     }
@@ -279,6 +297,40 @@ namespace MinecraftClient.ChatBots
                 {
                     SendPrivateMessage(sender, "Something went wrong!");
                 }
+            }
+        }
+
+        /// <summary>
+        /// List ignored players.
+        /// </summary>
+        public string toggleMailReceiving(string cmd, string[] args)
+        {
+            if (options.allow_receivemail)
+            {
+                options.allow_receivemail = false;
+                return "Turned mail receiving off.";
+            }
+            else
+            {
+                options.allow_receivemail = true;
+                return "Turned mail receiving on.";
+            }
+        }
+
+        /// <summary>
+        /// List ignored players.
+        /// </summary>
+        public string toggleMailSending(string cmd, string[] args)
+        {
+            if (options.allow_sendmail)
+            {
+                options.allow_sendmail = false;
+                return "Turned mail sending off.";
+            }
+            else
+            {
+                options.allow_sendmail = true;
+                return "Turned mail sending on.";
             }
         }
 
@@ -407,7 +459,11 @@ namespace MinecraftClient.ChatBots
                 + "; settingspath: "
                 + options.path_setting 
                 + "; autorespawn: "
-                + (options.auto_respawn).ToString();
+                + (options.auto_respawn).ToString()
+                + "; togglemailsending: "
+                + (options.allow_sendmail).ToString()
+                + "; togglemailreceiving: "
+                + (options.allow_receivemail).ToString();
         }
 
         /// <summary>
@@ -701,7 +757,6 @@ namespace MinecraftClient.ChatBots
         {
             BinaryFormatter formatter = new BinaryFormatter();
             
-
             // Tries to access file and creates a new one, if path doesn't exist, to avoid issues.
 
             try
