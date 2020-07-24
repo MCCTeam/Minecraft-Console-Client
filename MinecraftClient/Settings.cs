@@ -596,7 +596,7 @@ namespace MinecraftClient
                 + "consoletitle=%username%@%serverip% - Minecraft Console Client\r\n"
                 + "internalcmdchar=slash              # Use 'none', 'slash' or 'backslash'\r\n"
                 + "splitmessagedelay=2                # Seconds between each part of a long message\r\n"
-                + "botowners=Player1,Player2,Player3  # Use name list or myfile.txt with one name per line\r\n"
+                + "botowners=Player1,Player2,Player3  # Name list or myfile.txt one name per line. !Server admins can impersonate owners!\r\n"
                 + "botmessagedelay=2                  # Seconds to delay between message a bot makes to avoid accidental spam\r\n"
                 + "mcversion=auto                     # Use 'auto' or '1.X.X' values\r\n"
                 + "mcforge=auto                       # Use 'auto' or 'false'\r\n"
