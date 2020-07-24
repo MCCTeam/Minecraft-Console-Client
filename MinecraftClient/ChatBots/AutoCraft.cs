@@ -332,7 +332,7 @@ namespace MinecraftClient.ChatBots
                 string value = line.Substring(key.Length + 1);
                 switch (section)
                 {
-                    case "recipe": parseRecipe(key, value); break;
+                    case "recipe": parseRecipe(key, value, lastRecipe); break;
                     case "autocraft": parseMain(key, value); break;
                 }
             }
@@ -355,94 +355,96 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            #region Local method for parsing different section of config
+            
+        }
 
-            void parseMain(string key, string value)
+        #region Method for parsing different section of config
+
+        private void parseMain(string key, string value)
+        {
+            switch (key)
+            {
+                case "tablelocation":
+                    string[] values = value.Split(',');
+                    if (values.Length == 3)
+                    {
+                        tableLocation.X = Convert.ToInt32(values[0]);
+                        tableLocation.Y = Convert.ToInt32(values[1]);
+                        tableLocation.Z = Convert.ToInt32(values[2]);
+                    }
+                    else throw new Exception("Invalid tablelocation format: " + key);
+                    break;
+                case "onfailure":
+                    abortOnFailure = value.ToLower() == "abort" ? true : false;
+                    break;
+                case "updatedebounce":
+                    updateDebounceValue = Convert.ToInt32(value);
+                    break;
+            }
+        }
+
+        private void parseRecipe(string key, string value, string lastRecipe)
+        {
+            if (key.StartsWith("slot"))
+            {
+                int slot = Convert.ToInt32(key[key.Length - 1].ToString());
+                if (slot > 0 && slot < 10)
+                {
+                    if (recipes.ContainsKey(lastRecipe))
+                    {
+                        if (Enum.TryParse(value, out ItemType itemType))
+                        {
+                            if (recipes[lastRecipe].Materials != null && recipes[lastRecipe].Materials.Count > 0)
+                            {
+                                recipes[lastRecipe].Materials.Add(slot, itemType);
+                            }
+                            else
+                            {
+                                recipes[lastRecipe].Materials = new Dictionary<int, ItemType>()
+                                    {
+                                        { slot, itemType }
+                                    };
+                            }
+                            return;
+                        }
+                    }
+                }
+                throw new Exception("Invalid slot field in recipe: " + key);
+            }
+            else
             {
                 switch (key)
                 {
-                    case "tablelocation":
-                        string[] values = value.Split(',');
-                        if (values.Length == 3)
+                    case "name":
+                        if (!recipes.ContainsKey(value))
                         {
-                            tableLocation.X = Convert.ToInt32(values[0]);
-                            tableLocation.Y = Convert.ToInt32(values[1]);
-                            tableLocation.Z = Convert.ToInt32(values[2]);
+                            recipes.Add(value, new Recipe());
+                            lastRecipe = value;
                         }
-                        else throw new Exception("Invalid tablelocation format: " + key);
+                        else
+                        {
+                            throw new Exception("Duplicate recipe name specified: " + value);
+                        }
                         break;
-                    case "onfailure":
-                        abortOnFailure = value.ToLower() == "abort" ? true : false;
+                    case "type":
+                        if (recipes.ContainsKey(lastRecipe))
+                        {
+                            recipes[lastRecipe].CraftingAreaType = value.ToLower() == "player" ? ContainerType.PlayerInventory : ContainerType.Crafting;
+                        }
                         break;
-                    case "updatedebounce":
-                        updateDebounceValue = Convert.ToInt32(value);
-                        break;
-                }
-            }
-
-            void parseRecipe(string key, string value)
-            {
-                if (key.StartsWith("slot"))
-                {
-                    int slot = Convert.ToInt32(key[key.Length - 1].ToString());
-                    if (slot > 0 && slot < 10)
-                    {
+                    case "result":
                         if (recipes.ContainsKey(lastRecipe))
                         {
                             if (Enum.TryParse(value, out ItemType itemType))
                             {
-                                if (recipes[lastRecipe].Materials != null && recipes[lastRecipe].Materials.Count > 0)
-                                {
-                                    recipes[lastRecipe].Materials.Add(slot, itemType);
-                                }
-                                else
-                                {
-                                    recipes[lastRecipe].Materials = new Dictionary<int, ItemType>()
-                                    {
-                                        { slot, itemType }
-                                    };
-                                }
-                                return;
+                                recipes[lastRecipe].ResultItem = itemType;
                             }
                         }
-                    }
-                    throw new Exception("Invalid slot field in recipe: " + key);
-                }
-                else
-                {
-                    switch (key)
-                    {
-                        case "name":
-                            if (!recipes.ContainsKey(value))
-                            {
-                                recipes.Add(value, new Recipe());
-                                lastRecipe = value;
-                            }
-                            else
-                            {
-                                throw new Exception("Duplicate recipe name specified: " + value);
-                            }
-                            break;
-                        case "type":
-                            if (recipes.ContainsKey(lastRecipe))
-                            {
-                                recipes[lastRecipe].CraftingAreaType = value.ToLower() == "player" ? ContainerType.PlayerInventory : ContainerType.Crafting;
-                            }
-                            break;
-                        case "result":
-                            if (recipes.ContainsKey(lastRecipe))
-                            {
-                                if (Enum.TryParse(value, out ItemType itemType))
-                                {
-                                    recipes[lastRecipe].ResultItem = itemType;
-                                }
-                            }
-                            break;
-                    }
+                        break;
                 }
             }
-            #endregion
         }
+        #endregion
 
         #endregion
 
