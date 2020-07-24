@@ -1,16 +1,14 @@
 Commands of the ConsoleClient Mailbot
 +++++++++++++++++++++++++++++++++++++
 
-All commands are executed via sending
-a private message to the bot account.
-Options and Mails can be resetted by
-deleting their safe files.
+The commands for everyone can be
+executed through chat. For the moderator
+commands, you need to use the console.
 
 
 - COMMANDS FOR EVERYONE -
 
-
-sendmail [DESTINATION] [TEXT] 
+mail [DESTINATION] [TEXT] 
 => Saves the text and destination to a file.
 
 tellonym [DESTINATION] [TEXT]
@@ -19,30 +17,14 @@ tellonym [DESTINATION] [TEXT]
 
 
 - COMMANDS FOR MODERATORS -
+DO /help for a list of all commands.
+=> /[COMMAND](VALUE) to execute in the Console.
 
 getmails
 => Sends all mails in the console.
 
-respawn
-=> Do a manual Respawn, after the bot died.
-
 updatemails
 => Delivers, clears and saves mails to file.
-
-reconnect
-=> Let the bot reconnect to the server.
-
-addmod [NAME]
-=> Adds the mentioned player to the moderator group.
-	A moderator can add another moderator.
-	If no moderator is set, everybody has moderation rights,
-	if you leave the code line 38 uncommented.
-	At first start whether at a new installation, or after
-	deleting the option file, add yourself as a moderator,
-	otherwise everybody will have moderator rights.
-	
-getmoderator
-=> List all moderators in the console.
 
 toggledebug
 => Turn debugmessages On/Off.
@@ -74,9 +56,6 @@ toggleautorespawn
 getsettings
 => Sends you all settings and logs them to console.
 
-importmoderator
-=> Imports the botowners from the config file and adds them as
-	moderator.
 	
 resettimer
 => Resets the sending timer to 0. Useful if you put several bots
@@ -88,6 +67,20 @@ addignored [NAME] / removeignored [NAME]
 getignored
 => Lists ignored players to Console.
 
+togglemailsending
+=> toggles whether the bot sends out mails.
+
+togglemailreceiving
+=> toggles whether the bot listens to chat commands.
+
++++++++++++++
+CAUTION
++++++++++++++
+
+The bot identifies players by their name (Not by UUID!). A nick plugin 
+or a minecraft rename may cause mails going to the wrong player! 
+Never write something to the bot you wouldn't say in the normal chat!
+(You have been warned!)
 
 +++++++++++++
 Mail Network
@@ -103,10 +96,7 @@ should syncronize automatically to the same file. If you want
 different settings for each bot, change the option path. REMEMBER
 to create subfolder before changing the path. The Bot won't
 create folders on its own.
-For configuration I would recommend to let the bots join a 
-private server and to configure them through minecraft chat 
-there, because if no moderator is safed, everybody has 
-moderation rights. A good interval for the bots would be
+A good interval for the bots would be
 (botcount = minutes) and you go to each bot and reset the 
 timer after one minute so that each minute one bot synchronize
 its data. (Must be done after every restart.)
