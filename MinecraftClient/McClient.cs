@@ -176,6 +176,7 @@ namespace MinecraftClient
                     if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
                     if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
                     if (Settings.Mail_Enabled) { BotLoad(new ChatBots.Mail()); }
+                    if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
 
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
@@ -983,7 +984,283 @@ namespace MinecraftClient
             if (inventories.ContainsKey(windowId) && inventories[windowId].Items.ContainsKey(slotId))
                 item = inventories[windowId].Items[slotId];
 
-            return handler.SendWindowAction(windowId, slotId, action, item);
+            // Inventory update must be after sending packet
+            bool result = handler.SendWindowAction(windowId, slotId, action, item);
+
+            // Update our inventory base on action type
+            var inventory = GetInventory(windowId);
+            var playerInventory = GetInventory(0);
+            if (inventory != null)
+            {
+                switch (action)
+                {
+                    case WindowActionType.LeftClick:
+                        // Check if cursor have item (slot -1)
+                        if (playerInventory.Items.ContainsKey(-1))
+                        {
+                            // When item on cursor and clicking slot 0, nothing will happen
+                            if (slotId == 0) break;
+
+                            // Check target slot also have item?
+                            if (inventory.Items.ContainsKey(slotId))
+                            {
+                                // Check if both item are the same?
+                                if (inventory.Items[slotId].Type == playerInventory.Items[-1].Type)
+                                {
+                                    int maxCount = inventory.Items[slotId].Type.StackCount();
+                                    // Check item stacking
+                                    if ((inventory.Items[slotId].Count + playerInventory.Items[-1].Count) <= maxCount)
+                                    {
+                                        // Put cursor item to target
+                                        inventory.Items[slotId].Count += playerInventory.Items[-1].Count;
+                                        playerInventory.Items.Remove(-1);
+                                    }
+                                    else
+                                    {
+                                        // Leave some item on cursor
+                                        playerInventory.Items[-1].Count -= (maxCount - inventory.Items[slotId].Count);
+                                        inventory.Items[slotId].Count = maxCount;
+                                    }
+                                }
+                                else
+                                {
+                                    // Swap two items
+                                    var itemTmp = playerInventory.Items[-1];
+                                    playerInventory.Items[-1] = inventory.Items[slotId];
+                                    inventory.Items[slotId] = itemTmp;
+                                }
+                            }
+                            else
+                            {
+                                // Put cursor item to target
+                                inventory.Items[slotId] = playerInventory.Items[-1];
+                                playerInventory.Items.Remove(-1);
+                            }
+                        }
+                        else
+                        {
+                            // Check target slot have item?
+                            if (inventory.Items.ContainsKey(slotId))
+                            {
+                                // When taking item from slot 0, server will update us
+                                if (slotId == 0) break;
+
+                                // Put target slot item to cursor
+                                playerInventory.Items[-1] = inventory.Items[slotId];
+                                inventory.Items.Remove(slotId);
+                            }
+                        }
+                        break;
+                    case WindowActionType.RightClick:
+                        // Check if cursor have item (slot -1)
+                        if (playerInventory.Items.ContainsKey(-1))
+                        {
+                            // When item on cursor and clicking slot 0, nothing will happen
+                            if (slotId == 0) break;
+
+                            // Check target slot have item?
+                            if (inventory.Items.ContainsKey(slotId))
+                            {
+                                // Check if both item are the same?
+                                if (inventory.Items[slotId].Type == playerInventory.Items[-1].Type)
+                                {
+                                    // Check item stacking
+                                    if (inventory.Items[slotId].Count < inventory.Items[slotId].Type.StackCount())
+                                    {
+                                        // Drop 1 item count from cursor
+                                        playerInventory.Items[-1].Count--;
+                                        inventory.Items[slotId].Count++;
+                                    }
+                                }
+                                else
+                                {
+                                    // Swap two items
+                                    var itemTmp = playerInventory.Items[-1];
+                                    playerInventory.Items[-1] = inventory.Items[slotId];
+                                    inventory.Items[slotId] = itemTmp;
+                                }
+                            }
+                            else
+                            {
+                                // Drop 1 item count from cursor
+                                var itemTmp = playerInventory.Items[-1];
+                                var itemClone = new Item((int)itemTmp.Type, 1, itemTmp.NBT);
+                                inventory.Items[slotId] = itemClone;
+                                playerInventory.Items[-1].Count--;
+                            }
+                        }
+                        else
+                        {
+                            // Check target slot have item?
+                            if (inventory.Items.ContainsKey(slotId))
+                            {
+                                if (slotId == 0)
+                                {
+                                    // no matter how many item in slot 0, only 1 will be taken out
+                                    // Also server will update us
+                                    break;
+                                }
+                                if (inventory.Items[slotId].Count == 1)
+                                {
+                                    // Only 1 item count. Put it to cursor
+                                    playerInventory.Items[-1] = inventory.Items[slotId];
+                                    inventory.Items.Remove(slotId);
+                                }
+                                else
+                                {
+                                    // Take half of the item stack to cursor
+                                    if (inventory.Items[slotId].Count % 2 == 0)
+                                    {
+                                        // Can be evenly divided
+                                        Item itemTmp = inventory.Items[slotId];
+                                        playerInventory.Items[-1] = new Item((int)itemTmp.Type, itemTmp.Count / 2, itemTmp.NBT);
+                                        inventory.Items[slotId].Count = itemTmp.Count / 2;
+                                    }
+                                    else
+                                    {
+                                        // Cannot be evenly divided. item count on cursor is always larger than item on inventory
+                                        Item itemTmp = inventory.Items[slotId];
+                                        playerInventory.Items[-1] = new Item((int)itemTmp.Type, (itemTmp.Count + 1) / 2, itemTmp.NBT);
+                                        inventory.Items[slotId].Count = (itemTmp.Count - 1) / 2;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case WindowActionType.ShiftClick:
+                        if (slotId == 0) break;
+                        if (inventory.Items.ContainsKey(slotId))
+                        {
+                            /* Target slot have item */
+
+                            int upperStartSlot = 9;
+                            int upperEndSlot = 35;
+                            
+                            switch (inventory.Type)
+                            {
+                                case ContainerType.PlayerInventory:
+                                    upperStartSlot = 9;
+                                    upperEndSlot = 35;
+                                    break;
+                                case ContainerType.Crafting:
+                                    upperStartSlot = 1;
+                                    upperEndSlot = 9;
+                                    break;
+                                // TODO: Define more container type here
+                            }
+
+                            // Cursor have item or not doesn't matter
+                            // If hotbar already have same item, will put on it first until every stack are full
+                            // If no more same item , will put on the first empty slot (smaller slot id)
+                            // If inventory full, item will not move
+                            if (slotId <= upperEndSlot)
+                            {
+                                // Clicked slot is on upper side inventory, put it to hotbar
+                                // Now try to find same item and put on them
+                                var itemsClone = playerInventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
+                                foreach (KeyValuePair<int, Item> _item in itemsClone)
+                                {
+                                    if (_item.Key <= upperEndSlot) continue;
+
+                                    int maxCount = _item.Value.Type.StackCount();
+                                    if (_item.Value.Type == inventory.Items[slotId].Type && _item.Value.Count < maxCount)
+                                    {
+                                        // Put item on that stack
+                                        int spaceLeft = maxCount - _item.Value.Count;
+                                        if (inventory.Items[slotId].Count <= spaceLeft)
+                                        {
+                                            // Can fit into the stack
+                                            inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
+                                            inventory.Items.Remove(slotId);
+                                        }
+                                        else
+                                        {
+                                            inventory.Items[slotId].Count -= spaceLeft;
+                                            inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
+                                        }
+                                    }
+                                }
+                                if (inventory.Items[slotId].Count > 0)
+                                {
+                                    int[] emptySlots = inventory.GetEmpytSlots();
+                                    int emptySlot = -2;
+                                    foreach (int slot in emptySlots)
+                                    {
+                                        if (slot <= upperEndSlot) continue;
+                                        emptySlot = slot;
+                                        break;
+                                    }
+                                    if (emptySlot != -2)
+                                    {
+                                        var itemTmp = inventory.Items[slotId];
+                                        inventory.Items[emptySlot] = new Item((int)itemTmp.Type, itemTmp.Count, itemTmp.NBT);
+                                        inventory.Items.Remove(slotId);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Clicked slot is on hotbar, put it to upper inventory
+                                // Now try to find same item and put on them
+                                var itemsClone = playerInventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
+                                foreach (KeyValuePair<int, Item> _item in itemsClone)
+                                {
+                                    if (_item.Key < upperStartSlot) continue;
+                                    if (_item.Key >= upperEndSlot) break;
+
+                                    int maxCount = _item.Value.Type.StackCount();
+                                    if (_item.Value.Type == inventory.Items[slotId].Type && _item.Value.Count < maxCount)
+                                    {
+                                        // Put item on that stack
+                                        int spaceLeft = maxCount - _item.Value.Count;
+                                        if (inventory.Items[slotId].Count <= spaceLeft)
+                                        {
+                                            // Can fit into the stack
+                                            inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
+                                            inventory.Items.Remove(slotId);
+                                        }
+                                        else
+                                        {
+                                            inventory.Items[slotId].Count -= spaceLeft;
+                                            inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
+                                        }
+                                    }
+                                }
+                                if (inventory.Items[slotId].Count > 0)
+                                {
+                                    int[] emptySlots = inventory.GetEmpytSlots();
+                                    int emptySlot = -2;
+                                    foreach (int slot in emptySlots)
+                                    {
+                                        if (slot < upperStartSlot) continue;
+                                        if (slot >= upperEndSlot) break;
+                                        emptySlot = slot;
+                                        break;
+                                    }
+                                    if (emptySlot != -2)
+                                    {
+                                        var itemTmp = inventory.Items[slotId];
+                                        inventory.Items[emptySlot] = new Item((int)itemTmp.Type, itemTmp.Count, itemTmp.NBT);
+                                        inventory.Items.Remove(slotId);
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case WindowActionType.DropItem:
+                        if (inventory.Items.ContainsKey(slotId))
+                            inventory.Items[slotId].Count--;
+                        
+                        if (inventory.Items[slotId].Count <= 0)
+                            inventory.Items.Remove(slotId);
+                        break;
+                    case WindowActionType.DropItemStack:
+                        inventory.Items.Remove(slotId);
+                        break;
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -1015,11 +1292,13 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="windowId">Window ID</param>
         /// <returns>TRUE if the window was successfully closed</returns>
+        /// <remarks>Sending close window for inventory 0 can cause server to update our inventory if there are any item in the crafting area</remarks>
         public bool CloseInventory(int windowId)
         {
-            if (windowId != 0 && inventories.ContainsKey(windowId))
+            if (inventories.ContainsKey(windowId))
             {
-                inventories.Remove(windowId);
+                if (windowId != 0)
+                    inventories.Remove(windowId);
                 return handler.SendCloseWindow(windowId);
             }
             return false;
@@ -1371,7 +1650,8 @@ namespace MinecraftClient
         /// <summary>
         /// When an inventory is opened
         /// </summary>
-        /// <param name="inventory">Location to reach</param>
+        /// <param name="inventory">The inventory</param>
+        /// <param name="inventoryID">Inventory ID</param>
         public void OnInventoryOpen(int inventoryID, Container inventory)
         {
             inventories[inventoryID] = inventory;
@@ -1380,20 +1660,24 @@ namespace MinecraftClient
             {
                 ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " opened: " + inventory.Title);
                 ConsoleIO.WriteLogLine("Use /inventory to interact with it.");
+                DispatchBotEvent(bot => bot.OnInventoryOpen(inventoryID));
             }
         }
 
         /// <summary>
         /// When an inventory is close
         /// </summary>
-        /// <param name="inventoryID">Location to reach</param>
+        /// <param name="inventoryID">Inventory ID</param>
         public void OnInventoryClose(int inventoryID)
         {
             if (inventories.ContainsKey(inventoryID))
                 inventories.Remove(inventoryID);
 
             if (inventoryID != 0)
+            {
                 ConsoleIO.WriteLogLine("Inventory # " + inventoryID + " closed.");
+                DispatchBotEvent(bot => bot.OnInventoryClose(inventoryID));
+            }
         }
 
         /// <summary>
@@ -1404,7 +1688,10 @@ namespace MinecraftClient
         public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList)
         {
             if (inventories.ContainsKey(inventoryID))
+            {
                 inventories[inventoryID].Items = itemList;
+                DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
+            }
         }
 
         /// <summary>
@@ -1415,15 +1702,27 @@ namespace MinecraftClient
         /// <param name="item">Item (may be null for empty slot)</param>
         public void OnSetSlot(byte inventoryID, short slotID, Item item)
         {
-            if (inventories.ContainsKey(inventoryID))
+            // Handle cursor item
+            if (inventoryID == 255 && slotID == -1)
             {
-                if (item == null || item.IsEmpty)
-                {
-                    if (inventories[inventoryID].Items.ContainsKey(slotID))
-                        inventories[inventoryID].Items.Remove(slotID);
-                }
-                else inventories[inventoryID].Items[slotID] = item;
+                if (item != null)
+                    inventories[0].Items[-1] = item;
+                else
+                    inventories[0].Items.Remove(-1);
             }
+            else
+            {
+                if (inventories.ContainsKey(inventoryID))
+                {
+                    if (item == null || item.IsEmpty)
+                    {
+                        if (inventories[inventoryID].Items.ContainsKey(slotID))
+                            inventories[inventoryID].Items.Remove(slotID);
+                    }
+                    else inventories[inventoryID].Items[slotID] = item;
+                }
+            }
+            DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
         }
 
         /// <summary>

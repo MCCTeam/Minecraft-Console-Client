@@ -167,9 +167,11 @@ namespace MinecraftClient
         //AutoCraft
         public static bool AutoCraft_Enabled = false;
         public static string AutoCraft_configFile = @"autocraft\config.ini";
+
         
         //Mail
         public static bool Mail_Enabled = false;
+
 
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
@@ -177,6 +179,7 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
         private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, Mail };
+
 
         /// <summary>
         /// Load settings from the give INI file
@@ -222,6 +225,7 @@ namespace MinecraftClient
                                     case "autoeat": pMode = ParseMode.AutoEat; break;
                                     case "autocraft": pMode = ParseMode.AutoCraft; break;
                                     case "mail": pMode = ParseMode.Mail; break;
+
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }

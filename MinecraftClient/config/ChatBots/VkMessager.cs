@@ -97,10 +97,11 @@ internal class VkLongPoolClient
     private WebClient ReceiverWebClient { get; set; }
     private WebClient SenderWebClient { get; set; }
     private string Token { get; set; }
-    private string LastTs { get; set; }
+    private int LastTs { get; set; }
+    private int lastrand;
     private string Server { get; set; }
     private string Key { get; set; }
-    private Action<string, string> OnMessageReceivedCallback { get; set; }
+    private Action<string, string, string> OnMessageReceivedCallback { get; set; }
     private string BotCommunityId { get; set; }
 
     private void Init()
@@ -110,39 +111,70 @@ internal class VkLongPoolClient
 
         Key = data.Properties["response"].Properties["key"].StringValue;
         Server = data.Properties["response"].Properties["server"].StringValue;
-        LastTs = data.Properties["response"].Properties["ts"].StringValue;
+        LastTs = Convert.ToInt32(data.Properties["response"].Properties["ts"].StringValue);
+	lastrand = LastTs + 1;
     }
 
-    public void SendMessage(string chatId, string text)
+    public void SendMessage(string chatId, string text, int random_id = 0)
     {
-        CallVkMethod("messages.send", "peer_id=" + chatId + "&message=" + text);
+	if (random_id == 0)
+	{
+	    random_id = lastrand;
+	    lastrand++;
+	}
+		
+	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text);
     }
-
+	
+    public void SendSticker(string chatId, int sticker_id, int random_id = 0)
+    {
+	if (random_id == 0)
+	{
+            random_id = lastrand;
+	    lastrand++;
+	}
+		
+	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&sticker_id=" + sticker_id);
+    }
+    
+    public void OnlineGroup(bool enable = true)
+    {
+	if (enable)
+		CallVkMethod("groups.enableOnline", "group_id=" + BotCommunityId);
+	else
+		CallVkMethod("groups.disableOnline", "group_id=" + BotCommunityId);
+    }
+	
     private void StartLongPoolAsync()
     {
-        var baseUrl = String.Format("{0}?act=a_check&version=2&wait=25&key={1}&ts=", Server, Key);
         Task.Factory.StartNew(() =>
         {
             while (true)
             {
+                var baseUrl = String.Format("{0}?act=a_check&version=2&wait=25&key={1}&ts=", Server, Key);
+                
                 var data = ReceiverWebClient.DownloadString(baseUrl + LastTs);
                 var messages = ProcessResponse(data);
 
                 foreach (var message in messages)
                 {
-                    OnMessageReceivedCallback(message.Item1, message.Item2);
+                    OnMessageReceivedCallback(message.Item1, message.Item2, message.Item3);
                 }
             }
         });
     }
 
-    private IEnumerable<Tuple<string, string>> ProcessResponse(string jsonData)
+    private IEnumerable<Tuple<string, string, string>> ProcessResponse(string jsonData)
     {
         var data = Json.ParseJson(jsonData);
-        LastTs = data.Properties["ts"].StringValue;
-
+	if (data.Properties.ContainsKey("failed")) // Update Key on Server Error
+		Init();
+        
+        LastTs = Convert.ToInt32(data.Properties["ts"].StringValue);
+        lastrand = LastTs + 1;
+	    
         var updates = data.Properties["updates"].DataArray;
-        var messages = new List<Tuple<string, string>>();
+        var messages = new List<Tuple<string, string, string>>();
         foreach (var str in updates)
         {
             if (str.Properties["type"].StringValue != "message_new") continue;
@@ -150,17 +182,17 @@ internal class VkLongPoolClient
             var msgData = str.Properties["object"].Properties;
 
             var userId = msgData["from_id"].StringValue;
+	    var peer_id = msgData["peer_id"].StringValue;
             var msgText = msgData["text"].StringValue;
 
-            messages.Add(new Tuple<string, string>(userId, msgText));
+            messages.Add(new Tuple<string, string, string>(userId, peer_id, msgText));
         }
 
         return messages;
     }
-
     private string CallVkMethod(string methodName, string data)
     {
-        var url = String.Format("https://api.vk.com/method/{0}?v=5.80&access_token={1}&{2}", methodName, Token, data);
+        var url = String.Format("https://api.vk.com/method/{0}?v=5.120&access_token={1}&{2}", methodName, Token, data);
         var jsonResult = SenderWebClient.DownloadString(url);
 
         return jsonResult;

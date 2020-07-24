@@ -153,5 +153,43 @@ namespace MinecraftClient.Inventory
                 default: return ContainerType.Unknown;
             }
         }
+
+        /// <summary>
+        /// Search an item in the container
+        /// </summary>
+        /// <param name="itemType">The item to search</param>
+        /// <returns>An array of slot ID</returns>
+        public int[] SearchItem(ItemType itemType)
+        {
+            List<int> result = new List<int>();
+            if (Items != null)
+            {
+                foreach (var item in Items)
+                {
+                    if (item.Value.Type == itemType)
+                        result.Add(item.Key);
+                }
+            }
+            return result.ToArray();
+        }
+
+        /// <summary>
+        /// List empty slots in the container
+        /// </summary>
+        /// <returns>An array of slot ID</returns>
+        /// <remarks>Also depending on the container type, some empty slots cannot be used e.g. armor slots. This might cause issues.</remarks>
+        public int[] GetEmpytSlots()
+        {
+            List<int> result = new List<int>();
+            for (int i = 0; i < Type.SlotCount(); i++)
+            {
+                result.Add(i);
+            }
+            foreach (var item in Items)
+            {
+                result.Remove(item.Key);
+            }
+            return result.ToArray();
+        }
     }
 }

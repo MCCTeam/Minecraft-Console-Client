@@ -222,7 +222,7 @@ namespace MinecraftClient
         public virtual void OnLatencyUpdate(string playername, Guid uuid, int latency) { }
         
         /// <summary>
-        /// Called map data
+        /// Called when a map was updated
         /// </summary>
         /// <param name="mapid"></param>
         /// <param name="scale"></param>
@@ -232,7 +232,7 @@ namespace MinecraftClient
         public virtual void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount) { }
         
         /// <summary>
-        /// Received some Title from the server
+        /// Called when received a title from the server
         /// <param name="action"> 0 = set title, 1 = set subtitle, 3 = set action bar, 4 = set times and display, 4 = hide, 5 = reset</param>
         /// <param name="titletext"> title text</param>
         /// <param name="subtitletext"> suntitle text</param>
@@ -244,7 +244,7 @@ namespace MinecraftClient
         public virtual void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json) { }
 
         /// <summary>
-        /// Called on Entity Equipment
+        /// Called when an entity equipped
         /// </summary>
         /// <param name="entity"> Entity</param>
         /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
@@ -252,7 +252,7 @@ namespace MinecraftClient
         public virtual void OnEntityEquipment(Entity entity, int slot, Item item) { }
         
         /// <summary>
-        /// Called when the Entity use effects
+        /// Called when an entity has effect applied
         /// </summary>
         /// <param name="entityid">entity ID</param>
         /// <param name="effect">effect id</param>
@@ -260,9 +260,9 @@ namespace MinecraftClient
         /// <param name="duration">effect duration</param>
         /// <param name="flags">effect flags</param>
         public virtual void OnEntityEffect(Entity entity, Effects effect, int amplifier, int duration, byte flags) { }
-        
+
         /// <summary>
-        /// Called when coreboardObjective
+        /// Called when a scoreboard objective updated
         /// </summary>
         /// <param name="objectivename">objective name</param>
         /// <param name="mode">0 to create the scoreboard. 1 to remove the scoreboard. 2 to update the display text.</param>
@@ -271,13 +271,31 @@ namespace MinecraftClient
         public virtual void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type, string json) { }
         
         /// <summary>
-        /// Called when DisplayScoreboard
+        /// Called when a scoreboard updated
         /// </summary>
         /// <param name="entityname">The entity whose score this is. For players, this is their username; for other entities, it is their UUID.</param>
         /// <param name="action">0 to create/update an item. 1 to remove an item.</param>
         /// <param name="objectivename">The name of the objective the score belongs to</param>
-        /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
+        /// <param name="value">The score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
         public virtual void OnUpdateScore(string entityname, byte action, string objectivename, int value) { }
+
+        /// <summary>
+        /// Called when an inventory/container was updated by server
+        /// </summary>
+        /// <param name="inventoryId"></param>
+        public virtual void OnInventoryUpdate(int inventoryId) { }
+
+        /// <summary>
+        /// Called when a container was opened
+        /// </summary>
+        /// <param name="inventoryId"></param>
+        public virtual void OnInventoryOpen(int inventoryId) { }
+
+        /// <summary>
+        /// Called when a container was closed
+        /// </summary>
+        /// <param name="inventoryId"></param>
+        public virtual void OnInventoryClose(int inventoryId) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
@@ -727,6 +745,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Load an additional ChatBot
+        /// </summary>
+        /// <param name="chatBot">ChatBot to load</param>
+        protected void BotLoad(ChatBot chatBot)
+        {
+            Handler.BotLoad(chatBot);
+        }
+
+        /// <summary>
         /// Check whether Terrain and Movements is enabled.
         /// </summary>
         /// <returns>Enable status.</returns>
@@ -1152,6 +1179,16 @@ namespace MinecraftClient
         protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, CommandRunner callback)
         {
             return Handler.RegisterCommand(cmdName, cmdDesc, callback);
+        }
+
+        /// <summary>
+        /// Close a opened inventory
+        /// </summary>
+        /// <param name="inventoryID"></param>
+        /// <returns>True if success</returns>
+        protected bool CloseInventory(int inventoryID)
+        {
+            return Handler.CloseInventory(inventoryID);
         }
 
         /// <summary>

@@ -31,6 +31,7 @@ namespace MinecraftClient.Mapping
                 case EntityType.Silverfish:
                 case EntityType.Skeleton:
                 case EntityType.Slime:
+                case EntityType.Spider:
                 case EntityType.Stray:
                 case EntityType.Vex:
                 case EntityType.Vindicator:

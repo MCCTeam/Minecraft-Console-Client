@@ -1573,22 +1573,16 @@ namespace MinecraftClient.Protocol.Handlers
                     case WindowActionType.LeftClick: button = 0; break;
                     case WindowActionType.RightClick: button = 1; break;
                     case WindowActionType.MiddleClick: button = 2; mode = 3; break;
+                    case WindowActionType.ShiftClick: button = 0; mode = 1; item = new Item(-1, 0, null); break;
                     case WindowActionType.DropItem:
                         button = 0;
                         mode = 4;
                         item = new Item(-1, 0, null);
-                        Container inventory = handler.GetInventory(windowId);
-                        if (inventory.Items.ContainsKey(slotId))
-                            inventory.Items[slotId].Count--; // server won't update us after dropped
-                        if (inventory.Items[slotId].Count == 0)
-                            inventory.Items.Remove(slotId);
                         break;
                     case WindowActionType.DropItemStack:
                         button = 1;
                         mode = 4;
                         item = new Item(-1, 0, null);
-                        inventory = handler.GetInventory(windowId);
-                        inventory.Items.Remove(slotId); // server won't update us after dropped
                         break;
                 }
 

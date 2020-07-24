@@ -73,9 +73,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoTimeout.cs" />
+    <Compile Include="Commands\Entitycmd.cs" />
     <Compile Include="ChatBots\Alerts.cs" />
     <Compile Include="ChatBots\AntiAFK.cs" />
     <Compile Include="ChatBots\AutoAttack.cs" />
+    <Compile Include="ChatBots\AutoCraft.cs" />
     <Compile Include="ChatBots\AutoEat.cs" />
     <Compile Include="ChatBots\AutoFishing.cs" />
     <Compile Include="ChatBots\AutoRespond.cs" />
@@ -110,6 +112,7 @@
     <Compile Include="Commands\UseItem.cs" />
     <Compile Include="Inventory\Container.cs" />
     <Compile Include="Inventory\ContainerType.cs" />
+    <Compile Include="Inventory\ContainerTypeExtensions.cs" />
     <Compile Include="Inventory\Effects.cs" />
     <Compile Include="Inventory\Hand.cs" />
     <Compile Include="Inventory\Item.cs" />
