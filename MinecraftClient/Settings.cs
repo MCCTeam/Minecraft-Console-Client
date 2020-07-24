@@ -163,6 +163,10 @@ namespace MinecraftClient
         //Auto Eating
         public static bool AutoEat_Enabled = false;
         public static int AutoEat_hungerThreshold = 6;
+
+        //AutoCraft
+        public static bool AutoCraft_Enabled = false;
+        public static string AutoCraft_configFile = @"autocraft\config.ini";
         
         //Mail
         public static bool Mail_Enabled = false;
@@ -172,7 +176,7 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, Mail};
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, Mail };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -216,6 +220,7 @@ namespace MinecraftClient
                                     case "autoattack": pMode = ParseMode.AutoAttack; break;
                                     case "autofishing": pMode = ParseMode.AutoFishing; break;
                                     case "autoeat": pMode = ParseMode.AutoEat; break;
+                                    case "autocraft": pMode = ParseMode.AutoCraft; break;
                                     case "mail": pMode = ParseMode.Mail; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
@@ -496,6 +501,14 @@ namespace MinecraftClient
                                             }
                                             break;
 
+                                        case ParseMode.AutoCraft:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": AutoCraft_Enabled = str2bool(argValue); break;
+                                                case "configfile": AutoCraft_configFile = argValue; break;
+                                            }
+                                            break;
+
                                         case ParseMode.MCSettings:
                                             switch (argName.ToLower())
                                             {
@@ -704,6 +717,12 @@ namespace MinecraftClient
                 + "# Inventory Handling NEED to be enabled first\r\n"
                 + "enabled=false\r\n"
                 + "threshold=6\r\n"
+                + "\r\n"
+                + "[AutoCraft]"
+                + "# Inventory Handling NEED to be enabled first\r\n"
+                + "# Enable terrainandmovements if you need to use crafting table\r\n"
+                + "enabled=false\r\n"
+                + "configfile=autocraft\\config.ini\r\n"
                 + "\r\n"
                 + "[Mail]\r\n"
                 + "# Let the bot act like a mail plugin\r\n"
