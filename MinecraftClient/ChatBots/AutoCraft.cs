@@ -392,7 +392,8 @@ namespace MinecraftClient.ChatBots
                 {
                     if (recipes.ContainsKey(lastRecipe))
                     {
-                        if (Enum.TryParse(value, out ItemType itemType))
+                        ItemType itemType;
+                        if (Enum.TryParse(value, out itemType))
                         {
                             if (recipes[lastRecipe].Materials != null && recipes[lastRecipe].Materials.Count > 0)
                             {
@@ -435,7 +436,8 @@ namespace MinecraftClient.ChatBots
                     case "result":
                         if (recipes.ContainsKey(lastRecipe))
                         {
-                            if (Enum.TryParse(value, out ItemType itemType))
+                            ItemType itemType;
+                            if (Enum.TryParse(value, out itemType))
                             {
                                 recipes[lastRecipe].ResultItem = itemType;
                             }
