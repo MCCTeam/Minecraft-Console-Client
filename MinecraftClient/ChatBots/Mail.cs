@@ -629,7 +629,6 @@ namespace MinecraftClient.ChatBots
             }
 
             SaveOptionsToFile();
-
             return "Changed autorespawn to: " + (options.auto_respawn).ToString();
         }
 
