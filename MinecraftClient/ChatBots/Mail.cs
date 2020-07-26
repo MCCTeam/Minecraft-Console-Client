@@ -18,12 +18,15 @@ namespace MinecraftClient.ChatBots
         public int interval_sendmail { get; set; }
         public int maxSavedMails { get; set; }
         public int maxSavedMails_Player { get; set; }
+        public int maxCharsInMsg { get; set; }
         public int daysTosaveMsg { get; set; }
         public int timevar_100ms { get; set; }
         public bool debug_msg { get; set; }
         public bool auto_respawn { get; set; }
         public bool allow_sendmail { get; set; }
         public bool allow_receivemail { get; set; }
+        public bool allow_selfmail { get; set; }
+        public bool allow_publicCommands { get; set; }
         public string[] ignored = new string[0];
         public DateTime lastReset { get; set; }
         
@@ -36,10 +39,13 @@ namespace MinecraftClient.ChatBots
             maxSavedMails = 2000;                                                       // How many mails you want to safe
             maxSavedMails_Player = 3;                                                   // How many mails can be sent per player
             daysTosaveMsg = 30;                                                         // After how many days the message should get deleted
+            maxCharsInMsg = 255;                                                        // How many characters can be in a message
             debug_msg = Settings.DebugMessages;                                         // Disable debug Messages for a cleaner console
             auto_respawn = true;                                                        // Toggle the internal autorespawn
             allow_sendmail = true;                                                      // Enable the continious mail sending
-            allow_receivemail = true;
+            allow_receivemail = true;                                                   // Enable the bot reacting to command
+            allow_selfmail = true;                                                      // Enable to send mails to yourself (mainly for test reason)
+            allow_publicCommands = false;                                               // Should the bot accept commands from normal chat?
 
             timevar_100ms = 0;
             lastReset = DateTime.UtcNow;
@@ -115,23 +121,26 @@ namespace MinecraftClient.ChatBots
             logged_msg = new Message[0];
             options = new Options();
 
-            RegisterChatBotCommand("toggleautorespawn", "Enable/Disable autorespawn", toggleAutoRespawn);
-            RegisterChatBotCommand("toggledebugmsg", "Enable/Disable debug messages", toggleDebugMSG);
-            RegisterChatBotCommand("daystosavemsg", "How long are the unsent mails safed", daysToSaveMessage);
             RegisterChatBotCommand("addignored", "Add a player, the bot ignored", addIgnored);
-            RegisterChatBotCommand("removeignored", "Remove a player, the bot ignored", removeIgnored);
+            RegisterChatBotCommand("changemailpath", "Change the path of the mail file relative to the .exe", changeMailPath);
+            RegisterChatBotCommand("changesettingspath", "Change the path of the setting file relative to the .exe", changeSettingsPath);
+            RegisterChatBotCommand("daystosavemsg", "How long are the unsent mails safed", daysToSaveMessage);
             RegisterChatBotCommand("getignored", "Get ignored Players", getIgnored);
-            RegisterChatBotCommand("updatemails", "Delete / Send mails", updateMails);
             RegisterChatBotCommand("getmails", "Get all mails from file", getMails);
             RegisterChatBotCommand("getSettings", "See all settings", getSettings);
-            RegisterChatBotCommand("resetTimer", "Reset the timer for mail delivering", resetTimer);
-            RegisterChatBotCommand("changesettingspath", "Change the path of the setting file relative to the .exe", changeSettingsPath);
-            RegisterChatBotCommand("changemailpath", "Change the path of the mail file relative to the .exe", changeMailPath);
+            RegisterChatBotCommand("intervalsendmail", "How long should the bot wait until sending mails", intervalSendMail);
+            RegisterChatBotCommand("maxcharsinmail", "How long can a mail be?", maxCharsInMsg);
             RegisterChatBotCommand("maxmailsperplayer", "How many mails can the individual player send", maxMailsPerPlayer);
             RegisterChatBotCommand("maxsavedmails", "How many mails should be safed at all", maxSavedMails);
-            RegisterChatBotCommand("intervalsendmail", "How long should the bot wait until sending mails", intervalSendMail);
-            RegisterChatBotCommand("togglemailsending", "Turn the mail sending on / off", toggleMailSending);
+            RegisterChatBotCommand("removeignored", "Remove a player, the bot ignored", removeIgnored);
+            RegisterChatBotCommand("resetTimer", "Reset the timer for mail delivering", resetTimer);
+            RegisterChatBotCommand("toggleautorespawn", "Enable/Disable autorespawn", toggleAutoRespawn);
+            RegisterChatBotCommand("toggledebugmsg", "Enable/Disable debug messages", toggleDebugMSG);
             RegisterChatBotCommand("togglemailreceiving", "Turn listening to mail commands on / off", toggleMailReceiving);
+            RegisterChatBotCommand("togglemailsending", "Turn the mail sending on / off", toggleMailSending);
+            RegisterChatBotCommand("togglepubliccommands", "Should the bot accept commands outside of /msg's?", togglePublicCommands);
+            RegisterChatBotCommand("toggleselfmail", "Can you mail yourself?", toggleSelfMail);
+            RegisterChatBotCommand("updatemails", "Delete / Send mails", updateMails);
         }
         
         /// <summary>
@@ -190,7 +199,7 @@ namespace MinecraftClient.ChatBots
 
                 text = GetVerbatim(text);
 
-                if (IsPrivateMessage(text, ref message, ref username))
+                if (IsPrivateMessage(text, ref message, ref username) || (IsChatMessage(text, ref message, ref username) && options.allow_publicCommands))
                 {
                     if (!isIgnored(username))
                     {
@@ -198,106 +207,138 @@ namespace MinecraftClient.ChatBots
 
                         if (username.ToLower() != options.botname.ToLower() && getSentMessagesByUser(username) < options.maxSavedMails_Player && msg_array.Length < options.maxSavedMails)
                         {
-                            message = message.ToLower();
-                            cmd_reader(message, username);
-                        }
-                        else
-                        {
-                            if (message.Contains("sendmail") || message.Contains("tellonym"))
+                            if (message.ToLower().Contains("mail"))                     // IS it "mail" command
                             {
-                                SendPrivateMessage(username, "Couldn't save Message. Limit reached!");
+                                command_interpreter("mail", message, username);
+                            }
+                            else if (message.ToLower().Contains("tellonym"))            // IS it "tellonym" command
+                            {
+                                command_interpreter("tellonym", message, username);
                             }
                         }
-                    }
-                    else
-                    {
-                        if (options.debug_msg)
+                        else if (message.Contains("mail") || message.Contains("tellonym"))
                         {
-                            LogToConsole(username + " is ignored!");
+                            SendPrivateMessage(username, "Couldn't save Message. Limit reached!");
                         }
+                    }
+                    else if (options.debug_msg)
+                    {
+                        LogToConsole(username + " is ignored!");
                     }
                 }
             }
-            else
+            else if(options.debug_msg)
             {
-                if (options.debug_msg)
-                {
-                    LogToConsole("Receive Mails is turned off!");
-                }
+                LogToConsole("Receive Mails is turned off!");
             }
         }
 
-        /// <summary>
-        /// Interprets command.
-        /// </summary>
-        public void cmd_reader(string message, string sender)
+        public void command_interpreter(string command, string message, string sender)
         {
-            /// <summary>
-            /// Send Mails.
-            /// </summary>
-            if (message.Contains("mail"))
+            string content = "";
+            string destination = "";
+
+
+            for (int i = message.ToLower().IndexOf(command) + command.Length + 1; i < message.Length; i++) // -> get first letter of the name.
             {
-                    string content = "";
-                    string destination = "";
-                    bool destination_ended = false;
+                if (message[i].ToString() != " ")
+                {
+                    destination += message[i]; // extract destination
+                }
+                else
+                {
+                    string temp_content = message.Substring(i + 1);
 
-                    for (int i = message.IndexOf("mail") + "mail".Length + 1; i < message.Length; i++) // -> get first letter of the name.
+                    if (temp_content.Length <= options.maxCharsInMsg)
                     {
-                        if (message[i].ToString() != " " && !destination_ended)
-                        {
-                            destination += message[i]; // extract destination
-                        }
-                        else
-                        {
-                            destination_ended = true;
-
-                            content += message[i];  // extract message content
-                        }
+                        content = temp_content;  // extract message content
+                        break;
                     }
+                    else
+                    {
+                        content = string.Empty;
+                        break;
+                    }
+                }
+            }
 
-                    if (IsValidName(sender) && IsValidName(destination) && content != string.Empty)
+            if (IsValidName(sender) && IsValidName(destination) && content != string.Empty)
+            {
+                if (destination.ToLower() != sender.ToLower() || options.allow_selfmail)
+                {
+                    if (command == "mail")
                     {
                         logged_msg = AddMail(sender, destination, content, false, logged_msg);
                         SendPrivateMessage(sender, "Message saved!");
                     }
                     else
                     {
-                        SendPrivateMessage(sender, "Something went wrong!");
+                        logged_msg = AddMail(sender, destination, content, true, logged_msg);
+                        SendPrivateMessage(sender, "Message saved!");
                     }
+                }
             }
-
-            /// <summary>
-            /// Send anonymous mails.
-            /// </summary>
-            if (message.Contains("tellonym"))
+            else
             {
-                string content = "";
-                string destination = "";
-                bool destination_ended = false;
-
-                for (int i = message.IndexOf("tellonym") + "tellonym".Length + 1; i < message.Length; i++) // -> get first letter of the name.
-                {
-                    if (message[i].ToString() != " " && !destination_ended)
-                    {
-                        destination += message[i]; // extract destination
-                    }
-                    else
-                    {
-                        destination_ended = true;
-
-                        content += message[i];  // extract message content
-                    }
-                }
-
-                if (IsValidName(sender) && IsValidName(destination) && content != string.Empty)
-                {
-                    logged_msg = AddMail(sender, destination, content, true, logged_msg);
-                }
-                else
-                {
-                    SendPrivateMessage(sender, "Something went wrong!");
-                }
+                SendPrivateMessage(sender, "Something went wrong! Max characters: " + options.maxCharsInMsg);
             }
+        }
+
+        /// <summary>
+        /// Toggle whether commands from normal chat are accepted.
+        /// </summary>
+        public string togglePublicCommands(string cmd, string[] args)
+        {
+            if (options.allow_publicCommands)
+            {
+                options.allow_publicCommands = false;
+                SaveOptionsToFile();
+                return "Turned public commands off.";
+            }
+            else
+            {
+                options.allow_publicCommands = true;
+                SaveOptionsToFile();
+                return "Turned public commands on.";
+            }
+        }
+
+        /// <summary>
+        /// Toggle whether you can mail yourself.
+        /// </summary>
+        public string toggleSelfMail(string cmd, string[] args)
+        {
+            if (options.allow_selfmail)
+            {
+                options.allow_selfmail = false;
+                SaveOptionsToFile();
+                return "Turned self mail off.";
+            }
+            else
+            {
+                options.allow_selfmail = true;
+                SaveOptionsToFile();
+                return "Turned self mail on.";
+            }
+        }
+
+        /// <summary>
+        /// Change the intervall of respawn and mail sending.
+        /// </summary>
+        public string maxCharsInMsg(string cmd, string[] args)
+        {
+            try
+            {
+                options.maxCharsInMsg = Int32.Parse(args[0]);
+            }
+            catch (Exception)
+            {
+                return "You answer shall not pass!";
+            }
+
+            SaveOptionsToFile();
+
+            return "Changed maximum amounts of characters in a mail to: " + (options.maxCharsInMsg).ToString();
         }
 
         /// <summary>
@@ -308,11 +349,13 @@ namespace MinecraftClient.ChatBots
             if (options.allow_receivemail)
             {
                 options.allow_receivemail = false;
+                SaveOptionsToFile();
                 return "Turned mail receiving off.";
             }
             else
             {
                 options.allow_receivemail = true;
+                SaveOptionsToFile();
                 return "Turned mail receiving on.";
             }
         }
@@ -325,11 +368,13 @@ namespace MinecraftClient.ChatBots
             if (options.allow_sendmail)
             {
                 options.allow_sendmail = false;
+                SaveOptionsToFile();
                 return "Turned mail sending off.";
             }
             else
             {
                 options.allow_sendmail = true;
+                SaveOptionsToFile();
                 return "Turned mail sending on.";
             }
         }
@@ -444,26 +489,30 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string getSettings(string cmd, string[] args)
         {
-            return "debugmsg: "
+            return "\n debugmsg: "
                 + (options.debug_msg).ToString()
-                + "; daystosavemsg: "
+                + ";\n daystosavemsg: "
                 + (options.daysTosaveMsg).ToString()
-                + "; intervalsendmail: "
+                + ";\n intervalsendmail: "
                 + (options.interval_sendmail).ToString()
-                + "; maxsavedmails: "
+                + ";\n maxsavedmails: "
                 + (options.maxSavedMails).ToString()
-                + "; maxsavedmails_player: "
+                + ";\n maxsavedmails_player: "
                 + (options.maxSavedMails_Player).ToString()
-                + "; messagepath: "
+                + ";\n messagepath: "
                 + options.path_mail
-                + "; settingspath: "
+                + ";\n settingspath: "
                 + options.path_setting 
-                + "; autorespawn: "
+                + ";\n autorespawn: "
                 + (options.auto_respawn).ToString()
-                + "; togglemailsending: "
+                + ";\n togglemailsending: "
                 + (options.allow_sendmail).ToString()
-                + "; togglemailreceiving: "
-                + (options.allow_receivemail).ToString();
+                + ";\n togglemailreceiving: "
+                + (options.allow_receivemail).ToString()
+                + ";\n maxcharsinmail: "
+                + (options.maxCharsInMsg).ToString()
+                + ";\n toggleselfmail: "
+                + (options.allow_selfmail).ToString();
         }
 
         /// <summary>
@@ -557,7 +606,6 @@ namespace MinecraftClient.ChatBots
             }
 
             SaveOptionsToFile();
-
             return "Changed daystosavemsg to: " + (options.daysTosaveMsg).ToString();
         }
 
