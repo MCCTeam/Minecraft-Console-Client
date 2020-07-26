@@ -233,6 +233,9 @@ namespace MinecraftClient.ChatBots
             }
         }
 
+        /// <summary>
+        /// Reads & executes the command.
+        /// </summary>
         public void command_interpreter(string command, string message, string sender)
         {
             string content = "";
