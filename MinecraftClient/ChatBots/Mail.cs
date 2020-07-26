@@ -515,7 +515,9 @@ namespace MinecraftClient.ChatBots
                 + ";\n maxcharsinmail: "
                 + (options.maxCharsInMsg).ToString()
                 + ";\n toggleselfmail: "
-                + (options.allow_selfmail).ToString();
+                + (options.allow_selfmail).ToString()
+                + ";\n togglepubliccommands: "
+                + (options.allow_publicCommands).ToString();
         }
 
         /// <summary>
