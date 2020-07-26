@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace MinecraftClient.ChatBots
@@ -21,12 +22,7 @@ namespace MinecraftClient.ChatBots
         public int maxCharsInMsg { get; set; }
         public int daysTosaveMsg { get; set; }
         public int timevar_100ms { get; set; }
-        public bool debug_msg { get; set; }
-        public bool auto_respawn { get; set; }
-        public bool allow_sendmail { get; set; }
-        public bool allow_receivemail { get; set; }
-        public bool allow_selfmail { get; set; }
-        public bool allow_publicCommands { get; set; }
+        public Dictionary<string, bool> bools { get; set; }
         public string[] ignored = new string[0];
         public DateTime lastReset { get; set; }
         
@@ -39,13 +35,15 @@ namespace MinecraftClient.ChatBots
             maxSavedMails = 2000;                                                       // How many mails you want to safe
             maxSavedMails_Player = 3;                                                   // How many mails can be sent per player
             daysTosaveMsg = 30;                                                         // After how many days the message should get deleted
-            maxCharsInMsg = 255;                                                        // How many characters can be in a message
-            debug_msg = Settings.DebugMessages;                                         // Disable debug Messages for a cleaner console
-            auto_respawn = true;                                                        // Toggle the internal autorespawn
-            allow_sendmail = true;                                                      // Enable the continious mail sending
-            allow_receivemail = true;                                                   // Enable the bot reacting to command
-            allow_selfmail = true;                                                      // Enable to send mails to yourself (mainly for test reason)
-            allow_publicCommands = false;                                               // Should the bot accept commands from normal chat?
+            maxCharsInMsg = 255;                                                        // How many characters can be in a message (Only content, without command syntax)
+
+            bools = new Dictionary<string, bool>();
+            bools.Add("auto_respawn", true);                                            // Toggle the internal autorespawn
+            bools.Add("allow_sendmail" , true);                                         // Enable the continious mail sending
+            bools.Add("allow_receivemail" , true);                                      // Enable the bot reacting to command
+            bools.Add("allow_selfmail", true);                                          // Enable to send mails to yourself (mainly for test reason)
+            bools.Add("allow_publicCommands", false);                                   // Should the bot accept commands from normal chat?
+            bools.Add("debug_msg", Settings.DebugMessages);                             // Disable debug Messages for a cleaner console
 
             timevar_100ms = 0;
             lastReset = DateTime.UtcNow;
@@ -127,20 +125,17 @@ namespace MinecraftClient.ChatBots
             RegisterChatBotCommand("daystosavemsg", "How long are the unsent mails safed", daysToSaveMessage);
             RegisterChatBotCommand("getignored", "Get ignored Players", getIgnored);
             RegisterChatBotCommand("getmails", "Get all mails from file", getMails);
-            RegisterChatBotCommand("getSettings", "See all settings", getSettings);
+            RegisterChatBotCommand("getsettings", "See all settings", getSettings);
             RegisterChatBotCommand("intervalsendmail", "How long should the bot wait until sending mails", intervalSendMail);
             RegisterChatBotCommand("maxcharsinmail", "How long can a mail be?", maxCharsInMsg);
             RegisterChatBotCommand("maxmailsperplayer", "How many mails can the individual player send", maxMailsPerPlayer);
             RegisterChatBotCommand("maxsavedmails", "How many mails should be safed at all", maxSavedMails);
             RegisterChatBotCommand("removeignored", "Remove a player, the bot ignored", removeIgnored);
-            RegisterChatBotCommand("resetTimer", "Reset the timer for mail delivering", resetTimer);
-            RegisterChatBotCommand("toggleautorespawn", "Enable/Disable autorespawn", toggleAutoRespawn);
-            RegisterChatBotCommand("toggledebugmsg", "Enable/Disable debug messages", toggleDebugMSG);
-            RegisterChatBotCommand("togglemailreceiving", "Turn listening to mail commands on / off", toggleMailReceiving);
-            RegisterChatBotCommand("togglemailsending", "Turn the mail sending on / off", toggleMailSending);
-            RegisterChatBotCommand("togglepubliccommands", "Should the bot accept commands outside of /msg's?", togglePublicCommands);
-            RegisterChatBotCommand("toggleselfmail", "Can you mail yourself?", toggleSelfMail);
+            RegisterChatBotCommand("resettimer", "Reset the timer for mail delivering", resetTimer);
             RegisterChatBotCommand("updatemails", "Delete / Send mails", updateMails);
+
+            RegisterChatBotCommand("setbool", "Your options are: " + string.Join("; ", options.bools.Keys.ToArray()), setBooleans);
+
         }
         
         /// <summary>
@@ -159,7 +154,7 @@ namespace MinecraftClient.ChatBots
                 GetOptionsFromFile();
             }
 
-            options.debug_msg = Settings.DebugMessages;
+            options.bools["debug_msg"] = Settings.DebugMessages;
             options.lastReset = DateTime.UtcNow;
             options.botname = GetUsername();
             update_and_send_mails();
@@ -172,12 +167,12 @@ namespace MinecraftClient.ChatBots
         {
             if (options.timevar_100ms == options.interval_sendmail)
             {
-                if (options.allow_sendmail)
+                if (options.bools["allow_sendmail"])
                 {
                     update_and_send_mails();
                 }
 
-                if (options.auto_respawn)
+                if (options.bools["auto_respawn"])
                 {
                     PerformInternalCommand("respawn");
                 }
@@ -192,14 +187,14 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void GetText(string text)
         {
-            if (options.allow_receivemail) // Should the bot react to any message?
+            if (options.bools["allow_receivemail"]) // Should the bot react to any message?
             {
                 string message = "";
                 string username = "";
 
                 text = GetVerbatim(text);
 
-                if (IsPrivateMessage(text, ref message, ref username) || (IsChatMessage(text, ref message, ref username) && options.allow_publicCommands))
+                if (IsPrivateMessage(text, ref message, ref username) || (IsChatMessage(text, ref message, ref username) && options.bools["allow_publicCommands"]))
                 {
                     if (!isIgnored(username))
                     {
@@ -221,13 +216,13 @@ namespace MinecraftClient.ChatBots
                             SendPrivateMessage(username, "Couldn't save Message. Limit reached!");
                         }
                     }
-                    else if (options.debug_msg)
+                    else if (options.bools["debug_msg"])
                     {
                         LogToConsole(username + " is ignored!");
                     }
                 }
             }
-            else if(options.debug_msg)
+            else if(options.bools["debug_msg"])
             {
                 LogToConsole("Receive Mails is turned off!");
             }
@@ -252,7 +247,7 @@ namespace MinecraftClient.ChatBots
                 {
                     string temp_content = message.Substring(i + 1);
 
-                    if (temp_content.Length <= options.maxCharsInMsg)
+                    if (temp_content.Length <= options.maxCharsInMsg) // Is the content length within the given range of the host
                     {
                         content = temp_content;  // extract message content
                         break;
@@ -267,7 +262,7 @@ namespace MinecraftClient.ChatBots
 
             if (IsValidName(sender) && IsValidName(destination) && content != string.Empty)
             {
-                if (destination.ToLower() != sender.ToLower() || options.allow_selfmail)
+                if (destination.ToLower() != sender.ToLower() || options.bools["allow_selfmail"])
                 {
                     if (command == "mail")
                     {
@@ -288,40 +283,29 @@ namespace MinecraftClient.ChatBots
         }
 
         /// <summary>
-        /// Toggle whether commands from normal chat are accepted.
+        /// Toggles all commands.
         /// </summary>
-        public string togglePublicCommands(string cmd, string[] args)
+        public string setBooleans(string cmd, string[] args)
         {
-            if (options.allow_publicCommands)
+            if (args.Length > 0)
             {
-                options.allow_publicCommands = false;
-                SaveOptionsToFile();
-                return "Turned public commands off.";
+                try
+                {
+                    if (args.Length > 1)                                            // Check if a vlaue is given
+                    { options.bools[args[0]] = bool.Parse(args[1].ToLower()); }     // If yes, try to set the bool to this value
+                    else { options.bools[args[0]] = !options.bools[args[0]]; }      // Otherwise toggle.
+                    
+                    SaveOptionsToFile();
+                    return "Changed " + args[0] + " to: " + (options.bools[args[0]]).ToString();
+                }
+                catch (Exception)
+                {
+                    return "This option does not exist!";
+                }
             }
             else
             {
-                options.allow_publicCommands = true;
-                SaveOptionsToFile();
-                return "Turned public commands on.";
-            }
-        }
-
-        /// <summary>
-        /// Toggle whether you can mail yourself.
-        /// </summary>
-        public string toggleSelfMail(string cmd, string[] args)
-        {
-            if (options.allow_selfmail)
-            {
-                options.allow_selfmail = false;
-                SaveOptionsToFile();
-                return "Turned self mail off.";
-            }
-            else
-            {
-                options.allow_selfmail = true;
-                SaveOptionsToFile();
-                return "Turned self mail on.";
+                return "Missing argument!";
             }
         }
 
@@ -340,46 +324,7 @@ namespace MinecraftClient.ChatBots
             }
 
             SaveOptionsToFile();
-
             return "Changed maximum amounts of characters in a mail to: " + (options.maxCharsInMsg).ToString();
-        }
-
-        /// <summary>
-        /// List ignored players.
-        /// </summary>
-        public string toggleMailReceiving(string cmd, string[] args)
-        {
-            if (options.allow_receivemail)
-            {
-                options.allow_receivemail = false;
-                SaveOptionsToFile();
-                return "Turned mail receiving off.";
-            }
-            else
-            {
-                options.allow_receivemail = true;
-                SaveOptionsToFile();
-                return "Turned mail receiving on.";
-            }
-        }
-
-        /// <summary>
-        /// List ignored players.
-        /// </summary>
-        public string toggleMailSending(string cmd, string[] args)
-        {
-            if (options.allow_sendmail)
-            {
-                options.allow_sendmail = false;
-                SaveOptionsToFile();
-                return "Turned mail sending off.";
-            }
-            else
-            {
-                options.allow_sendmail = true;
-                SaveOptionsToFile();
-                return "Turned mail sending on.";
-            }
         }
 
         /// <summary>
@@ -492,8 +437,8 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string getSettings(string cmd, string[] args)
         {
-            return "\n debugmsg: "
-                + (options.debug_msg).ToString()
+            return "\n debug_msg: "
+                + (options.bools["debug_msg"]).ToString()
                 + ";\n daystosavemsg: "
                 + (options.daysTosaveMsg).ToString()
                 + ";\n intervalsendmail: "
@@ -506,18 +451,18 @@ namespace MinecraftClient.ChatBots
                 + options.path_mail
                 + ";\n settingspath: "
                 + options.path_setting 
-                + ";\n autorespawn: "
-                + (options.auto_respawn).ToString()
-                + ";\n togglemailsending: "
-                + (options.allow_sendmail).ToString()
-                + ";\n togglemailreceiving: "
-                + (options.allow_receivemail).ToString()
+                + ";\n auto_respawn: "
+                + (options.bools["auto_respawn"]).ToString()
+                + ";\n allow_sendmail: "
+                + (options.bools["allow_sendmail"]).ToString()
+                + ";\n allow_receivemail: "
+                + (options.bools["allow_receivemail"]).ToString()
                 + ";\n maxcharsinmail: "
                 + (options.maxCharsInMsg).ToString()
-                + ";\n toggleselfmail: "
-                + (options.allow_selfmail).ToString()
-                + ";\n togglepubliccommands: "
-                + (options.allow_publicCommands).ToString();
+                + ";\n allow_selfmail: "
+                + (options.bools["allow_selfmail"]).ToString()
+                + ";\n allow_publicCommands: "
+                + (options.bools["allow_publicCommands"]).ToString();
         }
 
         /// <summary>
@@ -612,43 +557,6 @@ namespace MinecraftClient.ChatBots
 
             SaveOptionsToFile();
             return "Changed daystosavemsg to: " + (options.daysTosaveMsg).ToString();
-        }
-
-        /// <summary>
-        /// Turns autorespawn on/off.
-        /// </summary>
-        public string toggleAutoRespawn(string cmd, string[] args)
-        {
-            if (options.auto_respawn)
-            {
-                options.auto_respawn = false;
-            }
-            else
-            {
-                options.auto_respawn = true;
-            }
-
-            SaveOptionsToFile();
-            return "Changed autorespawn to: " + (options.auto_respawn).ToString();
-        }
-
-        /// <summary>
-        /// Turns debug msg on/off.
-        /// </summary>
-        public string toggleDebugMSG(string cmd, string[] args)
-        {
-            if (options.debug_msg)
-            {
-                options.debug_msg = false;
-                SaveOptionsToFile();
-            }
-            else
-            {
-                options.debug_msg = true;
-                SaveOptionsToFile();
-            }
-
-            return "Turned debugmsg to " + (options.debug_msg).ToString();
         }
 
         /// <summary>
@@ -751,7 +659,7 @@ namespace MinecraftClient.ChatBots
                 formatter.Serialize(stream, msg_array);
                 stream.Close();
 
-                if (options.debug_msg)
+                if (options.bools["debug_msg"])
                 {
                     LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
                 }
@@ -771,7 +679,7 @@ namespace MinecraftClient.ChatBots
                     formatter.Serialize(stream, msg_array);
                     stream.Close();
 
-                    if (options.debug_msg)
+                    if (options.bools["debug_msg"])
                     {
                         LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
                     }
@@ -815,7 +723,7 @@ namespace MinecraftClient.ChatBots
             {
                 FileStream stream = new FileStream(options.path_mail, FileMode.Open, FileAccess.Read);
 
-                if (options.debug_msg)
+                if (options.bools["debug_msg"])
                 {
                     LogToConsole("Loaded mails from File!" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
                 }
@@ -845,7 +753,7 @@ namespace MinecraftClient.ChatBots
             formatter.Serialize(stream, options);
             stream.Close();
 
-            if (options.debug_msg)
+            if (options.bools["debug_msg"])
             {
                 LogToConsole("Saved options to File! " + "Location: " + options.path_setting + " Time: " + DateTime.UtcNow + " UTC");
             }
@@ -876,7 +784,7 @@ namespace MinecraftClient.ChatBots
                 LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_setting + " Time: " + DateTime.UtcNow + " UTC");
             }
 
-            if (options.debug_msg && !error)
+            if (options.bools["debug_msg"] && !error)
             {
                 LogToConsole("Loaded options from File! " + "Location: " + options.path_setting + " Time: " + DateTime.UtcNow + " UTC");
             }
@@ -897,7 +805,7 @@ namespace MinecraftClient.ChatBots
 
             msg_array[msg_array.Length - 1] = new Message(sender, destination, content, anonymous);
 
-            if (options.debug_msg)
+            if (options.bools["debug_msg"])
             {
                 LogToConsole("Saved message of: " + sender);
             }
