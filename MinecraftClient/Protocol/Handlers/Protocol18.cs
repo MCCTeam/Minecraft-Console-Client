@@ -84,7 +84,7 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetInventoryEnabled(false);
             }
 
-            if (handler.GetEntityHandlingEnabled() && (protocolversion <= MC1122Version || protocolversion > MC1152Version))
+            if (handler.GetEntityHandlingEnabled() && (protocolversion <= MC1122Version || protocolversion > MC1161Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Entities are currently not handled for that MC version.");
                 handler.SetEntityHandlingEnabled(false);
@@ -104,11 +104,13 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (protocolversion >= MC114Version)
             {
-                if (protocolversion > MC1152Version && handler.GetEntityHandlingEnabled())
+                if (protocolversion > MC1161Version && handler.GetEntityHandlingEnabled())
                     throw new NotImplementedException("Please update entity types handling for this Minecraft version. See EntityType.cs");
-                if (protocolversion >= MC115Version)
-                    entityPalette = new EntityPalette115();
-                else entityPalette = new EntityPalette114();
+                if (protocolversion < MC115Version)
+                    entityPalette = new EntityPalette114();
+                if (protocolversion > MC115Version)
+                    entityPalette = new EntityPalette116();
+                else entityPalette = new EntityPalette115();
             }
             else entityPalette = new EntityPalette113();
         }
@@ -1436,6 +1438,13 @@ namespace MinecraftClient.Protocol.Handlers
                 List<byte> fields = new List<byte>();
                 fields.AddRange(dataTypes.GetVarInt(EntityID));
                 fields.AddRange(dataTypes.GetVarInt(type));
+
+		// Is player Sneaking (Only 1.16 and above)
+		// Currently hardcoded to false
+		// TODO: Update to reflect the real player state
+		if (protocolversion >= MC116Version)
+			fields.AddRange(dataTypes.GetVarBool(false));
+
                 SendPacket(PacketOutgoingType.InteractEntity, fields);
                 return true;
             }
