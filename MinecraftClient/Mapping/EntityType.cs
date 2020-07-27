@@ -1,17 +1,5 @@
 namespace MinecraftClient.Mapping
 {
-    /// <summary>
-    /// Represents Minecraft Entity Types
-    /// </summary>
-    /// <remarks>
-    /// Generated from registries.json using EntityPaletteGenerator.cs.
-    /// Typical steps to handle new entity IDs for newer Minecraft versions:
-    /// 1. Generate registries.json using data reporting on Vanilla Minecraft (https://wiki.vg/Data_Generators)
-    /// 2. Generate temporary EntityTypeXXX.cs and EntityPaletteXXX.cs using EntityPaletteGenerator.cs
-    /// 3. Perform a diff with existing versions, add missing entries in EntityType.cs and EntityTypeExtensions.cs
-    /// 4. If existing entity IDs were not randomized by Mojang, simply add missing entries to the latest existing EntityPaletteXXX.cs
-    /// 5. If existing entity IDs were randomized, add a new palette as EntityPaletteXXX.cs into the codebase (worst case)
-    /// </remarks>
     public enum EntityType
     {
         AreaEffectCloud,
@@ -27,8 +15,8 @@ namespace MinecraftClient.Mapping
         Cod,
         Cow,
         Creeper,
-        Donkey,
         Dolphin,
+        Donkey,
         DragonFireball,
         Drowned,
         ElderGuardian,
@@ -36,8 +24,8 @@ namespace MinecraftClient.Mapping
         EnderDragon,
         Enderman,
         Endermite,
-        EvokerFangs,
         Evoker,
+        EvokerFangs,
         ExperienceOrb,
         EyeOfEnder,
         FallingBlock,
@@ -46,13 +34,16 @@ namespace MinecraftClient.Mapping
         Ghast,
         Giant,
         Guardian,
+        Hoglin,
         Horse,
         Husk,
         Illusioner,
+        IronGolem,
         Item,
         ItemFrame,
         Fireball,
         LeashKnot,
+        LightningBolt,
         Llama,
         LlamaSpit,
         MagmaCube,
@@ -69,12 +60,15 @@ namespace MinecraftClient.Mapping
         Painting,
         Panda,
         Parrot,
+        Phantom,
         Pig,
-        Pufferfish,
-        ZombiePigman,
+        Piglin,
+        Pillager,
         PolarBear,
         Tnt,
+        Pufferfish,
         Rabbit,
+        Ravager,
         Salmon,
         Sheep,
         Shulker,
@@ -90,31 +84,29 @@ namespace MinecraftClient.Mapping
         Spider,
         Squid,
         Stray,
-        TraderLlama,
-        TropicalFish,
-        Turtle,
+        Strider,
         Egg,
         EnderPearl,
         ExperienceBottle,
         Potion,
         Trident,
+        TraderLlama,
+        TropicalFish,
+        Turtle,
         Vex,
         Villager,
-        IronGolem,
         Vindicator,
-        Pillager,
         WanderingTrader,
         Witch,
         Wither,
         WitherSkeleton,
         WitherSkull,
         Wolf,
+        Zoglin,
         Zombie,
         ZombieHorse,
         ZombieVillager,
-        Phantom,
-        Ravager,
-        LightningBolt,
+        ZombiePigman,
         Player,
         FishingBobber,
     }

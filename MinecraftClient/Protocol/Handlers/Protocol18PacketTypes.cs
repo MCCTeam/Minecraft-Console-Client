@@ -385,9 +385,9 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x29: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x58: return PacketIncomingType.EntityProperties;
                     case 0x56: return PacketIncomingType.EntityTeleport;
-                    case 0x46: return PacketIncomingType.EntityVelocity;
+                    case 0x46: return PacketIncomingType.EntityVelocity; // This is maybe entity moving, not sure
                     case 0x47: return PacketIncomingType.EntityEquipment;
-                    case 0x5A: return PacketIncomingType.EntityEffect;
+                    case 0x59: return PacketIncomingType.EntityEffect;
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     case 0x49: return PacketIncomingType.UpdateHealth;
                     case 0x48: return PacketIncomingType.SetExperience;
@@ -605,12 +605,12 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.UseItem: return 0x2E;
                     case PacketOutgoingType.ClickWindow: return 0x09;
                     case PacketOutgoingType.CloseWindow: return 0x0A;
-                    case PacketOutgoingType.PlayerBlockPlacement: return 0x2C;
+                    case PacketOutgoingType.PlayerBlockPlacement: return 0x2D;
                     case PacketOutgoingType.CreativeInventoryAction: return 0x27;
                     case PacketOutgoingType.Animation: return 0x2B;
                     case PacketOutgoingType.PlayerDigging: return 0x1B;
                     case PacketOutgoingType.UpdateSign: return 0x2A;
-                    case PacketOutgoingType.UpdateCommandBlock: return 0x24;
+                    case PacketOutgoingType.UpdateCommandBlock: return 0x25;
                 }
             }
 
