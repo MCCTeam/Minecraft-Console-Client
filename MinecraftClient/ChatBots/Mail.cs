@@ -16,13 +16,9 @@ namespace MinecraftClient.ChatBots
         public string path_mail { get; set; }
         public string path_setting { get; set; }
         public string botname { get; set; }
-        public int interval_sendmail { get; set; }
-        public int maxSavedMails { get; set; }
-        public int maxSavedMails_Player { get; set; }
-        public int maxCharsInMsg { get; set; }
-        public int daysTosaveMsg { get; set; }
         public int timevar_100ms { get; set; }
         public Dictionary<string, bool> bools { get; set; }
+        public Dictionary<string, int> integer { get; set; }
         public string[] ignored = new string[0];
         public DateTime lastReset { get; set; }
         
@@ -31,11 +27,13 @@ namespace MinecraftClient.ChatBots
         {
             path_mail = AppDomain.CurrentDomain.BaseDirectory + "mails.txt";            // Path where the mail file is saved. You can also apply a normal path like @"C:\Users\SampleUser\Desktop"
             path_setting = AppDomain.CurrentDomain.BaseDirectory + "options.txt";       // Path where the settings are saved
-            interval_sendmail = 100;                                                    // Intervall atempting to send mails / do a respawn [in 100 ms] -> eg. 100 * 100ms = 10 sec
-            maxSavedMails = 2000;                                                       // How many mails you want to safe
-            maxSavedMails_Player = 3;                                                   // How many mails can be sent per player
-            daysTosaveMsg = 30;                                                         // After how many days the message should get deleted
-            maxCharsInMsg = 255;                                                        // How many characters can be in a message (Only content, without command syntax)
+
+            integer = new Dictionary<string, int>();
+            integer.Add("interval_sendmail", 100);                                      // Intervall atempting to send mails / do a respawn [in 100 ms] -> eg. 100 * 100ms = 10 sec
+            integer.Add("maxSavedMails", 2000);                                         // How many mails you want to safe
+            integer.Add("maxSavedMails_Player", 3);                                     // How many mails can be sent per player
+            integer.Add("daysTosaveMsg", 30);                                           // After how many days the message should get deleted
+            integer.Add("maxCharsInMsg", 255);                                          // How many characters can be in a message (Only content, without command syntax)
 
             bools = new Dictionary<string, bool>();
             bools.Add("auto_respawn", true);                                            // Toggle the internal autorespawn
@@ -119,22 +117,7 @@ namespace MinecraftClient.ChatBots
             logged_msg = new Message[0];
             options = new Options();
 
-            RegisterChatBotCommand("addignored", "Add a player, the bot ignored", addIgnored);
-            RegisterChatBotCommand("changemailpath", "Change the path of the mail file relative to the .exe", changeMailPath);
-            RegisterChatBotCommand("changesettingspath", "Change the path of the setting file relative to the .exe", changeSettingsPath);
-            RegisterChatBotCommand("daystosavemsg", "How long are the unsent mails safed", daysToSaveMessage);
-            RegisterChatBotCommand("getignored", "Get ignored Players", getIgnored);
-            RegisterChatBotCommand("getmails", "Get all mails from file", getMails);
-            RegisterChatBotCommand("getsettings", "See all settings", getSettings);
-            RegisterChatBotCommand("intervalsendmail", "How long should the bot wait until sending mails", intervalSendMail);
-            RegisterChatBotCommand("maxcharsinmail", "How long can a mail be?", maxCharsInMsg);
-            RegisterChatBotCommand("maxmailsperplayer", "How many mails can the individual player send", maxMailsPerPlayer);
-            RegisterChatBotCommand("maxsavedmails", "How many mails should be safed at all", maxSavedMails);
-            RegisterChatBotCommand("removeignored", "Remove a player, the bot ignored", removeIgnored);
-            RegisterChatBotCommand("resettimer", "Reset the timer for mail delivering", resetTimer);
-            RegisterChatBotCommand("updatemails", "Delete / Send mails", updateMails);
-
-            RegisterChatBotCommand("setbool", "Your options are: " + string.Join("; ", options.bools.Keys.ToArray()), setBooleans);
+            RegisterChatBotCommand("mail", "Options: addignored; changemailpath; changesettingspath; getignored; getmails; removeignored; resettimer; updatemails; setbool; setinteger;", internalCommandInterpreter);
 
         }
         
@@ -165,7 +148,7 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void Update()
         {
-            if (options.timevar_100ms == options.interval_sendmail)
+            if (options.timevar_100ms == options.integer["interval_sendmail"])
             {
                 if (options.bools["allow_sendmail"])
                 {
@@ -200,7 +183,7 @@ namespace MinecraftClient.ChatBots
                     {
                         Message[] msg_array = getMailsFromFile();
 
-                        if (username.ToLower() != options.botname.ToLower() && getSentMessagesByUser(username) < options.maxSavedMails_Player && msg_array.Length < options.maxSavedMails)
+                        if (username.ToLower() != options.botname.ToLower() && getSentMessagesByUser(username) < options.integer["maxSavedMails_Player"] && msg_array.Length < options.integer["maxSavedMails"])
                         {
                             if (message.ToLower().Contains("mail"))                     // IS it "mail" command
                             {
@@ -247,7 +230,7 @@ namespace MinecraftClient.ChatBots
                 {
                     string temp_content = message.Substring(i + 1);
 
-                    if (temp_content.Length <= options.maxCharsInMsg) // Is the content length within the given range of the host
+                    if (temp_content.Length <= options.integer["maxCharsInMsg"]) // Is the content length within the given range of the host
                     {
                         content = temp_content;  // extract message content
                         break;
@@ -278,110 +261,117 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                SendPrivateMessage(sender, "Something went wrong! Max characters: " + options.maxCharsInMsg);
+                SendPrivateMessage(sender, "Something went wrong! Max characters: " + options.integer["maxCharsInMsg"]);
             }
         }
 
         /// <summary>
-        /// Toggles all commands.
+        /// Interprets local commands.
+        /// </summary>
+        public string internalCommandInterpreter(string cmd, string[] args)
+        {
+            switch (args[0])
+            {
+                case "addignored":
+                    return addIgnored(cmd, args);
+
+                case "changemailpath":
+                    return changeMailPath(cmd, args);
+
+                case "changesettingspath":
+                    return changeSettingsPath(cmd, args);
+
+                case "getignored":
+                    return getIgnored(cmd, args);
+
+                case "getmails":
+                    return getMails(cmd, args);
+
+                case "getsettings":
+                    return getSettings(cmd, args);
+
+                case "removeignored":
+                    return removeIgnored(cmd, args);
+
+                case "resettimer":
+                    return resetTimer(cmd, args);
+
+                case "updatemails":
+                    return updateMails(cmd, args);
+
+                case "setbool":
+                    return setBooleans(cmd, args);
+
+                case "setinteger":
+                    return setInteger(cmd, args);
+            }
+            return "No option found! Do '/help mail'!";
+        }
+
+        /// <summary>
+        /// Toggles all bools.
+        /// Syntax args[0]="setbool"; args[1]="boolname"; args[2]="value";
         /// </summary>
         public string setBooleans(string cmd, string[] args)
         {
-            if (args.Length > 0)
+            if (args.Length > 1) // toggle is allowed!
             {
-                try
+                if (args[1] == "help")
                 {
-                    if (args.Length > 1)                                            // Check if a vlaue is given
-                    { options.bools[args[0]] = bool.Parse(args[1].ToLower()); }     // If yes, try to set the bool to this value
-                    else { options.bools[args[0]] = !options.bools[args[0]]; }      // Otherwise toggle.
-                    
-                    SaveOptionsToFile();
-                    return "Changed " + args[0] + " to: " + (options.bools[args[0]]).ToString();
+                    return "Options: " + string.Join("; ", options.bools.Keys.ToArray());
                 }
-                catch (Exception)
+                else
                 {
-                    return "This option does not exist!";
+                    try
+                    {
+                        if (args.Length > 2)                                            // Check if a vlaue is given
+                        { options.bools[args[1]] = bool.Parse(args[2].ToLower()); }     // If yes, try to set the bool to this value
+                        else { options.bools[args[1]] = !options.bools[args[1]]; }      // Otherwise toggle.
+
+                        SaveOptionsToFile();
+                        return "Changed " + args[1] + " to: " + (options.bools[args[1]]).ToString();
+                    }
+                    catch (Exception)
+                    {
+                        return "Missing or wrong argument! Add 'help' to get all available options!";
+                    }
                 }
             }
             else
             {
-                return "Missing argument!";
+                return "Missing or wrong argument! Add 'help' to get all available options!";
             }
         }
 
         /// <summary>
-        /// Change the intervall of respawn and mail sending.
+        /// Change Integers.
         /// </summary>
-        public string maxCharsInMsg(string cmd, string[] args)
+        public string setInteger(string cmd, string[] args)
         {
-            try
+            if (args.Length > 2) // You MUST enter a value!
             {
-                options.maxCharsInMsg = Int32.Parse(args[0]);
+                if (args[1] == "help")
+                {
+                    return "Options: " + string.Join("; ", options.integer.Keys.ToArray());
+                }
+                else
+                {
+                    try
+                    {
+                        options.integer[args[1]] = Int32.Parse(args[2]);
+                        SaveOptionsToFile();
+                        return "Changed " + args[1] + " to: " + (options.integer[args[1]]).ToString();
+                    }
+                    catch (Exception)
+                    {
+                        return "Missing or wrong argument! Add 'help' to get all available options!";
+                    }
+                }
             }
-            catch (Exception)
+            else
             {
-                return "You answer shall not pass!";
+                return "Missing or wrong argument! Add 'help' to get all available options!";
             }
-
-            SaveOptionsToFile();
-            return "Changed maximum amounts of characters in a mail to: " + (options.maxCharsInMsg).ToString();
-        }
-
-        /// <summary>
-        /// Change the intervall of respawn and mail sending.
-        /// </summary>
-        public string intervalSendMail(string cmd, string[] args)
-        {
-            try
-            {
-                options.interval_sendmail = Int32.Parse(args[0]);
-            }
-            catch (Exception)
-            {
-                return "You answer shall not pass!";
-            }
-
-            SaveOptionsToFile();
-
-            return "Changed intervalsendmail to: " + (options.interval_sendmail).ToString();
-        }
-
-        /// <summary>
-        /// How many mails should be safed in total.
-        /// </summary>
-        public string maxSavedMails(string cmd, string[] args)
-        {
-            try
-            {
-                options.maxSavedMails = Int32.Parse(args[0]);
-            }
-            catch (Exception)
-            {
-                return "You answer shall not pass!";
-            }
-
-            SaveOptionsToFile();
-
-            return "Changed maxsavedmails to: " + (options.maxSavedMails).ToString();
-        }
-
-        /// <summary>
-        /// How many mails can an individual player send.
-        /// </summary>
-        public string maxMailsPerPlayer(string cmd, string[] args)
-        {
-            try
-            {
-                options.maxSavedMails_Player = Int32.Parse(args[0]);
-            }
-            catch (Exception)
-            {
-                return "You answer shall not pass!";
-            }
-
-            SaveOptionsToFile();
-
-            return "Changed maxmailsperplayer to: " + (options.maxSavedMails_Player).ToString();
         }
 
         /// <summary>
@@ -440,13 +430,13 @@ namespace MinecraftClient.ChatBots
             return "\n debug_msg: "
                 + (options.bools["debug_msg"]).ToString()
                 + ";\n daystosavemsg: "
-                + (options.daysTosaveMsg).ToString()
+                + (options.integer["daysTosaveMsg"]).ToString()
                 + ";\n intervalsendmail: "
-                + (options.interval_sendmail).ToString()
+                + (options.integer["interval_sendmail"]).ToString()
                 + ";\n maxsavedmails: "
-                + (options.maxSavedMails).ToString()
+                + (options.integer["maxSavedMails"]).ToString()
                 + ";\n maxsavedmails_player: "
-                + (options.maxSavedMails_Player).ToString()
+                + (options.integer["maxSavedMails_Player"]).ToString()
                 + ";\n messagepath: "
                 + options.path_mail
                 + ";\n settingspath: "
@@ -458,7 +448,7 @@ namespace MinecraftClient.ChatBots
                 + ";\n allow_receivemail: "
                 + (options.bools["allow_receivemail"]).ToString()
                 + ";\n maxcharsinmail: "
-                + (options.maxCharsInMsg).ToString()
+                + (options.integer["maxCharsInMsg"]).ToString()
                 + ";\n allow_selfmail: "
                 + (options.bools["allow_selfmail"]).ToString()
                 + ";\n allow_publicCommands: "
@@ -539,24 +529,6 @@ namespace MinecraftClient.ChatBots
             }
 
             return "";
-        }
-
-        /// <summary>
-        /// How many days should your message be safed.
-        /// </summary>
-        public string daysToSaveMessage(string cmd, string[] args)
-        {
-            try
-            {
-                options.daysTosaveMsg = Int32.Parse(args[0]);
-            }
-            catch (Exception)
-            {
-                return "You answer shall not pass!";
-            }
-
-            SaveOptionsToFile();
-            return "Changed daystosavemsg to: " + (options.daysTosaveMsg).ToString();
         }
 
         /// <summary>
@@ -870,7 +842,7 @@ namespace MinecraftClient.ChatBots
         {
             for(int i = 0; i < msg_array.Length; i++)
             {
-                if ((DateTime.UtcNow - msg_array[i].GetTimeStamp()).Days > options.daysTosaveMsg)
+                if ((DateTime.UtcNow - msg_array[i].GetTimeStamp()).Days > options.integer["daysTosaveMsg"])
                 {
                     msg_array[i].setDelivered();
                 }
