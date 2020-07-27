@@ -282,22 +282,22 @@ namespace MinecraftClient.ChatBots
                     return changeSettingsPath(cmd, args);
 
                 case "getignored":
-                    return getIgnored(cmd, args);
+                    return getIgnored();
 
                 case "getmails":
-                    return getMails(cmd, args);
+                    return getMails();
 
                 case "getsettings":
-                    return getSettings(cmd, args);
+                    return getSettings();
 
                 case "removeignored":
                     return removeIgnored(cmd, args);
 
                 case "resettimer":
-                    return resetTimer(cmd, args);
+                    return resetTimer();
 
                 case "updatemails":
-                    return updateMails(cmd, args);
+                    return updateMails();
 
                 case "setbool":
                     return setBooleans(cmd, args);
@@ -379,9 +379,9 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string changeMailPath(string cmd, string[] args)
         {
-            if (args.Length > 0)
+            if (args.Length > 1)
             {
-                options.path_mail = AppDomain.CurrentDomain.BaseDirectory + args[0];
+                options.path_mail = AppDomain.CurrentDomain.BaseDirectory + args[1];
                 SaveOptionsToFile();
                 GetOptionsFromFile();
 
@@ -398,9 +398,9 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string changeSettingsPath(string cmd, string[] args)
         {
-            if (args.Length > 0)
+            if (args.Length > 1)
             {
-                options.path_setting = AppDomain.CurrentDomain.BaseDirectory + args[0];
+                options.path_setting = AppDomain.CurrentDomain.BaseDirectory + args[1];
                 SaveOptionsToFile();
                 GetOptionsFromFile();
 
@@ -415,7 +415,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Reset the timer.
         /// </summary>
-        public string resetTimer(string cmd, string[] args)
+        public string resetTimer()
         {
             options.timevar_100ms = 0;
 
@@ -425,7 +425,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// List all settings.
         /// </summary>
-        public string getSettings(string cmd, string[] args)
+        public string getSettings()
         {
             return "\n debug_msg: "
                 + (options.bools["debug_msg"]).ToString()
@@ -458,7 +458,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Get all safed mails.
         /// </summary>
-        public string getMails(string cmd, string[] args)
+        public string getMails()
         {
             Message[] msg_array = getMailsFromFile();
 
@@ -474,7 +474,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Update mails.
         /// </summary>
-        public string updateMails(string cmd, string[] args)
+        public string updateMails()
         {
             update_and_send_mails();
             return "Sending / Deleting mails!";
@@ -485,12 +485,12 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string addIgnored(string cmd, string[] args)
         {
-            if (args.Length > 0 && IsValidName(args[0]))
+            if (args.Length > 1 && IsValidName(args[1]))
             {
-                options.ignored = addMember(args[0], options.ignored);
+                options.ignored = addMember(args[1], options.ignored);
                 SaveOptionsToFile();
 
-                return "Added " + args[0] + " as ignored!";
+                return "Added " + args[1] + " as ignored!";
             }
             else
             {
@@ -503,12 +503,12 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string removeIgnored(string cmd, string[] args)
         {
-            if (args.Length > 0 && IsValidName(args[0]))
+            if (args.Length > 1 && IsValidName(args[1]))
             {
-                    options.ignored = removeMember(args[0], options.ignored);
+                    options.ignored = removeMember(args[1], options.ignored);
                     SaveOptionsToFile();
 
-                    return "Removed " + args[0] + " as ignored!";
+                    return "Removed " + args[1] + " as ignored!";
             }
             else
             {
@@ -519,7 +519,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// List ignored players.
         /// </summary>
-        public string getIgnored(string cmd, string[] args)
+        public string getIgnored()
         {
             LogToConsole("Ignored are:");
 
