@@ -131,6 +131,55 @@ namespace MinecraftClient.Mapping
             return list;
         }
         
+        /* Array */
+		public Location[] FindBlock(Location from, Material block, int radius)
+        {
+            Location minPoint = new Location(from.X - radius, from.Y - radius, from.Z - radius);
+            Location maxPoint = new Location(from.X + radius, from.Y + radius, from.Z + radius);
+            List<Location> list = new List<Location> { };
+            for (double x = minPoint.X; x <= maxPoint.X; x++)
+            {
+                for (double y = minPoint.Y; y <= maxPoint.Y; y++)
+                {
+                    for (double z = minPoint.Z; z <= maxPoint.Z; z++)
+                    {
+                        Location doneloc = new Location(x, y, z);
+                        Block doneblock = GetBlock(doneloc);
+                        Material blockType = GetBlock(doneloc).Type;
+                        if (blockType == block)
+                        {
+                            list.Add(doneloc);
+                        }
+                    }
+                }
+            }
+            return list.ToArray();
+        }
+
+        public Location[] FindBlock(Location from, Material block, int radiusx, int radiusy, int radiusz)
+        {
+            Location minPoint = new Location(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
+            Location maxPoint = new Location(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);
+            List<Location> list = new List<Location> { };
+            for (double x = minPoint.X; x <= maxPoint.X; x++)
+            {
+                for (double y = minPoint.Y; y <= maxPoint.Y; y++)
+                {
+                    for (double z = minPoint.Z; z <= maxPoint.Z; z++)
+                    {
+                        Location doneloc = new Location(x, y, z);
+                        Block doneblock = GetBlock(doneloc);
+                        Material blockType = GetBlock(doneloc).Type;
+                        if (blockType == block)
+                        {
+                            list.Add(doneloc);
+                        }
+                    }
+                }
+            }
+            return list.ToArray();
+        }
+        
         /// <summary>
         /// Set block at the specified location
         /// </summary>
