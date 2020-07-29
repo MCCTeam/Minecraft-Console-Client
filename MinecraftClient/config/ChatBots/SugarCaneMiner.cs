@@ -21,9 +21,7 @@ public class SugarCaneMiner : ChatBot
     {
         if (DetectSugarCane(sugarCane, fullHeight))
         {
-            DigBlock(0, sugarCane, 1);
-            Thread.Sleep(1);
-            DigBlock(2, sugarCane, 1);
+            DigBlock(sugarCane);
         }
     }
 
