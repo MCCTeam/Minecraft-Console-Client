@@ -106,11 +106,11 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (protocolversion > MC1161Version && handler.GetEntityHandlingEnabled())
                     throw new NotImplementedException("Please update entity types handling for this Minecraft version. See EntityType.cs");
-                if (protocolversion < MC115Version)
-                    entityPalette = new EntityPalette114();
-                if (protocolversion > MC115Version)
+                if (protocolversion >= MC116Version)
                     entityPalette = new EntityPalette116();
-                else entityPalette = new EntityPalette115();
+                else if (protocolversion >= MC115Version)
+                    entityPalette = new EntityPalette115();
+                else entityPalette = new EntityPalette114();
             }
             else entityPalette = new EntityPalette113();
         }
@@ -1439,11 +1439,11 @@ namespace MinecraftClient.Protocol.Handlers
                 fields.AddRange(dataTypes.GetVarInt(EntityID));
                 fields.AddRange(dataTypes.GetVarInt(type));
 
-		// Is player Sneaking (Only 1.16 and above)
-		// Currently hardcoded to false
-		// TODO: Update to reflect the real player state
-		if (protocolversion >= MC116Version)
-			fields.AddRange(dataTypes.GetVarBool(false));
+                // Is player Sneaking (Only 1.16 and above)
+                // Currently hardcoded to false
+                // TODO: Update to reflect the real player state
+                if (protocolversion >= MC116Version)
+                fields.AddRange(dataTypes.GetBool(false));
 
                 SendPacket(PacketOutgoingType.InteractEntity, fields);
                 return true;
