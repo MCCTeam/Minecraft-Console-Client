@@ -385,7 +385,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x29: return PacketIncomingType.EntityPositionAndRotation;
                     case 0x58: return PacketIncomingType.EntityProperties;
                     case 0x56: return PacketIncomingType.EntityTeleport;
-                    case 0x46: return PacketIncomingType.EntityVelocity; // This is maybe entity moving, not sure
+                    case 0x46: return PacketIncomingType.EntityVelocity;
                     case 0x47: return PacketIncomingType.EntityEquipment;
                     case 0x59: return PacketIncomingType.EntityEffect;
                     case 0x4E: return PacketIncomingType.TimeUpdate;

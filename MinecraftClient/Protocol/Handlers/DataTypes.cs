@@ -671,12 +671,12 @@ namespace MinecraftClient.Protocol.Handlers
             return bytes.ToArray();
         }
 
-	/// <summary>
+        /// <summary>
         /// Build an boolean for sending over the network
         /// </summary>
         /// <param name="paramBool">Boolean to encode</param>
         /// <returns>Byte array for this boolean</returns>
-        public byte[] GetVarBool(bool paramBool)
+        public byte[] GetBool(bool paramBool)
         {
             List<byte> bytes = new List<byte>();
             bytes.Add((byte)Convert.ToByte(paramBool));
