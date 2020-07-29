@@ -23,14 +23,10 @@ public class CobblestoneMiner: ChatBot
         switch (blockType)
         {
             case Material.Stone:
-                DigBlock(0, cobblestone, 1);
-                Thread.Sleep(100);
-                DigBlock(2, cobblestone, 1);
+                DigBlock(cobblestone);
                 break;
             case Material.Cobblestone:
-                DigBlock(0, cobblestone, 1);
-                Thread.Sleep(100);
-                DigBlock(2, cobblestone, 1);
+                DigBlock(cobblestone);
                 break;
         }
     }
