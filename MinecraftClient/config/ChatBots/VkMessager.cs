@@ -156,39 +156,40 @@ internal class VkLongPoolClient
         public List<List<object>> buttons = new List<List<object>>();
         public Keyboard(bool one_time2)
         {
-	   one_time = one_time2;
+			one_time = one_time2;
         } 
 		
 	public void AddButton(string label, string payload, string color)
 	{
-	    Buttons button = new Buttons(label, payload, color);
-            buttons.Add( new List<object>() { button });
+		buttons button = new Buttons(label, payload, color);
+            	buttons.Add( new List<object>() { button });
+	}
+		
+	public class Buttons
+	{
+		public Action action;
+		public string color;
+		public Buttons(string labe11, string payload1, string color2)
+		{
+			action = new Action(labe11, payload1);
+			color = color2;
+		} 
+			
+		public class Action
+		{
+			public string type;
+			public string payload;
+			public string label;
+			public Action(string label3, string payload3)
+			{
+				type = "text";
+				payload = "{\"button\": \"" + payload3 + "\"}";
+				label = label3;
+			}
+		}
 	}
     }
 	
-    public class Buttons
-    {
-	public Action action;
-	public string color;
-	public Buttons(string labe11, string payload1, string color2)
-        {
-            action = new Action(labe11, payload1);
-			color = color2;
-        } 
-    }
-    
-    public class Action
-    {
-        public string type;
-        public string payload;
-        public string label;
-        public Action(string label3, string payload3)
-        {
-            type = "text";
-            payload = "{\"button\": \"" + payload3 + "\"}";
-            label = label3;
-        }
-    }
     private void StartLongPoolAsync()
     {
         Task.Factory.StartNew(() =>
