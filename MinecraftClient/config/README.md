@@ -216,6 +216,7 @@ When the remote control bot is enabled, you can send commands to your bot using 
 Don't forget to add your username in botowners INI setting if you want it to obey.
 If it doesn't respond to bot owners, read the "Detecting chat messages" section.
 Please note that server admins can read what you type and output from the bot.
+They can also impersonate bot owners with /nick. See [#1142](https://github.com/ORelio/Minecraft-Console-Client/issues/1142) for more info.
 
 To perform a command simply do the following: /tell <yourbot> <thecommand>
 Where <thecommand> is an internal command as described in "Internal commands" section.

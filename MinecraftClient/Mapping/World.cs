@@ -84,6 +84,51 @@ namespace MinecraftClient.Mapping
         }
 
         /// <summary>
+        /// Look for a block around the specified location
+        /// </summary>
+        /// <param name="from">Start location</param>
+        /// <param name="block">Block type</param>
+        /// <param name="radius">Search radius - larger is slower: O^3 complexity</param>
+        /// <returns>Block matching the specified block type</returns>
+        public List<Location> FindBlock(Location from, Material block, int radius)
+        {
+            return FindBlock(from, block, radius, radius, radius);
+        }
+
+        /// <summary>
+        /// Look for a block around the specified location
+        /// </summary>
+        /// <param name="from">Start location</param>
+        /// <param name="block">Block type</param>
+        /// <param name="radiusx">Search radius on the X axis</param>
+        /// <param name="radiusy">Search radius on the Y axis</param>
+        /// <param name="radiusz">Search radius on the Z axis</param>
+        /// <returns>Block matching the specified block type</returns>
+        public List<Location> FindBlock(Location from, Material block, int radiusx, int radiusy, int radiusz)
+        {
+            Location minPoint = new Location(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
+            Location maxPoint = new Location(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);
+            List<Location> list = new List<Location> { };
+            for (double x = minPoint.X; x <= maxPoint.X; x++)
+            {
+                for (double y = minPoint.Y; y <= maxPoint.Y; y++)
+                {
+                    for (double z = minPoint.Z; z <= maxPoint.Z; z++)
+                    {
+                        Location doneloc = new Location(x, y, z);
+                        Block doneblock = GetBlock(doneloc);
+                        Material blockType = GetBlock(doneloc).Type;
+                        if (blockType == block)
+                        {
+                            list.Add(doneloc);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+        /// <summary>
         /// Set block at the specified location
         /// </summary>
         /// <param name="location">Location to set block to</param>

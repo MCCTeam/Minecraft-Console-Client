@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoTimeout.cs" />
+    <Compile Include="ChatBots\AutoDrop.cs" />
     <Compile Include="Commands\Entitycmd.cs" />
     <Compile Include="ChatBots\Alerts.cs" />
     <Compile Include="ChatBots\AntiAFK.cs" />
@@ -133,6 +134,7 @@
     <Compile Include="Mapping\EntityPalettes\EntityPalette.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette114.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette115.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPalette116.cs" />
     <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPaletteGenerator.cs" />
     <Compile Include="Mapping\EntityTypeExtensions.cs" />

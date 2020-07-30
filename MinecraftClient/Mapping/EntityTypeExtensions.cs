@@ -22,9 +22,11 @@ namespace MinecraftClient.Mapping
                 case EntityType.Evoker:
                 case EntityType.Ghast:
                 case EntityType.Guardian:
+                case EntityType.Hoglin:
                 case EntityType.Husk:
                 case EntityType.MagmaCube:
                 case EntityType.Phantom:
+                case EntityType.Piglin:
                 case EntityType.Pillager:
                 case EntityType.Ravager:
                 case EntityType.Shulker:
@@ -37,8 +39,8 @@ namespace MinecraftClient.Mapping
                 case EntityType.Vindicator:
                 case EntityType.Witch:
                 case EntityType.WitherSkeleton:
+                case EntityType.Zoglin:
                 case EntityType.Zombie:
-                case EntityType.ZombiePigman:
                 case EntityType.ZombieVillager:
                     return true;
                 default:
