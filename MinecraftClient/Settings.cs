@@ -168,12 +168,17 @@ namespace MinecraftClient
         public static bool AutoCraft_Enabled = false;
         public static string AutoCraft_configFile = @"autocraft\config.ini";
 
+        //AutoDrop
+        public static bool AutoDrop_Enabled = false;
+        public static string AutoDrop_Mode = "include";
+        public static string AutoDrop_items = "";
+
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop };
 
         /// <summary>
         /// Load settings from the give INI file
@@ -218,6 +223,7 @@ namespace MinecraftClient
                                     case "autofishing": pMode = ParseMode.AutoFishing; break;
                                     case "autoeat": pMode = ParseMode.AutoEat; break;
                                     case "autocraft": pMode = ParseMode.AutoCraft; break;
+                                    case "autodrop": pMode = ParseMode.AutoDrop; break;
                                     default: pMode = ParseMode.Default; break;
                                 }
                             }
@@ -505,6 +511,15 @@ namespace MinecraftClient
                                             }
                                             break;
 
+                                        case ParseMode.AutoDrop:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": AutoDrop_Enabled = str2bool(argValue); break;
+                                                case "mode": AutoDrop_Mode = argValue; break;
+                                                case "items": AutoDrop_items = argValue; break;
+                                            }
+                                            break;
+
                                         case ParseMode.MCSettings:
                                             switch (argName.ToLower())
                                             {
@@ -714,11 +729,19 @@ namespace MinecraftClient
                 + "enabled=false\r\n"
                 + "threshold=6\r\n"
                 + "\r\n"
-                + "[AutoCraft]"
+                + "[AutoCraft]\r\n"
                 + "# Inventory Handling NEED to be enabled first\r\n"
                 + "# Enable terrainandmovements if you need to use crafting table\r\n"
                 + "enabled=false\r\n"
                 + "configfile=autocraft\\config.ini\r\n"
+                + "\r\n"
+                + "[AutoDrop]\r\n"
+                + "# Inventory Handling NEED to be enabled first\r\n"
+                + "enabled=false\r\n"
+                + "mode=include                      # include, exclude or everything. Include: drop item IN the list. Exclude: drop item NOT IN the list\r\n"
+                + "items=                            # separate each item with comma ','\r\n"
+                + "# For the naming of the items, please see \r\n"
+                + "# https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs \r\n"
                 + "\r\n", Encoding.UTF8);
         }
 
