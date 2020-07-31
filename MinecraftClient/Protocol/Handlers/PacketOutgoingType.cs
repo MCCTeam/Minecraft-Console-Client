@@ -30,6 +30,7 @@ namespace MinecraftClient.Protocol.Handlers
         UseItem,
         ClickWindow,
         CloseWindow,
+        WindowConfirmation,
         PlayerBlockPlacement,
         CreativeInventoryAction,
         Animation,

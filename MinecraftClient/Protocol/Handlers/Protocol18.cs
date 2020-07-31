@@ -695,6 +695,18 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnSetSlot(windowID, slotID, item);
                         }
                         break;
+                    case PacketIncomingType.WindowConfirmation:
+                        if (handler.GetInventoryEnabled())
+                        {
+                            byte windowID = dataTypes.ReadNextByte(packetData);
+                            short actionID = dataTypes.ReadNextShort(packetData);
+                            bool accepted = dataTypes.ReadNextBool(packetData);
+                            if (!accepted)
+                            {
+                                SendWindowConfirmation(windowID, actionID, accepted);
+                            }
+                        }
+                        break;
                     case PacketIncomingType.ResourcePackSend:
                         string url = dataTypes.ReadNextString(packetData);
                         string hash = dataTypes.ReadNextString(packetData);
@@ -1728,6 +1740,22 @@ namespace MinecraftClient.Protocol.Handlers
                 catch (ObjectDisposedException) { return false; }
             }
             else { return false;  }
+        }
+
+        public bool SendWindowConfirmation(byte windowID, short actionID, bool accepted)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.Add(windowID);
+                packet.AddRange(dataTypes.GetShort(actionID));
+                packet.Add(accepted ? (byte)1 : (byte)0);
+                SendPacket(PacketOutgoingType.WindowConfirmation, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
         }
     }
 }

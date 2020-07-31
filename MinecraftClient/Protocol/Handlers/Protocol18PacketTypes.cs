@@ -47,6 +47,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x2E: return PacketIncomingType.CloseWindow;
                     case 0x2D: return PacketIncomingType.OpenWindow;
                     case 0x30: return PacketIncomingType.WindowItems;
+                    case 0x32: return PacketIncomingType.WindowConfirmation;
                     case 0x2F: return PacketIncomingType.SetSlot;
                     case 0x0E: return PacketIncomingType.SpawnEntity;
                     case 0x0F: return PacketIncomingType.SpawnLivingEntity;
@@ -94,6 +95,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x12: return PacketIncomingType.CloseWindow;
                     case 0x13: return PacketIncomingType.OpenWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
+                    case 0x11: return PacketIncomingType.WindowConfirmation;
                     case 0x16: return PacketIncomingType.SetSlot;
                     case 0x00: return PacketIncomingType.SpawnEntity;
                     case 0x03: return PacketIncomingType.SpawnLivingEntity;
@@ -141,6 +143,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x12: return PacketIncomingType.CloseWindow;
                     case 0x13: return PacketIncomingType.OpenWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
+                    case 0x11: return PacketIncomingType.WindowConfirmation;
                     case 0x16: return PacketIncomingType.SetSlot;
                     case 0x00: return PacketIncomingType.SpawnEntity;
                     case 0x03: return PacketIncomingType.SpawnLivingEntity;
@@ -188,6 +191,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x12: return PacketIncomingType.CloseWindow;
                     case 0x13: return PacketIncomingType.OpenWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
+                    case 0x11: return PacketIncomingType.WindowConfirmation;
                     case 0x16: return PacketIncomingType.SetSlot;
                     case 0x00: return PacketIncomingType.SpawnEntity;
                     case 0x03: return PacketIncomingType.SpawnLivingEntity;
@@ -235,6 +239,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x13: return PacketIncomingType.CloseWindow;
                     case 0x14: return PacketIncomingType.OpenWindow;
                     case 0x15: return PacketIncomingType.WindowItems;
+                    case 0x12: return PacketIncomingType.WindowConfirmation;
                     case 0x17: return PacketIncomingType.SetSlot;
                     case 0x00: return PacketIncomingType.SpawnEntity;
                     case 0x03: return PacketIncomingType.SpawnLivingEntity;
@@ -282,6 +287,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x13: return PacketIncomingType.CloseWindow;
                     case 0x2E: return PacketIncomingType.OpenWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
+                    case 0x12: return PacketIncomingType.WindowConfirmation;
                     case 0x16: return PacketIncomingType.SetSlot;
                     case 0x00: return PacketIncomingType.SpawnEntity;
                     case 0x03: return PacketIncomingType.SpawnLivingEntity;
@@ -329,6 +335,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x14: return PacketIncomingType.CloseWindow;
                     case 0x2F: return PacketIncomingType.OpenWindow;
                     case 0x15: return PacketIncomingType.WindowItems;
+                    case 0x13: return PacketIncomingType.WindowConfirmation;
                     case 0x17: return PacketIncomingType.SetSlot;
                     case 0x00: return PacketIncomingType.SpawnEntity;
                     case 0x03: return PacketIncomingType.SpawnLivingEntity;
@@ -375,6 +382,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x13: return PacketIncomingType.CloseWindow;
                     case 0x2E: return PacketIncomingType.OpenWindow;
                     case 0x14: return PacketIncomingType.WindowItems;
+                    case 0x12: return PacketIncomingType.WindowConfirmation;
                     case 0x16: return PacketIncomingType.SetSlot;
                     case 0x00: return PacketIncomingType.SpawnEntity;
                     case 0x02: return PacketIncomingType.SpawnLivingEntity;
@@ -437,6 +445,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.UseItem: throw new InvalidOperationException("Use item is not supported in protocol " + protocol);
                     case PacketOutgoingType.ClickWindow: return 0x0E;
                     case PacketOutgoingType.CloseWindow: return 0x0D;
+                    case PacketOutgoingType.WindowConfirmation: return 0x0f;
                     case PacketOutgoingType.PlayerBlockPlacement: return 0x08;
                     case PacketOutgoingType.CreativeInventoryAction: return 0x10;
                     case PacketOutgoingType.Animation: return 0x0A;
@@ -465,6 +474,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.UseItem: return 0x1D;
                     case PacketOutgoingType.ClickWindow: return 0x07;
                     case PacketOutgoingType.CloseWindow: return 0x08;
+                    case PacketOutgoingType.WindowConfirmation: return 0x05;
                     case PacketOutgoingType.PlayerBlockPlacement: return 0x1C;
                     case PacketOutgoingType.CreativeInventoryAction: return 0x18;
                     case PacketOutgoingType.Animation: return 0x1A;
@@ -493,6 +503,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.UseItem: return 0x20;
                     case PacketOutgoingType.ClickWindow: return 0x07;
                     case PacketOutgoingType.CloseWindow: return 0x08;
+                    case PacketOutgoingType.WindowConfirmation: return 0x06;
                     case PacketOutgoingType.PlayerBlockPlacement: return 0x1F;
                     case PacketOutgoingType.CreativeInventoryAction: return 0x1B;
                     case PacketOutgoingType.Animation: return 0x1D;
@@ -521,6 +532,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.UseItem: return 0x20;
                     case PacketOutgoingType.ClickWindow: return 0x07;
                     case PacketOutgoingType.CloseWindow: return 0x08;
+                    case PacketOutgoingType.WindowConfirmation: return 0x05;
                     case PacketOutgoingType.PlayerBlockPlacement: return 0x1F;
                     case PacketOutgoingType.CreativeInventoryAction: return 0x1B;
                     case PacketOutgoingType.Animation: return 0x1D;
@@ -549,6 +561,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.UseItem: return 0x2A;
                     case PacketOutgoingType.ClickWindow: return 0x08;
                     case PacketOutgoingType.CloseWindow: return 0x09;
+                    case PacketOutgoingType.WindowConfirmation: return 0x06;
                     case PacketOutgoingType.PlayerBlockPlacement: return 0x29;
                     case PacketOutgoingType.CreativeInventoryAction: return 0x24;
                     case PacketOutgoingType.Animation: return 0x27;
@@ -577,6 +590,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.UseItem: return 0x2D;
                     case PacketOutgoingType.ClickWindow: return 0x09;
                     case PacketOutgoingType.CloseWindow: return 0x0A;
+                    case PacketOutgoingType.WindowConfirmation: return 0x07;
                     case PacketOutgoingType.PlayerBlockPlacement: return 0x2C;
                     case PacketOutgoingType.CreativeInventoryAction: return 0x26;
                     case PacketOutgoingType.Animation: return 0x2A;
@@ -605,6 +619,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketOutgoingType.UseItem: return 0x2E;
                     case PacketOutgoingType.ClickWindow: return 0x09;
                     case PacketOutgoingType.CloseWindow: return 0x0A;
+                    case PacketOutgoingType.WindowConfirmation: return 0x07;
                     case PacketOutgoingType.PlayerBlockPlacement: return 0x2D;
                     case PacketOutgoingType.CreativeInventoryAction: return 0x27;
                     case PacketOutgoingType.Animation: return 0x2B;
