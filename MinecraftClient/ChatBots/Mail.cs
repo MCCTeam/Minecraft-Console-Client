@@ -791,6 +791,7 @@ namespace MinecraftClient.ChatBots
             iniSection["allow_selfmail"] = options.bools["allow_selfmail"].ToString();
             iniSection["allow_publiccommands"] = options.bools["allow_publiccommands"].ToString();
             iniSection["debug_msg"] = options.bools["debug_msg"].ToString();
+            iniSection["timeinutc"] = options.bools["timeinutc"].ToString();
 
             INIFile.WriteFile(options.path_setting, iniFileDict, "MailBot Settings");
 
@@ -824,6 +825,7 @@ namespace MinecraftClient.ChatBots
                 options.bools["allow_selfmail"] = bool.Parse(iniSection.Value["allow_selfmail"]);
                 options.bools["allow_publiccommands"] = bool.Parse(iniSection.Value["allow_publiccommands"]);
                 options.bools["debug_msg"] = bool.Parse(iniSection.Value["debug_msg"]);
+                options.bools["timeinutc"] = bool.Parse(iniSection.Value["timeinutc"]);
             }
 
             if (options.bools["debug_msg"])
