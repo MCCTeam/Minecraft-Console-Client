@@ -33,6 +33,7 @@ namespace MinecraftClient.Protocol.Handlers
         CloseWindow,
         OpenWindow,
         WindowItems,
+        WindowConfirmation,
         SetSlot,
         SpawnEntity,
         SpawnLivingEntity,
