@@ -15,6 +15,7 @@ namespace MinecraftClient.ChatBots
             Everything  // Everything will be dropped
         }
         private Mode dropMode = Mode.Include;
+        private bool enable = true;
 
         private int updateDebounce = 0;
         private int updateDebounceValue = 2;
@@ -53,6 +54,87 @@ namespace MinecraftClient.ChatBots
             return result.ToArray();
         }
 
+        public string CommandHandler(string cmd, string[] args)
+        {
+            if (args.Length > 0)
+            {
+                switch (args[0].ToLower())
+                {
+                    case "on":
+                        enable = true;
+                        inventoryUpdated = 0;
+                        OnUpdateFinish();
+                        return "AutoDrop enabled";
+                    case "off":
+                        enable = false;
+                        return "AutoDrop disabled";
+                    case "add":
+                        if (args.Length >= 2)
+                        {
+                            ItemType item;
+                            if (Enum.TryParse(args[1], true, out item))
+                            {
+                                itemList.Add(item);
+                                return "Added item " + item.ToString();
+                            }
+                            else
+                            {
+                                return "Incorrect item name " + args[1] + ". Please try again";
+                            }
+                        }
+                        else
+                        {
+                            return "Usage: add <item name>";
+                        }
+                    case "remove":
+                        if (args.Length >= 2)
+                        {
+                            ItemType item;
+                            if (Enum.TryParse(args[1], true, out item))
+                            {
+                                if (itemList.Contains(item))
+                                {
+                                    itemList.Remove(item);
+                                    return "Removed item " + item.ToString();
+                                }
+                                else
+                                {
+                                    return "Item not in the list";
+                                }
+                            }
+                            else
+                            {
+                                return "Incorrect item name " + args[1] + ". Please try again";
+                            }
+                        }
+                        else
+                        {
+                            return "Usage: remove <item name>";
+                        }
+                    case "list":
+                        if (itemList.Count > 0)
+                        {
+                            return "Total " + itemList.Count + " in the list:\n" + string.Join("\n", itemList);
+                        }
+                        else
+                        {
+                            return "No item in the list";
+                        }
+                    default:
+                        return GetHelp();
+                }
+            }
+            else
+            {
+                return GetHelp();
+            }
+        }
+
+        private string GetHelp()
+        {
+            return "AutoDrop ChatBot command. Available commands: on, off, add, remove, list";
+        }
+
         public override void Initialize()
         {
             if (!GetInventoryEnabled())
@@ -60,7 +142,8 @@ namespace MinecraftClient.ChatBots
                 LogToConsole("Inventory handling is disabled. Unloading...");
                 UnloadBot();
             }
-
+            RegisterChatBotCommand("autodrop", "AutoDrop ChatBot command", CommandHandler);
+            RegisterChatBotCommand("ad", "AutoDrop ChatBot command alias", CommandHandler);
         }
 
         public override void Update()
@@ -77,8 +160,11 @@ namespace MinecraftClient.ChatBots
 
         public override void OnInventoryUpdate(int inventoryId)
         {
-            updateDebounce = updateDebounceValue;
-            inventoryUpdated = inventoryId;
+            if (enable)
+            {
+                updateDebounce = updateDebounceValue;
+                inventoryUpdated = inventoryId;
+            }
         }
 
         private void OnUpdateFinish()
@@ -117,6 +203,7 @@ namespace MinecraftClient.ChatBots
                         WindowAction(inventoryUpdated, item.Key, WindowActionType.DropItemStack);
                     }
                 }
+                inventoryUpdated = -1;
             }
         }
     }
