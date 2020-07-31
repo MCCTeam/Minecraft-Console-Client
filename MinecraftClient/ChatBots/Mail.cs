@@ -12,20 +12,21 @@ namespace MinecraftClient.ChatBots
     [Serializable]
     public class Options
     {
-        public string path_mail { get; set; }
-        public string path_setting { get; set; }
         public string botname { get; set; }
         public int timevar_100ms { get; set; }
         public Dictionary<string, bool> bools { get; set; }
         public Dictionary<string, int> integer { get; set; }
+        public Dictionary<string, string> path { get; set; }
         public string[] ignored = new string[0];
         public DateTime lastReset { get; set; }
 
 
         public Options()
         {
-            path_mail = AppDomain.CurrentDomain.BaseDirectory + "MailDatabase.ini";            // Path where the mail file is saved. You can also apply a normal path like @"C:\Users\SampleUser\Desktop"
-            path_setting = AppDomain.CurrentDomain.BaseDirectory + "MailBotSettings.ini";       // Path where the settings are saved
+            path = new Dictionary<string, string>();
+            path.Add("path_mail", AppDomain.CurrentDomain.BaseDirectory + "MailDatabase.ini");
+            path.Add("path_setting", AppDomain.CurrentDomain.BaseDirectory + "MailBotSettings.ini");
+            path.Add("path_ignored", AppDomain.CurrentDomain.BaseDirectory + "IgnoredPlayers.ini");
 
             integer = new Dictionary<string, int>();
             integer.Add("interval_sendmail", 100);                                      // Intervall atempting to send mails / do a respawn [in 100 ms] -> eg. 100 * 100ms = 10 sec
@@ -128,7 +129,7 @@ namespace MinecraftClient.ChatBots
         {
             LogToConsole("Join time: " + getTime().ToString());
 
-            if (!File.Exists(options.path_setting))
+            if (!File.Exists(options.path["path_setting"]))
             {
                 serializeOptions();
             }
@@ -140,6 +141,7 @@ namespace MinecraftClient.ChatBots
             options.bools["debug_msg"] = Settings.DebugMessages;
             options.lastReset = getTime();
             options.botname = GetUsername();
+            deserializeIgnored();
             update_and_send_mails();
         }
 
@@ -381,11 +383,11 @@ namespace MinecraftClient.ChatBots
         {
             if (args.Length > 1)
             {
-                options.path_mail = AppDomain.CurrentDomain.BaseDirectory + args[1];
+                options.path["path_mail"] = AppDomain.CurrentDomain.BaseDirectory + args[1];
                 serializeOptions();
                 deserializeOptions();
 
-                return "Changed mailpath to: " + (options.path_mail).ToString();
+                return "Changed mailpath to: " + (options.path["path_mail"]).ToString();
             }
             else
             {
@@ -400,11 +402,11 @@ namespace MinecraftClient.ChatBots
         {
             if (args.Length > 1)
             {
-                options.path_setting = AppDomain.CurrentDomain.BaseDirectory + args[1];
+                options.path["path_setting"] = AppDomain.CurrentDomain.BaseDirectory + args[1];
                 serializeOptions();
                 deserializeOptions();
 
-                return "Changed settingsspath to: " + options.path_setting;
+                return "Changed settingsspath to: " + options.path["path_setting"];
             }
             else
             {
@@ -450,9 +452,9 @@ namespace MinecraftClient.ChatBots
                 + ";\n maxsavedmails_player: "
                 + (options.integer["maxsavedmails_player"]).ToString()
                 + ";\n messagepath: "
-                + options.path_mail
+                + options.path["path_mail"]
                 + ";\n settingspath: "
-                + options.path_setting
+                + options.path["path_setting"]
                 + "\n timeinutc: "
                 + (options.bools["timeinutc"]).ToString();
         }
@@ -487,10 +489,10 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string addIgnored(string cmd, string[] args)
         {
-            if (args.Length > 1 && IsValidName(args[1]))
+            if (args.Length > 1 && IsValidName(args[1]) && !options.ignored.Contains(args[1].ToLower()))
             {
                 options.ignored = addMember(args[1], options.ignored);
-                serializeOptions();
+                serializeIgnored();
 
                 return "Added " + args[1] + " as ignored!";
             }
@@ -505,10 +507,10 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public string removeIgnored(string cmd, string[] args)
         {
-            if (args.Length > 1 && IsValidName(args[1]))
+            if (args.Length > 1 && IsValidName(args[1]) && options.ignored.Contains(args[1].ToLower()))
             {
                 options.ignored = removeMember(args[1], options.ignored);
-                serializeOptions();
+                serializeIgnored();
 
                 return "Removed " + args[1] + " as ignored!";
             }
@@ -631,22 +633,22 @@ namespace MinecraftClient.ChatBots
 
                 if (options.bools["debug_msg"])
                 {
-                    LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
+                    LogToConsole("Saved mails to File!" + " Location: " + options.path["path_mail"] + " Time: " + getTime().ToString());
                 }
             }
             catch (Exception) // If, by any reason, the file couldn't be safed:
             {
                 
-                options.path_mail = AppDomain.CurrentDomain.BaseDirectory + "MailDatabase.ini";
+                options.path["path_mail"] = AppDomain.CurrentDomain.BaseDirectory + "MailDatabase.ini";
                 serializeOptions();
 
-                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
+                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path["path_mail"] + " Time: " + getTime().ToString());
 
                 serializeMail(msg_array);
 
                 if (options.bools["debug_msg"])
                 {
-                    LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
+                    LogToConsole("Saved mails to File!" + " Location: " + options.path["path_mail"] + " Time: " + getTime().ToString());
                 }
             }
         }
@@ -662,17 +664,17 @@ namespace MinecraftClient.ChatBots
             {
                 if (options.bools["debug_msg"])
                 {
-                    LogToConsole("Loaded mails from File!" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
+                    LogToConsole("Loaded mails from File!" + " Location: " + options.path["path_mail"] + " Time: " + getTime().ToString());
                 }
 
                 return deserializeMail();
             }
             catch (Exception)
             {
-                options.path_mail = AppDomain.CurrentDomain.BaseDirectory + "MailDatabase.ini";
+                options.path["path_mail"] = AppDomain.CurrentDomain.BaseDirectory + "MailDatabase.ini";
                 serializeOptions();
 
-                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
+                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path["path_mail"] + " Time: " + getTime().ToString());
                 return logged_msg;
             }
         }
@@ -776,8 +778,8 @@ namespace MinecraftClient.ChatBots
             
             Dictionary<string, string> iniSection = new Dictionary<string, string>();
             iniFileDict["Settings"] = iniSection;
-            iniSection["path_mail"] = options.path_mail;
-            iniSection["path_setting"] = options.path_setting;
+            iniSection["path_mail"] = options.path["path_mail"];
+            iniSection["path_setting"] = options.path["path_setting"];
 
             iniSection["interval_sendmail"] = options.integer["interval_sendmail"].ToString();
             iniSection["maxsavedmails"] = options.integer["maxsavedmails"].ToString();
@@ -793,11 +795,11 @@ namespace MinecraftClient.ChatBots
             iniSection["debug_msg"] = options.bools["debug_msg"].ToString();
             iniSection["timeinutc"] = options.bools["timeinutc"].ToString();
 
-            INIFile.WriteFile(options.path_setting, iniFileDict, "MailBot Settings");
+            INIFile.WriteFile(options.path["path_setting"], iniFileDict, "MailBot Settings");
 
             if(options.bools["debug_msg"])
             {
-                LogToConsole("Saved options to File! " + "Location: " + options.path_setting + " Time: " + getTime().ToString());
+                LogToConsole("Saved options to File! " + "Location: " + options.path["path_setting"] + " Time: " + getTime().ToString());
             }
         }
 
@@ -806,31 +808,34 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void deserializeOptions()
         {
-            Dictionary<string, Dictionary<string, string>> iniFileDict = INIFile.ParseFile(options.path_setting);
-            
-            foreach (KeyValuePair<string, Dictionary<string, string>> iniSection in iniFileDict)
+            Dictionary<string, Dictionary<string, string>> iniFileDict = INIFile.ParseFile(options.path["path_setting"]);
+            try
             {
-                options.path_mail = iniSection.Value["path_mail"];
-                options.path_setting = iniSection.Value["path_setting"];
+                foreach (KeyValuePair<string, Dictionary<string, string>> iniSection in iniFileDict)
+                {
+                    options.path["path_mail"] = iniSection.Value["path_mail"];
+                    options.path["path_setting"] = iniSection.Value["path_setting"];
 
-                options.integer["interval_sendmail"] = Int32.Parse(iniSection.Value["interval_sendmail"]);
-                options.integer["maxsavedmails"] = Int32.Parse(iniSection.Value["maxsavedmails"]);
-                options.integer["maxsavedmails_player"] = Int32.Parse(iniSection.Value["maxsavedmails_player"]);
-                options.integer["daystosavemsg"] = Int32.Parse(iniSection.Value["daystosavemsg"]);
-                options.integer["maxcharsinmsg"] = Int32.Parse(iniSection.Value["maxcharsinmsg"]);
+                    options.integer["interval_sendmail"] = Int32.Parse(iniSection.Value["interval_sendmail"]);
+                    options.integer["maxsavedmails"] = Int32.Parse(iniSection.Value["maxsavedmails"]);
+                    options.integer["maxsavedmails_player"] = Int32.Parse(iniSection.Value["maxsavedmails_player"]);
+                    options.integer["daystosavemsg"] = Int32.Parse(iniSection.Value["daystosavemsg"]);
+                    options.integer["maxcharsinmsg"] = Int32.Parse(iniSection.Value["maxcharsinmsg"]);
 
-                options.bools["auto_respawn"] = bool.Parse(iniSection.Value["auto_respawn"]);
-                options.bools["allow_sendmail"] = bool.Parse(iniSection.Value["allow_sendmail"]);
-                options.bools["allow_receivemail"] = bool.Parse(iniSection.Value["allow_receivemail"]);
-                options.bools["allow_selfmail"] = bool.Parse(iniSection.Value["allow_selfmail"]);
-                options.bools["allow_publiccommands"] = bool.Parse(iniSection.Value["allow_publiccommands"]);
-                options.bools["debug_msg"] = bool.Parse(iniSection.Value["debug_msg"]);
-                options.bools["timeinutc"] = bool.Parse(iniSection.Value["timeinutc"]);
+                    options.bools["auto_respawn"] = bool.Parse(iniSection.Value["auto_respawn"]);
+                    options.bools["allow_sendmail"] = bool.Parse(iniSection.Value["allow_sendmail"]);
+                    options.bools["allow_receivemail"] = bool.Parse(iniSection.Value["allow_receivemail"]);
+                    options.bools["allow_selfmail"] = bool.Parse(iniSection.Value["allow_selfmail"]);
+                    options.bools["allow_publiccommands"] = bool.Parse(iniSection.Value["allow_publiccommands"]);
+                    options.bools["debug_msg"] = bool.Parse(iniSection.Value["debug_msg"]);
+                    options.bools["timeinutc"] = bool.Parse(iniSection.Value["timeinutc"]);
+                }
             }
+            catch (Exception) { serializeOptions(); }
 
             if (options.bools["debug_msg"])
             {
-                LogToConsole("Loaded options from File! " + "Location: " + options.path_setting + " Time: " + getTime().ToString());
+                LogToConsole("Loaded options from File! " + "Location: " + options.path["path_setting"] + " Time: " + getTime().ToString());
             }
         }
 
@@ -851,7 +856,7 @@ namespace MinecraftClient.ChatBots
                 iniSection["anonymous"] = msg.isAnonymous().ToString();
                 iniFileDict["mail" + msgNum] = iniSection;
             }
-            INIFile.WriteFile(options.path_mail, iniFileDict, "Mail Database");
+            INIFile.WriteFile(options.path["path_mail"], iniFileDict, "Mail Database");
             
         }
 
@@ -860,8 +865,8 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public Message[] deserializeMail()
         {
-            Dictionary<string, Dictionary<string, string>> iniFileDict = INIFile.ParseFile(options.path_mail);
-            List<Message> messages = new List<Message>();
+            Dictionary<string, Dictionary<string, string>> iniFileDict = INIFile.ParseFile(options.path["path_mail"]);
+            List <Message> messages = new List<Message>();
             foreach (KeyValuePair<string, Dictionary<string, string>> iniSection in iniFileDict)
             {
                 //iniSection.Key is "mailXX" but we don't need it here
@@ -873,6 +878,34 @@ namespace MinecraftClient.ChatBots
                 messages.Add(new Message(sender, destination, content, anonymous, timestamp)); //TODO timestamp
             }
             return messages.ToArray();
+        }
+
+        public void deserializeIgnored()
+        {
+            try
+            {
+                foreach (string line in File.ReadAllLines(options.path["path_ignored"]))
+                {
+                    if (line != "#Ignored Players")
+                    {
+                        options.ignored = addMember(line, options.ignored);
+                    }
+                }
+            }
+            catch (Exception) 
+            {
+                LogToConsole("No ignored list found!");
+            }
+        }
+
+        public void serializeIgnored()
+        {
+            string file = "#Ignored Players";
+            foreach (string player in options.ignored)
+            {
+                file += "\n" + player;
+            }
+            File.WriteAllText(options.path["path_ignored"], file);
         }
 
         public DateTime getTime()
