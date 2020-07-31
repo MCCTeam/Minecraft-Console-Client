@@ -36,11 +36,12 @@ namespace MinecraftClient.ChatBots
 
             bools = new Dictionary<string, bool>();
             bools.Add("auto_respawn", true);                                            // Toggle the internal autorespawn
-            bools.Add("allow_sendmail", true);                                         // Enable the continious mail sending
-            bools.Add("allow_receivemail", true);                                      // Enable the bot reacting to command
+            bools.Add("allow_sendmail", true);                                          // Enable the continious mail sending
+            bools.Add("allow_receivemail", true);                                       // Enable the bot reacting to command
             bools.Add("allow_selfmail", true);                                          // Enable to send mails to yourself (mainly for test reason)
             bools.Add("allow_publiccommands", false);                                   // Should the bot accept commands from normal chat?
             bools.Add("debug_msg", Settings.DebugMessages);                             // Disable debug Messages for a cleaner console
+            bools.Add("timeinutc", true);                                               // Should the time be calculated in utc
 
             timevar_100ms = 0;
             lastReset = DateTime.UtcNow;
@@ -125,7 +126,7 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void AfterGameJoined()
         {
-            LogToConsole("Join time: " + DateTime.UtcNow + " UTC.");
+            LogToConsole("Join time: " + getTime().ToString());
 
             if (!File.Exists(options.path_setting))
             {
@@ -137,7 +138,7 @@ namespace MinecraftClient.ChatBots
             }
 
             options.bools["debug_msg"] = Settings.DebugMessages;
-            options.lastReset = DateTime.UtcNow;
+            options.lastReset = getTime();
             options.botname = GetUsername();
             update_and_send_mails();
         }
@@ -418,7 +419,7 @@ namespace MinecraftClient.ChatBots
         {
             options.timevar_100ms = 0;
 
-            return "Resetted Timer. At" + DateTime.UtcNow + " UTC";
+            return "Resetted Timer. At" + getTime().ToString();
         }
 
         /// <summary>
@@ -451,7 +452,9 @@ namespace MinecraftClient.ChatBots
                 + ";\n messagepath: "
                 + options.path_mail
                 + ";\n settingspath: "
-                + options.path_setting;
+                + options.path_setting
+                + "\n timeinutc: "
+                + (options.bools["timeinutc"]).ToString();
         }
 
         /// <summary>
@@ -590,7 +593,7 @@ namespace MinecraftClient.ChatBots
         {
             Message[] msg_fromFile = getMailsFromFile();                                // Deserialize File.
 
-            LogToConsole("Looking for mails to send: " + DateTime.UtcNow + " UTC");     // Can not be disabled to indicate, that the script is still running. 
+            LogToConsole("Looking for mails to send: " + getTime().ToString());     // Can not be disabled to indicate, that the script is still running. 
             msg_fromFile = DeliverMail(msg_fromFile);                                   //  Try sending all mails in the array.
             logged_msg = DeliverMail(logged_msg);                                       // Sends all messages in chace to minimize the amount of data to safe.
 
@@ -628,7 +631,7 @@ namespace MinecraftClient.ChatBots
 
                 if (options.bools["debug_msg"])
                 {
-                    LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
+                    LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
                 }
             }
             catch (Exception) // If, by any reason, the file couldn't be safed:
@@ -637,13 +640,13 @@ namespace MinecraftClient.ChatBots
                 options.path_mail = AppDomain.CurrentDomain.BaseDirectory + "MailDatabase.ini";
                 serializeOptions();
 
-                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
+                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
 
                 serializeMail(msg_array);
 
                 if (options.bools["debug_msg"])
                 {
-                    LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
+                    LogToConsole("Saved mails to File!" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
                 }
             }
         }
@@ -659,7 +662,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (options.bools["debug_msg"])
                 {
-                    LogToConsole("Loaded mails from File!" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
+                    LogToConsole("Loaded mails from File!" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
                 }
 
                 return deserializeMail();
@@ -669,7 +672,7 @@ namespace MinecraftClient.ChatBots
                 options.path_mail = AppDomain.CurrentDomain.BaseDirectory + "MailDatabase.ini";
                 serializeOptions();
 
-                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + DateTime.UtcNow + " UTC");
+                LogToConsole("Directory or File not Found! Path changed to:" + " Location: " + options.path_mail + " Time: " + getTime().ToString());
                 return logged_msg;
             }
         }
@@ -687,7 +690,7 @@ namespace MinecraftClient.ChatBots
                 msg_array[i] = tmp[i];
             }
 
-            msg_array[msg_array.Length - 1] = new Message(sender, destination, content, anonymous, DateTime.UtcNow);
+            msg_array[msg_array.Length - 1] = new Message(sender, destination, content, anonymous, getTime());
 
             if (options.bools["debug_msg"])
             {
@@ -754,7 +757,7 @@ namespace MinecraftClient.ChatBots
         {
             for (int i = 0; i < msg_array.Length; i++)
             {
-                if ((DateTime.UtcNow - msg_array[i].GetTimeStamp()).Days > options.integer["daystosavemsg"])
+                if ((getTime() - msg_array[i].GetTimeStamp()).Days > options.integer["daystosavemsg"])
                 {
                     msg_array[i].setDelivered();
                 }
@@ -793,7 +796,7 @@ namespace MinecraftClient.ChatBots
 
             if(options.bools["debug_msg"])
             {
-                LogToConsole("Saved options to File! " + "Location: " + options.path_setting + " Time: " + DateTime.UtcNow + " UTC");
+                LogToConsole("Saved options to File! " + "Location: " + options.path_setting + " Time: " + getTime().ToString());
             }
         }
 
@@ -825,7 +828,7 @@ namespace MinecraftClient.ChatBots
 
             if (options.bools["debug_msg"])
             {
-                LogToConsole("Loaded options from File! " + "Location: " + options.path_setting + " Time: " + DateTime.UtcNow + " UTC");
+                LogToConsole("Loaded options from File! " + "Location: " + options.path_setting + " Time: " + getTime().ToString());
             }
         }
 
@@ -868,6 +871,12 @@ namespace MinecraftClient.ChatBots
                 messages.Add(new Message(sender, destination, content, anonymous, timestamp)); //TODO timestamp
             }
             return messages.ToArray();
+        }
+
+        public DateTime getTime()
+        {
+            if (options.bools["timeinutc"]) { return DateTime.UtcNow; }
+            else { return DateTime.Now; }
         }
     }
 }
