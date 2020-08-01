@@ -1,5 +1,6 @@
 //MCCScript 1.0
 //using System.Threading.Tasks;
+//install https://github.com/Nekiplay/Minecraft-Console-Client-Scripts/releases/download/1.0/Newtonsoft.Json.dll Newtonsoft.Json.dll
 //dll Newtonsoft.Json.dll
 //using Newtonsoft.Json;
 //using Newtonsoft.Json.Linq;
