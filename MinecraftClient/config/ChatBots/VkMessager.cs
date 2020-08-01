@@ -1,5 +1,12 @@
 //MCCScript 1.0
 //using System.Threading.Tasks;
+//dll Newtonsoft.Json.dll
+//using Newtonsoft.Json;
+//using Newtonsoft.Json.Linq;
+
+//==== INFO START ====
+// Download Newtonsoft.Json.dll and install it into the program folder
+//==== INFO END  ====
 
 //==== CONFIG START ====
 string vkToken = "";
