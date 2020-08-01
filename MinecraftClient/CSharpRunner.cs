@@ -8,6 +8,8 @@ using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Threading;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
+using System.Net;
 
 namespace MinecraftClient
 {
@@ -52,11 +54,17 @@ namespace MinecraftClient
                     List<string> extensions = new List<string>();
                     List<string> libs = new List<string>();
                     List<string> dlls = new List<string>();
+                    List<string> downloaddlls = new List<string>();
                     foreach (string line in lines)
                     {
                         if (line.StartsWith("//using"))
                         {
                             libs.Add(line.Replace("//", "").Trim());
+                        }
+                        else if (line.StartsWith("//install"))
+                        {
+                            string fullstring = line.Replace("//install ", "").Trim();
+                            downloaddlls.Add(fullstring);
                         }
                         else if (line.StartsWith("//dll"))
                         {
@@ -71,7 +79,22 @@ namespace MinecraftClient
                             script.Add(line);
                         else extensions.Add(line);
                     }
-
+                    foreach (string data in downloaddlls)
+                    {
+                        Match regex = Regex.Match(data, "(.*) (.*)");
+                        string link = regex.Groups[1].Value;
+                        string path = regex.Groups[2].Value;
+                        if (link != string.Empty && path != string.Empty)
+                        {
+                            if (!File.Exists(path))
+                            {
+                                using (WebClient web = new WebClient())
+                                {
+                                    web.DownloadFile(link, path);
+                                }
+                            }
+                        }
+                    }
                     //Add return statement if missing
                     if (script.All(line => !line.StartsWith("return ") && !line.Contains(" return ")))
                         script.Add("return null;");
