@@ -91,6 +91,7 @@ namespace MinecraftClient
                                 using (WebClient web = new WebClient())
                                 {
                                     web.DownloadFile(link, path);
+                                    web.Dispose();
                                 }
                             }
                         }
