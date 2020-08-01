@@ -1,5 +1,12 @@
 //MCCScript 1.0
 //using System.Threading.Tasks;
+//dll Newtonsoft.Json.dll
+//using Newtonsoft.Json;
+//using Newtonsoft.Json.Linq;
+
+//==== INFO START ====
+// Download Newtonsoft.Json.dll and install it into the program folder Link: https://www.newtonsoft.com/json
+//==== INFO END  ====
 
 //==== CONFIG START ====
 string vkToken = "";
@@ -124,6 +131,29 @@ internal class VkLongPoolClient
 	}
 		
 	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text + "&keyboard=" + keyboard);
+    }
+    
+    public void SendMessageAndDocument(string chatId, string text, string file, string title, string keyboard = "", int random_id = 0)
+    {
+		if (random_id == 0)
+		{
+			random_id = lastrand;
+			lastrand++;
+		}
+		var c = new WebClient();
+		//
+		var u = CallVkMethod("docs.getMessagesUploadServer", "peer_id=" + chatId + "&type=doc");
+		var j = JsonConvert.DeserializeObject(u) as JObject;
+		//
+		var u2 = j["response"]["upload_url"].ToString();
+		var r2 = Encoding.UTF8.GetString(c.UploadFile(u2, "POST", file));
+		var j2 = JsonConvert.DeserializeObject(r2) as JObject;
+		//
+		var r3 = CallVkMethod("docs.save", "&file=" + j2["file"]
+				+ "&title=" + title);
+		var j3 = JsonConvert.DeserializeObject(r3) as JObject;
+		var at = "doc"+ j3["response"]["doc"]["owner_id"].ToString() + "_" + j3["response"]["doc"]["id"].ToString();
+		CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text + "&keyboard=" + keyboard + "&attachment=" + at);
     }
 	
     public void SendSticker(string chatId, int sticker_id, int random_id = 0)
