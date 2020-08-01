@@ -5,7 +5,7 @@
 //using Newtonsoft.Json.Linq;
 
 //==== INFO START ====
-// Download Newtonsoft.Json.dll and install it into the program folder
+// Download Newtonsoft.Json.dll and install it into the program folder Link: https://www.newtonsoft.com/json
 //==== INFO END  ====
 
 //==== CONFIG START ====
