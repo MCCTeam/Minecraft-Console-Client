@@ -132,6 +132,35 @@ internal class VkLongPoolClient
 		
 	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text + "&keyboard=" + keyboard);
     }
+    
+    public void SendMessageAndDocument(string chatId, string text, string file, string title, string keyboard = "", int random_id = 0)
+    {
+		if (random_id == 0)
+		{
+			random_id = lastrand;
+			lastrand++;
+		}
+		var c = new WebClient();
+		//
+		var u = CallVkMethod("docs.getMessagesUploadServer", "peer_id=" + chatId + "&type=doc");
+		var j = JsonConvert.DeserializeObject(u) as JObject;
+		//
+		var u2 = j["response"]["upload_url"].ToString();
+		Console.WriteLine(u2);
+		var r2 = Encoding.UTF8.GetString(c.UploadFile(u2, "POST", file));
+		var j2 = JsonConvert.DeserializeObject(r2) as JObject;
+		//
+		Console.WriteLine(j2["file"]);
+		var r3 = CallVkMethod("docs.save", "&file=" + j2["file"]
+				+ "&title=" + title);
+				Console.WriteLine(r3);
+		var j3 = JsonConvert.DeserializeObject(r3) as JObject;
+		Console.WriteLine(j3.ToString());
+		var at = "doc"+ j3["response"]["doc"]["owner_id"].ToString() + "_" + j3["response"]["doc"]["id"].ToString();
+		Console.WriteLine("Done");
+		Console.WriteLine(at);
+		CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text + "&keyboard=" + keyboard + "&attachment=" + at);
+    }
 	
     public void SendSticker(string chatId, int sticker_id, int random_id = 0)
     {
