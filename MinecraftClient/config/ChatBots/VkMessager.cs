@@ -115,15 +115,15 @@ internal class VkLongPoolClient
 	lastrand = LastTs + 1;
     }
 
-    public void SendMessage(string chatId, string text, int random_id = 0)
+    public void SendMessage(string chatId, string text, string keyboard = "", int random_id = 0)
     {
 	if (random_id == 0)
 	{
-	    random_id = lastrand;
-	    lastrand++;
+		random_id = lastrand;
+		lastrand++;
 	}
 		
-	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text);
+	CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text + "&keyboard=" + keyboard);
     }
 	
     public void SendSticker(string chatId, int sticker_id, int random_id = 0)
@@ -143,6 +143,51 @@ internal class VkLongPoolClient
 		CallVkMethod("groups.enableOnline", "group_id=" + BotCommunityId);
 	else
 		CallVkMethod("groups.disableOnline", "group_id=" + BotCommunityId);
+    }
+    
+    public void KickChatUser(string chat_id, string user_id)
+    {
+	CallVkMethod("messages.removeChatUser", "chat_id=" + chat_id + "&user_id=" + user_id + "&member_id=" + user_id);
+    }
+	
+    public class Keyboard
+    {
+        public bool one_time = false;
+        public List<List<object>> buttons = new List<List<object>>();
+        public Keyboard(bool one_time2)
+        {
+			one_time = one_time2;
+        } 
+		
+	public void AddButton(string label, string payload, string color)
+	{
+		buttons button = new Buttons(label, payload, color);
+            	buttons.Add( new List<object>() { button });
+	}
+		
+	public class Buttons
+	{
+		public Action action;
+		public string color;
+		public Buttons(string labe11, string payload1, string color2)
+		{
+			action = new Action(labe11, payload1);
+			color = color2;
+		} 
+			
+		public class Action
+		{
+			public string type;
+			public string payload;
+			public string label;
+			public Action(string label3, string payload3)
+			{
+				type = "text";
+				payload = "{\"button\": \"" + payload3 + "\"}";
+				label = label3;
+			}
+		}
+	}
     }
 	
     private void StartLongPoolAsync()
