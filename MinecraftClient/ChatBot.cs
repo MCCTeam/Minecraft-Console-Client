@@ -35,6 +35,7 @@ namespace MinecraftClient
         public void SetHandler(McClient handler) { this._handler = handler; }
         protected void SetMaster(ChatBot master) { this.master = master; }
         protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
+        protected void UnLoadBot(ChatBot bot) { Handler.BotUnLoad(bot); }
         private McClient _handler = null;
         private ChatBot master = null;
         private List<string> registeredPluginChannels = new List<String>();
