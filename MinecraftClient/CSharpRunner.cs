@@ -107,6 +107,16 @@ namespace MinecraftClient
                                 .Select(a => a.Location).ToArray());
                     parameters.CompilerOptions = "/t:library";
                     parameters.GenerateInMemory = true;
+                    if (Directory.Exists("libs"))
+                    {
+                        DirectoryInfo dir = new DirectoryInfo(@"libs\");
+                        foreach (var item in dir.GetFiles())
+                        {
+                            if (item.Extension == ".dll")
+                                parameters.ReferencedAssemblies.Add(item.FullName);
+
+                        }
+                    }
                     CompilerResults result = compiler.CompileAssemblyFromSource(parameters, code);
 
                     //Process compile warnings and errors
