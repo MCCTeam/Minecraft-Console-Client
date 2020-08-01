@@ -150,15 +150,11 @@ internal class VkLongPoolClient
 		var r2 = Encoding.UTF8.GetString(c.UploadFile(u2, "POST", file));
 		var j2 = JsonConvert.DeserializeObject(r2) as JObject;
 		//
-		Console.WriteLine(j2["file"]);
 		var r3 = CallVkMethod("docs.save", "&file=" + j2["file"]
 				+ "&title=" + title);
 				Console.WriteLine(r3);
 		var j3 = JsonConvert.DeserializeObject(r3) as JObject;
-		Console.WriteLine(j3.ToString());
 		var at = "doc"+ j3["response"]["doc"]["owner_id"].ToString() + "_" + j3["response"]["doc"]["id"].ToString();
-		Console.WriteLine("Done");
-		Console.WriteLine(at);
 		CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + random_id + "&message=" + text + "&keyboard=" + keyboard + "&attachment=" + at);
     }
 	
