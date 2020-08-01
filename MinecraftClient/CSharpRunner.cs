@@ -51,11 +51,16 @@ namespace MinecraftClient
                     List<string> script = new List<string>();
                     List<string> extensions = new List<string>();
                     List<string> libs = new List<string>();
+                    List<string> dlls = new List<string>();
                     foreach (string line in lines)
                     {
                         if (line.StartsWith("//using"))
                         {
                             libs.Add(line.Replace("//", "").Trim());
+                        }
+                        else if (line.StartsWith("//dll"))
+                        {
+                            dlls.Add(line.Replace("//dll ", "").Trim());
                         }
                         else if (line.StartsWith("//MCCScript"))
                         {
@@ -107,16 +112,7 @@ namespace MinecraftClient
                                 .Select(a => a.Location).ToArray());
                     parameters.CompilerOptions = "/t:library";
                     parameters.GenerateInMemory = true;
-                    if (Directory.Exists("libs"))
-                    {
-                        DirectoryInfo dir = new DirectoryInfo(@"libs\");
-                        foreach (var item in dir.GetFiles())
-                        {
-                            if (item.Extension == ".dll")
-                                parameters.ReferencedAssemblies.Add(item.FullName);
-
-                        }
-                    }
+                    parameters.ReferencedAssemblies.AddRange(dlls.ToArray());
                     CompilerResults result = compiler.CompileAssemblyFromSource(parameters, code);
 
                     //Process compile warnings and errors
