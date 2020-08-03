@@ -279,8 +279,8 @@ namespace MinecraftClient.ChatBots
                 ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
 
                 // Process at most 3 mails at a time to avoid spamming. Other mails will be processed on next mail send
-                HashSet<string> onlinePlayer = new HashSet<string>(GetOnlinePlayers());
-                foreach (Mail mail in mailDatabase.Where(mail => !mail.Delivered && onlinePlayer.Contains(mail.Recipient)).Take(3))
+                HashSet<string> onlinePlayer = new HashSet<string>(GetOnlinePlayers().Select(s => s.ToLowerInvariant()).ToArray());
+                foreach (Mail mail in mailDatabase.Where(mail => !mail.Delivered && onlinePlayer.Contains(mail.Recipient.ToLower())).Take(3))
                 {
                     string sender = mail.Anonymous ? "Anonymous" : mail.Sender;
                     SendPrivateMessage(mail.Recipient, sender + " mailed: " + mail.Content);
