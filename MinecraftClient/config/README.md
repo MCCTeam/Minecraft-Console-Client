@@ -253,6 +253,30 @@ Steps for using this bot:
 4. Do `/useitem` and you should see "threw a fishing rod"
 5. To stop fishing, do `/useitem` again
 
+Using the Mailer
+------
+
+The Mailer bot can store and relay mails much like Essential's /mail command.
+
+* /tell <Bot> mail [RECIPIENT] [MESSAGE]: Save your message for future delivery
+* /tell <Bot> tellonym [RECIPIENT] [MESSAGE]: Same, but the recipient will receive an anonymous mail
+
+The bot will automatically deliver the mail when the recipient is online.
+The bot also offers a /mailer command from the MCC command prompt:
+
+* /mailer getmails: Show all mails in the console
+* /mailer addignored [NAME]: Prevent a specific player from sending mails
+* /mailer removeignored [NAME]: Lift the mailer restriction for this player
+* /mailer getignored: Show all ignored players
+
+**CAUTION:** The bot identifies players by their name (Not by UUID!).
+A nickname plugin or a minecraft rename may cause mails going to the wrong player!
+Never write something to the bot you wouldn't say in the normal chat (You have been warned!)
+
+**Mailer Network:** The Mailer bot can relay messages between servers.
+To set up a network of two or more bots, launch several instances with the bot activated and the same database.
+If you launch two instances from one .exe they should syncronize automatically to the same file.
+
 Disclaimer
 ------
 
