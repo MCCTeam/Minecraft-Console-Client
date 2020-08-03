@@ -1192,6 +1192,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get max length for chat messages
+        /// </summary>
+        /// <returns>Max length, in characters</returns>
+        protected int GetMaxChatMessageLength()
+        {
+            return Handler.GetMaxChatMessageLength();
+        }
+
+        /// <summary>
         /// Command runner definition.
         /// Returned string will be the output of the command
         /// </summary>

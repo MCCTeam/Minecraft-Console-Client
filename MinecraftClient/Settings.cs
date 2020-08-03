@@ -167,10 +167,15 @@ namespace MinecraftClient
         //AutoCraft
         public static bool AutoCraft_Enabled = false;
         public static string AutoCraft_configFile = @"autocraft\config.ini";
-
         
-        //Mail
-        public static bool Mail_Enabled = false;
+        //Mailer
+        public static bool Mailer_Enabled = false;
+        public static string Mailer_DatabaseFile = "MailerDatabase.ini";
+        public static string Mailer_IgnoreListFile = "MailerIgnoreList.ini";
+        public static bool Mailer_PublicInteractions = false;
+        public static int Mailer_MaxMailsPerPlayer = 10;
+        public static int Mailer_MaxDatabaseSize = 10000;
+        public static int Mailer_MailRetentionDays = 30;
 
         //AutoDrop
         public static bool AutoDrop_Enabled = false;
@@ -184,7 +189,7 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mail };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer };
 
 
         /// <summary>
@@ -230,7 +235,7 @@ namespace MinecraftClient
                                     case "autofishing": pMode = ParseMode.AutoFishing; break;
                                     case "autoeat": pMode = ParseMode.AutoEat; break;
                                     case "autocraft": pMode = ParseMode.AutoCraft; break;
-                                    case "mail": pMode = ParseMode.Mail; break;
+                                    case "mailer": pMode = ParseMode.Mailer; break;
                                     case "autodrop": pMode = ParseMode.AutoDrop; break;
 
                                     default: pMode = ParseMode.Default; break;
@@ -585,6 +590,19 @@ namespace MinecraftClient
                                                     break;
                                             }
                                             break;
+
+                                        case ParseMode.Mailer:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": Mailer_Enabled = str2bool(argValue); break;
+                                                case "database": Mailer_DatabaseFile = argValue; break;
+                                                case "ignorelist": Mailer_IgnoreListFile = argValue; break;
+                                                case "publicinteractions": Mailer_PublicInteractions = str2bool(argValue); break;
+                                                case "maxmailsperplayer": Mailer_MaxMailsPerPlayer = str2int(argValue); break;
+                                                case "maxdatabasesize": Mailer_MaxDatabaseSize = str2int(argValue); break;
+                                                case "retentiondays": Mailer_MailRetentionDays = str2int(argValue); break;
+                                            }
+                                            break;
                                     }
                                 }
                             }
@@ -744,10 +762,16 @@ namespace MinecraftClient
                 + "enabled=false\r\n"
                 + "configfile=autocraft\\config.ini\r\n"
                 + "\r\n"
-                + "[Mail]\r\n"
+                + "[Mailer]\r\n"
                 + "# Let the bot act like a mail plugin\r\n"
                 + "enabled=false\r\n"
-
+                + "database=MailerDatabase.ini\r\n"
+                + "ignorelist=MailerIgnoreList.ini\r\n"
+                + "publicinteractions=false\r\n"
+                + "maxmailsperplayer=10\r\n"
+                + "maxdatabasesize=10000\r\n"
+                + "retentiondays=30\r\n"
+                + "\r\n"
                 + "[AutoDrop]\r\n"
                 + "# Inventory Handling NEED to be enabled first\r\n"
                 + "enabled=false\r\n"

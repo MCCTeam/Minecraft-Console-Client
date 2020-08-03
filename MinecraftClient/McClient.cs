@@ -175,7 +175,7 @@ namespace MinecraftClient
                     if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack()); }
                     if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
                     if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
-                    if (Settings.Mail_Enabled) { BotLoad(new ChatBots.Mail()); }
+                    if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
                     if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
                     if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
 
@@ -751,6 +751,15 @@ namespace MinecraftClient
         #endregion
 
         #region Getters: Retrieve data for use in other methods or ChatBots
+
+        /// <summary>
+        /// Get max length for chat messages
+        /// </summary>
+        /// <returns>Max length, in characters</returns>
+        public int GetMaxChatMessageLength()
+        {
+            return handler.GetMaxChatMessageLength();
+        }
 
         /// <summary>
         /// Get all inventories. ID 0 is the player inventory.
