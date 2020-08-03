@@ -184,7 +184,7 @@ namespace MinecraftClient.Commands
                 + "\n " + GetAvailableActions() + " Use \"/inventory help <action>\" for action help."
                 + "\n Creative mode give: " + GetCreativeGiveHelp()
                 + "\n \"player\" and \"container\" can be simplified to \"p\" and \"c\"."
-                + "\n Note that parameters started with \"?\" are optional.";
+                + "\n Note that parameters in \"[]\" are optional.";
         }
 
         private string GetCreativeGiveHelp()
@@ -201,9 +201,9 @@ namespace MinecraftClient.Commands
                 case "close":
                     return "Close an opened container. Usage: /inventory <player|container|<id>> close";
                 case "click":
-                    return "Click on an item. Usage: /inventory <player|container|<id>> click <slot> <?left|right|middle>. \nDefault is left click";
+                    return "Click on an item. Usage: /inventory <player|container|<id>> click <slot> [left|right|middle]. \nDefault is left click";
                 case "drop":
-                    return "Drop an item from inventory. Usage: /inventory <player|container|<id>> drop <slot> <?all>. \nAll means drop full stack";
+                    return "Drop an item from inventory. Usage: /inventory <player|container|<id>> drop <slot> [all]. \nAll means drop full stack";
                 case "help":
                     return GetHelp();
                 default:
