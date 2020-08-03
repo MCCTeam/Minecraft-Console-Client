@@ -273,9 +273,13 @@ namespace MinecraftClient.ChatBots
             if (nextMailSend < dateNow)
             {
                 LogDebugToConsole("Looking for mails to send @ " + DateTime.Now);
-                HashSet<string> onlinePlayer = new HashSet<string>(GetOnlinePlayers());
+
+                // Reload mail and ignore list database in case several instances are sharing the same database
+                mailDatabase = MailDatabase.FromFile(Settings.Mailer_DatabaseFile);
+                ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
 
                 // Process at most 3 mails at a time to avoid spamming. Other mails will be processed on next mail send
+                HashSet<string> onlinePlayer = new HashSet<string>(GetOnlinePlayers());
                 foreach (Mail mail in mailDatabase.Where(mail => !mail.Delivered && onlinePlayer.Contains(mail.Recipient)).Take(3))
                 {
                     string sender = mail.Anonymous ? "Anonymous" : mail.Sender;
