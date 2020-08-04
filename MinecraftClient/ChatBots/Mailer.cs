@@ -108,6 +108,7 @@ namespace MinecraftClient.ChatBots
             private string sender;
             private string senderLower;
             private string recipient;
+            private string recipientLower;
             private string message;
             private DateTime datesent;
             private bool delivered;
@@ -118,6 +119,7 @@ namespace MinecraftClient.ChatBots
                 this.sender = sender;
                 this.senderLower = sender.ToLower();
                 this.recipient = recipient;
+                this.recipientLower = recipient.ToLower();
                 this.message = message;
                 this.datesent = datesent;
                 this.delivered = false;
@@ -127,6 +129,7 @@ namespace MinecraftClient.ChatBots
             public string Sender { get { return sender; } }
             public string SenderLowercase { get { return senderLower; } }
             public string Recipient { get { return recipient; } }
+            public string RecipientLowercase { get { return recipientLower; } }
             public string Content { get { return message; } }
             public DateTime DateSent { get { return datesent; } }
             public bool Delivered { get { return delivered; } }
@@ -279,8 +282,8 @@ namespace MinecraftClient.ChatBots
                 ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
 
                 // Process at most 3 mails at a time to avoid spamming. Other mails will be processed on next mail send
-                HashSet<string> onlinePlayer = new HashSet<string>(GetOnlinePlayers());
-                foreach (Mail mail in mailDatabase.Where(mail => !mail.Delivered && onlinePlayer.Contains(mail.Recipient)).Take(3))
+                HashSet<string> onlinePlayersLowercase = new HashSet<string>(GetOnlinePlayers().Select(name => name.ToLower()));
+                foreach (Mail mail in mailDatabase.Where(mail => !mail.Delivered && onlinePlayersLowercase.Contains(mail.RecipientLowercase)).Take(3))
                 {
                     string sender = mail.Anonymous ? "Anonymous" : mail.Sender;
                     SendPrivateMessage(mail.Recipient, sender + " mailed: " + mail.Content);
