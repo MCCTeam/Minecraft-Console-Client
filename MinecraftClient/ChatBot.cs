@@ -312,6 +312,18 @@ namespace MinecraftClient
         /// <param name="uuid">UUID of the player</param>
         /// <param name="name">Name of the player</param>
         public virtual void OnPlayerLeave(Guid uuid, string name) { }
+        
+        /// <summary>
+        /// Called when a time changed
+        /// </summary>
+        /// <param name="WorldAge">World age</param>
+        /// <param name="TimeOfDay">Time</param>
+        public virtual void OnTimeUpdate(long WorldAge, long TimeOfDay) { }
+        
+        /// <summary>
+        /// Called when a player respawn
+        /// </summary>
+        public virtual void OnRespawn() { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
