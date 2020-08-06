@@ -1759,6 +1759,8 @@ namespace MinecraftClient
             {
                 onlinePlayers[uuid] = name;
             }
+
+            DispatchBotEvent(bot => bot.OnPlayerJoin(uuid, name));
         }
 
         /// <summary>
@@ -1771,6 +1773,8 @@ namespace MinecraftClient
             {
                 onlinePlayers.Remove(uuid);
             }
+
+            DispatchBotEvent(bot => bot.OnPlayerLeave(uuid, onlinePlayers[uuid]));
         }
 
         /// <summary>
