@@ -1755,11 +1755,12 @@ namespace MinecraftClient
             if (!ChatBot.IsValidName(name))
                 return;
 
-            DispatchBotEvent(bot => bot.OnPlayerJoin(uuid, name));
             lock (onlinePlayers)
             {
                 onlinePlayers[uuid] = name;
             }
+
+            DispatchBotEvent(bot => bot.OnPlayerJoin(uuid, name));
         }
 
         /// <summary>
@@ -1768,11 +1769,12 @@ namespace MinecraftClient
         /// <param name="uuid">UUID of the player</param>
         public void OnPlayerLeave(Guid uuid)
         {
-            DispatchBotEvent(bot => bot.OnPlayerLeave(uuid, onlinePlayers[uuid]));
             lock (onlinePlayers)
             {
                 onlinePlayers.Remove(uuid);
             }
+
+            DispatchBotEvent(bot => bot.OnPlayerLeave(uuid, onlinePlayers[uuid]));
         }
 
         /// <summary>
