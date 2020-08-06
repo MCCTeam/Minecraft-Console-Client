@@ -299,6 +299,10 @@ namespace MinecraftClient
         /// <param name="inventoryId"></param>
         public virtual void OnInventoryClose(int inventoryId) { }
 
+        public virtual void OnPlayerJoin(Guid uuid, string name) { }
+
+        public virtual void OnPlayerLeave(Guid uuid, string name) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
