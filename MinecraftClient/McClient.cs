@@ -1769,12 +1769,16 @@ namespace MinecraftClient
         /// <param name="uuid">UUID of the player</param>
         public void OnPlayerLeave(Guid uuid)
         {
+            string username = null;
+            if (onlinePlayers.ContainsKey(uuid))
+                username = onlinePlayers[uuid];
+
             lock (onlinePlayers)
             {
                 onlinePlayers.Remove(uuid);
             }
 
-            DispatchBotEvent(bot => bot.OnPlayerLeave(uuid, onlinePlayers[uuid]));
+            DispatchBotEvent(bot => bot.OnPlayerLeave(uuid, username));
         }
 
         /// <summary>
