@@ -1522,6 +1522,7 @@ namespace MinecraftClient
             }
 
             ClearInventories();
+            DispatchBotEvent(bot => bot.OnRespawn());
         }
 
         /// <summary>
@@ -1978,6 +1979,7 @@ namespace MinecraftClient
                 lastAge = WorldAge;
                 lastTime = DateTime.Now;
             }
+            DispatchBotEvent(bot => bot.OnTimeUpdate(WorldAge, TimeOfDay));
         }
 
         /// <summary>
