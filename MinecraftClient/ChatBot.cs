@@ -321,7 +321,7 @@ namespace MinecraftClient
         public virtual void OnPlayerLeave(Guid uuid, string name) { }
         
         /// <summary>
-        /// Called when a player respawn
+        /// Called when the player respawns
         /// </summary>
         public virtual void OnRespawn() { }
 
