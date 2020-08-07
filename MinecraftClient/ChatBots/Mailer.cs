@@ -24,7 +24,7 @@ namespace MinecraftClient.ChatBots
             public static IgnoreList FromFile(string filePath)
             {
                 IgnoreList ignoreList = new IgnoreList();
-                foreach (string line in File.ReadAllLines(filePath))
+                foreach (string line in FileMonitor.ReadAllLinesWithRetries(filePath))
                 {
                     if (!line.StartsWith("#"))
                     {
@@ -46,7 +46,7 @@ namespace MinecraftClient.ChatBots
                 lines.Add("#Ignored Players");
                 foreach (string player in this)
                     lines.Add(player);
-                File.WriteAllLines(filePath, lines);
+                FileMonitor.WriteAllLinesWithRetries(filePath, lines);
             }
         }
 
@@ -63,7 +63,7 @@ namespace MinecraftClient.ChatBots
             public static MailDatabase FromFile(string filePath)
             {
                 MailDatabase database = new MailDatabase();
-                Dictionary<string, Dictionary<string, string>> iniFileDict = INIFile.ParseFile(filePath);
+                Dictionary<string, Dictionary<string, string>> iniFileDict = INIFile.ParseFile(FileMonitor.ReadAllLinesWithRetries(filePath));
                 foreach (KeyValuePair<string, Dictionary<string, string>> iniSection in iniFileDict)
                 {
                     //iniSection.Key is "mailXX" but we don't need it here
@@ -96,7 +96,7 @@ namespace MinecraftClient.ChatBots
                     iniSection["anonymous"] = mail.Anonymous.ToString();
                     iniFileDict["mail" + mailCount] = iniSection;
                 }
-                INIFile.WriteFile(filePath, iniFileDict, "Mail Database");
+                FileMonitor.WriteAllLinesWithRetries(filePath, INIFile.Generate(iniFileDict, "Mail Database"));
             }
         }
 
@@ -147,6 +147,9 @@ namespace MinecraftClient.ChatBots
         private DateTime nextMailSend = DateTime.Now;
         private MailDatabase mailDatabase = new MailDatabase();
         private IgnoreList ignoreList = new IgnoreList();
+        private FileMonitor mailDbFileMonitor;
+        private FileMonitor ignoreListFileMonitor;
+        private object readWriteLock = new object();
 
         /// <summary>
         /// Initialization of the Mailer bot
@@ -194,11 +197,18 @@ namespace MinecraftClient.ChatBots
                 new IgnoreList().SaveToFile(Settings.Mailer_IgnoreListFile);
             }
 
-            LogDebugToConsole("Loading database file: " + Path.GetFullPath(Settings.Mailer_DatabaseFile));
-            mailDatabase = MailDatabase.FromFile(Settings.Mailer_DatabaseFile);
+            lock (readWriteLock)
+            {
+                LogDebugToConsole("Loading database file: " + Path.GetFullPath(Settings.Mailer_DatabaseFile));
+                mailDatabase = MailDatabase.FromFile(Settings.Mailer_DatabaseFile);
 
-            LogDebugToConsole("Loading ignore list: " + Path.GetFullPath(Settings.Mailer_IgnoreListFile));
-            ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
+                LogDebugToConsole("Loading ignore list: " + Path.GetFullPath(Settings.Mailer_IgnoreListFile));
+                ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
+            }
+
+            //Initialize file monitors. In case the bot needs to unload for some reason in the future, do not forget to .Dispose() them
+            mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_DatabaseFile), Path.GetFileName(Settings.Mailer_DatabaseFile), FileMonitorCallback);
+            ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_IgnoreListFile), Path.GetFileName(Settings.Mailer_IgnoreListFile), FileMonitorCallback);
 
             RegisterChatBotCommand("mailer", "Subcommands: getmails, addignored, getignored, removeignored", ProcessInternalCommand);
         }
@@ -249,8 +259,11 @@ namespace MinecraftClient.ChatBots
                                         {
                                             Mail mail = new Mail(username, recipient, message, anonymous, DateTime.Now);
                                             LogToConsole("Saving message: " + mail.ToString());
-                                            mailDatabase.Add(mail);
-                                            mailDatabase.SaveToFile(Settings.Mailer_DatabaseFile);
+                                            lock (readWriteLock)
+                                            {
+                                                mailDatabase.Add(mail);
+                                                mailDatabase.SaveToFile(Settings.Mailer_DatabaseFile);
+                                            }
                                             SendPrivateMessage(username, "Message saved!");
                                         }
                                         else SendPrivateMessage(username, "Your message cannot be longer than " + maxMessageLength + " characters.");
@@ -277,10 +290,6 @@ namespace MinecraftClient.ChatBots
             {
                 LogDebugToConsole("Looking for mails to send @ " + DateTime.Now);
 
-                // Reload mail and ignore list database in case several instances are sharing the same database
-                mailDatabase = MailDatabase.FromFile(Settings.Mailer_DatabaseFile);
-                ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
-
                 // Process at most 3 mails at a time to avoid spamming. Other mails will be processed on next mail send
                 HashSet<string> onlinePlayersLowercase = new HashSet<string>(GetOnlinePlayers().Select(name => name.ToLower()));
                 foreach (Mail mail in mailDatabase.Where(mail => !mail.Delivered && onlinePlayersLowercase.Contains(mail.RecipientLowercase)).Take(3))
@@ -291,11 +300,28 @@ namespace MinecraftClient.ChatBots
                     LogDebugToConsole("Delivered: " + mail.ToString());
                 }
 
-                mailDatabase.RemoveAll(mail => mail.Delivered);
-                mailDatabase.RemoveAll(mail => mail.DateSent.AddDays(Settings.Mailer_MailRetentionDays) < DateTime.Now);
-                mailDatabase.SaveToFile(Settings.Mailer_DatabaseFile);
+                lock (readWriteLock)
+                {
+                    mailDatabase.RemoveAll(mail => mail.Delivered);
+                    mailDatabase.RemoveAll(mail => mail.DateSent.AddDays(Settings.Mailer_MailRetentionDays) < DateTime.Now);
+                    mailDatabase.SaveToFile(Settings.Mailer_DatabaseFile);
+                }
 
                 nextMailSend = dateNow.AddSeconds(10);
+            }
+        }
+
+        /// <summary>
+        /// Called when the Mail Database or Ignore list has changed on disk
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void FileMonitorCallback(object sender, FileSystemEventArgs e)
+        {
+            lock (readWriteLock)
+            {
+                mailDatabase = MailDatabase.FromFile(Settings.Mailer_DatabaseFile);
+                ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
             }
         }
 
@@ -322,19 +348,25 @@ namespace MinecraftClient.ChatBots
                             string username = args[1].ToLower();
                             if (commandName == "addignored")
                             {
-                                if (!ignoreList.Contains(username))
+                                lock (readWriteLock)
                                 {
-                                    ignoreList.Add(username);
-                                    ignoreList.SaveToFile(Settings.Mailer_IgnoreListFile);
+                                    if (!ignoreList.Contains(username))
+                                    {
+                                        ignoreList.Add(username);
+                                        ignoreList.SaveToFile(Settings.Mailer_IgnoreListFile);
+                                    }
                                 }
                                 return "Added " + args[1] + " to the ignore list!";
                             }
                             else
                             {
-                                if (ignoreList.Contains(username))
+                                lock (readWriteLock)
                                 {
-                                    ignoreList.Remove(username);
-                                    ignoreList.SaveToFile(Settings.Mailer_IgnoreListFile);
+                                    if (ignoreList.Contains(username))
+                                    {
+                                        ignoreList.Remove(username);
+                                        ignoreList.SaveToFile(Settings.Mailer_IgnoreListFile);
+                                    }
                                 }
                                 return "Removed " + args[1] + " from the ignore list!";
                             }

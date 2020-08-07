@@ -23,7 +23,7 @@ namespace MinecraftClient.Protocol.Session
             "launcher_profiles.json"
         );
 
-        private static SessionFileMonitor cachemonitor;
+        private static FileMonitor cachemonitor;
         private static Dictionary<string, SessionToken> sessions = new Dictionary<string, SessionToken>();
         private static Timer updatetimer = new Timer(100);
         private static List<KeyValuePair<string, SessionToken>> pendingadds = new List<KeyValuePair<string, SessionToken>>();
@@ -81,7 +81,7 @@ namespace MinecraftClient.Protocol.Session
         /// <returns>TRUE if session tokens are seeded from file</returns>
         public static bool InitializeDiskCache()
         {
-            cachemonitor = new SessionFileMonitor(AppDomain.CurrentDomain.BaseDirectory, SessionCacheFilePlaintext, new FileSystemEventHandler(OnChanged));
+            cachemonitor = new FileMonitor(AppDomain.CurrentDomain.BaseDirectory, SessionCacheFilePlaintext, new FileSystemEventHandler(OnChanged));
             updatetimer.Elapsed += HandlePending;
             return LoadFromDisk();
         }
@@ -189,11 +189,11 @@ namespace MinecraftClient.Protocol.Session
                 }
                 catch (IOException ex)
                 {
-                    ConsoleIO.WriteLineFormatted("§8Failed to read session cache from disk: " + ex.Message);
+                    ConsoleIO.WriteLineFormatted("§8Failed to read serialized session cache from disk: " + ex.Message);
                 }
                 catch (SerializationException ex2)
                 {
-                    ConsoleIO.WriteLineFormatted("§8Got malformed data while reading session cache from disk: " + ex2.Message);
+                    ConsoleIO.WriteLineFormatted("§8Got malformed data while reading serialized session cache from disk: " + ex2.Message);
                 }
             }
 
@@ -203,32 +203,39 @@ namespace MinecraftClient.Protocol.Session
                 if (Settings.DebugMessages)
                     ConsoleIO.WriteLineFormatted("§8Loading session cache from disk: " + SessionCacheFilePlaintext);
 
-                foreach (string line in File.ReadAllLines(SessionCacheFilePlaintext))
+                try
                 {
-                    if (!line.Trim().StartsWith("#"))
+                    foreach (string line in FileMonitor.ReadAllLinesWithRetries(SessionCacheFilePlaintext))
                     {
-                        string[] keyValue = line.Split('=');
-                        if (keyValue.Length == 2)
+                        if (!line.Trim().StartsWith("#"))
                         {
-                            try
+                            string[] keyValue = line.Split('=');
+                            if (keyValue.Length == 2)
                             {
-                                string login = keyValue[0].ToLower();
-                                SessionToken session = SessionToken.FromString(keyValue[1]);
-                                if (Settings.DebugMessages)
-                                    ConsoleIO.WriteLineFormatted("§8Loaded session: " + login + ':' + session.ID);
-                                sessions[login] = session;
+                                try
+                                {
+                                    string login = keyValue[0].ToLower();
+                                    SessionToken session = SessionToken.FromString(keyValue[1]);
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted("§8Loaded session: " + login + ':' + session.ID);
+                                    sessions[login] = session;
+                                }
+                                catch (InvalidDataException e)
+                                {
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted("§8Ignoring session token string '" + keyValue[1] + "': " + e.Message);
+                                }
                             }
-                            catch (InvalidDataException e)
+                            else if (Settings.DebugMessages)
                             {
-                                if (Settings.DebugMessages)
-                                    ConsoleIO.WriteLineFormatted("§8Ignoring session token string '" + keyValue[1] + "': " + e.Message);
+                                ConsoleIO.WriteLineFormatted("§8Ignoring invalid session token line: " + line);
                             }
-                        }
-                        else if (Settings.DebugMessages)
-                        {
-                            ConsoleIO.WriteLineFormatted("§8Ignoring invalid session token line: " + line);
                         }
                     }
+                }
+                catch (IOException e)
+                {
+                    ConsoleIO.WriteLineFormatted("§8Failed to read session cache from disk: " + e.Message);
                 }
             }
 
@@ -243,33 +250,20 @@ namespace MinecraftClient.Protocol.Session
             if (Settings.DebugMessages)
                 ConsoleIO.WriteLineFormatted("§8Saving session cache to disk");
 
-            bool fileexists = File.Exists(SessionCacheFilePlaintext);
-            IOException lastEx = null;
-            int attempt = 1;
+            List<string> sessionCacheLines = new List<string>();
+            sessionCacheLines.Add("# Generated by MCC v" + Program.Version + " - Edit at own risk!");
+            sessionCacheLines.Add("# Login=SessionID,PlayerName,UUID,ClientID");
+            foreach (KeyValuePair<string, SessionToken> entry in sessions)
+                sessionCacheLines.Add(entry.Key + '=' + entry.Value.ToString());
 
-            while (attempt < 4)
+            try
             {
-                try
-                {
-                    List<string> sessionCacheLines = new List<string>();
-                    sessionCacheLines.Add("# Generated by MCC v" + Program.Version + " - Edit at own risk!");
-                    sessionCacheLines.Add("# Login=SessionID,PlayerName,UUID,ClientID");
-                    foreach (KeyValuePair<string, SessionToken> entry in sessions)
-                        sessionCacheLines.Add(entry.Key + '=' + entry.Value.ToString());
-                    File.WriteAllLines(SessionCacheFilePlaintext, sessionCacheLines);
-                    //if (File.Exists(SessionCacheFileSerialized))
-                    //    File.Delete(SessionCacheFileSerialized);
-                    return;
-                }
-                catch (IOException ex)
-                {
-                    lastEx = ex;
-                    attempt++;
-                    System.Threading.Thread.Sleep(new Random().Next(150, 350) * attempt); //CSMA/CD :)
-                }
+                FileMonitor.WriteAllLinesWithRetries(SessionCacheFilePlaintext, sessionCacheLines);
             }
-
-            ConsoleIO.WriteLineFormatted("§8Failed to write session cache to disk" + (lastEx != null ? ": " + lastEx.Message : ""));
+            catch (IOException e)
+            {
+                ConsoleIO.WriteLineFormatted("§8Failed to write session cache to disk: " + e.Message);
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ namespace MinecraftClient
 {
     /// <summary>
     /// INI File tools for parsing and generating user-friendly INI files
-    /// By ORelio (c) 2014 - CDDL 1.0
+    /// By ORelio (c) 2014-2020 - CDDL 1.0
     /// </summary>
     static class INIFile
     {
@@ -22,8 +22,20 @@ namespace MinecraftClient
         /// <returns>Parsed data from INI file</returns>
         public static Dictionary<string, Dictionary<string, string>> ParseFile(string iniFile, bool lowerCase = true)
         {
+            return ParseFile(File.ReadAllLines(iniFile, Encoding.UTF8), lowerCase);
+        }
+
+        /// <summary>
+        /// Parse a INI file into a dictionary.
+        /// Values can be accessed like this: dict["section"]["setting"]
+        /// </summary>
+        /// <param name="lines">INI file content to parse</param>
+        /// <param name="lowerCase">INI sections and keys will be converted to lowercase unless this parameter is set to false</param>
+        /// <exception cref="IOException">If failed to read the file</exception>
+        /// <returns>Parsed data from INI file</returns>
+        public static Dictionary<string, Dictionary<string, string>> ParseFile(IEnumerable<string> lines, bool lowerCase = true)
+        {
             var iniContents = new Dictionary<string, Dictionary<string, string>>();
-            string[] lines = File.ReadAllLines(iniFile, Encoding.UTF8);
             string iniSection = "default";
             foreach (string lineRaw in lines)
             {
@@ -63,6 +75,18 @@ namespace MinecraftClient
         /// <param name="autoCase">Automatically change first char of section and keys to uppercase</param>
         public static void WriteFile(string iniFile, Dictionary<string, Dictionary<string, string>> contents, string description = null, bool autoCase = true)
         {
+            File.WriteAllLines(iniFile, Generate(contents, description, autoCase), Encoding.UTF8);
+        }
+
+        /// <summary>
+        /// Generate given data into the INI format
+        /// </summary>
+        /// <param name="contents">Data to put into the INI format</param>
+        /// <param name="description">INI file description, inserted as a comment on first line of the INI file</param>
+        /// <param name="autoCase">Automatically change first char of section and keys to uppercase</param>
+        /// <returns>Lines of the INI file</returns>
+        public static string[] Generate(Dictionary<string, Dictionary<string, string>> contents, string description = null, bool autoCase = true)
+        {
             List<string> lines = new List<string>();
             if (!String.IsNullOrWhiteSpace(description))
                 lines.Add('#' + description);
@@ -78,7 +102,7 @@ namespace MinecraftClient
                             lines.Add((autoCase ? char.ToUpper(item.Key[0]) + item.Key.Substring(1) : item.Key) + '=' + item.Value);
                 }
             }
-            File.WriteAllLines(iniFile, lines, Encoding.UTF8);
+            return lines.ToArray();
         }
 
         /// <summary>
