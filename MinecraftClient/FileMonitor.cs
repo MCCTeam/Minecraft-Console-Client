@@ -147,6 +147,7 @@ namespace MinecraftClient
                 try
                 {
                     File.WriteAllLines(filePath, lines, encoding);
+                    return;
                 }
                 catch (IOException)
                 {
