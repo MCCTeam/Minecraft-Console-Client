@@ -802,12 +802,21 @@ namespace MinecraftClient.Protocol.Handlers
                 tcp.ReceiveTimeout = 5000; //MC 1.7.2+ SpigotMC servers won't respond, so we need a reasonable timeout.
                 byte[] ping = new byte[2] { 0xfe, 0x01 };
                 tcp.Client.Send(ping, SocketFlags.None);
-
                 tcp.Client.Receive(ping, 0, 1, SocketFlags.None);
+
                 if (ping[0] == 0xff)
                 {
                     Protocol16Handler ComTmp = new Protocol16Handler(tcp);
                     string result = ComTmp.readNextString();
+
+                    if (Settings.DebugMessages)
+                    {
+                        // May contain formatting codes, cannot use WriteLineFormatted
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        ConsoleIO.WriteLine(result);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                    }
+
                     if (result.Length > 2 && result[0] == '§' && result[1] == '1')
                     {
                         string[] tmp = result.Split((char)0x00);
@@ -822,7 +831,9 @@ namespace MinecraftClient.Protocol.Handlers
                         protocolversion = (byte)39;
                         version = "B1.8.1 - 1.3.2";
                     }
+
                     ConsoleIO.WriteLineFormatted("§8Server version : MC " + version + " (protocol v" + protocolversion + ").");
+
                     return true;
                 }
                 else return false;

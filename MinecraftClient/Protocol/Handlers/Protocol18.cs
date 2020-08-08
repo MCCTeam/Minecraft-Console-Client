@@ -1216,6 +1216,14 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     string result = dataTypes.ReadNextString(packetData); //Get the Json data
 
+                    if (Settings.DebugMessages)
+                    {
+                        // May contain formatting codes, cannot use WriteLineFormatted
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        ConsoleIO.WriteLine(result);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                    }
+
                     if (!String.IsNullOrEmpty(result) && result.StartsWith("{") && result.EndsWith("}"))
                     {
                         Json.JSONData jsonData = Json.ParseJson(result);
