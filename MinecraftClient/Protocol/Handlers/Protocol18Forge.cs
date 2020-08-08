@@ -248,30 +248,45 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="jsonData">JSON data returned by the server</param>
         /// <param name="forgeInfo">ForgeInfo to populate</param>
-        public static void ServerInfoCheckForge(Json.JSONData jsonData, ref ForgeInfo forgeInfo)
+        /// <returns>True if the server is running Forge</returns>
+        public static bool ServerInfoCheckForge(Json.JSONData jsonData, ref ForgeInfo forgeInfo)
         {
-            if (jsonData.Properties.ContainsKey("modinfo") && jsonData.Properties["modinfo"].Type == Json.JSONData.DataType.Object)
+            return ServerInfoCheckForgeSub(jsonData, ref forgeInfo, "modinfo", "type", "FML")               // MC 1.12 and lower
+                || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, "forgeData", "fmlNetworkVersion", "2"); // MC 1.13 and greater
+        }
+
+        /// <summary>
+        /// Server Info: Check for For Forge on a Minecraft server Ping result
+        /// </summary>
+        /// <param name="jsonData">JSON data returned by the server</param>
+        /// <param name="forgeInfo">ForgeInfo to populate</param>
+        /// <param name="forgeDataTag">ForgeData JSON field, e.g. "modinfo"</param>
+        /// <param name="versionField">ForgeData version field, e.g. "type"</param>
+        /// <param name="versionString">ForgeData version value, e.g. "FML"</param>
+        /// <returns>True if the server is running Forge</returns>
+        private static bool ServerInfoCheckForgeSub(Json.JSONData jsonData, ref ForgeInfo forgeInfo, string forgeDataTag, string versionField, string versionString)
+        {
+            if (jsonData.Properties.ContainsKey(forgeDataTag) && jsonData.Properties[forgeDataTag].Type == Json.JSONData.DataType.Object)
             {
-                Json.JSONData modData = jsonData.Properties["modinfo"];
-                if (modData.Properties.ContainsKey("type") && modData.Properties["type"].StringValue == "FML")
+                Json.JSONData modData = jsonData.Properties[forgeDataTag];
+                if (modData.Properties.ContainsKey(versionField) && modData.Properties[versionField].StringValue == versionString)
                 {
                     forgeInfo = new ForgeInfo(modData);
-
                     if (forgeInfo.Mods.Any())
                     {
+                        ConsoleIO.WriteLineFormatted(String.Format("§8Server is running Forge with {0} mods.", forgeInfo.Mods.Count));
                         if (Settings.DebugMessages)
                         {
-                            ConsoleIO.WriteLineFormatted("§8Server is running Forge. Mod list:");
+                            ConsoleIO.WriteLineFormatted("§8Mod list:");
                             foreach (ForgeInfo.ForgeMod mod in forgeInfo.Mods)
-                            {
                                 ConsoleIO.WriteLineFormatted("§8  " + mod.ToString());
-                            }
                         }
-                        else ConsoleIO.WriteLineFormatted("§8Server is running Forge.");
+                        return true;
                     }
-                    else forgeInfo = null;
+                    else ConsoleIO.WriteLineFormatted("§8Server is running Forge without mods.");
                 }
             }
+            return false;
         }
     }
 }
