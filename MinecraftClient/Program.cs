@@ -118,6 +118,12 @@ namespace MinecraftClient
                 Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
             }
 
+            //Test line to troubleshoot invisible colors
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLineFormatted("Color test: Your terminal should display [0123456789ABCDEF]: [§00§11§22§33§44§55§66§77§88§99§aA§bB§cC§dD§eE§fF§r]");
+            }
+
             //Load cached sessions from disk if necessary
             if (Settings.SessionCaching == CacheType.Disk)
             {
