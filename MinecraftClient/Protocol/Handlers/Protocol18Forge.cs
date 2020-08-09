@@ -283,7 +283,11 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         return true;
                     }
-                    else ConsoleIO.WriteLineFormatted("§8Server is running Forge without mods.");
+                    else
+                    {
+                        ConsoleIO.WriteLineFormatted("§8Server is running Forge without mods.");
+                        forgeInfo = null;
+                    }
                 }
             }
             return false;
