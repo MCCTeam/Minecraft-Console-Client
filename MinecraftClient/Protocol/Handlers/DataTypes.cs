@@ -370,7 +370,17 @@ namespace MinecraftClient.Protocol.Handlers
                 entityUUID = ReadNextUUID(cache);
             }
 
-            EntityType entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
+            EntityType entityType;
+            // Entity type data type change from byte to varint after 1.14
+            if (protocolversion > Protocol18Handler.MC113Version)
+            {
+                entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
+            }
+            else
+            {
+                entityType = entityPalette.FromId(ReadNextByte(cache), living);
+            }
+            
             Double entityX = ReadNextDouble(cache);
             Double entityY = ReadNextDouble(cache);
             Double entityZ = ReadNextDouble(cache);
