@@ -267,7 +267,7 @@ internal class VkLongPoolClient
     }
     private string CallVkMethod(string methodName, string data)
     {
-        var url = String.Format("https://api.vk.com/method/{0}?v=5.120&access_token={1}&{2}", methodName, Token, data);
+        var url = String.Format("https://api.vk.com/method/{0}?v=5.122&access_token={1}&{2}", methodName, Token, data);
         var jsonResult = SenderWebClient.DownloadString(url);
 
         return jsonResult;
