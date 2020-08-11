@@ -143,6 +143,7 @@
     <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Protocol\EntityActionType.cs" />
     <Compile Include="Protocol\Handlers\DataTypes.cs" />
+    <Compile Include="Protocol\Handlers\Forge\FMLVersion.cs" />
     <Compile Include="Protocol\Handlers\PacketIncomingType.cs" />
     <Compile Include="Protocol\Handlers\PacketOutgoingType.cs" />
     <Compile Include="Protocol\Handlers\Protocol18Forge.cs" />

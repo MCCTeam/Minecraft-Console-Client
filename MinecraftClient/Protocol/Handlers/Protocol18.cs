@@ -169,7 +169,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             packetData.Clear();
             int size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
-            byte[] rawpacket = socketWrapper.ReadDataRAW(size);//Packet contents
+            byte[] rawpacket = socketWrapper.ReadDataRAW(size); //Packet contents
             for (int i = 0; i < rawpacket.Length; i++)
                 packetData.Enqueue(rawpacket[i]);
 
@@ -209,6 +209,13 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolversion >= MC18Version)
                                 compression_treshold = dataTypes.ReadNextVarInt(packetData);
                             break;
+                        case 0x04:
+                            int messageId = dataTypes.ReadNextVarInt(packetData);
+                            string channel = dataTypes.ReadNextString(packetData);
+                            List<byte> responseData = new List<byte>();
+                            bool understood = pForge.HandleLoginPluginRequest(channel, packetData, ref responseData);
+                            SendLoginPluginResponse(messageId, understood, responseData.ToArray());
+                            return understood;
                         default:
                             return false; //Ignored packet
                     }
@@ -1012,7 +1019,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             byte[] protocol_version = dataTypes.GetVarInt(protocolversion);
             string server_address = pForge.GetServerAddress(handler.GetServerHost());
-            byte[] server_port = BitConverter.GetBytes((ushort)handler.GetServerPort()); Array.Reverse(server_port);
+            byte[] server_port = dataTypes.GetUShort((ushort)handler.GetServerPort());
             byte[] next_state = dataTypes.GetVarInt(2);
             byte[] handshake_packet = dataTypes.ConcatBytes(protocol_version, dataTypes.GetString(server_address), server_port, next_state);
 
@@ -1438,6 +1445,25 @@ namespace MinecraftClient.Protocol.Handlers
                     SendPacket(PacketOutgoingType.PluginMessage, dataTypes.ConcatBytes(dataTypes.GetString(channel), data));
                 }
 
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        /// <summary>
+        /// Send a Login Plugin Response packet (0x02)
+        /// </summary>
+        /// <param name="messageId">Login Plugin Request message Id </param>
+        /// <param name="understood">TRUE if the request was understood</param>
+        /// <param name="data">Response to the request</param>
+        /// <returns>TRUE if successfully sent</returns>
+        public bool SendLoginPluginResponse(int messageId, bool understood, byte[] data)
+        {
+            try
+            {
+                SendPacket(0x02, dataTypes.ConcatBytes(dataTypes.GetVarInt(messageId), dataTypes.GetBool(understood), data));
                 return true;
             }
             catch (SocketException) { return false; }
