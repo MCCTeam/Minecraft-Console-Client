@@ -132,6 +132,7 @@
     <Compile Include="Mapping\CommandBlockFlags.cs" />
     <Compile Include="Mapping\CommandBlockMode.cs" />
     <Compile Include="Mapping\Entity.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPalette112.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette113.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette114.cs" />
