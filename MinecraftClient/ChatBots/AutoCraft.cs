@@ -28,6 +28,7 @@ namespace MinecraftClient.ChatBots
         private string timeoutAction = "unspecified";
 
         private string configPath = @"autocraft\config.ini";
+        private string lastRecipe = ""; // Used in parsing recipe config
 
         private Dictionary<string, Recipe> recipes = new Dictionary<string, Recipe>();
 
@@ -332,7 +333,7 @@ namespace MinecraftClient.ChatBots
                 string value = line.Substring(key.Length + 1);
                 switch (section)
                 {
-                    case "recipe": parseRecipe(key, value, lastRecipe); break;
+                    case "recipe": parseRecipe(key, value); break;
                     case "autocraft": parseMain(key, value); break;
                 }
             }
@@ -383,7 +384,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private void parseRecipe(string key, string value, string lastRecipe)
+        private void parseRecipe(string key, string value)
         {
             if (key.StartsWith("slot"))
             {
@@ -408,9 +409,20 @@ namespace MinecraftClient.ChatBots
                             }
                             return;
                         }
+                        else
+                        {
+                            throw new Exception("Invalid item name in recipe " + lastRecipe + " at " + key);
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Missing recipe name while parsing a recipe");
                     }
                 }
-                throw new Exception("Invalid slot field in recipe: " + key);
+                else
+                {
+                    throw new Exception("Invalid slot field in recipe: " + key);
+                }
             }
             else
             {
@@ -664,6 +676,11 @@ namespace MinecraftClient.ChatBots
         {
             if (craftingFailed)
             {
+                if (actionSteps[index - 1].ActionType == ActionType.LeftClick && actionSteps[index - 1].ItemType != ItemType.Air)
+                {
+                    // Inform user the missing meterial name
+                    ConsoleIO.WriteLogLine("Missing material: " + actionSteps[index - 1].ItemType.ToString());
+                }
                 if (abortOnFailure)
                 {
                     StopCrafting();
@@ -676,11 +693,6 @@ namespace MinecraftClient.ChatBots
                     // we want to do that failed step again so decrease index by 1
                     index--;
                     ConsoleIO.WriteLogLine("Crafting failed! Waiting for more materials");
-                }
-                if (actionSteps[index - 1].ActionType == ActionType.LeftClick && actionSteps[index - 1].ItemType != ItemType.Air)
-                {
-                    // Inform user the missing meterial name
-                    ConsoleIO.WriteLogLine("Missing material: " + actionSteps[index - 1].ItemType.ToString());
                 }
             }
         }
