@@ -84,7 +84,7 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetInventoryEnabled(false);
             }
 
-            if (handler.GetEntityHandlingEnabled() && (protocolversion <= MC1122Version || protocolversion > MC1161Version))
+            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1161Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Entities are currently not handled for that MC version.");
                 handler.SetEntityHandlingEnabled(false);
@@ -102,7 +102,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else Block.Palette = new Palette112();
 
-            if (protocolversion >= MC114Version)
+            if (protocolversion >= MC113Version)
             {
                 if (protocolversion > MC1161Version && handler.GetEntityHandlingEnabled())
                     throw new NotImplementedException("Please update entity types handling for this Minecraft version. See EntityType.cs");
@@ -110,9 +110,11 @@ namespace MinecraftClient.Protocol.Handlers
                     entityPalette = new EntityPalette116();
                 else if (protocolversion >= MC115Version)
                     entityPalette = new EntityPalette115();
-                else entityPalette = new EntityPalette114();
+                else if (protocolVersion >= MC114Version)
+                    entityPalette = new EntityPalette114();
+                else entityPalette = new EntityPalette113();
             }
-            else entityPalette = new EntityPalette113();
+            else entityPalette = new EntityPalette112();
         }
 
         /// <summary>
