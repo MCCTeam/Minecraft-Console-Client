@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace MinecraftClient.Mapping.EntityPalettes
 {
     /// <summary>
-    /// Defines mappings for pre-1.14 entitiy IDs
-    /// Pre-1.14 Minecraft has 2 set of ids: One for non-living objects and one for living mobs
-    /// 1.14+ Minecraft has only one set of ids for all types of entities
+    /// Defines mappings for Minecraft 1.13.
+    /// 1.13 and lower has 2 set of ids: One for non-living objects and one for living mobs
+    /// 1.14+ has only one set of ids for all types of entities
     /// </summary>
     public class EntityPalette113 : EntityPalette
     {
