@@ -282,7 +282,7 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                     case PacketIncomingType.ChatMessage:
                         string message = dataTypes.ReadNextString(packetData);
-                        try
+                        if (protocolversion >= MC18Version)
                         {
                             //Hide system messages or xp bar messages?
                             byte messageType = dataTypes.ReadNextByte(packetData);
@@ -290,7 +290,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 || (messageType == 2 && !Settings.DisplayXPBarMessages))
                                 break;
                         }
-                        catch (ArgumentOutOfRangeException) { /* No message type */ }
                         handler.OnTextReceived(message, true);
                         break;
                     case PacketIncomingType.Respawn:
