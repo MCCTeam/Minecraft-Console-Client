@@ -314,9 +314,9 @@ internal class VkLongPoolClient
 			buttons.Add(new List<object>() { button });
 		}
 		public string GetKeyboard()
-        {
+        	{
 			return JsonConvert.SerializeObject(this, Formatting.Indented); ;
-        }
+        	}
 		public class Buttons
 		{
 			public Action action;
