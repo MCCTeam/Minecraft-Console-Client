@@ -921,12 +921,12 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketIncomingType.UpdateScore:
                         string entityname = dataTypes.ReadNextString(packetData);
                         byte action3 = dataTypes.ReadNextByte(packetData);
-                        string objectivename2 = dataTypes.ReadNextString(packetData);
+                        string objectivename2 = null;
                         int value = -1;
+                        if (action3 != 1 || protocolversion >= MC18Version)
+                            objectivename2 = dataTypes.ReadNextString(packetData);
                         if (action3 != 1)
-                        {
                             value = dataTypes.ReadNextVarInt(packetData);
-                        }
                         handler.OnUpdateScore(entityname, action3, objectivename2, value);
                         break;
                     default:
