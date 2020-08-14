@@ -2119,7 +2119,14 @@ namespace MinecraftClient
         /// <param name="metadata">Metadata</param>
         public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
         {
-
+            if (entities.ContainsKey(entityID))
+            {
+                // Get health data for an entity
+                if (metadata.ContainsKey(8) && metadata[8].GetType() == typeof(float))
+                {
+                    entities[entityID].Health = (float)metadata[8];
+                }
+            }
         }
         #endregion
     }

@@ -34,6 +34,11 @@ namespace MinecraftClient.Mapping
         public Location Location;
 
         /// <summary>
+        /// Health of the entity
+        /// </summary>
+        public float Health;
+
+        /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>
         /// <param name="ID">Entity ID</param>
@@ -44,6 +49,7 @@ namespace MinecraftClient.Mapping
             this.ID = ID;
             this.Type = type;
             this.Location = location;
+            this.Health = 0;
         }
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type, location, name and UUID
@@ -60,6 +66,7 @@ namespace MinecraftClient.Mapping
             this.Location = location;
             this.UUID = uuid;
             this.Name = name;
+            this.Health = 0;
         }
     }
 }
