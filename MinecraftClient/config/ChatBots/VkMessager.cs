@@ -149,7 +149,7 @@ internal class VkLongPoolClient
 		var j2 = JsonConvert.DeserializeObject(file) as JObject;
 		string json = CallVkMethod("docs.save", "&file=" + j2["file"].ToString() + "&title=" + title);
 		if (json != "") return json;
-		else return Docs_Save(file, title)$
+		else return Docs_Save(file, title);
 	}
 	public string Docs_GetSendAttachment(string file)
 	{
