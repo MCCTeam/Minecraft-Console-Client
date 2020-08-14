@@ -40,13 +40,13 @@ namespace MinecraftClient.ChatBots
                 attackCooldownCounter = attackCooldown;
                 if (entitiesToAttack.Count > 0)
                 {
+                    SendAnimation(Inventory.Hand.MainHand); // Arm animation
                     foreach (KeyValuePair<int, Entity> entity in entitiesToAttack)
                     {
                         // check that we are in range once again.
                         bool shouldAttack = handleEntity(entity.Value);
                         if (shouldAttack)
                         {
-                            SendAnimation(Inventory.Hand.MainHand); // Hit Animation
                             InteractEntity(entity.Key, 1); // hit the entity!
                         }
                     }
@@ -116,7 +116,7 @@ namespace MinecraftClient.ChatBots
                 return false;
 
             bool isBeingAttacked = entitiesToAttack.ContainsKey(entity.ID);
-            if (GetCurrentLocation().Distance(entity.Location) < attackRange)
+            if (GetCurrentLocation().Distance(entity.Location) <= attackRange)
             {
                 // check to see if entity has not been marked as tracked, and if not, track it.
                 if (!isBeingAttacked)
