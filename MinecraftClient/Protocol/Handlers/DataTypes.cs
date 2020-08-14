@@ -494,6 +494,126 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+        public Dictionary<int, object> ReadNextMetadata(Queue<byte> cache)
+        {
+            Dictionary<int, object> data = new Dictionary<int, object>();
+            byte Key = ReadNextByte(cache);
+            while (Key != 0xff)
+            {
+                int Type = ReadNextVarInt(cache);
+                // Value's data type is depended on Type
+                object Value = null;
+
+                // We need to go through every data in order to get all fields in the packet
+                // Store the value as needed
+                switch (Type)
+                {
+                    case 0: // byte
+                        Value = ReadNextByte(cache);
+                        break;
+                    case 1: // VarInt
+                        Value = ReadNextVarInt(cache);
+                        break;
+                    case 2: // Float
+                        Value = ReadNextFloat(cache);
+                        break;
+                    case 3: // String
+                        Value = ReadNextString(cache);
+                        break;
+                    case 4: // Chat
+                        Value = ReadNextString(cache);
+                        break;
+                    case 5: // Optional Chat
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextString(cache);
+                        }
+                        break;
+                    case 6: // Slot
+                        Value = ReadNextItemSlot(cache);
+                        break;
+                    case 7: // Boolean
+                        Value = ReadNextBool(cache);
+                        break;
+                    case 8: // Rotation (3x floats)
+                        List<float> t = new List<float>();
+                        t.Add(ReadNextFloat(cache));
+                        t.Add(ReadNextFloat(cache));
+                        t.Add(ReadNextFloat(cache));
+                        Value = t;
+                        break;
+                    case 9: // Position
+                        Value = ReadNextLocation(cache);
+                        break;
+                    case 10: // Optional Position
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextLocation(cache);
+                        }
+                        break;
+                    case 11: // Direction (VarInt)
+                        Value = ReadNextVarInt(cache);
+                        break;
+                    case 12: // Optional UUID
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextUUID(cache);
+                        }
+                        break;
+                    case 13: // Optional BlockID (VarInt)
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextVarInt(cache);
+                        }
+                        break;
+                    case 14: // NBT
+                        Value = ReadNextNbt(cache);
+                        break;
+                    case 15: // Particle
+                             // Currecutly not handled. Reading data only
+                        int ParticleID = ReadNextVarInt(cache);
+                        switch (ParticleID)
+                        {
+                            case 3:
+                                ReadNextVarInt(cache);
+                                break;
+                            case 14:
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                break;
+                            case 23:
+                                ReadNextVarInt(cache);
+                                break;
+                            case 32:
+                                ReadNextItemSlot(cache);
+                                break;
+                        }
+                        break;
+                    case 16: // Villager Data (3x VarInt)
+                        List<int> d = new List<int>();
+                        d.Add(ReadNextVarInt(cache));
+                        d.Add(ReadNextVarInt(cache));
+                        d.Add(ReadNextVarInt(cache));
+                        Value = d;
+                        break;
+                    case 17: // Optional VarInt
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextVarInt(cache);
+                        }
+                        break;
+                    case 18: // Pose
+                        Value = ReadNextVarInt(cache);
+                        break;
+                }
+                data.Add(Key, Value);
+                Key = ReadNextByte(cache);
+            }
+            return data;
+        }
+
         /// <summary>
         /// Build an uncompressed Named Binary Tag blob for sending over the network
         /// </summary>

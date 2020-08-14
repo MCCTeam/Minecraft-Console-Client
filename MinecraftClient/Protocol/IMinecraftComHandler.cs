@@ -193,6 +193,13 @@ namespace MinecraftClient.Protocol
         void OnEntityProperties(int entityID, Dictionary<string, Double> prop);
 
         /// <summary>
+        /// Called when entity metadata added/updated
+        /// </summary>
+        /// <param name="entityID">Target entity's ID</param>
+        /// <param name="metadata">Metadata</param>
+        void OnEntityMetadata(int entityID, Dictionary<int, object> metadata);
+
+        /// <summary>
         /// Called when the world age has been updated
         /// </summary>
         /// <param name="WorldAge">World age</param>

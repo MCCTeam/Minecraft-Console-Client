@@ -2111,6 +2111,16 @@ namespace MinecraftClient
         {
             DispatchBotEvent(bot => bot.OnUpdateScore(entityname, action, objectivename, value));
         }
+
+        /// <summary>
+        /// Called when entity metadata added/updated
+        /// </summary>
+        /// <param name="entityID">Target entity's ID</param>
+        /// <param name="metadata">Metadata</param>
+        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
+        {
+
+        }
         #endregion
     }
 }
