@@ -28,6 +28,11 @@ MCC.LoadBot(new VkMessager(vkToken, chatId, botCommunityId));
 /// - VK ChatId (typically 2000000001, etc.)
 /// - Bot's CommunityId
 /// </summary>
+
+/// <summary>
+/// Client for VK Community (bot) LongPool API.
+/// Also can send messages.
+/// </summary>
 internal class VkLongPoolClient
 {
 	/* VK Client*/
