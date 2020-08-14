@@ -114,28 +114,42 @@ internal class VkLongPoolClient
 	/* Utils */
 	public string Utils_GetShortLink(string url)
 	{
-		string json = CallVkMethod("utils.getShortLink", "url=" + url);
-		var j = JsonConvert.DeserializeObject(json) as JObject;
-		var link = j["response"]["short_url"].ToString();
-		return link;
+		if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
+		{
+			string json = CallVkMethod("utils.getShortLink", "url=" + url);
+			var j = JsonConvert.DeserializeObject(json) as JObject;
+			var link = j["response"]["short_url"].ToString();
+			if (link == "")
+				return Utils_GetShortLink(url);
+			else
+				return link;
+		}
+		else
+			return "Invalid link format";
 	}
 	/* Docs */
 	public string Docs_GetMessagesUploadServer(string peer_id, string type, string file)
 	{
 		string string1 = CallVkMethod("docs.getMessagesUploadServer", "peer_id=" + peer_id + "&type=" + type);
-		string uploadurl = Regex.Match(string1, "\"upload_url\":\"(.*)\"").Groups[1].Value.Replace(@"\/", "/");
-		return uploadurl;
+		if (string1 != "")
+		{
+			string uploadurl = Regex.Match(string1, "\"upload_url\":\"(.*)\"").Groups[1].Value.Replace(@"\/", "/");
+			return uploadurl;
+		} else return Docs_GetMessagesUploadServer(peer_id, type, file);
 	}
 	public string Docs_Upload(string url, string file)
 	{
 		var c = new WebClient();
 		var r2 = Encoding.UTF8.GetString(c.UploadFile(url, "POST", file));
-		return r2;
+		if (r2 != "") return r2;
+		else return Docs_Upload(url, file);
 	}
 	public string Docs_Save(string file, string title)
 	{
 		var j2 = JsonConvert.DeserializeObject(file) as JObject;
-		return CallVkMethod("docs.save", "&file=" + j2["file"].ToString() + "&title=" + title);
+		string json = CallVkMethod("docs.save", "&file=" + j2["file"].ToString() + "&title=" + title);
+		if (json != "") return json;
+		else return Docs_Save(file, title)$
 	}
 	public string Docs_GetSendAttachment(string file)
 	{
@@ -147,29 +161,56 @@ internal class VkLongPoolClient
 	public void Groups_Online(bool enable = true)
 	{
 		if (enable)
-			CallVkMethod("groups.enableOnline", "group_id=" + BotCommunityId);
+			string json = CallVkMethod("groups.enableOnline", "group_id=" + BotCommunityId);
+			if (json == "")
+				Groups_Online(enable);
 		else
-			CallVkMethod("groups.disableOnline", "group_id=" + BotCommunityId);
+			string json = CallVkMethod("groups.disableOnline", "group_id=" + BotCommunityId);
+			if (json == "")
+				Groups_Online(enable);
 	}
 	public string Groups_GetById_GetName(string group_id)
 	{
 		try
 		{
 			string js = CallVkMethod("groups.getById", "group_id=" + group_id);
-			var j3 = JsonConvert.DeserializeObject(js) as JObject;
-			string name = j3["response"][0]["name"].ToString();
-			return name;
+			if (js != "")
+			{
+				var j3 = JsonConvert.DeserializeObject(js) as JObject;
+				string name = j3["response"][0]["name"].ToString();
+				return name;
+			}
+			else return Groups_GetById_GetName(group_id);
 		} catch { return ""; }
+	}
+	/* Users */
+	public string Users_Get_FirstName(string user_id)
+	{
+		string js = CallVkMethod("users.get", "user_ids=" + user_id);
+		if (js != "")
+		{
+			var j3 = JsonConvert.DeserializeObject(js) as JObject;
+			string name = j3["response"][0]["first_name"].ToString();
+			return name;
+		}
+		else return Users_Get_FirstName(user_id);
+		return "";
 	}
 	/* Messages */
 	public void Messages_Kick_Group(string chat_id, string user_id)
 	{
 		if (user_id != BotCommunityId)
-		CallVkMethod("messages.removeChatUser", "chat_id=" + chat_id + "&member_id=" + "-" + user_id);
+		{
+			string json = CallVkMethod("messages.removeChatUser", "chat_id=" + chat_id + "&member_id=" + "-" + user_id);
+			if (json == "")
+				Messages_Kick_Group(chat_id, user_id);
+		}
 	}
 	public void Messages_Kick_User(string chat_id, string user_id)
 	{
-		CallVkMethod("messages.removeChatUser", "chat_id=" + chat_id + "&user_id=" + user_id + "&member_id=" + user_id);
+		string json = CallVkMethod("messages.removeChatUser", "chat_id=" + chat_id + "&user_id=" + user_id + "&member_id=" + user_id);
+		if (json == "")
+			Messages_Kick_User(chat_id, user_id);
 	}
 	public void Messages_SetActivity(string chatId, string type = "typing")
 	{
@@ -181,14 +222,21 @@ internal class VkLongPoolClient
 	}
 	public string Messages_GetInviteLink(string chatId, bool reset)
 	{
-		string json = "";
-		if (reset == true)
-			json = CallVkMethod("messages.getInviteLink", "peer_id=" + chatId + "&group_id=" + BotCommunityId + "&reset=1");
-		else
-			json = CallVkMethod("messages.getInviteLink", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
-		var j = JsonConvert.DeserializeObject(json) as JObject;
-		var link = j["response"]["link"].ToString();
-		return link;
+		try
+		{
+			string json = CallVkMethod("messages.getInviteLink", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
+			if (json != "")
+			{
+				var j = JsonConvert.DeserializeObject(json) as JObject;
+				var link = j["response"]["link"].ToString();
+				if (link == "")
+					return Messages_GetInviteLink(chatId, reset);
+				else return link;
+			}
+			else return Messages_GetInviteLink(chatId, reset);
+		} catch { 
+			return Messages_GetInviteLink(chatId, reset);
+		}
 	}
 	/* Messages Send */
 	public void Messages_Send_Text(string chatId, string text)
@@ -196,9 +244,11 @@ internal class VkLongPoolClient
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text);
 		try
 		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text);
+			if (reply == "")
+				Messages_Send_Text(chatId, text);
+			var j = JsonConvert.DeserializeObject(reply) as JObject;
+			if (j["error"]["error_code"].ToString() != "")
+				CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text);
 		} catch { }
 	}
 	public void Messages_Send_Keyboard(string chatId, Keyboard keyboard)
@@ -207,9 +257,11 @@ internal class VkLongPoolClient
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&keyboard=" + kb);
 		try
 		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&keyboard=" + kb);
+			if (reply == "")
+				Messages_Send_Keyboard(chatId, keyboard);
+			var j = JsonConvert.DeserializeObject(reply) as JObject;
+			if (j["error"]["error_code"].ToString() != "")
+				CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&keyboard=" + kb);
 		} catch { }
 	}
 	public void Messages_Send_TextAndKeyboard(string chatId, string text, Keyboard keyboard)
@@ -218,9 +270,11 @@ internal class VkLongPoolClient
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&keyboard=" + kb);
 		try
 		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&keyboard=" + kb);
+			if (reply == "")
+				Messages_Send_TextAndKeyboard(chatId, text, keyboard);
+			var j = JsonConvert.DeserializeObject(reply) as JObject;
+			if (j["error"]["error_code"].ToString() != "")
+				CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&keyboard=" + kb);
 		} catch { }
 	}
 	public void Messages_Send_Sticker(string chatId, int sticker_id)
@@ -228,9 +282,11 @@ internal class VkLongPoolClient
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&sticker_id=" + sticker_id);
 		try
 		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&sticker_id=" + sticker_id);
+			if (reply == "")
+				Messages_Send_Sticker(chatId, sticker_id);
+			var j = JsonConvert.DeserializeObject(reply) as JObject;
+			if (j["error"]["error_code"].ToString() != "")
+				CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&sticker_id=" + sticker_id);
 		} catch { }
 	}
 	public void Messages_Send_TextAndDocument(string chatId, string text, string file, string title)
@@ -242,9 +298,11 @@ internal class VkLongPoolClient
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&attachment=" + at);
 		try
 		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-			if (j["error"]["error_code"].ToString() != "")
-				CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&attachment=" + at);
+			if (reply == "")
+				Messages_Send_TextAndDocument(chatId, text, file, title);
+			var j = JsonConvert.DeserializeObject(reply) as JObject;
+				if (j["error"]["error_code"].ToString() != "")
+					CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&attachment=" + at);
 		} catch { }
 	}
 	public void Messages_Send_Custom(string chatId, string custom)
@@ -252,46 +310,60 @@ internal class VkLongPoolClient
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + custom);
 		try
 		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + custom);
+			if (reply == "")
+				Messages_Send_Custom(chatId, custom);
+			var j = JsonConvert.DeserializeObject(reply) as JObject;
+			if (j["error"]["error_code"].ToString() != "")
+				CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + custom);
 		} catch { }
 	}	
 	/* Messages GetConversationMembers*/
-	public int Messages_GetConversationMembers_GetCount_v1(string chatId)
+	public int Messages_GetConversationMembers_GetCount(string chatId)
 	{
 		var json = CallVkMethod("messages.getConversationMembers", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
-		var j = JsonConvert.DeserializeObject(json) as JObject;
-		int u2 = int.Parse(j["response"]["count"].ToString());
-		return u2;
+		if (json != "")
+		{
+			var j = JsonConvert.DeserializeObject(json) as JObject;
+			int u2 = int.Parse(j["response"]["count"].ToString());
+			return u2;
+		}
+		else return Messages_GetConversationMembers_GetCount(chatId);
 	}
 	public string Messages_GetConversationMembers_GetProfiles(string chatId)
 	{
 		var json = CallVkMethod("messages.getConversationMembers", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
-		string ids = "";
-		JObject json1 = JObject.Parse(json);
-		IList<JToken> results = json1["response"]["profiles"].Children().ToList();
-		foreach (JToken result in results)
+		if (json != "")
 		{
-			string id = result["id"].ToString();
-			if (!id.Contains("-"))
-				ids += id + ", ";
+			string ids = "";
+			JObject json1 = JObject.Parse(json);
+			IList<JToken> results = json1["response"]["profiles"].Children().ToList();
+			foreach (JToken result in results)
+			{
+				string id = result["id"].ToString();
+				if (!id.Contains("-"))
+					ids += id + ", ";
+			}
+			return ids;
 		}
-		return ids;
+		else return Messages_GetConversationMembers_GetProfiles(chatId);
 	}
 	public string Messages_GetConversationMembers_GetItems_member_id(string chatId)
 	{
 		var json = CallVkMethod("messages.getConversationMembers", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
-		string ids = "";
-		JObject json1 = JObject.Parse(json);
-		IList<JToken> results = json1["response"]["items"].Children().ToList();
-		foreach (JToken result in results)
+		if (json != "")
 		{
-			string id = result["member_id"].ToString();
-			if (!id.Contains("-"))
-				ids += id + ", ";
+			string ids = "";
+			JObject json1 = JObject.Parse(json);
+			IList<JToken> results = json1["response"]["items"].Children().ToList();
+			foreach (JToken result in results)
+			{
+				string id = result["member_id"].ToString();
+				if (!id.Contains("-"))
+					ids += id + ", ";
+			}
+			return ids;
 		}
-		return ids;
+		else return Messages_GetConversationMembers_GetItems_member_id(chatId);
 	}
 
 	public class Keyboard
@@ -385,7 +457,7 @@ internal class VkLongPoolClient
 		}
 		LastTs = Convert.ToInt32(data.Properties["ts"].StringValue);
 		var updates = data.Properties["updates"].DataArray;
-		var messages = new List<Tuple<string, string, string, string, string, string>>();
+		List<Tuple<string, string, string, string, string, string>> messages = new List<Tuple<string, string, string, string, string, string>>();
 		foreach (var str in updates)
 		{
 			if (str.Properties["type"].StringValue != "message_new") continue;
