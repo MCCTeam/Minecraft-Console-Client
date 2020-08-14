@@ -28,60 +28,6 @@ MCC.LoadBot(new VkMessager(vkToken, chatId, botCommunityId));
 /// - VK ChatId (typically 2000000001, etc.)
 /// - Bot's CommunityId
 /// </summary>
-public class VkMessager : ChatBot
-{
-    private VkLongPoolClient VkLongPoolClient { get; set; }
-    private readonly string ChatId;
-
-    /// <summary>
-    /// This bot forwarding messages between Minecraft and VKonrakte chats.
-    /// Shares only messages that starts with dot ("."). Example: .Hello!
-    /// Also, send message to VK when any player joins or leaves.
-    /// </summary>
-    /// <param name="vkToken">VK Community token</param>
-    /// <param name="chatId">VK ChatId</param>
-    /// <param name="botCommunityId">Bot's CommunityId</param>
-    public VkMessager(string vkToken, string chatId, string botCommunityId)
-    {
-        VkLongPoolClient = new VkLongPoolClient(vkToken, botCommunityId, ProcessMsgFromVk);
-        ChatId = chatId;
-    }
-
-    public override void GetText(string text)
-    {
-        text = GetVerbatim(text);
-        string sender = "";
-        string message = "";
-
-        if (IsChatMessage(text, ref message, ref sender))
-        {
-            ProcessMsgFromMinecraft(sender, message);
-        }
-        else if (IsPrivateMessage(text, ref message, ref sender))
-        {
-            ProcessMsgFromMinecraft(sender, message);
-        }
-        else
-        {
-            ProcessMsgFromMinecraft("Server", text);
-        }
-    }
-
-    private void ProcessMsgFromVk(string senderId, string text)
-    {
-        if (!text.StartsWith(".")) return;
-
-        SendText("[VK " + senderId.Substring(0, 2) + "]: " + text.TrimStart('.'));
-    }
-
-    private void ProcessMsgFromMinecraft(string senderName, string text)
-    {
-        if (!text.StartsWith(".") && !text.Contains("left") && !text.Contains("joined")) return;
-        if (text.Contains("[VK")) return; // loop protection
-
-        VkLongPoolClient.SendMessage(ChatId, String.Format("[MC {0}]\r\n{1}", senderName, text.TrimStart('.')));
-    }
-}
 
 /// <summary>
 /// Client for VK Community (bot) LongPool API.
@@ -114,30 +60,43 @@ internal class VkLongPoolClient
 	/* Utils */
 	public string Utils_GetShortLink(string url)
 	{
-		string json = CallVkMethod("utils.getShortLink", "url=" + url);
-		var j = JsonConvert.DeserializeObject(json) as JObject;
-		var link = j["response"]["short_url"].ToString();
-		return link;
+		if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
+		{
+			string json = CallVkMethod("utils.getShortLink", "url=" + url);
+			var j = JsonConvert.DeserializeObject(json) as JObject;
+			var link = j["response"]["short_url"].ToString();
+			if (link == "") return Utils_GetShortLink(url);
+			else return link;
+		}
+		else return "Invalid link format";
 	}
 	/* Docs */
 	public string Docs_GetMessagesUploadServer(string peer_id, string type, string file)
 	{
 		string string1 = CallVkMethod("docs.getMessagesUploadServer", "peer_id=" + peer_id + "&type=" + type);
-		string uploadurl = Regex.Match(string1, "\"upload_url\":\"(.*)\"").Groups[1].Value.Replace(@"\/", "/");
-		return uploadurl;
+		if (string1 != "")
+		{
+			string uploadurl = Regex.Match(string1, "\"upload_url\":\"(.*)\"").Groups[1].Value.Replace(@"\/", "/");
+			return uploadurl;
+		}
+		else return Docs_GetMessagesUploadServer(peer_id, type, file);
 	}
 	public string Docs_Upload(string url, string file)
 	{
 		var c = new WebClient();
 		var r2 = Encoding.UTF8.GetString(c.UploadFile(url, "POST", file));
-		return r2;
+		if (r2 != "") return r2;
+		else return Docs_Upload(url, file);
 	}
 	public string Docs_Save(string file, string title)
 	{
 		var j2 = JsonConvert.DeserializeObject(file) as JObject;
-		return CallVkMethod("docs.save", "&file=" + j2["file"].ToString() + "&title=" + title);
+		string json = CallVkMethod("docs.save", "&file=" + j2["file"].ToString() + "&title=" + title);
+		if (json != "")
+			return json;
+		else return Docs_Save(file, title);
 	}
-	public string Docs_GetSendAttachment(string file)
+	public string Docs_Get_Send_Attachment(string file)
 	{
 		var j3 = JsonConvert.DeserializeObject(file) as JObject;
 		var at = "doc" + j3["response"]["doc"]["owner_id"].ToString() + "_" + j3["response"]["doc"]["id"].ToString();
@@ -147,29 +106,55 @@ internal class VkLongPoolClient
 	public void Groups_Online(bool enable = true)
 	{
 		if (enable)
-			CallVkMethod("groups.enableOnline", "group_id=" + BotCommunityId);
+			string json = CallVkMethod("groups.enableOnline", "group_id=" + BotCommunityId);
+			if (json == "")
+				Groups_Online(enable);
 		else
-			CallVkMethod("groups.disableOnline", "group_id=" + BotCommunityId);
+			string json = CallVkMethod("groups.disableOnline", "group_id=" + BotCommunityId);
+			if (json == "")
+				Groups_Online(enable);
 	}
 	public string Groups_GetById_GetName(string group_id)
 	{
 		try
 		{
 			string js = CallVkMethod("groups.getById", "group_id=" + group_id);
-			var j3 = JsonConvert.DeserializeObject(js) as JObject;
-			string name = j3["response"][0]["name"].ToString();
-			return name;
+			if (js != "")
+			{
+				var j3 = JsonConvert.DeserializeObject(js) as JObject;
+				string name = j3["response"][0]["name"].ToString();
+				return name;
+			}
+			else return Groups_GetById_GetName(group_id);
 		} catch { return ""; }
+	}
+	/* Users */
+	public string Users_Get_FirstName(string user_id)
+	{
+		string js = CallVkMethod("users.get", "user_ids=" + user_id);
+		if (js != "")
+		{
+			var j3 = JsonConvert.DeserializeObject(js) as JObject;
+			string name = j3["response"][0]["first_name"].ToString();
+			return name;
+		}
+		else return Users_Get_FirstName(user_id);
 	}
 	/* Messages */
 	public void Messages_Kick_Group(string chat_id, string user_id)
 	{
 		if (user_id != BotCommunityId)
-		CallVkMethod("messages.removeChatUser", "chat_id=" + chat_id + "&member_id=" + "-" + user_id);
+		{
+			string json = CallVkMethod("messages.removeChatUser", "chat_id=" + chat_id + "&member_id=" + "-" + user_id);
+			if (json == "")
+				Messages_Kick_Group(chat_id, user_id);
+		}
 	}
 	public void Messages_Kick_User(string chat_id, string user_id)
 	{
-		CallVkMethod("messages.removeChatUser", "chat_id=" + chat_id + "&user_id=" + user_id + "&member_id=" + user_id);
+		string json = CallVkMethod("messages.removeChatUser", "chat_id=" + chat_id + "&user_id=" + user_id + "&member_id=" + user_id);
+		if (json == "")
+			Messages_Kick_User(chat_id, user_id);
 	}
 	public void Messages_SetActivity(string chatId, string type = "typing")
 	{
@@ -181,117 +166,110 @@ internal class VkLongPoolClient
 	}
 	public string Messages_GetInviteLink(string chatId, bool reset)
 	{
-		string json = "";
-		if (reset == true)
-			json = CallVkMethod("messages.getInviteLink", "peer_id=" + chatId + "&group_id=" + BotCommunityId + "&reset=1");
-		else
-			json = CallVkMethod("messages.getInviteLink", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
-		var j = JsonConvert.DeserializeObject(json) as JObject;
-		var link = j["response"]["link"].ToString();
-		return link;
+		try
+		{
+			string json = CallVkMethod("messages.getInviteLink", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
+			if (json != "")
+			{
+				var j = JsonConvert.DeserializeObject(json) as JObject;
+				var link = j["response"]["link"].ToString();
+				if (link == "")
+					return Messages_GetInviteLink(chatId, reset);
+				else return link;
+			}
+			else return Messages_GetInviteLink(chatId, reset);
+		} catch { return Messages_GetInviteLink(chatId, reset); }
 	}
 	/* Messages Send */
 	public void Messages_Send_Text(string chatId, string text)
 	{
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text);
-		try
-		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text);
-		} catch { }
+		if (reply == "")
+			Messages_Send_Text(chatId, text);
 	}
 	public void Messages_Send_Keyboard(string chatId, Keyboard keyboard)
 	{
 		string kb = keyboard.GetKeyboard();
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&keyboard=" + kb);
-		try
-		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&keyboard=" + kb);
-		} catch { }
+		if (reply == "")
+			Messages_Send_Keyboard(chatId, keyboard);
 	}
 	public void Messages_Send_TextAndKeyboard(string chatId, string text, Keyboard keyboard)
 	{
 		string kb = keyboard.GetKeyboard();
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&keyboard=" + kb);
-		try
-		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&keyboard=" + kb);
-		} catch { }
+		if (reply == "")
+			Messages_Send_TextAndKeyboard(chatId, text, keyboard);
 	}
 	public void Messages_Send_Sticker(string chatId, int sticker_id)
 	{
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&sticker_id=" + sticker_id);
-		try
-		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&sticker_id=" + sticker_id);
-		} catch { }
+		if (reply == "")
+			Messages_Send_Sticker(chatId, sticker_id);
 	}
 	public void Messages_Send_TextAndDocument(string chatId, string text, string file, string title)
 	{
 		string u2 = Docs_GetMessagesUploadServer(chatId, "doc", file);
 		string r2 = Docs_Upload(u2, file);
 		string r3 = Docs_Save(r2, title);
-		string at = Docs_GetSendAttachment(r3);
+		string at = Docs_Get_Send_Attachment(r3);
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&attachment=" + at);
-		try
-		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-			if (j["error"]["error_code"].ToString() != "")
-				CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + "&message=" + text + "&attachment=" + at);
-		} catch { }
+		if (reply == "")
+			Messages_Send_TextAndDocument(chatId, text, file, title);
 	}
 	public void Messages_Send_Custom(string chatId, string custom)
 	{
 		string reply = CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + custom);
-		try
-		{
-		var j = JsonConvert.DeserializeObject(reply) as JObject;
-		if (j["error"]["error_code"].ToString() != "")
-			CallVkMethod("messages.send", "peer_id=" + chatId + "&random_id=" + rnd.Next() + custom);
-		} catch { }
+		if (reply == "")
+			Messages_Send_Custom(chatId, custom);
 	}	
 	/* Messages GetConversationMembers*/
-	public int Messages_GetConversationMembers_GetCount_v1(string chatId)
+	public int Messages_GetConversationMembers_GetCount(string chatId)
 	{
 		var json = CallVkMethod("messages.getConversationMembers", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
-		var j = JsonConvert.DeserializeObject(json) as JObject;
-		int u2 = int.Parse(j["response"]["count"].ToString());
-		return u2;
+		if (json != "")
+		{
+			var j = JsonConvert.DeserializeObject(json) as JObject;
+			int u2 = int.Parse(j["response"]["count"].ToString());
+			return u2;
+		}
+		else return Messages_GetConversationMembers_GetCount(chatId);
 	}
 	public string Messages_GetConversationMembers_GetProfiles(string chatId)
 	{
 		var json = CallVkMethod("messages.getConversationMembers", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
-		string ids = "";
-		JObject json1 = JObject.Parse(json);
-		IList<JToken> results = json1["response"]["profiles"].Children().ToList();
-		foreach (JToken result in results)
+		if (json != "")
 		{
-			string id = result["id"].ToString();
-			if (!id.Contains("-"))
-				ids += id + ", ";
+			string ids = "";
+			JObject json1 = JObject.Parse(json);
+			IList<JToken> results = json1["response"]["profiles"].Children().ToList();
+			foreach (JToken result in results)
+			{
+				string id = result["id"].ToString();
+				if (!id.Contains("-"))
+					ids += id + ", ";
+			}
+			return ids;
 		}
-		return ids;
+		else return Messages_GetConversationMembers_GetProfiles(chatId);
 	}
 	public string Messages_GetConversationMembers_GetItems_member_id(string chatId)
 	{
 		var json = CallVkMethod("messages.getConversationMembers", "peer_id=" + chatId + "&group_id=" + BotCommunityId);
-		string ids = "";
-		JObject json1 = JObject.Parse(json);
-		IList<JToken> results = json1["response"]["items"].Children().ToList();
-		foreach (JToken result in results)
+		if (json != "")
 		{
-			string id = result["member_id"].ToString();
-			if (!id.Contains("-"))
-				ids += id + ", ";
+			string ids = "";
+			JObject json1 = JObject.Parse(json);
+			IList<JToken> results = json1["response"]["items"].Children().ToList();
+			foreach (JToken result in results)
+			{
+				string id = result["member_id"].ToString();
+				if (!id.Contains("-"))
+					ids += id + ", ";
+			}
+			return ids;
 		}
-		return ids;
+		else return Messages_GetConversationMembers_GetItems_member_id(chatId);
 	}
 
 	public class Keyboard
@@ -314,9 +292,9 @@ internal class VkLongPoolClient
 			buttons.Add(new List<object>() { button });
 		}
 		public string GetKeyboard()
-        	{
+        {
 			return JsonConvert.SerializeObject(this, Formatting.Indented); ;
-        	}
+        }
 		public class Buttons
 		{
 			public Action action;
@@ -385,7 +363,7 @@ internal class VkLongPoolClient
 		}
 		LastTs = Convert.ToInt32(data.Properties["ts"].StringValue);
 		var updates = data.Properties["updates"].DataArray;
-		var messages = new List<Tuple<string, string, string, string, string, string>>();
+		List<Tuple<string, string, string, string, string, string>> messages = new List<Tuple<string, string, string, string, string, string>>();
 		foreach (var str in updates)
 		{
 			if (str.Properties["type"].StringValue != "message_new") continue;
@@ -411,7 +389,6 @@ internal class VkLongPoolClient
 		{
 			var url = String.Format("https://api.vk.com/method/{0}?v=5.122&access_token={1}&{2}", methodName, Token, data);
 			var jsonResult = SenderWebClient.DownloadString(url);
-
 			return jsonResult;
 		}
 		catch { return String.Empty; }
