@@ -1609,6 +1609,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
         }
+
         public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item)
         {
             try
@@ -1624,22 +1625,24 @@ namespace MinecraftClient.Protocol.Handlers
 
                 byte button = 0;
                 byte mode = 0;
+
                 switch (action)
                 {
-                    case WindowActionType.LeftClick: button = 0; break;
-                    case WindowActionType.RightClick: button = 1; break;
-                    case WindowActionType.MiddleClick: button = 2; mode = 3; break;
-                    case WindowActionType.ShiftClick: button = 0; mode = 1; item = new Item(-1, 0, null); break;
-                    case WindowActionType.DropItem:
-                        button = 0;
-                        mode = 4;
-                        item = new Item(-1, 0, null);
-                        break;
-                    case WindowActionType.DropItemStack:
-                        button = 1;
-                        mode = 4;
-                        item = new Item(-1, 0, null);
-                        break;
+                    case WindowActionType.LeftClick:       button = 0;  break;
+                    case WindowActionType.RightClick:      button = 1;  break;
+                    case WindowActionType.MiddleClick:     button = 2;  mode = 3; break;
+                    case WindowActionType.ShiftClick:      button = 0;  mode = 1; item = new Item(-1, 0, null); break;
+                    case WindowActionType.DropItem:        button = 0;  mode = 4; item = new Item(-1, 0, null); break;
+                    case WindowActionType.DropItemStack:   button = 1;  mode = 4; item = new Item(-1, 0, null); break;
+                    case WindowActionType.StartDragLeft:   button = 0;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.StartDragRight:  button = 4;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.StartDragMiddle: button = 8;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.EndDragLeft:     button = 2;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.EndDragRight:    button = 6;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.EndDragMiddle:   button = 10; mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.AddDragLeft:     button = 1;  mode = 5; item = new Item(-1, 0, null); break;
+                    case WindowActionType.AddDragRight:    button = 5;  mode = 5; item = new Item(-1, 0, null); break;
+                    case WindowActionType.AddDragMiddle:   button = 9;  mode = 5; item = new Item(-1, 0, null); break;
                 }
 
                 List<byte> packet = new List<byte>();
