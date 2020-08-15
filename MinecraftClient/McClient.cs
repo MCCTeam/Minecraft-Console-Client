@@ -59,6 +59,7 @@ namespace MinecraftClient
         private object lastKeepAliveLock = new object();
         private int respawnTicks = 0;
         private int gamemode = 0;
+        private int protocolVersion;
 
         private int playerEntityID;
 
@@ -155,6 +156,7 @@ namespace MinecraftClient
             this.username = user;
             this.host = server_ip;
             this.port = port;
+            this.protocolVersion = protocolversion;
 
             if (!singlecommand)
             {
@@ -2122,9 +2124,19 @@ namespace MinecraftClient
             if (entities.ContainsKey(entityID))
             {
                 // Get health data for an entity
-                if (metadata.ContainsKey(8) && metadata[8].GetType() == typeof(float))
+                int key;
+                // Key for 1.10+ is 7 and 1.14+ is 8
+                if (protocolVersion >= Protocol.Handlers.Protocol18Handler.MC114Version)
                 {
-                    entities[entityID].Health = (float)metadata[8];
+                    key = 8;
+                }
+                else
+                {
+                    key = 7;
+                }
+                if (metadata.ContainsKey(key) && metadata[key].GetType() == typeof(float))
+                {
+                    entities[entityID].Health = (float)metadata[key];
                 }
             }
         }

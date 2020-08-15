@@ -501,11 +501,25 @@ namespace MinecraftClient.Protocol.Handlers
             while (Key != 0xff)
             {
                 int Type = ReadNextVarInt(cache);
+
+                // starting from 1.13, Optional Chat is inserted as number 5 in 1.13 and IDs after 5 got shifted.
+                // Increase type ID by 1 if
+                // - below 1.13
+                // - type ID larger than 4
+                if (protocolversion < Protocol18Handler.MC113Version)
+                {
+                    if (Type > 4)
+                    {
+                        Type += 1;
+                    }
+                }
                 // Value's data type is depended on Type
                 object Value = null;
 
-                // We need to go through every data in order to get all fields in the packet
-                // Store the value as needed
+                // This is backward compatible since new type is appended to the end
+                // Version upgrade note
+                // - Check type ID got shifted or not
+                // - Add new type if any
                 switch (Type)
                 {
                     case 0: // byte
@@ -607,6 +621,8 @@ namespace MinecraftClient.Protocol.Handlers
                     case 18: // Pose
                         Value = ReadNextVarInt(cache);
                         break;
+                    default:
+                        throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + Type + ". Is this up to date for new MC Version?");
                 }
                 data.Add(Key, Value);
                 Key = ReadNextByte(cache);
