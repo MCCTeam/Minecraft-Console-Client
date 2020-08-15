@@ -1640,6 +1640,18 @@ namespace MinecraftClient.Protocol.Handlers
                         mode = 4;
                         item = new Item(-1, 0, null);
                         break;
+                    // Start dragging
+                    case WindowActionType.StartDragLeft: button = 0; mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.StartDragRight: button = 4; mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.StartDragMiddle: button = 8; mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    // End dragging
+                    case WindowActionType.EndDragLeft: button = 2; mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.EndDragRight: button = 6; mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    case WindowActionType.EndDragMiddle: button = 10; mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
+                    // Add dragged slot
+                    case WindowActionType.AddDragLeft: button = 1; mode = 5; item = new Item(-1, 0, null); break;
+                    case WindowActionType.AddDragRight: button = 5; mode = 5; item = new Item(-1, 0, null); break;
+                    case WindowActionType.AddDragMiddle: button = 9; mode = 5; item = new Item(-1, 0, null); break;
                 }
 
                 List<byte> packet = new List<byte>();

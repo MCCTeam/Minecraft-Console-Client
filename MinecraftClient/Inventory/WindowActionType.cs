@@ -12,6 +12,15 @@ namespace MinecraftClient.Inventory
         MiddleClick,
         ShiftClick,
         DropItem,
-        DropItemStack
+        DropItemStack,
+        StartDragLeft,
+        StartDragRight,
+        StartDragMiddle,
+        EndDragLeft,
+        EndDragRight,
+        EndDragMiddle,
+        AddDragLeft,
+        AddDragRight,
+        AddDragMiddle,
     }
 }
