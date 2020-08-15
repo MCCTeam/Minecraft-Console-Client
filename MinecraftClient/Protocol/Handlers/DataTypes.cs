@@ -494,6 +494,142 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+        public Dictionary<int, object> ReadNextMetadata(Queue<byte> cache)
+        {
+            Dictionary<int, object> data = new Dictionary<int, object>();
+            byte Key = ReadNextByte(cache);
+            while (Key != 0xff)
+            {
+                int Type = ReadNextVarInt(cache);
+
+                // starting from 1.13, Optional Chat is inserted as number 5 in 1.13 and IDs after 5 got shifted.
+                // Increase type ID by 1 if
+                // - below 1.13
+                // - type ID larger than 4
+                if (protocolversion < Protocol18Handler.MC113Version)
+                {
+                    if (Type > 4)
+                    {
+                        Type += 1;
+                    }
+                }
+                // Value's data type is depended on Type
+                object Value = null;
+
+                // This is backward compatible since new type is appended to the end
+                // Version upgrade note
+                // - Check type ID got shifted or not
+                // - Add new type if any
+                switch (Type)
+                {
+                    case 0: // byte
+                        Value = ReadNextByte(cache);
+                        break;
+                    case 1: // VarInt
+                        Value = ReadNextVarInt(cache);
+                        break;
+                    case 2: // Float
+                        Value = ReadNextFloat(cache);
+                        break;
+                    case 3: // String
+                        Value = ReadNextString(cache);
+                        break;
+                    case 4: // Chat
+                        Value = ReadNextString(cache);
+                        break;
+                    case 5: // Optional Chat
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextString(cache);
+                        }
+                        break;
+                    case 6: // Slot
+                        Value = ReadNextItemSlot(cache);
+                        break;
+                    case 7: // Boolean
+                        Value = ReadNextBool(cache);
+                        break;
+                    case 8: // Rotation (3x floats)
+                        List<float> t = new List<float>();
+                        t.Add(ReadNextFloat(cache));
+                        t.Add(ReadNextFloat(cache));
+                        t.Add(ReadNextFloat(cache));
+                        Value = t;
+                        break;
+                    case 9: // Position
+                        Value = ReadNextLocation(cache);
+                        break;
+                    case 10: // Optional Position
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextLocation(cache);
+                        }
+                        break;
+                    case 11: // Direction (VarInt)
+                        Value = ReadNextVarInt(cache);
+                        break;
+                    case 12: // Optional UUID
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextUUID(cache);
+                        }
+                        break;
+                    case 13: // Optional BlockID (VarInt)
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextVarInt(cache);
+                        }
+                        break;
+                    case 14: // NBT
+                        Value = ReadNextNbt(cache);
+                        break;
+                    case 15: // Particle
+                             // Currecutly not handled. Reading data only
+                        int ParticleID = ReadNextVarInt(cache);
+                        switch (ParticleID)
+                        {
+                            case 3:
+                                ReadNextVarInt(cache);
+                                break;
+                            case 14:
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                ReadNextFloat(cache);
+                                break;
+                            case 23:
+                                ReadNextVarInt(cache);
+                                break;
+                            case 32:
+                                ReadNextItemSlot(cache);
+                                break;
+                        }
+                        break;
+                    case 16: // Villager Data (3x VarInt)
+                        List<int> d = new List<int>();
+                        d.Add(ReadNextVarInt(cache));
+                        d.Add(ReadNextVarInt(cache));
+                        d.Add(ReadNextVarInt(cache));
+                        Value = d;
+                        break;
+                    case 17: // Optional VarInt
+                        if (ReadNextBool(cache))
+                        {
+                            Value = ReadNextVarInt(cache);
+                        }
+                        break;
+                    case 18: // Pose
+                        Value = ReadNextVarInt(cache);
+                        break;
+                    default:
+                        throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + Type + ". Is this up to date for new MC Version?");
+                }
+                data.Add(Key, Value);
+                Key = ReadNextByte(cache);
+            }
+            return data;
+        }
+
         /// <summary>
         /// Build an uncompressed Named Binary Tag blob for sending over the network
         /// </summary>

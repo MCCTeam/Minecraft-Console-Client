@@ -2111,6 +2111,20 @@ namespace MinecraftClient
         {
             DispatchBotEvent(bot => bot.OnUpdateScore(entityname, action, objectivename, value));
         }
+
+        /// <summary>
+        /// Called when the health of an entity changed
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="health">The health of the entity</param>
+        public void OnEntityHealth(int entityID, float health)
+        {
+            if (entities.ContainsKey(entityID))
+            {
+                entities[entityID].Health = health;
+                DispatchBotEvent(bot => bot.OnEntityHealth(entityID, health));
+            }
+        }
         #endregion
     }
 }

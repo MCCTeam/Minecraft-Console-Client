@@ -109,6 +109,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x3B: return PacketIncomingType.EntityVelocity;
                     case 0x3C: return PacketIncomingType.EntityEquipment;
                     case 0x4B: return PacketIncomingType.EntityEffect;
+                    case 0x39: return PacketIncomingType.EntityMetadata;
                     case 0x44: return PacketIncomingType.TimeUpdate;
                     case 0x3E: return PacketIncomingType.UpdateHealth;
                     case 0x3D: return PacketIncomingType.SetExperience;
@@ -157,6 +158,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x3D: return PacketIncomingType.EntityVelocity;
                     case 0x3E: return PacketIncomingType.EntityEquipment;
                     case 0x4E: return PacketIncomingType.EntityEffect;
+                    case 0x3B: return PacketIncomingType.EntityMetadata;
                     case 0x46: return PacketIncomingType.TimeUpdate;
                     case 0x40: return PacketIncomingType.UpdateHealth;
                     case 0x3F: return PacketIncomingType.SetExperience;
@@ -205,6 +207,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x3E: return PacketIncomingType.EntityVelocity;
                     case 0x3F: return PacketIncomingType.EntityEquipment;
                     case 0x4F: return PacketIncomingType.EntityEffect;
+                    case 0x3C: return PacketIncomingType.EntityMetadata;
                     case 0x47: return PacketIncomingType.TimeUpdate;
                     case 0x41: return PacketIncomingType.UpdateHealth;
                     case 0x40: return PacketIncomingType.SetExperience;
@@ -253,6 +256,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x41: return PacketIncomingType.EntityVelocity;
                     case 0x42: return PacketIncomingType.EntityEquipment;
                     case 0x53: return PacketIncomingType.EntityEffect;
+                    case 0x3F: return PacketIncomingType.EntityMetadata;
                     case 0x4A: return PacketIncomingType.TimeUpdate;
                     case 0x44: return PacketIncomingType.UpdateHealth;
                     case 0x43: return PacketIncomingType.SetExperience;
@@ -301,6 +305,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x41: return PacketIncomingType.EntityVelocity;
                     case 0x46: return PacketIncomingType.EntityEquipment;
                     case 0x59: return PacketIncomingType.EntityEffect;
+                    case 0x43: return PacketIncomingType.EntityMetadata;
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     case 0x48: return PacketIncomingType.UpdateHealth;
                     case 0x47: return PacketIncomingType.SetExperience;
@@ -349,6 +354,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x46: return PacketIncomingType.EntityVelocity;
                     case 0x47: return PacketIncomingType.EntityEquipment;
                     case 0x5A: return PacketIncomingType.EntityEffect;
+                    case 0x44: return PacketIncomingType.EntityMetadata;
                     case 0x4F: return PacketIncomingType.TimeUpdate;
                     case 0x49: return PacketIncomingType.UpdateHealth;
                     case 0x48: return PacketIncomingType.SetExperience;
@@ -361,7 +367,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 }
             } else {
-                switch (packetID)
+                switch (packetID)  // MC 1.16+
                 {
                     case 0x20: return PacketIncomingType.KeepAlive;
                     case 0x25: return PacketIncomingType.JoinGame;
@@ -396,6 +402,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case 0x46: return PacketIncomingType.EntityVelocity;
                     case 0x47: return PacketIncomingType.EntityEquipment;
                     case 0x59: return PacketIncomingType.EntityEffect;
+                    case 0x44: return PacketIncomingType.EntityMetadata;
                     case 0x4E: return PacketIncomingType.TimeUpdate;
                     case 0x49: return PacketIncomingType.UpdateHealth;
                     case 0x48: return PacketIncomingType.SetExperience;

@@ -112,7 +112,7 @@ namespace MinecraftClient.ChatBots
         /// <returns>If the entity should be attacked</returns>
         public bool handleEntity(Entity entity)
         {
-            if (!entity.Type.IsHostile())
+            if (!entity.Type.IsHostile() || entity.Health <= 0)
                 return false;
 
             bool isBeingAttacked = entitiesToAttack.ContainsKey(entity.ID);

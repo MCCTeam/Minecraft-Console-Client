@@ -301,5 +301,12 @@ namespace MinecraftClient.Protocol
         /// <param name="objectivename">The name of the objective the score belongs to</param>
         /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
         void OnUpdateScore(string entityname, byte action, string objectivename, int value);
+
+        /// <summary>
+        /// Called when the health of an entity changed
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="health">The health of the entity</param>
+        void OnEntityHealth(int entityID, float health);
     }
 }

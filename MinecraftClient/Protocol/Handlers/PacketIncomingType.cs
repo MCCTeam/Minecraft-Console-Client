@@ -47,6 +47,7 @@ namespace MinecraftClient.Protocol.Handlers
         EntityEquipment,
         EntityVelocity,
         EntityEffect,
+        EntityMetadata,
         TimeUpdate,
         UpdateHealth,
         SetExperience,
