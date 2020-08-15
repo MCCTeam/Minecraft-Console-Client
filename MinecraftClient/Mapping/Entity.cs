@@ -49,7 +49,7 @@ namespace MinecraftClient.Mapping
             this.ID = ID;
             this.Type = type;
             this.Location = location;
-            this.Health = 1.0;
+            this.Health = 1.0f;
         }
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type, location, name and UUID
@@ -66,7 +66,7 @@ namespace MinecraftClient.Mapping
             this.Location = location;
             this.UUID = uuid;
             this.Name = name;
-            this.Health = 1.0;
+            this.Health = 1.0f;
         }
     }
 }
