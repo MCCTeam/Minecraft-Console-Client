@@ -12,7 +12,6 @@ using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
-using System.Windows.Forms;
 
 namespace MinecraftClient
 {
@@ -2111,16 +2110,6 @@ namespace MinecraftClient
         public void OnUpdateScore(string entityname, byte action, string objectivename, int value)
         {
             DispatchBotEvent(bot => bot.OnUpdateScore(entityname, action, objectivename, value));
-        }
-
-        /// <summary>
-        /// Called when entity metadata added/updated
-        /// </summary>
-        /// <param name="entityID">Target entity's ID</param>
-        /// <param name="metadata">Metadata</param>
-        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
-        {
-            // currently no usage I guess :P
         }
 
         /// <summary>
