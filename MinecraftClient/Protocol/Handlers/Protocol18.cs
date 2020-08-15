@@ -867,6 +867,22 @@ namespace MinecraftClient.Protocol.Handlers
                             int EntityID = dataTypes.ReadNextVarInt(packetData);
                             Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData);
                             handler.OnEntityMetadata(EntityID, metadata);
+                                
+                            // Get health data for an entity
+                            int key;
+                            // Key for 1.10+ is 7 and 1.14+ is 8
+                            if (protocolversion >= MC114Version)
+                            {
+                                key = 8;
+                            }
+                            else
+                            {
+                                key = 7;
+                            }
+                            if (metadata.ContainsKey(key) && metadata[key].GetType() == typeof(float))
+                            {
+                                handler.OnEntityHealth(EntityID, (float)metadata[key]);
+                            }
                         }
                         break;
                     case PacketIncomingType.TimeUpdate:

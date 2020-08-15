@@ -325,6 +325,13 @@ namespace MinecraftClient
         /// </summary>
         public virtual void OnRespawn() { }
 
+        /// <summary>
+        /// Called when the health of an entity changed
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="health">The health of the entity</param>
+        public virtual void OnEntityHealth(int entityID, float health) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */

@@ -12,6 +12,7 @@ using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
+using System.Windows.Forms;
 
 namespace MinecraftClient
 {
@@ -59,7 +60,6 @@ namespace MinecraftClient
         private object lastKeepAliveLock = new object();
         private int respawnTicks = 0;
         private int gamemode = 0;
-        private int protocolVersion;
 
         private int playerEntityID;
 
@@ -156,7 +156,6 @@ namespace MinecraftClient
             this.username = user;
             this.host = server_ip;
             this.port = port;
-            this.protocolVersion = protocolversion;
 
             if (!singlecommand)
             {
@@ -2121,23 +2120,20 @@ namespace MinecraftClient
         /// <param name="metadata">Metadata</param>
         public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
         {
+            // currently no usage I guess :P
+        }
+
+        /// <summary>
+        /// Called when the health of an entity changed
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="health">The health of the entity</param>
+        public void OnEntityHealth(int entityID, float health)
+        {
             if (entities.ContainsKey(entityID))
             {
-                // Get health data for an entity
-                int key;
-                // Key for 1.10+ is 7 and 1.14+ is 8
-                if (protocolVersion >= Protocol.Handlers.Protocol18Handler.MC114Version)
-                {
-                    key = 8;
-                }
-                else
-                {
-                    key = 7;
-                }
-                if (metadata.ContainsKey(key) && metadata[key].GetType() == typeof(float))
-                {
-                    entities[entityID].Health = (float)metadata[key];
-                }
+                entities[entityID].Health = health;
+                DispatchBotEvent(bot => bot.OnEntityHealth(entityID, health));
             }
         }
         #endregion
