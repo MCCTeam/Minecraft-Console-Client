@@ -31,12 +31,12 @@ namespace MinecraftClient.Inventory
         ShiftClick,
 
         /// <summary>
-        /// Drop a single item on ground after grabbing an item stack
+        /// Drop a single item on ground
         /// </summary>
         DropItem,
 
         /// <summary>
-        /// Drop a whole item stack on ground after grabbing it
+        /// Drop a whole item stack on ground
         /// </summary>
         DropItemStack,
 
