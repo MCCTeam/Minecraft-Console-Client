@@ -12,7 +12,13 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
-            return "Current tps: " + handler.GetServerTPS();
+            var tps = handler.GetServerTPS();
+            string color = "§a"; // Green
+            if (tps <= 15)
+                color = "§e";    // Yellow
+            if (tps <= 10)
+                color = "§c";    // Red
+            return "Current tps: " + color + Math.Round(tps, 2);
         }
     }
 }
