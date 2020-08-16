@@ -1990,7 +1990,6 @@ namespace MinecraftClient
                     sampleSum += tps;
                     averageTPS = sampleSum / tpsSamples.Count;
                     serverTPS = tps;
-                    //ConsoleIO.WriteLine("tps: " + tps + ", average tps: " + averageTPS);
                     DispatchBotEvent(bot => bot.OnServerTpsUpdate(tps));
                 }
             }
