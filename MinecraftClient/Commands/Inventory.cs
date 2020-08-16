@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MinecraftClient.Inventory;
-
 namespace MinecraftClient.Commands
 {
     class Inventory : Command
@@ -86,7 +85,11 @@ namespace MinecraftClient.Commands
                                     string displayName = item.Value.DisplayName;
                                     if (String.IsNullOrEmpty(displayName))
                                     {
-                                        response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
+                                        Dictionary<string, Object> itemnbt = item.Value.NBT;
+                                        if (itemnbt.ContainsKey("Damage"))
+                                            response.Add(String.Format(" #{0}: {1} x{2} | Damage: {4}", item.Key, item.Value.Type, item.Value.Count, itemnbt["Damage"]));
+                                        else
+                                            response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
                                     }
                                     else
                                     {
@@ -171,7 +174,6 @@ namespace MinecraftClient.Commands
             }
             else return "Please enable inventoryhandling in config to use this command.";
         }
-
         #region Methods for commands help
         private string GetCommandDesc()
         {
