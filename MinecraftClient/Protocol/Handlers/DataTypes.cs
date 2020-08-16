@@ -626,10 +626,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 // issue #1209: An item with the same index key has been added
                 // That shouldn't happen, but if yes then we over-write the existing one
-                if (data.ContainsKey(key))
-                    data[key] = value;
-                else
-                    data.Add(key, value);
+                data[key] = value;
                 key = ReadNextByte(cache);
             }
             return data;
