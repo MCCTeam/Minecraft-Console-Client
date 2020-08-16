@@ -87,7 +87,7 @@ namespace MinecraftClient.Commands
                                     {
                                         Dictionary<string, Object> itemnbt = item.Value.NBT;
                                         if (itemnbt.ContainsKey("Damage"))
-                                            response.Add(String.Format(" #{0}: {1} x{2} | Damage: {4}", item.Key, item.Value.Type, item.Value.Count, itemnbt["Damage"]));
+                                            response.Add(String.Format(" #{0}: {1} x{2} | Damage: {3}", item.Key, item.Value.Type, item.Value.Count, itemnbt["Damage"]));
                                         else
                                             response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
                                     }
