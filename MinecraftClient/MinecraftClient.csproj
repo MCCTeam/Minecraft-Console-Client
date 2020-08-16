@@ -110,6 +110,7 @@
     <Compile Include="Commands\Set.cs" />
     <Compile Include="Commands\Health.cs" />
     <Compile Include="Commands\Sneak.cs" />
+    <Compile Include="Commands\Tps.cs" />
     <Compile Include="Commands\Useblock.cs" />
     <Compile Include="Commands\UseItem.cs" />
     <Compile Include="INIFile.cs" />
