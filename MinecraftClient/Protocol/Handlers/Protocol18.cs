@@ -85,7 +85,7 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetInventoryEnabled(false);
             }
 
-            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version))
+            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1162Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Entities are currently not handled for that MC version.");
                 handler.SetEntityHandlingEnabled(false);
