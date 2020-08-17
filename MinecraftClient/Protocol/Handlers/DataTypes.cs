@@ -624,8 +624,6 @@ namespace MinecraftClient.Protocol.Handlers
                     default:
                         throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + type + ". Is this up to date for new MC Version?");
                 }
-                // issue #1209: An item with the same index key has been added
-                // That shouldn't happen, but if yes then we over-write the existing one
                 data[key] = value;
                 key = ReadNextByte(cache);
             }
