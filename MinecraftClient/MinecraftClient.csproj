@@ -120,9 +120,13 @@
     <Compile Include="Inventory\Effects.cs" />
     <Compile Include="Inventory\Hand.cs" />
     <Compile Include="Inventory\Item.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette115.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette1161.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette1162.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPaletteGenerator.cs" />
     <Compile Include="Inventory\ItemType.cs" />
     <Compile Include="Inventory\ItemTypeExtensions.cs" />
-    <Compile Include="Inventory\ItemTypeGenerator.cs" />
     <Compile Include="Inventory\WindowActionType.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette112.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette113.cs" />
@@ -138,7 +142,8 @@
     <Compile Include="Mapping\EntityPalettes\EntityPalette.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette114.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette115.cs" />
-    <Compile Include="Mapping\EntityPalettes\EntityPalette116.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPalette1161.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPalette1162.cs" />
     <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPaletteGenerator.cs" />
     <Compile Include="Mapping\EntityTypeExtensions.cs" />

@@ -15,6 +15,7 @@ using MinecraftClient.Inventory;
 using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using MinecraftClient.Inventory.ItemPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -43,6 +44,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC1152Version = 578;
         internal const int MC116Version = 735;
         internal const int MC1161Version = 736;
+        internal const int MC1162Version = 751;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -57,6 +59,7 @@ namespace MinecraftClient.Protocol.Handlers
         Protocol18Terrain pTerrain;
         IMinecraftComHandler handler;
         EntityPalette entityPalette;
+        ItemPalette itemPalette;
         SocketWrapper socketWrapper;
         DataTypes dataTypes;
         Thread netRead;
@@ -78,18 +81,19 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1152Version))
+            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1162Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Inventories are currently not handled for that MC version.");
                 handler.SetInventoryEnabled(false);
             }
 
-            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1161Version))
+            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1162Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Entities are currently not handled for that MC version.");
                 handler.SetEntityHandlingEnabled(false);
             }
 
+            // Block palette
             if (protocolversion >= MC113Version)
             {
                 if (protocolVersion > MC1152Version && handler.GetTerrainEnabled())
@@ -102,12 +106,15 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else Block.Palette = new Palette112();
 
+            // Entity palette
             if (protocolversion >= MC113Version)
             {
-                if (protocolversion > MC1161Version && handler.GetEntityHandlingEnabled())
+                if (protocolversion > MC1162Version && handler.GetEntityHandlingEnabled())
                     throw new NotImplementedException("Please update entity types handling for this Minecraft version. See EntityType.cs");
-                if (protocolversion >= MC116Version)
-                    entityPalette = new EntityPalette116();
+                if (protocolversion >= MC1162Version)
+                    entityPalette = new EntityPalette1162();
+                else if (protocolversion >= MC116Version)
+                    entityPalette = new EntityPalette1161();
                 else if (protocolversion >= MC115Version)
                     entityPalette = new EntityPalette115();
                 else if (protocolVersion >= MC114Version)
@@ -115,6 +122,17 @@ namespace MinecraftClient.Protocol.Handlers
                 else entityPalette = new EntityPalette113();
             }
             else entityPalette = new EntityPalette112();
+
+            // Item palette
+            if (protocolversion >= MC116Version)
+            {
+                if (protocolversion > MC1162Version && handler.GetInventoryEnabled())
+                    throw new NotImplementedException("Please update item types handling for this Minecraft version. See ItemType.cs");
+                if (protocolversion >= MC1162Version)
+                    itemPalette = new ItemPalette1162();
+                else itemPalette = new ItemPalette1161();
+            }
+            else itemPalette = new ItemPalette115();
         }
 
         /// <summary>
@@ -233,6 +251,10 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnGameJoined();
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
                         handler.OnReceivePlayerEntityID(playerEntityID);
+
+                        if (protocolversion >= MC1162Version)
+                            dataTypes.ReadNextBool(packetData);                       // Is hardcore - 1.16.2 and above
+
                         handler.OnGamemodeUpdate(Guid.Empty, dataTypes.ReadNextByte(packetData));
 
                         if (protocolversion >= MC116Version)
@@ -247,8 +269,11 @@ namespace MinecraftClient.Protocol.Handlers
                         //Current dimension - String identifier in 1.16, varInt below 1.16, byte below 1.9.1
                         if (protocolversion >= MC116Version)
                         {
+                            if (protocolversion >= MC1162Version)
+                                dataTypes.ReadNextNbt(packetData);
+                            else
+                                dataTypes.ReadNextString(packetData);
                             // TODO handle dimensions for 1.16+, needed for terrain handling
-                            dataTypes.ReadNextString(packetData);
                             this.currentDimension = 0;
                         }
                         else if (protocolversion >= MC191Version)
@@ -263,7 +288,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion >= MC115Version)
                             dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
 
-                        dataTypes.ReadNextByte(packetData);               // Max Players
+                        if (protocolversion >= MC1162Version)
+                            dataTypes.ReadNextVarInt(packetData);         // Max Players - 1.16.2 and above
+                        else
+                            dataTypes.ReadNextByte(packetData);           // Max Players - 1.16.1 and below
 
                         if (protocolversion < MC116Version)
                             dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
@@ -687,7 +715,7 @@ namespace MinecraftClient.Protocol.Handlers
                             Dictionary<int, Item> inventorySlots = new Dictionary<int, Item>();
                             for (short slotId = 0; slotId < elements; slotId++)
                             {
-                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                 if (item != null)
                                     inventorySlots[slotId] = item;
                             }
@@ -699,7 +727,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
                             short slotID = dataTypes.ReadNextShort(packetData);
-                            Item item = dataTypes.ReadNextItemSlot(packetData);
+                            Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                             handler.OnSetSlot(windowID, slotID, item);
                         }
                         break;
@@ -739,9 +767,25 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetEntityHandlingEnabled())
                         {
                             int entityid = dataTypes.ReadNextVarInt(packetData);
-                            int slot2 = dataTypes.ReadNextVarInt(packetData);
-                            Item item = dataTypes.ReadNextItemSlot(packetData);
-                            handler.OnEntityEquipment(entityid, slot2, item);
+                            if (protocolversion >= MC116Version)
+                            {
+                                bool hasNext;
+                                do
+                                {
+                                    byte bitsData = dataTypes.ReadNextByte(packetData);
+                                    //  Top bit set if another entry follows, and otherwise unset if this is the last item in the array
+                                    hasNext = (bitsData >> 7) == 1 ? true : false;
+                                    int slot2 = bitsData >> 1;
+                                    Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
+                                    handler.OnEntityEquipment(entityid, slot2, item);
+                                } while (hasNext);
+                            }
+                            else
+                            {
+                                int slot2 = dataTypes.ReadNextVarInt(packetData);
+                                Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
+                                handler.OnEntityEquipment(entityid, slot2, item);
+                            }
                         }
                         break;
                    case PacketIncomingType.SpawnLivingEntity:
@@ -865,7 +909,7 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetEntityHandlingEnabled())
                         {
                             int EntityID = dataTypes.ReadNextVarInt(packetData);
-                            Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData);
+                            Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette); // need itemPalette because metadata need to read slot item
                             int healthField = protocolversion >= MC114Version ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
                             if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
                                 handler.OnEntityHealth(EntityID, (float)metadata[healthField]);
@@ -1641,18 +1685,18 @@ namespace MinecraftClient.Protocol.Handlers
                     case WindowActionType.LeftClick:       button = 0;  break;
                     case WindowActionType.RightClick:      button = 1;  break;
                     case WindowActionType.MiddleClick:     button = 2;  mode = 3; break;
-                    case WindowActionType.ShiftClick:      button = 0;  mode = 1; item = new Item(-1, 0, null); break;
-                    case WindowActionType.DropItem:        button = 0;  mode = 4; item = new Item(-1, 0, null); break;
-                    case WindowActionType.DropItemStack:   button = 1;  mode = 4; item = new Item(-1, 0, null); break;
-                    case WindowActionType.StartDragLeft:   button = 0;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
-                    case WindowActionType.StartDragRight:  button = 4;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
-                    case WindowActionType.StartDragMiddle: button = 8;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
-                    case WindowActionType.EndDragLeft:     button = 2;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
-                    case WindowActionType.EndDragRight:    button = 6;  mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
-                    case WindowActionType.EndDragMiddle:   button = 10; mode = 5; item = new Item(-1, 0, null); slotId = -999; break;
-                    case WindowActionType.AddDragLeft:     button = 1;  mode = 5; item = new Item(-1, 0, null); break;
-                    case WindowActionType.AddDragRight:    button = 5;  mode = 5; item = new Item(-1, 0, null); break;
-                    case WindowActionType.AddDragMiddle:   button = 9;  mode = 5; item = new Item(-1, 0, null); break;
+                    case WindowActionType.ShiftClick:      button = 0;  mode = 1; item = new Item(ItemType.Null, 0, null); break;
+                    case WindowActionType.DropItem:        button = 0;  mode = 4; item = new Item(ItemType.Null, 0, null); break;
+                    case WindowActionType.DropItemStack:   button = 1;  mode = 4; item = new Item(ItemType.Null, 0, null); break;
+                    case WindowActionType.StartDragLeft:   button = 0;  mode = 5; item = new Item(ItemType.Null, 0, null); slotId = -999; break;
+                    case WindowActionType.StartDragRight:  button = 4;  mode = 5; item = new Item(ItemType.Null, 0, null); slotId = -999; break;
+                    case WindowActionType.StartDragMiddle: button = 8;  mode = 5; item = new Item(ItemType.Null, 0, null); slotId = -999; break;
+                    case WindowActionType.EndDragLeft:     button = 2;  mode = 5; item = new Item(ItemType.Null, 0, null); slotId = -999; break;
+                    case WindowActionType.EndDragRight:    button = 6;  mode = 5; item = new Item(ItemType.Null, 0, null); slotId = -999; break;
+                    case WindowActionType.EndDragMiddle:   button = 10; mode = 5; item = new Item(ItemType.Null, 0, null); slotId = -999; break;
+                    case WindowActionType.AddDragLeft:     button = 1;  mode = 5; item = new Item(ItemType.Null, 0, null); break;
+                    case WindowActionType.AddDragRight:    button = 5;  mode = 5; item = new Item(ItemType.Null, 0, null); break;
+                    case WindowActionType.AddDragMiddle:   button = 9;  mode = 5; item = new Item(ItemType.Null, 0, null); break;
                 }
 
                 List<byte> packet = new List<byte>();
@@ -1665,7 +1709,7 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(dataTypes.GetVarInt(mode));
                 else packet.Add(mode);
 
-                packet.AddRange(dataTypes.GetItemSlot(item));
+                packet.AddRange(dataTypes.GetItemSlot(item, itemPalette));
 
                 SendPacket(PacketOutgoingType.ClickWindow, packet);
                 return true;
@@ -1681,7 +1725,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 List<byte> packet = new List<byte>();
                 packet.AddRange(dataTypes.GetShort((short)slot));
-                packet.AddRange(dataTypes.GetItemSlot(new Item((int)itemType, count, nbt)));
+                packet.AddRange(dataTypes.GetItemSlot(new Item(itemType, count, nbt), itemPalette));
                 SendPacket(PacketOutgoingType.CreativeInventoryAction, packet);
                 return true;
             }

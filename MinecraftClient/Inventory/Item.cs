@@ -26,14 +26,14 @@ namespace MinecraftClient.Inventory
         public Dictionary<string, object> NBT;
 
         /// <summary>
-        /// Create an item with Type ID, Count and Metadata
+        /// Create an item with ItemType, Count and Metadata
         /// </summary>
-        /// <param name="ID">Item Type ID</param>
-        /// <param name="Count">Item Count</param>
+        /// <param name="itemType">Type of the item</param>
+        /// <param name="count">Item Count</param>
         /// <param name="nbt">Item Metadata</param>
-        public Item(int id, int count, Dictionary<string, object> nbt)
+        public Item(ItemType itemType, int count, Dictionary<string, object> nbt)
         {
-            this.Type = (ItemType)id;
+            this.Type = itemType;
             this.Count = count;
             this.NBT = nbt;
         }

@@ -7,6 +7,7 @@ using MinecraftClient.Mapping;
 using MinecraftClient.Crypto;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping.EntityPalettes;
+using MinecraftClient.Inventory.ItemPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -325,7 +326,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single item slot from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The item that was read or NULL for an empty slot</returns>
-        public Item ReadNextItemSlot(Queue<byte> cache)
+        public Item ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
         {
             List<byte> slotData = new List<byte>();
             if (protocolversion > Protocol18Handler.MC113Version)
@@ -334,10 +335,10 @@ namespace MinecraftClient.Protocol.Handlers
                 bool itemPresent = ReadNextBool(cache);
                 if (itemPresent)
                 {
-                    int itemID = ReadNextVarInt(cache);
+                    ItemType type = itemPalette.FromId(ReadNextVarInt(cache));
                     byte itemCount = ReadNextByte(cache);
                     Dictionary<string, object> nbt = ReadNextNbt(cache);
-                    return new Item(itemID, itemCount, nbt);
+                    return new Item(type, itemCount, nbt);
                 }
                 else return null;
             }
@@ -350,7 +351,7 @@ namespace MinecraftClient.Protocol.Handlers
                 byte itemCount = ReadNextByte(cache);
                 short itemDamage = ReadNextShort(cache);
                 Dictionary<string, object> nbt = ReadNextNbt(cache);
-                return new Item(itemID, itemCount, nbt);
+                return new Item(itemPalette.FromId(itemID), itemCount, nbt);
             }
         }
 
@@ -494,7 +495,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        public Dictionary<int, object> ReadNextMetadata(Queue<byte> cache)
+        public Dictionary<int, object> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette)
         {
             Dictionary<int, object> data = new Dictionary<int, object>();
             byte key = ReadNextByte(cache);
@@ -544,7 +545,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case 6: // Slot
-                        value = ReadNextItemSlot(cache);
+                        value = ReadNextItemSlot(cache, itemPalette);
                         break;
                     case 7: // Boolean
                         value = ReadNextBool(cache);
@@ -601,7 +602,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 ReadNextVarInt(cache);
                                 break;
                             case 32:
-                                ReadNextItemSlot(cache);
+                                ReadNextItemSlot(cache, itemPalette);
                                 break;
                         }
                         break;
@@ -954,8 +955,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// Get a byte array representing the given item as an item slot
         /// </summary>
         /// <param name="item">Item</param>
+        /// <param name="itemPalette">Item Palette</param>
         /// <returns>Item slot representation</returns>
-        public byte[] GetItemSlot(Item item)
+        public byte[] GetItemSlot(Item item, ItemPalette itemPalette)
         {
             List<byte> slotData = new List<byte>();
             if (protocolversion > Protocol18Handler.MC113Version)
@@ -966,7 +968,7 @@ namespace MinecraftClient.Protocol.Handlers
                 else
                 {
                     slotData.Add(1); // Item is present
-                    slotData.AddRange(GetVarInt((int)item.Type));
+                    slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
                     slotData.Add((byte)item.Count);
                     slotData.AddRange(GetNbt(item.NBT));
                 }
@@ -978,7 +980,7 @@ namespace MinecraftClient.Protocol.Handlers
                     slotData.AddRange(GetShort(-1));
                 else
                 {
-                    slotData.AddRange(GetShort((short)item.Type));
+                    slotData.AddRange(GetShort((short)itemPalette.ToId(item.Type)));
                     slotData.Add((byte)item.Count);
                     slotData.AddRange(GetNbt(item.NBT));
                 }
