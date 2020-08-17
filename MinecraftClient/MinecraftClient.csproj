@@ -122,7 +122,7 @@
     <Compile Include="Inventory\Item.cs" />
     <Compile Include="Inventory\ItemPalettes\ItemPalette.cs" />
     <Compile Include="Inventory\ItemPalettes\ItemPalette115.cs" />
-    <Compile Include="Inventory\ItemPalettes\ItemPalette116.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette1161.cs" />
     <Compile Include="Inventory\ItemPalettes\ItemPalette1162.cs" />
     <Compile Include="Inventory\ItemPalettes\ItemPaletteGenerator.cs" />
     <Compile Include="Inventory\ItemType.cs" />

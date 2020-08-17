@@ -127,7 +127,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion >= MC1162Version)
                     itemPalette = new ItemPalette1162();
                 else if (protocolversion >= MC116Version)
-                    itemPalette = new ItemPalette116();
+                    itemPalette = new ItemPalette1161();
                 else itemPalette = new ItemPalette115(); // All version under 1.15.2 use this
             }
         }

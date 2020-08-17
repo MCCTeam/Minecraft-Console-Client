@@ -24,6 +24,8 @@ namespace MinecraftClient.Inventory.ItemPalettes
 
         public int ToId(ItemType itemType)
         {
+            if (itemType == ItemType.Null)
+                return -1;
             return DictReverse[itemType];
         }
     }
