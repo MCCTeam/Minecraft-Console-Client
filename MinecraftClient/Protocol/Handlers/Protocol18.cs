@@ -901,25 +901,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (op2.Count > 0) _value *= op2.Aggregate((a, _x) => a * _x);
                                 keys.Add(_key, _value);
                             }
-                            if (protocolversion >= MC116Version)
-                            {
-                                Dictionary<string, double> newKeys = new Dictionary<string, double>();
-                                foreach(var pair in keys)
-                                {
-                                    var firstPart = pair.Key.Replace("minecraft:", "").Split('.').ToList();    // Remove "minecraft:" and split out the "generic."
-                                    var secondPart = firstPart[1].Split('_').ToList();
-                                    string first = secondPart[0]; // "namingStyle" firts is lower case
-                                    secondPart.RemoveAt(0);
-                                    List<string> converted = new List<string>();
-                                    foreach(var s in secondPart)
-                                    {
-                                        converted.Add(char.ToUpper(s[0]) + s.Substring(1));
-                                    }
-                                    string final = firstPart[0] + "." + first + string.Join("", converted);
-                                    newKeys.Add(final, pair.Value);
-                                }
-                                keys = newKeys;
-                            }
                             handler.OnEntityProperties(EntityID, keys);
                         }
                         break;
