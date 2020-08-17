@@ -168,6 +168,7 @@ namespace MinecraftClient.ChatBots
             {
                 LogToConsole("Inventory handling is disabled. AutoCraft will be unloaded");
                 UnloadBot();
+                return;
             }
             RegisterChatBotCommand("autocraft", "Auto-crafting ChatBot command", CommandHandler);
             RegisterChatBotCommand("ac", "Auto-crafting ChatBot command alias", CommandHandler);
