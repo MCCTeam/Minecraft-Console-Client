@@ -75,7 +75,14 @@ namespace MinecraftClient
         // server TPS
         private long lastAge = 0;
         private DateTime lastTime;
-        private Double serverTPS = 0;
+        private double serverTPS = 0;
+        private double averageTPS = 20;
+        private const int maxSamples = 5;
+        private List<double> tpsSamples = new List<double>(maxSamples);
+        private double sampleSum = 0;
+
+        // players latency
+        private Dictionary<string, int> playersLatency = new Dictionary<string, int>();
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -84,7 +91,7 @@ namespace MinecraftClient
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
         public World GetWorld() { return world; }
-        public Double GetServerTPS() { return serverTPS; }
+        public Double GetServerTPS() { return averageTPS; }
         public float GetHealth() { return playerHealth; }
         public int GetSaturation() { return playerFoodSaturation; }
         public int GetLevel() { return playerLevel; }
@@ -1970,8 +1977,18 @@ namespace MinecraftClient
                 Double tps = tickDiff / (currentTime - lastTime).TotalSeconds;
                 lastAge = WorldAge;
                 lastTime = currentTime;
-                if (tps <= 20.0 && tps >= 0.0 && serverTPS != tps)
+                if (tps <= 20 && tps > 0)
                 {
+                    // calculate average tps
+                    if (tpsSamples.Count >= maxSamples)
+                    {
+                        // full
+                        sampleSum -= tpsSamples[0];
+                        tpsSamples.RemoveAt(0);
+                    }
+                    tpsSamples.Add(tps);
+                    sampleSum += tps;
+                    averageTPS = sampleSum / tpsSamples.Count;
                     serverTPS = tps;
                     DispatchBotEvent(bot => bot.OnServerTpsUpdate(tps));
                 }
@@ -2044,6 +2061,7 @@ namespace MinecraftClient
             if (onlinePlayers.ContainsKey(uuid))
             {
                 playerName = onlinePlayers[uuid];
+                playersLatency[playerName] = latency;
                 DispatchBotEvent(bot => bot.OnLatencyUpdate(playerName, uuid, latency));
             }
         }

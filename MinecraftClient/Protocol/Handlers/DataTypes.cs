@@ -498,10 +498,10 @@ namespace MinecraftClient.Protocol.Handlers
         public Dictionary<int, object> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette)
         {
             Dictionary<int, object> data = new Dictionary<int, object>();
-            byte Key = ReadNextByte(cache);
-            while (Key != 0xff)
+            byte key = ReadNextByte(cache);
+            while (key != 0xff)
             {
-                int Type = ReadNextVarInt(cache);
+                int type = ReadNextVarInt(cache);
 
                 // starting from 1.13, Optional Chat is inserted as number 5 in 1.13 and IDs after 5 got shifted.
                 // Increase type ID by 1 if
@@ -509,80 +509,80 @@ namespace MinecraftClient.Protocol.Handlers
                 // - type ID larger than 4
                 if (protocolversion < Protocol18Handler.MC113Version)
                 {
-                    if (Type > 4)
+                    if (type > 4)
                     {
-                        Type += 1;
+                        type += 1;
                     }
                 }
                 // Value's data type is depended on Type
-                object Value = null;
+                object value = null;
 
                 // This is backward compatible since new type is appended to the end
                 // Version upgrade note
                 // - Check type ID got shifted or not
                 // - Add new type if any
-                switch (Type)
+                switch (type)
                 {
                     case 0: // byte
-                        Value = ReadNextByte(cache);
+                        value = ReadNextByte(cache);
                         break;
                     case 1: // VarInt
-                        Value = ReadNextVarInt(cache);
+                        value = ReadNextVarInt(cache);
                         break;
                     case 2: // Float
-                        Value = ReadNextFloat(cache);
+                        value = ReadNextFloat(cache);
                         break;
                     case 3: // String
-                        Value = ReadNextString(cache);
+                        value = ReadNextString(cache);
                         break;
                     case 4: // Chat
-                        Value = ReadNextString(cache);
+                        value = ReadNextString(cache);
                         break;
                     case 5: // Optional Chat
                         if (ReadNextBool(cache))
                         {
-                            Value = ReadNextString(cache);
+                            value = ReadNextString(cache);
                         }
                         break;
                     case 6: // Slot
-                        Value = ReadNextItemSlot(cache, itemPalette);
+                        value = ReadNextItemSlot(cache, itemPalette);
                         break;
                     case 7: // Boolean
-                        Value = ReadNextBool(cache);
+                        value = ReadNextBool(cache);
                         break;
                     case 8: // Rotation (3x floats)
                         List<float> t = new List<float>();
                         t.Add(ReadNextFloat(cache));
                         t.Add(ReadNextFloat(cache));
                         t.Add(ReadNextFloat(cache));
-                        Value = t;
+                        value = t;
                         break;
                     case 9: // Position
-                        Value = ReadNextLocation(cache);
+                        value = ReadNextLocation(cache);
                         break;
                     case 10: // Optional Position
                         if (ReadNextBool(cache))
                         {
-                            Value = ReadNextLocation(cache);
+                            value = ReadNextLocation(cache);
                         }
                         break;
                     case 11: // Direction (VarInt)
-                        Value = ReadNextVarInt(cache);
+                        value = ReadNextVarInt(cache);
                         break;
                     case 12: // Optional UUID
                         if (ReadNextBool(cache))
                         {
-                            Value = ReadNextUUID(cache);
+                            value = ReadNextUUID(cache);
                         }
                         break;
                     case 13: // Optional BlockID (VarInt)
                         if (ReadNextBool(cache))
                         {
-                            Value = ReadNextVarInt(cache);
+                            value = ReadNextVarInt(cache);
                         }
                         break;
                     case 14: // NBT
-                        Value = ReadNextNbt(cache);
+                        value = ReadNextNbt(cache);
                         break;
                     case 15: // Particle
                              // Currecutly not handled. Reading data only
@@ -611,22 +611,22 @@ namespace MinecraftClient.Protocol.Handlers
                         d.Add(ReadNextVarInt(cache));
                         d.Add(ReadNextVarInt(cache));
                         d.Add(ReadNextVarInt(cache));
-                        Value = d;
+                        value = d;
                         break;
                     case 17: // Optional VarInt
                         if (ReadNextBool(cache))
                         {
-                            Value = ReadNextVarInt(cache);
+                            value = ReadNextVarInt(cache);
                         }
                         break;
                     case 18: // Pose
-                        Value = ReadNextVarInt(cache);
+                        value = ReadNextVarInt(cache);
                         break;
                     default:
-                        throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + Type + ". Is this up to date for new MC Version?");
+                        throw new System.IO.InvalidDataException("Unknown Metadata Type ID " + type + ". Is this up to date for new MC Version?");
                 }
-                data.Add(Key, Value);
-                Key = ReadNextByte(cache);
+                data[key] = value;
+                key = ReadNextByte(cache);
             }
             return data;
         }
