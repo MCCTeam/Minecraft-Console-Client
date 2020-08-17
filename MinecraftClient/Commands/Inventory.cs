@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Commands
@@ -86,8 +85,19 @@ namespace MinecraftClient.Commands
                                 {
                                     string displayName = item.Value.DisplayName;
                                     if (String.IsNullOrEmpty(displayName))
-                                        response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
-                                    else response.Add(String.Format(" #{0}: {1} x{2} - {3}§8", item.Key, item.Value.Type, item.Value.Count, displayName));
+                                    {
+                                        if (item.Value.Damage != 0)
+                                            response.Add(String.Format(" #{0}: {1} x{2} | Damage: {3}", item.Key, item.Value.Type, item.Value.Count, item.Value.Damage));
+                                        else
+                                            response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
+                                    }
+                                    else
+                                    {
+                                        if (item.Value.Damage != 0)
+                                            response.Add(String.Format(" #{0}: {1} x{2} - {3}§8 | Damage: {4}", item.Key, item.Value.Type, item.Value.Count, displayName, item.Value.Damage));
+                                        else
+                                            response.Add(String.Format(" #{0}: {1} x{2} - {3}§8", item.Key, item.Value.Type, item.Value.Count, displayName));
+                                    }
                                 }
                                 if (inventoryId == 0) response.Add("Your selected hotbar is " + (handler.GetCurrentSlot() + 1));
                                 return String.Join("\n", response.ToArray());
@@ -153,8 +163,10 @@ namespace MinecraftClient.Commands
                     Dictionary<int, Container> inventories = handler.GetInventories();
                     List<string> response = new List<string>();
                     response.Add("Inventories:");
-                    foreach (var inventory in inventories)
+                    foreach (KeyValuePair<int, Container> inventory in inventories)
+                    {
                         response.Add(String.Format(" #{0}: {1}", inventory.Key, inventory.Value.Title + "§8"));
+                    }
                     response.Add(CMDDesc);
                     return String.Join("\n", response);
                 }

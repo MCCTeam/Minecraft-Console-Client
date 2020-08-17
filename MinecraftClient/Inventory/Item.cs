@@ -70,5 +70,24 @@ namespace MinecraftClient.Inventory
                 return null;
             }
         }
+
+        /// <summary>
+        /// Retrieve item damage from NBT properties. Returns 0 if no damage is defined.
+        /// </summary>
+        public int Damage
+        {
+            get
+            {
+                if (NBT != null && NBT.ContainsKey("Damage"))
+                {
+                    object damage = NBT["Damage"];
+                    if (damage != null)
+                    {
+                        return int.Parse(damage.ToString());
+                    }
+                }
+                return 0;
+            }
+        }
     }
 }
