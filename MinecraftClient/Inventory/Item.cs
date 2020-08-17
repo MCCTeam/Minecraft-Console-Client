@@ -70,5 +70,23 @@ namespace MinecraftClient.Inventory
                 return null;
             }
         }
+        
+        /// Retrieve item damage NBT properties.
+        /// </summary>
+        public int Damage
+        {
+            get
+            {
+                if (NBT != null && NBT.ContainsKey("Damage"))
+                {
+                    object damage = NBT["Damage"];
+                    if (damage != null )
+                    {
+                        return int.Parse(damage.ToString());
+                    }
+                }
+                return 0;
+            }
+        }
     }
 }
