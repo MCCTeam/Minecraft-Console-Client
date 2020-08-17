@@ -141,6 +141,7 @@ namespace MinecraftClient.ChatBots
             {
                 LogToConsole("Inventory handling is disabled. Unloading...");
                 UnloadBot();
+                return;
             }
             RegisterChatBotCommand("autodrop", "AutoDrop ChatBot command", CommandHandler);
             RegisterChatBotCommand("ad", "AutoDrop ChatBot command alias", CommandHandler);
