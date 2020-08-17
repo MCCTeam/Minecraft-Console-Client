@@ -174,6 +174,7 @@ namespace MinecraftClient.Commands
             }
             else return "Please enable inventoryhandling in config to use this command.";
         }
+        
         #region Methods for commands help
         private string GetCommandDesc()
         {
