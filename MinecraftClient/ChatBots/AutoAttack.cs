@@ -83,15 +83,18 @@ namespace MinecraftClient.ChatBots
 
         public override void OnPlayerProperty(Dictionary<string, double> prop)
         {
-            // adjust auto attack cooldown for maximum attack damage
-            if (prop.ContainsKey("generic.attackSpeed"))
+            foreach (var attackSpeedKey in new[] { "generic.attackSpeed", "minecraft:generic.attack_speed" })
             {
-                if (attackSpeed != prop["generic.attackSpeed"])
+                // adjust auto attack cooldown for maximum attack damage
+                if (prop.ContainsKey(attackSpeedKey))
                 {
-                    serverTPS = GetServerTPS();
-                    attackSpeed = prop["generic.attackSpeed"];
-                    attackCooldownSecond = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
-                    attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSecond / 0.1) + 1);
+                    if (attackSpeed != prop[attackSpeedKey])
+                    {
+                        serverTPS = GetServerTPS();
+                        attackSpeed = prop[attackSpeedKey];
+                        attackCooldownSecond = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
+                        attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSecond / 0.1) + 1);
+                    }
                 }
             }
         }
