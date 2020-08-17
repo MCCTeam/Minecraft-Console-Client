@@ -767,7 +767,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[751] = ItemType.WolfSpawnEgg;
             mappings[752] = ItemType.ZombieSpawnEgg;
             mappings[753] = ItemType.ZombieHorseSpawnEgg;
-            mappings[754] = ItemType.ZombiePigmanSpawnEgg;
+            mappings[754] = ItemType.ZombifiedPiglinSpawnEgg;
             mappings[755] = ItemType.ZombieVillagerSpawnEgg;
             mappings[756] = ItemType.ExperienceBottle;
             mappings[757] = ItemType.FireCharge;

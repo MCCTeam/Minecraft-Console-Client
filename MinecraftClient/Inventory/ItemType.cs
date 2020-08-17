@@ -982,7 +982,6 @@ namespace MinecraftClient.Inventory
         ZoglinSpawnEgg,
         ZombieHead,
         ZombieHorseSpawnEgg,
-        ZombiePigmanSpawnEgg, // MC 1.15.2 or below
         ZombieSpawnEgg,
         ZombieVillagerSpawnEgg,
         ZombifiedPiglinSpawnEgg,
