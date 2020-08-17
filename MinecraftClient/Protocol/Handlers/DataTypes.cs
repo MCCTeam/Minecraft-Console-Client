@@ -7,6 +7,7 @@ using MinecraftClient.Mapping;
 using MinecraftClient.Crypto;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping.EntityPalettes;
+using MinecraftClient.Inventory.ItemPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -325,7 +326,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single item slot from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The item that was read or NULL for an empty slot</returns>
-        public Item ReadNextItemSlot(Queue<byte> cache)
+        public Item ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
         {
             List<byte> slotData = new List<byte>();
             if (protocolversion > Protocol18Handler.MC113Version)
@@ -334,10 +335,10 @@ namespace MinecraftClient.Protocol.Handlers
                 bool itemPresent = ReadNextBool(cache);
                 if (itemPresent)
                 {
-                    int itemID = ReadNextVarInt(cache);
+                    ItemType type = itemPalette.FromId(ReadNextVarInt(cache));
                     byte itemCount = ReadNextByte(cache);
                     Dictionary<string, object> nbt = ReadNextNbt(cache);
-                    return new Item(itemID, itemCount, nbt);
+                    return new Item(type, itemCount, nbt);
                 }
                 else return null;
             }
@@ -494,7 +495,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        public Dictionary<int, object> ReadNextMetadata(Queue<byte> cache)
+        public Dictionary<int, object> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette)
         {
             Dictionary<int, object> data = new Dictionary<int, object>();
             byte Key = ReadNextByte(cache);
@@ -544,7 +545,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case 6: // Slot
-                        Value = ReadNextItemSlot(cache);
+                        Value = ReadNextItemSlot(cache, itemPalette);
                         break;
                     case 7: // Boolean
                         Value = ReadNextBool(cache);
@@ -601,7 +602,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 ReadNextVarInt(cache);
                                 break;
                             case 32:
-                                ReadNextItemSlot(cache);
+                                ReadNextItemSlot(cache, itemPalette);
                                 break;
                         }
                         break;

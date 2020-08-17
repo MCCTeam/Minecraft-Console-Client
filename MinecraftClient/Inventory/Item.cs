@@ -37,6 +37,18 @@ namespace MinecraftClient.Inventory
             this.Count = count;
             this.NBT = nbt;
         }
+        /// <summary>
+        /// Create an item with ItemType, Count and Metadata
+        /// </summary>
+        /// <param name="itemType">Type of the item</param>
+        /// <param name="count">Item Count</param>
+        /// <param name="nbt">Item Metadata</param>
+        public Item(ItemType itemType, int count, Dictionary<string, object> nbt)
+        {
+            this.Type = itemType;
+            this.Count = count;
+            this.NBT = nbt;
+        }
 
         /// <summary>
         /// Check if the item slot is empty

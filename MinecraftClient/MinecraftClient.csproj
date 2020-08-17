@@ -119,6 +119,11 @@
     <Compile Include="Inventory\Effects.cs" />
     <Compile Include="Inventory\Hand.cs" />
     <Compile Include="Inventory\Item.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette115.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette116.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette1162.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPaletteGenerator.cs" />
     <Compile Include="Inventory\ItemType.cs" />
     <Compile Include="Inventory\ItemTypeExtensions.cs" />
     <Compile Include="Inventory\ItemTypeGenerator.cs" />

@@ -15,6 +15,7 @@ using MinecraftClient.Inventory;
 using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using MinecraftClient.Inventory.ItemPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -58,6 +59,7 @@ namespace MinecraftClient.Protocol.Handlers
         Protocol18Terrain pTerrain;
         IMinecraftComHandler handler;
         EntityPalette entityPalette;
+        ItemPalette itemPalette;
         SocketWrapper socketWrapper;
         DataTypes dataTypes;
         Thread netRead;
@@ -79,7 +81,7 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1152Version))
+            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1162Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Inventories are currently not handled for that MC version.");
                 handler.SetInventoryEnabled(false);
@@ -91,6 +93,7 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetEntityHandlingEnabled(false);
             }
 
+            // Block palette
             if (protocolversion >= MC113Version)
             {
                 if (protocolVersion > MC1152Version && handler.GetTerrainEnabled())
@@ -103,6 +106,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else Block.Palette = new Palette112();
 
+            // Entity palette
             if (protocolversion >= MC113Version)
             {
                 if (protocolversion >= MC1162Version)
@@ -116,6 +120,16 @@ namespace MinecraftClient.Protocol.Handlers
                 else entityPalette = new EntityPalette113();
             }
             else entityPalette = new EntityPalette112();
+
+            // Item palette
+            if (handler.GetInventoryEnabled())
+            {
+                if (protocolversion >= MC1162Version)
+                    itemPalette = new ItemPalette1162();
+                else if (protocolversion >= MC116Version)
+                    itemPalette = new ItemPalette116();
+                else itemPalette = new ItemPalette115(); // All version under 1.15.2 use this
+            }
         }
 
         /// <summary>
@@ -700,7 +714,7 @@ namespace MinecraftClient.Protocol.Handlers
                             Dictionary<int, Item> inventorySlots = new Dictionary<int, Item>();
                             for (short slotId = 0; slotId < elements; slotId++)
                             {
-                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                 if (item != null)
                                     inventorySlots[slotId] = item;
                             }
@@ -712,7 +726,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
                             short slotID = dataTypes.ReadNextShort(packetData);
-                            Item item = dataTypes.ReadNextItemSlot(packetData);
+                            Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                             handler.OnSetSlot(windowID, slotID, item);
                         }
                         break;
@@ -761,14 +775,14 @@ namespace MinecraftClient.Protocol.Handlers
                                     //  Top bit set if another entry follows, and otherwise unset if this is the last item in the array
                                     hasNext = (bitsData >> 7) == 1 ? true : false;
                                     int slot2 = bitsData >> 1;
-                                    Item item = dataTypes.ReadNextItemSlot(packetData);
+                                    Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                     handler.OnEntityEquipment(entityid, slot2, item);
                                 } while (hasNext);
                             }
                             else
                             {
                                 int slot2 = dataTypes.ReadNextVarInt(packetData);
-                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                 handler.OnEntityEquipment(entityid, slot2, item);
                             }
                         }
@@ -894,7 +908,7 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetEntityHandlingEnabled())
                         {
                             int EntityID = dataTypes.ReadNextVarInt(packetData);
-                            Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData);
+                            Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette); // need itemPalette because metadata need to read slot item
                             int healthField = protocolversion >= MC114Version ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
                             if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
                                 handler.OnEntityHealth(EntityID, (float)metadata[healthField]);
