@@ -42,7 +42,6 @@ namespace MinecraftClient.Mapping
         EyeOfEnder,
         FallingBlock,
         FireworkRocket,
-        FishingBobber,
         Fox,
         Ghast,
         Giant,
@@ -76,6 +75,7 @@ namespace MinecraftClient.Mapping
         Phantom,
         Pig,
         Piglin,
+        PiglinBrute,
         Pillager,
         PolarBear,
         Tnt,
@@ -101,7 +101,6 @@ namespace MinecraftClient.Mapping
         Egg,
         EnderPearl,
         ExperienceBottle,
-        Player,
         Potion,
         Trident,
         TraderLlama,
@@ -120,6 +119,9 @@ namespace MinecraftClient.Mapping
         Zombie,
         ZombieHorse,
         ZombieVillager,
+        ZombifiedPiglin,
         ZombiePigman,
+        Player,
+        FishingBobber,
     }
 }

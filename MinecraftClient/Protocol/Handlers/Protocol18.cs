@@ -85,7 +85,7 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetInventoryEnabled(false);
             }
 
-            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1161Version))
+            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version))
             {
                 ConsoleIO.WriteLineFormatted("§8Entities are currently not handled for that MC version.");
                 handler.SetEntityHandlingEnabled(false);
@@ -105,9 +105,9 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (protocolversion >= MC113Version)
             {
-                if (protocolversion > MC1161Version && handler.GetEntityHandlingEnabled())
-                    throw new NotImplementedException("Please update entity types handling for this Minecraft version. See EntityType.cs");
-                if (protocolversion >= MC116Version)
+                if (protocolversion >= MC1162Version)
+                    entityPalette = new EntityPalette1162();
+                else if (protocolversion >= MC116Version)
                     entityPalette = new EntityPalette116();
                 else if (protocolversion >= MC115Version)
                     entityPalette = new EntityPalette115();
@@ -752,9 +752,25 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetEntityHandlingEnabled())
                         {
                             int entityid = dataTypes.ReadNextVarInt(packetData);
-                            int slot2 = dataTypes.ReadNextVarInt(packetData);
-                            Item item = dataTypes.ReadNextItemSlot(packetData);
-                            handler.OnEntityEquipment(entityid, slot2, item);
+                            if (protocolversion >= MC116Version)
+                            {
+                                bool hasNext;
+                                do
+                                {
+                                    byte bitsData = dataTypes.ReadNextByte(packetData);
+                                    //  Top bit set if another entry follows, and otherwise unset if this is the last item in the array
+                                    hasNext = (bitsData >> 7) == 1 ? true : false;
+                                    int slot2 = bitsData >> 1;
+                                    Item item = dataTypes.ReadNextItemSlot(packetData);
+                                    handler.OnEntityEquipment(entityid, slot2, item);
+                                } while (hasNext);
+                            }
+                            else
+                            {
+                                int slot2 = dataTypes.ReadNextVarInt(packetData);
+                                Item item = dataTypes.ReadNextItemSlot(packetData);
+                                handler.OnEntityEquipment(entityid, slot2, item);
+                            }
                         }
                         break;
                    case PacketIncomingType.SpawnLivingEntity:
