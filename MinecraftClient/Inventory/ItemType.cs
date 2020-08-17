@@ -3,7 +3,12 @@ namespace MinecraftClient.Inventory
     /// <summary>
     /// For MC version 1.16.2. 
     /// Generated using ItemPaletteGenerator. 
-    /// For new Minecraft versions, generate this file again and add new entries to the list.
+    /// Typical steps to handle new item IDs for newer Minecraft versions:
+    /// 1. Generate registries.json using data reporting on Vanilla Minecraft (https://wiki.vg/Data_Generators)
+    /// 2. Generate temporary ItemTypeXXX.cs and ItemPaletteXXX.cs using ItemPaletteGenerator.cs
+    /// 3. Perform a diff with existing versions, add missing entries in ItemType.cs and ItemTypeExtensions.cs
+    /// 4. If existing entity IDs were not randomized by Mojang, simply add missing entries to the latest existing ItemPaletteXXX.cs
+    /// 5. If existing entity IDs were randomized, add a new palette as ItemPaletteXXX.cs into the codebase
     /// </summary>
     public enum ItemType
     {

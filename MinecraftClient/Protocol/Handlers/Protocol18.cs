@@ -109,6 +109,8 @@ namespace MinecraftClient.Protocol.Handlers
             // Entity palette
             if (protocolversion >= MC113Version)
             {
+                if (protocolversion > MC1162Version && handler.GetEntityHandlingEnabled())
+                    throw new NotImplementedException("Please update entity types handling for this Minecraft version. See EntityType.cs");
                 if (protocolversion >= MC1162Version)
                     entityPalette = new EntityPalette1162();
                 else if (protocolversion >= MC116Version)
@@ -122,14 +124,15 @@ namespace MinecraftClient.Protocol.Handlers
             else entityPalette = new EntityPalette112();
 
             // Item palette
-            if (handler.GetInventoryEnabled())
+            if (protocolversion >= MC116Version)
             {
+                if (protocolversion > MC1162Version && handler.GetInventoryEnabled())
+                    throw new NotImplementedException("Please update item types handling for this Minecraft version. See ItemType.cs");
                 if (protocolversion >= MC1162Version)
                     itemPalette = new ItemPalette1162();
-                else if (protocolversion >= MC116Version)
-                    itemPalette = new ItemPalette1161();
-                else itemPalette = new ItemPalette115(); // All version under 1.15.2 use this
+                else itemPalette = new ItemPalette1161();
             }
+            else itemPalette = new ItemPalette115();
         }
 
         /// <summary>
@@ -249,9 +252,8 @@ namespace MinecraftClient.Protocol.Handlers
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
                         handler.OnReceivePlayerEntityID(playerEntityID);
 
-                        // Is hardcore - Added in 1.16.2
                         if (protocolversion >= MC1162Version)
-                            dataTypes.ReadNextBool(packetData);
+                            dataTypes.ReadNextBool(packetData);                       // Is hardcore - 1.16.2 and above
 
                         handler.OnGamemodeUpdate(Guid.Empty, dataTypes.ReadNextByte(packetData));
 
@@ -286,11 +288,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion >= MC115Version)
                             dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
 
-                            
                         if (protocolversion >= MC1162Version)
-                            dataTypes.ReadNextVarInt(packetData);     // Max Players - 1.16.2 is VarInt
+                            dataTypes.ReadNextVarInt(packetData);         // Max Players - 1.16.2 and above
                         else
-                            dataTypes.ReadNextByte(packetData);
+                            dataTypes.ReadNextByte(packetData);           // Max Players - 1.16.1 and below
 
                         if (protocolversion < MC116Version)
                             dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
