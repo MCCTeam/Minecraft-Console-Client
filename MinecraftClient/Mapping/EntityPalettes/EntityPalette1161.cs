@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace MinecraftClient.Mapping.EntityPalettes
 {
-    public class EntityPalette116 : EntityPalette
+    public class EntityPalette1161 : EntityPalette
     {
         private static Dictionary<int, EntityType> mappings = new Dictionary<int, EntityType>();
 
-        static EntityPalette116()
+        static EntityPalette1161()
         {
             mappings[0] = EntityType.AreaEffectCloud;
             mappings[1] = EntityType.ArmorStand;
