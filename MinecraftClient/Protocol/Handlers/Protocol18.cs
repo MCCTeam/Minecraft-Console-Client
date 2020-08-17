@@ -43,6 +43,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC1152Version = 578;
         internal const int MC116Version = 735;
         internal const int MC1161Version = 736;
+        internal const int MC1162Version = 751;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -233,6 +234,11 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnGameJoined();
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
                         handler.OnReceivePlayerEntityID(playerEntityID);
+
+                        // Is hardcore - Added in 1.16.2
+                        if (protocolversion >= MC1162Version)
+                            dataTypes.ReadNextBool(packetData);
+
                         handler.OnGamemodeUpdate(Guid.Empty, dataTypes.ReadNextByte(packetData));
 
                         if (protocolversion >= MC116Version)
@@ -247,8 +253,11 @@ namespace MinecraftClient.Protocol.Handlers
                         //Current dimension - String identifier in 1.16, varInt below 1.16, byte below 1.9.1
                         if (protocolversion >= MC116Version)
                         {
+                            if (protocolversion >= MC1162Version)
+                                dataTypes.ReadNextNbt(packetData);
+                            else
+                                dataTypes.ReadNextString(packetData);
                             // TODO handle dimensions for 1.16+, needed for terrain handling
-                            dataTypes.ReadNextString(packetData);
                             this.currentDimension = 0;
                         }
                         else if (protocolversion >= MC191Version)
@@ -263,7 +272,11 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion >= MC115Version)
                             dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
 
-                        dataTypes.ReadNextByte(packetData);               // Max Players
+                            
+                        if (protocolversion >= MC1162Version)
+                            dataTypes.ReadNextVarInt(packetData);     // Max Players - 1.16.2 is VarInt
+                        else
+                            dataTypes.ReadNextByte(packetData);
 
                         if (protocolversion < MC116Version)
                             dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
