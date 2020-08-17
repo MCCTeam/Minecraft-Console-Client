@@ -310,7 +310,6 @@ namespace MinecraftClient.ChatBots
             // local variable for use in parsing config
             string section = "";
             Dictionary<string, Recipe> recipes = new Dictionary<string, Recipe>();
-            string lastRecipe = "";
 
             foreach (string l in content)
             {

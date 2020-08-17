@@ -7,7 +7,8 @@ namespace MinecraftClient.Inventory
     /// </summary>
     public enum ItemType
     {
-        ZombiePigmanSpawnEgg, // backward support 1.15.2 or below
+        Null = -1, // Unspecified item type (special value for protocol packets)
+        ZombiePigmanSpawnEgg, // MC 1.15.2 or below
         Air,
         Stone,
         Granite,

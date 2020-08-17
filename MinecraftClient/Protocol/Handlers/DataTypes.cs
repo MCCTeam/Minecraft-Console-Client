@@ -351,7 +351,7 @@ namespace MinecraftClient.Protocol.Handlers
                 byte itemCount = ReadNextByte(cache);
                 short itemDamage = ReadNextShort(cache);
                 Dictionary<string, object> nbt = ReadNextNbt(cache);
-                return new Item(itemID, itemCount, nbt);
+                return new Item(itemPalette.FromId(itemID), itemCount, nbt);
             }
         }
 
@@ -955,8 +955,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// Get a byte array representing the given item as an item slot
         /// </summary>
         /// <param name="item">Item</param>
+        /// <param name="itemPalette">Item Palette</param>
         /// <returns>Item slot representation</returns>
-        public byte[] GetItemSlot(Item item)
+        public byte[] GetItemSlot(Item item, ItemPalette itemPalette)
         {
             List<byte> slotData = new List<byte>();
             if (protocolversion > Protocol18Handler.MC113Version)
@@ -967,7 +968,7 @@ namespace MinecraftClient.Protocol.Handlers
                 else
                 {
                     slotData.Add(1); // Item is present
-                    slotData.AddRange(GetVarInt((int)item.Type));
+                    slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
                     slotData.Add((byte)item.Count);
                     slotData.AddRange(GetNbt(item.NBT));
                 }
@@ -979,7 +980,7 @@ namespace MinecraftClient.Protocol.Handlers
                     slotData.AddRange(GetShort(-1));
                 else
                 {
-                    slotData.AddRange(GetShort((short)item.Type));
+                    slotData.AddRange(GetShort((short)itemPalette.ToId(item.Type)));
                     slotData.Add((byte)item.Count);
                     slotData.AddRange(GetNbt(item.NBT));
                 }

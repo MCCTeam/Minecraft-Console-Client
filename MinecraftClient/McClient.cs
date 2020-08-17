@@ -1101,7 +1101,7 @@ namespace MinecraftClient
                             {
                                 // Drop 1 item count from cursor
                                 var itemTmp = playerInventory.Items[-1];
-                                var itemClone = new Item((int)itemTmp.Type, 1, itemTmp.NBT);
+                                var itemClone = new Item(itemTmp.Type, 1, itemTmp.NBT);
                                 inventory.Items[slotId] = itemClone;
                                 playerInventory.Items[-1].Count--;
                             }
@@ -1130,14 +1130,14 @@ namespace MinecraftClient
                                     {
                                         // Can be evenly divided
                                         Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item((int)itemTmp.Type, itemTmp.Count / 2, itemTmp.NBT);
+                                        playerInventory.Items[-1] = new Item(itemTmp.Type, itemTmp.Count / 2, itemTmp.NBT);
                                         inventory.Items[slotId].Count = itemTmp.Count / 2;
                                     }
                                     else
                                     {
                                         // Cannot be evenly divided. item count on cursor is always larger than item on inventory
                                         Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item((int)itemTmp.Type, (itemTmp.Count + 1) / 2, itemTmp.NBT);
+                                        playerInventory.Items[-1] = new Item(itemTmp.Type, (itemTmp.Count + 1) / 2, itemTmp.NBT);
                                         inventory.Items[slotId].Count = (itemTmp.Count - 1) / 2;
                                     }
                                 }
@@ -1210,7 +1210,7 @@ namespace MinecraftClient
                                     if (emptySlot != -2)
                                     {
                                         var itemTmp = inventory.Items[slotId];
-                                        inventory.Items[emptySlot] = new Item((int)itemTmp.Type, itemTmp.Count, itemTmp.NBT);
+                                        inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
                                         inventory.Items.Remove(slotId);
                                     }
                                 }
@@ -1257,7 +1257,7 @@ namespace MinecraftClient
                                     if (emptySlot != -2)
                                     {
                                         var itemTmp = inventory.Items[slotId];
-                                        inventory.Items[emptySlot] = new Item((int)itemTmp.Type, itemTmp.Count, itemTmp.NBT);
+                                        inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
                                         inventory.Items.Remove(slotId);
                                     }
                                 }
