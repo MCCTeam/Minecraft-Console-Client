@@ -739,11 +739,7 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetEntityHandlingEnabled())
                         {
                             int entityid = dataTypes.ReadNextVarInt(packetData);
-                            int slot2;
-                            if (protocolversion >= MC1161Version)
-                                slot2 = dataTypes.ReadNextByte(packetData);
-                            else
-                                slot2 = dataTypes.ReadNextVarInt(packetData);
+                            int slot2 = dataTypes.ReadNextVarInt(packetData);
                             Item item = dataTypes.ReadNextItemSlot(packetData);
                             handler.OnEntityEquipment(entityid, slot2, item);
                         }
