@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
-            if (!handler.GetTerrainEnabled())
+            if (!handler.GetInventoryEnabled())
                 return "Please enable InventoryHandling in the config file first.";
 
             if (hasArg(command))
