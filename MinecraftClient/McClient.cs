@@ -2155,12 +2155,13 @@ namespace MinecraftClient
         /// Called when the metadata of an entity changed
         /// </summary>
         /// <param name="entityID">Entity ID</param>
-        /// <param name="health">The health of the entity</param>
-        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
+        /// <param name="metadata">The metadata of the entity</param>
+        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata, int protocolversion)
         {
+            int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
             if (entities.ContainsKey(entityID))
             {
-                if (entities[entityID].Type == EntityType.Item || entities[entityID].Type == EntityType.ItemFrame)
+                if (entities[entityID].Type == EntityType.Item || entities[entityID].Type == EntityType.ItemFrame || entity2.Value.Type == Mapping.EntityType.EyeOfEnder || entity2.Value.Type == Mapping.EntityType.Egg || entity2.Value.Type == Mapping.EntityType.EnderPearl || entity2.Value.Type == Mapping.EntityType.Potion || entity2.Value.Type == Mapping.EntityType.Fireball || entity2.Value.Type == Mapping.EntityType.FireworkRocket)
                 {
                     if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
                     {
@@ -2168,6 +2169,9 @@ namespace MinecraftClient
                     }
                 }
             }
+            if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
+                OnEntityHealth(entityID, (float)metadata[healthField]);
+
             DispatchBotEvent(bot => bot.OnEntityMetadata(entities[entityID], metadata));
         }
         #endregion
