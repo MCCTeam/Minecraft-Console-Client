@@ -220,7 +220,14 @@ namespace MinecraftClient.Protocol
         /// <param name="health"></param>
         /// <param name="food"></param>
         void OnUpdateHealth(float health, int food);
-
+        
+        /// <summary>
+        /// Called when entity metadata or metadata changed.
+        /// </summary>
+        /// <param name="health"></param>
+        /// <param name="food"></param>
+        void OnEntityMetadata(int EntityID, Dictionary<int, object> metadata);
+        
         /// <summary>
         /// Called when and explosion occurs on the server
         /// </summary>
