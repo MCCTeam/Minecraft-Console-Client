@@ -1723,10 +1723,23 @@ namespace MinecraftClient
             // Handle cursor item
             if (inventoryID == 255 && slotID == -1)
             {
-                if (item != null)
-                    inventories[0].Items[-1] = item;
-                else
-                    inventories[0].Items.Remove(-1);
+                if (inventories.ContainsKey(0))
+                {
+                    if (item != null)
+                        inventories[0].Items[-1] = item;
+                    else
+                        inventories[0].Items.Remove(-1);
+                }
+            }
+            else if (inventoryID == 254) // To add item to player inventory without animation
+            {
+                if (inventories.ContainsKey(0))
+                {
+                    if (item != null)
+                        inventories[0].Items[slotID] = item;
+                    else
+                        inventories[0].Items.Remove(slotID);
+                }
             }
             else
             {
