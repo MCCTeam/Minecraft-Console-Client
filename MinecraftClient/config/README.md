@@ -277,7 +277,7 @@ Never write something to the bot you wouldn't say in the normal chat (You have b
 To set up a network of two or more bots, launch several instances with the bot activated and the same database.
 If you launch two instances from one .exe they should syncronize automatically to the same file.
 
-Using the Auto Craft
+Using the AutoCraft bot
 ------
 
 The AutoCraft bot can automatically craft items for you as long as you have defined the item recipe.
@@ -289,12 +289,12 @@ Useful commands description:
 * /autocraft list: List all loaded recipes.
 * /autocraft start <name\>: Start the crafting process with the given recipe name you had defined.
 * /autocraft stop: Stop the crafting process.
-* /auticraft help: In-game help command.
+* /autocraft help: In-game help command.
 
 
 How to define a recipe?
 
-_Exmaple_
+_Example_
 ```md
 [Recipe]
 name=whatever          # name could be whatever you like. This field must be defined first
@@ -332,12 +332,12 @@ Slots are indexed as follow:
 ║ 7 ║ 8 ║ 9 ║ 
 ╚═══╩═══╩═══╝
 ```
-Simply use `slot` + `index` = `<material name>` to define meterial.  
+Simply use `slotIndex=MaterialName` to define material.  
  e.g. `slot1=coal` and `slot3=stick` will craft a torch.
 
-For the naming of items, please see [here](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).
+For the naming of items, please see [ItemType.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).
 
-After you finished writing your config, you can use `/autocraft start <recipe name>` to start crafting. Make sure to provide meterials for your bot.
+After you finished writing your config, you can use `/autocraft start <recipe name>` to start crafting. Make sure to provide materials for your bot.
 
 Disclaimer
 ------
