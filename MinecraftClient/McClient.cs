@@ -2144,21 +2144,23 @@ namespace MinecraftClient
         /// <param name="metadata">The metadata of the entity</param>
         public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata, int protocolversion)
         {
-            int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
             if (entities.ContainsKey(entityID))
             {
                 Entity entity = entities[entityID];
+                int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
+                if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
+                {
+                    float heath = (float)metadata[healthField];
+                    entities[entityID].Health = heath;
+                    DispatchBotEvent(bot => bot.OnEntityHealth(entity, (float)metadata[healthField]));
+                }
                 if (entity.Type == EntityType.Item || entity.Type == EntityType.ItemFrame || entity.Type == Mapping.EntityType.EyeOfEnder || entity.Type == Mapping.EntityType.Egg || entity.Type == Mapping.EntityType.EnderPearl || entity.Type == Mapping.EntityType.Potion || entity.Type == Mapping.EntityType.Fireball || entity.Type == Mapping.EntityType.FireworkRocket)
                 {
                     if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
                     {
-                        entity.Item = (Item)metadata[7];
+                        Item item = (Item)metadata[7];
+                         entities[entityID].Item = item;
                     }
-                }
-                if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float) && entity.Type != EntityType.FireworkRocket)
-                {
-                    entity.Health = (float)metadata[healthField];
-                    DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], (float)metadata[healthField]));
                 }
             }
             DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
