@@ -2161,8 +2161,7 @@ namespace MinecraftClient
                     DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], (float)metadata[healthField]));
                 }
             }
-
-            DispatchBotEvent(bot => bot.OnEntityMetadata(entities[entityID], metadata));
+            DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
         }
         #endregion
     }
