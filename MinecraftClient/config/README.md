@@ -61,7 +61,7 @@ In scripts and remote control, no slash is needed to perform the command.
  - quit or exit: disconnect from the server and close the application
  - reco [account] : disconnect and reconnect to the server
  - connect <server> [account] : go to the given server and resume the script
- - script <script name> : run a script containing a list of commands
+ - script <script name\> : run a script containing a list of commands
  - send <text> : send a message or a command to the server
  - respawn : Use this to respawn if you are dead (like clicking "respawn" ingame)
  - log <text> : display some text in the console (useful for scripts)
@@ -276,6 +276,68 @@ Never write something to the bot you wouldn't say in the normal chat (You have b
 **Mailer Network:** The Mailer bot can relay messages between servers.
 To set up a network of two or more bots, launch several instances with the bot activated and the same database.
 If you launch two instances from one .exe they should syncronize automatically to the same file.
+
+Using the AutoCraft bot
+------
+
+The AutoCraft bot can automatically craft items for you as long as you have defined the item recipe.
+You can get the default config by running the bot at lease once.
+
+Useful commands description:
+* /autocraft reload: Reload the config from disk. You can load your edited AutoCraft config without restarting the client.
+* /autocraft resetcfg: Reset your AutoCraft config back to default. Use with care!
+* /autocraft list: List all loaded recipes.
+* /autocraft start <name\>: Start the crafting process with the given recipe name you had defined.
+* /autocraft stop: Stop the crafting process.
+* /autocraft help: In-game help command.
+
+
+How to define a recipe?
+
+_Example_
+```md
+[Recipe]
+name=whatever          # name could be whatever you like. This field must be defined first
+type=player            # crafting table type: player or table
+result=StoneButton     # the resulting item
+
+# define slots with their deserved item
+slot1=stone            # slot start with 1, count from left to right, top to bottom
+# For the naming of the items, please see
+# https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs
+```
+
+1. You need to give your recipe a **name** so that you could start them later by name.
+2. The size of crafting area needed for your recipe, 2x2(player inventory) or 3x3(crafting table). If you need to use the crafting table, make sure to set the **table coordinate** in the `[AutoCraft]` section.
+3. The expected crafting result.
+
+Then you need to define the position of each crafting materials. 
+Slots are indexed as follow:
+
+2x2
+```
+╔═══╦═══╗
+║ 1 ║ 2 ║
+╠═══╬═══╣
+║ 3 ║ 4 ║
+╚═══╩═══╝
+```
+3x3
+```
+╔═══╦═══╦═══╗
+║ 1 ║ 2 ║ 3 ║
+╠═══╬═══╬═══╣
+║ 4 ║ 5 ║ 6 ║
+╠═══╬═══╬═══╣
+║ 7 ║ 8 ║ 9 ║ 
+╚═══╩═══╩═══╝
+```
+Simply use `slotIndex=MaterialName` to define material.  
+ e.g. `slot1=coal` and `slot3=stick` will craft a torch.
+
+For the naming of items, please see [ItemType.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).
+
+After you finished writing your config, you can use `/autocraft start <recipe name>` to start crafting. Make sure to provide materials for your bot.
 
 Disclaimer
 ------

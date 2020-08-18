@@ -155,6 +155,8 @@ namespace MinecraftClient
 
         //Auto Attack
         public static bool AutoAttack_Enabled = false;
+        public static string AutoAttack_Mode = "single";
+        public static string AutoAttack_Priority = "distance";
 
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;
@@ -498,6 +500,8 @@ namespace MinecraftClient
                                             switch (argName.ToLower())
                                             {
                                                 case "enabled": AutoAttack_Enabled = str2bool(argValue); break;
+                                                case "mode": AutoAttack_Mode = argValue.ToLower(); break;
+                                                case "priority": AutoAttack_Priority = argValue.ToLower(); break;
                                             }
                                             break;
 
@@ -745,6 +749,8 @@ namespace MinecraftClient
                 + "[AutoAttack]\r\n"
                 + "# Entity Handling NEED to be enabled first\r\n"
                 + "enabled=false\r\n"
+                + "mode=single                        # single or multi. single target one mob per attack. multi target all mobs in range per attack\r\n"
+                + "priority=distance                  # health or distance. Only needed when using single mode\r\n"
                 + "\r\n"
                 + "[AutoFishing]\r\n"
                 + "# Entity Handling NEED to be enabled first\r\n"

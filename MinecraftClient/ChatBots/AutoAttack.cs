@@ -19,6 +19,23 @@ namespace MinecraftClient.ChatBots
         private int attackRange = 4;
         private Double serverTPS;
         private float health = 100;
+        private bool singleMode = true;
+        private bool priorityDistance = true;
+
+        public AutoAttack(string mode, string priority)
+        {
+            if (mode == "single")
+                singleMode = true;
+            else if (mode == "multi")
+                singleMode = false;
+            else LogToConsole("Unknown attack mode: " + mode + ". Using single mode as default.");
+
+            if (priority == "distance")
+                priorityDistance = true;
+            else if (priority == "health")
+                priorityDistance = false;
+            else LogToConsole("Unknown priority: " + priority + ". Using distance priority as default.");
+        }
 
         public override void Initialize()
         {
@@ -40,15 +57,52 @@ namespace MinecraftClient.ChatBots
                 attackCooldownCounter = attackCooldown;
                 if (entitiesToAttack.Count > 0)
                 {
-                    SendAnimation(Inventory.Hand.MainHand); // Arm animation
-                    foreach (KeyValuePair<int, Entity> entity in entitiesToAttack)
+                    if (singleMode)
                     {
-                        // check that we are in range once again.
-                        bool shouldAttack = handleEntity(entity.Value);
-                        if (shouldAttack)
+                        int priorityEntity = 0;
+                        if (priorityDistance) // closest distance priority
                         {
-                            InteractEntity(entity.Key, 1); // hit the entity!
+                            double distance = 5;
+                            foreach (var entity in entitiesToAttack)
+                            {
+                                var tmp = GetCurrentLocation().Distance(entity.Value.Location);
+                                if (tmp < distance)
+                                {
+                                    priorityEntity = entity.Key;
+                                    distance = tmp;
+                                }
+                            }
                         }
+                        else // low health priority
+                        {
+                            float health = int.MaxValue;
+                            foreach (var entity in entitiesToAttack)
+                            {
+                                if (entity.Value.Health < health)
+                                {
+                                    priorityEntity = entity.Key;
+                                    health = entity.Value.Health;
+                                }
+                            }
+                        }
+                        // check entity distance and health again
+                        if (shouldAttackEntity(entitiesToAttack[priorityEntity]))
+                        {
+                            InteractEntity(priorityEntity, 1); // hit the entity!
+                            SendAnimation(Inventory.Hand.MainHand); // Arm animation
+                        }
+                    }
+                    else
+                    {
+                        foreach (KeyValuePair<int, Entity> entity in entitiesToAttack)
+                        {
+                            // check that we are in range once again.
+                            if (shouldAttackEntity(entity.Value))
+                            {
+                                InteractEntity(entity.Key, 1); // hit the entity!
+                            }
+                        }
+                        SendAnimation(Inventory.Hand.MainHand); // Arm animation
                     }
                 }
             }
@@ -60,7 +114,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntitySpawn(Entity entity)
         {
-            handleEntity(entity);
+            shouldAttackEntity(entity);
         }
 
         public override void OnEntityDespawn(Entity entity)
@@ -73,7 +127,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-            handleEntity(entity);
+            shouldAttackEntity(entity);
         }
 
         public override void OnHealthUpdate(float health, int food)
@@ -113,7 +167,7 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         /// <param name="entity">The entity to handle</param>
         /// <returns>If the entity should be attacked</returns>
-        public bool handleEntity(Entity entity)
+        public bool shouldAttackEntity(Entity entity)
         {
             if (!entity.Type.IsHostile() || entity.Health <= 0)
                 return false;
