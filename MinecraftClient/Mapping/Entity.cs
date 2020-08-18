@@ -37,6 +37,11 @@ namespace MinecraftClient.Mapping
         /// Health of the entity
         /// </summary>
         public float Health;
+        
+        /// <summary>
+        /// Item of the entity if ItemFrame or Item
+        /// </summary>
+        public Item Item;
 
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
