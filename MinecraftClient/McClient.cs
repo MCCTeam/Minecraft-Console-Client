@@ -2147,8 +2147,28 @@ namespace MinecraftClient
             if (entities.ContainsKey(entityID))
             {
                 entities[entityID].Health = health;
-                DispatchBotEvent(bot => bot.OnEntityHealth(entityID, health));
+                DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], health));
             }
+        }
+
+        /// <summary>
+        /// Called when the metadata of an entity changed
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="health">The health of the entity</param>
+        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
+        {
+            if (entities.ContainsKey(entityID))
+            {
+                if (entities[entityID].Type == EntityType.Item || entities[entityID].Type == EntityType.ItemFrame)
+                {
+                    if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
+                    {
+                        entities[entityID].Item = (Item)metadata[7];
+                    }
+                }
+            }
+            DispatchBotEvent(bot => bot.OnEntityMetadata(entities[entityID], metadata));
         }
         #endregion
     }
