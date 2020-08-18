@@ -321,6 +321,11 @@ namespace MinecraftClient
         public virtual void OnPlayerLeave(Guid uuid, string name) { }
         
         /// <summary>
+        /// Called when the player deaths
+        /// </summary>
+        public virtual void OnDeath() { }
+        
+        /// <summary>
         /// Called when the player respawns
         /// </summary>
         public virtual void OnRespawn() { }
