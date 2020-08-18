@@ -2148,7 +2148,7 @@ namespace MinecraftClient
             if (entities.ContainsKey(entityID))
             {
                 Entity entity = entities[entityID];
-                if (entities[entityID].Type == EntityType.Item || entities[entityID].Type == EntityType.ItemFrame || entity2.Value.Type == Mapping.EntityType.EyeOfEnder || entity2.Value.Type == Mapping.EntityType.Egg || entity2.Value.Type == Mapping.EntityType.EnderPearl || entity2.Value.Type == Mapping.EntityType.Potion || entity2.Value.Type == Mapping.EntityType.Fireball || entity2.Value.Type == Mapping.EntityType.FireworkRocket)
+                if (entity.Type == EntityType.Item || entity.Type == EntityType.ItemFrame || entity.Type == Mapping.EntityType.EyeOfEnder || entity.Type == Mapping.EntityType.Egg || entity.Type == Mapping.EntityType.EnderPearl || entity.Type == Mapping.EntityType.Potion || entity.Type == Mapping.EntityType.Fireball || entity.Type == Mapping.EntityType.FireworkRocket)
                 {
                     if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
                     {
