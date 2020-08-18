@@ -2155,7 +2155,7 @@ namespace MinecraftClient
                         entity.Item = (Item)metadata[7];
                     }
                 }
-                if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
+                if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float) && entity.Type != EntityType.FireworkRocket)
                 {
                     entity.Health = (float)metadata[healthField];
                     DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], (float)metadata[healthField]));
