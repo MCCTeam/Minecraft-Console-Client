@@ -42,6 +42,11 @@ namespace MinecraftClient.Mapping
         /// Item of the entity if ItemFrame or Item
         /// </summary>
         public Item Item;
+        
+        /// <summary>
+        /// Entity pose in the Minecraft world
+        /// </summary>
+        public EntityPose Pose;
 
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
