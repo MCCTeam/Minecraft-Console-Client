@@ -2162,6 +2162,11 @@ namespace MinecraftClient
                          entities[entityID].Item = item;
                     }
                 }
+                if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(Int32))
+                {
+                    EntityPose entityPose = (EntityPose)metadata[6];
+                    entities[entityID].Pose = entityPose;
+                }
             }
             DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
         }
