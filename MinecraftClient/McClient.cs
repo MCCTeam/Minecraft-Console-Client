@@ -2138,20 +2138,6 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Called when the health of an entity changed
-        /// </summary>
-        /// <param name="entityID">Entity ID</param>
-        /// <param name="health">The health of the entity</param>
-        public void OnEntityHealth(int entityID, float health)
-        {
-            if (entities.ContainsKey(entityID))
-            {
-                entities[entityID].Health = health;
-                DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], health));
-            }
-        }
-
-        /// <summary>
         /// Called when the metadata of an entity changed
         /// </summary>
         /// <param name="entityID">Entity ID</param>
@@ -2161,16 +2147,20 @@ namespace MinecraftClient
             int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
             if (entities.ContainsKey(entityID))
             {
+                Entity entity = entities[entityID];
                 if (entities[entityID].Type == EntityType.Item || entities[entityID].Type == EntityType.ItemFrame || entity2.Value.Type == Mapping.EntityType.EyeOfEnder || entity2.Value.Type == Mapping.EntityType.Egg || entity2.Value.Type == Mapping.EntityType.EnderPearl || entity2.Value.Type == Mapping.EntityType.Potion || entity2.Value.Type == Mapping.EntityType.Fireball || entity2.Value.Type == Mapping.EntityType.FireworkRocket)
                 {
                     if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
                     {
-                        entities[entityID].Item = (Item)metadata[7];
+                        entity.Item = (Item)metadata[7];
                     }
                 }
+                if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
+                {
+                    entity.Health = (float)metadata[healthField];
+                    DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], (float)metadata[healthField]));
+                }
             }
-            if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
-                OnEntityHealth(entityID, (float)metadata[healthField]);
 
             DispatchBotEvent(bot => bot.OnEntityMetadata(entities[entityID], metadata));
         }
