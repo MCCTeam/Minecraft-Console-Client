@@ -2027,6 +2027,7 @@ namespace MinecraftClient
                 {
                     ConsoleIO.WriteLogLine("You are dead. Type /respawn to respawn.");
                 }
+                DispatchBotEvent(bot => bot.OnDeath());
             }
 
             DispatchBotEvent(bot => bot.OnHealthUpdate(health, food));
