@@ -19,6 +19,21 @@ namespace MinecraftClient.ChatBots
         private int attackRange = 4;
         private Double serverTPS;
         private float health = 100;
+        private bool singleMode = true;
+        private bool priorityDistance = true;
+
+        public AutoAttack(string mode, string priority)
+        {
+            if (mode == "single")
+                singleMode = true;
+            else if (mode == "multi")
+                singleMode = false;
+
+            if (priority == "distance")
+                priorityDistance = true;
+            else if (priority == "health")
+                priorityDistance = false;
+        }
 
         public override void Initialize()
         {
@@ -40,14 +55,53 @@ namespace MinecraftClient.ChatBots
                 attackCooldownCounter = attackCooldown;
                 if (entitiesToAttack.Count > 0)
                 {
-                    SendAnimation(Inventory.Hand.MainHand); // Arm animation
-                    foreach (KeyValuePair<int, Entity> entity in entitiesToAttack)
+                    if (!singleMode)
                     {
-                        // check that we are in range once again.
-                        bool shouldAttack = handleEntity(entity.Value);
+                        foreach (KeyValuePair<int, Entity> entity in entitiesToAttack)
+                        {
+                            // check that we are in range once again.
+                            bool shouldAttack = handleEntity(entity.Value);
+                            if (shouldAttack)
+                            {
+                                InteractEntity(entity.Key, 1); // hit the entity!
+                            }
+                        }
+                        SendAnimation(Inventory.Hand.MainHand); // Arm animation
+                    }
+                    else
+                    {
+                        int priorityEntity = 0;
+                        if (!priorityDistance) // low health priority
+                        {
+                            float health = int.MaxValue;
+                            foreach (var entity in entitiesToAttack)
+                            {
+                                if (entity.Value.Health < health)
+                                {
+                                    priorityEntity = entity.Key;
+                                    health = entity.Value.Health;
+                                }
+                            }
+                        }
+                        else // closest distance priority
+                        {
+                            double distance = 5;
+                            foreach (var entity in entitiesToAttack)
+                            {
+                                var tmp = GetCurrentLocation().Distance(entity.Value.Location);
+                                if (tmp < distance)
+                                {
+                                    priorityEntity = entity.Key;
+                                    distance = tmp;
+                                }
+                            }
+                        }
+                        // check entity distance and health again
+                        bool shouldAttack = handleEntity(entitiesToAttack[priorityEntity]);
                         if (shouldAttack)
                         {
-                            InteractEntity(entity.Key, 1); // hit the entity!
+                            InteractEntity(priorityEntity, 1); // hit the entity!
+                            SendAnimation(Inventory.Hand.MainHand); // Arm animation
                         }
                     }
                 }
