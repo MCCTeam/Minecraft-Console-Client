@@ -1720,13 +1720,19 @@ namespace MinecraftClient
         /// <param name="item">Item (may be null for empty slot)</param>
         public void OnSetSlot(byte inventoryID, short slotID, Item item)
         {
+            // Handle inventoryID -2 - Add item to player inventory without animation
+            if (inventoryID == 254)
+                inventoryID = 0;
             // Handle cursor item
             if (inventoryID == 255 && slotID == -1)
             {
-                if (item != null)
-                    inventories[0].Items[-1] = item;
-                else
-                    inventories[0].Items.Remove(-1);
+                if (inventories.ContainsKey(0))
+                {
+                    if (item != null)
+                        inventories[0].Items[-1] = item;
+                    else
+                        inventories[0].Items.Remove(-1);
+                }
             }
             else
             {
