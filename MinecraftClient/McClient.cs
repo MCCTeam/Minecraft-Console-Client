@@ -1528,6 +1528,7 @@ namespace MinecraftClient
                 world.Clear();
             }
 
+            entities.Clear();
             ClearInventories();
             DispatchBotEvent(bot => bot.OnRespawn());
         }
