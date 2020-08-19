@@ -2161,12 +2161,9 @@ namespace MinecraftClient
                 int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
                 if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
                 {
-                    try
-                    {
-                        float heath = (float)metadata[healthField];
-                        entities[entityID].Health = heath;
-                        DispatchBotEvent(bot => bot.OnEntityHealth(entity, (float)metadata[healthField]));
-                    } catch { }
+                    float heath = (float)metadata[healthField];
+                    entities[entityID].Health = heath;
+                    DispatchBotEvent(bot => bot.OnEntityHealth(entity, (float)metadata[healthField]));
                 }
                 if (entity.Type == EntityType.Item || entity.Type == EntityType.ItemFrame || entity.Type == Mapping.EntityType.EyeOfEnder || entity.Type == Mapping.EntityType.Egg || entity.Type == Mapping.EntityType.EnderPearl || entity.Type == Mapping.EntityType.Potion || entity.Type == Mapping.EntityType.Fireball || entity.Type == Mapping.EntityType.FireworkRocket)
                 {
@@ -2182,12 +2179,9 @@ namespace MinecraftClient
                 }
                 if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(byte))
                 {
-                    try
-                    {
-                        EntityPose entityPose = EntityPose.Standing;
-                        Enum.TryParse(metadata[6].ToString(), out entityPose);
-                        entities[entityID].Pose = entityPose;
-                    } catch { }
+                    EntityPose entityPose = EntityPose.Standing;
+                    Enum.TryParse(metadata[6].ToString(), out entityPose);
+                    entities[entityID].Pose = entityPose;
                 }
             }
             DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
