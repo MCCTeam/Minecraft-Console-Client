@@ -47,11 +47,11 @@ namespace MinecraftClient.Commands
                     foreach (var entity2 in entities)
                     {
                         if (entity2.Value.Type == Mapping.EntityType.Item || entity2.Value.Type == Mapping.EntityType.ItemFrame)
-                            response.Add(String.Format(" #{0}: Type: {1}, Item: {2}", entity2.Key, entity2.Value.Type, entity2.Value.Item.Type));
+                            response.Add(String.Format(" #{0}: Type: {1}, Item: {2}, Location: {3}", entity2.Key, entity2.Value.Type, entity2.Value.Item.Type, entity2.Value.Location));
                         else if (entity2.Value.Type == Mapping.EntityType.Player && entity2.Value.Name != string.Empty)
-                            response.Add(String.Format(" #{0}: Type: {1}, Nickname: {2}, Latency: {3}, Health: {4}, Pose: {5}", entity2.Key, entity2.Value.Type, entity2.Value.Name, entity2.Value.Latency, entity2.Value.Health, entity2.Value.Pose));
+                            response.Add(String.Format(" #{0}: Type: {1}, Nickname: {2}, Latency: {3}, Health: {4}, Pose: {5}, Location: {6}", entity2.Key, entity2.Value.Type, entity2.Value.Name, entity2.Value.Latency, entity2.Value.Health, entity2.Value.Pose, entity2.Value.Location));
                         else
-                            response.Add(String.Format(" #{0}: Type: {1}, Health: {2}", entity2.Key, entity2.Value.Type, entity2.Value.Health));
+                            response.Add(String.Format(" #{0}: Type: {1}, Health: {2}, Location: {3}", entity2.Key, entity2.Value.Type, entity2.Value.Health, entity2.Value.Location));
                     }
                     response.Add(CMDDesc);
                     return String.Join("\n", response);
