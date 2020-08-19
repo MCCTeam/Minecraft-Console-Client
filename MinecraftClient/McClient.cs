@@ -2171,7 +2171,6 @@ namespace MinecraftClient
                 {
                     if ((byte)metadata[0] == 0x01)
                         entities[entityID].IsOnFire = Convert.ToBoolean((byte)metadata[0]);
-                    ConsoleIO.WriteLine(entities[entityID].IsOnFire.ToString());
                 }
             }
             DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
