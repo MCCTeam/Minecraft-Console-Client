@@ -54,6 +54,11 @@ namespace MinecraftClient.Mapping
         public bool IsOnFire;
         
         /// <summary>
+        /// Entity metadata
+        /// </summary>
+        public Dictionary<int, object> Metadata;
+        
+        /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>
         /// <param name="ID">Entity ID</param>
