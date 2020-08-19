@@ -2167,13 +2167,17 @@ namespace MinecraftClient
                 }
                 if (entity.Type == EntityType.Item || entity.Type == EntityType.ItemFrame || entity.Type == Mapping.EntityType.EyeOfEnder || entity.Type == Mapping.EntityType.Egg || entity.Type == Mapping.EntityType.EnderPearl || entity.Type == Mapping.EntityType.Potion || entity.Type == Mapping.EntityType.Fireball || entity.Type == Mapping.EntityType.FireworkRocket)
                 {
-                    if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
+                    try
                     {
-                        Item item = (Item)metadata[7];
-                         entities[entityID].Item = item;
+                        if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
+                        {
+                            Item item = (Item)metadata[7];
+                            entities[entityID].Item = item;
+                        }
                     }
+                    catch { entities[entityID].Item = new Item(ItemType.Air, 1, null); }
                 }
-                if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(Int32))
+                if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(EntityPose))
                 {
                     EntityPose entityPose = (EntityPose)metadata[6];
                     entities[entityID].Pose = entityPose;
