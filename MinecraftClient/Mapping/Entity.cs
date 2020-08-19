@@ -54,6 +54,11 @@ namespace MinecraftClient.Mapping
         public bool IsOnFire;
         
         /// <summary>
+        /// Entity is invisible
+        /// </summary>
+        public bool IsInvisible;
+        
+        /// <summary>
         /// Entity metadata
         /// </summary>
         public Dictionary<int, object> Metadata;
