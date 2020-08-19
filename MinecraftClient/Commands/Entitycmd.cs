@@ -23,7 +23,6 @@ namespace MinecraftClient.Commands
                     {
                         int entityID = 0;
                         int.TryParse(args[0], out entityID);
-                        Console.WriteLine(entityID.ToString());
                         if (entityID != 0)
                         {
                             string action = args.Length > 1
