@@ -47,7 +47,12 @@ namespace MinecraftClient.Mapping
         /// Entity pose in the Minecraft world
         /// </summary>
         public EntityPose Pose;
-
+        
+        /// <summary>
+        /// Entity IsOnFire
+        /// </summary>
+        public bool IsOnFire;
+        
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>
