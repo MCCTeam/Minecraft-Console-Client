@@ -2161,9 +2161,12 @@ namespace MinecraftClient
                 int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
                 if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
                 {
-                    float heath = (float)metadata[healthField];
-                    entities[entityID].Health = heath;
-                    DispatchBotEvent(bot => bot.OnEntityHealth(entity, (float)metadata[healthField]));
+                    try
+                    {
+                        float heath = (float)metadata[healthField];
+                        entities[entityID].Health = heath;
+                        DispatchBotEvent(bot => bot.OnEntityHealth(entity, (float)metadata[healthField]));
+                    } catch { }
                 }
                 if (entity.Type == EntityType.Item || entity.Type == EntityType.ItemFrame || entity.Type == Mapping.EntityType.EyeOfEnder || entity.Type == Mapping.EntityType.Egg || entity.Type == Mapping.EntityType.EnderPearl || entity.Type == Mapping.EntityType.Potion || entity.Type == Mapping.EntityType.Fireball || entity.Type == Mapping.EntityType.FireworkRocket)
                 {
@@ -2177,10 +2180,14 @@ namespace MinecraftClient
                     }
                     catch { entities[entityID].Item = new Item(ItemType.Air, 1, null); }
                 }
-                if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(EntityPose))
+                if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(byte))
                 {
-                    EntityPose entityPose = (EntityPose)metadata[6];
-                    entities[entityID].Pose = entityPose;
+                    try
+                    {
+                        EntityPose entityPose = EntityPose.Standing;
+                        Enum.TryParse(metadata[6].ToString(), out entityPose);
+                        entities[entityID].Pose = entityPose;
+                    } catch { }
                 }
             }
             DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
