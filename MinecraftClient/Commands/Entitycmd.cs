@@ -21,21 +21,56 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        int entityID;
-                        entityID = int.Parse(args[0]);
-                        string action = args.Length > 1
-                            ? args[1].ToLower()
-                            : "list";
-                        switch (action)
+                        int entityID = 0;
+                        int.TryParse(args[0], out entityID);
+                        Console.WriteLine(entityID.ToString());
+                        if (entityID != 0)
                         {
-                            case "attack":
-                                handler.InteractEntity(entityID, 1);
-                                return "Entity attacked";
-                            case "use":
-                                handler.InteractEntity(entityID, 0);
-                                return "Entity used";
-                            default:
-                                return CMDDesc;
+                            string action = args.Length > 1
+                                ? args[1].ToLower()
+                                : "list";
+                            switch (action)
+                            {
+                                case "attack":
+                                    handler.InteractEntity(entityID, 1);
+                                    return "Entity attacked";
+                                case "use":
+                                    handler.InteractEntity(entityID, 0);
+                                    return "Entity used";
+                                default:
+                                    return CMDDesc;
+                            }
+                        }
+                        else
+                        {
+                            EntityType interacttype = EntityType.Player;
+                            Enum.TryParse(args[0], out interacttype);
+                            Dictionary<int, Mapping.Entity> entities = handler.GetEntities();
+                            string actionst = "Entity attacked";
+                            int actioncount = 0;
+                            foreach (var entity2 in entities)
+                            {
+                                if (entity2.Value.Type == interacttype)
+                                {
+                                    string action = args.Length > 1
+                                    ? args[1].ToLower()
+                                    : "list";
+                                    if (action == "attack")
+                                    {
+                                        handler.InteractEntity(entity2.Key, 1);
+                                        actionst = "Entity attacked";
+                                        actioncount++;
+                                    }
+                                    else if (action == "use")
+                                    {
+                                        handler.InteractEntity(entity2.Key, 0);
+                                        actionst = "Entity used";
+                                        actioncount++;
+                                    }
+                                    else return CMDDesc;
+                                }
+                            }
+                            return actioncount + " " + actionst;
                         }
                     }
                     catch (FormatException) { return CMDDesc; }
