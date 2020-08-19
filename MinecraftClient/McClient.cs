@@ -2154,37 +2154,40 @@ namespace MinecraftClient
         /// <param name="metadata">The metadata of the entity</param>
         public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata, int protocolversion)
         {
-            if (entities.ContainsKey(entityID))
+            try
             {
-                Entity entity = entities[entityID];
-                entity.Metadata = metadata;
-                int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
-                if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
+                if (entities.ContainsKey(entityID))
                 {
-                    float heath = (float)metadata[healthField];
-                    entities[entityID].Health = heath;
-                    DispatchBotEvent(bot => bot.OnEntityHealth(entity, (float)metadata[healthField]));
-                }
-                if (entity.Type == EntityType.Item || entity.Type == EntityType.ItemFrame || entity.Type == Mapping.EntityType.EyeOfEnder || entity.Type == Mapping.EntityType.Egg || entity.Type == Mapping.EntityType.EnderPearl || entity.Type == Mapping.EntityType.Potion || entity.Type == Mapping.EntityType.Fireball || entity.Type == Mapping.EntityType.FireworkRocket)
-                {
-                    try
+                    Entity entity = entities[entityID];
+                    entity.Metadata = metadata;
+                    int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
+                    if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
                     {
-                        if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
-                        {
-                            Item item = (Item)metadata[7];
-                            entities[entityID].Item = item;
-                        }
+                        float heath = (float)metadata[healthField];
+                        entities[entityID].Health = heath;
+                        DispatchBotEvent(bot => bot.OnEntityHealth(entity, (float)metadata[healthField]));
                     }
-                    catch { entities[entityID].Item = new Item(ItemType.Air, 1, null); }
+                    if (entity.Type == EntityType.Item || entity.Type == EntityType.ItemFrame || entity.Type == Mapping.EntityType.EyeOfEnder || entity.Type == Mapping.EntityType.Egg || entity.Type == Mapping.EntityType.EnderPearl || entity.Type == Mapping.EntityType.Potion || entity.Type == Mapping.EntityType.Fireball || entity.Type == Mapping.EntityType.FireworkRocket)
+                    {
+                        try
+                        {
+                            if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
+                            {
+                                Item item = (Item)metadata[7];
+                                entities[entityID].Item = item;
+                            }
+                        }
+                        catch { entities[entityID].Item = new Item(ItemType.Air, 1, null); }
+                    }
+                    if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(byte))
+                    {
+                        EntityPose entityPose = EntityPose.Standing;
+                        Enum.TryParse(metadata[6].ToString(), out entityPose);
+                        entities[entityID].Pose = entityPose;
+                    }
                 }
-                if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(byte))
-                {
-                    EntityPose entityPose = EntityPose.Standing;
-                    Enum.TryParse(metadata[6].ToString(), out entityPose);
-                    entities[entityID].Pose = entityPose;
-                }
-            }
-            DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
+                DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
+            } catch { }
         }
         #endregion
     }
