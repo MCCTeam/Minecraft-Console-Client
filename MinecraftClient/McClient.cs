@@ -2067,8 +2067,17 @@ namespace MinecraftClient
             string playerName = null;
             if (onlinePlayers.ContainsKey(uuid))
             {
+                Dictionary<int, Entity> keyValuePairs = GetEntities();
                 playerName = onlinePlayers[uuid];
                 playersLatency[playerName] = latency;
+                foreach (KeyValuePair<int, Entity> ent in keyValuePairs)
+                {
+                    if (ent.Value.UUID == uuid && ent.Value.Name == playerName)
+                    {
+                        ent.Value.Latency = latency;
+                        break;
+                    }
+                }
                 DispatchBotEvent(bot => bot.OnLatencyUpdate(playerName, uuid, latency));
             }
         }
