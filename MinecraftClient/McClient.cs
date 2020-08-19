@@ -2185,6 +2185,11 @@ namespace MinecraftClient
                         Enum.TryParse(metadata[6].ToString(), out entityPose);
                         entities[entityID].Pose = entityPose;
                     }
+                    if (metadata.ContainsKey(2) && metadata[2].GetType() == typeof(string))
+                    {
+                        entities[entityID].CustomNameJson = metadata[2].ToString();
+                        entities[entityID].CustomName = ChatParser.ParseText(metadata[2].ToString());
+                    }
                 }
                 DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
             } catch { }
