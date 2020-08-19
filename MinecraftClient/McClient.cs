@@ -2147,6 +2147,7 @@ namespace MinecraftClient
             if (entities.ContainsKey(entityID))
             {
                 Entity entity = entities[entityID];
+                entity.Metadata = metadata;
                 int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
                 if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
                 {
