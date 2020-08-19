@@ -2154,11 +2154,11 @@ namespace MinecraftClient
         /// <param name="metadata">The metadata of the entity</param>
         public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata, int protocolversion)
         {
-            try
+            if (entities.ContainsKey(entityID))
             {
-                if (entities.ContainsKey(entityID))
+                Entity entity = entities[entityID];
+                try
                 {
-                    Entity entity = entities[entityID];
                     entity.Metadata = metadata;
                     int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
                     if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
@@ -2171,7 +2171,7 @@ namespace MinecraftClient
                     {
                         try
                         {
-                            if (metadata.ContainsKey(7) && metadata[7].GetType() == typeof(Item))
+                            if (metadata.ContainsKey(7) && metadata.ContainsValue(metadata[7]) && metadata[7].GetType() == typeof(Item))
                             {
                                 Item item = (Item)metadata[7];
                                 entities[entityID].Item = item;
@@ -2179,22 +2179,23 @@ namespace MinecraftClient
                         }
                         catch { entities[entityID].Item = new Item(ItemType.Air, 1, null); }
                     }
-                    if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(byte))
+                    if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(Int32))
                     {
-                         entities[entityID].Pose = (EntityPose)metadata[6];
+                        EntityPose entityPose = (EntityPose)metadata[6];
+                        entities[entityID].Pose = entityPose;
                     }
-                    if (metadata.ContainsKey(2) && metadata[2].GetType() == typeof(string))
+                    if (metadata.ContainsKey(2) && metadata.ContainsValue(metadata[2]) && metadata[2].GetType() == typeof(string))
                     {
                         entities[entityID].CustomNameJson = metadata[2].ToString();
                         entities[entityID].CustomName = ChatParser.ParseText(metadata[2].ToString());
                     }
-                    if (metadata.ContainsKey(3) && metadata[3].GetType() == typeof(bool))
+                    if (metadata.ContainsKey(3) && metadata.ContainsValue(metadata[3]) && metadata[3].GetType() == typeof(bool))
                     {
                         entities[entityID].IsCustomNameVisible = (bool)metadata[3];
                     }
-                }
-                DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
-            } catch { }
+                } catch { }
+            }
+            DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
         }
         #endregion
     }
