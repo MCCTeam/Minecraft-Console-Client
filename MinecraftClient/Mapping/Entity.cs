@@ -22,6 +22,11 @@ namespace MinecraftClient.Mapping
         /// Nickname of the entity if it is a player.
         /// </summary>
         public string Name;
+        
+        /// <summary>
+        /// Latency of the entity if it is a player.
+        /// </summary>
+        public int Latency;
 
         /// <summary>
         /// Entity type
