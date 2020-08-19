@@ -24,6 +24,16 @@ namespace MinecraftClient.Mapping
         public string Name;
         
         /// <summary>
+        /// CustomName of the entity.
+        /// </summary>
+        public string CustomNameJson;
+
+        /// <summary>
+        /// CustomName of the entity.
+        /// </summary>
+        public string CustomName;
+        
+        /// <summary>
         /// Latency of the entity if it is a player.
         /// </summary>
         public int Latency;
