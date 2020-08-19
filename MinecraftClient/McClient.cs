@@ -2181,9 +2181,7 @@ namespace MinecraftClient
                     }
                     if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(byte))
                     {
-                        EntityPose entityPose = EntityPose.Standing;
-                        Enum.TryParse(metadata[6].ToString(), out entityPose);
-                        entities[entityID].Pose = entityPose;
+                         entities[entityID].Pose = (EntityPose)metadata[6];
                     }
                     if (metadata.ContainsKey(2) && metadata[2].GetType() == typeof(string))
                     {
