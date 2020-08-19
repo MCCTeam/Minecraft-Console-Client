@@ -2190,6 +2190,10 @@ namespace MinecraftClient
                         entities[entityID].CustomNameJson = metadata[2].ToString();
                         entities[entityID].CustomName = ChatParser.ParseText(metadata[2].ToString());
                     }
+                    if (metadata.ContainsKey(3) && metadata[3].GetType() == typeof(bool))
+                    {
+                        entities[entityID].IsCustomNameVisible = (bool)metadata[3];
+                    }
                 }
                 DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
             } catch { }
