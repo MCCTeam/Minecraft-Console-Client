@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
     class Entitycmd : Command
     {
         public override string CMDName { get { return "entity"; } }
-        public override string CMDDesc { get { return "entity <id> <list|attack|use>"; } }
+        public override string CMDDesc { get { return "entity <id|entitytype> <list|attack|use>"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
