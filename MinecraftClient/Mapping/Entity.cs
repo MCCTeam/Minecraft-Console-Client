@@ -27,6 +27,11 @@ namespace MinecraftClient.Mapping
         /// CustomName of the entity.
         /// </summary>
         public string CustomNameJson;
+        
+        /// <summary>
+        /// IsCustomNameVisible of the entity.
+        /// </summary>
+        public bool IsCustomNameVisible;
 
         /// <summary>
         /// CustomName of the entity.
