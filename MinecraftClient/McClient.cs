@@ -2172,7 +2172,7 @@ namespace MinecraftClient
                 {
                     if ((byte)metadata[0] == 0x01)
                         entities[entityID].IsOnFire = Convert.ToBoolean((byte)metadata[0]);
-                    if ((byte)metadata[0] == 0x20)
+                    else if ((byte)metadata[0] == 0x20)
                         entities[entityID].IsInvisible = Convert.ToBoolean((byte)metadata[0]);
                 }
             }
