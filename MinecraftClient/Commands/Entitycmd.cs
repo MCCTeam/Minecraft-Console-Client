@@ -49,7 +49,7 @@ namespace MinecraftClient.Commands
                         if (entity2.Value.Type == Mapping.EntityType.Item || entity2.Value.Type == Mapping.EntityType.ItemFrame)
                             response.Add(String.Format(" #{0}: Type: {1}, Item: {2}", entity2.Key, entity2.Value.Type, entity2.Value.Item.Type));
                         else if (entity2.Value.Type == Mapping.EntityType.Player && entity2.Value.Name != string.Empty)
-                            response.Add(String.Format(" #{0}: Type: {1} Nickname: {2}, Latency: {3}", entity2.Key, entity2.Value.Type, entity2.Value.Name, entity2.Value.Latency));
+                            response.Add(String.Format(" #{0}: Type: {1}, Nickname: {2}, Latency: {3}", entity2.Key, entity2.Value.Type, entity2.Value.Name, entity2.Value.Latency));
                         else
                             response.Add(String.Format(" #{0}: Type: {1}", entity2.Key, entity2.Value.Type));
                     }
