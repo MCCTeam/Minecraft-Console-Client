@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MinecraftClient.Inventory;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
 {
@@ -46,7 +47,7 @@ namespace MinecraftClient.Commands
                     response.Add("Entities:");
                     foreach (var entity2 in entities)
                     {
-                        if (entity2.Value.Type == Mapping.EntityType.Item || entity2.Value.Type == Mapping.EntityType.ItemFrame)
+                        if (entity2.Value.Type == EntityType.Item || entity2.Value.Type == EntityType.ItemFrame || entity2.Value.Type == Mapping.EntityType.EyeOfEnder || entity2.Value.Type == Mapping.EntityType.Egg || entity2.Value.Type == Mapping.EntityType.EnderPearl || entity2.Value.Type == Mapping.EntityType.Potion || entity2.Value.Type == Mapping.EntityType.Fireball || entity2.Value.Type == Mapping.EntityType.FireworkRocket)
                             response.Add(String.Format(" #{0}: Type: {1}, Item: {2}, Location: {3}", entity2.Key, entity2.Value.Type, entity2.Value.Item.Type, entity2.Value.Location));
                         else if (entity2.Value.Type == Mapping.EntityType.Player && entity2.Value.Name != string.Empty)
                             response.Add(String.Format(" #{0}: Type: {1}, Nickname: {2}, Latency: {3}, Health: {4}, Pose: {5}, Location: {6}", entity2.Key, entity2.Value.Type, entity2.Value.Name, entity2.Value.Latency, entity2.Value.Health, entity2.Value.Pose, entity2.Value.Location));
