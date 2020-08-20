@@ -47,5 +47,27 @@ namespace MinecraftClient.Mapping
                     return false;
             }
         }
+
+        /// <summary>
+        /// Indicates whether the entity type contains an inner item
+        /// </summary>
+        /// <returns>TRUE if item holder (Item Entity, ItemFrame...)</returns>
+        public static bool ContainsItem(this EntityType e)
+        {
+            switch (e)
+            {
+                case EntityType.Item:
+                case EntityType.ItemFrame:
+                case EntityType.EyeOfEnder:
+                case EntityType.Egg:
+                case EntityType.EnderPearl:
+                case EntityType.Potion:
+                case EntityType.Fireball:
+                case EntityType.FireworkRocket:
+                    return true;
+                default:
+                    return false;
+            };
+        }
     }
 }

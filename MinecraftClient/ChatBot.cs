@@ -321,11 +321,6 @@ namespace MinecraftClient
         public virtual void OnPlayerLeave(Guid uuid, string name) { }
         
         /// <summary>
-        /// Called when the player deaths
-        /// </summary>
-        public virtual void OnDeath() { }
-        
-        /// <summary>
         /// Called when the player respawns
         /// </summary>
         public virtual void OnRespawn() { }
@@ -343,7 +338,7 @@ namespace MinecraftClient
         /// <param name="entity">Entity</param>
         /// <param name="metadata">The metadata of the entity</param>
         /// <param name="protocolversion">Ptotocol version</param>
-        public virtual void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata, int protocolversion) { }
+        public virtual void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */

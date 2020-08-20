@@ -909,8 +909,11 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetEntityHandlingEnabled())
                         {
                             int EntityID = dataTypes.ReadNextVarInt(packetData);
-                            Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette); // need itemPalette because metadata need to read slot item
-                            handler.OnEntityMetadata(EntityID, metadata, protocolversion);
+                            Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
+                            int healthField = protocolversion >= MC114Version ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
+                            if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
+                                handler.OnEntityHealth(EntityID, (float)metadata[healthField]);
+                            handler.OnEntityMetadata(EntityID, metadata);
                         }
                         break;
                     case PacketIncomingType.TimeUpdate:

@@ -2146,12 +2146,25 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Called when the health of an entity changed
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="health">The health of the entity</param>
+        public void OnEntityHealth(int entityID, float health)
+        {
+            if (entities.ContainsKey(entityID))
+            {
+                entities[entityID].Health = health;
+                DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], health));
+            }
+        }
+
+        /// <summary>
         /// Called when the metadata of an entity changed
         /// </summary>
         /// <param name="entityID">Entity ID</param>
         /// <param name="metadata">The metadata of the entity</param>
-        /// <param name="protocolversion">Protocol version</param>
-        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata, int protocolversion)
+        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
         {
             if (entities.ContainsKey(entityID))
             {
@@ -2159,23 +2172,16 @@ namespace MinecraftClient
                 try
                 {
                     entity.Metadata = metadata;
-                    int healthField = protocolversion >= 477 ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
-                    if (metadata.ContainsKey(healthField) && metadata[healthField].GetType() == typeof(float))
-                    {
-                        float heath = (float)metadata[healthField];
-                        entity.Health = heath;
-                        DispatchBotEvent(bot => bot.OnEntityHealth(entity, (float)metadata[healthField]));
-                    }
-                    if (entity.Type == EntityType.Item || entity.Type == EntityType.ItemFrame || entity.Type == Mapping.EntityType.EyeOfEnder || entity.Type == Mapping.EntityType.Egg || entity.Type == Mapping.EntityType.EnderPearl || entity.Type == Mapping.EntityType.Potion || entity.Type == Mapping.EntityType.Fireball || entity.Type == Mapping.EntityType.FireworkRocket)
+                    if (entity.Type.ContainsItem() && metadata.ContainsKey(7) && metadata[7] != null && metadata[7].GetType() == typeof(Item))
                     {
                         try
                         {
-                            if (metadata.ContainsKey(7) && metadata.ContainsValue(metadata[7]) && metadata[7].GetType() == typeof(Item))
-                            {
-                                entity.Item = (Item)metadata[7];
-                            }
+                            entity.Item = (Item)metadata[7];
                         }
-                        catch { entity.Item = new Item(ItemType.Air, 1, null); }
+                        catch
+                        {
+                            entity.Item = new Item(ItemType.Air, 1, null);
+                        }
                     }
                     if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(Int32))
                     {
@@ -2190,7 +2196,7 @@ namespace MinecraftClient
                     {
                         entity.IsCustomNameVisible = (bool)metadata[3];
                     }
-                    DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata, protocolversion));
+                    DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
                 } catch { }
             }
         }
