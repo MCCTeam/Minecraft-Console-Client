@@ -2166,23 +2166,6 @@ namespace MinecraftClient
                         entity.Health = heath;
                         DispatchBotEvent(bot => bot.OnEntityHealth(entity, (float)metadata[healthField]));
                     }
-                } catch { }
-            }
-        }
-
-        /// <summary>
-        /// Called when the metadata of an entity changed
-        /// </summary>
-        /// <param name="entityID">Entity ID</param>
-        /// <param name="metadata">The metadata of the entity</param>
-        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
-        {
-            if (entities.ContainsKey(entityID))
-            {
-                Entity entity = entities[entityID];
-                try
-                {
-                    entity.Metadata = metadata;
                     if (entity.Type == EntityType.Item || entity.Type == EntityType.ItemFrame || entity.Type == Mapping.EntityType.EyeOfEnder || entity.Type == Mapping.EntityType.Egg || entity.Type == Mapping.EntityType.EnderPearl || entity.Type == Mapping.EntityType.Potion || entity.Type == Mapping.EntityType.Fireball || entity.Type == Mapping.EntityType.FireworkRocket)
                     {
                         try
@@ -2207,9 +2190,8 @@ namespace MinecraftClient
                     {
                         entity.IsCustomNameVisible = (bool)metadata[3];
                     }
-                    DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
-                }
-                catch { }
+                    DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata, protocolversion));
+                } catch { }
             }
         }
         #endregion
