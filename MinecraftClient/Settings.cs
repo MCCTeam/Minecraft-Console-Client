@@ -73,7 +73,7 @@ namespace MinecraftClient
         }
 
         //Other Settings
-        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\ed\eda1518b15c711cf6e75d99003bd87753f67fac4"; //MC 1.10 en_GB.lang
+        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\eb\ebf762c137bd91ab2496397f2504e250f3c5d1ba"; //MC 1.16 en_GB.lang
         public static string TranslationsFile_Website_Index = "https://launchermeta.mojang.com/v1/packages/bdb68de96a44ec1e9ed6d9cfcd2ee973be618c3a/1.16.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static TimeSpan splitMessageDelay = TimeSpan.FromSeconds(2);
