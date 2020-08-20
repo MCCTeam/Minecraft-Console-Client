@@ -2155,11 +2155,14 @@ namespace MinecraftClient
         /// <param name="health">The health of the entity</param>
         public void OnEntityHealth(int entityID, float health)
         {
-            if (entities.ContainsKey(entityID))
+            try
             {
-                entities[entityID].Health = health;
-                DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], health));
-            }
+                if (entities.ContainsKey(entityID))
+                {
+                    entities[entityID].Health = health;
+                    DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], health));
+                }
+            } catch { }
         }
 
         /// <summary>
