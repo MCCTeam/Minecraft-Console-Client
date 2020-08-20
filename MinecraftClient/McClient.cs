@@ -2191,9 +2191,9 @@ namespace MinecraftClient
                     {
                         entity.IsCustomNameVisible = (bool)metadata[3];
                     }
+                    DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
                 } catch { }
             }
-            DispatchBotEvent(bot => bot.OnEntityMetadata(entityID, metadata));
         }
         #endregion
     }
