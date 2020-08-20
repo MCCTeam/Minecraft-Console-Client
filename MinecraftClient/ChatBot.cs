@@ -342,7 +342,8 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="entity">Entity</param>
         /// <param name="metadata">The metadata of the entity</param>
-        public virtual void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata) { }
+        /// <param name="protocolversion">Ptotocol version</param>
+        public virtual void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata, int protocolversion) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
