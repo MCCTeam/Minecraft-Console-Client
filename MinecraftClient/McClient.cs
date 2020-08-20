@@ -2068,10 +2068,9 @@ namespace MinecraftClient
             string playerName = null;
             if (onlinePlayers.ContainsKey(uuid))
             {
-                Dictionary<int, Entity> keyValuePairs = GetEntities();
                 playerName = onlinePlayers[uuid];
                 playersLatency[playerName] = latency;
-                foreach (KeyValuePair<int, Entity> ent in keyValuePairs)
+                foreach (KeyValuePair<int, Entity> ent in entities)
                 {
                     if (ent.Value.UUID == uuid && ent.Value.Name == playerName)
                     {
