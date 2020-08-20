@@ -228,6 +228,13 @@ namespace MinecraftClient.Protocol
         /// <param name="metadata"></param>
         /// <param name="protocolversion"></param>
         void OnEntityMetadata(int EntityID, Dictionary<int, object> metadata, int protocolversion);
+
+        /// <summary>
+        /// Called when entity metadata or metadata changed.
+        /// </summary>
+        /// <param name="EntityID"></param>
+        /// <param name="metadata"></param>
+        void OnEntityMetadata(int EntityID, Dictionary<int, object> metadata);
         
         /// <summary>
         /// Called when and explosion occurs on the server
