@@ -911,6 +911,7 @@ namespace MinecraftClient.Protocol.Handlers
                             int EntityID = dataTypes.ReadNextVarInt(packetData);
                             Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette); // need itemPalette because metadata need to read slot item
                             handler.OnEntityMetadata(EntityID, metadata, protocolversion);
+                            handler.OnEntityMetadata(EntityID, metadata);
                         }
                         break;
                     case PacketIncomingType.TimeUpdate:
