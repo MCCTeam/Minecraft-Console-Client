@@ -333,9 +333,17 @@ namespace MinecraftClient
         /// <summary>
         /// Called when the health of an entity changed
         /// </summary>
-        /// <param name="entityID">Entity ID</param>
+        /// <param name="entity">Entity</param>
         /// <param name="health">The health of the entity</param>
-        public virtual void OnEntityHealth(int entityID, float health) { }
+        public virtual void OnEntityHealth(Entity entity, float health) { }
+
+        /// <summary>
+        /// Called when the metadata of an entity changed
+        /// </summary>
+        /// <param name="entity">Entity</param>
+        /// <param name="metadata">The metadata of the entity</param>
+        /// <param name="protocolversion">Ptotocol version</param>
+        public virtual void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata) { }
 
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */

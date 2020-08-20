@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Mapping
 {
@@ -22,6 +23,26 @@ namespace MinecraftClient.Mapping
         /// Nickname of the entity if it is a player.
         /// </summary>
         public string Name;
+        
+        /// <summary>
+        /// CustomName of the entity.
+        /// </summary>
+        public string CustomNameJson;
+        
+        /// <summary>
+        /// IsCustomNameVisible of the entity.
+        /// </summary>
+        public bool IsCustomNameVisible;
+
+        /// <summary>
+        /// CustomName of the entity.
+        /// </summary>
+        public string CustomName;
+        
+        /// <summary>
+        /// Latency of the entity if it is a player.
+        /// </summary>
+        public int Latency;
 
         /// <summary>
         /// Entity type
@@ -37,7 +58,22 @@ namespace MinecraftClient.Mapping
         /// Health of the entity
         /// </summary>
         public float Health;
-
+        
+        /// <summary>
+        /// Item of the entity if ItemFrame or Item
+        /// </summary>
+        public Item Item;
+        
+        /// <summary>
+        /// Entity pose in the Minecraft world
+        /// </summary>
+        public EntityPose Pose;
+        
+        /// <summary>
+        /// Entity metadata
+        /// </summary>
+        public Dictionary<int, object> Metadata;
+        
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>

@@ -144,6 +144,7 @@
     <Compile Include="Mapping\EntityPalettes\EntityPalette115.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette1161.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette1162.cs" />
+    <Compile Include="Mapping\EntityPose.cs" />
     <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPaletteGenerator.cs" />
     <Compile Include="Mapping\EntityTypeExtensions.cs" />

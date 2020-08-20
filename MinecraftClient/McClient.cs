@@ -1530,6 +1530,7 @@ namespace MinecraftClient
                 world.Clear();
             }
 
+            entities.Clear();
             ClearInventories();
             DispatchBotEvent(bot => bot.OnRespawn());
         }
@@ -2071,6 +2072,14 @@ namespace MinecraftClient
             {
                 playerName = onlinePlayers[uuid];
                 playersLatency[playerName] = latency;
+                foreach (KeyValuePair<int, Entity> ent in entities)
+                {
+                    if (ent.Value.UUID == uuid && ent.Value.Name == playerName)
+                    {
+                        ent.Value.Latency = latency;
+                        break;
+                    }
+                }
                 DispatchBotEvent(bot => bot.OnLatencyUpdate(playerName, uuid, latency));
             }
         }
@@ -2149,7 +2158,49 @@ namespace MinecraftClient
             if (entities.ContainsKey(entityID))
             {
                 entities[entityID].Health = health;
-                DispatchBotEvent(bot => bot.OnEntityHealth(entityID, health));
+                DispatchBotEvent(bot => bot.OnEntityHealth(entities[entityID], health));
+            }
+        }
+
+        /// <summary>
+        /// Called when the metadata of an entity changed
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="metadata">The metadata of the entity</param>
+        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
+        {
+            if (entities.ContainsKey(entityID))
+            {
+                Entity entity = entities[entityID];
+                try
+                {
+                    entity.Metadata = metadata;
+                    if (entity.Type.ContainsItem() && metadata.ContainsKey(7) && metadata[7] != null && metadata[7].GetType() == typeof(Item))
+                    {
+                        try
+                        {
+                            entity.Item = (Item)metadata[7];
+                        }
+                        catch
+                        {
+                            entity.Item = new Item(ItemType.Air, 1, null);
+                        }
+                    }
+                    if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(Int32))
+                    {
+                        entity.Pose = (EntityPose)metadata[6];
+                    }
+                    if (metadata.ContainsKey(2) && metadata.ContainsValue(metadata[2]) && metadata[2].GetType() == typeof(string))
+                    {
+                        entity.CustomNameJson = metadata[2].ToString();
+                        entity.CustomName = ChatParser.ParseText(metadata[2].ToString());
+                    }
+                    if (metadata.ContainsKey(3) && metadata.ContainsValue(metadata[3]) && metadata[3].GetType() == typeof(bool))
+                    {
+                        entity.IsCustomNameVisible = (bool)metadata[3];
+                    }
+                    DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
+                } catch { }
             }
         }
         #endregion
