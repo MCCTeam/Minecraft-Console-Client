@@ -335,6 +335,7 @@ namespace MinecraftClient
                     if (lastKeepAlive.AddSeconds(30) < DateTime.Now)
                     {
                         OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "Connection Timeout");
+                        return;
                     }
                 }
             }
@@ -481,7 +482,8 @@ namespace MinecraftClient
 
             if (timeoutdetector != null)
             {
-                timeoutdetector.Abort();
+                if (Thread.CurrentThread != timeoutdetector)
+                    timeoutdetector.Abort();
                 timeoutdetector = null;
             }
 
