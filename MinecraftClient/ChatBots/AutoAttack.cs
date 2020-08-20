@@ -75,13 +75,13 @@ namespace MinecraftClient.ChatBots
                         }
                         else // low health priority
                         {
-                            float health = int.MaxValue;
+                            float entityHealth = int.MaxValue;
                             foreach (var entity in entitiesToAttack)
                             {
-                                if (entity.Value.Health < health)
+                                if (entity.Value.Health < entityHealth)
                                 {
                                     priorityEntity = entity.Key;
-                                    health = entity.Value.Health;
+                                    entityHealth = entity.Value.Health;
                                 }
                             }
                         }
