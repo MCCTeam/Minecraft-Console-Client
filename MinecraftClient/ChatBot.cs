@@ -1247,6 +1247,14 @@ namespace MinecraftClient
         {
             return Handler.GetMaxChatMessageLength();
         }
+        
+        /// <summary>
+        /// Respawn player
+        /// </summary>
+        protected bool Respawn()
+        {
+            return Handler.SendRespawnPacket();
+        }
 
         /// <summary>
         /// Command runner definition.
