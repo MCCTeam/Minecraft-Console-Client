@@ -2172,35 +2172,32 @@ namespace MinecraftClient
             if (entities.ContainsKey(entityID))
             {
                 Entity entity = entities[entityID];
-                try
+                entity.Metadata = metadata;
+                if (entity.Type.ContainsItem() && metadata.ContainsKey(7) && metadata[7] != null && metadata[7].GetType() == typeof(Item))
                 {
-                    entity.Metadata = metadata;
-                    if (entity.Type.ContainsItem() && metadata.ContainsKey(7) && metadata[7] != null && metadata[7].GetType() == typeof(Item))
+                    try
                     {
-                        try
-                        {
-                            entity.Item = (Item)metadata[7];
-                        }
-                        catch
-                        {
-                            entity.Item = new Item(ItemType.Air, 1, null);
-                        }
+                        entity.Item = (Item)metadata[7];
                     }
-                    if (metadata.ContainsKey(6) && metadata[6].GetType() == typeof(Int32))
+                    catch
                     {
-                        entity.Pose = (EntityPose)metadata[6];
+                        entity.Item = new Item(ItemType.Air, 1, null);
                     }
-                    if (metadata.ContainsKey(2) && metadata.ContainsValue(metadata[2]) && metadata[2].GetType() == typeof(string))
-                    {
-                        entity.CustomNameJson = metadata[2].ToString();
-                        entity.CustomName = ChatParser.ParseText(metadata[2].ToString());
-                    }
-                    if (metadata.ContainsKey(3) && metadata.ContainsValue(metadata[3]) && metadata[3].GetType() == typeof(bool))
-                    {
-                        entity.IsCustomNameVisible = (bool)metadata[3];
-                    }
-                    DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
-                } catch { }
+                }
+                if (metadata.ContainsKey(6) && metadata[6] != null && metadata[6].GetType() == typeof(Int32))
+                {
+                    entity.Pose = (EntityPose)metadata[6];
+                }
+                if (metadata.ContainsKey(2) && metadata[2] != null && metadata[2].GetType() == typeof(string))
+                {
+                    entity.CustomNameJson = metadata[2].ToString();
+                    entity.CustomName = ChatParser.ParseText(metadata[2].ToString());
+                }
+                if (metadata.ContainsKey(3) && metadata[3] != null && metadata[3].GetType() == typeof(bool))
+                {
+                    entity.IsCustomNameVisible = bool.Parse(metadata[3].ToString());
+                }
+                DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
             }
         }
         #endregion
