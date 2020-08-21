@@ -2172,6 +2172,7 @@ namespace MinecraftClient
             if (entities.ContainsKey(entityID))
             {
                 Entity entity = entities[entityID];
+                entity.Metadata = metadata;
                 if (entity.Type.ContainsItem() && metadata.ContainsKey(7) && metadata[7] != null && metadata[7].GetType() == typeof(Item))
                 {
                     try
