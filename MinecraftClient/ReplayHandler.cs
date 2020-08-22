@@ -27,16 +27,16 @@ namespace MinecraftClient
         public void AddPacket(int packetID, IEnumerable<byte> packetData)
         {
             // build raw packet
+            // format: packetID + packetData
             List<byte> rawPacket = new List<byte>();
-            byte[] id = dataTypes.GetVarInt(packetID);
-            rawPacket.AddRange(dataTypes.GetVarInt(packetData.Count() + id.Length));
-            rawPacket.AddRange(id);
+            rawPacket.AddRange(dataTypes.GetVarInt(packetID));
             rawPacket.AddRange(packetData.ToArray());
             // build format
+            // format: timestamp + packetLength + RawPacket
             List<byte> line = new List<byte>();
             int nowTime = Convert.ToInt32((DateTime.Now - now).TotalMilliseconds);
-            line.AddRange(BitConverter.GetBytes((Int32)nowTime));
-            line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count));
+            line.AddRange(BitConverter.GetBytes((Int32)nowTime).Reverse().ToArray());
+            line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count).Reverse().ToArray());
             line.AddRange(rawPacket.ToArray());
             byte[] buf = line.ToArray();
             streamWriter.Write(buf);
