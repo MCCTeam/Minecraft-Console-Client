@@ -28,8 +28,9 @@ namespace MinecraftClient
         {
             // build raw packet
             List<byte> rawPacket = new List<byte>();
-            rawPacket.AddRange(dataTypes.GetVarInt(packetID));
-            rawPacket.AddRange(dataTypes.GetVarInt(packetData.Count()));
+            byte[] id = dataTypes.GetVarInt(packetID);
+            rawPacket.AddRange(dataTypes.GetVarInt(packetData.Count() + id.Length));
+            rawPacket.AddRange(id);
             rawPacket.AddRange(packetData.ToArray());
             // build format
             List<byte> line = new List<byte>();
