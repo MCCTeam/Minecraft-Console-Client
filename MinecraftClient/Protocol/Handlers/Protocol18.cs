@@ -228,7 +228,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         internal bool HandlePacket(int packetID, Queue<byte> packetData)
         {
-            replay.AddPacket(packetID, packetData);
+            replay.AddPacket(packetID, packetData, login_phase, true);
             try
             {
                 if (login_phase)
@@ -1057,7 +1057,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">packet Data</param>
         private void SendPacket(int packetID, IEnumerable<byte> packetData)
         {
-            replay.AddPacket(packetID, packetData);
+            replay.AddPacket(packetID, packetData, login_phase, false);
             //The inner packet
             byte[] the_packet = dataTypes.ConcatBytes(dataTypes.GetVarInt(packetID), packetData.ToArray());
 
