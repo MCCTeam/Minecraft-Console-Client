@@ -2181,7 +2181,7 @@ namespace MinecraftClient
                     }
                     catch
                     {
-                        entity.Item = new Item(ItemType.Air, 1, null);
+                        entity.Item = new Item(ItemType.Air, 0, null);
                     }
                 }
                 if (metadata.ContainsKey(6) && metadata[6] != null && metadata[6].GetType() == typeof(Int32))
