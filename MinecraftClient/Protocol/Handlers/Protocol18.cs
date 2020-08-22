@@ -66,6 +66,8 @@ namespace MinecraftClient.Protocol.Handlers
         DataTypes dataTypes;
         Thread netRead;
 
+        ReplayHandler replay;
+
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo forgeInfo)
         {
             ConsoleIO.SetAutoCompleteEngine(this);
@@ -136,7 +138,11 @@ namespace MinecraftClient.Protocol.Handlers
                 else itemPalette = new ItemPalette1161();
             }
             else itemPalette = new ItemPalette115();
+
+            replay = new ReplayHandler(protocolversion);
         }
+
+        
 
         /// <summary>
         /// Separate thread. Network reading loop.
@@ -222,6 +228,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         internal bool HandlePacket(int packetID, Queue<byte> packetData)
         {
+            replay.AddPacket(packetID, packetData);
             try
             {
                 if (login_phase)
@@ -1050,6 +1057,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">packet Data</param>
         private void SendPacket(int packetID, IEnumerable<byte> packetData)
         {
+            replay.AddPacket(packetID, packetData);
             //The inner packet
             byte[] the_packet = dataTypes.ConcatBytes(dataTypes.GetVarInt(packetID), packetData.ToArray());
 
