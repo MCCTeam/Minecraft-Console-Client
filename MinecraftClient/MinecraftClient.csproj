@@ -150,6 +150,7 @@
     <Compile Include="Mapping\EntityTypeExtensions.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Protocol\EntityActionType.cs" />
+    <Compile Include="Protocol\Handlers\Compression\ZipStorer.cs" />
     <Compile Include="Protocol\Handlers\DataTypes.cs" />
     <Compile Include="Protocol\Handlers\Forge\FMLVersion.cs" />
     <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette110.cs" />
@@ -339,6 +340,7 @@
     <Content Include="Protocol\Dns\Records\totla.txt" />
     <Content Include="Resources\AppIcon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

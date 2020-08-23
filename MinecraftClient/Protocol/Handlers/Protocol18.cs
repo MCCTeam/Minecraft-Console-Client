@@ -140,6 +140,7 @@ namespace MinecraftClient.Protocol.Handlers
             else itemPalette = new ItemPalette115();
 
             replay = new ReplayHandler(protocolversion);
+            replay.MetaData.serverName = handler.GetServerHost() + ":" + handler.GetServerPort();
         }
 
         
@@ -218,6 +219,8 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             packetID = dataTypes.ReadNextVarInt(packetData); //Packet ID
+
+            replay.AddPacket(packetID, packetData, login_phase, true);
         }
 
         /// <summary>
@@ -228,7 +231,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the packet was processed, FALSE if ignored or unknown</returns>
         internal bool HandlePacket(int packetID, Queue<byte> packetData)
         {
-            replay.AddPacket(packetID, packetData, login_phase, true);
             try
             {
                 if (login_phase)
@@ -1196,6 +1198,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         public void Disconnect()
         {
+            //replay.OnShutDown();
             socketWrapper.Disconnect();
         }
 
