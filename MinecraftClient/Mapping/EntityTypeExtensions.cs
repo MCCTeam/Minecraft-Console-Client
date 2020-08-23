@@ -17,16 +17,21 @@ namespace MinecraftClient.Mapping
             switch (e)
             {
                 case EntityType.Blaze:
+                case EntityType.CaveSpider:
                 case EntityType.Creeper:
                 case EntityType.Drowned:
+                case EntityType.Enderman:
+                case EntityType.Endermite:
                 case EntityType.Evoker:
                 case EntityType.Ghast:
                 case EntityType.Guardian:
                 case EntityType.Hoglin:
                 case EntityType.Husk:
+                case EntityType.Illusioner:
                 case EntityType.MagmaCube:
                 case EntityType.Phantom:
                 case EntityType.Piglin:
+                case EntityType.PiglinBrute:
                 case EntityType.Pillager:
                 case EntityType.Ravager:
                 case EntityType.Shulker:
@@ -41,7 +46,9 @@ namespace MinecraftClient.Mapping
                 case EntityType.WitherSkeleton:
                 case EntityType.Zoglin:
                 case EntityType.Zombie:
+                case EntityType.ZombiePigman:
                 case EntityType.ZombieVillager:
+                case EntityType.ZombifiedPiglin:
                     return true;
                 default:
                     return false;
