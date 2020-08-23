@@ -27,7 +27,7 @@ namespace MinecraftClient.Commands
                         int y = int.Parse(args[1]);
                         int z = int.Parse(args[2]);
                         Location blockToBreak = new Location(x, y, z);
-                        if (blockToBreak.DistanceSquared(handler.GetCurrentLocation()) > 25)
+                        if (blockToBreak.DistanceSquared(handler.GetCurrentLocation().EyesLocation()) > 25)
                             return "You are too far away from this block.";
                         if (handler.GetWorld().GetBlock(blockToBreak).Type == Material.Air)
                             return "No block at this location (Air)";

@@ -150,6 +150,15 @@ namespace MinecraftClient.Mapping
         }
 
         /// <summary>
+        /// Considering the current location as Feet location, calculate Eyes location
+        /// </summary>
+        /// <returns>Player Eyes location</returns>
+        public Location EyesLocation()
+        {
+            return this + new Location(0, 1.62, 0);
+        }
+
+        /// <summary>
         /// Compare two locations. Locations are equals if the integer part of their coordinates are equals.
         /// </summary>
         /// <param name="obj">Object to compare to</param>
