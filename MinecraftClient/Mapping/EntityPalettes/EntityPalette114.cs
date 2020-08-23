@@ -69,7 +69,7 @@ namespace MinecraftClient.Mapping.EntityPalettes
             mappings[53] = EntityType.Parrot;
             mappings[54] = EntityType.Pig;
             mappings[55] = EntityType.Pufferfish;
-            mappings[56] = EntityType.ZombiePigman;
+            mappings[56] = EntityType.ZombifiedPiglin;
             mappings[57] = EntityType.PolarBear;
             mappings[58] = EntityType.Tnt;
             mappings[59] = EntityType.Rabbit;

@@ -113,7 +113,7 @@ namespace MinecraftClient.Mapping.EntityPalettes
             mappings[101] = EntityType.Zombie;
             mappings[102] = EntityType.ZombieHorse;
             mappings[103] = EntityType.ZombieVillager;
-            mappings[104] = EntityType.ZombiePigman;
+            mappings[104] = EntityType.ZombifiedPiglin;
             mappings[105] = EntityType.Player;
             mappings[106] = EntityType.FishingBobber;
         }

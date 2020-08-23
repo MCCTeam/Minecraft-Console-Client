@@ -120,7 +120,6 @@ namespace MinecraftClient.Mapping
         Zoglin,
         Zombie,
         ZombieHorse,
-        ZombiePigman,
         ZombieVillager,
         ZombifiedPiglin,
     }
