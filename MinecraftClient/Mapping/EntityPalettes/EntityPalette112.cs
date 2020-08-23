@@ -96,7 +96,7 @@ namespace MinecraftClient.Mapping.EntityPalettes
             { 54, EntityType.Zombie },
             { 55, EntityType.Slime },
             { 56, EntityType.Ghast },
-            { 57, EntityType.ZombiePigman },
+            { 57, EntityType.ZombifiedPiglin },
             { 58, EntityType.Enderman },
             { 59, EntityType.CaveSpider },
             { 60, EntityType.Silverfish },

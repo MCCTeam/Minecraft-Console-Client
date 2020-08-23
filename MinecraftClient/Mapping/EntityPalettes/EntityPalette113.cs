@@ -99,7 +99,7 @@ namespace MinecraftClient.Mapping.EntityPalettes
             { 50, EntityType.Parrot },
             { 51, EntityType.Pig },
             { 52, EntityType.Pufferfish },
-            { 53, EntityType.ZombiePigman },
+            { 53, EntityType.ZombifiedPiglin },
             { 54, EntityType.PolarBear },
             { 55, EntityType.Tnt },
             { 56, EntityType.Rabbit },

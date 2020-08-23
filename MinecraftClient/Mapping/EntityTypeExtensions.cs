@@ -46,7 +46,6 @@ namespace MinecraftClient.Mapping
                 case EntityType.WitherSkeleton:
                 case EntityType.Zoglin:
                 case EntityType.Zombie:
-                case EntityType.ZombiePigman:
                 case EntityType.ZombieVillager:
                 case EntityType.ZombifiedPiglin:
                     return true;
