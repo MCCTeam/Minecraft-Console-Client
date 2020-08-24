@@ -220,7 +220,8 @@ namespace MinecraftClient.Protocol.Handlers
 
             packetID = dataTypes.ReadNextVarInt(packetData); //Packet ID
 
-            replay.AddPacket(packetID, packetData, login_phase, true);
+            List<byte> clone = packetData.ToArray().ToList();
+            replay.AddPacket(packetID, clone, login_phase, true);
         }
 
         /// <summary>
@@ -262,6 +263,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketTypesIn.JoinGame:
                         handler.OnGameJoined();
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
+                        replay.SetClientEntityID(playerEntityID);
                         handler.OnReceivePlayerEntityID(playerEntityID);
 
                         if (protocolversion >= MC1162Version)
@@ -1059,7 +1061,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">packet Data</param>
         private void SendPacket(int packetID, IEnumerable<byte> packetData)
         {
-            replay.AddPacket(packetID, packetData, login_phase, false);
+            List<byte> clone = packetData.ToArray().ToList();
+            replay.AddPacket(packetID, clone, login_phase, false);
             //The inner packet
             byte[] the_packet = dataTypes.ConcatBytes(dataTypes.GetVarInt(packetID), packetData.ToArray());
 
@@ -1198,7 +1201,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         public void Disconnect()
         {
-            //replay.OnShutDown();
             socketWrapper.Disconnect();
         }
 
