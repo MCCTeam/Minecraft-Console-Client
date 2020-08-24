@@ -12,7 +12,8 @@ namespace MinecraftClient.Inventory
     /// </summary>
     public enum ItemType
     {
-        Null = -1, // Unspecified item type
+        Unknown = -2, // Unsupported item type (Forge mod custom item...)
+        Null = -1,    // Unspecified item type (Used in the network protocol)
 
         AcaciaBoat,
         AcaciaButton,
