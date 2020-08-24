@@ -15,19 +15,22 @@ namespace MinecraftClient.Inventory.ItemPalettes
             // Index reverse mappings for use in ToId()
             foreach (KeyValuePair<int, ItemType> entry in GetDict())
                 DictReverse.Add(entry.Value, entry.Key);
+
+            DictReverse[ItemType.Unknown] = -2;
+            DictReverse[ItemType.Null] = -1;
         }
 
         public ItemType FromId(int id)
         {
-            if (id >= GetDict().Count) // Unknown item type
-                return ItemType.Null;
+            // Unknown item types may appear of Forge servers for custom items
+            if (!GetDict().ContainsKey(id))
+                return ItemType.Unknown;
+
             return GetDict()[id];
         }
 
         public int ToId(ItemType itemType)
         {
-            if (itemType == ItemType.Null)
-                return -1;
             return DictReverse[itemType];
         }
     }
