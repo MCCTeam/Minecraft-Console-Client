@@ -19,6 +19,8 @@ namespace MinecraftClient.Inventory.ItemPalettes
 
         public ItemType FromId(int id)
         {
+            if (id >= GetDict().Count) // Unknown item type
+                return ItemType.Null;
             return GetDict()[id];
         }
 
