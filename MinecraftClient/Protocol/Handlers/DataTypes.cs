@@ -576,10 +576,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case 13: // Optional BlockID (VarInt)
-                        if (ReadNextBool(cache))
-                        {
-                            value = ReadNextVarInt(cache);
-                        }
+                        value = ReadNextVarInt(cache);
                         break;
                     case 14: // NBT
                         value = ReadNextNbt(cache);
