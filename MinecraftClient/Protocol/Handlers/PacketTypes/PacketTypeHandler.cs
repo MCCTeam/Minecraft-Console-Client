@@ -10,12 +10,34 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes
     public class PacketTypeHandler
     {
         private int protocol;
+
+        /// <summary>
+        /// Initialize the handler
+        /// </summary>
+        /// <param name="protocol">Protocol version to use</param>
         public PacketTypeHandler(int protocol)
         {
             this.protocol = protocol;
         }
+        /// <summary>
+        /// Initialize the handler
+        /// </summary>
+        public PacketTypeHandler() { }
 
+        /// <summary>
+        /// Get the packet type palette
+        /// </summary>
+        /// <returns></returns>
         public PacketTypePalette GetTypeHandler()
+        {
+            return GetTypeHandler(this.protocol);
+        }
+        /// <summary>
+        /// Get the packet type palette
+        /// </summary>
+        /// <param name="protocol">Protocol version to use</param>
+        /// <returns></returns>
+        public PacketTypePalette GetTypeHandler(int protocol)
         {
             if (protocol <= Protocol18Handler.MC18Version)
                 return new PacketPalette18();

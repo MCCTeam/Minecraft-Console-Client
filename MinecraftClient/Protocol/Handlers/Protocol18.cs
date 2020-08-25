@@ -999,7 +999,7 @@ namespace MinecraftClient.Protocol.Handlers
                     throw; //Thread abort or Connection lost rather than invalid data
                 throw new System.IO.InvalidDataException(
                     String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
-                        Protocol18PacketTypes.GetPacketIncomingType(packetID, protocolversion),
+                        PacketType.GetIncommingTypeById(packetID),
                         packetID,
                         protocolversion,
                         login_phase,

@@ -5,6 +5,9 @@ using System.Text;
 
 namespace MinecraftClient.Protocol.Handlers.PacketTypes
 {
+    /// <summary>
+    /// Incomming packet types
+    /// </summary>
     public enum PacketTypesIn
     {
         SpawnEntity,

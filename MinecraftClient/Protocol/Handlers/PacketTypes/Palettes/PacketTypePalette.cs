@@ -26,26 +26,49 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             }
         }
 
+        /// <summary>
+        /// Get incomming packet type by packet ID
+        /// </summary>
+        /// <param name="packetId">packet ID</param>
+        /// <returns>Packet type</returns>
         public PacketTypesIn GetIncommingTypeById(int packetId)
         {
             return GetListIn()[packetId];
         }
 
+        /// <summary>
+        /// Get incomming packet ID by packet type
+        /// </summary>
+        /// <param name="packetType">Packet type</param>
+        /// <returns>packet ID</returns>
         public int GetIncommingIdByType(PacketTypesIn packetType)
         {
             return reverseMappingIn[packetType];
         }
 
+        /// <summary>
+        /// Get outgoing packet type by packet ID
+        /// </summary>
+        /// <param name="packetId">Packet ID</param>
+        /// <returns>Packet type</returns>
         public PacketTypesOut GetOutgoingTypeById(int packetId)
         {
             return GetListOut()[packetId];
         }
 
+        /// <summary>
+        /// Get outgoing packet ID by packet type
+        /// </summary>
+        /// <param name="packetType">Packet type</param>
+        /// <returns>Packet ID</returns>
         public int GetOutgoingIdByType(PacketTypesOut packetType)
         {
             return reverseMappingOut[packetType];
         }
 
+        /// <summary>
+        /// Dump the inbound packet ID mapping to console
+        /// </summary>
         public void DumpInboundPacketId()
         {
             for (int i = 0; i < GetListIn().Count; i++)
@@ -54,6 +77,9 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             }
         }
 
+        /// <summary>
+        /// Dump the outbound packet ID mapping to console
+        /// </summary>
         public void DumpOutboundPacketId()
         {
             for (int i = 0; i < GetListOut().Count; i++)

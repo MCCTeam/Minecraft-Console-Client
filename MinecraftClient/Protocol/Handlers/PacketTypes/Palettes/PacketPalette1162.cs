@@ -5,6 +5,9 @@ using System.Text;
 
 namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
 {
+    /// <summary>
+    /// For Minecraft version 1.16.2
+    /// </summary>
     class PacketPalette1162 : PacketTypePalette
     {
         private List<PacketTypesIn> typeIn = new List<PacketTypesIn>()
@@ -24,7 +27,6 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             PacketTypesIn.BossBar,
             PacketTypesIn.ServerDifficulty,
             PacketTypesIn.ChatMessage,
-            
             PacketTypesIn.TabComplete,
             PacketTypesIn.DeclareCommands,
             PacketTypesIn.WindowConfirmation,

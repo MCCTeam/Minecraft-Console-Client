@@ -5,6 +5,9 @@ using System.Text;
 
 namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
 {
+    /// <summary>
+    /// For Minecraft version 1.7 - 1.8
+    /// </summary>
     class PacketPalette18 : PacketTypePalette
     {
         private List<PacketTypesIn> typeIn = new List<PacketTypesIn>()

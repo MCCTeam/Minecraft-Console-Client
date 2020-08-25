@@ -5,6 +5,9 @@ using System.Text;
 
 namespace MinecraftClient.Protocol.Handlers.PacketTypes
 {
+    /// <summary>
+    /// Outgoing packet types
+    /// </summary>
     public enum PacketTypesOut
     {
         TeleportConfirm,
