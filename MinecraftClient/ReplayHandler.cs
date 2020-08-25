@@ -44,8 +44,6 @@ namespace MinecraftClient
         {
             this.dataTypes = new DataTypes(protocolVersion);
             this.protocolVersion = protocolVersion;
-            if (File.Exists(RecordingTmpFileName))
-                File.Delete(RecordingTmpFileName);
             recordStream = new BinaryWriter(new FileStream(RecordingTmpFileName, FileMode.Create));
             recordStartTime = DateTime.Now;
 
@@ -74,7 +72,7 @@ namespace MinecraftClient
 
         #region File and stream handling
 
-        public void CloseStream()
+        public void CloseRecordStream()
         {
             try
             {
@@ -91,7 +89,7 @@ namespace MinecraftClient
         {
             MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
             MetaData.SaveToFile();
-            CloseStream();
+            CloseRecordStream();
             CreateReplayFile();
         }
 
@@ -139,7 +137,7 @@ namespace MinecraftClient
             }
             catch (Exception e)
             {
-                ConsoleIO.WriteLine("Exceotion in replay: " + e.Message + "\n" + e.StackTrace);
+                ConsoleIO.WriteLine("Exception in replay: " + e.Message + "\n" + e.StackTrace);
             }
         }
 
