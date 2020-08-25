@@ -49,7 +49,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes
         MapData,
         TradeList,
         EntityPosition,
-        EntityPositionandRotation,
+        EntityPositionAndRotation,
         EntityRotation,
         EntityMovement,
         VehicleMove,
@@ -101,6 +101,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes
         DeclareRecipes,
         Tags,
         MapChunkBulk, // For 1.8 or below
+        SetCompression, // For 1.8 or below
         Unknown, // For old version packet that have been removed and not used by mcc 
     }
 }

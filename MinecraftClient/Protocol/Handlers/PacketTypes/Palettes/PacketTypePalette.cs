@@ -14,6 +14,18 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
 
         private Dictionary<PacketTypesOut, int> reverseMappingOut = new Dictionary<PacketTypesOut, int>();
 
+        public PacketTypePalette()
+        {
+            for (int i = 0; i < GetListIn().Count; i++)
+            {
+                reverseMappingIn[GetListIn()[i]] = i;
+            }
+            for (int i = 0; i < GetListOut().Count; i++)
+            {
+                reverseMappingOut[GetListOut()[i]] = i;
+            }
+        }
+
         public PacketTypesIn GetIncommingTypeById(int packetId)
         {
             return GetListIn()[packetId];

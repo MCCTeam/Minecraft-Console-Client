@@ -32,7 +32,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             PacketTypesIn.EntityMovement,
             PacketTypesIn.EntityPosition,
             PacketTypesIn.EntityRotation,
-            PacketTypesIn.EntityPositionandRotation,
+            PacketTypesIn.EntityPositionAndRotation,
             PacketTypesIn.EntityTeleport,
             PacketTypesIn.EntityHeadLook,
             PacketTypesIn.EntityStatus,
@@ -79,7 +79,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             PacketTypesIn.Camera,
             PacketTypesIn.WorldBorder,
             PacketTypesIn.Title,
-            PacketTypesIn.Unknown, // SetCompression
+            PacketTypesIn.SetCompression,
             PacketTypesIn.PlayerListHeaderAndFooter,
             PacketTypesIn.ResourcePackSend,
             PacketTypesIn.Unknown // UpdateEntityNBT

@@ -47,7 +47,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             PacketTypesIn.JoinGame,
             PacketTypesIn.MapData,
             PacketTypesIn.EntityPosition,
-            PacketTypesIn.EntityPositionandRotation,
+            PacketTypesIn.EntityPositionAndRotation,
             PacketTypesIn.EntityRotation,
             PacketTypesIn.EntityMovement,
             PacketTypesIn.VehicleMove,

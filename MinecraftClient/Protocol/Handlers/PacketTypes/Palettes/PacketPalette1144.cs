@@ -50,7 +50,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             PacketTypesIn.MapData,
             PacketTypesIn.TradeList,
             PacketTypesIn.EntityPosition,
-            PacketTypesIn.EntityPositionandRotation,
+            PacketTypesIn.EntityPositionAndRotation,
             PacketTypesIn.EntityRotation,
             PacketTypesIn.EntityMovement,
             PacketTypesIn.VehicleMove,
