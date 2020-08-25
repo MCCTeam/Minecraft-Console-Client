@@ -45,5 +45,21 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
         {
             return reverseMappingOut[packetType];
         }
+
+        public void DumpInboundPacketId()
+        {
+            for (int i = 0; i < GetListIn().Count; i++)
+            {
+                ConsoleIO.WriteLine("0x" + i.ToString("X2") + " " + GetListIn()[i]);
+            }
+        }
+
+        public void DumpOutboundPacketId()
+        {
+            for (int i = 0; i < GetListOut().Count; i++)
+            {
+                ConsoleIO.WriteLine("0x" + i.ToString("X2") + " " + GetListOut()[i]);
+            }
+        }
     }
 }
