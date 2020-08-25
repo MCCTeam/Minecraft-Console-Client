@@ -154,6 +154,19 @@
     <Compile Include="Protocol\Handlers\Forge\FMLVersion.cs" />
     <Compile Include="Protocol\Handlers\PacketIncomingType.cs" />
     <Compile Include="Protocol\Handlers\PacketOutgoingType.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketPalette111.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketPalette112.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketPalette1122.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketPalette1132.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketPalette1144.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketPalette1152.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketPalette1161.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketPalette1162.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketPalette18.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\PacketTypeHandler.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\Palettes\PacketTypePalette.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\PacketTypesIn.cs" />
+    <Compile Include="Protocol\Handlers\PacketTypes\PacketTypesOut.cs" />
     <Compile Include="Protocol\Handlers\Protocol18Forge.cs" />
     <Compile Include="Protocol\Handlers\Protocol18PacketTypes.cs" />
     <Compile Include="Protocol\Handlers\Protocol18Terrain.cs" />
@@ -327,6 +340,7 @@
     <Content Include="Protocol\Dns\Records\totla.txt" />
     <Content Include="Resources\AppIcon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
