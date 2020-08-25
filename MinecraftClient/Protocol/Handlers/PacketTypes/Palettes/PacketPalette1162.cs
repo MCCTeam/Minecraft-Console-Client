@@ -24,7 +24,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             PacketTypesIn.BossBar,
             PacketTypesIn.ServerDifficulty,
             PacketTypesIn.ChatMessage,
-            PacketTypesIn.MultiBlockChange,
+            
             PacketTypesIn.TabComplete,
             PacketTypesIn.DeclareCommands,
             PacketTypesIn.WindowConfirmation,
@@ -69,6 +69,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             PacketTypesIn.ResourcePackSend,
             PacketTypesIn.Respawn,
             PacketTypesIn.EntityHeadLook,
+            PacketTypesIn.MultiBlockChange,
             PacketTypesIn.SelectAdvancementTab,
             PacketTypesIn.WorldBorder,
             PacketTypesIn.Camera,
