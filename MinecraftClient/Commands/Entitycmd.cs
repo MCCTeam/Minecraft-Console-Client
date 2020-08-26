@@ -60,7 +60,7 @@ namespace MinecraftClient.Commands
                                     if (!String.IsNullOrEmpty(nickname))
                                         done += String.Format("\n[MCC] Nickname: {0}", nickname);
                                     else if (!String.IsNullOrEmpty(customname))
-                                        done += String.Format("\n[MCC] CustomName: {0}", customname);
+                                        done += String.Format("\n[MCC] CustomName: {0}§8", customname);
                                     if (type == EntityType.Player)
                                         done += String.Format("\n[MCC] Latency: {0}", latency);
                                     else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
