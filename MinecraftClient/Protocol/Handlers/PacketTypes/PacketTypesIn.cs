@@ -62,7 +62,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes
         CraftRecipeResponse,
         PlayerAbilities,
         CombatEvent,
-        PlayerListUpdate, // new name is PlayerInfo. should we change it?
+        PlayerInfo,
         FacePlayer,
         PlayerPositionAndLook,
         UnlockRecipes,

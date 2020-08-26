@@ -28,7 +28,7 @@ namespace MinecraftClient.Protocol.Handlers
     /// Typical update steps for implementing protocol changes for a new Minecraft version:
     ///  - Perform a diff between latest supported version in MCC and new stable version to support on https://wiki.vg/Protocol
     ///  - If there are any changes in packets implemented by MCC, add MCXXXVersion field below and implement new packet layouts
-    ///  - If packet IDs were changed, also update getPacketIncomingType() and getPacketOutgoingID() inside Protocol18PacketTypes.cs
+    ///  - Add the packet type palette for that Minecraft version. Please see PacketTypePalette.cs for more information
     ///  - Also see Material.cs and ItemType.cs for updating block and item data inside MCC
     /// </remarks>
     class Protocol18Handler : IMinecraftCom
@@ -62,7 +62,7 @@ namespace MinecraftClient.Protocol.Handlers
         IMinecraftComHandler handler;
         EntityPalette entityPalette;
         ItemPalette itemPalette;
-        PacketTypePalette PacketType;
+        PacketTypePalette packetPalette;
         SocketWrapper socketWrapper;
         DataTypes dataTypes;
         Thread netRead;
@@ -77,7 +77,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.handler = handler;
             this.pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
-            this.PacketType = new PacketTypeHandler(protocolVersion).GetTypeHandler();
+            this.packetPalette = new PacketTypeHandler(protocolVersion).GetTypeHandler();
 
             if (handler.GetTerrainEnabled() && protocolversion > MC1152Version)
             {
@@ -245,7 +245,7 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
                 // Regular in-game packets
-                else switch (PacketType.GetIncommingTypeById(packetID))
+                else switch (packetPalette.GetIncommingTypeById(packetID))
                 {
                     case PacketTypesIn.KeepAlive:
                         SendPacket(PacketTypesOut.KeepAlive, packetData);
@@ -583,7 +583,7 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.GetWorld()[chunkX, chunkZ] = null;
                         }
                         break;
-                    case PacketTypesIn.PlayerListUpdate:
+                    case PacketTypesIn.PlayerInfo:
                         if (protocolversion >= MC18Version)
                         {
                             int action = dataTypes.ReadNextVarInt(packetData);
@@ -999,7 +999,7 @@ namespace MinecraftClient.Protocol.Handlers
                     throw; //Thread abort or Connection lost rather than invalid data
                 throw new System.IO.InvalidDataException(
                     String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
-                        PacketType.GetIncommingTypeById(packetID),
+                        packetPalette.GetIncommingTypeById(packetID),
                         packetID,
                         protocolversion,
                         login_phase,
@@ -1041,7 +1041,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">packet Data</param>
         private void SendPacket(PacketTypesOut packet, IEnumerable<byte> packetData)
         {
-            SendPacket(PacketType.GetOutgoingIdByType(packet), packetData);
+            SendPacket(packetPalette.GetOutgoingIdByType(packet), packetData);
         }
 
         /// <summary>

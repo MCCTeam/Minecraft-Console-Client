@@ -68,7 +68,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             PacketTypesIn.BlockEntityData,
             PacketTypesIn.OpenSignEditor,
             PacketTypesIn.Statistics,
-            PacketTypesIn.PlayerListUpdate,
+            PacketTypesIn.PlayerInfo,
             PacketTypesIn.PlayerAbilities,
             PacketTypesIn.TabComplete,
             PacketTypesIn.ScoreboardObjective,

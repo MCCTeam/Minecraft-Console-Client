@@ -64,7 +64,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
             PacketTypesIn.CraftRecipeResponse,
             PacketTypesIn.PlayerAbilities,
             PacketTypesIn.CombatEvent,
-            PacketTypesIn.PlayerListUpdate,
+            PacketTypesIn.PlayerInfo,
             PacketTypesIn.FacePlayer,
             PacketTypesIn.PlayerPositionAndLook,
             PacketTypesIn.UnlockRecipes,
