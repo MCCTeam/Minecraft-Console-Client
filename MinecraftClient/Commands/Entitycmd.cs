@@ -74,6 +74,22 @@ namespace MinecraftClient.Commands
                                             else
                                                 done += String.Format("\n[MCC] Item: {0} x{1} - {2}§8", item.Type, item.Count, displayName);
                                         }
+                                        if (entity.Equipment.Count >= 1 && entity.Equipment.ContainsKey(0) || entity.Equipment.ContainsKey(1) || entity.Equipment.ContainsKey(2) || entity.Equipment.ContainsKey(3) || entity.Equipment.ContainsKey(4) || entity.Equipment.ContainsKey(5))
+                                        {
+                                            done += String.Format("\n[MCC] Equipment:");
+                                            if (entity.Equipment.ContainsKey(0) && entity.Equipment[0] != null)
+                                                done += String.Format("\n [MCC] MainHand: {0} x{1}", entity.Equipment[0].Type, entity.Equipment[0].Count);
+                                            if (entity.Equipment.ContainsKey(1) && entity.Equipment[1] != null)
+                                                done += String.Format("\n [MCC] OffHand: {0} x{1}", entity.Equipment[1].Type, entity.Equipment[1].Count);
+                                            if (entity.Equipment.ContainsKey(5) && entity.Equipment[5] != null)
+                                                done += String.Format("\n [MCC] Helmet: {0} x{1}", entity.Equipment[5].Type, entity.Equipment[5].Count);
+                                            if (entity.Equipment.ContainsKey(4) && entity.Equipment[4] != null)
+                                                done += String.Format("\n [MCC] Chestplate: {0} x{1}", entity.Equipment[4].Type, entity.Equipment[4].Count);
+                                            if (entity.Equipment.ContainsKey(3) && entity.Equipment[3] != null)
+                                                done += String.Format("\n [MCC] Leggings: {0} x{1}", entity.Equipment[3].Type, entity.Equipment[3].Count);
+                                            if (entity.Equipment.ContainsKey(2) && entity.Equipment[2] != null)
+                                                done += String.Format("\n [MCC] Boots: {0} x{1}", entity.Equipment[2].Type, entity.Equipment[2].Count);
+                                        }
                                         done += String.Format("\n[MCC] Pose: {0}", pose);
                                         done += String.Format("\n[MCC] Health: {0}", color + health + "§8");
                                         done += String.Format("\n[MCC] Distance: {0}", distance);
