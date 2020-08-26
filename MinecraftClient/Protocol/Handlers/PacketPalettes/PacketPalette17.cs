@@ -22,7 +22,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.Respawn,
             PacketTypesIn.PlayerPositionAndLook,
             PacketTypesIn.HeldItemChange,
-            PacketTypesIn.Unknown, // UseBed
+            PacketTypesIn.UseBed,
             PacketTypesIn.EntityAnimation,
             PacketTypesIn.SpawnPlayer,
             PacketTypesIn.CollectItem,
@@ -93,7 +93,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesOut.KeepAlive,
             PacketTypesOut.ChatMessage,
             PacketTypesOut.InteractEntity,
-            PacketTypesOut.Unknown, // Player
+            PacketTypesOut.PlayerMovement,
             PacketTypesOut.PlayerPosition,
             PacketTypesOut.PlayerRotation,
             PacketTypesOut.PlayerPositionAndRotation,
@@ -107,7 +107,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesOut.ClickWindow,
             PacketTypesOut.WindowConfirmation,
             PacketTypesOut.CreativeInventoryAction,
-            PacketTypesOut.Unknown, // EnchantItem
+            PacketTypesOut.EnchantItem,
             PacketTypesOut.UpdateSign,
             PacketTypesOut.PlayerAbilities,
             PacketTypesOut.TabComplete,

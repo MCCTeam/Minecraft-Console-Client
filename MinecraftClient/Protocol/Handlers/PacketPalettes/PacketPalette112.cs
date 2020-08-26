@@ -59,7 +59,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.CombatEvent,
             PacketTypesIn.PlayerInfo,
             PacketTypesIn.PlayerPositionAndLook,
-            PacketTypesIn.Unknown, // UseBed
+            PacketTypesIn.UseBed,
             PacketTypesIn.UnlockRecipes,
             PacketTypesIn.DestroyEntities,
             PacketTypesIn.RemoveEntityEffect,
@@ -102,7 +102,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesOut.ClientStatus,
             PacketTypesOut.ClientSettings,
             PacketTypesOut.WindowConfirmation,
-            PacketTypesOut.Unknown, // EnchantItem
+            PacketTypesOut.EnchantItem, // EnchantItem
             PacketTypesOut.ClickWindow,
             PacketTypesOut.CloseWindow,
             PacketTypesOut.PluginMessage,
