@@ -22,64 +22,66 @@ namespace MinecraftClient.Commands
                     {
                         int entityID = 0;
                         int.TryParse(args[0], out entityID);
-                        if (entityID != 0 && handler.GetEntities().ContainsKey(entityID))
+                        if (entityID != 0)
                         {
-                            string action = args.Length > 1
-                                ? args[1].ToLower()
-                                : "list";
-                            switch (action)
+                            if (handler.GetEntities().ContainsKey(entityID))
                             {
-                                case "attack":
-                                    handler.InteractEntity(entityID, 1);
-                                    return "Entity attacked";
-                                case "use":
-                                    handler.InteractEntity(entityID, 0);
-                                    return "Entity used";
-                                case "info":
-                                    Entity entity = handler.GetEntities()[entityID];
-                                    int id = entity.ID;
-                                    float health = entity.Health;
-                                    int latency = entity.Latency;
-                                    Item item = entity.Item;
-                                    string nickname = entity.Name;
-                                    string customname = entity.CustomName;
-                                    EntityPose pose = entity.Pose;
-                                    EntityType type = entity.Type;
-                                    customname = customname.Replace("&", "§");
+                                string action = args.Length > 1
+                                    ? args[1].ToLower()
+                                    : "list";
+                                switch (action)
+                                {
+                                    case "attack":
+                                        handler.InteractEntity(entityID, 1);
+                                        return "Entity attacked";
+                                    case "use":
+                                        handler.InteractEntity(entityID, 0);
+                                        return "Entity used";
+                                    default:
+                                        Entity entity = handler.GetEntities()[entityID];
+                                        int id = entity.ID;
+                                        float health = entity.Health;
+                                        int latency = entity.Latency;
+                                        Item item = entity.Item;
+                                        string nickname = entity.Name;
+                                        string customname = entity.CustomName;
+                                        EntityPose pose = entity.Pose;
+                                        EntityType type = entity.Type;
+                                        customname = customname.Replace("&", "§");
 
-                                    double distance = Math.Round(entity.Location.Distance(handler.GetCurrentLocation()), 2);
+                                        double distance = Math.Round(entity.Location.Distance(handler.GetCurrentLocation()), 2);
 
-                                    string color = "§a"; // Green
-                                    if (health < 10)
-                                        color = "§c";  // Red
-                                    else if (health < 15)
-                                        color = "§e";  // Yellow
+                                        string color = "§a"; // Green
+                                        if (health < 10)
+                                            color = "§c";  // Red
+                                        else if (health < 15)
+                                            color = "§e";  // Yellow
 
-                                    string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity.Location.X, 2), Math.Round(entity.Location.Y, 2), Math.Round(entity.Location.Y, 2));
+                                        string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity.Location.X, 2), Math.Round(entity.Location.Y, 2), Math.Round(entity.Location.Y, 2));
 
-                                    string done = String.Format("Entity: {0} \n[MCC] Type: {1}", id, type);
-                                    if (!String.IsNullOrEmpty(nickname))
-                                        done += String.Format("\n[MCC] Nickname: {0}", nickname);
-                                    else if (!String.IsNullOrEmpty(customname))
-                                        done += String.Format("\n[MCC] CustomName: {0}§8", customname);
-                                    if (type == EntityType.Player)
-                                        done += String.Format("\n[MCC] Latency: {0}", latency);
-                                    else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
-                                    {
-                                        string displayName = item.DisplayName;
-                                        if (String.IsNullOrEmpty(displayName))
-                                            done += String.Format("\n[MCC] Item: {0} x{1}", item.Type, item.Count);
-                                        else
-                                            done += String.Format("\n[MCC] Item: {0} x{1} - {2}§8", item.Type, item.Count, displayName);
-                                    }
-                                    done += String.Format("\n[MCC] Pose: {0}", pose);
-                                    done += String.Format("\n[MCC] Health: {0}", color + health + "§8");
-                                    done += String.Format("\n[MCC] Distance: {0}", distance);
-                                    done += String.Format("\n[MCC] Location: {0}", location);
-                                    return done;
-                                default:
-                                    return CMDDesc;
+                                        string done = String.Format("Entity: {0}\n[MCC] Type: {1}", id, type);
+                                        if (!String.IsNullOrEmpty(nickname))
+                                            done += String.Format("\n[MCC] Nickname: {0}", nickname);
+                                        else if (!String.IsNullOrEmpty(customname))
+                                            done += String.Format("\n[MCC] CustomName: {0}§8", customname);
+                                        if (type == EntityType.Player)
+                                            done += String.Format("\n[MCC] Latency: {0}", latency);
+                                        else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
+                                        {
+                                            string displayName = item.DisplayName;
+                                            if (String.IsNullOrEmpty(displayName))
+                                                done += String.Format("\n[MCC] Item: {0} x{1}", item.Type, item.Count);
+                                            else
+                                                done += String.Format("\n[MCC] Item: {0} x{1} - {2}§8", item.Type, item.Count, displayName);
+                                        }
+                                        done += String.Format("\n[MCC] Pose: {0}", pose);
+                                        done += String.Format("\n[MCC] Health: {0}", color + health + "§8");
+                                        done += String.Format("\n[MCC] Distance: {0}", distance);
+                                        done += String.Format("\n[MCC] Location: {0}", location);
+                                        return done;
+                                }
                             }
+                            else return "Entity not found";
                         }
                         else
                         {
