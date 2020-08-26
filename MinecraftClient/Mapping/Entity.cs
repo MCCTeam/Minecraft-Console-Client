@@ -75,6 +75,11 @@ namespace MinecraftClient.Mapping
         public Dictionary<int, object> Metadata;
         
         /// <summary>
+        /// Entity equipment
+        /// </summary>
+        public Dictionary<int, Item> Equipment;
+        
+        /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>
         /// <param name="ID">Entity ID</param>
