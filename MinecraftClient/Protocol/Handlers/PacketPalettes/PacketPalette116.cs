@@ -6,20 +6,20 @@ using System.Text;
 namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
     /// <summary>
-    /// For Minecraft version 1.13 - 1.13.2
+    /// For Minecraft version 1.16 - 1.16.1
     /// </summary>
-    class PacketPalette1132 : PacketTypePalette
+    class PacketPalette116 : PacketTypePalette
     {
         private List<PacketTypesIn> typeIn = new List<PacketTypesIn>()
         {
             PacketTypesIn.SpawnEntity,
             PacketTypesIn.SpawnExperienceOrb,
-            PacketTypesIn.SpawnWeatherEntity,
             PacketTypesIn.SpawnLivingEntity,
             PacketTypesIn.SpawnPainting,
             PacketTypesIn.SpawnPlayer,
             PacketTypesIn.EntityAnimation,
             PacketTypesIn.Statistics,
+            PacketTypesIn.AcknowledgePlayerDigging,
             PacketTypesIn.BlockBreakAnimation,
             PacketTypesIn.BlockEntityData,
             PacketTypesIn.BlockAction,
@@ -32,7 +32,6 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.DeclareCommands,
             PacketTypesIn.WindowConfirmation,
             PacketTypesIn.CloseWindow,
-            PacketTypesIn.OpenWindow,
             PacketTypesIn.WindowItems,
             PacketTypesIn.WindowProperty,
             PacketTypesIn.SetSlot,
@@ -41,21 +40,25 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.NamedSoundEffect,
             PacketTypesIn.Disconnect,
             PacketTypesIn.EntityStatus,
-            PacketTypesIn.NBTQueryResponse,
             PacketTypesIn.Explosion,
             PacketTypesIn.UnloadChunk,
             PacketTypesIn.ChangeGameState,
+            PacketTypesIn.OpenHorseWindow,
             PacketTypesIn.KeepAlive,
             PacketTypesIn.ChunkData,
             PacketTypesIn.Effect,
             PacketTypesIn.Particle,
+            PacketTypesIn.UpdateLight,
             PacketTypesIn.JoinGame,
             PacketTypesIn.MapData,
-            PacketTypesIn.EntityMovement,
+            PacketTypesIn.TradeList,
             PacketTypesIn.EntityPosition,
             PacketTypesIn.EntityPositionAndRotation,
             PacketTypesIn.EntityRotation,
+            PacketTypesIn.EntityMovement,
             PacketTypesIn.VehicleMove,
+            PacketTypesIn.OpenBook,
+            PacketTypesIn.OpenWindow,
             PacketTypesIn.OpenSignEditor,
             PacketTypesIn.CraftRecipeResponse,
             PacketTypesIn.PlayerAbilities,
@@ -63,7 +66,6 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.PlayerInfo,
             PacketTypesIn.FacePlayer,
             PacketTypesIn.PlayerPositionAndLook,
-            PacketTypesIn.Unknown, // UseBed
             PacketTypesIn.UnlockRecipes,
             PacketTypesIn.DestroyEntities,
             PacketTypesIn.RemoveEntityEffect,
@@ -74,6 +76,9 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.WorldBorder,
             PacketTypesIn.Camera,
             PacketTypesIn.HeldItemChange,
+            PacketTypesIn.UpdateViewPosition,
+            PacketTypesIn.UpdateViewDistance,
+            PacketTypesIn.SpawnPosition,
             PacketTypesIn.DisplayScoreboard,
             PacketTypesIn.EntityMetadata,
             PacketTypesIn.AttachEntity,
@@ -85,42 +90,46 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.SetPassengers,
             PacketTypesIn.Teams,
             PacketTypesIn.UpdateScore,
-            PacketTypesIn.SpawnPosition,
             PacketTypesIn.TimeUpdate,
             PacketTypesIn.Title,
-            PacketTypesIn.StopSound,
+            PacketTypesIn.EntitySoundEffect,
             PacketTypesIn.SoundEffect,
+            PacketTypesIn.StopSound,
             PacketTypesIn.PlayerListHeaderAndFooter,
+            PacketTypesIn.NBTQueryResponse,
             PacketTypesIn.CollectItem,
             PacketTypesIn.EntityTeleport,
             PacketTypesIn.Advancements,
             PacketTypesIn.EntityProperties,
             PacketTypesIn.EntityEffect,
             PacketTypesIn.DeclareRecipes,
-            PacketTypesIn.Tags
+            PacketTypesIn.Tags,
         };
 
         private List<PacketTypesOut> typeOut = new List<PacketTypesOut>()
         {
             PacketTypesOut.TeleportConfirm,
             PacketTypesOut.QueryBlockNBT,
+            PacketTypesOut.SetDifficulty,
             PacketTypesOut.ChatMessage,
             PacketTypesOut.ClientStatus,
             PacketTypesOut.ClientSettings,
             PacketTypesOut.TabComplete,
             PacketTypesOut.WindowConfirmation,
-            PacketTypesOut.Unknown, // EnchantItem
+            PacketTypesOut.ClickWindowButton,
             PacketTypesOut.ClickWindow,
             PacketTypesOut.CloseWindow,
             PacketTypesOut.PluginMessage,
             PacketTypesOut.EditBook,
             PacketTypesOut.EntityNBTRequest,
             PacketTypesOut.InteractEntity,
+            PacketTypesOut.GenerateStructure,
             PacketTypesOut.KeepAlive,
-            PacketTypesOut.PlayerMovement,
+            PacketTypesOut.LockDifficulty,
             PacketTypesOut.PlayerPosition,
             PacketTypesOut.PlayerPositionAndRotation,
-            PacketTypesOut.PlayerPosition,
+            PacketTypesOut.PlayerRotation,
+            PacketTypesOut.PlayerMovement,
             PacketTypesOut.VehicleMove,
             PacketTypesOut.SteerBoat,
             PacketTypesOut.PickItem,
@@ -139,12 +148,13 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesOut.UpdateCommandBlock,
             PacketTypesOut.UpdateCommandBlockMinecart,
             PacketTypesOut.CreativeInventoryAction,
+            PacketTypesOut.UpdateJigsawBlock,
             PacketTypesOut.UpdateStructureBlock,
             PacketTypesOut.UpdateSign,
             PacketTypesOut.Animation,
             PacketTypesOut.Spectate,
             PacketTypesOut.PlayerBlockPlacement,
-            PacketTypesOut.UseItem
+            PacketTypesOut.UseItem,
         };
 
         protected override List<PacketTypesIn> GetListIn()

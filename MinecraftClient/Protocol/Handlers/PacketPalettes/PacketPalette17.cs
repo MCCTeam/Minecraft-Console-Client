@@ -8,7 +8,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
     /// <summary>
     /// For Minecraft version 1.7 - 1.8
     /// </summary>
-    class PacketPalette18 : PacketTypePalette
+    class PacketPalette17 : PacketTypePalette
     {
         private List<PacketTypesIn> typeIn = new List<PacketTypesIn>()
         {

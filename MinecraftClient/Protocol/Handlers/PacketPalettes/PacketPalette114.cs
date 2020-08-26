@@ -6,20 +6,20 @@ using System.Text;
 namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
     /// <summary>
-    /// For Minecraft version 1.16 - 1.16.1
+    /// For Minecraft version 1.14 - 1.14.4
     /// </summary>
-    class PacketPalette1161 : PacketTypePalette
+    class PacketPalette114 : PacketTypePalette
     {
         private List<PacketTypesIn> typeIn = new List<PacketTypesIn>()
         {
             PacketTypesIn.SpawnEntity,
             PacketTypesIn.SpawnExperienceOrb,
+            PacketTypesIn.SpawnWeatherEntity,
             PacketTypesIn.SpawnLivingEntity,
             PacketTypesIn.SpawnPainting,
             PacketTypesIn.SpawnPlayer,
             PacketTypesIn.EntityAnimation,
             PacketTypesIn.Statistics,
-            PacketTypesIn.AcknowledgePlayerDigging,
             PacketTypesIn.BlockBreakAnimation,
             PacketTypesIn.BlockEntityData,
             PacketTypesIn.BlockAction,
@@ -78,7 +78,6 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.HeldItemChange,
             PacketTypesIn.UpdateViewPosition,
             PacketTypesIn.UpdateViewDistance,
-            PacketTypesIn.SpawnPosition,
             PacketTypesIn.DisplayScoreboard,
             PacketTypesIn.EntityMetadata,
             PacketTypesIn.AttachEntity,
@@ -90,6 +89,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.SetPassengers,
             PacketTypesIn.Teams,
             PacketTypesIn.UpdateScore,
+            PacketTypesIn.SpawnPosition,
             PacketTypesIn.TimeUpdate,
             PacketTypesIn.Title,
             PacketTypesIn.EntitySoundEffect,
@@ -104,6 +104,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.EntityEffect,
             PacketTypesIn.DeclareRecipes,
             PacketTypesIn.Tags,
+            PacketTypesIn.AcknowledgePlayerDigging
         };
 
         private List<PacketTypesOut> typeOut = new List<PacketTypesOut>()
@@ -123,7 +124,6 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesOut.EditBook,
             PacketTypesOut.EntityNBTRequest,
             PacketTypesOut.InteractEntity,
-            PacketTypesOut.GenerateStructure,
             PacketTypesOut.KeepAlive,
             PacketTypesOut.LockDifficulty,
             PacketTypesOut.PlayerPosition,
@@ -154,7 +154,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesOut.Animation,
             PacketTypesOut.Spectate,
             PacketTypesOut.PlayerBlockPlacement,
-            PacketTypesOut.UseItem,
+            PacketTypesOut.UseItem
         };
 
         protected override List<PacketTypesIn> GetListIn()

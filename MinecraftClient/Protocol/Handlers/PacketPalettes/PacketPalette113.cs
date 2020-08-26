@@ -6,9 +6,9 @@ using System.Text;
 namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
     /// <summary>
-    /// For Minecraft version 1.10 - 1.11.2
+    /// For Minecraft version 1.13 - 1.13.2
     /// </summary>
-    class PacketPalette111 : PacketTypePalette
+    class PacketPalette113 : PacketTypePalette
     {
         private List<PacketTypesIn> typeIn = new List<PacketTypesIn>()
         {
@@ -26,9 +26,10 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.BlockChange,
             PacketTypesIn.BossBar,
             PacketTypesIn.ServerDifficulty,
-            PacketTypesIn.TabComplete,
             PacketTypesIn.ChatMessage,
             PacketTypesIn.MultiBlockChange,
+            PacketTypesIn.TabComplete,
+            PacketTypesIn.DeclareCommands,
             PacketTypesIn.WindowConfirmation,
             PacketTypesIn.CloseWindow,
             PacketTypesIn.OpenWindow,
@@ -40,6 +41,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.NamedSoundEffect,
             PacketTypesIn.Disconnect,
             PacketTypesIn.EntityStatus,
+            PacketTypesIn.NBTQueryResponse,
             PacketTypesIn.Explosion,
             PacketTypesIn.UnloadChunk,
             PacketTypesIn.ChangeGameState,
@@ -49,22 +51,26 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.Particle,
             PacketTypesIn.JoinGame,
             PacketTypesIn.MapData,
+            PacketTypesIn.EntityMovement,
             PacketTypesIn.EntityPosition,
             PacketTypesIn.EntityPositionAndRotation,
             PacketTypesIn.EntityRotation,
-            PacketTypesIn.EntityMovement,
             PacketTypesIn.VehicleMove,
             PacketTypesIn.OpenSignEditor,
+            PacketTypesIn.CraftRecipeResponse,
             PacketTypesIn.PlayerAbilities,
             PacketTypesIn.CombatEvent,
             PacketTypesIn.PlayerInfo,
+            PacketTypesIn.FacePlayer,
             PacketTypesIn.PlayerPositionAndLook,
             PacketTypesIn.Unknown, // UseBed
+            PacketTypesIn.UnlockRecipes,
             PacketTypesIn.DestroyEntities,
             PacketTypesIn.RemoveEntityEffect,
             PacketTypesIn.ResourcePackSend,
             PacketTypesIn.Respawn,
             PacketTypesIn.EntityHeadLook,
+            PacketTypesIn.SelectAdvancementTab,
             PacketTypesIn.WorldBorder,
             PacketTypesIn.Camera,
             PacketTypesIn.HeldItemChange,
@@ -82,41 +88,58 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             PacketTypesIn.SpawnPosition,
             PacketTypesIn.TimeUpdate,
             PacketTypesIn.Title,
+            PacketTypesIn.StopSound,
             PacketTypesIn.SoundEffect,
             PacketTypesIn.PlayerListHeaderAndFooter,
             PacketTypesIn.CollectItem,
             PacketTypesIn.EntityTeleport,
+            PacketTypesIn.Advancements,
             PacketTypesIn.EntityProperties,
-            PacketTypesIn.EntityEffect
+            PacketTypesIn.EntityEffect,
+            PacketTypesIn.DeclareRecipes,
+            PacketTypesIn.Tags
         };
 
         private List<PacketTypesOut> typeOut = new List<PacketTypesOut>()
         {
             PacketTypesOut.TeleportConfirm,
-            PacketTypesOut.TabComplete,
+            PacketTypesOut.QueryBlockNBT,
             PacketTypesOut.ChatMessage,
             PacketTypesOut.ClientStatus,
             PacketTypesOut.ClientSettings,
+            PacketTypesOut.TabComplete,
             PacketTypesOut.WindowConfirmation,
             PacketTypesOut.Unknown, // EnchantItem
             PacketTypesOut.ClickWindow,
             PacketTypesOut.CloseWindow,
             PacketTypesOut.PluginMessage,
+            PacketTypesOut.EditBook,
+            PacketTypesOut.EntityNBTRequest,
             PacketTypesOut.InteractEntity,
             PacketTypesOut.KeepAlive,
+            PacketTypesOut.PlayerMovement,
             PacketTypesOut.PlayerPosition,
             PacketTypesOut.PlayerPositionAndRotation,
-            PacketTypesOut.PlayerRotation,
-            PacketTypesOut.PlayerMovement,
+            PacketTypesOut.PlayerPosition,
             PacketTypesOut.VehicleMove,
             PacketTypesOut.SteerBoat,
+            PacketTypesOut.PickItem,
+            PacketTypesOut.CraftRecipeRequest,
             PacketTypesOut.PlayerAbilities,
             PacketTypesOut.PlayerDigging,
             PacketTypesOut.EntityAction,
             PacketTypesOut.SteerVehicle,
+            PacketTypesOut.RecipeBookData,
+            PacketTypesOut.NameItem,
             PacketTypesOut.ResourcePackStatus,
+            PacketTypesOut.AdvancementTab,
+            PacketTypesOut.SelectTrade,
+            PacketTypesOut.SetBeaconEffect,
             PacketTypesOut.HeldItemChange,
+            PacketTypesOut.UpdateCommandBlock,
+            PacketTypesOut.UpdateCommandBlockMinecart,
             PacketTypesOut.CreativeInventoryAction,
+            PacketTypesOut.UpdateStructureBlock,
             PacketTypesOut.UpdateSign,
             PacketTypesOut.Animation,
             PacketTypesOut.Spectate,

@@ -42,21 +42,21 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocol > Protocol18Handler.MC1162Version)
                 throw new NotImplementedException("Please update packet type palette for this Minecraft version. See PacketTypePalette.cs");
             if (protocol <= Protocol18Handler.MC18Version)
-                return new PacketPalette18();
+                return new PacketPalette17();
             else if (protocol <= Protocol18Handler.MC1112Version)
-                return new PacketPalette111();
+                return new PacketPalette110();
             else if (protocol <= Protocol18Handler.MC112Version)
                 return new PacketPalette112();
             else if (protocol <= Protocol18Handler.MC1122Version)
                 return new PacketPalette1122();
             else if (protocol <= Protocol18Handler.MC114Version)
-                return new PacketPalette1132();
+                return new PacketPalette113();
             else if (protocol <= Protocol18Handler.MC115Version)
-                return new PacketPalette1144();
+                return new PacketPalette114();
             else if (protocol <= Protocol18Handler.MC1152Version)
-                return new PacketPalette1152();
+                return new PacketPalette115();
             else if (protocol <= Protocol18Handler.MC1161Version)
-                return new PacketPalette1161();
+                return new PacketPalette116();
             else return new PacketPalette1162();
         }
     }
