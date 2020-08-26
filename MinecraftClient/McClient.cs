@@ -1875,14 +1875,14 @@ namespace MinecraftClient
         /// <param name="item"> Item)</param>
         public void OnEntityEquipment(int entityid, int slot, Item item)
         {
-            if (entities.ContainsKey(entityid) && item != null)
+            if (entities.ContainsKey(entityid))
             {
                 Entity entity = entities[entityid];
                 if (entity.Equipment.ContainsKey(slot))
                     entity.Equipment.Remove(slot);
-                entity.Equipment.Add(slot, item);
+                if (item != null)
+                    entity.Equipment.Add(slot, item);
                 DispatchBotEvent(bot => bot.OnEntityEquipment(entities[entityid], slot, item));
-
             }
         }
 
