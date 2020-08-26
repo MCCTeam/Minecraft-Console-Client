@@ -91,7 +91,7 @@ namespace MinecraftClient.Mapping
             this.Type = type;
             this.Location = location;
             this.Health = 1.0f;
-            this.Equipment = new Dictionary<int, Item>(5);
+            this.Equipment = new Dictionary<int, Item>();
         }
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type, location, name and UUID
@@ -109,7 +109,7 @@ namespace MinecraftClient.Mapping
             this.UUID = uuid;
             this.Name = name;
             this.Health = 1.0f;
-            this.Equipment = new Dictionary<int, Item>(5);
+            this.Equipment = new Dictionary<int, Item>();
         }
     }
 }
