@@ -106,6 +106,8 @@ namespace MinecraftClient.Protocol.Handlers
         UseBed, // For 1.13.2 or below
         MapChunkBulk, // For 1.8 or below
         SetCompression, // For 1.8 or below
+        UpdateSign, // For 1.8 or below
+        UpdateEntityNBT, // For 1.8 or below
         Unknown, // For old version packet that have been removed and not used by mcc 
     }
 }

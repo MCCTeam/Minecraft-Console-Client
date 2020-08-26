@@ -11,15 +11,19 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
     /// </summary>
     /// <remarks>
     /// Steps for implementing palette for new Minecraft version:
-    /// - Check out https://wiki.vg/Pre-release_protocol to see if there is any packet got added/removed
-    /// - Add new packet type to PacketTypesIn.cs and PacketTypesOut.cs (if any)
-    /// - Create a new PacketPaletteXXX.cs by copying the latest version of existing PacketPaletteXXX.cs
-    /// - Apply change to the copied PacketPaletteXXX.cs by:
-    ///    > Inserting new packet type to the correct position
-    ///    > Removing packet type that got deleted
-    /// - Check the new packet IDs to make sure they are implemented correctly by calling these dumping methods:
-    ///    > PacketTypePalette.DumpInboundPacketId()
-    ///    > PacketTypePalette.DumpOutboundPacketId()
+    /// 1. Check out https://wiki.vg/Pre-release_protocol to see if there is any packet got added/removed
+    /// 2. Add new packet type to PacketTypesIn.cs and PacketTypesOut.cs (if any)
+    /// 3. Create a new PacketPaletteXXX.cs by copying the latest version of existing PacketPaletteXXX.cs (could reduce massive works on writing a brand new one)
+    /// 4. Apply change to the copied PacketPaletteXXX.cs by either:
+    ///     - Inserting new packet type to the correct position
+    ///     - Removing packet type that got deleted
+    ///    OR
+    ///     - Changing the packet IDs manually
+    /// 5. Use PacketPaletteHelper to generate a code snippet and copy the generated code snippet back to PacketPaletteXXX.cs
+    ///     - Use UpdatePacketPositionToAscending() if you changed the packet IDs manually
+    ///     - Use UpdatePacketIdByItemPosition() if you inserted some packet type into the dictionary
+    ///    Simply add the method call in Program.cs and run the program once. The code snippet will be generated
+    /// 
     /// 
     /// The way how Mojang change the packet ID is simple: 
     ///  * Either adding/removing a packet from middle and cause packet ID below it get shifted
@@ -27,8 +31,8 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
     /// </remarks>
     public abstract class PacketTypePalette
     {
-        protected abstract List<PacketTypesIn> GetListIn();
-        protected abstract List<PacketTypesOut> GetListOut();
+        protected abstract Dictionary<int, PacketTypesIn> GetListIn();
+        protected abstract Dictionary<int, PacketTypesOut> GetListOut();
 
         private Dictionary<PacketTypesIn, int> reverseMappingIn = new Dictionary<PacketTypesIn, int>();
 
@@ -36,13 +40,13 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 
         public PacketTypePalette()
         {
-            for (int i = 0; i < GetListIn().Count; i++)
+            foreach (var p in GetListIn())
             {
-                reverseMappingIn[GetListIn()[i]] = i;
+                reverseMappingIn.Add(p.Value, p.Key);
             }
-            for (int i = 0; i < GetListOut().Count; i++)
+            foreach (var p in GetListOut())
             {
-                reverseMappingOut[GetListOut()[i]] = i;
+                reverseMappingOut.Add(p.Value, p.Key);
             }
         }
 
@@ -91,11 +95,12 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         /// </summary>
         public void DumpInboundPacketId()
         {
-            for (int i = 0; i < GetListIn().Count; i++)
+            foreach (var p in GetListIn())
             {
-                ConsoleIO.WriteLine("0x" + i.ToString("X2") + " " + GetListIn()[i]);
+                ConsoleIO.WriteLine("0x" + p.Key.ToString("X2") + " " + p.Value);
             }
         }
+
         /// <summary>
         /// Dump the inbound packet ID mapping to a file
         /// </summary>
@@ -103,9 +108,9 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         public void DumpInboundPacketId(string path)
         {
             List<string> ids = new List<string>();
-            for (int i = 0; i < GetListIn().Count; i++)
+            foreach (var p in GetListOut())
             {
-                ids.Add("0x" + i.ToString("X2") + " " + GetListIn()[i]);
+                ids.Add("0x" + p.Key.ToString("X2") + " " + p.Value);
             }
             File.WriteAllText(path, string.Join("\r\n", ids));
         }
@@ -132,6 +137,24 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
                 ids.Add("0x" + i.ToString("X2") + " " + GetListOut()[i]);
             }
             File.WriteAllText(path, string.Join("\r\n", ids));
+        }
+
+        /// <summary>
+        /// Public method for getting the type mapping
+        /// </summary>
+        /// <returns>PacketTypesIn with packet ID as index</returns>
+        public Dictionary<int, PacketTypesIn> GetMappingIn()
+        {
+            return GetListIn();
+        }
+
+        /// <summary>
+        /// Public method for getting the type mapping
+        /// </summary>
+        /// <returns>PacketTypesOut with packet ID as index</returns>
+        public Dictionary<int ,PacketTypesOut> GetMappingOut()
+        {
+            return GetListOut();
         }
     }
 }
