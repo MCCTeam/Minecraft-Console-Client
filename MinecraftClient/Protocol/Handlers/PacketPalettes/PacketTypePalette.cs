@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -16,6 +17,9 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
     /// - Apply change to the copied PacketPaletteXXX.cs by:
     ///    > Inserting new packet type to the correct position
     ///    > Removing packet type that got deleted
+    /// - Check the new packet IDs to make sure they are implemented correctly by calling these dumping methods:
+    ///    > PacketTypePalette.DumpInboundPacketId()
+    ///    > PacketTypePalette.DumpOutboundPacketId()
     /// 
     /// The way how Mojang change the packet ID is simple: 
     ///  * Either adding/removing a packet from middle and cause packet ID below it get shifted
@@ -83,7 +87,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         }
 
         /// <summary>
-        /// Dump the inbound packet ID mapping to console
+        /// Dump the inbound packet ID mapping to the console
         /// </summary>
         public void DumpInboundPacketId()
         {
@@ -92,9 +96,22 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
                 ConsoleIO.WriteLine("0x" + i.ToString("X2") + " " + GetListIn()[i]);
             }
         }
+        /// <summary>
+        /// Dump the inbound packet ID mapping to a file
+        /// </summary>
+        /// <param name="path">The file name</param>
+        public void DumpInboundPacketId(string path)
+        {
+            List<string> ids = new List<string>();
+            for (int i = 0; i < GetListIn().Count; i++)
+            {
+                ids.Add("0x" + i.ToString("X2") + " " + GetListIn()[i]);
+            }
+            File.WriteAllText(path, string.Join("\r\n", ids));
+        }
 
         /// <summary>
-        /// Dump the outbound packet ID mapping to console
+        /// Dump the outbound packet ID mapping to the console
         /// </summary>
         public void DumpOutboundPacketId()
         {
@@ -102,6 +119,19 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             {
                 ConsoleIO.WriteLine("0x" + i.ToString("X2") + " " + GetListOut()[i]);
             }
+        }
+        /// <summary>
+        /// Dump the outbound packet ID mapping to a file
+        /// </summary>
+        /// <param name="path">The file name</param>
+        public void DumpOutboundPacketId(string path)
+        {
+            List<string> ids = new List<string>();
+            for (int i = 0; i < GetListOut().Count; i++)
+            {
+                ids.Add("0x" + i.ToString("X2") + " " + GetListOut()[i]);
+            }
+            File.WriteAllText(path, string.Join("\r\n", ids));
         }
     }
 }
