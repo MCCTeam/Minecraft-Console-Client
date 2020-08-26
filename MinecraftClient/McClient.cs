@@ -1877,7 +1877,11 @@ namespace MinecraftClient
         {
             if (entities.ContainsKey(entityid))
             {
-                DispatchBotEvent(bot => bot.OnEntityEquipment(entities[entityid], slot, item));
+                Entity entity = entities[entityid];
+                if (entity.Equipment.ContainsKey(slot))
+                    entity.Equipment.Remove(slot);
+                entity.Equipment.Add(slot, item);
+                DispatchBotEvent(bot => bot.OnEntityEquipment(entity, slot, item));
             }
         }
 
