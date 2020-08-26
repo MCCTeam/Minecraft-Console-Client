@@ -47,9 +47,6 @@ namespace MinecraftClient.Commands
                                         string customname = entity.CustomName;
                                         EntityPose pose = entity.Pose;
                                         EntityType type = entity.Type;
-                                        if (!string.IsNullOrEmpty(customname))
-                                            customname = customname.Replace("&", "§");
-
                                         double distance = Math.Round(entity.Location.Distance(handler.GetCurrentLocation()), 2);
 
                                         string color = "§a"; // Green
@@ -59,12 +56,11 @@ namespace MinecraftClient.Commands
                                             color = "§e";  // Yellow
 
                                         string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity.Location.X, 2), Math.Round(entity.Location.Y, 2), Math.Round(entity.Location.Y, 2));
-
                                         string done = String.Format(" Entity: {0}\n[MCC] Type: {1}", id, type);
                                         if (!String.IsNullOrEmpty(nickname))
                                             done += String.Format("\n [MCC] Nickname: {0}", nickname);
                                         else if (!String.IsNullOrEmpty(customname))
-                                            done += String.Format("\n [MCC] CustomName: {0}§8", customname);
+                                            done += String.Format("\n [MCC] CustomName: {0}§8", customname.Replace("&", "§"));
                                         if (type == EntityType.Player)
                                             done += String.Format("\n [MCC] Latency: {0}", latency);
                                         else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
