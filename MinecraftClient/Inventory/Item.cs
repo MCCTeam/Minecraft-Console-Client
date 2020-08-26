@@ -70,7 +70,33 @@ namespace MinecraftClient.Inventory
                 return null;
             }
         }
-
+        
+        /// <summary>
+        /// Retrieve item lores from NBT properties. Returns null if no lores is defined.
+        /// </summary>
+        public string[] Lores
+        {
+            get
+            {
+                List<string> lores = new List<string>();
+                if (NBT != null && NBT.ContainsKey("display"))
+                {
+                    var displayProperties = NBT["display"] as Dictionary<string, object>;
+                    if (displayProperties != null && displayProperties.ContainsKey("Lore"))
+                    {
+                        object[] displayName = displayProperties["Lore"] as object[];
+                        foreach (string st in displayName)
+                        {
+                            string str = MinecraftClient.Protocol.ChatParser.ParseText(st.ToString());
+                            lores.Add(str);
+                        }
+                        return lores.ToArray();
+                    }
+                }
+                return null;
+            }
+        }
+        
         /// <summary>
         /// Retrieve item damage from NBT properties. Returns 0 if no damage is defined.
         /// </summary>

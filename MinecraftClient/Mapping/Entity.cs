@@ -73,7 +73,12 @@ namespace MinecraftClient.Mapping
         /// Entity metadata
         /// </summary>
         public Dictionary<int, object> Metadata;
-        
+
+        /// <summary>
+        /// Entity equipment
+        /// </summary>
+        public Dictionary<int, Item> Equipment;
+
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>
@@ -86,6 +91,7 @@ namespace MinecraftClient.Mapping
             this.Type = type;
             this.Location = location;
             this.Health = 1.0f;
+            this.Equipment = new Dictionary<int, Item>();
         }
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type, location, name and UUID
@@ -103,6 +109,7 @@ namespace MinecraftClient.Mapping
             this.UUID = uuid;
             this.Name = name;
             this.Health = 1.0f;
+            this.Equipment = new Dictionary<int, Item>();
         }
     }
 }
