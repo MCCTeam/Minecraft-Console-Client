@@ -57,9 +57,9 @@ namespace MinecraftClient.Commands
                                     string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity.Location.X, 2), Math.Round(entity.Location.Y, 2), Math.Round(entity.Location.Y, 2));
 
                                     string done = String.Format("Entity: {0} \n[MCC] Type: {1}", id, type);
-                                    if (nickname != string.Empty)
+                                    if (!String.IsNullOrEmpty(nickname))
                                         done += String.Format("\n[MCC] Nickname: {0}", nickname);
-                                    else if (nickname == string.Empty && customname != string.Empty)
+                                    else if (!String.IsNullOrEmpty(customname))
                                         done += String.Format("\n[MCC] CustomName: {0}", customname);
                                     if (type == EntityType.Player)
                                         done += String.Format("\n[MCC] Latency: {0}", latency);
