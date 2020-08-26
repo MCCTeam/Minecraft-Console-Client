@@ -56,7 +56,7 @@ namespace MinecraftClient.Commands
                                             color = "§e";  // Yellow
 
                                         string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity.Location.X, 2), Math.Round(entity.Location.Y, 2), Math.Round(entity.Location.Y, 2));
-                                        string done = String.Format("Entity: {0}\n[MCC] Type: {1}", id, type);
+                                        string done = String.Format("Entity: {0}\n [MCC] Type: {1}", id, type);
                                         if (!String.IsNullOrEmpty(nickname))
                                             done += String.Format("\n [MCC] Nickname: {0}", nickname);
                                         else if (!String.IsNullOrEmpty(customname))
