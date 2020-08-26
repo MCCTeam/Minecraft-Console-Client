@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
+namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
     /// <summary>
     /// For Minecraft version 1.7 - 1.8

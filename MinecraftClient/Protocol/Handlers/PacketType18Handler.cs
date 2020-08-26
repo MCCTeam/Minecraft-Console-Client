@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MinecraftClient.Protocol.Handlers;
-using MinecraftClient.Protocol.Handlers.PacketTypes.Palettes;
+using MinecraftClient.Protocol.Handlers.PacketPalettes;
 
-namespace MinecraftClient.Protocol.Handlers.PacketTypes
+namespace MinecraftClient.Protocol.Handlers
 {
     public class PacketTypeHandler
     {

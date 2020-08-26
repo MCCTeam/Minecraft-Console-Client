@@ -3,8 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftClient.Protocol.Handlers.PacketTypes.Palettes
+namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
+    /// <summary>
+    /// Packet type palette
+    /// </summary>
+    /// <remarks>
+    /// Steps for implementing palette for new Minecraft version:
+    /// - Check out https://wiki.vg/Pre-release_protocol to see if there is any packet got added/removed
+    /// - Add new packet type to PacketTypesIn.cs and PacketTypesOut.cs (if any)
+    /// - Create a new PacketPaletteXXX.cs by copying the latest version of existing PacketPaletteXXX.cs
+    /// - Apply change to the copied PacketPaletteXXX.cs by:
+    ///    > Inserting new packet type to the correct position
+    ///    > Removing packet type that got deleted
+    /// 
+    /// The way how Mojang change the packet ID is simple: 
+    ///  * Either adding/removing a packet from middle and cause packet ID below it get shifted
+    ///  * Append a new packet at the end (but this is rare)
+    /// </remarks>
     public abstract class PacketTypePalette
     {
         protected abstract List<PacketTypesIn> GetListIn();

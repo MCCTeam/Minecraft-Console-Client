@@ -16,8 +16,7 @@ using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using MinecraftClient.Inventory.ItemPalettes;
-using MinecraftClient.Protocol.Handlers.PacketTypes.Palettes;
-using MinecraftClient.Protocol.Handlers.PacketTypes;
+using MinecraftClient.Protocol.Handlers.PacketPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
 {
