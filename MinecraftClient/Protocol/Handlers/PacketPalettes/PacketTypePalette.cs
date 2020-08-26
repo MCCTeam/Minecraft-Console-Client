@@ -90,54 +90,6 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             return reverseMappingOut[packetType];
         }
 
-        /// <summary>
-        /// Dump the inbound packet ID mapping to the console
-        /// </summary>
-        public void DumpInboundPacketId()
-        {
-            foreach (var p in GetListIn())
-            {
-                ConsoleIO.WriteLine("0x" + p.Key.ToString("X2") + " " + p.Value);
-            }
-        }
-
-        /// <summary>
-        /// Dump the inbound packet ID mapping to a file
-        /// </summary>
-        /// <param name="path">The file name</param>
-        public void DumpInboundPacketId(string path)
-        {
-            List<string> ids = new List<string>();
-            foreach (var p in GetListOut())
-            {
-                ids.Add("0x" + p.Key.ToString("X2") + " " + p.Value);
-            }
-            File.WriteAllText(path, string.Join("\r\n", ids));
-        }
-
-        /// <summary>
-        /// Dump the outbound packet ID mapping to the console
-        /// </summary>
-        public void DumpOutboundPacketId()
-        {
-            for (int i = 0; i < GetListOut().Count; i++)
-            {
-                ConsoleIO.WriteLine("0x" + i.ToString("X2") + " " + GetListOut()[i]);
-            }
-        }
-        /// <summary>
-        /// Dump the outbound packet ID mapping to a file
-        /// </summary>
-        /// <param name="path">The file name</param>
-        public void DumpOutboundPacketId(string path)
-        {
-            List<string> ids = new List<string>();
-            for (int i = 0; i < GetListOut().Count; i++)
-            {
-                ids.Add("0x" + i.ToString("X2") + " " + GetListOut()[i]);
-            }
-            File.WriteAllText(path, string.Join("\r\n", ids));
-        }
 
         /// <summary>
         /// Public method for getting the type mapping
