@@ -1,9 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
@@ -24,7 +20,7 @@ namespace MinecraftClient.Commands
                     {
                         int entityID = 0;
                         int.TryParse(args[0], out entityID);
-                        if (entityID != 0)
+                        if (entityID != 0 && handler.GetEntities().ContainsKey(entityID))
                         {
                             string action = args.Length > 1
                                 ? args[1].ToLower()
@@ -45,10 +41,9 @@ namespace MinecraftClient.Commands
                         {
                             EntityType interacttype = EntityType.Player;
                             Enum.TryParse(args[0], out interacttype);
-                            Dictionary<int, Mapping.Entity> entities = handler.GetEntities();
                             string actionst = "Entity attacked";
                             int actioncount = 0;
-                            foreach (var entity2 in entities)
+                            foreach (var entity2 in handler.GetEntities())
                             {
                                 if (entity2.Value.Type == interacttype)
                                 {
@@ -86,14 +81,17 @@ namespace MinecraftClient.Commands
                         float health = entity2.Value.Health;
                         int latency = entity2.Value.Latency;
                         string nickname = entity2.Value.Name;
+                        string customname = entity2.Value.CustomName;
                         EntityPose pose = entity2.Value.Pose;
                         EntityType type = entity2.Value.Type;
                         string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity2.Value.Location.X, 2), Math.Round(entity2.Value.Location.Y, 2), Math.Round(entity2.Value.Location.Y, 2));
 
                         if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
                             response.Add(String.Format(" #{0}: Type: {1}, Item: {2}, Location: {3}", id, type, entity2.Value.Item.Type, location));
-                        else if (entity2.Value.Type == Mapping.EntityType.Player && entity2.Value.Name != string.Empty)
-                            response.Add(String.Format(" #{0}: Type: {1}, Nickname: {2}, Latency: {3}, Health: {4}, Pose: {5}, Location: {6}", id, type, nickname, latency, health, pose, location));
+                        else if (type == Mapping.EntityType.Player && nickname != string.Empty && customname == string.Empty)
+                            response.Add(String.Format(" #{0}: Type: {1}, Nickname: §8{2}§8, Latency: {3}, Health: {4}, Pose: {5}, Location: {6}", id, type, nickname, latency, health, pose, location));
+                        else if (type == Mapping.EntityType.Player && customname != string.Empty)
+                            response.Add(String.Format(" #{0}: Type: {1}, Nickname: §8{2}§8, Latency: {3}, Health: {4}, Pose: {5}, Location: {6}", id, type, customname, latency, health, pose, location));
                         else
                             response.Add(String.Format(" #{0}: Type: {1}, Health: {2}, Location: {3}", id, type, health, location));
                     }
