@@ -117,7 +117,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x0F, PacketTypesOut.PlayerMovement },
             { 0x10, PacketTypesOut.PlayerPosition },
             { 0x11, PacketTypesOut.PlayerPositionAndRotation },
-            { 0x12, PacketTypesOut.PlayerPosition },
+            { 0x12, PacketTypesOut.PlayerRotation },
             { 0x13, PacketTypesOut.VehicleMove },
             { 0x14, PacketTypesOut.SteerBoat },
             { 0x15, PacketTypesOut.PickItem },
