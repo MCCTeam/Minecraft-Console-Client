@@ -2180,14 +2180,10 @@ namespace MinecraftClient
                 entity.Metadata = metadata;
                 if (entity.Type.ContainsItem() && metadata.ContainsKey(7) && metadata[7] != null && metadata[7].GetType() == typeof(Item))
                 {
-                    try
-                    {
-                        entity.Item = (Item)metadata[7];
-                    }
-                    catch
-                    {
+                    Item item = (Item)metadata[7];
+                    if (item == null)
                         entity.Item = new Item(ItemType.Air, 0, null);
-                    }
+                    else entity.Item = item;
                 }
                 if (metadata.ContainsKey(6) && metadata[6] != null && metadata[6].GetType() == typeof(Int32))
                 {
