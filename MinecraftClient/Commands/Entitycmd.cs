@@ -148,8 +148,7 @@ namespace MinecraftClient.Commands
                         string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity2.Value.Location.X, 2), Math.Round(entity2.Value.Location.Y, 2), Math.Round(entity2.Value.Location.Y, 2));
 
                         if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
-                                if (item != null)
-                                    response.Add(String.Format(" #{0}: Type: {1}, Item: {2}, Location: {3}", id, type, item.Type, location));
+                            response.Add(String.Format(" #{0}: Type: {1}, Item: {2}, Location: {3}", id, type, item.Type, location));
                         else if (type == Mapping.EntityType.Player && !String.IsNullOrEmpty(nickname))
                             response.Add(String.Format(" #{0}: Type: {1}, Nickname: §8{2}§8, Latency: {3}, Health: {4}, Pose: {5}, Location: {6}", id, type, nickname, latency, health, pose, location));
                         else if (type == Mapping.EntityType.Player && !String.IsNullOrEmpty(customname))
