@@ -783,9 +783,9 @@ namespace MinecraftClient
         /// Get all Entities
         /// </summary>
         /// <returns>All Entities</returns>
-        public Dictionary<int, Entity> GetEntities() 
-        { 
-            return entities; 
+        public Dictionary<int, Entity> GetEntities()
+        {
+            return entities;
         }
 
         /// <summary>
