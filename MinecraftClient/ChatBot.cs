@@ -896,7 +896,7 @@ namespace MinecraftClient
         /// <summary>
         /// Get all players Latency
         /// </summary>
-        /// <returns>All Entities</returns>
+        /// <returns>All players latency</returns>
         protected Dictionary<string, int> GetPlayersLatency()
         {
             return Handler.GetPlayersLatency();
