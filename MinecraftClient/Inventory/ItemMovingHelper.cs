@@ -12,7 +12,7 @@ namespace MinecraftClient.Inventory
     public class ItemMovingHelper
     {
         private Container c;
-        private Func<int, int, WindowActionType, bool> windowAction;
+        private McClient mc;
 
         /// <summary>
         /// Create a helper that contains useful methods to move item around in container
@@ -25,21 +25,7 @@ namespace MinecraftClient.Inventory
         public ItemMovingHelper(Container c, McClient mc)
         {
             this.c = c;
-            this.windowAction = mc.DoWindowAction;
-        }
-
-        /// <summary>
-        /// Create a helper that contains useful methods to move item around in container
-        /// </summary>
-        /// <param name="c">Source container to use. All method will use this container for handling first slot parameter</param>
-        /// <param name="windowAction">Function for sending WindowAction packet to server</param>
-        /// <remarks>
-        /// If you are using ChatBot API and cannot have direct access to McClient handler, use <see cref="ChatBot.WindowAction(int, int, WindowActionType)"/> as second parameter
-        /// </remarks>
-        public ItemMovingHelper(Container c, Func<int, int, WindowActionType, bool> windowAction)
-        {
-            this.c = c;
-            this.windowAction = windowAction;
+            this.mc = mc;
         }
 
         /// <summary>
@@ -55,8 +41,8 @@ namespace MinecraftClient.Inventory
             if (ValidateSlots(source, dest, destContainer) &&
                 HasItem(source) &&
                 ((destContainer != null && !HasItem(dest, destContainer)) || (destContainer == null && !HasItem(dest))))
-                return windowAction(c.ID, source, WindowActionType.LeftClick)
-                    && windowAction(destContainer == null ? c.ID : destContainer.ID, dest, WindowActionType.LeftClick);
+                return mc.DoWindowAction(c.ID, source, WindowActionType.LeftClick)
+                    && mc.DoWindowAction(destContainer == null ? c.ID : destContainer.ID, dest, WindowActionType.LeftClick);
             else return false;
         }
 
@@ -73,9 +59,9 @@ namespace MinecraftClient.Inventory
             if (ValidateSlots(slot1, slot2, destContainer) &&
                 HasItem(slot1) &&
                 (destContainer != null && HasItem(slot2, destContainer) || (destContainer == null && HasItem(slot2))))
-                return windowAction(c.ID, slot1, WindowActionType.LeftClick)
-                    && windowAction(destContainer == null ? c.ID : destContainer.ID, slot2, WindowActionType.LeftClick)
-                    && windowAction(c.ID, slot1, WindowActionType.LeftClick);
+                return mc.DoWindowAction(c.ID, slot1, WindowActionType.LeftClick)
+                    && mc.DoWindowAction(destContainer == null ? c.ID : destContainer.ID, slot2, WindowActionType.LeftClick)
+                    && mc.DoWindowAction(c.ID, slot1, WindowActionType.LeftClick);
             else return false;
         }
 
@@ -120,14 +106,14 @@ namespace MinecraftClient.Inventory
                             break;
                         }
                 }
-                windowAction(c.ID, source, WindowActionType.LeftClick); // grab item
-                windowAction(c.ID, -999, startDragging);
+                mc.DoWindowAction(c.ID, source, WindowActionType.LeftClick); // grab item
+                mc.DoWindowAction(c.ID, -999, startDragging);
                 foreach (var slot in availableSlots)
                 {
-                    windowAction(c.ID, slot, addDragging);
+                    mc.DoWindowAction(c.ID, slot, addDragging);
                 }
-                windowAction(c.ID, -999, endDragging);
-                windowAction(c.ID, source, WindowActionType.LeftClick); // put down item left (if any)
+                mc.DoWindowAction(c.ID, -999, endDragging);
+                mc.DoWindowAction(c.ID, source, WindowActionType.LeftClick); // put down item left (if any)
                 return true;
             }
             else return false;

@@ -1165,6 +1165,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get inventory action helper
+        /// </summary>
+        /// <param name="container">Inventory Container</param>
+        /// <returns>ItemMovingHelper instance</returns>
+        protected ItemMovingHelper GetItemMovingHelper(Container container)
+        {
+            return new ItemMovingHelper(container, Handler);
+        }
+
+        /// <summary>
         /// Change player selected hotbar slot
         /// </summary>
         /// <param name="slot">0-8</param>
