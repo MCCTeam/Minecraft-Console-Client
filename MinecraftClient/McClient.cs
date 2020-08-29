@@ -1501,7 +1501,6 @@ namespace MinecraftClient
                     Settings.MCSettings_Skin_All,
                     Settings.MCSettings_MainHand);
 
-            DispatchBotEvent(bot => bot.AfterGameJoined());
 
             if (inventoryHandlingRequested)
             {
@@ -1511,6 +1510,8 @@ namespace MinecraftClient
             }
 
             ClearInventories();
+
+            DispatchBotEvent(bot => bot.AfterGameJoined());
         }
 
         /// <summary>
