@@ -8,16 +8,20 @@ using System.Runtime.InteropServices;
 using Ionic.Zip;
 using MinecraftClient.Mapping;
 using Org.BouncyCastle.Crypto.Utilities;
+using MinecraftClient.Protocol.Handlers.PacketPalettes;
 
 namespace MinecraftClient
 {
     public class ReplayHandler
     {
-        public string RecordingTmpFileName { get { return @"recording.tmcpr"; } }
-        public string ReplayFileName { get { return @"whhhh.mcpr"; } }
+        public string ReplayFileName = @"whhhh.mcpr";
+        public string ReplayFileDirectory = @"replay_recordings";
         public MetaDataHandler MetaData;
 
+        private readonly string recordingTmpFileName = @"recording.tmcpr";
+        private readonly string temporaryCache = @"recording_cache";
         private DataTypes dataTypes;
+        private PacketTypePalette packetType;
         private int protocolVersion;
         private BinaryWriter recordStream;
         private DateTime recordStartTime;
@@ -30,26 +34,36 @@ namespace MinecraftClient
         private Location playerLastPosition;
         private float playerLastYaw;
         private float playerLastPitch;
+        private bool notSpawned = true;
 
         public ReplayHandler(int protocolVersion)
         {
             Initialize(protocolVersion);
         }
-        public ReplayHandler(int protocolVersion, string serverName)
+        public ReplayHandler(int protocolVersion, string serverName, string recordingDirectory = @"replay_recordings")
         {
             Initialize(protocolVersion);
             this.MetaData.serverName = serverName;
+            ReplayFileDirectory = recordingDirectory;
         }
         private void Initialize(int protocolVersion)
         {
             this.dataTypes = new DataTypes(protocolVersion);
+            this.packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
             this.protocolVersion = protocolVersion;
-            recordStream = new BinaryWriter(new FileStream(RecordingTmpFileName, FileMode.Create));
+
+            if (!Directory.Exists(ReplayFileDirectory))
+                Directory.CreateDirectory(ReplayFileDirectory);
+            if (!Directory.Exists(temporaryCache))
+                Directory.CreateDirectory(temporaryCache);
+
+            recordStream = new BinaryWriter(new FileStream(temporaryCache + "\\" + recordingTmpFileName, FileMode.Create));
             recordStartTime = DateTime.Now;
 
             MetaData = new MetaDataHandler();
             MetaData.date = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
             MetaData.protocol = protocolVersion;
+            MetaData.mcversion = ProtocolNumberToVersion(protocolVersion);
 
             playerLastPosition = new Location(0, 0, 0);
             WriteLog("Start recording.");
@@ -99,16 +113,20 @@ namespace MinecraftClient
         public void CreateReplayFile()
         {
             WriteLog("Creating replay file.");
-            using (Stream recordingFile = new FileStream(RecordingTmpFileName, FileMode.Open)) // what if I want to save replay while MCC running? thread-safe?
-            using (Stream metaDatFile = new FileStream(MetaData.metaDataFileName, FileMode.Open))
-            using (ZipOutputStream zs = new ZipOutputStream(ReplayFileName))
+            var now = DateTime.Now;
+            ReplayFileName = string.Format("{0}_{1}_{2}_{3}_{4}_{5}.mcpr", now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second); // yyyy_mm_dd_hh_mm_ss
+            using (Stream recordingFile = new FileStream(temporaryCache + "\\" + recordingTmpFileName, FileMode.Open)) // what if I want to save replay while MCC running? thread-safe?
+            using (Stream metaDatFile = new FileStream(temporaryCache + "\\" + MetaData.MetaDataFileName, FileMode.Open))
+            using (ZipOutputStream zs = new ZipOutputStream(ReplayFileDirectory + "\\" + ReplayFileName))
             {
-                zs.PutNextEntry(RecordingTmpFileName);
+                zs.PutNextEntry(recordingTmpFileName);
                 recordingFile.CopyTo(zs);
-                zs.PutNextEntry(MetaData.metaDataFileName);
+                zs.PutNextEntry(MetaData.MetaDataFileName);
                 metaDatFile.CopyTo(zs);
                 zs.Close();
             }
+            File.Delete(temporaryCache + "\\" + recordingTmpFileName);
+            File.Delete(temporaryCache + "\\" + MetaData.MetaDataFileName);
             WriteLog("Replay file created.");
         }
 
@@ -183,7 +201,6 @@ namespace MinecraftClient
             { // is login
                 if (packetID == 0x02) // login success
                 {
-                    // Add fake spawn player packet for spawning client player
                     return true;
                 }
                 else return false;
@@ -200,6 +217,7 @@ namespace MinecraftClient
         {
             List<byte> clone = packetData.ToArray().ToList();
             Queue<byte> p = new Queue<byte>(clone);
+            PacketTypesIn pType = packetType.GetIncommingTypeById(packetID);
             // Login success. Get player UUID
             if (isLogin && packetID == 0x02)
             {
@@ -209,15 +227,18 @@ namespace MinecraftClient
                     if (Guid.TryParse(dataTypes.ReadNextString(p), out uuid))
                     {
                         SetClientPlayerUUID(uuid);
+                        WriteDebugLog("User UUID: " + uuid.ToString());
                     }
                 }
                 else
                 {
-                    SetClientPlayerUUID(dataTypes.ReadNextUUID(p));
+                    var uuid2 = dataTypes.ReadNextUUID(p);
+                    SetClientPlayerUUID(uuid2);
+                    WriteDebugLog("User UUID: " + uuid2.ToString());
                 }
             }
             // Get client player location for calculating movement delta later
-            if (Protocol18PacketTypes.GetPacketIncomingType(packetID, protocolVersion) == PacketIncomingType.PlayerPositionAndLook)
+            if (pType == PacketTypesIn.PlayerPositionAndLook)
             {
                 double x = dataTypes.ReadNextDouble(p);
                 double y = dataTypes.ReadNextDouble(p);
@@ -243,10 +264,57 @@ namespace MinecraftClient
 
                 // Add spawn player for client player after 
                 // we have client player location information
-                AddPacket(GetSpawnPlayerPacketID(protocolVersion),
-                    GetSpawnPlayerPacket(playerEntityID, playerUUID, playerLastPosition, playerLastPitch, playerLastYaw));
-                MetaData.AddPlayerUUID(playerUUID);
+                //AddPacket(GetSpawnPlayerPacketID(protocolVersion),
+                //    GetSpawnPlayerPacket(playerEntityID, playerUUID, playerLastPosition, playerLastPitch, playerLastYaw));
+                //MetaData.AddPlayerUUID(playerUUID);
             }
+            //if (pType == PacketTypesIn.PlayerInfo)
+            //{
+            //    if (notSpawned)
+            //    {
+            //        bool shouldAdd = false;
+            //        // parse player info
+            //        int action = dataTypes.ReadNextVarInt(p);
+            //        int count = dataTypes.ReadNextVarInt(p);
+            //        if (action == 0 && count > 0)
+            //        {
+            //            for (int i = 0; i < count; i++)
+            //            {
+            //                Guid uuid = dataTypes.ReadNextUUID(p);
+            //                dataTypes.ReadNextString(p); // player name
+            //                int propCount = dataTypes.ReadNextVarInt(p);
+            //                for (int j = 0; j < propCount; j++)
+            //                {
+            //                    dataTypes.ReadNextString(p);
+            //                    dataTypes.ReadNextString(p);
+            //                    if (dataTypes.ReadNextBool(p))
+            //                        dataTypes.ReadNextString(p);
+            //                }
+            //                dataTypes.ReadNextVarInt(p);
+            //                dataTypes.ReadNextVarInt(p);
+            //                if (dataTypes.ReadNextBool(p))
+            //                    dataTypes.ReadNextString(p);
+            //                if (uuid == playerUUID)
+            //                    shouldAdd = true;
+            //            }
+            //        }
+
+            //        if (shouldAdd)
+            //        {
+            //            AddPacket(packetType.GetIncommingIdByType(PacketTypesIn.SpawnPlayer),
+            //                GetSpawnPlayerPacket(playerEntityID, playerUUID, playerLastPosition, playerLastPitch, playerLastYaw));
+            //            notSpawned = false;
+            //        }
+            //    }
+            //}
+            //if (pType == PacketTypesIn.Respawn)
+            //{
+            //    if (!notSpawned)
+            //    {
+            //        AddPacket(packetType.GetIncommingIdByType(PacketTypesIn.SpawnPlayer),
+            //                GetSpawnPlayerPacket(playerEntityID, playerUUID, playerLastPosition, playerLastPitch, playerLastYaw));
+            //    }
+            //}
         }
 
         /// <summary>
@@ -257,9 +325,9 @@ namespace MinecraftClient
         /// <param name="isLogin"></param>
         private void HandleOutBoundPacket(int packetID, IEnumerable<byte> packetData, bool isLogin)
         {
-            var packetType = GetPacketTypeOut(packetID, protocolVersion);
-            if (packetType == PacketOutgoingType.PlayerPosition
-                || packetType == PacketOutgoingType.PlayerPositionAndLook)
+            var packetType = this.packetType.GetOutgoingTypeById(packetID);
+            if (packetType == PacketTypesOut.PlayerPosition
+                || packetType == PacketTypesOut.PlayerPositionAndRotation)
             {
                 // translate them to incoming entitymovement packet then save them
             }
@@ -283,83 +351,6 @@ namespace MinecraftClient
             Location delta = (new Location(x, y, z)) - playerLastPosition;
 
             return new byte[0];
-        }
-
-        private static PacketOutgoingType GetPacketTypeOut(int packetID, int protocol)
-        {
-            if (protocol <= Protocol18Handler.MC18Version) // MC 1.7 and 1.8
-            {
-                switch (packetID)
-                {
-                    case 0x04: return PacketOutgoingType.PlayerPosition;
-                    case 0x06: return PacketOutgoingType.PlayerPositionAndLook;
-                }
-            }
-            else if (protocol <= Protocol18Handler.MC1112Version) // MC 1.9, 1,10 and 1.11
-            {
-                switch (packetID)
-                {
-                    case 0x0C: return PacketOutgoingType.PlayerPosition;
-                    case 0x0D: return PacketOutgoingType.PlayerPositionAndLook;
-                }
-            }
-            else if (protocol <= Protocol18Handler.MC112Version) // MC 1.12
-            {
-                switch (packetID)
-                {
-                    case 0x0E: return PacketOutgoingType.PlayerPosition;
-                    case 0x0F: return PacketOutgoingType.PlayerPositionAndLook;
-                }
-            }
-            else if (protocol <= Protocol18Handler.MC1122Version) // 1.12.2
-            {
-                switch (packetID)
-                {
-                    case 0x0D: return PacketOutgoingType.PlayerPosition;
-                    case 0x0E: return PacketOutgoingType.PlayerPositionAndLook;
-                }
-            }
-            else if (protocol < Protocol18Handler.MC114Version) // MC 1.13 to 1.13.2
-            {
-                switch (packetID)
-                {
-                    case 0x10: return PacketOutgoingType.PlayerPosition;
-                    case 0x11: return PacketOutgoingType.PlayerPositionAndLook;
-                }
-            }
-            else if (protocol <= Protocol18Handler.MC1152Version) //MC 1.14 to 1.15.2
-            {
-                switch (packetID)
-                {
-                    case 0x11: return PacketOutgoingType.PlayerPosition;
-                    case 0x12: return PacketOutgoingType.PlayerPositionAndLook;
-                }
-            }
-            else if (protocol <= Protocol18Handler.MC1161Version) // MC 1.16 and 1.16.1
-            {
-                switch (packetID)
-                {
-                    case 0x12: return PacketOutgoingType.PlayerPosition;
-                    case 0x13: return PacketOutgoingType.PlayerPositionAndLook;
-                }
-            }
-            else
-            {
-                switch (packetID)
-                {
-                    case 0x12: return PacketOutgoingType.PlayerPosition;
-                    case 0x13: return PacketOutgoingType.PlayerPositionAndLook;
-                }
-            }
-
-            return PacketOutgoingType.KeepAlive;
-        }
-
-        private static int GetSpawnPlayerPacketID(int protocol)
-        {
-            if (protocol < Protocol18Handler.MC116Version)
-                return 0x05;
-            else return 0x04;
         }
 
         private byte[] GetSpawnPlayerPacket(int entityID, Guid playerUUID, Location location, double pitch, double yaw)
@@ -391,12 +382,48 @@ namespace MinecraftClient
                 WriteLog(t);
         }
 
+        private static string ProtocolNumberToVersion(int protocol)
+        {
+            switch (protocol) 
+            {
+                case 4: return "1.7.2";
+                case 5: return "1.7.6";
+                case 47: return "1.8";
+                case 107: return "1.9";
+                case 108: return "1.9.1";
+                case 109: return "1.9.2";
+                case 110: return "1.9.3";
+                case 210: return "1.10";
+                case 315: return "1.11";
+                case 316: return "1.11.1";
+                case 335: return "1.12";
+                case 338: return "1.12.1";
+                case 340: return "1.12.2";
+                case 393: return "1.13";
+                case 401: return "1.13.1";
+                case 404: return "1.13.2";
+                case 477: return "1.14";
+                case 480: return "1.14.1";
+                case 485: return "1.14.2";
+                case 490: return "1.14.3";
+                case 498: return "1.14.4";
+                case 573: return "1.15";
+                case 575: return "1.15.1";
+                case 578: return "1.15.2";
+                case 735: return "1.16";
+                case 736: return "1.16.1";
+                case 751: return "1.16.2";
+                default: return "0.0";
+            }
+        }
+
         #endregion
     }
 
     public class MetaDataHandler
     {
-        public string metaDataFileName { get { return @"metaData.json"; } }
+        public readonly string MetaDataFileName = @"metaData.json";
+        public readonly string temporaryCache = @"recording_cache";
 
         public bool singlePlayer = false;
         public string serverName;
@@ -450,7 +477,7 @@ namespace MinecraftClient
         /// </summary>
         public void SaveToFile()
         {
-            File.WriteAllText(metaDataFileName, ToJson());
+            File.WriteAllText(temporaryCache + "\\" + MetaDataFileName, ToJson());
         }
 
         /// <summary>
