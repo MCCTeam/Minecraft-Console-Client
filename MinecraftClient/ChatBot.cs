@@ -233,7 +233,7 @@ namespace MinecraftClient
         /// <summary>
         /// Called when the Latency has been updated for a player
         /// </summary>
-        /// <param name="entity">Entity Name</param>
+        /// <param name="entity">Entity</param>
         /// <param name="playername">Player Name</param>
         /// <param name="uuid">Player UUID</param>
         /// <param name="latency">Latency.</param>
