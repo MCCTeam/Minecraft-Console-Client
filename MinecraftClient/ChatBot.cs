@@ -231,6 +231,15 @@ namespace MinecraftClient
         public virtual void OnLatencyUpdate(string playername, Guid uuid, int latency) { }
         
         /// <summary>
+        /// Called when the Latency has been updated for a player
+        /// </summary>
+        /// <param name="entity">Entity Name</param>
+        /// <param name="playername">Player Name</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="latency">Latency.</param>
+        public virtual void OnLatencyUpdate(Entity entity, string playername, Guid uuid, int latency) { }
+        
+        /// <summary>
         /// Called when a map was updated
         /// </summary>
         /// <param name="mapid"></param>
@@ -876,7 +885,7 @@ namespace MinecraftClient
         }
         
         /// <summary>
-        /// Get all Entityes
+        /// Get all Entities
         /// </summary>
         /// <returns>All Entities</returns>
         protected Dictionary<int, Entity> GetEntities()
@@ -884,6 +893,15 @@ namespace MinecraftClient
             return Handler.GetEntities();
         }
 
+        /// <summary>
+        /// Get all players Latency
+        /// </summary>
+        /// <returns>All Entities</returns>
+        protected Dictionary<string, int> GetPlayersLatency()
+        {
+            return Handler.GetPlayersLatency();
+        }
+        
         /// <summary>
         /// Get the current location of the player (Feets location)
         /// </summary>
