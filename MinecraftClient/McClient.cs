@@ -780,7 +780,7 @@ namespace MinecraftClient
         }
         
         /// <summary>
-        /// Get all Entityes
+        /// Get all Entities
         /// </summary>
         /// <returns>All Entities</returns>
         public Dictionary<int, Entity> GetEntities()
@@ -788,6 +788,15 @@ namespace MinecraftClient
             return entities;
         }
 
+        /// <summary>
+        /// Get all players latency
+        /// </summary>
+        /// <returns>All players latency</returns>
+        public Dictionary<string, int> GetPlayersLatency() 
+        { 
+            return playersLatency; 
+        }
+        
         /// <summary>
         /// Get client player's inventory items
         /// </summary>
@@ -2082,6 +2091,7 @@ namespace MinecraftClient
                     if (ent.Value.UUID == uuid && ent.Value.Name == playerName)
                     {
                         ent.Value.Latency = latency;
+                        DispatchBotEvent(bot => bot.OnLatencyUpdate(ent.Value, playerName, uuid, latency));
                         break;
                     }
                 }
