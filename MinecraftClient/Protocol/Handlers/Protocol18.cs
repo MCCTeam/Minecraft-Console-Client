@@ -66,8 +66,6 @@ namespace MinecraftClient.Protocol.Handlers
         DataTypes dataTypes;
         Thread netRead;
 
-        ReplayHandler replay;
-
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo forgeInfo)
         {
             ConsoleIO.SetAutoCompleteEngine(this);
@@ -138,9 +136,6 @@ namespace MinecraftClient.Protocol.Handlers
                 else itemPalette = new ItemPalette1161();
             }
             else itemPalette = new ItemPalette115();
-
-            replay = new ReplayHandler(protocolversion);
-            replay.MetaData.serverName = handler.GetServerHost() + ":" + handler.GetServerPort();
         }
 
         
@@ -220,8 +215,11 @@ namespace MinecraftClient.Protocol.Handlers
 
             packetID = dataTypes.ReadNextVarInt(packetData); //Packet ID
 
-            List<byte> clone = packetData.ToArray().ToList();
-            replay.AddPacket(packetID, clone, login_phase, true);
+            if (handler.GetNetworkPacketEventEnabled())
+            {
+                List<byte> clone = packetData.ToList();
+                handler.OnNetworkPacket(packetID, clone, login_phase, true);
+            }
         }
 
         /// <summary>
@@ -263,7 +261,6 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketTypesIn.JoinGame:
                         handler.OnGameJoined();
                         int playerEntityID = dataTypes.ReadNextInt(packetData);
-                        replay.SetClientEntityID(playerEntityID);
                         handler.OnReceivePlayerEntityID(playerEntityID);
 
                         if (protocolversion >= MC1162Version)
@@ -1061,8 +1058,12 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">packet Data</param>
         private void SendPacket(int packetID, IEnumerable<byte> packetData)
         {
-            List<byte> clone = packetData.ToArray().ToList();
-            replay.AddPacket(packetID, clone, login_phase, false);
+            if (handler.GetNetworkPacketEventEnabled())
+            {
+                List<byte> clone = packetData.ToList();
+                handler.OnNetworkPacket(packetID, clone, login_phase, false);
+            }
+            
             //The inner packet
             byte[] the_packet = dataTypes.ConcatBytes(dataTypes.GetVarInt(packetID), packetData.ToArray());
 

@@ -12,6 +12,9 @@ using MinecraftClient.Protocol.Handlers.PacketPalettes;
 
 namespace MinecraftClient
 {
+    /// <summary>
+    /// Record and save replay file that can be used by Replay mod
+    /// </summary>
     public class ReplayHandler
     {
         public string ReplayFileName = @"whhhh.mcpr";
@@ -34,7 +37,6 @@ namespace MinecraftClient
         private Location playerLastPosition;
         private float playerLastYaw;
         private float playerLastPitch;
-        private bool notSpawned = true;
 
         public ReplayHandler(int protocolVersion)
         {
@@ -64,6 +66,7 @@ namespace MinecraftClient
             MetaData.date = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
             MetaData.protocol = protocolVersion;
             MetaData.mcversion = ProtocolNumberToVersion(protocolVersion);
+            MetaData.SaveToFile();
 
             playerLastPosition = new Location(0, 0, 0);
             WriteLog("Start recording.");
@@ -145,17 +148,16 @@ namespace MinecraftClient
         {
             try 
             {
-                if (!isInbound)
-                {
-                    HandleOutBoundPacket(packetID, packetData, isLogin);
-                    return;
-                } else HandleInBoundPacket(packetID, packetData, isLogin);
+                if (isInbound)
+                    HandleInBoundPacket(packetID, packetData, isLogin);
+                else return;
+
                 if (PacketShouldSave(packetID, isLogin, isInbound))
                     AddPacket(packetID, packetData);
             }
             catch (Exception e)
             {
-                ConsoleIO.WriteLine("Exception in replay: " + e.Message + "\n" + e.StackTrace);
+                WriteDebugLog("Exception while adding packet: " + e.Message + "\n" + e.StackTrace);
             }
         }
 
@@ -183,12 +185,24 @@ namespace MinecraftClient
             recordStream.Write(line.ToArray());
         }
 
-        public void OnPlayerSpawn(Guid uuid, string name)
+        /// <summary>
+        /// Add a player's UUID to the MetaData
+        /// </summary>
+        /// <param name="uuid"></param>
+        /// <param name="name"></param>
+        public void OnPlayerSpawn(Guid uuid)
         {
             // Metadata has a field for storing uuid for all players entered client render range
             MetaData.AddPlayerUUID(uuid);
         }
 
+        /// <summary>
+        /// Determine a packet should be saved
+        /// </summary>
+        /// <param name="packetID"></param>
+        /// <param name="isLogin"></param>
+        /// <param name="isInbound"></param>
+        /// <returns></returns>
         private bool PacketShouldSave(int packetID, bool isLogin, bool isInbound)
         {
             if (!isInbound) // save inbound only
@@ -210,13 +224,15 @@ namespace MinecraftClient
         /// <summary>
         /// Used to gather information needed
         /// </summary>
+        /// <remarks>
+        /// Also for converting client side packet to server side packet
+        /// </remarks>
         /// <param name="packetID"></param>
         /// <param name="packetData"></param>
         /// <param name="isLogin"></param>
         private void HandleInBoundPacket(int packetID, IEnumerable<byte> packetData, bool isLogin)
         {
-            List<byte> clone = packetData.ToArray().ToList();
-            Queue<byte> p = new Queue<byte>(clone);
+            Queue<byte> p = new Queue<byte>(packetData);
             PacketTypesIn pType = packetType.GetIncommingTypeById(packetID);
             // Login success. Get player UUID
             if (isLogin && packetID == 0x02)
@@ -236,6 +252,19 @@ namespace MinecraftClient
                     SetClientPlayerUUID(uuid2);
                     WriteDebugLog("User UUID: " + uuid2.ToString());
                 }
+                return;
+            }
+            if (!isLogin && pType == PacketTypesIn.JoinGame)
+            {
+                // Get client player entity ID
+                SetClientEntityID(dataTypes.ReadNextInt(p));
+                return;
+            }
+            if (!isLogin && pType == PacketTypesIn.SpawnPlayer)
+            {
+                dataTypes.ReadNextVarInt(p);
+                OnPlayerSpawn(dataTypes.ReadNextUUID(p));
+                return;
             }
             // Get client player location for calculating movement delta later
             if (pType == PacketTypesIn.PlayerPositionAndLook)
@@ -261,60 +290,8 @@ namespace MinecraftClient
                     playerLastPosition.Y = y;
                     playerLastPosition.Z = z;
                 }
-
-                // Add spawn player for client player after 
-                // we have client player location information
-                //AddPacket(GetSpawnPlayerPacketID(protocolVersion),
-                //    GetSpawnPlayerPacket(playerEntityID, playerUUID, playerLastPosition, playerLastPitch, playerLastYaw));
-                //MetaData.AddPlayerUUID(playerUUID);
+                return;
             }
-            //if (pType == PacketTypesIn.PlayerInfo)
-            //{
-            //    if (notSpawned)
-            //    {
-            //        bool shouldAdd = false;
-            //        // parse player info
-            //        int action = dataTypes.ReadNextVarInt(p);
-            //        int count = dataTypes.ReadNextVarInt(p);
-            //        if (action == 0 && count > 0)
-            //        {
-            //            for (int i = 0; i < count; i++)
-            //            {
-            //                Guid uuid = dataTypes.ReadNextUUID(p);
-            //                dataTypes.ReadNextString(p); // player name
-            //                int propCount = dataTypes.ReadNextVarInt(p);
-            //                for (int j = 0; j < propCount; j++)
-            //                {
-            //                    dataTypes.ReadNextString(p);
-            //                    dataTypes.ReadNextString(p);
-            //                    if (dataTypes.ReadNextBool(p))
-            //                        dataTypes.ReadNextString(p);
-            //                }
-            //                dataTypes.ReadNextVarInt(p);
-            //                dataTypes.ReadNextVarInt(p);
-            //                if (dataTypes.ReadNextBool(p))
-            //                    dataTypes.ReadNextString(p);
-            //                if (uuid == playerUUID)
-            //                    shouldAdd = true;
-            //            }
-            //        }
-
-            //        if (shouldAdd)
-            //        {
-            //            AddPacket(packetType.GetIncommingIdByType(PacketTypesIn.SpawnPlayer),
-            //                GetSpawnPlayerPacket(playerEntityID, playerUUID, playerLastPosition, playerLastPitch, playerLastYaw));
-            //            notSpawned = false;
-            //        }
-            //    }
-            //}
-            //if (pType == PacketTypesIn.Respawn)
-            //{
-            //    if (!notSpawned)
-            //    {
-            //        AddPacket(packetType.GetIncommingIdByType(PacketTypesIn.SpawnPlayer),
-            //                GetSpawnPlayerPacket(playerEntityID, playerUUID, playerLastPosition, playerLastPitch, playerLastYaw));
-            //    }
-            //}
         }
 
         /// <summary>
@@ -331,26 +308,6 @@ namespace MinecraftClient
             {
                 // translate them to incoming entitymovement packet then save them
             }
-        }
-
-        /// <summary>
-        /// Translate client outgoing movement packet to incoming entitymovement packet
-        /// </summary>
-        /// <param name="packetID"></param>
-        /// <param name="packetData"></param>
-        /// <returns></returns>
-        private byte[] PlayerPositionPacketC2S(int packetID, IEnumerable<byte> packetData)
-        {
-            Queue<byte> p = new Queue<byte>(packetData);
-            double x = dataTypes.ReadNextDouble(p);
-            double y = dataTypes.ReadNextDouble(p);
-            if (protocolVersion < Protocol18Handler.MC18Version)
-                dataTypes.ReadNextDouble(p); // head position - useless
-            double z = dataTypes.ReadNextDouble(p);
-
-            Location delta = (new Location(x, y, z)) - playerLastPosition;
-
-            return new byte[0];
         }
 
         private byte[] GetSpawnPlayerPacket(int entityID, Guid playerUUID, Location location, double pitch, double yaw)
@@ -420,6 +377,9 @@ namespace MinecraftClient
         #endregion
     }
 
+    /// <summary>
+    /// Handle MetaData used by Replay mod
+    /// </summary>
     public class MetaDataHandler
     {
         public readonly string MetaDataFileName = @"metaData.json";
@@ -429,12 +389,12 @@ namespace MinecraftClient
         public string serverName;
         public int duration = 0; // duration of the whole replay
         public long date; // start time of the recording in unix timestamp milliseconds
-        public string mcversion = "0.0"; // e.g. 1.8. TODO: Convert protocol number to MC Version string;
+        public string mcversion = "0.0"; // e.g. 1.15.2
         public string fileFormat = "MCPR";
         public int fileFormatVersion = 14; // 14 is what I found in metadata generated in 1.15.2 replay mod
         public int protocol;
-        public string generator = "MCC"; // The program which generated the file
-        public int selfId = -1;
+        public string generator = "MCC"; // The program which generated the file (MCC have more popularity now :P)
+        public int selfId = -1; // I saw -1 in medaData file generated by Replay mod. Not sure what is this for
         public List<string> players; // Array of UUIDs of all players which can be seen in the replay
 
         public MetaDataHandler()

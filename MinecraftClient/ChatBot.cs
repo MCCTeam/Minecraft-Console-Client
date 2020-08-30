@@ -345,6 +345,18 @@ namespace MinecraftClient
         /// <param name="protocolversion">Ptotocol version</param>
         public virtual void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata) { }
 
+        /// <summary>
+        /// Called when a network packet received or sent
+        /// </summary>
+        /// <remarks>
+        /// You need to enable this event by calling <see cref="SetNetworkPacketEventEnabled(bool)"/> with True before you can use this event
+        /// </remarks>
+        /// <param name="packetID">Packet ID</param>
+        /// <param name="packetData">A copy of Packet Data</param>
+        /// <param name="isLogin">The packet is login phase or playing phase</param>
+        /// <param name="isInbound">The packet is received from server or sent by client</param>
+        public virtual void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
@@ -1256,6 +1268,27 @@ namespace MinecraftClient
             if (Handler.GetHealth() <= 0)
                 return Handler.SendRespawnPacket();
             else return false;
+        }
+
+        /// <summary>
+        /// Enable or disable network packet event calling. If you want to capture every packet including login phase, please enable this in <see cref="Initialize()"/>
+        /// </summary>
+        /// <remarks>
+        /// Enable this may increase memory usage.
+        /// </remarks>
+        /// <param name="enabled"></param>
+        protected void SetNetworkPacketEventEnabled(bool enabled)
+        {
+            Handler.SetNetworkPacketEventEnabled(enabled);
+        }
+
+        /// <summary>
+        /// Get the minecraft protcol number currently in use
+        /// </summary>
+        /// <returns>Protcol number</returns>
+        protected int GetProtocolVersion()
+        {
+            return Handler.GetProtocolVersion();
         }
 
         /// <summary>

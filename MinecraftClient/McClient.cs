@@ -84,6 +84,10 @@ namespace MinecraftClient
         // players latency
         private Dictionary<string, int> playersLatency = new Dictionary<string, int>();
 
+        // ChatBot OnNetworkPacket event
+        private bool networkPacketEventEnabled = false;
+        private int protocolVersion;
+
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
         public string GetUsername() { return username; }
@@ -98,6 +102,8 @@ namespace MinecraftClient
         public int GetTotalExperience() { return playerTotalExperience; }
         public byte GetCurrentSlot() { return CurrentSlot; }
         public int GetGamemode() { return gamemode; }
+        public bool GetNetworkPacketEventEnabled() { return networkPacketEventEnabled; }
+        public int GetProtocolVersion() { return protocolVersion; }
 
         // get bots list for unloading them by commands
         public List<ChatBot> GetLoadedChatBots()
@@ -162,6 +168,7 @@ namespace MinecraftClient
             this.username = user;
             this.host = server_ip;
             this.port = port;
+            this.protocolVersion = protocolversion;
 
             if (!singlecommand)
             {
@@ -185,6 +192,7 @@ namespace MinecraftClient
                     if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
                     if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
                     if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
+                    if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCaptor()); }
 
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
@@ -755,6 +763,18 @@ namespace MinecraftClient
                 // Entity Handling cannot be enabled in runtime (or after joining server)
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Enable or disable network packet event calling.
+        /// </summary>
+        /// <remarks>
+        /// Enable this may increase memory usage.
+        /// </remarks>
+        /// <param name="enabled"></param>
+        public void SetNetworkPacketEventEnabled(bool enabled)
+        {
+            networkPacketEventEnabled = enabled;
         }
 
         #endregion
@@ -1481,6 +1501,21 @@ namespace MinecraftClient
                     else throw; //ThreadAbortException should not be caught here as in can happen when disconnecting from server
                 }
             }
+        }
+
+        /// <summary>
+        /// Called when a network packet received or sent
+        /// </summary>
+        /// <remarks>
+        /// Only called if <see cref="networkPacketEventEnabled"/> is set to True
+        /// </remarks>
+        /// <param name="packetID">Packet ID</param>
+        /// <param name="packetData">A copy of Packet Data</param>
+        /// <param name="isLogin">The packet is login phase or playing phase</param>
+        /// <param name="isInbound">The packet is received from server or sent by client</param>
+        public void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
+        {
+            DispatchBotEvent(bot => bot.OnNetworkPacket(packetID, packetData, isLogin, isInbound));
         }
 
         /// <summary>
