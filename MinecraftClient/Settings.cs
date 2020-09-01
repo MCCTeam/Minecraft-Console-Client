@@ -186,6 +186,7 @@ namespace MinecraftClient
 
         // Replay Mod
         public static bool ReplayMod_Enabled = false;
+        public static int ReplayMod_BackupInterval = 3000;
 
 
         //Custom app variables and Minecraft accounts
@@ -615,6 +616,7 @@ namespace MinecraftClient
                                             switch (argName.ToLower())
                                             {
                                                 case "enabled": ReplayMod_Enabled = str2bool(argValue); break;
+                                                case "backupinterval": ReplayMod_BackupInterval = str2int(argValue); break;
                                             }
                                             break;
                                     }
@@ -800,6 +802,7 @@ namespace MinecraftClient
                 + "# Enable recording the game and replay it later using Replay Mod\r\n"
                 + "# You MUST exit the program using /quit command or the replay will NOT be saved!\r\n"
                 + "enabled=false\r\n"
+                + "backupinterval=300                # How long should replay file be auto-saved, in seconds. Use -1 for disabled\r\n"
                 + "\r\n", Encoding.UTF8);
         }
 

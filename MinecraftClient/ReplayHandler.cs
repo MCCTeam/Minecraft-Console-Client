@@ -9,6 +9,7 @@ using Ionic.Zip;
 using MinecraftClient.Mapping;
 using Org.BouncyCastle.Crypto.Utilities;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
+using System.Runtime.Remoting.Messaging;
 
 namespace MinecraftClient
 {
@@ -20,6 +21,7 @@ namespace MinecraftClient
         public string ReplayFileName = @"whhhh.mcpr";
         public string ReplayFileDirectory = @"replay_recordings";
         public MetaDataHandler MetaData;
+        public bool RecordRunning { get => !cleanedUp; }
 
         private readonly string recordingTmpFileName = @"recording.tmcpr";
         private readonly string temporaryCache = @"recording_cache";
@@ -29,6 +31,7 @@ namespace MinecraftClient
         private BinaryWriter recordStream;
         private DateTime recordStartTime;
         private DateTime lastPacketTime;
+        private bool cleanedUp = false;
 
         private static bool logOutput = true;
 
@@ -59,7 +62,7 @@ namespace MinecraftClient
             if (!Directory.Exists(temporaryCache))
                 Directory.CreateDirectory(temporaryCache);
 
-            recordStream = new BinaryWriter(new FileStream(temporaryCache + "\\" + recordingTmpFileName, FileMode.Create));
+            recordStream = new BinaryWriter(new FileStream(temporaryCache + "\\" + recordingTmpFileName, FileMode.Create, FileAccess.ReadWrite));
             recordStartTime = DateTime.Now;
 
             MetaData = new MetaDataHandler();
@@ -100,14 +103,18 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Should call once before program exit
+        /// Stop recording and save replay file. Should called once before program exit
         /// </summary>
         public void OnShutDown()
         {
-            MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
-            MetaData.SaveToFile();
-            CloseRecordStream();
-            CreateReplayFile();
+            if (!cleanedUp)
+            {
+                MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
+                MetaData.SaveToFile();
+                CloseRecordStream();
+                CreateReplayFile();
+                cleanedUp = true;
+            }
         }
 
         /// <summary>
@@ -115,22 +122,71 @@ namespace MinecraftClient
         /// </summary>
         public void CreateReplayFile()
         {
+            string replayFileName = GetReplayDefaultName();
+            CreateReplayFile(replayFileName);
+        }
+        /// <summary>
+        /// Create the replay file for Replay mod to read
+        /// </summary>
+        /// <param name="replayFileName">Replay file name</param>
+        public void CreateReplayFile(string replayFileName)
+        {
             WriteLog("Creating replay file.");
-            var now = DateTime.Now;
-            ReplayFileName = string.Format("{0}_{1}_{2}_{3}_{4}_{5}.mcpr", now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second); // yyyy_mm_dd_hh_mm_ss
-            using (Stream recordingFile = new FileStream(temporaryCache + "\\" + recordingTmpFileName, FileMode.Open)) // what if I want to save replay while MCC running? thread-safe?
-            using (Stream metaDatFile = new FileStream(temporaryCache + "\\" + MetaData.MetaDataFileName, FileMode.Open))
-            using (ZipOutputStream zs = new ZipOutputStream(ReplayFileDirectory + "\\" + ReplayFileName))
+            
+            using (Stream recordingFile = new FileStream(temporaryCache + "\\" + recordingTmpFileName, FileMode.Open))
+            using (Stream metaDataFile = new FileStream(temporaryCache + "\\" + MetaData.MetaDataFileName, FileMode.Open))
+            using (ZipOutputStream zs = new ZipOutputStream(ReplayFileDirectory + "\\" + replayFileName))
             {
                 zs.PutNextEntry(recordingTmpFileName);
                 recordingFile.CopyTo(zs);
                 zs.PutNextEntry(MetaData.MetaDataFileName);
-                metaDatFile.CopyTo(zs);
+                metaDataFile.CopyTo(zs);
                 zs.Close();
             }
             File.Delete(temporaryCache + "\\" + recordingTmpFileName);
             File.Delete(temporaryCache + "\\" + MetaData.MetaDataFileName);
             WriteLog("Replay file created.");
+        }
+
+        /// <summary>
+        /// Create a backup replay file while recording
+        /// </summary>
+        /// <param name="replayFileName"></param>
+        public void CreateBackupReplay(string replayFileName)
+        {
+            if (cleanedUp)
+                return;
+            WriteDebugLog("Creating backup replay file.");
+
+            MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
+            MetaData.SaveToFile();
+
+            using (Stream metaDataFile = new FileStream(temporaryCache + "\\" + MetaData.MetaDataFileName, FileMode.Open))
+            using (ZipOutputStream zs = new ZipOutputStream(replayFileName))
+            {
+                zs.PutNextEntry(recordingTmpFileName);
+                // .CopyTo() method start from stream current position
+                // We need to reset position in order to get full content
+                var lastPosition = recordStream.BaseStream.Position;
+                recordStream.BaseStream.Position = 0;
+                recordStream.BaseStream.CopyTo(zs);
+                recordStream.BaseStream.Position = lastPosition;
+
+                zs.PutNextEntry(MetaData.MetaDataFileName);
+                metaDataFile.CopyTo(zs);
+                zs.Close();
+            }
+            WriteDebugLog("Backup replay file created.");
+        }
+
+        /// <summary>
+        /// Get the default mcpr file name by current time
+        /// </summary>
+        /// <returns></returns>
+        public string GetReplayDefaultName()
+        {
+            var now = DateTime.Now;
+            return string.Format("{0}_{1}_{2}_{3}_{4}_{5}.mcpr", now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second); // yyyy_mm_dd_hh_mm_ss
         }
 
         #endregion

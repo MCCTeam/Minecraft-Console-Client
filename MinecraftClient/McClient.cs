@@ -192,7 +192,7 @@ namespace MinecraftClient
                     if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
                     if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
                     if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
-                    if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCaptor()); }
+                    if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCaptor(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
