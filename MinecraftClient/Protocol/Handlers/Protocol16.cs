@@ -617,6 +617,11 @@ namespace MinecraftClient.Protocol.Handlers
             return 100;
         }
 
+        public int GetProtocolVersion()
+        {
+            return protocolversion;
+        }
+
         public bool SendChatMessage(string message)
         {
             if (String.IsNullOrEmpty(message))

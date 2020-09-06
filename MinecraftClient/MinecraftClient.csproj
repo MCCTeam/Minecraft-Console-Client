@@ -75,6 +75,7 @@
     <Compile Include="AutoTimeout.cs" />
     <Compile Include="ChatBots\AutoDrop.cs" />
     <Compile Include="ChatBots\Mailer.cs" />
+    <Compile Include="ChatBots\ReplayCapture.cs" />
     <Compile Include="Commands\Entitycmd.cs" />
     <Compile Include="ChatBots\Alerts.cs" />
     <Compile Include="ChatBots\AntiAFK.cs" />
@@ -151,6 +152,40 @@
     <Compile Include="Mapping\EntityTypeExtensions.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Protocol\EntityActionType.cs" />
+    <Compile Include="Protocol\GuidExtensions.cs" />
+    <Compile Include="Protocol\Handlers\Compression\DeflateStream.cs" />
+    <Compile Include="Protocol\Handlers\Compression\ParallelDeflateOutputStream.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ComHelper.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\EncryptionAlgorithm.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\Events.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\Exceptions.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ExtractExistingFileAction.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\FileSelector.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\OffsetStream.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\Shared.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\WinZipAes.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipConstants.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipCrypto.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipDirEntry.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntry.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntry.Extract.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntry.Read.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntry.Write.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntrySource.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipErrorAction.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.AddUpdate.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Check.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Events.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Extract.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Read.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Save.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.SaveSelfExtractor.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Selector.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.x-IEnumerable.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipInputStream.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipOutputStream.cs" />
+    <Compile Include="Protocol\Handlers\Compression\Zip\ZipSegmentedStream.cs" />
     <Compile Include="Protocol\Handlers\DataTypes.cs" />
     <Compile Include="Protocol\Handlers\Forge\FMLVersion.cs" />
     <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette110.cs" />
@@ -172,6 +207,7 @@
     <Compile Include="Protocol\Handlers\SocketWrapper.cs" />
     <Compile Include="Protocol\DataTypeGenerator.cs" />
     <Compile Include="FileMonitor.cs" />
+    <Compile Include="Protocol\ReplayHandler.cs" />
     <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />
@@ -339,6 +375,7 @@
     <Content Include="Protocol\Dns\Records\totla.txt" />
     <Content Include="Resources\AppIcon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

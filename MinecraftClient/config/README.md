@@ -176,6 +176,12 @@ This is useful for reacting to messages eg when using the AutoRespond, Hangman g
 However, for unusual chat formats, so you may need to tinker with the ChatFormat section of the config file.
 Building regular expressions can be a bit tricky, so you might want to try them out eg on regex101.com
 
+About Replay Mod feature
+------
+Replay Mod is _A Minecraft Mod to record, relive and share your experience._ You can see more at https://www.replaymod.com/
+
+MCC support recording and saving your game to a file which can be used by Replay Mod. You can simply enable ReplayMod in the `.ini` setting to use this feature. The only limitation is the client player (you) will not be shown in the replay. Please be reminded that you MUST exit MCC with `/quit` command or use `/replay stop` command before closing MCC. Your replay will be lost if you force-closed MCC (i.e. Ctrl+C).
+
 Using the Alerts bot
 ------
 
