@@ -138,6 +138,8 @@ namespace MinecraftClient.Protocol.Handlers
             else itemPalette = new ItemPalette115();
         }
 
+        
+
         /// <summary>
         /// Separate thread. Network reading loop.
         /// </summary>
@@ -212,6 +214,12 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             packetID = dataTypes.ReadNextVarInt(packetData); //Packet ID
+
+            if (handler.GetNetworkPacketEventEnabled())
+            {
+                List<byte> clone = packetData.ToList();
+                handler.OnNetworkPacket(packetID, clone, login_phase, true);
+            }
         }
 
         /// <summary>
@@ -1050,6 +1058,12 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">packet Data</param>
         private void SendPacket(int packetID, IEnumerable<byte> packetData)
         {
+            if (handler.GetNetworkPacketEventEnabled())
+            {
+                List<byte> clone = packetData.ToList();
+                handler.OnNetworkPacket(packetID, clone, login_phase, false);
+            }
+            
             //The inner packet
             byte[] the_packet = dataTypes.ConcatBytes(dataTypes.GetVarInt(packetID), packetData.ToArray());
 

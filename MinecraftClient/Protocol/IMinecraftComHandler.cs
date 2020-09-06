@@ -33,7 +33,22 @@ namespace MinecraftClient.Protocol
         bool SetInventoryEnabled(bool enabled);
         bool GetEntityHandlingEnabled();
         bool SetEntityHandlingEnabled(bool enabled);
+        bool GetNetworkPacketEventEnabled();
+        void SetNetworkPacketEventEnabled(bool enabled);
+        int GetProtocolVersion();
         Container GetInventory(int inventoryID);
+
+        /// <summary>
+        /// Called when a network packet received or sent
+        /// </summary>
+        /// <remarks>
+        /// Only called if <see cref="McClient.networkPacketEventEnabled"/> is set to True
+        /// </remarks>
+        /// <param name="packetID">Packet ID</param>
+        /// <param name="packetData">A copy of Packet Data</param>
+        /// <param name="isLogin">The packet is login phase or playing phase</param>
+        /// <param name="isInbound">The packet is received from server or sent by client</param>
+        void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound);
 
         /// <summary>
         /// Called when a server was successfully joined

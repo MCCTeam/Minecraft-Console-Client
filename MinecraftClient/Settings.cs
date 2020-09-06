@@ -184,6 +184,10 @@ namespace MinecraftClient
         public static string AutoDrop_Mode = "include";
         public static string AutoDrop_items = "";
 
+        // Replay Mod
+        public static bool ReplayMod_Enabled = false;
+        public static int ReplayMod_BackupInterval = 3000;
+
 
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
@@ -191,7 +195,7 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod };
 
 
         /// <summary>
@@ -239,6 +243,7 @@ namespace MinecraftClient
                                     case "autocraft": pMode = ParseMode.AutoCraft; break;
                                     case "mailer": pMode = ParseMode.Mailer; break;
                                     case "autodrop": pMode = ParseMode.AutoDrop; break;
+                                    case "replaymod": pMode = ParseMode.ReplayMod; break;
 
                                     default: pMode = ParseMode.Default; break;
                                 }
@@ -607,6 +612,13 @@ namespace MinecraftClient
                                                 case "retentiondays": Mailer_MailRetentionDays = str2int(argValue); break;
                                             }
                                             break;
+                                        case ParseMode.ReplayMod:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "enabled": ReplayMod_Enabled = str2bool(argValue); break;
+                                                case "backupinterval": ReplayMod_BackupInterval = str2int(argValue); break;
+                                            }
+                                            break;
                                     }
                                 }
                             }
@@ -785,6 +797,12 @@ namespace MinecraftClient
                 + "items=                            # separate each item with comma ','\r\n"
                 + "# For the naming of the items, please see \r\n"
                 + "# https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs \r\n"
+                + "\r\n"
+                + "[ReplayMod]\r\n"
+                + "# Enable recording the game and replay it later using Replay Mod\r\n"
+                + "# You MUST exit the program using /quit command or the replay will NOT be saved!\r\n"
+                + "enabled=false\r\n"
+                + "backupinterval=300                # How long should replay file be auto-saved, in seconds. Use -1 for disabled\r\n"
                 + "\r\n", Encoding.UTF8);
         }
 
