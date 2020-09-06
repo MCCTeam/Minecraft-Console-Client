@@ -11,7 +11,7 @@ using Org.BouncyCastle.Crypto.Utilities;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 using System.Runtime.Remoting.Messaging;
 
-namespace MinecraftClient
+namespace MinecraftClient.Protocol
 {
     /// <summary>
     /// Record and save replay file that can be used by Replay mod
@@ -45,12 +45,14 @@ namespace MinecraftClient
         {
             Initialize(protocolVersion);
         }
+
         public ReplayHandler(int protocolVersion, string serverName, string recordingDirectory = @"replay_recordings")
         {
             Initialize(protocolVersion);
             this.MetaData.serverName = serverName;
             ReplayFileDirectory = recordingDirectory;
         }
+
         private void Initialize(int protocolVersion)
         {
             this.dataTypes = new DataTypes(protocolVersion);
@@ -62,13 +64,13 @@ namespace MinecraftClient
             if (!Directory.Exists(temporaryCache))
                 Directory.CreateDirectory(temporaryCache);
 
-            recordStream = new BinaryWriter(new FileStream(temporaryCache + "\\" + recordingTmpFileName, FileMode.Create, FileAccess.ReadWrite));
+            recordStream = new BinaryWriter(new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Create, FileAccess.ReadWrite));
             recordStartTime = DateTime.Now;
 
             MetaData = new MetaDataHandler();
             MetaData.date = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
             MetaData.protocol = protocolVersion;
-            MetaData.mcversion = ProtocolNumberToVersion(protocolVersion);
+            MetaData.mcversion = ProtocolHandler.ProtocolVersion2MCVer(protocolVersion);
             MetaData.SaveToFile();
 
             playerLastPosition = new Location(0, 0, 0);
@@ -125,6 +127,7 @@ namespace MinecraftClient
             string replayFileName = GetReplayDefaultName();
             CreateReplayFile(replayFileName);
         }
+
         /// <summary>
         /// Create the replay file for Replay mod to read
         /// </summary>
@@ -132,19 +135,25 @@ namespace MinecraftClient
         public void CreateReplayFile(string replayFileName)
         {
             WriteLog("Creating replay file.");
-            
-            using (Stream recordingFile = new FileStream(temporaryCache + "\\" + recordingTmpFileName, FileMode.Open))
-            using (Stream metaDataFile = new FileStream(temporaryCache + "\\" + MetaData.MetaDataFileName, FileMode.Open))
-            using (ZipOutputStream zs = new ZipOutputStream(ReplayFileDirectory + "\\" + replayFileName))
+
+            using (Stream recordingFile = new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Open))
             {
-                zs.PutNextEntry(recordingTmpFileName);
-                recordingFile.CopyTo(zs);
-                zs.PutNextEntry(MetaData.MetaDataFileName);
-                metaDataFile.CopyTo(zs);
-                zs.Close();
+                using (Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open))
+                {
+                    using (ZipOutputStream zs = new ZipOutputStream(Path.Combine(ReplayFileDirectory, replayFileName)))
+                    {
+                        zs.PutNextEntry(recordingTmpFileName);
+                        recordingFile.CopyTo(zs);
+                        zs.PutNextEntry(MetaData.MetaDataFileName);
+                        metaDataFile.CopyTo(zs);
+                        zs.Close();
+                    }
+                }
             }
-            File.Delete(temporaryCache + "\\" + recordingTmpFileName);
-            File.Delete(temporaryCache + "\\" + MetaData.MetaDataFileName);
+
+            File.Delete(Path.Combine(temporaryCache, recordingTmpFileName));
+            File.Delete(Path.Combine(temporaryCache, MetaData.MetaDataFileName));
+
             WriteLog("Replay file created.");
         }
 
@@ -161,21 +170,24 @@ namespace MinecraftClient
             MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
             MetaData.SaveToFile();
 
-            using (Stream metaDataFile = new FileStream(temporaryCache + "\\" + MetaData.MetaDataFileName, FileMode.Open))
-            using (ZipOutputStream zs = new ZipOutputStream(replayFileName))
+            using (Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open))
             {
-                zs.PutNextEntry(recordingTmpFileName);
-                // .CopyTo() method start from stream current position
-                // We need to reset position in order to get full content
-                var lastPosition = recordStream.BaseStream.Position;
-                recordStream.BaseStream.Position = 0;
-                recordStream.BaseStream.CopyTo(zs);
-                recordStream.BaseStream.Position = lastPosition;
+                using (ZipOutputStream zs = new ZipOutputStream(replayFileName))
+                {
+                    zs.PutNextEntry(recordingTmpFileName);
+                    // .CopyTo() method start from stream current position
+                    // We need to reset position in order to get full content
+                    var lastPosition = recordStream.BaseStream.Position;
+                    recordStream.BaseStream.Position = 0;
+                    recordStream.BaseStream.CopyTo(zs);
+                    recordStream.BaseStream.Position = lastPosition;
 
-                zs.PutNextEntry(MetaData.MetaDataFileName);
-                metaDataFile.CopyTo(zs);
-                zs.Close();
+                    zs.PutNextEntry(MetaData.MetaDataFileName);
+                    metaDataFile.CopyTo(zs);
+                    zs.Close();
+                }
             }
+
             WriteDebugLog("Backup replay file created.");
         }
 
@@ -310,18 +322,21 @@ namespace MinecraftClient
                 }
                 return;
             }
+
             if (!isLogin && pType == PacketTypesIn.JoinGame)
             {
                 // Get client player entity ID
                 SetClientEntityID(dataTypes.ReadNextInt(p));
                 return;
             }
+
             if (!isLogin && pType == PacketTypesIn.SpawnPlayer)
             {
                 dataTypes.ReadNextVarInt(p);
                 OnPlayerSpawn(dataTypes.ReadNextUUID(p));
                 return;
             }
+
             // Get client player location for calculating movement delta later
             if (pType == PacketTypesIn.PlayerPositionAndLook)
             {
@@ -395,41 +410,6 @@ namespace MinecraftClient
                 WriteLog(t);
         }
 
-        private static string ProtocolNumberToVersion(int protocol)
-        {
-            switch (protocol) 
-            {
-                case 4: return "1.7.2";
-                case 5: return "1.7.6";
-                case 47: return "1.8";
-                case 107: return "1.9";
-                case 108: return "1.9.1";
-                case 109: return "1.9.2";
-                case 110: return "1.9.3";
-                case 210: return "1.10";
-                case 315: return "1.11";
-                case 316: return "1.11.1";
-                case 335: return "1.12";
-                case 338: return "1.12.1";
-                case 340: return "1.12.2";
-                case 393: return "1.13";
-                case 401: return "1.13.1";
-                case 404: return "1.13.2";
-                case 477: return "1.14";
-                case 480: return "1.14.1";
-                case 485: return "1.14.2";
-                case 490: return "1.14.3";
-                case 498: return "1.14.4";
-                case 573: return "1.15";
-                case 575: return "1.15.1";
-                case 578: return "1.15.2";
-                case 735: return "1.16";
-                case 736: return "1.16.1";
-                case 751: return "1.16.2";
-                default: return "0.0";
-            }
-        }
-
         #endregion
     }
 
@@ -473,19 +453,20 @@ namespace MinecraftClient
         /// <returns>JSON string</returns>
         public string ToJson()
         {
-            return "{"
-                + "\"singleplayer\":" + singlePlayer.ToString().ToLower() + ","
-                + "\"serverName\":\"" + serverName + "\","
-                + "\"duration\":" + duration + ","
-                + "\"date\":" + date + ","
-                + "\"mcversion\":\"" + mcversion + "\","
-                + "\"fileFormat\":\"" + fileFormat + "\","
-                + "\"fileFormatVersion\":" + fileFormatVersion + ","
-                + "\"protocol\":" + protocol + ","
-                + "\"generator\":\"" + generator + "\","
-                + "\"selfId\":" + selfId + ","
-                + "\"player\":" + GetPlayersArray()
-                + "}";
+            return String.Concat(new[] { "{"
+                , "\"singleplayer\":" , singlePlayer.ToString().ToLower() , ","
+                , "\"serverName\":\"" , serverName , "\","
+                , "\"duration\":" , duration.ToString() , ","
+                , "\"date\":" , date.ToString() , ","
+                , "\"mcversion\":\"" , mcversion , "\","
+                , "\"fileFormat\":\"" , fileFormat , "\","
+                , "\"fileFormatVersion\":" , fileFormatVersion.ToString() , ","
+                , "\"protocol\":" , protocol.ToString() , ","
+                , "\"generator\":\"" , generator , "\","
+                , "\"selfId\":" , selfId.ToString() + ","
+                , "\"player\":" , GetPlayersJsonArray()
+                , "}"
+            });
         }
 
         /// <summary>
@@ -493,95 +474,24 @@ namespace MinecraftClient
         /// </summary>
         public void SaveToFile()
         {
-            File.WriteAllText(temporaryCache + "\\" + MetaDataFileName, ToJson());
+            File.WriteAllText(Path.Combine(temporaryCache, MetaDataFileName), ToJson());
         }
 
         /// <summary>
-        /// Get players UUID json array string
+        /// Get players UUID JSON array string
         /// </summary>
         /// <returns></returns>
-        private string GetPlayersArray()
+        private string GetPlayersJsonArray()
         {
             if (players.Count == 0)
                 return "[]";
-            string[] tmp = players.ToArray();
-            for (int i = 0; i < players.Count; i++)
-            {
-                tmp[i] = "\"" + players[i] + "\"";
-            }
-            return "[" + string.Join(",", tmp) + "]";
-        }
-    }
 
-    public static class GuidExtensions
-    {
-        /// <summary>
-        /// A CLSCompliant method to convert a Java big-endian Guid to a .NET 
-        /// little-endian Guid.
-        /// The Guid Constructor (UInt32, UInt16, UInt16, Byte, Byte, Byte, Byte,
-        ///  Byte, Byte, Byte, Byte) is not CLSCompliant.
-        /// </summary>
-        public static Guid ToLittleEndian(this Guid javaGuid)
-        {
-            byte[] net = new byte[16];
-            byte[] java = javaGuid.ToByteArray();
-            for (int i = 8; i < 16; i++)
-            {
-                net[i] = java[i];
-            }
-            net[3] = java[0];
-            net[2] = java[1];
-            net[1] = java[2];
-            net[0] = java[3];
-            net[5] = java[4];
-            net[4] = java[5];
-            net[6] = java[7];
-            net[7] = java[6];
-            return new Guid(net);
-        }
-
-        /// <summary>
-        /// Converts little-endian .NET guids to big-endian Java guids:
-        /// </summary>
-        public static Guid ToBigEndian(this Guid netGuid)
-        {
-            byte[] java = new byte[16];
-            byte[] net = netGuid.ToByteArray();
-            for (int i = 8; i < 16; i++)
-            {
-                java[i] = net[i];
-            }
-            java[0] = net[3];
-            java[1] = net[2];
-            java[2] = net[1];
-            java[3] = net[0];
-            java[4] = net[5];
-            java[5] = net[4];
-            java[6] = net[7];
-            java[7] = net[6];
-            return new Guid(java);
-        }
-
-        /// <summary>
-        /// Converts little-endian .NET guids to big-endian Java guids:
-        /// </summary>
-        public static byte[] ToBigEndianBytes(this Guid netGuid)
-        {
-            byte[] java = new byte[16];
-            byte[] net = netGuid.ToByteArray();
-            for (int i = 8; i < 16; i++)
-            {
-                java[i] = net[i];
-            }
-            java[0] = net[3];
-            java[1] = net[2];
-            java[2] = net[1];
-            java[3] = net[0];
-            java[4] = net[5];
-            java[5] = net[4];
-            java[6] = net[7];
-            java[7] = net[6];
-            return java;
+            // Place between brackets the comma-separated list of player names placed between quotes
+            return String.Format("[{0}]",
+                String.Join(",",
+                    players.Select(player => String.Format("\"{0}\"", player))
+                )
+            );
         }
     }
 }

@@ -152,6 +152,7 @@
     <Compile Include="Mapping\EntityTypeExtensions.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Protocol\EntityActionType.cs" />
+    <Compile Include="Protocol\GuidExtensions.cs" />
     <Compile Include="Protocol\Handlers\Compression\DeflateStream.cs" />
     <Compile Include="Protocol\Handlers\Compression\ParallelDeflateOutputStream.cs" />
     <Compile Include="Protocol\Handlers\Compression\Zip\ComHelper.cs" />
@@ -206,7 +207,7 @@
     <Compile Include="Protocol\Handlers\SocketWrapper.cs" />
     <Compile Include="Protocol\DataTypeGenerator.cs" />
     <Compile Include="FileMonitor.cs" />
-    <Compile Include="ReplayHandler.cs" />
+    <Compile Include="Protocol\ReplayHandler.cs" />
     <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />
