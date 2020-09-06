@@ -1307,7 +1307,7 @@ namespace MinecraftClient
         /// <param name="enabled"></param>
         protected void SetNetworkPacketEventEnabled(bool enabled)
         {
-            Handler.SetNetworkPacketEventEnabled(enabled);
+            Handler.SetNetworkPacketCaptureEnabled(enabled);
         }
 
         /// <summary>

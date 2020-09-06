@@ -33,8 +33,8 @@ namespace MinecraftClient.Protocol
         bool SetInventoryEnabled(bool enabled);
         bool GetEntityHandlingEnabled();
         bool SetEntityHandlingEnabled(bool enabled);
-        bool GetNetworkPacketEventEnabled();
-        void SetNetworkPacketEventEnabled(bool enabled);
+        bool GetNetworkPacketCaptureEnabled();
+        void SetNetworkPacketCaptureEnabled(bool enabled);
         int GetProtocolVersion();
         Container GetInventory(int inventoryID);
 

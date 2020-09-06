@@ -138,8 +138,6 @@ namespace MinecraftClient.Protocol.Handlers
             else itemPalette = new ItemPalette115();
         }
 
-        
-
         /// <summary>
         /// Separate thread. Network reading loop.
         /// </summary>
@@ -215,7 +213,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             packetID = dataTypes.ReadNextVarInt(packetData); //Packet ID
 
-            if (handler.GetNetworkPacketEventEnabled())
+            if (handler.GetNetworkPacketCaptureEnabled())
             {
                 List<byte> clone = packetData.ToList();
                 handler.OnNetworkPacket(packetID, clone, login_phase, true);
@@ -1058,7 +1056,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="packetData">packet Data</param>
         private void SendPacket(int packetID, IEnumerable<byte> packetData)
         {
-            if (handler.GetNetworkPacketEventEnabled())
+            if (handler.GetNetworkPacketCaptureEnabled())
             {
                 List<byte> clone = packetData.ToList();
                 handler.OnNetworkPacket(packetID, clone, login_phase, false);
@@ -1341,6 +1339,18 @@ namespace MinecraftClient.Protocol.Handlers
             return protocolversion > MC110Version
                 ? 256
                 : 100;
+        }
+
+        /// <summary>
+        /// Get the current protocol version.
+        /// </summary>
+        /// <remarks>
+        /// Version-specific operations should be handled inside the Protocol handled whenever possible.
+        /// </remarks>
+        /// <returns>Minecraft Protocol version number</returns>
+        public int GetProtocolVersion()
+        {
+            return protocolversion;
         }
 
         /// <summary>

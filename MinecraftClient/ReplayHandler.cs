@@ -21,7 +21,7 @@ namespace MinecraftClient
         public string ReplayFileName = @"whhhh.mcpr";
         public string ReplayFileDirectory = @"replay_recordings";
         public MetaDataHandler MetaData;
-        public bool RecordRunning { get => !cleanedUp; }
+        public bool RecordRunning { get { return !cleanedUp; } }
 
         private readonly string recordingTmpFileName = @"recording.tmcpr";
         private readonly string temporaryCache = @"recording_cache";

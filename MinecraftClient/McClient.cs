@@ -85,8 +85,7 @@ namespace MinecraftClient
         private Dictionary<string, int> playersLatency = new Dictionary<string, int>();
 
         // ChatBot OnNetworkPacket event
-        private bool networkPacketEventEnabled = false;
-        private int protocolVersion;
+        private bool networkPacketCaptureEnabled = false;
 
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
@@ -102,8 +101,8 @@ namespace MinecraftClient
         public int GetTotalExperience() { return playerTotalExperience; }
         public byte GetCurrentSlot() { return CurrentSlot; }
         public int GetGamemode() { return gamemode; }
-        public bool GetNetworkPacketEventEnabled() { return networkPacketEventEnabled; }
-        public int GetProtocolVersion() { return protocolVersion; }
+        public bool GetNetworkPacketCaptureEnabled() { return networkPacketCaptureEnabled; }
+        public int GetProtocolVersion() { return handler.GetProtocolVersion(); }
 
         // get bots list for unloading them by commands
         public List<ChatBot> GetLoadedChatBots()
@@ -168,7 +167,6 @@ namespace MinecraftClient
             this.username = user;
             this.host = server_ip;
             this.port = port;
-            this.protocolVersion = protocolversion;
 
             if (!singlecommand)
             {
@@ -192,7 +190,7 @@ namespace MinecraftClient
                     if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
                     if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
                     if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
-                    if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCaptor(Settings.ReplayMod_BackupInterval)); }
+                    if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
@@ -772,9 +770,9 @@ namespace MinecraftClient
         /// Enable this may increase memory usage.
         /// </remarks>
         /// <param name="enabled"></param>
-        public void SetNetworkPacketEventEnabled(bool enabled)
+        public void SetNetworkPacketCaptureEnabled(bool enabled)
         {
-            networkPacketEventEnabled = enabled;
+            networkPacketCaptureEnabled = enabled;
         }
 
         #endregion

@@ -5,13 +5,16 @@ using System.Text;
 
 namespace MinecraftClient.ChatBots
 {
-    public class ReplayCaptor : ChatBot
+    /// <summary>
+    /// Record and save replay file that can be used by the Replay mod (https://www.replaymod.com/)
+    /// </summary>
+    public class ReplayCapture : ChatBot
     {
         private ReplayHandler replay;
         private int backupInterval = 3000; // Unit: second * 10
         private int backupCounter = -1;
 
-        public ReplayCaptor(int backupInterval)
+        public ReplayCapture(int backupInterval)
         {
             if (backupInterval != -1)
                 this.backupInterval = backupInterval * 10;

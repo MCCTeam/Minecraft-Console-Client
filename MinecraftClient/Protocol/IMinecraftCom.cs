@@ -35,6 +35,15 @@ namespace MinecraftClient.Protocol
         int GetMaxChatMessageLength();
 
         /// <summary>
+        /// Get the current protocol version.
+        /// </summary>
+        /// <remarks>
+        /// Version-specific operations should be handled inside the Protocol handled whenever possible.
+        /// </remarks>
+        /// <returns>Minecraft Protocol version number</returns>
+        int GetProtocolVersion();
+
+        /// <summary>
         /// Send a chat message or command to the server
         /// </summary>
         /// <param name="message">Text to send</param>
