@@ -64,17 +64,29 @@ namespace MinecraftClient.Proxy
                     {
                         string proxyhost = "";
                         int proxyport = 80;
+                        string proxyusername = "";
+                        string proxypassword = ""; ;
                         if (lastgoodproxy == "")
                         {
-                            proxyhost = Regex.Match(proxyst, "(.*):(.*):(.*)").Groups[1].Value;
-                            proxyport = int.Parse(Regex.Match(proxyst, "(.*):(.*):(.*)").Groups[2].Value);
-                            Enum.TryParse(Regex.Match(proxyst, "(.*):(.*):(.*)").Groups[3].Value, out Settings.proxyType);
+                            proxyhost = Regex.Match(proxyst, "(.*):(.*):(.*):(.*):(.*)").Groups[1].Value;
+                            proxyport = int.Parse(Regex.Match(proxyst, "(.*):(.*):(.*):(.*):(.*)").Groups[2].Value);
+                            try
+                            {
+                                proxyusername = Regex.Match(proxyst, "(.*):(.*):(.*):(.*):(.*)").Groups[4].Value;
+                                proxypassword = Regex.Match(proxyst, "(.*):(.*):(.*):(.*):(.*)").Groups[5].Value;
+                            } catch { proxyusername = ""; proxypassword = ""; }
+                            Enum.TryParse(Regex.Match(proxyst, "(.*):(.*):(.*):(.*):(.*)").Groups[3].Value, out Settings.proxyType);
                         }
                         else
                         {
-                            proxyhost = Regex.Match(lastgoodproxy, "(.*):(.*):(.*)").Groups[1].Value;
+                            proxyhost = Regex.Match(lastgoodproxy, "(.*):(.*):(.*):(.*):(.*)").Groups[1].Value;
                             proxyport = int.Parse(Regex.Match(lastgoodproxy, "(.*):(.*):(.*)").Groups[2].Value);
-                            Enum.TryParse(Regex.Match(lastgoodproxy, "(.*):(.*):(.*)").Groups[3].Value, out Settings.proxyType);
+                            try
+                            {
+                                proxyusername = Regex.Match(lastgoodproxy, "(.*):(.*):(.*):(.*):(.*)").Groups[4].Value;
+                                proxypassword = Regex.Match(lastgoodproxy, "(.*):(.*):(.*):(.*):(.*)").Groups[5].Value;
+                            } catch { proxyusername = ""; proxypassword = ""; }
+                            Enum.TryParse(Regex.Match(lastgoodproxy, "(.*):(.*):(.*):(.*):(.*)").Groups[3].Value, out Settings.proxyType);
                         }
                         try
                         {
@@ -89,7 +101,11 @@ namespace MinecraftClient.Proxy
                                     case Type.SOCKS4a: innerProxytype = ProxyType.Socks4a; break;
                                     case Type.SOCKS5: innerProxytype = ProxyType.Socks5; break;
                                 }
-                                proxy = factory.CreateProxyClient(innerProxytype, proxyhost, proxyport);
+                                if (proxyusername != "" && proxypassword != "")
+                                {
+                                    proxy = factory.CreateProxyClient(innerProxytype, proxyhost, proxyport, proxyusername, proxypassword);
+                                }
+                                else proxy = factory.CreateProxyClient(innerProxytype, proxyhost, proxyport);
 
                                 if (!proxy_ok)
                                 {
@@ -102,7 +118,7 @@ namespace MinecraftClient.Proxy
                                 Content2.Add("Proxy", proxies);
                                 Content.Add("Settings", Content2);
                                 INIFile.WriteFile("ProxySettings.ini", Content);
-                                return proxy.CreateConnection(host, port);
+                                else return proxy.CreateConnection(host, port);
                             }
                             else return new TcpClient(host, port);
                         }
