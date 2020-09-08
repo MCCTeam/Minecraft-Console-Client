@@ -118,7 +118,7 @@ namespace MinecraftClient.Proxy
                                 Content2.Add("Proxy", proxies);
                                 Content.Add("Settings", Content2);
                                 INIFile.WriteFile("ProxySettings.ini", Content);
-                                else return proxy.CreateConnection(host, port);
+                                return proxy.CreateConnection(host, port);
                             }
                             else return new TcpClient(host, port);
                         }
