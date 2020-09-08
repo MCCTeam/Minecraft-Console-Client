@@ -484,6 +484,19 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
+            string proxies = "";
+            if (File.Exists("ProxySettings.ini"))
+            {
+                Dictionary<string, Dictionary<string, string>> Content3 = INIFile.ParseFile("ProxySettings.ini");
+                if (Content3.ContainsKey("settings"))
+                {
+                    Dictionary<string, string> Content4 = Content3["settings"];
+                    if (Content4.ContainsKey("proxy"))
+                    {
+                        proxies = Content4["proxy"];
+                    }
+                }
+            }
             world.Clear();
 
             if (timeoutdetector != null)
@@ -499,6 +512,12 @@ namespace MinecraftClient
             {
                 case ChatBot.DisconnectReason.ConnectionLost:
                     message = "Connection has been lost.";
+                    Dictionary<string, Dictionary<string, string>> Content = new Dictionary<string, Dictionary<string, string>>();
+                    Dictionary<string, string> Content2 = new Dictionary<string, string>();
+                    Content2.Add("GoodProxy", "");
+                    Content2.Add("Proxy", proxies);
+                    Content.Add("Settings", Content2);
+                    INIFile.WriteFile("ProxySettings.ini", Content);
                     ConsoleIO.WriteLine(message);
                     break;
 
