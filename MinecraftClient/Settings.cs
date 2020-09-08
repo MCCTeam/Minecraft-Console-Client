@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,6 +35,7 @@ namespace MinecraftClient
         //Proxy Settings
         public static bool ProxyEnabledLogin = false;
         public static bool ProxyEnabledIngame = false;
+        public static bool ProxySwitcher = false;
         public static string ProxyHost = "";
         public static int ProxyPort = 0;
         public static Proxy.ProxyHandler.Type proxyType = Proxy.ProxyHandler.Type.HTTP;
@@ -484,6 +485,9 @@ namespace MinecraftClient
                                                         ProxyHost = host_splitted[0];
                                                         ProxyPort = str2int(host_splitted[1]);
                                                     }
+                                                    break;
+                                                case "autoswitch":
+                                                    ProxySwitcher = str2bool(argValue);
                                                     break;
                                                 case "username": ProxyUsername = argValue; break;
                                                 case "password": ProxyPassword = argValue; break;
