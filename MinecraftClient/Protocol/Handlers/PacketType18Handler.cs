@@ -39,7 +39,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns></returns>
         public PacketTypePalette GetTypeHandler(int protocol)
         {
-            if (protocol > Protocol18Handler.MC1162Version)
+            if (protocol > Protocol18Handler.MC1163Version)
                 throw new NotImplementedException("Please update packet type palette for this Minecraft version. See PacketTypePalette.cs");
             if (protocol <= Protocol18Handler.MC18Version)
                 return new PacketPalette17();
