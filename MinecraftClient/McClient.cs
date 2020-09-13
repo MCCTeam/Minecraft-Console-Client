@@ -1403,7 +1403,8 @@ namespace MinecraftClient
         /// Attempt to dig a block at the specified location
         /// </summary>
         /// <param name="location">Location of block to dig</param>
-        public bool DigBlock(Location location)
+        /// <param name="swingArms">Also perform the "arm swing" animation</param>
+        public bool DigBlock(Location location, bool swingArms = true)
         {
             if (GetTerrainEnabled())
             {
@@ -1416,6 +1417,7 @@ namespace MinecraftClient
                 // Send dig start and dig end, will need to wait for server response to know dig result
                 // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
                 return handler.SendPlayerDigging(0, location, blockFace)
+                    && (!swingArms || DoAnimation((int)Hand.MainHand))
                     && handler.SendPlayerDigging(2, location, blockFace);
             }
             else return false;

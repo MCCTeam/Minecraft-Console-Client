@@ -16,13 +16,14 @@ namespace MinecraftClient.Inventory.ItemPalettes
             foreach (KeyValuePair<int, ItemType> entry in GetDict())
                 DictReverse.Add(entry.Value, entry.Key);
 
-            DictReverse[ItemType.Unknown] = -2;
-            DictReverse[ItemType.Null] = -1;
+            // Hardcoded placeholder types for internal and network use
+            DictReverse[ItemType.Unknown] = (int)ItemType.Unknown;
+            DictReverse[ItemType.Null] = (int)ItemType.Null;
         }
 
         public ItemType FromId(int id)
         {
-            // Unknown item types may appear of Forge servers for custom items
+            // Unknown item types may appear on Forge servers for custom items
             if (!GetDict().ContainsKey(id))
                 return ItemType.Unknown;
 

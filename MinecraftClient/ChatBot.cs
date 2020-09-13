@@ -915,7 +915,7 @@ namespace MinecraftClient
         }
         
         /// <summary>
-        /// Get the current location of the player (Feets location)
+        /// Get the current location of the player (Feet location)
         /// </summary>
         /// <returns>Minecraft world or null if associated setting is disabled</returns>
         protected Mapping.Location GetCurrentLocation()
