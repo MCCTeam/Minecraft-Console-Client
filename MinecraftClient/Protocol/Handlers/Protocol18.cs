@@ -115,7 +115,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (protocolversion > MC1163Version && handler.GetEntityHandlingEnabled())
                     throw new NotImplementedException("Please update entity types handling for this Minecraft version. See EntityType.cs");
-                if (protocolversion >= MC1163Version)
+                if (protocolversion >= MC1162Version)
                     entityPalette = new EntityPalette1162();
                 else if (protocolversion >= MC116Version)
                     entityPalette = new EntityPalette1161();
@@ -132,7 +132,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (protocolversion > MC1163Version && handler.GetInventoryEnabled())
                     throw new NotImplementedException("Please update item types handling for this Minecraft version. See ItemType.cs");
-                if (protocolversion >= MC1163Version)
+                if (protocolversion >= MC1162Version)
                     itemPalette = new ItemPalette1162();
                 else itemPalette = new ItemPalette1161();
             }
