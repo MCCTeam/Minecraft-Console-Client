@@ -26,8 +26,7 @@ namespace MinecraftClient.ChatBots
             McClient.ReconnectionAttemptsLeft = attempts;
             delay = DelayBeforeRelog;
             if (delay < 1) { delay = 1; }
-            if (Settings.DebugMessages)
-                LogToConsole("Launching with " + attempts + " reconnection attempts");
+            LogDebugToConsole("Launching with " + attempts + " reconnection attempts");
         }
 
         public override void Initialize()
@@ -35,22 +34,19 @@ namespace MinecraftClient.ChatBots
             McClient.ReconnectionAttemptsLeft = attempts;
             if (Settings.AutoRelog_IgnoreKickMessage)
             {
-                if (Settings.DebugMessages)
-                    LogToConsole("Initializing without a kick message file");
+                LogDebugToConsole("Initializing without a kick message file");
             }
             else
             {
                 if (System.IO.File.Exists(Settings.AutoRelog_KickMessagesFile))
                 {
-                    if (Settings.DebugMessages)
-                        LogToConsole("Loading messages from file: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
+                    LogDebugToConsole("Loading messages from file: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
 
                     dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile, Encoding.UTF8);
 
                     for (int i = 0; i < dictionary.Length; i++)
                     {
-                        if (Settings.DebugMessages)
-                            LogToConsole("  Loaded message: " + dictionary[i]);
+                        LogDebugToConsole("  Loaded message: " + dictionary[i]);
                         dictionary[i] = dictionary[i].ToLower();
                     }
                 }
@@ -58,8 +54,7 @@ namespace MinecraftClient.ChatBots
                 {
                     LogToConsole("File not found: " + System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
 
-                    if (Settings.DebugMessages)
-                        LogToConsole("  Current directory was: " + System.IO.Directory.GetCurrentDirectory());
+                    LogDebugToConsole("  Current directory was: " + System.IO.Directory.GetCurrentDirectory());
                 }
             }
         }
@@ -68,21 +63,20 @@ namespace MinecraftClient.ChatBots
         {
             if (reason == DisconnectReason.UserLogout)
             {
-                if (Settings.DebugMessages)
-                    LogToConsole("Disconnection initiated by User or MCC bot. Ignoring.");
+                LogDebugToConsole("Disconnection initiated by User or MCC bot. Ignoring.");
             }
             else
             {
                 message = GetVerbatim(message);
                 string comp = message.ToLower();
 
-                if (Settings.DebugMessages)
-                    LogToConsole("Got disconnected with message: " + message);
+                LogDebugToConsole("Got disconnected with message: " + message);
 
                 if (Settings.AutoRelog_IgnoreKickMessage)
                 {
-                    if (Settings.DebugMessages)
-                        LogToConsole("Ignoring kick message, reconnecting anyway.");
+                    LogDebugToConsole("Ignoring kick message, reconnecting anyway.");
+                    LogToConsole("Waiting " + delay + " seconds before reconnecting...");
+                    System.Threading.Thread.Sleep(delay * 1000);
                     ReconnectToTheServer();
                     return true;
                 }
@@ -91,9 +85,7 @@ namespace MinecraftClient.ChatBots
                 {
                     if (comp.Contains(msg))
                     {
-                        if (Settings.DebugMessages)
-                            LogToConsole("Message contains '" + msg + "'. Reconnecting.");
-
+                        LogDebugToConsole("Message contains '" + msg + "'. Reconnecting.");
                         LogToConsole("Waiting " + delay + " seconds before reconnecting...");
                         System.Threading.Thread.Sleep(delay * 1000);
                         McClient.ReconnectionAttemptsLeft = attempts;
@@ -102,8 +94,7 @@ namespace MinecraftClient.ChatBots
                     }
                 }
 
-                if (Settings.DebugMessages)
-                    LogToConsole("Message not containing any defined keywords. Ignoring.");
+                LogDebugToConsole("Message not containing any defined keywords. Ignoring.");
             }
 
             return false;
