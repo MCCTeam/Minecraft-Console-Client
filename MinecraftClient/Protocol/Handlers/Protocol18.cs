@@ -81,19 +81,19 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (handler.GetTerrainEnabled() && protocolversion > MC1152Version)
             {
-                ConsoleIO.WriteLineFormatted("§8Terrain & Movements currently not handled for that MC version.");
+                ConsoleIO.WriteLineFormatted("§cTerrain & Movements disabled due to currently not handled for that MC version.");
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1163Version))
             {
-                ConsoleIO.WriteLineFormatted("§8Inventories are currently not handled for that MC version.");
+                ConsoleIO.WriteLineFormatted("§cInventories disabled due to currently not handled for that MC version.");
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1163Version))
             {
-                ConsoleIO.WriteLineFormatted("§8Entities are currently not handled for that MC version.");
+                ConsoleIO.WriteLineFormatted("§cEntities disabled due to currently not handled for that MC version.");
                 handler.SetEntityHandlingEnabled(false);
             }
 
