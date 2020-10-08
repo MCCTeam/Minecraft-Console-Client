@@ -39,7 +39,7 @@ namespace MinecraftClient.Protocol
                 {
                     try
                     {
-                        Console.WriteLine("Resolving {0}...", domainVal);
+                        Translations.WriteLine("mcc.resolve", domainVal);
                         Heijden.DNS.Response response = new Heijden.DNS.Resolver().Query("_minecraft._tcp." + domainVal, Heijden.DNS.QType.SRV);
                         Heijden.DNS.RecordSRV[] srvRecords = response.RecordsSRV;
                         if (srvRecords != null && srvRecords.Any())
@@ -51,7 +51,7 @@ namespace MinecraftClient.Protocol
                                 .ThenBy(record => Guid.NewGuid())
                                 .First();
                             string target = result.TARGET.Trim('.');
-                            ConsoleIO.WriteLineFormatted(String.Format("§8Found server {0}:{1} for domain {2}", target, result.PORT, domainVal));
+                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.found", target, result.PORT, domainVal));
                             domainVal = target;
                             portVal = result.PORT;
                             foundService = true;
@@ -59,7 +59,7 @@ namespace MinecraftClient.Protocol
                     }
                     catch (Exception e)
                     {
-                        ConsoleIO.WriteLineFormatted(String.Format("§8Failed to perform SRV lookup for {0}\n{1}: {2}", domainVal, e.GetType().FullName, e.Message));
+                        ConsoleIO.WriteLineFormatted(Translations.Get("mcc.not_found", domainVal, e.GetType().FullName, e.Message));
                     }
                 }, TimeSpan.FromSeconds(Settings.ResolveSrvRecordsShortTimeout ? 10 : 30));
             }
@@ -90,7 +90,7 @@ namespace MinecraftClient.Protocol
                     {
                         success = true;
                     }
-                    else ConsoleIO.WriteLineFormatted("§8Unexpected response from the server (is that a Minecraft server?)");
+                    else Translations.WriteLineFormatted("error.unexpect_response");
                 }
                 catch (Exception e)
                 {
@@ -99,9 +99,9 @@ namespace MinecraftClient.Protocol
             }, TimeSpan.FromSeconds(Settings.ResolveSrvRecordsShortTimeout ? 10 : 30)))
             {
                 if (protocolversion != 0 && protocolversion != protocolversionTmp)
-                    ConsoleIO.WriteLineFormatted("§8Server reports a different version than manually set. Login may not work.");
+                    Translations.WriteLineFormatted("error.version_different");
                 if (protocolversion == 0 && protocolversionTmp <= 1)
-                    ConsoleIO.WriteLineFormatted("§8Server does not report its protocol version, autodetection will not work.");
+                    Translations.WriteLineFormatted("error.no_version_report");
                 if (protocolversion == 0)
                     protocolversion = protocolversionTmp;
                 forgeInfo = forgeInfoTmp;
@@ -109,7 +109,7 @@ namespace MinecraftClient.Protocol
             }
             else
             {
-                ConsoleIO.WriteLineFormatted("§8A timeout occured while attempting to connect to this IP.");
+                Translations.WriteLineFormatted("error.connection_timeout");
                 return false;
             }
         }
@@ -129,7 +129,7 @@ namespace MinecraftClient.Protocol
             int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753 };
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
                 return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
-            throw new NotSupportedException("The protocol version no." + ProtocolVersion + " is not supported.");
+            throw new NotSupportedException(Translations.Get("exception.version_unsupport", ProtocolVersion));
         }
 
         /// <summary>

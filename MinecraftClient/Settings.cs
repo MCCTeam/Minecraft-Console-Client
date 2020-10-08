@@ -204,7 +204,7 @@ namespace MinecraftClient
         /// <param name="settingsfile">File to load</param>
         public static void LoadSettings(string settingsfile)
         {
-            ConsoleIO.WriteLogLine(String.Format("[Settings] Loading Settings from {0}", System.IO.Path.GetFullPath(settingsfile)));
+            ConsoleIO.WriteLogLine(Translations.Get("mcc.setting", System.IO.Path.GetFullPath(settingsfile)));
             if (File.Exists(settingsfile))
             {
                 try
@@ -818,7 +818,7 @@ namespace MinecraftClient
                 return Convert.ToInt32(str.Trim());
             }
             catch {
-                ConsoleIO.WriteLogLine("Failed to convert '" + str + "' into an int. Please check your settings.");
+                ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
                 return 0;
             }
         }
