@@ -43,7 +43,6 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
-            
             Translations.WriteLine("mcc.description", MCLowestVersion, MCHighestVersion, Version);
 
             //Build information to facilitate processing of bug reports
@@ -122,7 +121,7 @@ namespace MinecraftClient
             //Test line to troubleshoot invisible colors
             if (Settings.DebugMessages)
             {
-                Translations.WriteLineFormatted("debug.color_test");
+                Translations.WriteLineFormatted(Translations.Get("debug.color_test", "[0123456789ABCDEF]: [§00§11§22§33§44§55§66§77§88§99§aA§bB§cC§dD§eE§fF§r]"));
             }
 
             //Load cached sessions from disk if necessary
@@ -137,7 +136,7 @@ namespace MinecraftClient
 
             if (Settings.Login == "")
             {
-                Translations.Write(ConsoleIO.BasicIO ? "mcc.login_basic_io" : "mcc.login");
+                Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
                 Settings.Login = Console.ReadLine();
             }
             if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
@@ -154,13 +153,13 @@ namespace MinecraftClient
         /// </summary>
         private static void RequestPassword()
         {
-            Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Settings.Login) : Translations.Get("mcc.password"));
+            Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Settings.Login) + "\n" : Translations.Get("mcc.password"));
             Settings.Password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
             if (Settings.Password == "") { Settings.Password = "-"; }
             if (!ConsoleIO.BasicIO)
             {
                 //Hide password length
-                Console.CursorTop--; Translations.Write("mcc.password_hidden");
+                Console.CursorTop--; Console.Write(Translations.Get("mcc.password_hidden", "<******>"));
                 for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
             }
         }

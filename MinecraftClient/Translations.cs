@@ -7,7 +7,7 @@ using System.IO;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Allows to localize the app in different languages
+    /// Allows to localize MinecraftClient in different languages
     /// </summary>
     /// <remarks>
     /// By ORelio (c) 2015-2018 - CDDL 1.0
@@ -15,9 +15,12 @@ namespace MinecraftClient
     public static class Translations
     {
         private static Dictionary<string, string> translations;
+        private static string translationFilePath = "lang" + Path.DirectorySeparatorChar + "mcc";
+        private static bool debugMessages = true; // Settings.LoadSettings have not been called yet at the time I guess. 
+                                                  // Hence Settings.DebugMessages will always return false
 
         /// <summary>
-        /// Return a tranlation for the requested text
+        /// Return a tranlation for the requested text. Support string formatting
         /// </summary>
         /// <param name="msg_name">text identifier</param>
         /// <returns>returns translation for this identifier</returns>
@@ -31,8 +34,6 @@ namespace MinecraftClient
                 }
                 else return translations[msg_name];
             }
-                
-
             return msg_name.ToUpper();
         }
 
@@ -43,28 +44,61 @@ namespace MinecraftClient
         static Translations()
         {
             translations = new Dictionary<string, string>();
+            LoadTranslationsFile();
+        }
 
+        /// <summary>
+        /// Load translation file depends on system language. Default to English if translation file does not exist
+        /// </summary>
+        private static void LoadTranslationsFile()
+        {
             /*
              * External translation files
              * These files are loaded from the installation directory as:
              * Lang/abc.ini, e.g. Lang/eng.ini which is the default language file
              * Useful for adding new translations of fixing typos without recompiling
              */
-
             string systemLanguage = CultureInfo.CurrentCulture.ThreeLetterISOLanguageName;
-            string langDir = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + "MCC_Lang" + Path.DirectorySeparatorChar;
+            string langDir = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar;
             string langFileSystemLanguage = langDir + systemLanguage + ".ini";
             string langFileDefault = langDir + "eng.ini";
 
-            string langFileToUse = langFileDefault;
-            if (File.Exists(langFileSystemLanguage))
-                langFileToUse = langFileSystemLanguage;
-
-            // Write the language file for Eng if does not exist
+            // Write the language file for English to the disk if does not exist
             if (!File.Exists(langFileDefault))
-                WriteDefaultLang();
+            {
+                WriteDefaultTranslation();
+            }
+            else // Check default language file is outdated or not and update it
+            {
+                string diskContent = File.ReadAllText(langFileDefault, Encoding.UTF8);
+                if (diskContent.GetHashCode() != engLanguage.GetHashCode())
+                {
+                    if (debugMessages)
+                        Console.WriteLine("Default language file is different from the newest version! Replacing it."); // How to translate this LOL
+                    WriteDefaultTranslation();
+                }
+            }
+            string[] engLang = engLanguage.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None); // use embedded translations
 
-            foreach (string lineRaw in File.ReadAllLines(langFileToUse, Encoding.UTF8))
+            // Load Eng language as default
+            ParseTranslationContent(engLang);
+
+            // Then load language file for system language.
+            // Missing translation key will be covered by Eng loaded above
+            if (File.Exists(langFileSystemLanguage))
+                ParseTranslationContent(File.ReadAllLines(langFileSystemLanguage));
+            else
+                if (debugMessages)
+                    ConsoleIO.WriteLogLine("No translation file found for " + systemLanguage + ". (Looked '" + langFileSystemLanguage + "'");
+        }
+
+        /// <summary>
+        /// Parse the given array to translation map
+        /// </summary>
+        /// <param name="content">Content of the translation file (in ini format)</param>
+        private static void ParseTranslationContent(string[] content)
+        {
+            foreach (string lineRaw in content)
             {
                 string line = lineRaw.Trim();
                 if (line.Length <= 0)
@@ -77,67 +111,89 @@ namespace MinecraftClient
                 string translationName = line.Split('=')[0];
                 if (line.Length > (translationName.Length + 1))
                 {
-                    string translationValue = line.Substring(translationName.Length + 1).Replace("\\n", "\n"); 
+                    string translationValue = line.Substring(translationName.Length + 1).Replace("\\n", "\n");
                     translations[translationName] = translationValue;
                 }
             }
-
-            /* 
-             * Hardcoded translation data
-             * This data is used as fallback if no translation file could be loaded
-             * Useful for standalone exe portable apps
-             
-
-            else if (systemLanguage == "fra")
-            {
-                translations["about"] = "A Propos";
-                //Ajouter de nouvelles traductions ici
-            }
-            //Add new languages here as 'else if' blocks
-            //English is the default language in 'else' block below
-            else
-            {
-                translations["about"] = "About";
-                //Add new translations here
-            }
-            */
         }
 
-        public static void Write(string text)
+        /// <summary>
+        /// Write the default translation file (English) to the disk.
+        /// </summary>
+        private static void WriteDefaultTranslation()
         {
-            ConsoleIO.Write(Get(text));
+            string defaultPath = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar + "eng.ini";
+
+            if (!Directory.Exists(translationFilePath))
+            {
+                Directory.CreateDirectory(translationFilePath);
+            }
+            File.WriteAllText(defaultPath, engLanguage, Encoding.UTF8);
         }
 
-        public static void WriteLineFormatted(string str, bool acceptnewlines = true, bool? displayTimestamp = null)
+        #region Console writing method wrapper
+
+        /// <summary>
+        /// Translate the key and write the result to the standard output, without newline character
+        /// </summary>
+        /// <param name="key">Translation key</param>
+        public static void Write(string key)
         {
-            ConsoleIO.WriteLineFormatted(Get(str), acceptnewlines, displayTimestamp);
+            ConsoleIO.Write(Get(key));
         }
 
-        public static void WriteLine(string line, params object[] args)
+        /// <summary>
+        /// Translate the key and write a Minecraft-Like formatted string to the standard output, using §c color codes
+        /// See minecraft.gamepedia.com/Classic_server_protocol#Color_Codes for more info
+        /// </summary>
+        /// <param name="key">Translation key</param>
+        /// <param name="acceptnewlines">If false, space are printed instead of newlines</param>
+        /// <param name="displayTimestamp">
+        /// If false, no timestamp is prepended.
+        /// If true, "hh-mm-ss" timestamp will be prepended.
+        /// If unspecified, value is retrieved from EnableTimestamps.
+        /// </param>
+        public static void WriteLineFormatted(string key, bool acceptnewlines = true, bool? displayTimestamp = null)
+        {
+            ConsoleIO.WriteLineFormatted(Get(key), acceptnewlines, displayTimestamp);
+        }
+
+        /// <summary>
+        /// Translate the key, format the result and write it to the standard output with a trailing newline. Support string formatting
+        /// </summary>
+        /// <param name="key">Translation key</param>
+        /// <param name="args"></param>
+        public static void WriteLine(string key, params object[] args)
         {
             if (args.Length > 0)
-                ConsoleIO.WriteLine(String.Format(Get(line), args));
-            else ConsoleIO.WriteLine(Get(line));
+                ConsoleIO.WriteLine(string.Format(Get(key), args));
+            else ConsoleIO.WriteLine(Get(key));
         }
 
-        public static void WriteLogLine(string text, bool acceptnewlines = true)
+        /// <summary>
+        /// Translate the key and write the result with a prefixed log line. Prefix is set in LogPrefix.
+        /// </summary>
+        /// <param name="key">Translation key</param>
+        /// <param name="acceptnewlines">Allow line breaks</param>
+        public static void WriteLogLine(string key, bool acceptnewlines = true)
         {
-            ConsoleIO.WriteLogLine(Get(text), acceptnewlines);
+            ConsoleIO.WriteLogLine(Get(key), acceptnewlines);
         }
 
-        private static void WriteDefaultLang()
-        {
-            string defaultPath = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + "MCC_Lang" + Path.DirectorySeparatorChar + "eng.ini";
-            string content = @"[mcc]
+        #endregion
+
+        #region English Translation File
+
+        private static string engLanguage = @"[mcc]
 # Messages from MCC itself
 mcc.description=Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors
 mcc.keyboard_debug=Keyboard debug mode: Press any key to display info
-mcc.setting=[Settings] Loading Settings from {0}
+mcc.setting=Loading Settings from {0}
 mcc.login=Login :
-mcc.login_basic_io=Please type the username or email of your choice.\n
+mcc.login_basic_io=Please type the username or email of your choice.
 mcc.password=Password : 
-mcc.password_basic_io=Please type the password for {0}.\n
-mcc.password_hidden=Password : <******>
+mcc.password_basic_io=Please type the password for {0}.
+mcc.password_hidden=Password : {0}
 mcc.offline=§8You chose to run in offline mode.
 mcc.session_invalid=§8Cached session is invalid or expired.
 mcc.session_valid=§8Cached session is still valid for {0}.
@@ -159,7 +215,6 @@ mcc.version_supported=Version is supported.\nLogging in...
 mcc.single_cmd=§7Command §8 {0} §7 sent.
 mcc.joined=Server was successfully joined.\nType '{0}quit' to leave the server.
 mcc.reconnect=Waiting 5 seconds ({0} attempts left)...
-mcc.autocomplete=autocomplete
 mcc.disconnect.lost=Connection has been lost.
 mcc.disconnect.server=Disconnected by Server :
 mcc.disconnect.login=Login failed :
@@ -175,7 +230,7 @@ mcc.with_forge=, with Forge
 
 [debug]
 # Messages from MCC Debug Mode
-debug.color_test=Color test: Your terminal should display [0123456789ABCDEF]: [§00§11§22§33§44§55§66§77§88§99§aA§bB§cC§dD§eE§fF§r]
+debug.color_test=Color test: Your terminal should display {0}
 debug.session_cache_ok=§8Session data has been successfully loaded from disk.
 debug.session_cache_fail=§8No sessions could be loaded from disk
 debug.session_id=Success. (session ID: {0})
@@ -241,7 +296,7 @@ extra.inventory_close=Inventory # {0} closed.
 # Entity
 extra.entity_disabled=§cEntities are currently not handled for that MC version.
 ";
-            File.WriteAllText(defaultPath, content);
-        }
+
+        #endregion
     }
 }

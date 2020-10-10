@@ -290,9 +290,8 @@ namespace MinecraftClient
                         switch (command[0].ToLower())
                         {
                             case "autocomplete":
-                                string localizeAutoComplete = Translations.Get("mcc.autocomplete");
-                                if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + localizeAutoComplete + (char)0x00 + handler.AutoComplete(command[1])); }
-                                else Console.WriteLine((char)0x00 + localizeAutoComplete + (char)0x00);
+                                if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
+                                else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
                                 break;
                         }
                     }
