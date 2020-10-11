@@ -16,6 +16,7 @@ namespace MinecraftClient
     {
         private static Dictionary<string, string> translations;
         private static string translationFilePath = "lang" + Path.DirectorySeparatorChar + "mcc";
+        private static string defaultTranslation = "en.ini";
         private static bool debugMessages = true; // Settings.LoadSettings have not been called yet at the time I guess. 
                                                   // Hence Settings.DebugMessages will always return false
 
@@ -65,7 +66,7 @@ namespace MinecraftClient
                 : CultureInfo.CurrentCulture.Parent.Name;
             string langDir = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar;
             string langFileSystemLanguage = langDir + systemLanguage + ".ini";
-            string langFileDefault = langDir + "en.ini";
+            string langFileDefault = langDir + defaultTranslation;
 
             // Write the language file for English to the disk if does not exist
             if (!File.Exists(langFileDefault))
@@ -126,7 +127,7 @@ namespace MinecraftClient
         /// </summary>
         private static void WriteDefaultTranslation()
         {
-            string defaultPath = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar + "eng.ini";
+            string defaultPath = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar + defaultTranslation;
 
             if (!Directory.Exists(translationFilePath))
             {
