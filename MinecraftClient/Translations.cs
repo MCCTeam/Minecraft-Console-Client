@@ -58,10 +58,14 @@ namespace MinecraftClient
              * Lang/abc.ini, e.g. Lang/eng.ini which is the default language file
              * Useful for adding new translations of fixing typos without recompiling
              */
-            string systemLanguage = CultureInfo.CurrentCulture.ThreeLetterISOLanguageName;
+
+            // Two letters language name
+            string systemLanguage = string.IsNullOrEmpty(CultureInfo.CurrentCulture.Parent.Name) // Parent.Name might be empty
+                ? CultureInfo.CurrentCulture.Name
+                : CultureInfo.CurrentCulture.Parent.Name;
             string langDir = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar;
             string langFileSystemLanguage = langDir + systemLanguage + ".ini";
-            string langFileDefault = langDir + "eng.ini";
+            string langFileDefault = langDir + "en.ini";
 
             // Write the language file for English to the disk if does not exist
             if (!File.Exists(langFileDefault))
