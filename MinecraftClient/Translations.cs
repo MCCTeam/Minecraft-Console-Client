@@ -231,6 +231,7 @@ mcc.session=Checking Session...
 mcc.session_fail=Failed to check session.
 mcc.server_protocol=§8Server version : {0} (protocol v{1})
 mcc.with_forge=, with Forge
+mcc.handshake=§8Handshake successful. (Server ID: {0})
 
 
 [debug]
@@ -240,6 +241,7 @@ debug.session_cache_ok=§8Session data has been successfully loaded from disk.
 debug.session_cache_fail=§8No sessions could be loaded from disk
 debug.session_id=Success. (session ID: {0})
 debug.crypto=§8Crypto keys & hash generated.
+debug.request=§8Performing request to {0}
 
 [error]
 # Error messages from MCC
@@ -261,12 +263,16 @@ error.join=Failed to join this server.
 error.connect=Failed to connect to this IP.
 error.timeout=Connection Timeout
 error.unexpect_response=§8Unexpected response from the server (is that a Minecraft server?)
+error.invalid_response=§8Invalid response to Handshake packet
+error.invalid_encrypt=§8Invalid response to StartEncryption packet
 error.version_different=§8Server reports a different version than manually set. Login may not work.
 error.no_version_report=§8Server does not report its protocol version, autodetection will not work.
 error.connection_timeout=§8A timeout occured while attempting to connect to this IP.
 error.forge=§8Forge Login Handshake did not complete successfully
 error.forge_encrypt=§8Forge StartEncryption Handshake did not complete successfully
 error.setting.str2int=Failed to convert '{0}' into an int. Please check your settings.
+error.http_code=§8Got error code from server: {0}
+error.auth=§8Got error code from server while refreshing authentication: {0}
 
 [internal command]
 # MCC internal help command
@@ -300,6 +306,54 @@ extra.inventory_open=Inventory # {0} opened: {1}
 extra.inventory_close=Inventory # {0} closed.
 # Entity
 extra.entity_disabled=§cEntities are currently not handled for that MC version.
+
+
+[forge]
+# Messages from Forge handler
+forge.version=§8Forge protocol version : {0}
+forge.send_mod=§8Sending falsified mod list to server...
+forge.accept=§8Accepting server mod list...
+forge.registry=§8Received registry with {0} entries
+forge.registry_2=§8Received registry {0} with {1} entries
+forge.accept_registry=§8Accepting server registries...
+forge.complete=Forge server connection complete!
+forge.with_mod=§8Server is running Forge with {0} mods.
+forge.no_mod=§8Server is running Forge without mods.
+forge.mod_list=§8Mod list:
+# FML2
+forge.fml2.mod=§8Received FML2 Server Mod List
+forge.fml2.mod_send=§8Sending back FML2 Client Mod List
+forge.fml2.registry=§8Acknowledging FML2 Server Registry: {0}
+forge.fml2.config=§8Acknowledging FML2 Server Config: {0}
+forge.fml2.unknown=§8Got Unknown FML2 Handshake message no. {0}
+forge.fml2.unknown_channel=§8Ignoring Unknown FML2 LoginMessage channel: {0}
+
+[cache]
+# Session Cache
+cache.loading=§8Loading Minecraft profiles: {0}
+cache.loaded=§8Loaded session: {0}:{1}
+cache.converting=§8Converting session cache from disk: {0}
+cache.read_fail=§8Failed to read serialized session cache from disk: {0}
+cache.malformed=§8Got malformed data while reading serialized session cache from disk: {0}
+cache.loading_session=§8Loading session cache from disk: {0}
+cache.ignore_string=§8Ignoring session token string '{0}': {1}
+cache.ignore_line=§8Ignoring invalid session token line: {0}
+cache.read_fail_plain=§8Failed to read session cache from disk: {0}
+cache.saving=§8Saving session cache to disk
+cache.save_fail=§8Failed to write session cache to disk: {0}
+
+[proxy]
+proxy.connected=§8Connected to proxy {0}:{1}
+
+[chat]
+# Chat Parser
+chat.download=§8Downloading '{0}.lang' from Mojang servers...
+chat.request=§8Performing request to {0}
+chat.done=§8Done. File saved as '{0}'
+chat.fail=§8Failed to download the file.
+chat.from_dir=§8Defaulting to en_GB.lang from your Minecraft directory.
+chat.loaded=§8Translations file loaded.
+chat.not_found=§8Translations file not found: '{0}'\nSome messages won't be properly printed without this file.
 ";
 
         #endregion

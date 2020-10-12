@@ -359,7 +359,7 @@ namespace MinecraftClient.Protocol
                 }
                 else
                 {
-                    ConsoleIO.WriteLineFormatted("§8Got error code from server: " + code);
+                    ConsoleIO.WriteLineFormatted(Translations.Get("error.http_code", code));
                     return LoginResult.OtherError;
                 }
             }
@@ -466,7 +466,7 @@ namespace MinecraftClient.Protocol
                 }
                 else
                 {
-                    ConsoleIO.WriteLineFormatted("§8Got error code from server while refreshing authentication: " + code);
+                    ConsoleIO.WriteLineFormatted(Translations.Get("error.auth", code));
                     return LoginResult.OtherError;
                 }
             }
@@ -568,7 +568,7 @@ namespace MinecraftClient.Protocol
                 try
                 {
                     if (Settings.DebugMessages)
-                        ConsoleIO.WriteLineFormatted("§8Performing request to " + host);
+                        ConsoleIO.WriteLineFormatted(Translations.Get("debug.request", host));
 
                     TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
                     SslStream stream = new SslStream(client.GetStream());

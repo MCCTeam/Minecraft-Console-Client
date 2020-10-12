@@ -52,7 +52,7 @@ namespace MinecraftClient.Proxy
 
                     if (!proxy_ok)
                     {
-                        ConsoleIO.WriteLineFormatted("§8Connected to proxy " + Settings.ProxyHost + ':' + Settings.ProxyPort);
+                        ConsoleIO.WriteLineFormatted(Translations.Get("proxy.connected", Settings.ProxyHost, Settings.ProxyPort));
                         proxy_ok = true;
                     }
 
