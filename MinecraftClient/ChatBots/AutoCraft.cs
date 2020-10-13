@@ -170,8 +170,8 @@ namespace MinecraftClient.ChatBots
                 UnloadBot();
                 return;
             }
-            RegisterChatBotCommand("autocraft", "Auto-crafting ChatBot command", CommandHandler);
-            RegisterChatBotCommand("ac", "Auto-crafting ChatBot command alias", CommandHandler);
+            RegisterChatBotCommand("autocraft", "Auto-crafting ChatBot command", GetHelp(), CommandHandler);
+            RegisterChatBotCommand("ac", "Auto-crafting ChatBot command alias", GetHelp(), CommandHandler);
             LoadConfig();
         }
 

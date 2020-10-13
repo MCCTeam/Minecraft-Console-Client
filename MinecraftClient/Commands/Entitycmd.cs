@@ -8,8 +8,9 @@ namespace MinecraftClient.Commands
 {
     class Entitycmd : Command
     {
-        public override string CMDName { get { return "entity"; } }
-        public override string CMDDesc { get { return "entity <id|entitytype> <attack|use>"; } }
+        public override string CmdName { get { return "entity"; } }
+        public override string CmdUsage { get { return "entity <id|entitytype> <attack|use>"; } }
+        public override string CmdDesc { get { return ""; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -33,10 +34,10 @@ namespace MinecraftClient.Commands
                                 {
                                     case "attack":
                                         handler.InteractEntity(entityID, 1);
-                                        return "Entity attacked";
+                                        return Translations.Get("cmd.entityCmd.attacked");
                                     case "use":
                                         handler.InteractEntity(entityID, 0);
-                                        return "Entity used";
+                                        return Translations.Get("cmd.entityCmd.used");
                                     default:
                                         Entity entity = handler.GetEntities()[entityID];
                                         int id = entity.ID;
@@ -95,13 +96,13 @@ namespace MinecraftClient.Commands
                                         return done;
                                 }
                             }
-                            else return "Entity not found";
+                            else return Translations.Get("cmd.entityCmd.not_found");
                         }
                         else
                         {
                             EntityType interacttype = EntityType.Player;
                             Enum.TryParse(args[0], out interacttype);
-                            string actionst = "Entity attacked";
+                            string actionst = "cmd.entityCmd.attacked";
                             int actioncount = 0;
                             foreach (var entity2 in handler.GetEntities())
                             {
@@ -113,22 +114,22 @@ namespace MinecraftClient.Commands
                                     if (action == "attack")
                                     {
                                         handler.InteractEntity(entity2.Key, 1);
-                                        actionst = "Entity attacked";
+                                        actionst = "cmd.entityCmd.attacked";
                                         actioncount++;
                                     }
                                     else if (action == "use")
                                     {
                                         handler.InteractEntity(entity2.Key, 0);
-                                        actionst = "Entity used";
+                                        actionst = "cmd.entityCmd.used";
                                         actioncount++;
                                     }
-                                    else return CMDDesc;
+                                    else return GetCmdDescTranslated();
                                 }
                             }
-                            return actioncount + " " + actionst;
+                            return actioncount + " " + Translations.Get(actionst);
                         }
                     }
-                    catch (FormatException) { return CMDDesc; }
+                    catch (FormatException) { return GetCmdDescTranslated(); }
                 }
                 else
                 {
@@ -156,11 +157,11 @@ namespace MinecraftClient.Commands
                         else
                             response.Add(String.Format(" #{0}: Type: {1}, Health: {2}, Location: {3}", id, type, health, location));
                     }
-                    response.Add(CMDDesc);
+                    response.Add(GetCmdDescTranslated());
                     return String.Join("\n", response);
                 }
             }
-            else return "Please enable entityhandling in config to use this command.";
+            else return Translations.Get("extra.entity_required");
         }
     }
 }

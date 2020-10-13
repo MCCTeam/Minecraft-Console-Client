@@ -16,12 +16,27 @@ namespace MinecraftClient
         /// <summary>
         /// The command name
         /// </summary>
-        public abstract string CMDName { get; }
+        public abstract string CmdName { get; }
 
         /// <summary>
-        /// Usage message, eg: 'name [args]: do something'
+        /// Command description with translation support. Please add your message in Translations.cs file and return mapping key in this property
         /// </summary>
-        public abstract string CMDDesc { get; }
+        public abstract string CmdDesc { get; }
+
+        /// <summary>
+        /// Get the translated version of command description.
+        /// </summary>
+        /// <returns>Translated command description</returns>
+        public string GetCmdDescTranslated()
+        {
+            string s = string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc) ? "" : ": "; // If either one is empty, no colon :
+            return CmdUsage + s + Translations.TryGet(CmdDesc);
+        }
+
+        /// <summary>
+        /// Usage message, eg: 'name [args]'
+        /// </summary>
+        public abstract string CmdUsage { get; }
 
         /// <summary>
         /// Perform the command

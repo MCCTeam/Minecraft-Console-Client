@@ -1264,9 +1264,9 @@ namespace MinecraftClient
         /// <param name="cmdDesc">Description/usage of the command</param>
         /// <param name="callback">Method for handling the command</param>
         /// <returns>True if successfully registered</returns>
-        protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, CommandRunner callback)
+        protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
         {
-            return Handler.RegisterCommand(cmdName, cmdDesc, callback);
+            return Handler.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
         }
 
         /// <summary>
@@ -1337,9 +1337,11 @@ namespace MinecraftClient
 
             private readonly string _cmdName;
             private readonly string _cmdDesc;
+            private readonly string _cmdUsage;
 
-            public override string CMDName { get { return _cmdName; } }
-            public override string CMDDesc { get { return _cmdDesc; } }
+            public override string CmdName { get { return _cmdName; } }
+            public override string CmdUsage { get { return _cmdUsage; } }
+            public override string CmdDesc { get { return _cmdDesc; } }
 
             public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
             {
@@ -1349,13 +1351,15 @@ namespace MinecraftClient
             /// <summary>
             /// ChatBotCommand Constructor
             /// </summary>
-            /// <param name="CMDName">Name of the command</param>
-            /// <param name="CMDDesc">Description/usage of the command</param>
-            /// <param name="runner">Method for handling the command</param>
-            public ChatBotCommand(string cmdName, string cmdDesc, CommandRunner callback)
+            /// <param name="cmdName">Name of the command</param>
+            /// <param name="cmdDesc">Description of the command. Support tranlation.</param>
+            /// <param name="cmdUsage">Usage of the command</param>
+            /// <param name="callback">Method for handling the command</param>
+            public ChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
             {
                 this._cmdName = cmdName;
                 this._cmdDesc = cmdDesc;
+                this._cmdUsage = cmdUsage;
                 this.Runner = callback;
             }
         }

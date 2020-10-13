@@ -7,8 +7,9 @@ namespace MinecraftClient.Commands
 {
     public class Send : Command
     {
-        public override string CMDName { get { return "send"; } }
-        public override string CMDDesc { get { return "send <text>: send a chat message or command."; } }
+        public override string CmdName { get { return "send"; } }
+        public override string CmdUsage { get { return "send <text>"; } }
+        public override string CmdDesc { get { return "cmd.send.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -17,7 +18,7 @@ namespace MinecraftClient.Commands
                 handler.SendText(getArg(command));
                 return "";
             }
-            else return CMDDesc;
+            else return GetCmdDescTranslated();
         }
     }
 }

@@ -7,17 +7,18 @@ namespace MinecraftClient.Commands
 {
     class UseItem : Command
     {
-        public override string CMDName { get { return "useitem"; } }
-        public override string CMDDesc { get { return "useitem: Use (left click) an item on the hand"; } }
+        public override string CmdName { get { return "useitem"; } }
+        public override string CmdUsage { get { return "useitem"; } }
+        public override string CmdDesc { get { return "cmd.useitem.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
             if (handler.GetInventoryEnabled())
             {
                 handler.UseItemOnHand();
-                return "Used an item";
+                return Translations.Get("cmd.useitem.use");
             }
-            else return "Please enable inventoryhandling in config to use this command.";
+            else return Translations.Get("extra.inventory_required");
         }
     }
 }

@@ -210,7 +210,7 @@ namespace MinecraftClient.ChatBots
             mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_DatabaseFile), Path.GetFileName(Settings.Mailer_DatabaseFile), FileMonitorCallback);
             ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_IgnoreListFile), Path.GetFileName(Settings.Mailer_IgnoreListFile), FileMonitorCallback);
 
-            RegisterChatBotCommand("mailer", "Subcommands: getmails, addignored, getignored, removeignored", ProcessInternalCommand);
+            RegisterChatBotCommand("mailer", "mailer command", "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
         }
 
         /// <summary>

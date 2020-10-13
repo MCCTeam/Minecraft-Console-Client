@@ -29,7 +29,7 @@ namespace MinecraftClient.ChatBots
             replay.MetaData.serverName = GetServerHost() + GetServerPort();
             backupCounter = backupInterval;
 
-            RegisterChatBotCommand("replay", "replay command", Command);
+            RegisterChatBotCommand("replay", "replay command", "replay <save|stop>", Command);
         }
 
         public override void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)

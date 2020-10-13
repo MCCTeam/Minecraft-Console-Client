@@ -132,7 +132,7 @@ namespace MinecraftClient.ChatBots
 
         private string GetHelp()
         {
-            return "AutoDrop ChatBot command. Available commands: on, off, add, remove, list";
+            return "Available commands: on, off, add, remove, list";
         }
 
         public override void Initialize()
@@ -143,8 +143,8 @@ namespace MinecraftClient.ChatBots
                 UnloadBot();
                 return;
             }
-            RegisterChatBotCommand("autodrop", "AutoDrop ChatBot command", CommandHandler);
-            RegisterChatBotCommand("ad", "AutoDrop ChatBot command alias", CommandHandler);
+            RegisterChatBotCommand("autodrop", "AutoDrop ChatBot command", GetHelp(), CommandHandler);
+            RegisterChatBotCommand("ad", "AutoDrop ChatBot command alias", GetHelp(), CommandHandler);
         }
 
         public override void Update()

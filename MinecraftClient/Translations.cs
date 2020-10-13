@@ -23,19 +23,33 @@ namespace MinecraftClient
         /// <summary>
         /// Return a tranlation for the requested text. Support string formatting
         /// </summary>
-        /// <param name="msg_name">text identifier</param>
+        /// <param name="msgName">text identifier</param>
         /// <returns>returns translation for this identifier</returns>
-        public static string Get(string msg_name, params object[] args)
+        public static string Get(string msgName, params object[] args)
         {
-            if (translations.ContainsKey(msg_name))
+            if (translations.ContainsKey(msgName))
             {
                 if (args.Length > 0)
                 {
-                    return string.Format(translations[msg_name], args);
+                    return string.Format(translations[msgName], args);
                 }
-                else return translations[msg_name];
+                else return translations[msgName];
             }
-            return msg_name.ToUpper();
+            return msgName.ToUpper();
+        }
+
+        /// <summary>
+        /// Return a tranlation for the requested text. Support string formatting. If not found, return the original text
+        /// </summary>
+        /// <param name="msgName">text identifier</param>
+        /// <param name="args"></param>
+        /// <returns>Translated text or original text if not found</returns>
+        /// <remarks>Useful when not sure msgName is a translation mapping key or a normal text</remarks>
+        public static string TryGet(string msgName, params object[] args)
+        {
+            if (translations.ContainsKey(msgName))
+                return Get(msgName, args);
+            else return msgName;
         }
 
         /// <summary>
@@ -298,14 +312,17 @@ exception.version_unsupport=The protocol version no.{0} is not supported.
 # Terrain & Movements
 extra.terrainandmovement_enabled=Terrain and Movements is now enabled.
 extra.terrainandmovement_disabled=§cTerrain & Movements currently not handled for that MC version.
+extra.terrainandmovement_required=Please enable Terrain and Movements in the config file first.
 # Inventory
 extra.inventory_enabled=Inventory handling is now enabled.
 extra.inventory_disabled=§cInventories are currently not handled for that MC version.
+extra.inventory_required=Please enable InventoryHandling in the config file first.
 extra.inventory_interact=Use /inventory to interact with it.
 extra.inventory_open=Inventory # {0} opened: {1}
 extra.inventory_close=Inventory # {0} closed.
 # Entity
 extra.entity_disabled=§cEntities are currently not handled for that MC version.
+extra.entity_required=Please enable EntityHandling in the config file first.
 
 
 [forge]
@@ -354,6 +371,141 @@ chat.fail=§8Failed to download the file.
 chat.from_dir=§8Defaulting to en_GB.lang from your Minecraft directory.
 chat.loaded=§8Translations file loaded.
 chat.not_found=§8Translations file not found: '{0}'\nSome messages won't be properly printed without this file.
+
+[general]
+# General message/information (i.e. Done)
+general.done=Done
+general.fail=Fail
+
+
+
+[cmd]
+# Commands. Naming style: cmd.<className>.<msg...>
+
+# Animation
+cmd.animation.desc=Swing your arm.
+
+# ChangeSlot
+cmd.changeSlot.desc=Change hotbar
+cmd.changeSlot.nan=Could not change slot: Not a Number
+cmd.changeSlot.changed=Changed to slot {0}
+cmd.changeSlot.fail=Could not change slot
+
+# Connect
+cmd.connect.desc=connect to the specified server.
+cmd.connect.unknown=Unknown account '{0}'.
+cmd.connect.invalid_ip=Invalid server IP '{0}'.
+
+# Debug
+cmd.debug.desc=toggle debug messages.
+cmd.debug.state_on=Debug messages are now ON
+cmd.debug.state_off=Debug messages are now OFF
+
+# Dig
+cmd.dig.desc=attempt to break a block
+cmd.dig.too_far=You are too far away from this block.
+cmd.dig.no_block=No block at this location (Air)
+cmd.dig.dig=Attempting to dig block at {0} {1} {2}
+cmd.dig.fail=Failed to start digging block.
+
+# Entitycmd
+cmd.entityCmd.attacked=Entity attacked
+cmd.entityCmd.used=Entity used
+cmd.entityCmd.not_found=Entity not found
+# How to map translation for EntityCmd......
+
+# Exit
+cmd.exit.desc=disconnect from the server.
+
+# Health
+cmd.health.desc=Display Health and Food saturation.
+cmd.health.response=Health: {0}, Saturation: {1}, Level: {2}, TotalExperience: {3}
+
+# Inventory
+cmd.inventory.desc=Inventory command
+cmd.inventory.creative_done=Requested {0} x{1} in slot #{2}
+cmd.inventory.creative_fail=Failed to request Creative Give
+cmd.inventory.need_creative=You need Gamemode Creative
+cmd.inventory.container_not_found=Cannot find container, please retry with explicit ID
+cmd.inventory.close=Closing Inventoy #{0}
+cmd.inventory.close_fail=Failed to close Inventory #{0}
+cmd.inventory.not_exist=Inventory #{0} do not exist
+cmd.inventory.inventory=Inventory
+cmd.inventory.inventories=Inventories
+cmd.inventory.hotbar=Your selected hotbar is {0}
+cmd.inventory.damage=Damage
+cmd.inventory.left=Left
+cmd.inventory.right=Right
+cmd.inventory.middle=Middle
+cmd.inventory.clicking={0} clicking slot {1} in window #{2}
+cmd.inventory.no_item=No item in slot #{0}
+cmd.inventory.drop=Dropped 1 item from slot #{0}
+cmd.inventory.drop_stack=Dropped whole item stack from slot #{0}
+# Inventory Help
+cmd.inventory.help.basic=Basic usage
+cmd.inventory.help.available=Available actions
+cmd.inventory.help.help=\n{0} Use '/inventory help <action>' for action help.\nCreative mode give: {1}\n'player' and 'container' can be simplified to 'p' and 'c'.\nNote that parameters in '[]' are optional.
+cmd.inventory.help.usage=Usage
+cmd.inventory.help.list=List your inventory.
+cmd.inventory.help.close=Close an opened container.
+cmd.inventory.help.click=Click on an item.
+cmd.inventory.help.drop=Drop an item from inventory.
+cmd.inventory.help.unknown=Unknown action. 
+
+# List
+cmd.list.desc=get the player list.
+cmd.list.players=PlayerList: {0}
+
+# Log
+cmd.log.desc=log some text to the console.
+
+# Look
+cmd.look.desc=look at direction or coordinates.
+cmd.look.unknown=Unknown direction '{0}'
+cmd.look.at=Looking at YAW: {0} PITCH: {1}
+cmd.look.block=Looking at {0}
+
+# Move
+cmd.move.desc=walk or start walking.
+cmd.move.enable=Enabling Terrain and Movements on next server login, respawn or world change.
+cmd.move.disable=Disabling Terrain and Movements.
+cmd.move.moving=Moving {0}
+cmd.move.dir_fail=Cannot move in that direction.
+cmd.move.walk=Walking to {0}
+cmd.move.fail=Failed to compute path to {0}
+
+# Reco
+cmd.reco.desc=restart and reconnect to the server.
+
+# Respawn
+cmd.respawn.desc=Use this to respawn if you are dead.
+cmd.respawn.done=You have respawned.
+
+# Script
+cmd.script.desc=run a script file.
+
+# Send
+cmd.send.desc=send a chat message or command.
+
+# Set
+cmd.set.desc=set a custom %variable%.
+cmd.set.format=variable name must be A-Za-z0-9.
+
+# Sneak
+cmd.sneak.desc=Toggles sneaking
+cmd.sneak.on=You are sneaking now
+cmd.sneak.off=You aren't sneaking anymore
+
+# Tps
+cmd.tps.desc=Display server current tps (tick per second). May not be accurate
+cmd.tps.current=Current tps
+
+# Useblock
+cmd.useblock.desc=Place a block or open chest
+
+# Useitem
+cmd.useitem.desc=Use (left click) an item on the hand
+cmd.useitem.use=Used an item
 ";
 
         #endregion

@@ -8,12 +8,13 @@ namespace MinecraftClient.Commands
 {
     class Useblock : Command
     {
-        public override string CMDName { get { return "useblock"; } }
-        public override string CMDDesc { get { return "useblock <x> <y> <z>: use block"; } }
+        public override string CmdName { get { return "useblock"; } }
+        public override string CmdUsage { get { return "useblock <x> <y> <z>"; } }
+        public override string CmdDesc { get { return "cmd.useblock.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
-            if (!handler.GetTerrainEnabled()) return "Please enable TerrainHandling in the config file first.";
+            if (!handler.GetTerrainEnabled()) return Translations.Get("extra.terrainandmovement_required");
             if (hasArg(command))
             {
                 string[] args = getArgs(command);
@@ -24,9 +25,9 @@ namespace MinecraftClient.Commands
                     int z = Convert.ToInt32(args[2]);
                     handler.PlaceBlock(new Location(x, y, z), Direction.Down);
                 }
-                else { return CMDDesc;  }
+                else { return GetCmdDescTranslated();  }
             }
-            return CMDDesc;
+            return GetCmdDescTranslated();
         }
     }
 }

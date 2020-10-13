@@ -7,8 +7,9 @@ namespace MinecraftClient.Commands
 {
     public class Exit : Command
     {
-        public override string CMDName { get { return "exit"; } }
-        public override string CMDDesc { get { return "exit: disconnect from the server."; } }
+        public override string CmdName { get { return "exit"; } }
+        public override string CmdUsage { get { return "exit"; } }
+        public override string CmdDesc { get { return "cmd.exit.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {

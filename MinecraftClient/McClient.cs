@@ -369,7 +369,7 @@ namespace MinecraftClient
                     }
                     else if (cmds.ContainsKey(help_cmdname))
                     {
-                        response_msg = cmds[help_cmdname].CMDDesc;
+                        response_msg = cmds[help_cmdname].GetCmdDescTranslated();
                     }
                     else response_msg = Translations.Get("icmd.unknown", command_name);
                 }
@@ -417,8 +417,8 @@ namespace MinecraftClient
                         try
                         {
                             Command cmd = (Command)Activator.CreateInstance(type);
-                            cmds[cmd.CMDName.ToLower()] = cmd;
-                            cmd_names.Add(cmd.CMDName.ToLower());
+                            cmds[cmd.CmdName.ToLower()] = cmd;
+                            cmd_names.Add(cmd.CmdName.ToLower());
                             foreach (string alias in cmd.getCMDAliases())
                                 cmds[alias.ToLower()] = cmd;
                         }
@@ -589,7 +589,7 @@ namespace MinecraftClient
         /// <param name="cmdDesc">Description/usage of the command</param>
         /// <param name="callback">Method for handling the command</param>
         /// <returns>True if successfully registered</returns>
-        public bool RegisterCommand(string cmdName, string cmdDesc, ChatBot.CommandRunner callback)
+        public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, ChatBot.CommandRunner callback)
         {
             if (cmds.ContainsKey(cmdName.ToLower()))
             {
@@ -597,7 +597,7 @@ namespace MinecraftClient
             }
             else
             {
-                Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, callback);
+                Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
                 cmds.Add(cmdName.ToLower(), cmd);
                 cmd_names.Add(cmdName.ToLower());
                 return true;

@@ -7,13 +7,14 @@ namespace MinecraftClient.Commands
 {
     public class Respawn : Command
     {
-        public override string CMDName { get { return "respawn"; } }
-        public override string CMDDesc { get { return "respawn: Use this to respawn if you are dead."; } }
+        public override string CmdName { get { return "respawn"; } }
+        public override string CmdUsage { get { return "respawn"; } }
+        public override string CmdDesc { get { return "cmd.respawn.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
             handler.SendRespawnPacket();
-            return "You have respawned.";
+            return Translations.Get("cmd.respawn.done");
         }
     }
 }

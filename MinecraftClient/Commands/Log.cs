@@ -7,8 +7,9 @@ namespace MinecraftClient.Commands
 {
     public class Log : Command
     {
-        public override string CMDName { get { return "log"; } }
-        public override string CMDDesc { get { return "log <text>: log some text to the console."; } }
+        public override string CmdName { get { return "log"; } }
+        public override string CmdUsage { get { return "log <text>"; } }
+        public override string CmdDesc { get { return "cmd.log.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -17,7 +18,7 @@ namespace MinecraftClient.Commands
                 ConsoleIO.WriteLogLine(getArg(command));
                 return "";
             }
-            else return CMDDesc;
+            else return GetCmdDescTranslated();
         }
     }
 }

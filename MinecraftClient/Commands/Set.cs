@@ -7,8 +7,9 @@ namespace MinecraftClient.Commands
 {
     public class Set : Command
     {
-        public override string CMDName { get { return "set"; } }
-        public override string CMDDesc { get { return "set varname=value: set a custom %variable%."; } }
+        public override string CmdName { get { return "set"; } }
+        public override string CmdUsage { get { return "set varname=value"; } }
+        public override string CmdDesc { get { return "cmd.set.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -21,11 +22,11 @@ namespace MinecraftClient.Commands
                     {
                         return ""; //Success
                     }
-                    else return "variable name must be A-Za-z0-9.";
+                    else return Translations.Get("cmd.set.format");
                 }
-                else return CMDDesc;
+                else return GetCmdDescTranslated();
             }
-            else return CMDDesc;
+            else return GetCmdDescTranslated();
         }
     }
 }
