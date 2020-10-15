@@ -62,7 +62,7 @@ namespace MinecraftClient.ChatBots
             }
             if (String.IsNullOrEmpty(file) || file.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
             {
-                LogToConsole("Path '" + file + "' contains invalid characters.");
+                LogToConsoleTranslated("bot.chatLog.invalid_file", file);
                 UnloadBot();
             }
         }

@@ -376,7 +376,8 @@ chat.not_found=§8Translations file not found: '{0}'\nSome messages won't be pro
 # General message/information (i.e. Done)
 general.done=Done
 general.fail=Fail
-
+general.bot_unload=This bot will be unloaded.
+general.available_cmd=Available commands: {0}
 
 
 [cmd]
@@ -506,6 +507,143 @@ cmd.useblock.desc=Place a block or open chest
 # Useitem
 cmd.useitem.desc=Use (left click) an item on the hand
 cmd.useitem.use=Used an item
+
+
+[bot]
+# ChatBots. Naming style: bot.<className>.<msg...>
+
+# AutoAttack
+bot.autoAttack.mode=Unknown attack mode: {0}. Using single mode as default.
+bot.autoAttack.priority=Unknown priority: {0}. Using distance priority as default.
+
+# AutoCraft
+bot.autoCraft.cmd=Auto-crafting ChatBot command
+bot.autoCraft.alias=Auto-crafting ChatBot command alias
+bot.autoCraft.cmd.list=Total {0} recipes loaded: {1}
+bot.autoCraft.cmd.resetcfg=Resetting your config to default
+bot.autoCraft.recipe_not_exist=Specified recipe name does not exist. Check your config file.
+bot.autoCraft.no_recipe_name=Please specify the recipe name you want to craft.
+bot.autoCraft.stop=AutoCraft stopped
+bot.autoCraft.available_cmd=Available commands: {0}. Use /autocraft help <cmd name> for more information. You may use /ac as command alias.
+bot.autoCraft.help.load=Load the config file.
+bot.autoCraft.help.list=List loaded recipes name.
+bot.autoCraft.help.reload=Reload the config file.
+bot.autoCraft.help.resetcfg=Write the default example config to default location.
+bot.autoCraft.help.start=Start the crafting. Usage: /autocraft start <recipe name>
+bot.autoCraft.help.stop=Stop the current running crafting process
+bot.autoCraft.help.help=Get the command description. Usage: /autocraft help <command name>
+bot.autoCraft.loaded=Successfully loaded
+bot.autoCraft.start=Starting AutoCraft: {0}
+bot.autoCraft.start_fail=AutoCraft cannot be started. Check your available materials for crafting {0}
+bot.autoCraft.table_not_found=table not found
+bot.autoCraft.close_inventory=Inventory #{0} was closed by AutoCraft
+bot.autoCraft.missing_material=Missing material: {0}
+bot.autoCraft.aborted=Crafting aborted! Check your available materials.
+bot.autoCraft.craft_fail=Crafting failed! Waiting for more materials
+bot.autoCraft.timeout=Action timeout! Reason: {0}
+bot.autoCraft.error.config=Error while parsing config: {0}
+bot.autoCraft.exception.empty=Empty configuration file: {0}
+bot.autoCraft.exception.invalid=Invalid configuration file: {0}
+bot.autoCraft.exception.item_miss=Missing item in recipe: {0}
+bot.autoCraft.exception.invalid_table=Invalid tablelocation format: {0}
+bot.autoCraft.exception.item_name=Invalid item name in recipe {0} at {1}
+bot.autoCraft.exception.name_miss=Missing recipe name while parsing a recipe
+bot.autoCraft.exception.slot=Invalid slot field in recipe: {0}
+bot.autoCraft.exception.duplicate=Duplicate recipe name specified: {0}
+bot.autoCraft.debug.no_config=No config found. Writing a new one.
+
+# AutoDrop
+bot.autoDrop.cmd=AutoDrop ChatBot command
+bot.autoDrop.alias=AutoDrop ChatBot command alias
+bot.autoDrop.on=AutoDrop enabled
+bot.autoDrop.off=AutoDrop disabled
+bot.autoDrop.added=Added item {0}
+bot.autoDrop.incorrect_name=Incorrect item name {0}. Please try again
+bot.autoDrop.removed=Removed item {0}
+bot.autoDrop.not_in_list=Item not in the list
+bot.autoDrop.no_item=No item in the list
+bot.autoDrop.list=Total {0} in the list:\n {1}
+
+# AutoFish
+bot.autoFish.throw=Threw a fishing rod
+bot.autoFish.caught=Caught a fish!
+bot.autoFish.no_rod=No Fishing Rod on hand. Maybe broken?
+
+# AutoRelog
+bot.autoRelog.launch=Launching with {0} reconnection attempts
+bot.autoRelog.no_kick_msg=Initializing without a kick message file
+bot.autoRelog.loading=Loading messages from file: {0}
+bot.autoRelog.loaded=Loaded message: {0}
+bot.autoRelog.not_found=File not found: {0}
+bot.autoRelog.curr_dir=Current directory was: {0}
+bot.autoRelog.ignore=Disconnection initiated by User or MCC bot. Ignoring.
+bot.autoRelog.disconnect_msg=Got disconnected with message: {0}
+bot.autoRelog.reconnect_always=Ignoring kick message, reconnecting anyway.
+bot.autoRelog.reconnect=Message contains '{0}'. Reconnecting.
+bot.autoRelog.reconnect_ignore=Message not containing any defined keywords. Ignoring.
+bot.autoRelog.wait=Waiting {0} seconds before reconnecting...
+
+# ChatLog
+bot.chatLog.invalid_file=Path '{0}' contains invalid characters.
+
+# Mailer
+bot.mailer.init=Initializing Mailer with settings:
+bot.mailer.init.db= - Database File: {0}
+bot.mailer.init.ignore= - Ignore List: {0}
+bot.mailer.init.public= - Public Interactions: {0}
+bot.mailer.init.max_mails= - Max Mails per Player: {0}
+bot.mailer.init.db_size= - Max Database Size: {0}
+bot.mailer.init.mail_retention= - Mail Retention: {0}
+
+bot.mailer.init_fail.db_size=Cannot enable Mailer: Max Database Size must be greater than zero. Please review the settings.
+bot.mailer.init_fail.max_mails=Cannot enable Mailer: Max Mails per Player must be greater than zero. Please review the settings.
+bot.mailer.init_fail.mail_retention=Cannot enable Mailer: Mail Retention must be greater than zero. Please review the settings.
+
+bot.mailer.create.db=Creating new database file: {0}
+bot.mailer.create.ignore=Creating new ignore list: {0}
+bot.mailer.load.db=Loading database file: {0}
+bot.mailer.load.ignore=Loading ignore list: 
+
+bot.mailer.cmd=mailer command
+
+bot.mailer.saving=Saving message: {0}
+bot.mailer.user_ignored={0} is ignored!
+bot.mailer.process_mails=Looking for mails to send @ {0}
+bot.mailer.delivered=Delivered: {0}
+
+bot.mailer.cmd.getmails=--- Mails in database ---\n{0}
+bot.mailer.cmd.getignored=--- Ignore list ---\n{0}
+bot.mailer.cmd.ignore.added=Added {0} to the ignore list!
+bot.mailer.cmd.ignore.removed=Removed {0} from the ignore list!
+bot.mailer.cmd.ignore.invalid=Missing or invalid name. Usage: {0} <username>
+bot.mailer.cmd.help=See usage
+
+# ReplayCapture
+bot.replayCapture.cmd=replay command
+bot.replayCapture.created=Replay file created.
+bot.replayCapture.stopped=Record stopped.
+bot.replayCapture.restart=Record was stopped. Restart the program to start another record.
+
+# Script
+bot.script.not_found=§8[MCC] [{0}] Cannot find script file: {1}
+bot.script.file_not_found=File not found: '{0}'
+bot.script.fail=Script '{0}' failed to run ({1}).
+bot.script.pm.loaded=Script '{0}' loaded.
+
+# ScriptScheduler
+bot.scriptScheduler.loading=Loading tasks from '{0}'
+bot.scriptScheduler.not_found=File not found: '{0}'
+bot.scriptScheduler.loaded_task=Loaded task:\n{0}
+bot.scriptScheduler.no_trigger=This task will never trigger:\n{0}
+bot.scriptScheduler.no_action=No action for task:\n{0}
+bot.scriptScheduler.running_time=Time / Running action: {0}
+bot.scriptScheduler.running_inverval=Interval / Running action: {0}
+bot.scriptScheduler.running_login=Login / Running action: {0}
+bot.scriptScheduler.task=triggeronfirstlogin: {0}\n triggeronlogin: {1}\n triggerontime: {2}\n triggeroninterval: {3}\n timevalue: {4}\n timeinterval: {5}\n action: {6}
+
+# TestBot
+bot.testBot.told=Bot: {0} told me : {1}
+bot.testBot.said=Bot: {0} said : {1}
 ";
 
         #endregion

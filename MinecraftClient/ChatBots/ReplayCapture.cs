@@ -29,7 +29,7 @@ namespace MinecraftClient.ChatBots
             replay.MetaData.serverName = GetServerHost() + GetServerPort();
             backupCounter = backupInterval;
 
-            RegisterChatBotCommand("replay", "replay command", "replay <save|stop>", Command);
+            RegisterChatBotCommand("replay", Translations.Get("bot.replayCapture.cmd"), "replay <save|stop>", Command);
         }
 
         public override void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
@@ -69,18 +69,18 @@ namespace MinecraftClient.ChatBots
                             case "save":
                                 {
                                     replay.CreateBackupReplay(@"replay_recordings\" + replay.GetReplayDefaultName());
-                                    return "Replay file created.";
+                                    return Translations.Get("bot.replayCapture.created");
                                 }
                             case "stop":
                                 {
                                     replay.OnShutDown();
-                                    return "Record stopped.";
+                                    return Translations.Get("bot.replayCapture.stopped");
                                 }
                         }
                     }
-                    return "Available commands: save, stop";
+                    return Translations.Get("general.available_cmd", "save, stop");
                 }
-                else return "Record was stopped. Restart the program to start another record.";
+                else return Translations.Get("bot.replayCapture.restart");
             }
             catch (Exception e)
             {

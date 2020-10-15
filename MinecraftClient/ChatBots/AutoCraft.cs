@@ -166,12 +166,13 @@ namespace MinecraftClient.ChatBots
         {
             if (!GetInventoryEnabled())
             {
-                LogToConsole("Inventory handling is disabled. AutoCraft will be unloaded");
+                LogToConsoleTranslated("extra.inventory_required");
+                LogToConsoleTranslated("general.bot_unload");
                 UnloadBot();
                 return;
             }
-            RegisterChatBotCommand("autocraft", "Auto-crafting ChatBot command", GetHelp(), CommandHandler);
-            RegisterChatBotCommand("ac", "Auto-crafting ChatBot command alias", GetHelp(), CommandHandler);
+            RegisterChatBotCommand("autocraft", Translations.Get("bot.autoCraft.cmd"), GetHelp(), CommandHandler);
+            RegisterChatBotCommand("ac", Translations.Get("bot.autoCraft.alias"), GetHelp(), CommandHandler);
             LoadConfig();
         }
 
@@ -186,14 +187,14 @@ namespace MinecraftClient.ChatBots
                         return "";
                     case "list":
                         string names = string.Join(", ", recipes.Keys.ToList());
-                        return String.Format("Total {0} recipes loaded: {1}", recipes.Count, names);
+                        return Translations.Get("bot.autoCraft.cmd.list", recipes.Count, names);
                     case "reload":
                         recipes.Clear();
                         LoadConfig();
                         return "";
                     case "resetcfg":
                         WriteDefaultConfig();
-                        return "Resetting your config to default";
+                        return Translations.Get("bot.autoCraft.cmd.resetcfg");
                     case "start":
                         if (args.Length >= 2)
                         {
@@ -204,12 +205,12 @@ namespace MinecraftClient.ChatBots
                                 PrepareCrafting(recipes[name]);
                                 return "";
                             }
-                            else return "Specified recipe name does not exist. Check your config file.";
+                            else return Translations.Get("bot.autoCraft.recipe_not_exist");
                         }
-                        else return "Please specify the recipe name you want to craft.";
+                        else return Translations.Get("bot.autoCraft.no_recipe_name");
                     case "stop":
                         StopCrafting();
-                        return "AutoCraft stopped";
+                        return Translations.Get("bot.autoCraft.stop");
                     case "help":
                         return GetCommandHelp(args.Length >= 2 ? args[1] : "");
                     default:
@@ -221,7 +222,7 @@ namespace MinecraftClient.ChatBots
 
         private string GetHelp()
         {
-            return "Available commands: load, list, reload, resetcfg, start, stop, help. Use /autocraft help <cmd name> for more information. You may use /ac as command alias.";
+            return Translations.Get("bot.autoCraft.available_cmd", "load, list, reload, resetcfg, start, stop, help");
         }
 
         private string GetCommandHelp(string cmd)
@@ -229,19 +230,19 @@ namespace MinecraftClient.ChatBots
             switch (cmd.ToLower())
             {
                 case "load":
-                    return "Load the config file.";
+                    return Translations.Get("bot.autocraft.help.load");
                 case "list":
-                    return "List loaded recipes name.";
+                    return Translations.Get("bot.autocraft.help.list");
                 case "reload":
-                    return "Reload the config file.";
+                    return Translations.Get("bot.autocraft.help.reload");
                 case "resetcfg":
-                    return "Write the default example config to default location.";
+                    return Translations.Get("bot.autocraft.help.resetcfg");
                 case "start":
-                    return "Start the crafting. Usage: /autocraft start <recipe name>";
+                    return Translations.Get("bot.autocraft.help.start");
                 case "stop":
-                    return "Stop the current running crafting process";
+                    return Translations.Get("bot.autocraft.help.stop");
                 case "help":
-                    return "Get the command description. Usage: /autocraft help <command name>";
+                    return Translations.Get("bot.autocraft.help.help");
                 default:
                     return GetHelp();
             }
@@ -258,16 +259,16 @@ namespace MinecraftClient.ChatBots
                     Directory.CreateDirectory(@"autocraft");
                 }
                 WriteDefaultConfig();
-                LogDebugToConsole("No config found. Writing a new one.");
+                LogDebugToConsoleTranslated("bot.autoCraft.debug.no_config");
             }
             try
             {
                 ParseConfig();
-                LogToConsole("Successfully loaded");
+                LogToConsoleTranslated("bot.autoCraft.loaded");
             }
             catch (Exception e)
             {
-                LogToConsole("Error while parsing config: \n" + e.Message);
+                LogToConsoleTranslated("bot.autoCraft.error.config", "\n" + e.Message);
             }
         }
 
@@ -301,11 +302,11 @@ namespace MinecraftClient.ChatBots
             string[] content = File.ReadAllLines(configPath);
             if (content.Length <= 0)
             {
-                throw new Exception("Empty onfiguration file: " + configPath);
+                throw new Exception(Translations.Get("bot.autoCraft.exception.empty", configPath));
             }
             if (content[0].ToLower() != "[autocraft]")
             {
-                throw new Exception("Invalid configuration file: " + configPath);
+                throw new Exception(Translations.Get("bot.autoCraft.exception.invalid", configPath));
             }
 
             // local variable for use in parsing config
@@ -352,7 +353,7 @@ namespace MinecraftClient.ChatBots
                 }
                 else
                 {
-                    throw new Exception("Missing item in recipe: " + pair.Key);
+                    throw new Exception(Translations.Get("bot.autoCraft.exception.item_miss", pair.Key));
                 }
             }
 
@@ -373,7 +374,7 @@ namespace MinecraftClient.ChatBots
                         tableLocation.Y = Convert.ToInt32(values[1]);
                         tableLocation.Z = Convert.ToInt32(values[2]);
                     }
-                    else throw new Exception("Invalid tablelocation format: " + key);
+                    else throw new Exception(Translations.Get("bot.autoCraft.exception.invalid_table", key));
                     break;
                 case "onfailure":
                     abortOnFailure = value.ToLower() == "abort" ? true : false;
@@ -411,17 +412,17 @@ namespace MinecraftClient.ChatBots
                         }
                         else
                         {
-                            throw new Exception("Invalid item name in recipe " + lastRecipe + " at " + key);
+                            throw new Exception(Translations.Get("bot.autoCraft.exception.item_name", lastRecipe, key));
                         }
                     }
                     else
                     {
-                        throw new Exception("Missing recipe name while parsing a recipe");
+                        throw new Exception(Translations.Get("bot.autoCraft.exception.name_miss"));
                     }
                 }
                 else
                 {
-                    throw new Exception("Invalid slot field in recipe: " + key);
+                    throw new Exception(Translations.Get("bot.autoCraft.exception.slot", key));
                 }
             }
             else
@@ -436,7 +437,7 @@ namespace MinecraftClient.ChatBots
                         }
                         else
                         {
-                            throw new Exception("Duplicate recipe name specified: " + value);
+                            throw new Exception(Translations.Get("bot.autoCraft.exception.duplicate", value));
                         }
                         break;
                     case "type":
@@ -555,7 +556,7 @@ namespace MinecraftClient.ChatBots
                     // table required but not found. Try to open one
                     OpenTable(tableLocation);
                     waitingForTable = true;
-                    SetTimeout("table not found");
+                    SetTimeout(Translations.Get("bot.autoCraft.table_not_found"));
                     return;
                 }
             }
@@ -577,10 +578,10 @@ namespace MinecraftClient.ChatBots
                 // Repeat the whole process again
                 actionSteps.Add(new ActionStep(ActionType.Repeat));
                 // Start crafting
-                ConsoleIO.WriteLogLine("Starting AutoCraft: " + recipe.ResultItem);
+                LogToConsoleTranslated("bot.autoCraft.start", recipe.ResultItem);
                 HandleNextStep();
             }
-            else ConsoleIO.WriteLogLine("AutoCraft cannot be started. Check your available materials for crafting " + recipe.ResultItem);
+            else LogToConsoleTranslated("bot.autoCraft.start_fail", recipe.ResultItem);
         }
 
         /// <summary>
@@ -596,7 +597,7 @@ namespace MinecraftClient.ChatBots
             if (GetInventories().ContainsKey(inventoryInUse))
             {
                 CloseInventory(inventoryInUse);
-                ConsoleIO.WriteLogLine("Inventory #" + inventoryInUse + " was closed by AutoCraft");
+                LogToConsoleTranslated("bot.autoCraft.close_inventory", inventoryInUse);
             }
         }
 
@@ -679,12 +680,12 @@ namespace MinecraftClient.ChatBots
                 if (actionSteps[index - 1].ActionType == ActionType.LeftClick && actionSteps[index - 1].ItemType != ItemType.Air)
                 {
                     // Inform user the missing meterial name
-                    ConsoleIO.WriteLogLine("Missing material: " + actionSteps[index - 1].ItemType.ToString());
+                    LogToConsoleTranslated("bot.autoCraft.missing_material", actionSteps[index - 1].ItemType.ToString());
                 }
                 if (abortOnFailure)
                 {
                     StopCrafting();
-                    ConsoleIO.WriteLogLine("Crafting aborted! Check your available materials.");
+                    LogToConsoleTranslated("bot.autoCraft.aborted");
                 }
                 else
                 {
@@ -692,14 +693,14 @@ namespace MinecraftClient.ChatBots
                     // Even though crafting failed, action step index will still increase
                     // we want to do that failed step again so decrease index by 1
                     index--;
-                    ConsoleIO.WriteLogLine("Crafting failed! Waiting for more materials");
+                    LogToConsoleTranslated("bot.autoCraft.craft_fail");
                 }
             }
         }
 
         private void HandleUpdateTimeout()
         {
-            ConsoleIO.WriteLogLine("Action timeout! Reason: " + timeoutAction);
+            LogToConsoleTranslated("bot.autoCraft.timeout", timeoutAction);
         }
 
         /// <summary>

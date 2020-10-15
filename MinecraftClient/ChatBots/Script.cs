@@ -121,7 +121,7 @@ namespace MinecraftClient.ChatBots
                     caller = type.Name;
                 }
                 catch { }
-                ConsoleIO.WriteLineFormatted(String.Format("§8[MCC] [{0}] Cannot find script file: {1}", caller, filename));
+                ConsoleIO.WriteLineFormatted(Translations.Get("bot.script.not_found", caller, filename));
             }
 
             return false;
@@ -137,14 +137,14 @@ namespace MinecraftClient.ChatBots
                 thread = null;
 
                 if (!String.IsNullOrEmpty(owner))
-                    SendPrivateMessage(owner, "Script '" + file + "' loaded.");
+                    SendPrivateMessage(owner, Translations.Get("bot.script.pm.loaded", file));
             }
             else
             {
-                LogToConsole("File not found: '" + System.IO.Path.GetFullPath(file) + "'");
+                LogToConsoleTranslated("bot.script.file_not_found", System.IO.Path.GetFullPath(file));
 
                 if (!String.IsNullOrEmpty(owner))
-                    SendPrivateMessage(owner, "File not found: '" + file + "'");
+                    SendPrivateMessage(owner, Translations.Get("bot.script.file_not_found", file));
                 
                 UnloadBot(); //No need to keep the bot active
             }
@@ -166,7 +166,7 @@ namespace MinecraftClient.ChatBots
                         }
                         catch (CSharpException e)
                         {
-                            string errorMessage = "Script '" + file + "' failed to run (" + e.ExceptionType + ").";
+                            string errorMessage = Translations.Get("bot.script.fail", file, e.ExceptionType);
                             LogToConsole(errorMessage);
                             if (owner != null)
                                 SendPrivateMessage(owner, errorMessage);

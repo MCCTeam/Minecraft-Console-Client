@@ -762,6 +762,16 @@ namespace MinecraftClient
                 LogToConsole(text);
         }
 
+        protected void LogToConsoleTranslated(string key, params object[] args)
+        {
+            LogToConsole(Translations.TryGet(key, args));
+        }
+
+        protected void LogDebugToConsoleTranslated(string key, params object[] args)
+        {
+            LogDebugToConsole(Translations.TryGet(key, args));
+        }
+
         /// <summary>
         /// Disconnect from the server and restart the program
         /// It will unload and reload all the bots and then reconnect to the server
