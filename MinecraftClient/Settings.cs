@@ -204,7 +204,7 @@ namespace MinecraftClient
         /// <param name="settingsfile">File to load</param>
         public static void LoadSettings(string settingsfile)
         {
-            ConsoleIO.WriteLogLine("[Settings] " + Translations.Get("mcc.setting", System.IO.Path.GetFullPath(settingsfile)));
+            ConsoleIO.WriteLogLine("[Settings] Loading Settings from " + Path.GetFullPath(settingsfile));
             if (File.Exists(settingsfile))
             {
                 try

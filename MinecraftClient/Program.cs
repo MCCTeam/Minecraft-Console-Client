@@ -43,7 +43,7 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
-            Translations.WriteLine("mcc.description", MCLowestVersion, MCHighestVersion, Version);
+            Console.WriteLine("Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors", MCLowestVersion, MCHighestVersion, Version);
 
             //Build information to facilitate processing of bug reports
             if (BuildInfo != null)
@@ -54,7 +54,7 @@ namespace MinecraftClient
             //Debug input ?
             if (args.Length == 1 && args[0] == "--keyboard-debug")
             {
-                Translations.WriteLine("mcc.keyboard_debug");
+                ConsoleIO.WriteLine("Keyboard debug mode: Press any key to display info");
                 ConsoleIO.DebugReadInput();
             }
 
