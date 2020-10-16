@@ -760,11 +760,21 @@ namespace MinecraftClient
                 LogToConsole(text);
         }
 
+        /// <summary>
+        /// Write the translated text in the console by giving a translation key. Nothing will be sent to the server.
+        /// </summary>
+        /// <param name="key">Translation key</param>
+        /// <param name="args"></param>
         protected void LogToConsoleTranslated(string key, params object[] args)
         {
             LogToConsole(Translations.TryGet(key, args));
         }
 
+        /// <summary>
+        /// Write the translated text in the console by giving a translation key, but only if DebugMessages is enabled in INI file. Nothing will be sent to the server.
+        /// </summary>
+        /// <param name="key">Translation key</param>
+        /// <param name="args"></param>
         protected void LogDebugToConsoleTranslated(string key, params object[] args)
         {
             LogDebugToConsole(Translations.TryGet(key, args));

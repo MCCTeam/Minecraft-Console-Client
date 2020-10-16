@@ -92,6 +92,9 @@ namespace MinecraftClient
             }
             else Settings.WriteDefaultSettings("MinecraftClient.ini");
 
+            //Load external translation file. Should be called AFTER settings loaded
+            Translations.LoadExternalTranslationFile(Settings.Language);
+
             //Other command-line arguments
             if (args.Length >= 1)
             {

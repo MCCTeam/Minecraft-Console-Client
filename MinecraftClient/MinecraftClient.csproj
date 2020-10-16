@@ -114,6 +114,11 @@
     <Compile Include="Commands\Tps.cs" />
     <Compile Include="Commands\Useblock.cs" />
     <Compile Include="Commands\UseItem.cs" />
+    <Compile Include="DefaultConfigResource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DefaultConfigResource.resx</DependentUpon>
+    </Compile>
     <Compile Include="INIFile.cs" />
     <Compile Include="Inventory\Container.cs" />
     <Compile Include="Inventory\ContainerType.cs" />
@@ -376,7 +381,16 @@
     <Content Include="Protocol\Dns\Records\totla.txt" />
     <Content Include="Resources\AppIcon.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="DefaultConfigResource.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>DefaultConfigResource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\config\MinecraftClient.ini" />
+    <None Include="Resources\lang\en.ini" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
