@@ -326,7 +326,17 @@ exception.palette.item=Please update item types handling for this Minecraft vers
 exception.palette.packet=Please update packet type palette for this Minecraft version. See PacketTypePalette.cs
 exception.packet_process=Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).
 exception.version_unsupport=The protocol version no.{0} is not supported.
+exception.chatbot.init=ChatBot methods should NOT be called in the constructor as API handler is not initialized yet. Override Initialize() or AfterGameJoined() instead to perform initialization tasks.
+exception.csrunner.invalid_head=The provided script does not have a valid MCCScript header
 
+[chatbot]
+# ChatBot API
+chatbot.reconnect=[{0}] Disconnecting and Reconnecting to the Server
+
+[filemonitor]
+# FileMonitor
+filemonitor.init=§8[{0}] Initializing FileSystemWatcher for file: {1}
+filemonitor.fail=§8[{0}] Failed to initialize FileSystemWatcher, retrying using Polling
 
 [extra]
 # Inventory, Terrain & Movements, Entity related messages

@@ -50,9 +50,7 @@ namespace MinecraftClient
                     return master.Handler;
                 if (_handler != null)
                     return _handler;
-                throw new InvalidOperationException(
-                    "ChatBot methods should NOT be called in the constructor as API handler is not initialized yet."
-                    + " Override Initialize() or AfterGameJoined() instead to perform initialization tasks.");
+                throw new InvalidOperationException(Translations.Get("exception.chatbot.init"));
             }
         }
         private bool MessageCooldownEnded
@@ -781,7 +779,7 @@ namespace MinecraftClient
         protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0)
         {
             if (Settings.DebugMessages)
-                ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
+                ConsoleIO.WriteLogLine(Translations.Get("chatbot.reconnect", this.GetType().Name));
             McClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart(delaySeconds);
         }
