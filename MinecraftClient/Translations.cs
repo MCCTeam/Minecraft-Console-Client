@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -19,6 +20,7 @@ namespace MinecraftClient
         private static string defaultTranslation = "en.ini";
         private static bool debugMessages = true; // Settings.LoadSettings have not been called yet at the time I guess. 
                                                   // Hence Settings.DebugMessages will always return false
+        private static Regex translationKeyRegex = new Regex(@"\(\[(.*?)\]\)", RegexOptions.Compiled);
 
         /// <summary>
         /// Return a tranlation for the requested text. Support string formatting
@@ -50,6 +52,25 @@ namespace MinecraftClient
             if (translations.ContainsKey(msgName))
                 return Get(msgName, args);
             else return msgName;
+        }
+
+        /// <summary>
+        /// Replace translation key to translated text. Wrap the key in ([translation.key])
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static string Replace(string msg, params object[] args)
+        {
+            string translated = translationKeyRegex.Replace(msg, new MatchEvaluator(ReplaceKey));
+            if (args.Length > 0)
+                return string.Format(translated, args);
+            else return translated;
+        }
+
+        private static string ReplaceKey(Match m)
+        {
+            return Get(m.Groups[1].Value);
         }
 
         /// <summary>
@@ -413,7 +434,25 @@ cmd.dig.fail=Failed to start digging block.
 cmd.entityCmd.attacked=Entity attacked
 cmd.entityCmd.used=Entity used
 cmd.entityCmd.not_found=Entity not found
-# How to map translation for EntityCmd......
+
+cmd.entityCmd.entity=Entity
+cmd.entityCmd.entities=Entities
+cmd.entityCmd.nickname=Nickname
+cmd.entityCmd.customname=Custom Name
+cmd.entityCmd.latency=Latency
+cmd.entityCmd.item=Item
+cmd.entityCmd.equipment=Equipment
+cmd.entityCmd.mainhand=Main Hand
+cmd.entityCmd.offhane=Off Hand
+cmd.entityCmd.helmet=Helmet
+cmd.entityCmd.chestplate=Chestplate
+cmd.entityCmd.leggings=Leggings
+cmd.entityCmd.boots=Boots
+cmd.entityCmd.pose=Pose
+cmd.entityCmd.health=Health
+cmd.entityCmd.distance=Distance
+cmd.entityCmd.location=Location
+cmd.entityCmd.type=Type
 
 # Exit
 cmd.exit.desc=disconnect from the server.
