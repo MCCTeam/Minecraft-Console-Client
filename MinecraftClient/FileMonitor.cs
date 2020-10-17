@@ -25,7 +25,7 @@ namespace MinecraftClient
             if (Settings.DebugMessages)
             {
                 string callerClass = new System.Diagnostics.StackFrame(1).GetMethod().DeclaringType.Name;
-                ConsoleIO.WriteLineFormatted(String.Format("§8[{0}] Initializing FileSystemWatcher for file: {1}", callerClass, Path.Combine(folder, filename)));
+                ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.init", callerClass, Path.Combine(folder, filename)));
             }
 
             try
@@ -43,7 +43,7 @@ namespace MinecraftClient
                 if (Settings.DebugMessages)
                 {
                     string callerClass = new System.Diagnostics.StackFrame(1).GetMethod().DeclaringType.Name;
-                    ConsoleIO.WriteLineFormatted(String.Format("§8[{0}] Failed to initialize FileSystemWatcher, retrying using Polling", callerClass));
+                    ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.fail", callerClass));
                 }
 
                 monitor = null;

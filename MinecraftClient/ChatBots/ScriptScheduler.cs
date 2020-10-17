@@ -44,8 +44,7 @@ namespace MinecraftClient.ChatBots
             //Load the given file from the startup parameters
             if (System.IO.File.Exists(tasksfile))
             {
-                if (Settings.DebugMessages)
-                    LogToConsole("Loading tasks from '" + System.IO.Path.GetFullPath(tasksfile) + "'");
+                LogDebugToConsoleTranslated("bot.scriptScheduler.loading", System.IO.Path.GetFullPath(tasksfile));
                 TaskDesc current_task = null;
                 String[] lines = System.IO.File.ReadAllLines(tasksfile, Encoding.UTF8);
                 foreach (string lineRAW in lines)
@@ -88,7 +87,7 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                LogToConsole("File not found: '" + System.IO.Path.GetFullPath(tasksfile) + "'");
+                LogToConsoleTranslated("bot.scriptScheduler.not_found", System.IO.Path.GetFullPath(tasksfile));
                 UnloadBot(); //No need to keep the bot active
             }
         }
@@ -107,19 +106,19 @@ namespace MinecraftClient.ChatBots
                         || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0)
                         || (current_task.triggerOnInterval && current_task.triggerOnInterval_Interval > 0))
                     {
-                        if (Settings.DebugMessages)
-                            LogToConsole("Loaded task:\n" + Task2String(current_task));
+                        
+                        LogDebugToConsoleTranslated("bot.scriptScheduler.loaded_task", Task2String(current_task));
                         current_task.triggerOnInterval_Interval_Countdown = current_task.triggerOnInterval_Interval; //Init countdown for interval
                         tasks.Add(current_task);
                     }
-                    else if (Settings.DebugMessages)
+                    else
                     {
-                        LogToConsole("This task will never trigger:\n" + Task2String(current_task));
+                        LogDebugToConsoleTranslated("bot.scriptScheduler.no_trigger", Task2String(current_task));
                     }
                 }
-                else if (Settings.DebugMessages)
+                else
                 {
-                    LogToConsole("No action for task:\n" + Task2String(current_task));
+                    LogDebugToConsoleTranslated("bot.scriptScheduler.no_action", Task2String(current_task));
                 }
             }
         }
@@ -145,8 +144,7 @@ namespace MinecraftClient.ChatBots
                                     if (!task.triggerOnTime_alreadyTriggered)
                                     {
                                         task.triggerOnTime_alreadyTriggered = true;
-                                        if (Settings.DebugMessages)
-                                            LogToConsole("Time / Running action: " + task.action);
+                                        LogDebugToConsoleTranslated("bot.scriptScheduler.running_time", task.action);
                                         PerformInternalCommand(task.action);
                                     }
                                 }
@@ -161,8 +159,7 @@ namespace MinecraftClient.ChatBots
                             if (task.triggerOnInterval_Interval_Countdown == 0)
                             {
                                 task.triggerOnInterval_Interval_Countdown = task.triggerOnInterval_Interval;
-                                if (Settings.DebugMessages)
-                                    LogToConsole("Interval / Running action: " + task.action);
+                                LogDebugToConsoleTranslated("bot.scriptScheduler.running_inverval", task.action);
                                 PerformInternalCommand(task.action);
                             }
                             else task.triggerOnInterval_Interval_Countdown--;
@@ -175,8 +172,7 @@ namespace MinecraftClient.ChatBots
                     {
                         if (task.triggerOnLogin || (firstlogin_done == false && task.triggerOnFirstLogin))
                         {
-                            if (Settings.DebugMessages)
-                                LogToConsole("Login / Running action: " + task.action);
+                            LogDebugToConsoleTranslated("bot.scriptScheduler.running_login", task.action);
                             PerformInternalCommand(task.action);
                         }
                     }
@@ -196,9 +192,8 @@ namespace MinecraftClient.ChatBots
 
         private static string Task2String(TaskDesc task)
         {
-            return String.Format(
-                " triggeronfirstlogin = {0}\n triggeronlogin = {1}\n triggerontime = {2}\n "
-                    + "triggeroninterval = {3}\n timevalue = {4}\n timeinterval = {5}\n action = {6}",
+            return Translations.Get(
+                "bot.scriptScheduler.task",
                 task.triggerOnFirstLogin,
                 task.triggerOnLogin,
                 task.triggerOnTime,

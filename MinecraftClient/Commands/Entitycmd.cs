@@ -8,8 +8,9 @@ namespace MinecraftClient.Commands
 {
     class Entitycmd : Command
     {
-        public override string CMDName { get { return "entity"; } }
-        public override string CMDDesc { get { return "entity <id|entitytype> <attack|use>"; } }
+        public override string CmdName { get { return "entity"; } }
+        public override string CmdUsage { get { return "entity <id|entitytype> <attack|use>"; } }
+        public override string CmdDesc { get { return ""; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -33,10 +34,10 @@ namespace MinecraftClient.Commands
                                 {
                                     case "attack":
                                         handler.InteractEntity(entityID, 1);
-                                        return "Entity attacked";
+                                        return Translations.Get("cmd.entityCmd.attacked");
                                     case "use":
                                         handler.InteractEntity(entityID, 0);
-                                        return "Entity used";
+                                        return Translations.Get("cmd.entityCmd.used");
                                     default:
                                         Entity entity = handler.GetEntities()[entityID];
                                         int id = entity.ID;
@@ -56,52 +57,52 @@ namespace MinecraftClient.Commands
                                             color = "§e";  // Yellow
 
                                         string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity.Location.X, 2), Math.Round(entity.Location.Y, 2), Math.Round(entity.Location.Y, 2));
-                                        string done = String.Format("Entity: {0}\n [MCC] Type: {1}", id, type);
+                                        string done = Translations.Replace("([cmd.entityCmd.entity]): {0}\n [MCC] Type: {1}", id, type);
                                         if (!String.IsNullOrEmpty(nickname))
-                                            done += String.Format("\n [MCC] Nickname: {0}", nickname);
+                                            done += Translations.Replace("\n [MCC] ([cmd.entityCmd.nickname]): {0}", nickname);
                                         else if (!String.IsNullOrEmpty(customname))
-                                            done += String.Format("\n [MCC] CustomName: {0}§8", customname.Replace("&", "§"));
+                                            done += Translations.Replace("\n [MCC] ([cmd.entityCmd.customname]): {0}§8", customname.Replace("&", "§"));
                                         if (type == EntityType.Player)
-                                            done += String.Format("\n [MCC] Latency: {0}", latency);
+                                            done += Translations.Replace("\n [MCC] ([cmd.entityCmd.latency]): {0}", latency);
                                         else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
                                         {
                                             string displayName = item.DisplayName;
                                             if (String.IsNullOrEmpty(displayName))
-                                                done += String.Format("\n [MCC] Item: {0} x{1}", item.Type, item.Count);
+                                                done += Translations.Replace("\n [MCC] ([cmd.entityCmd.item]): {0} x{1}", item.Type, item.Count);
                                             else
-                                                done += String.Format("\n [MCC] Item: {0} x{1} - {2}§8", item.Type, item.Count, displayName);
+                                                done += Translations.Replace("\n [MCC] ([cmd.entityCmd.item]): {0} x{1} - {2}§8", item.Type, item.Count, displayName);
                                         }
 
                                         if (entity.Equipment.Count >= 1 && entity.Equipment != null)
                                         {
-                                            done += String.Format("\n [MCC] Equipment:");
+                                            done += Translations.Replace("\n [MCC] ([cmd.entityCmd.equipment]):");
                                             if (entity.Equipment.ContainsKey(0) && entity.Equipment[0] != null)
-                                                done += String.Format("\n   [MCC] MainHand: {0} x{1}", entity.Equipment[0].Type, entity.Equipment[0].Count);
+                                                done += Translations.Replace("\n   [MCC] ([cmd.entityCmd.mainhand]): {0} x{1}", entity.Equipment[0].Type, entity.Equipment[0].Count);
                                             if (entity.Equipment.ContainsKey(1) && entity.Equipment[1] != null)
-                                                done += String.Format("\n   [MCC] OffHand: {0} x{1}", entity.Equipment[1].Type, entity.Equipment[1].Count);
+                                                done += Translations.Replace("\n   [MCC] ([cmd.entityCmd.offhand]): {0} x{1}", entity.Equipment[1].Type, entity.Equipment[1].Count);
                                             if (entity.Equipment.ContainsKey(5) && entity.Equipment[5] != null)
-                                                done += String.Format("\n   [MCC] Helmet: {0} x{1}", entity.Equipment[5].Type, entity.Equipment[5].Count);
+                                                done += Translations.Replace("\n   [MCC] ([cmd.entityCmd.helmet]): {0} x{1}", entity.Equipment[5].Type, entity.Equipment[5].Count);
                                             if (entity.Equipment.ContainsKey(4) && entity.Equipment[4] != null)
-                                                done += String.Format("\n   [MCC] Chestplate: {0} x{1}", entity.Equipment[4].Type, entity.Equipment[4].Count);
+                                                done += Translations.Replace("\n   [MCC] ([cmd.entityCmd.chestplate]): {0} x{1}", entity.Equipment[4].Type, entity.Equipment[4].Count);
                                             if (entity.Equipment.ContainsKey(3) && entity.Equipment[3] != null)
-                                                done += String.Format("\n   [MCC] Leggings: {0} x{1}", entity.Equipment[3].Type, entity.Equipment[3].Count);
+                                                done += Translations.Replace("\n   [MCC] ([cmd.entityCmd.leggings]): {0} x{1}", entity.Equipment[3].Type, entity.Equipment[3].Count);
                                             if (entity.Equipment.ContainsKey(2) && entity.Equipment[2] != null)
-                                                done += String.Format("\n   [MCC] Boots: {0} x{1}", entity.Equipment[2].Type, entity.Equipment[2].Count);
+                                                done += Translations.Replace("\n   [MCC] ([cmd.entityCmd.boots]): {0} x{1}", entity.Equipment[2].Type, entity.Equipment[2].Count);
                                         }
-                                        done += String.Format("\n [MCC] Pose: {0}", pose);
-                                        done += String.Format("\n [MCC] Health: {0}", color + health + "§8");
-                                        done += String.Format("\n [MCC] Distance: {0}", distance);
-                                        done += String.Format("\n [MCC] Location: {0}", location);
+                                        done += Translations.Replace("\n [MCC] ([cmd.entityCmd.pose]): {0}", pose);
+                                        done += Translations.Replace("\n [MCC] ([cmd.entityCmd.health]): {0}", color + health + "§8");
+                                        done += Translations.Replace("\n [MCC] ([cmd.entityCmd.distance]): {0}", distance);
+                                        done += Translations.Replace("\n [MCC] ([cmd.entityCmd.location]): {0}", location);
                                         return done;
                                 }
                             }
-                            else return "Entity not found";
+                            else return Translations.Get("cmd.entityCmd.not_found");
                         }
                         else
                         {
                             EntityType interacttype = EntityType.Player;
                             Enum.TryParse(args[0], out interacttype);
-                            string actionst = "Entity attacked";
+                            string actionst = "cmd.entityCmd.attacked";
                             int actioncount = 0;
                             foreach (var entity2 in handler.GetEntities())
                             {
@@ -113,28 +114,28 @@ namespace MinecraftClient.Commands
                                     if (action == "attack")
                                     {
                                         handler.InteractEntity(entity2.Key, 1);
-                                        actionst = "Entity attacked";
+                                        actionst = "cmd.entityCmd.attacked";
                                         actioncount++;
                                     }
                                     else if (action == "use")
                                     {
                                         handler.InteractEntity(entity2.Key, 0);
-                                        actionst = "Entity used";
+                                        actionst = "cmd.entityCmd.used";
                                         actioncount++;
                                     }
-                                    else return CMDDesc;
+                                    else return GetCmdDescTranslated();
                                 }
                             }
-                            return actioncount + " " + actionst;
+                            return actioncount + " " + Translations.Get(actionst);
                         }
                     }
-                    catch (FormatException) { return CMDDesc; }
+                    catch (FormatException) { return GetCmdDescTranslated(); }
                 }
                 else
                 {
-                    Dictionary<int, Mapping.Entity> entities = handler.GetEntities();
+                    Dictionary<int, Entity> entities = handler.GetEntities();
                     List<string> response = new List<string>();
-                    response.Add("Entities:");
+                    response.Add(Translations.Get("cmd.entityCmd.entities"));
                     foreach (var entity2 in entities)
                     {
                         int id = entity2.Key;
@@ -147,20 +148,20 @@ namespace MinecraftClient.Commands
                         Item item = entity2.Value.Item;
                         string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity2.Value.Location.X, 2), Math.Round(entity2.Value.Location.Y, 2), Math.Round(entity2.Value.Location.Y, 2));
 
-                        if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
-                            response.Add(String.Format(" #{0}: Type: {1}, Item: {2}, Location: {3}", id, type, item.Type, location));
-                        else if (type == Mapping.EntityType.Player && !String.IsNullOrEmpty(nickname))
-                            response.Add(String.Format(" #{0}: Type: {1}, Nickname: §8{2}§8, Latency: {3}, Health: {4}, Pose: {5}, Location: {6}", id, type, nickname, latency, health, pose, location));
-                        else if (type == Mapping.EntityType.Player && !String.IsNullOrEmpty(customname))
-                            response.Add(String.Format(" #{0}: Type: {1}, CustomName: §8{2}§8, Latency: {3}, Health: {4}, Pose: {5}, Location: {6}", id, type, customname.Replace("&", "§"), latency, health, pose, location));
+                        if (type == EntityType.Item || type == EntityType.ItemFrame || type == EntityType.EyeOfEnder || type == EntityType.Egg || type == EntityType.EnderPearl || type == EntityType.Potion || type == EntityType.Fireball || type == EntityType.FireworkRocket)
+                            response.Add(Translations.Replace(" #{0}: ([cmd.entityCmd.type]): {1}, ([cmd.entityCmd.item]): {2}, ([cmd.entityCmd.location]): {3}", id, type, item.Type, location));
+                        else if (type == EntityType.Player && !String.IsNullOrEmpty(nickname))
+                            response.Add(Translations.Replace(" #{0}: ([cmd.entityCmd.type]): {1}, ([cmd.entityCmd.nickname]): §8{2}§8, ([cmd.entityCmd.latency]): {3}, ([cmd.entityCmd.health]): {4}, ([cmd.entityCmd.pose]): {5}, ([cmd.entityCmd.location]): {6}", id, type, nickname, latency, health, pose, location));
+                        else if (type == EntityType.Player && !String.IsNullOrEmpty(customname))
+                            response.Add(Translations.Replace(" #{0}: ([cmd.entityCmd.type]): {1}, ([cmd.entityCmd.customname]): §8{2}§8, ([cmd.entityCmd.latency]): {3}, ([cmd.entityCmd.health]): {4}, ([cmd.entityCmd.pose]): {5}, ([cmd.entityCmd.location]): {6}", id, type, customname.Replace("&", "§"), latency, health, pose, location));
                         else
-                            response.Add(String.Format(" #{0}: Type: {1}, Health: {2}, Location: {3}", id, type, health, location));
+                            response.Add(Translations.Replace(" #{0}: ([cmd.entityCmd.type]): {1}, ([cmd.entityCmd.health]): {2}, ([cmd.entityCmd.location]): {3}", id, type, health, location));
                     }
-                    response.Add(CMDDesc);
+                    response.Add(GetCmdDescTranslated());
                     return String.Join("\n", response);
                 }
             }
-            else return "Please enable entityhandling in config to use this command.";
+            else return Translations.Get("extra.entity_required");
         }
     }
 }

@@ -81,19 +81,19 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (handler.GetTerrainEnabled() && protocolversion > MC1152Version)
             {
-                ConsoleIO.WriteLineFormatted("§cTerrain & Movements currently not handled for that MC version.");
+                Translations.WriteLineFormatted("extra.terrainandmovement_disabled");
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1163Version))
             {
-                ConsoleIO.WriteLineFormatted("§cInventories are currently not handled for that MC version.");
+                Translations.WriteLineFormatted("extra.inventory_disabled");
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1163Version))
             {
-                ConsoleIO.WriteLineFormatted("§cEntities are currently not handled for that MC version.");
+                Translations.WriteLineFormatted("extra.entity_disabled");
                 handler.SetEntityHandlingEnabled(false);
             }
 
@@ -101,7 +101,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocolversion >= MC113Version)
             {
                 if (protocolVersion > MC1152Version && handler.GetTerrainEnabled())
-                    throw new NotImplementedException("Please update block types handling for this Minecraft version. See Material.cs");
+                    throw new NotImplementedException(Translations.Get("exception.palette.block"));
                 if (protocolVersion >= MC115Version)
                     Block.Palette = new Palette115();
                 else if (protocolVersion >= MC114Version)
@@ -114,7 +114,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocolversion >= MC113Version)
             {
                 if (protocolversion > MC1163Version && handler.GetEntityHandlingEnabled())
-                    throw new NotImplementedException("Please update entity types handling for this Minecraft version. See EntityType.cs");
+                    throw new NotImplementedException(Translations.Get("exception.palette.entity"));
                 if (protocolversion >= MC1162Version)
                     entityPalette = new EntityPalette1162();
                 else if (protocolversion >= MC116Version)
@@ -131,7 +131,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (protocolversion >= MC116Version)
             {
                 if (protocolversion > MC1163Version && handler.GetInventoryEnabled())
-                    throw new NotImplementedException("Please update item types handling for this Minecraft version. See ItemType.cs");
+                    throw new NotImplementedException(Translations.Get("exception.palette.item"));
                 if (protocolversion >= MC1162Version)
                     itemPalette = new ItemPalette1162();
                 else itemPalette = new ItemPalette1161();
@@ -1004,7 +1004,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (innerException is ThreadAbortException || innerException is SocketException || innerException.InnerException is SocketException)
                     throw; //Thread abort or Connection lost rather than invalid data
                 throw new System.IO.InvalidDataException(
-                    String.Format("Failed to process incoming packet of type {0}. (PacketID: {1}, Protocol: {2}, LoginPhase: {3}, InnerException: {4}).",
+                    Translations.Get("exception.packet_process",
                         packetPalette.GetIncommingTypeById(packetID),
                         packetID,
                         protocolversion,
@@ -1120,12 +1120,12 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else if (packetID == 0x02) //Login successful
                 {
-                    ConsoleIO.WriteLineFormatted("§8Server is in offline mode.");
+                    Translations.WriteLineFormatted("mcc.server_offline");
                     login_phase = false;
 
                     if (!pForge.CompleteForgeHandshake())
                     {
-                        ConsoleIO.WriteLineFormatted("§8Forge Login Handshake did not complete successfully");
+                        Translations.WriteLineFormatted("error.forge");
                         return false;
                     }
 
@@ -1146,14 +1146,14 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
 
             if (Settings.DebugMessages)
-                ConsoleIO.WriteLineFormatted("§8Crypto keys & hash generated.");
+                Translations.WriteLineFormatted("debug.crypto");
 
             if (serverIDhash != "-")
             {
-                Console.WriteLine("Checking Session...");
+                Translations.WriteLine("mcc.session");
                 if (!ProtocolHandler.SessionCheck(uuid, sessionID, CryptoHandler.getServerHash(serverIDhash, serverKey, secretKey)))
                 {
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, "Failed to check session.");
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
                     return false;
                 }
             }
@@ -1185,7 +1185,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     if (!pForge.CompleteForgeHandshake())
                     {
-                        ConsoleIO.WriteLineFormatted("§8Forge StartEncryption Handshake did not complete successfully");
+                        Translations.WriteLineFormatted("error.forge_encrypt");
                         return false;
                     }
 
@@ -1321,7 +1321,7 @@ namespace MinecraftClient.Protocol.Handlers
                             // Check for forge on the server.
                             Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);
 
-                            ConsoleIO.WriteLineFormatted("§8Server version : " + version + " (protocol v" + protocolversion + (forgeInfo != null ? ", with Forge)." : ")."));
+                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.server_protocol", version, protocolversion + (forgeInfo != null ? Translations.Get("mcc.with_forge") : "")));
 
                             return true;
                         }

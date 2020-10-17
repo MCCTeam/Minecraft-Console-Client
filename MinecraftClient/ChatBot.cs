@@ -50,9 +50,7 @@ namespace MinecraftClient
                     return master.Handler;
                 if (_handler != null)
                     return _handler;
-                throw new InvalidOperationException(
-                    "ChatBot methods should NOT be called in the constructor as API handler is not initialized yet."
-                    + " Override Initialize() or AfterGameJoined() instead to perform initialization tasks.");
+                throw new InvalidOperationException(Translations.Get("exception.chatbot.init"));
             }
         }
         private bool MessageCooldownEnded
@@ -763,6 +761,26 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Write the translated text in the console by giving a translation key. Nothing will be sent to the server.
+        /// </summary>
+        /// <param name="key">Translation key</param>
+        /// <param name="args"></param>
+        protected void LogToConsoleTranslated(string key, params object[] args)
+        {
+            LogToConsole(Translations.TryGet(key, args));
+        }
+
+        /// <summary>
+        /// Write the translated text in the console by giving a translation key, but only if DebugMessages is enabled in INI file. Nothing will be sent to the server.
+        /// </summary>
+        /// <param name="key">Translation key</param>
+        /// <param name="args"></param>
+        protected void LogDebugToConsoleTranslated(string key, params object[] args)
+        {
+            LogDebugToConsole(Translations.TryGet(key, args));
+        }
+
+        /// <summary>
         /// Disconnect from the server and restart the program
         /// It will unload and reload all the bots and then reconnect to the server
         /// </summary>
@@ -771,7 +789,7 @@ namespace MinecraftClient
         protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0)
         {
             if (Settings.DebugMessages)
-                ConsoleIO.WriteLogLine(String.Format("[{0}] Disconnecting and Reconnecting to the Server", this.GetType().Name));
+                ConsoleIO.WriteLogLine(Translations.Get("chatbot.reconnect", this.GetType().Name));
             McClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart(delaySeconds);
         }
@@ -1264,9 +1282,9 @@ namespace MinecraftClient
         /// <param name="cmdDesc">Description/usage of the command</param>
         /// <param name="callback">Method for handling the command</param>
         /// <returns>True if successfully registered</returns>
-        protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, CommandRunner callback)
+        protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
         {
-            return Handler.RegisterCommand(cmdName, cmdDesc, callback);
+            return Handler.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
         }
 
         /// <summary>
@@ -1337,9 +1355,11 @@ namespace MinecraftClient
 
             private readonly string _cmdName;
             private readonly string _cmdDesc;
+            private readonly string _cmdUsage;
 
-            public override string CMDName { get { return _cmdName; } }
-            public override string CMDDesc { get { return _cmdDesc; } }
+            public override string CmdName { get { return _cmdName; } }
+            public override string CmdUsage { get { return _cmdUsage; } }
+            public override string CmdDesc { get { return _cmdDesc; } }
 
             public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
             {
@@ -1349,13 +1369,15 @@ namespace MinecraftClient
             /// <summary>
             /// ChatBotCommand Constructor
             /// </summary>
-            /// <param name="CMDName">Name of the command</param>
-            /// <param name="CMDDesc">Description/usage of the command</param>
-            /// <param name="runner">Method for handling the command</param>
-            public ChatBotCommand(string cmdName, string cmdDesc, CommandRunner callback)
+            /// <param name="cmdName">Name of the command</param>
+            /// <param name="cmdDesc">Description of the command. Support tranlation.</param>
+            /// <param name="cmdUsage">Usage of the command</param>
+            /// <param name="callback">Method for handling the command</param>
+            public ChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
             {
                 this._cmdName = cmdName;
                 this._cmdDesc = cmdDesc;
+                this._cmdUsage = cmdUsage;
                 this.Runner = callback;
             }
         }

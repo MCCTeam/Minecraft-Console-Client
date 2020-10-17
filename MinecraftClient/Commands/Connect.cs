@@ -7,8 +7,9 @@ namespace MinecraftClient.Commands
 {
     public class Connect : Command
     {
-        public override string CMDName { get { return "connect"; } }
-        public override string CMDDesc { get { return "connect <server> [account]: connect to the specified server."; } }
+        public override string CmdName { get { return "connect"; } }
+        public override string CmdUsage { get { return "connect <server> [account]"; } }
+        public override string CmdDesc { get { return "cmd.connect.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -19,7 +20,7 @@ namespace MinecraftClient.Commands
                 {
                     if (!Settings.SetAccount(args[1]))
                     {
-                        return "Unknown account '" + args[1] + "'.";
+                        return Translations.Get("cmd.connect.unknown", args[1]);
                     }
                 }
 
@@ -28,9 +29,9 @@ namespace MinecraftClient.Commands
                     Program.Restart();
                     return "";
                 }
-                else return "Invalid server IP '" + args[0] + "'.";
+                else return Translations.Get("cmd.connect.invalid_ip", args[0]);
             }
-            else return CMDDesc;
+            else return GetCmdDescTranslated();
         }
     }
 }

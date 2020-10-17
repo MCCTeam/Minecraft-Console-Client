@@ -7,8 +7,9 @@ namespace MinecraftClient.Commands
 {
     public class Script : Command
     {
-        public override string CMDName { get { return "script"; } }
-        public override string CMDDesc { get { return "script <scriptname>: run a script file."; } }
+        public override string CmdName { get { return "script"; } }
+        public override string CmdUsage { get { return "script <scriptname>"; } }
+        public override string CmdDesc { get { return "cmd.script.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -17,7 +18,7 @@ namespace MinecraftClient.Commands
                 handler.BotLoad(new ChatBots.Script(getArg(command), null, localVars));
                 return "";
             }
-            else return CMDDesc;
+            else return GetCmdDescTranslated();
         }
     }
 }

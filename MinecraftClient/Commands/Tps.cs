@@ -7,8 +7,9 @@ namespace MinecraftClient.Commands
 {
     class Tps : Command
     {
-        public override string CMDName { get { return "tps"; } }
-        public override string CMDDesc { get { return "Display server current tps (tick per second). May not be accurate"; } }
+        public override string CmdName { get { return "tps"; } }
+        public override string CmdUsage { get { return "tps"; } }
+        public override string CmdDesc { get { return "cmd.tps.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -19,7 +20,7 @@ namespace MinecraftClient.Commands
             else if (tps < 15)
                 color = "§e";  // Yellow
             else color = "§a"; // Green
-            return "Current tps: " + color + tps;
+            return Translations.Get("cmd.tps.current") + ": " + color + tps;
         }
     }
 }

@@ -92,7 +92,7 @@ namespace MinecraftClient.Protocol
             //File not found? Try downloading language file from Mojang's servers?
             if (!System.IO.File.Exists(Language_File))
             {
-                ConsoleIO.WriteLineFormatted("§8Downloading '" + Settings.Language + ".lang' from Mojang servers...");
+                ConsoleIO.WriteLineFormatted(Translations.Get("chat.download", Settings.Language));
                 try
                 {
                     string assets_index = DownloadString(Settings.TranslationsFile_Website_Index);
@@ -101,7 +101,7 @@ namespace MinecraftClient.Protocol
                     string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
                     string translation_file_location = Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash;
                     if (Settings.DebugMessages)
-                        ConsoleIO.WriteLineFormatted("§8Performing request to " + translation_file_location);
+                        ConsoleIO.WriteLineFormatted(Translations.Get("chat.request", translation_file_location));
 
                     StringBuilder stringBuilder = new StringBuilder();
                     foreach (KeyValuePair<string, Json.JSONData> entry in Json.ParseJson(DownloadString(translation_file_location)).Properties)
@@ -110,11 +110,11 @@ namespace MinecraftClient.Protocol
                     }
 
                     System.IO.File.WriteAllText(Language_File, stringBuilder.ToString());
-                    ConsoleIO.WriteLineFormatted("§8Done. File saved as '" + Language_File + '\'');
+                    ConsoleIO.WriteLineFormatted(Translations.Get("chat.done", Language_File));
                 }
                 catch
                 {
-                    ConsoleIO.WriteLineFormatted("§8Failed to download the file.");
+                    Translations.WriteLineFormatted("chat.fail");
                 }
             }
 
@@ -123,7 +123,7 @@ namespace MinecraftClient.Protocol
               && System.IO.File.Exists(Settings.TranslationsFile_FromMCDir))
             {
                 Language_File = Settings.TranslationsFile_FromMCDir;
-                ConsoleIO.WriteLineFormatted("§8Defaulting to en_GB.lang from your Minecraft directory.");
+                Translations.WriteLineFormatted("chat.from_dir");
             }
 
             //Load the external dictionnary of translation rules or display an error message
@@ -143,12 +143,11 @@ namespace MinecraftClient.Protocol
                 }
 
                 if (Settings.DebugMessages)
-                    ConsoleIO.WriteLineFormatted("§8Translations file loaded.");
+                    Translations.WriteLineFormatted("chat.loaded");
             }
             else //No external dictionnary found.
             {
-                ConsoleIO.WriteLineFormatted("§8Translations file not found: \"" + Language_File + "\""
-                + "\nSome messages won't be properly printed without this file.");
+                ConsoleIO.WriteLineFormatted(Translations.Get("chat.not_found", Language_File));
             }
         }
 

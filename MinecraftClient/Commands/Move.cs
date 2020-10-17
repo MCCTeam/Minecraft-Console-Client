@@ -8,8 +8,9 @@ namespace MinecraftClient.Commands
 {
     public class Move : Command
     {
-        public override string CMDName { get { return "move"; } }
-        public override string CMDDesc { get { return "move <on|off|get|up|down|east|west|north|south|x y z>: walk or start walking."; } }
+        public override string CmdName { get { return "move"; } }
+        public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|x y z>"; } }
+        public override string CmdDesc { get { return "walk or start walking."; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -19,12 +20,12 @@ namespace MinecraftClient.Commands
             if (argStr == "on")
             {
                 handler.SetTerrainEnabled(true);
-                return "Enabling Terrain and Movements on next server login, respawn or world change.";
+                return Translations.Get("cmd.move.enable");
             }
             else if (argStr == "off")
             {
                 handler.SetTerrainEnabled(false);
-                return "Disabling Terrain and Movements.";
+                return Translations.Get("cmd.move.disable");
             }
             else if (handler.GetTerrainEnabled())
             {
@@ -40,14 +41,14 @@ namespace MinecraftClient.Commands
                         case "north": direction = Direction.North; break;
                         case "south": direction = Direction.South; break;
                         case "get": return handler.GetCurrentLocation().ToString();
-                        default: return "Unknown direction '" + argStr + "'.";
+                        default: return Translations.Get("cmd.look.unknown", argStr);
                     }
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
                     {
                         handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction));
-                        return "Moving " + argStr + '.';
+                        return Translations.Get("cmd.move.moving", argStr);
                     }
-                    else return "Cannot move in that direction.";
+                    else return Translations.Get("cmd.move.dir_fail");
                 }
                 else if (args.Length == 3)
                 {
@@ -58,14 +59,14 @@ namespace MinecraftClient.Commands
                         int z = int.Parse(args[2]);
                         Location goal = new Location(x, y, z);
                         if (handler.MoveTo(goal))
-                            return "Walking to " + goal;
-                        return "Failed to compute path to " + goal;
+                            return Translations.Get("cmd.move.walk", goal);
+                        return Translations.Get("cmd.move.fail", goal);
                     }
-                    catch (FormatException) { return CMDDesc; }
+                    catch (FormatException) { return GetCmdDescTranslated(); }
                 }
-                else return CMDDesc;
+                else return GetCmdDescTranslated();
             }
-            else return "Please enable terrainandmovements to use this command.";
+            else return Translations.Get("extra.terrainandmovement_required");
         }
     }
 }
