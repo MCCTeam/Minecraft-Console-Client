@@ -7,13 +7,14 @@ namespace MinecraftClient.Commands
 {
     class ChangeSlot : Command
     {
-        public override string CMDName { get { return "changeslot"; } }
-        public override string CMDDesc { get { return "changeslot <1-9>: Change hotbar"; } }
+        public override string CmdName { get { return "changeslot"; } }
+        public override string CmdUsage { get { return "changeslot <1-9>"; } }
+        public override string CmdDesc { get { return "cmd.changeSlot.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
             if (!handler.GetInventoryEnabled())
-                return "Please enable InventoryHandling in the config file first.";
+                return Translations.Get("extra.inventory_required");
 
             if (hasArg(command))
             {
@@ -24,21 +25,21 @@ namespace MinecraftClient.Commands
                 }
                 catch (FormatException)
                 {
-                    return "Could not change slot: Not a Number";
+                    return Translations.Get("cmd.changeSlot.nan");
                 }
                 if (slot >= 1 && slot <= 9)
                 {
                     if (handler.ChangeSlot(slot-=1))
                     {
-                        return "Changed to slot " + (slot+=1);
+                        return Translations.Get("cmd.changeSlot.changed", (slot+=1));
                     }
                     else
                     {
-                        return "Could not change slot";
+                        return Translations.Get("cmd.changeSlot.fail");
                     }
                 }
             }
-            return CMDDesc;
+            return GetCmdDescTranslated();
         }
     }
 }

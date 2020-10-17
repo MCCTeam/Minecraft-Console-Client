@@ -7,8 +7,9 @@ namespace MinecraftClient.Commands
 {
     public class Debug : Command
     {
-        public override string CMDName { get { return "debug"; } }
-        public override string CMDDesc { get { return "debug [on|off]: toggle debug messages."; } }
+        public override string CmdName { get { return "debug"; } }
+        public override string CmdUsage { get { return "debug [on|off]"; } }
+        public override string CmdDesc { get { return "cmd.debug.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -17,7 +18,7 @@ namespace MinecraftClient.Commands
                 Settings.DebugMessages = (getArg(command).ToLower() == "on");
             }
             else Settings.DebugMessages = !Settings.DebugMessages;
-            return "Debug messages are now " + (Settings.DebugMessages ? "ON" : "OFF");
+            return Translations.Get(Settings.DebugMessages ? "cmd.debug.state_on" : "cmd.debug.state_off");
         }
     }
 }

@@ -7,8 +7,9 @@ namespace MinecraftClient.Commands
 {
     public class Animation : Command
     {
-        public override string CMDName { get { return "animation"; } }
-        public override string CMDDesc { get { return "animation <mainhand|offhand>"; } }
+        public override string CmdName { get { return "animation"; } }
+        public override string CmdUsage { get { return "animation <mainhand|offhand>"; } }
+        public override string CmdDesc { get { return "cmd.animation.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -20,24 +21,24 @@ namespace MinecraftClient.Commands
                     if (args[0] == "mainhand" || args[0] == "0")
                     {
                         handler.DoAnimation(0);
-                        return "Done";
+                        return Translations.Get("general.done");
                     }
                     else if (args[0] == "offhand" || args[0] == "1")
                     {
                         handler.DoAnimation(1);
-                        return "Done";
+                        return Translations.Get("general.done");
                     }
                     else
                     {
-                        return CMDDesc;
+                        return GetCmdDescTranslated();
                     }
                 }
                 else
                 {
-                    return CMDDesc;
+                    return GetCmdDescTranslated();
                 }
             }
-            else return CMDDesc;
+            else return GetCmdDescTranslated();
         }
     }
 }

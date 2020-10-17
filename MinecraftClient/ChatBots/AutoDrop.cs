@@ -64,10 +64,10 @@ namespace MinecraftClient.ChatBots
                         enable = true;
                         inventoryUpdated = 0;
                         OnUpdateFinish();
-                        return "AutoDrop enabled";
+                        return Translations.Get("bot.autoDrop.on");
                     case "off":
                         enable = false;
-                        return "AutoDrop disabled";
+                        return Translations.Get("bot.autoDrop.off");
                     case "add":
                         if (args.Length >= 2)
                         {
@@ -75,16 +75,16 @@ namespace MinecraftClient.ChatBots
                             if (Enum.TryParse(args[1], true, out item))
                             {
                                 itemList.Add(item);
-                                return "Added item " + item.ToString();
+                                return Translations.Get("bot.autoDrop.added", item.ToString());
                             }
                             else
                             {
-                                return "Incorrect item name " + args[1] + ". Please try again";
+                                return Translations.Get("bot.autoDrop.incorrect_name", args[1]);
                             }
                         }
                         else
                         {
-                            return "Usage: add <item name>";
+                            return Translations.Get("cmd.inventory.help.usage") + ": add <item name>";
                         }
                     case "remove":
                         if (args.Length >= 2)
@@ -95,30 +95,30 @@ namespace MinecraftClient.ChatBots
                                 if (itemList.Contains(item))
                                 {
                                     itemList.Remove(item);
-                                    return "Removed item " + item.ToString();
+                                    return Translations.Get("bot.autoDrop.removed", item.ToString());
                                 }
                                 else
                                 {
-                                    return "Item not in the list";
+                                    return Translations.Get("bot.autoDrop.not_in_list");
                                 }
                             }
                             else
                             {
-                                return "Incorrect item name " + args[1] + ". Please try again";
+                                return Translations.Get("bot.autoDrop.incorrect_name", args[1]);
                             }
                         }
                         else
                         {
-                            return "Usage: remove <item name>";
+                            return Translations.Get("cmd.inventory.help.usage") +  ": remove <item name>";
                         }
                     case "list":
                         if (itemList.Count > 0)
                         {
-                            return "Total " + itemList.Count + " in the list:\n" + string.Join("\n", itemList);
+                            return Translations.Get("bot.autoDrop.list", itemList.Count, string.Join("\n", itemList));
                         }
                         else
                         {
-                            return "No item in the list";
+                            return Translations.Get("bot.autoDrop.no_item");
                         }
                     default:
                         return GetHelp();
@@ -132,19 +132,20 @@ namespace MinecraftClient.ChatBots
 
         private string GetHelp()
         {
-            return "AutoDrop ChatBot command. Available commands: on, off, add, remove, list";
+            return Translations.Get("general.available_cmd", "on, off, add, remove, list");
         }
 
         public override void Initialize()
         {
             if (!GetInventoryEnabled())
             {
-                LogToConsole("Inventory handling is disabled. Unloading...");
+                LogToConsoleTranslated("extra.inventory_required");
+                LogToConsoleTranslated("general.bot_unload");
                 UnloadBot();
                 return;
             }
-            RegisterChatBotCommand("autodrop", "AutoDrop ChatBot command", CommandHandler);
-            RegisterChatBotCommand("ad", "AutoDrop ChatBot command alias", CommandHandler);
+            RegisterChatBotCommand("autodrop", Translations.Get("bot.autoDrop.cmd"), GetHelp(), CommandHandler);
+            RegisterChatBotCommand("ad", Translations.Get("bot.autoDrop.alias"), GetHelp(), CommandHandler);
         }
 
         public override void Update()

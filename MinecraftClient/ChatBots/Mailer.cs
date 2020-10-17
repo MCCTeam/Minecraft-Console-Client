@@ -156,53 +156,53 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void Initialize()
         {
-            LogDebugToConsole("Initializing Mailer with settings:");
-            LogDebugToConsole(" - Database File: " + Settings.Mailer_DatabaseFile);
-            LogDebugToConsole(" - Ignore List: " + Settings.Mailer_IgnoreListFile);
-            LogDebugToConsole(" - Public Interactions: " + Settings.Mailer_PublicInteractions);
-            LogDebugToConsole(" - Max Mails per Player: " + Settings.Mailer_MaxMailsPerPlayer);
-            LogDebugToConsole(" - Max Database Size: " + Settings.Mailer_MaxDatabaseSize);
-            LogDebugToConsole(" - Mail Retention: " + Settings.Mailer_MailRetentionDays + " days");
+            LogDebugToConsoleTranslated("bot.mailer.init");
+            LogDebugToConsoleTranslated("bot.mailer.init.db" + Settings.Mailer_DatabaseFile);
+            LogDebugToConsoleTranslated("bot.mailer.init.ignore" + Settings.Mailer_IgnoreListFile);
+            LogDebugToConsoleTranslated("bot.mailer.init.public" + Settings.Mailer_PublicInteractions);
+            LogDebugToConsoleTranslated("bot.mailer.init.max_mails" + Settings.Mailer_MaxMailsPerPlayer);
+            LogDebugToConsoleTranslated("bot.mailer.init.db_size" + Settings.Mailer_MaxDatabaseSize);
+            LogDebugToConsoleTranslated("bot.mailer.init.mail_retention" + Settings.Mailer_MailRetentionDays + " days");
 
             if (Settings.Mailer_MaxDatabaseSize <= 0)
             {
-                LogToConsole("Cannot enable Mailer: Max Database Size must be greater than zero. Please review the settings.");
+                LogToConsoleTranslated("bot.mailer.init_fail.db_size");
                 UnloadBot();
                 return;
             }
 
             if (Settings.Mailer_MaxMailsPerPlayer <= 0)
             {
-                LogToConsole("Cannot enable Mailer: Max Mails per Player must be greater than zero. Please review the settings.");
+                LogToConsoleTranslated("bot.mailer.init_fail.max_mails");
                 UnloadBot();
                 return;
             }
 
             if (Settings.Mailer_MailRetentionDays <= 0)
             {
-                LogToConsole("Cannot enable Mailer: Mail Retention must be greater than zero. Please review the settings.");
+                LogToConsoleTranslated("bot.mailer.init_fail.mail_retention");
                 UnloadBot();
                 return;
             }
 
             if (!File.Exists(Settings.Mailer_DatabaseFile))
             {
-                LogToConsole("Creating new database file: " + Path.GetFullPath(Settings.Mailer_DatabaseFile));
+                LogToConsoleTranslated("bot.mailer.create.db", Path.GetFullPath(Settings.Mailer_DatabaseFile));
                 new MailDatabase().SaveToFile(Settings.Mailer_DatabaseFile);
             }
 
             if (!File.Exists(Settings.Mailer_IgnoreListFile))
             {
-                LogToConsole("Creating new ignore list: " + Path.GetFullPath(Settings.Mailer_IgnoreListFile));
+                LogToConsoleTranslated("bot.mailer.create.ignore", Path.GetFullPath(Settings.Mailer_IgnoreListFile));
                 new IgnoreList().SaveToFile(Settings.Mailer_IgnoreListFile);
             }
 
             lock (readWriteLock)
             {
-                LogDebugToConsole("Loading database file: " + Path.GetFullPath(Settings.Mailer_DatabaseFile));
+                LogDebugToConsoleTranslated("bot.mailer.load.db", Path.GetFullPath(Settings.Mailer_DatabaseFile));
                 mailDatabase = MailDatabase.FromFile(Settings.Mailer_DatabaseFile);
 
-                LogDebugToConsole("Loading ignore list: " + Path.GetFullPath(Settings.Mailer_IgnoreListFile));
+                LogDebugToConsoleTranslated("bot.mailer.load.ignore", Path.GetFullPath(Settings.Mailer_IgnoreListFile));
                 ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
             }
 
@@ -210,7 +210,7 @@ namespace MinecraftClient.ChatBots
             mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_DatabaseFile), Path.GetFileName(Settings.Mailer_DatabaseFile), FileMonitorCallback);
             ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_IgnoreListFile), Path.GetFileName(Settings.Mailer_IgnoreListFile), FileMonitorCallback);
 
-            RegisterChatBotCommand("mailer", "Subcommands: getmails, addignored, getignored, removeignored", ProcessInternalCommand);
+            RegisterChatBotCommand("mailer", Translations.Get("bot.mailer.cmd"), "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace MinecraftClient.ChatBots
                                         if (message.Length <= maxMessageLength)
                                         {
                                             Mail mail = new Mail(username, recipient, message, anonymous, DateTime.Now);
-                                            LogToConsole("Saving message: " + mail.ToString());
+                                            LogToConsoleTranslated("bot.mailer.saving", mail.ToString());
                                             lock (readWriteLock)
                                             {
                                                 mailDatabase.Add(mail);
@@ -276,7 +276,7 @@ namespace MinecraftClient.ChatBots
                             break;
                     }
                 }
-                else LogDebugToConsole(username + " is ignored!");
+                else LogDebugToConsoleTranslated("bot.mailer.user_ignored", username);
             }
         }
 
@@ -288,7 +288,7 @@ namespace MinecraftClient.ChatBots
             DateTime dateNow = DateTime.Now;
             if (nextMailSend < dateNow)
             {
-                LogDebugToConsole("Looking for mails to send @ " + DateTime.Now);
+                LogDebugToConsoleTranslated("bot.mailer.process_mails", DateTime.Now);
 
                 // Process at most 3 mails at a time to avoid spamming. Other mails will be processed on next mail send
                 HashSet<string> onlinePlayersLowercase = new HashSet<string>(GetOnlinePlayers().Select(name => name.ToLower()));
@@ -297,7 +297,7 @@ namespace MinecraftClient.ChatBots
                     string sender = mail.Anonymous ? "Anonymous" : mail.Sender;
                     SendPrivateMessage(mail.Recipient, sender + " mailed: " + mail.Content);
                     mail.setDelivered();
-                    LogDebugToConsole("Delivered: " + mail.ToString());
+                    LogDebugToConsoleTranslated("bot.mailer.delivered", mail.ToString());
                 }
 
                 lock (readWriteLock)
@@ -335,11 +335,11 @@ namespace MinecraftClient.ChatBots
                 string commandName = args[0].ToLower();
                 switch (commandName)
                 {
-                    case "getmails":
-                        return "== Mails in database ==\n" + string.Join("\n", mailDatabase);
+                    case "getmails": // Sorry, I (ReinforceZwei) replaced "=" to "-" because it would affect the parsing of translation file (key=value)
+                        return Translations.Get("bot.mailer.cmd.getmails", string.Join("\n", mailDatabase)); 
 
                     case "getignored":
-                        return "== Ignore list ==\n" + string.Join("\n", ignoreList);
+                        return Translations.Get("bot.mailer.cmd.getignored", string.Join("\n", ignoreList));
 
                     case "addignored":
                     case "removeignored":
@@ -356,7 +356,7 @@ namespace MinecraftClient.ChatBots
                                         ignoreList.SaveToFile(Settings.Mailer_IgnoreListFile);
                                     }
                                 }
-                                return "Added " + args[1] + " to the ignore list!";
+                                return Translations.Get("bot.mailer.cmd.ignore.added", args[1]);
                             }
                             else
                             {
@@ -368,13 +368,13 @@ namespace MinecraftClient.ChatBots
                                         ignoreList.SaveToFile(Settings.Mailer_IgnoreListFile);
                                     }
                                 }
-                                return "Removed " + args[1] + " from the ignore list!";
+                                return Translations.Get("bot.mailer.cmd.ignore.removed", args[1]);
                             }
                         }
-                        else return "Missing or invalid name. Usage: " + commandName + " <username>";
+                        else return Translations.Get("bot.mailer.cmd.ignore.invalid", commandName);
                 }
             }
-            return "See usage: /help mailer";
+            return Translations.Get("bot.mailer.cmd.help") + ": /help mailer";
         }
     }
 }

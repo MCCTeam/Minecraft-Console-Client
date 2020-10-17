@@ -25,8 +25,8 @@ namespace MinecraftClient.ChatBots
         {
             if (!GetEntityHandlingEnabled())
             {
-                LogToConsole("Entity Handling is not enabled in the config file!");
-                LogToConsole("This bot will be unloaded.");
+                LogToConsoleTranslated("extra.entity_required");
+                LogToConsoleTranslated("general.bot_unload");
                 UnloadBot();
             }
             inventoryEnabled = GetInventoryEnabled();
@@ -50,7 +50,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (GetCurrentLocation().Distance(entity.Location) < 2 && !isFishing)
                 {
-                    LogToConsole("Threw a fishing rod");
+                    LogToConsoleTranslated("bot.autoFish.throw");
                     fishingRod = entity;
                     LastPos = entity.Location;
                     isFishing = true;
@@ -108,14 +108,14 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void OnCaughtFish()
         {
-            LogToConsole(GetTimestamp() + ": Caught a fish!");
+            LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.caught"));
             // retract fishing rod
             UseItemInHand();
             if (inventoryEnabled)
             {
                 if (!hasFishingRod())
                 {
-                    LogToConsole(GetTimestamp() + ": No Fishing Rod on hand. Maybe broken?");
+                    LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.no_rod"));
                     return;
                 }
             }

@@ -38,19 +38,19 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (Handler.GetTerrainEnabled())
             {
-                ConsoleIO.WriteLineFormatted("§cTerrain & Movements currently not handled for that MC version.");
+                Translations.WriteLineFormatted("extra.terrainandmovement_disabled");
                 Handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled())
             {
-                ConsoleIO.WriteLineFormatted("§cInventories are currently not handled for that MC version.");
+                Translations.WriteLineFormatted("extra.inventory_disabled");
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled())
             {
-                ConsoleIO.WriteLineFormatted("§cEntities are currently not handled for that MC version.");
+                Translations.WriteLineFormatted("extra.entity_disabled");
                 handler.SetEntityHandlingEnabled(false);
             }
         }
@@ -167,7 +167,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x84: readData(11); nbr = readNextShort(); if (nbr > 0) { readData(nbr); } break;
                 case 0x85: if (protocolversion >= 74) { readData(13); } break;
                 case 0xC8:
-                    if (readNextInt() == 2022) { ConsoleIO.WriteLogLine("You are dead. Type /respawn to respawn."); }
+                    if (readNextInt() == 2022) { Translations.WriteLogLine("mcc.player_dead"); }
                     if (protocolversion >= 72) { readData(4); } else readData(1);
                     break;
                 case 0xC9:
@@ -468,15 +468,15 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] token = readNextByteArray();
 
                 if (serverID == "-")
-                    ConsoleIO.WriteLineFormatted("§8Server is in offline mode.");
+                    Translations.WriteLineFormatted("mcc.server_offline");
                 else if (Settings.DebugMessages)
-                    ConsoleIO.WriteLineFormatted("§8Handshake successful. (Server ID: " + serverID + ')');
+                    ConsoleIO.WriteLineFormatted(Translations.Get("mcc.handshake", serverID));
 
                 return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey);
             }
             else
             {
-                ConsoleIO.WriteLineFormatted("§8Invalid response to Handshake packet");
+                Translations.WriteLineFormatted("error.invalid_response");
                 return false;
             }
         }
@@ -487,14 +487,14 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
 
             if (Settings.DebugMessages)
-                ConsoleIO.WriteLineFormatted("§8Crypto keys & hash generated.");
+                Translations.WriteLineFormatted("debug.crypto");
 
             if (serverIDhash != "-")
             {
-                Console.WriteLine("Checking Session...");
+                Translations.WriteLine("mcc.session");
                 if (!ProtocolHandler.SessionCheck(uuid, sessionID, CryptoHandler.getServerHash(serverIDhash, serverKey, secretKey)))
                 {
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, "Failed to check session.");
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
                     return false;
                 }
             }
@@ -531,7 +531,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else
             {
-                ConsoleIO.WriteLineFormatted("§8Invalid response to StartEncryption packet");
+                Translations.WriteLineFormatted("error.invalid_encrypt");
                 return false;
             }
         }
@@ -837,7 +837,7 @@ namespace MinecraftClient.Protocol.Handlers
                         version = "B1.8.1 - 1.3.2";
                     }
 
-                    ConsoleIO.WriteLineFormatted("§8Server version : MC " + version + " (protocol v" + protocolversion + ").");
+                    ConsoleIO.WriteLineFormatted(Translations.Get("mcc.use_version", version, protocolversion));
 
                     return true;
                 }
