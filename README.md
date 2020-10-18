@@ -46,6 +46,12 @@ Edit `MinecraftClient.csproj` to set the Build target to `Release` on [line 4](h
 
 If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request. The *Indev* branch for contributions to future stable versions is no longer used as MCC is currently distributed as development builds only.
 
+## Translate Minecraft Console Client to your language
+
+If you would like to translate Minecraft Console Client to a different language, please download the translation file from [the repository](https://github.com/ORelio/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) or just fork the repository. Once you finished the translation work, submit a pull request or send us the file in case you did not fork the repository.
+
+To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if does not exist.
+
 ## License
 
 Unless specifically stated, the code is from the MCC developers, and available under CDDL-1.0.
