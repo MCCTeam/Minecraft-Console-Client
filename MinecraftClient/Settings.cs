@@ -28,7 +28,8 @@ namespace MinecraftClient
         public static string ServerIP = "";
         public static ushort ServerPort = 25565;
         public static string ServerVersion = "";
-        public static bool ServerMayHaveForge = true;
+        public static bool ServerForceForge = false;
+        public static bool ServerAutodetectForge = true;
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
 
@@ -270,7 +271,6 @@ namespace MinecraftClient
                                                 case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
                                                 case "chatbotlogfile": chatbotLogFile = argValue; break;
                                                 case "mcversion": ServerVersion = argValue; break;
-                                                case "mcforge": ServerMayHaveForge = argValue.ToLower() == "auto" || str2bool(argValue); break;
                                                 case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
                                                 case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
@@ -375,6 +375,19 @@ namespace MinecraftClient
                                                     {
                                                         ResolveSrvRecords = str2bool(argValue);
                                                         ResolveSrvRecordsShortTimeout = false;
+                                                    }
+                                                    break;
+
+                                                case "mcforge":
+                                                    if (argValue.ToLower() == "auto")
+                                                    {
+                                                        ServerAutodetectForge = true;
+                                                        ServerForceForge = false;
+                                                    }
+                                                    else
+                                                    {
+                                                        ServerAutodetectForge = false;
+                                                        ServerForceForge = str2bool(argValue);
                                                     }
                                                     break;
                                             }
