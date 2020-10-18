@@ -52,6 +52,8 @@ If you would like to translate Minecraft Console Client to a different language,
 
 To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if does not exist.
 
+For the names of the translation file, please see [this comment](https://github.com/ORelio/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
+
 ## License
 
 Unless specifically stated, the code is from the MCC developers, and available under CDDL-1.0.
