@@ -447,6 +447,30 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Server Info: Check if we can force-enable Forge support for this Minecraft version without using server Ping
+        /// </summary>
+        /// <param name="protocolVersion">Minecraft protocol version</param>
+        /// <returns>TRUE if we can force-enable Forge support without using server Ping</returns>
+        public static bool ServerMayForceForge(int protocolVersion)
+        {
+            return protocolVersion >= ProtocolHandler.MCVer2ProtocolVersion("1.13");
+        }
+
+        /// <summary>
+        /// Server Info: Consider Forge to be enabled regardless of server Ping
+        /// </summary>
+        /// <param name="protocolVersion">Minecraft protocol version</param>
+        /// <returns>ForgeInfo item stating that Forge is enabled</returns>
+        public static ForgeInfo ServerForceForge(int protocolVersion)
+        {
+            if (ServerMayForceForge(protocolVersion))
+            {
+                return new ForgeInfo(FMLVersion.FML2);
+            }
+            else throw new InvalidOperationException(Translations.Get("error.forgeforce"));
+        }
+
+        /// <summary>
         /// Server Info: Check for For Forge on a Minecraft server Ping result (Handles FML and FML2
         /// </summary>
         /// <param name="jsonData">JSON data returned by the server</param>

@@ -305,6 +305,26 @@ namespace MinecraftClient.Protocol
             }
         }
 
+        /// <summary>
+        /// Check if we can force-enable Forge support for a Minecraft version without using server Ping
+        /// </summary>
+        /// <param name="protocolVersion">Minecraft protocol version</param>
+        /// <returns>TRUE if we can force-enable Forge support without using server Ping</returns>
+        public static bool ProtocolMayForceForge(int protocol)
+        {
+            return Protocol18Forge.ServerMayForceForge(protocol);
+        }
+
+        /// <summary>
+        /// Server Info: Consider Forge to be enabled regardless of server Ping
+        /// </summary>
+        /// <param name="protocolVersion">Minecraft protocol version</param>
+        /// <returns>ForgeInfo item stating that Forge is enabled</returns>
+        public static ForgeInfo ProtocolForceForge(int protocol)
+        {
+            return Protocol18Forge.ServerForceForge(protocol);
+        }
+
         public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError };
 
         /// <summary>

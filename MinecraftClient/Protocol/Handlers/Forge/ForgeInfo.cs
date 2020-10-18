@@ -34,6 +34,24 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         internal FMLVersion Version;
 
         /// <summary>
+        /// Create a new ForgeInfo with the given version.
+        /// </summary>
+        /// <param name="fmlVersion">FML version to use</param>
+        internal ForgeInfo(FMLVersion fmlVersion)
+        {
+            switch (fmlVersion)
+            {
+                case FMLVersion.FML2:
+                    this.Mods = new List<ForgeMod>();
+                    this.Mods.Add(new ForgeMod("forge", "ANY"));
+                    this.Version = fmlVersion;
+                    break;
+                default:
+                    throw new InvalidOperationException(Translations.Get("error.forgeforce"));
+            }
+        }
+
+        /// <summary>
         /// Create a new ForgeInfo from the given data.
         /// </summary>
         /// <param name="data">The modinfo JSON tag.</param>

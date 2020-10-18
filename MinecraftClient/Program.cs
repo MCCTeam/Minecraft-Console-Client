@@ -124,7 +124,7 @@ namespace MinecraftClient
             //Test line to troubleshoot invisible colors
             if (Settings.DebugMessages)
             {
-                Translations.WriteLineFormatted(Translations.Get("debug.color_test", "[0123456789ABCDEF]: [§00§11§22§33§44§55§66§77§88§99§aA§bB§cC§dD§eE§fF§r]"));
+                ConsoleIO.WriteLineFormatted(Translations.Get("debug.color_test", "[0123456789ABCDEF]: [§00§11§22§33§44§55§66§77§88§99§aA§bB§cC§dD§eE§fF§r]"));
             }
 
             //Load cached sessions from disk if necessary
@@ -254,7 +254,8 @@ namespace MinecraftClient
                     }
                 }
 
-                if (protocolversion == 0 || Settings.ServerMayHaveForge)
+                //Retrieve server info if version is not manually set OR if need to retrieve Forge information
+                if (protocolversion == 0 || Settings.ServerAutodetectForge || (Settings.ServerForceForge && !ProtocolHandler.ProtocolMayForceForge(protocolversion)))
                 {
                     if (protocolversion != 0)
                         Translations.WriteLine("mcc.forge");
@@ -266,6 +267,22 @@ namespace MinecraftClient
                     }
                 }
 
+                //Force-enable Forge support?
+                if (Settings.ServerForceForge && forgeInfo == null)
+                {
+                    if (ProtocolHandler.ProtocolMayForceForge(protocolversion))
+                    {
+                        Translations.WriteLine("mcc.forgeforce");
+                        forgeInfo = ProtocolHandler.ProtocolForceForge(protocolversion);
+                    }
+                    else
+                    {
+                        HandleFailure(Translations.Get("error.forgeforce"), true, ChatBots.AutoRelog.DisconnectReason.ConnectionLost);
+                        return;
+                    }
+                }
+
+                //Proceed to server login
                 if (protocolversion != 0)
                 {
                     try
