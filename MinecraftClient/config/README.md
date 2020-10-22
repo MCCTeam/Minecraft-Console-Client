@@ -58,31 +58,35 @@ These commands can be performed from the chat prompt, scripts or remote control.
 From chat prompt, commands must by default be prepended with a slash, eg. /quit
 In scripts and remote control, no slash is needed to perform the command.
 
- - quit or exit: disconnect from the server and close the application
- - reco [account] : disconnect and reconnect to the server
- - connect <server> [account] : go to the given server and resume the script
- - script <script name\> : run a script containing a list of commands
- - send <text> : send a message or a command to the server
- - respawn : Use this to respawn if you are dead (like clicking "respawn" ingame)
- - log <text> : display some text in the console (useful for scripts)
- - list : list players logged in to the server (uses tab list info sent by server)
- - set varname=value : set a value which can be used as %varname% in further commands
- - wait <time> : wait X ticks (10 ticks = ~1 second. Only for scripts)
- - move : used for moving when terrain and movements feature is enabled
- - look : used for looking at direction when terrain and movements is enabled
- - debug : toggle debug messages, useful for chatbot developers
- - help : show command help. Tip: Use "/send /help" for server help
+ - `quit` or `exit`: disconnect from the server and close the application
+ - `reco [account]`: disconnect and reconnect to the server
+ - `connect <server> [account]`: go to the given server and resume the script
+ - `script <script name>`: run a script containing a list of commands
+ - `send <text>`: send a message or a command to the server
+ - `respawn`: Use this to respawn if you are dead (like clicking "respawn" ingame)
+ - `log <text>`: display some text in the console (useful for scripts)
+ - `list`: list players logged in to the server (uses tab list info sent by server)
+ - `set varname=value`: set a value which can be used as `%varname%` in further commands
+ - `wait <time>`: wait X ticks (10 ticks = ~1 second. Only for scripts)
+ - `move`: used for moving when terrain and movements feature is enabled
+ - `look`: used for looking at direction when terrain and movements is enabled
+ - `debug`: toggle debug messages, useful for chatbot developers
+ - `help`: show command help. Tip: Use "/send /help" for server help
+ - Some commands may not be documented yet, use `help` to list them all.
 
-[account] is an account alias defined in accounts file, read more below.
-<server> is either a server IP or a server alias defined in servers file
+`[account]` is an account alias defined in accounts file, read more below.
+
+`<server>` is either a server IP or a server alias defined in servers file
 
 Servers and Accounts file
 ------
 
 These two files can be used to store info about accounts and server, and give them aliases.
 The purpose of this is to give them an easy-to-remember alias and to avoid typing account passwords.
+
 As what you are typing can be read by the server admin if using the remote control feature,
 using aliases is really important for privacy and for safely switching between accounts.
+
 To use these files, simply take a look at sample-accounts.txt and sample-servers.txt.
 Once you have created your files, fill the 'accountlist' and 'serverlist' fields in INI file.
 
@@ -124,8 +128,7 @@ C# scripts can be used for creating your own ChatBot without recompiling the who
 These bots are embedded in a script file, which is compiled and loaded on the fly.
 ChatBots can access plugin channels for communicating with some server plugins.
 
-For knowing everything the API has to offer, you can look at CSharpRunner.cs and ChatBot.cs.
-The latest version for these files can be found on the GitHub repository.
+For knowing everything the API has to offer, you can look at [CSharpRunner.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) and [ChatBot.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs).
 
 The structure of the C# file must be like this:
 ```csharp
@@ -137,10 +140,13 @@ MCC.LoadBot(<instance of your class which extends the ChatBot class>);
 
 <your class code here>
 ```
-The first line always needs to be "//MCCScript 1.0" comment, as the program requires it to determine the version of the script.
-Everything between "//MCCScript 1.0" and "//MCCScript Extensions" comments will be treated as code, that part of the code will be inserted into the constructor during the compile time.
-You can include C# libraries/namespaces using the following syntax: //using <name>;
-Example: //using System.Net;
+The first line always needs to be `//MCCScript 1.0` comment, as the program requires it to determine the version of the script.
+
+Everything between `//MCCScript 1.0` and `//MCCScript Extensions` comments will be treated as code, that part of the code will be inserted into the constructor during the compile time. The main part of the script has access to the [CSharpRunner.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) API while the ChatBot defined in the Extensions section will use the [ChatBot.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs) API.
+
+You can include C# libraries/namespaces using the following syntax: `//using <name>;`. Example: `//using System.Net;`
+
+Some sample scripts and optional Chatbots are made available in the [config](https://github.com/ORelio/Minecraft-Console-Client/tree/master/MinecraftClient/config) folder.
 
 Using HTTP/Socks proxies
 ------
@@ -180,37 +186,39 @@ About Replay Mod feature
 ------
 Replay Mod is _A Minecraft Mod to record, relive and share your experience._ You can see more at https://www.replaymod.com/
 
-MCC support recording and saving your game to a file which can be used by Replay Mod. You can simply enable ReplayMod in the `.ini` setting to use this feature. The only limitation is the client player (you) will not be shown in the replay. Please be reminded that you MUST exit MCC with `/quit` command or use `/replay stop` command before closing MCC. Your replay will be lost if you force-closed MCC (i.e. Ctrl+C).
+MCC supports recording and saving your game to a file which can be used by Replay Mod. You can simply enable ReplayMod in the `.ini` setting to use this feature. The only limitation is the client player (you) will not be shown in the replay. Please be reminded that you MUST exit MCC with `/quit` command or use `/replay stop` command before closing MCC as your replay will become corrupt if you force-close MCC with CTRL+C or the [X] button.
 
 Using the Alerts bot
 ------
 
 Write in alerts.txt the words you want the console to beep/alert you on.
 Write in alerts-exclude.txt the words you want NOT to be alerted on.
-For example write Yourname in alerts and <Yourname> in alerts-exclude.txt
+For example write Yourname in alerts and <Yourname\> in alerts-exclude.txt to avoid alerts when you are talking.
 
 Using the AutoRelog bot
 ------
 
 Write in kickmessages.txt some words, such as "Restarting" for example.
 If the kick message contains one of them, you will automatically be re-connected.
-A kick message "Connection has been lost." is generated by the console itself when connection is lost.
-A kick message "Login failed." is generated the same way when it failed to login to the server.
-A kick message "Failed to ping this IP." is generated when it failed to ping the server.
+
+- A kick message `Connection has been lost.` is generated by the console itself when connection is lost.
+- A kick message `Login failed.` is generated the same way when it failed to login to the server.
+- A kick message `Failed to ping this IP.` is generated when it failed to ping the server.
+
 You can use them for reconnecting when connection is lost or the login failed.
-If you want to always reconnect, set ignorekickmessage=true in MinecraftClient.ini. Use at own risk!
+If you want to always reconnect, set `ignorekickmessage=true` in `MinecraftClient.ini`. Use at own risk!
 
 Using the Script Scheduler
 ------
 
 The script scheduler allows you to perform scripts on various events.
 Simply enable the ScriptScheduler bot and specify a tasks file in your INI file.
-Please read sample-tasks.ini for learning how to make your own task file.
+Please read `sample-tasks.ini` for learning how to make your own task file.
 
 Using the hangman game
 ------
 
-Use "/tell <bot username> start" to start the game.
+Use `/tell <bot username> start` to start the game.
 Don't forget to add your username in botowners INI setting if you want it to obey.
 Edit the provided configuration files to customize the words and the bot owners.
 If it doesn't respond to bot owners, read the "Detecting chat messages" section.
@@ -222,13 +230,13 @@ When the remote control bot is enabled, you can send commands to your bot using 
 Don't forget to add your username in botowners INI setting if you want it to obey.
 If it doesn't respond to bot owners, read the "Detecting chat messages" section.
 Please note that server admins can read what you type and output from the bot.
-They can also impersonate bot owners with /nick. See [#1142](https://github.com/ORelio/Minecraft-Console-Client/issues/1142) for more info.
+They can also impersonate bot owners with `/nick`. See [#1142](https://github.com/ORelio/Minecraft-Console-Client/issues/1142) for more info.
 
-To perform a command simply do the following: /tell <yourbot> <thecommand>
-Where <thecommand> is an internal command as described in "Internal commands" section.
-You can remotely send chat messages or commands using /tell <yourbot> send <thetext>
+To perform a command simply do the following: `/tell <yourbot> <thecommand>`
+Where `<thecommand>` is an internal command as described in "Internal commands" section.
+You can remotely send chat messages or commands using `/tell <yourbot> send <thetext>`
 
-Remote control system can by default auto-accept /tpa and /tpahere requests from the bot owners.
+Remote control system can by default auto-accept `/tpa` and `/tpahere` requests from the bot owners.
 Auto-accept can be disabled or extended to requests from anyone in remote control configuration.
 
 Using the AutoRespond feature
@@ -236,12 +244,12 @@ Using the AutoRespond feature
 
 The AutoRespond bot allows you to automatically react on specific chat messages or server announcements.
 You can use either a string to detect in chat messages, or an advanced regular expression.
-For more information about how to define match rules, please refer to sample-matches.ini
+For more information about how to define match rules, please refer to `sample-matches.ini`
 
 Using the Auto Attack
 ------
 
-The AutoAttack bot allows you to automatically attack mobs around you (precisely within radius of 4 block).
+The AutoAttack bot allows you to automatically attack mobs around you within radius of 4 block.
 To use this bot, you will need to enable **Entity Handling** in the config file first.
 
 Using the Auto Fishing
@@ -264,16 +272,16 @@ Using the Mailer
 
 The Mailer bot can store and relay mails much like Essential's /mail command.
 
-* /tell <Bot> mail [RECIPIENT] [MESSAGE]: Save your message for future delivery
-* /tell <Bot> tellonym [RECIPIENT] [MESSAGE]: Same, but the recipient will receive an anonymous mail
+* `/tell <Bot> mail [RECIPIENT] [MESSAGE]`: Save your message for future delivery
+* `/tell <Bot> tellonym [RECIPIENT] [MESSAGE]`: Same, but the recipient will receive an anonymous mail
 
 The bot will automatically deliver the mail when the recipient is online.
 The bot also offers a /mailer command from the MCC command prompt:
 
-* /mailer getmails: Show all mails in the console
-* /mailer addignored [NAME]: Prevent a specific player from sending mails
-* /mailer removeignored [NAME]: Lift the mailer restriction for this player
-* /mailer getignored: Show all ignored players
+* `/mailer getmails`: Show all mails in the console
+* `/mailer addignored [NAME]`: Prevent a specific player from sending mails
+* `/mailer removeignored [NAME]`: Lift the mailer restriction for this player
+* `/mailer getignored`: Show all ignored players
 
 **CAUTION:** The bot identifies players by their name (Not by UUID!).
 A nickname plugin or a minecraft rename may cause mails going to the wrong player!
@@ -290,13 +298,12 @@ The AutoCraft bot can automatically craft items for you as long as you have defi
 You can get the default config by running the bot at lease once.
 
 Useful commands description:
-* /autocraft reload: Reload the config from disk. You can load your edited AutoCraft config without restarting the client.
-* /autocraft resetcfg: Reset your AutoCraft config back to default. Use with care!
-* /autocraft list: List all loaded recipes.
-* /autocraft start <name\>: Start the crafting process with the given recipe name you had defined.
-* /autocraft stop: Stop the crafting process.
-* /autocraft help: In-game help command.
-
+* `/autocraft reload`: Reload the config from disk. You can load your edited AutoCraft config without restarting the client.
+* `/autocraft resetcfg`: Reset your AutoCraft config back to default. Use with care!
+* `/autocraft list`: List all loaded recipes.
+* `/autocraft start <name>`: Start the crafting process with the given recipe name you had defined.
+* `/autocraft stop`: Stop the crafting process.
+* `/autocraft help`: In-game help command.
 
 How to define a recipe?
 
@@ -370,8 +377,7 @@ Full license at http://opensource.org/licenses/CDDL-1.0
 Credits
 ------
 
-Even though I'm the main author of Minecraft Console Client, many features
-would not have been possible without the help of talented contributors:
+Many features would not have been possible without the help of talented contributors:
 
 **Ideas:**
 
@@ -396,21 +402,19 @@ would not have been possible without the help of talented contributors:
 
   Minecraft Console Client also borrows code from the following libraries:
 
-  -----------------------------------------------------------------
-    Name           Purpose             Author             License
-    
-    Biko           Proxy handling      Benton Stark       MIT
-    BouncyCastle   CFB-8 AES on Mono   The Legion         MIT
-    Heijden.Dns    DNS SRV Lookup      Geoffrey Huntley   MIT
-    DotNetZip      Zlib compression    Dino Chiesa        MS-PL
-  -----------------------------------------------------------------
+| Name         | Purpose           | Author           | License |
+|--------------|-------------------|------------------|---------|
+| Biko         | Proxy handling    | Benton Stark     | MIT     |
+| BouncyCastle | CFB-8 AES on Mono | The Legion       | MIT     |
+| Heijden.Dns  | DNS SRV Lookup    | Geoffrey Huntley | MIT     |
+| DotNetZip    | Zlib compression  | Dino Chiesa      | MS-PL   |
 
 **Support:**
 
 If you still have any question after reading this file, you can get support here:
 
- - General Questions: http://www.minecraftforum.net/topic/1314800-/
- - Bugs & Issues: https://github.com/ORelio/Minecraft-Console-Client/issues
+ - General Questions: http://www.minecraftforum.net/topic/1314800-/ (not maintained by the MCC team)
+ - Bugs & Issues: https://github.com/ORelio/Minecraft-Console-Client/issues (where you can contact the MCC team)
 
 Like Minecraft Console Client? You can buy me a coffee here:
 
@@ -418,6 +422,4 @@ Like Minecraft Console Client? You can buy me a coffee here:
 
 Code contributions, bug reports and any kind of comments are also highly appreciated :)
 
-+-----------------------------------+
-| © 2012-2020 ORelio & Contributors |
-+-----------------------------------+
+_© 2012-2020 ORelio & Contributors_
