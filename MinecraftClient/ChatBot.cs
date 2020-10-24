@@ -16,7 +16,7 @@ namespace MinecraftClient
     /// Inherit from this class while adding your bot class to the "ChatBots" folder.
     /// Override the methods you want for handling events: Initialize, Update, GetText.
     ///
-    /// For testing your bot you can add it in McTcpClient.cs (see comment at line ~119).
+    /// For testing your bot you can add it in McClient.cs (see comment at line ~199).
     /// Your bot will be loaded everytime MCC is started so that you can test/debug.
     ///
     /// Once your bot is fully written and tested, you can export it a standalone script.
@@ -40,8 +40,6 @@ namespace MinecraftClient
         private McClient _handler = null;
         private ChatBot master = null;
         private List<string> registeredPluginChannels = new List<String>();
-        private Queue<string> chatQueue = new Queue<string>();
-        private DateTime lastMessageSentTime = DateTime.MinValue;
         private McClient Handler
         {
             get
@@ -51,30 +49,6 @@ namespace MinecraftClient
                 if (_handler != null)
                     return _handler;
                 throw new InvalidOperationException(Translations.Get("exception.chatbot.init"));
-            }
-        }
-        private bool MessageCooldownEnded
-        {
-            get
-            {
-                return DateTime.Now > lastMessageSentTime + Settings.botMessageDelay;
-            }
-        }
-
-        /// <summary>
-        /// Processes the current chat message queue, displaying a message after enough time passes.
-        /// </summary>
-        internal void ProcessQueuedText()
-        {
-            if (chatQueue.Count > 0)
-            {
-                if (MessageCooldownEnded)
-                {
-                    string text = chatQueue.Dequeue();
-                    LogToConsole("Sending '" + text + "'");
-                    lastMessageSentTime = DateTime.Now;
-                    Handler.SendText(text);
-                }
             }
         }
 
@@ -375,23 +349,12 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="text">Text to send to the server</param>
         /// <param name="sendImmediately">Whether the message should be sent immediately rather than being queued to avoid chat spam</param>
-        /// <returns>True if the text was sent with no error</returns>
+        /// <returns>TRUE if successfully sent (Deprectated, always returns TRUE for compatibility purposes with existing scripts)</returns>
         protected bool SendText(string text, bool sendImmediately = false)
         {
-            if (Settings.botMessageDelay.TotalSeconds > 0 && !sendImmediately)
-            {
-                if (!MessageCooldownEnded)
-                {
-                    chatQueue.Enqueue(text);
-                    // TODO: We don't know whether there was an error at this point, so we assume there isn't.
-                    // Might not be the best idea.
-                    return true;
-                }
-            }
-
             LogToConsole("Sending '" + text + "'");
-            lastMessageSentTime = DateTime.Now;
-            return Handler.SendText(text);
+            Handler.SendText(text);
+            return true;
         }
 
         /// <summary>
