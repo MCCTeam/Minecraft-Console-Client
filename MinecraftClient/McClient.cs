@@ -27,6 +27,9 @@ namespace MinecraftClient
         private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
         private static bool CommandLoaded = false;
 
+        private Queue<string> chatQueue = new Queue<string>();
+        private static DateTime nextMessageSendTime = DateTime.MinValue;
+
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
         private static Dictionary<int, Container> inventories = new Dictionary<int, Container>();
@@ -530,7 +533,6 @@ namespace MinecraftClient
                 try
                 {
                     bot.Update();
-                    bot.ProcessQueuedText();
                 }
                 catch (Exception e)
                 {
@@ -539,6 +541,16 @@ namespace MinecraftClient
                         ConsoleIO.WriteLogLine("Update: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
+                }
+            }
+
+            lock (chatQueue)
+            {
+                if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
+                {
+                    string text = chatQueue.Dequeue();
+                    handler.SendChatMessage(text);
+                    nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
                 }
             }
 
@@ -886,32 +898,32 @@ namespace MinecraftClient
         /// Send a chat message or command to the server
         /// </summary>
         /// <param name="text">Text to send to the server</param>
-        /// <returns>True if the text was sent with no error</returns>
-        public bool SendText(string text)
+        public void SendText(string text)
         {
-            int maxLength = handler.GetMaxChatMessageLength();
-            if (text.Length > maxLength) //Message is too long?
+            lock (chatQueue)
             {
-                if (text[0] == '/')
+                int maxLength = handler.GetMaxChatMessageLength();
+                if (text.Length > maxLength) //Message is too long?
                 {
-                    //Send the first 100/256 chars of the command
-                    text = text.Substring(0, maxLength);
-                    return handler.SendChatMessage(text);
-                }
-                else
-                {
-                    //Send the message splitted into several messages
-                    while (text.Length > maxLength)
+                    if (text[0] == '/')
                     {
-                        handler.SendChatMessage(text.Substring(0, maxLength));
-                        text = text.Substring(maxLength, text.Length - maxLength);
-                        if (Settings.splitMessageDelay.TotalSeconds > 0)
-                            Thread.Sleep(Settings.splitMessageDelay);
+                        //Send the first 100/256 chars of the command
+                        text = text.Substring(0, maxLength);
+                        chatQueue.Enqueue(text);
                     }
-                    return handler.SendChatMessage(text);
+                    else
+                    {
+                        //Split the message into several messages
+                        while (text.Length > maxLength)
+                        {
+                            chatQueue.Enqueue(text.Substring(0, maxLength));
+                            text = text.Substring(maxLength, text.Length - maxLength);
+                        }
+                        chatQueue.Enqueue(text);
+                    }
                 }
+                else chatQueue.Enqueue(text);
             }
-            else return handler.SendChatMessage(text);
         }
 
         /// <summary>

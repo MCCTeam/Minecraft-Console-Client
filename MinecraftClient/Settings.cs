@@ -77,9 +77,8 @@ namespace MinecraftClient
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\eb\ebf762c137bd91ab2496397f2504e250f3c5d1ba"; //MC 1.16 en_GB.lang
         public static string TranslationsFile_Website_Index = "https://launchermeta.mojang.com/v1/packages/bdb68de96a44ec1e9ed6d9cfcd2ee973be618c3a/1.16.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
-        public static TimeSpan splitMessageDelay = TimeSpan.FromSeconds(2);
+        public static TimeSpan messageCooldown = TimeSpan.FromSeconds(2);
         public static List<string> Bots_Owners = new List<string>();
-        public static TimeSpan botMessageDelay = TimeSpan.FromSeconds(2);
         public static string Language = "en_GB";
         public static bool interactiveMode = true;
         public static char internalCmdChar = '/';
@@ -271,7 +270,7 @@ namespace MinecraftClient
                                                 case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
                                                 case "chatbotlogfile": chatbotLogFile = argValue; break;
                                                 case "mcversion": ServerVersion = argValue; break;
-                                                case "splitmessagedelay": splitMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
+                                                case "messagecooldown": messageCooldown = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "scriptcache": CacheScripts = str2bool(argValue); break;
                                                 case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
                                                 case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
@@ -281,7 +280,6 @@ namespace MinecraftClient
                                                 case "enableentityhandling": EntityHandling = str2bool(argValue); break;
                                                 case "inventoryhandling": InventoryHandling = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
-                                                case "botmessagedelay": botMessageDelay = TimeSpan.FromSeconds(str2int(argValue)); break;
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
 

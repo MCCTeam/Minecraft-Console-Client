@@ -233,13 +233,13 @@ namespace MinecraftClient
         /// Send text to the server. Can be anything such as chat messages or commands
         /// </summary>
         /// <param name="text">Text to send to the server</param>
-        /// <returns>True if the text was sent with no error</returns>
+        /// <returns>TRUE if successfully sent (Deprectated, always returns TRUE for compatibility purposes with existing scripts)</returns>
         public bool SendText(object text)
         {
-            bool result = base.SendText(text is string ? (string)text : text.ToString());
+            base.SendText(text is string ? (string)text : text.ToString());
             tickHandler.WaitOne();
             Thread.Sleep(1000);
-            return result;
+            return true;
         }
 
         /// <summary>
