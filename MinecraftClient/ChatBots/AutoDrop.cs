@@ -190,7 +190,9 @@ namespace MinecraftClient.ChatBots
             if (enable)
             {
                 updateDebounce = updateDebounceValue;
-                inventoryUpdated = inventoryId;
+                // Always interact container if available (larger ID) because they included player inventory (ID 0)
+                if (inventoryId >= inventoryUpdated)
+                    inventoryUpdated = inventoryId;
             }
         }
 
