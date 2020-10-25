@@ -206,6 +206,9 @@ namespace MinecraftClient.ChatBots
                 {
                     foreach (var item in items)
                     {
+                        // Ingore crafting result slot
+                        if (item.Key == 0)
+                            continue;
                         if (itemList.Contains(item.Value.Type))
                         {
                             // Drop it !!
@@ -217,6 +220,9 @@ namespace MinecraftClient.ChatBots
                 {
                     foreach (var item in items)
                     {
+                        // Ingore crafting result slot
+                        if (item.Key == 0)
+                            continue;
                         if (!itemList.Contains(item.Value.Type))
                         {
                             // Drop it !!
@@ -228,6 +234,9 @@ namespace MinecraftClient.ChatBots
                 {
                     foreach (var item in items)
                     {
+                        // Ingore crafting result slot
+                        if (item.Key == 0)
+                            continue;
                         // Drop it !!
                         WindowAction(inventoryUpdated, item.Key, WindowActionType.DropItemStack);
                     }
