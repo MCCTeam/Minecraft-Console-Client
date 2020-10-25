@@ -27,7 +27,7 @@ namespace MinecraftClient.ChatBots
         {
             if (!Enum.TryParse(mode, true, out dropMode))
             {
-                LogToConsole("Cannot read drop mode from config. Using include mode.");
+                LogToConsoleTranslated("bot.autoDrop.no_mode");
             }
             if (dropMode != Mode.Everything)
                 this.itemList = ItemListParser(itemList).ToList();
@@ -120,6 +120,31 @@ namespace MinecraftClient.ChatBots
                         {
                             return Translations.Get("bot.autoDrop.no_item");
                         }
+                    case "mode":
+                        if (args.Length >= 2)
+                        {
+                            switch (args[1].ToLower())
+                            {
+                                case "include":
+                                    dropMode = Mode.Include;
+                                    break;
+                                case "exclude":
+                                    dropMode = Mode.Exclude;
+                                    break;
+                                case "everything":
+                                    dropMode = Mode.Everything;
+                                    break;
+                                default:
+                                    return Translations.Get("bot.autoDrop.unknown_mode"); // Unknwon mode. Available modes: Include, Exclude, Everything
+                            }
+                            inventoryUpdated = 0;
+                            OnUpdateFinish();
+                            return Translations.Get("bot.autoDrop.switched", dropMode.ToString()); // Switched to {0} mode.
+                        }
+                        else
+                        {
+                            return Translations.Get("bot.autoDrop.unknown_mode");
+                        }
                     default:
                         return GetHelp();
                 }
@@ -132,7 +157,7 @@ namespace MinecraftClient.ChatBots
 
         private string GetHelp()
         {
-            return Translations.Get("general.available_cmd", "on, off, add, remove, list");
+            return Translations.Get("general.available_cmd", "on, off, add, remove, list, mode");
         }
 
         public override void Initialize()
