@@ -1770,6 +1770,7 @@ namespace MinecraftClient
             // Handle cursor item
             if (inventoryID == 255 && slotID == -1)
             {
+                inventoryID = 0; // Prevent key not found for some bots relied to this event
                 if (inventories.ContainsKey(0))
                 {
                     if (item != null)
