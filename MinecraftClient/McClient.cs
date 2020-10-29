@@ -55,6 +55,7 @@ namespace MinecraftClient
 
         private string host;
         private int port;
+        private int protocolVersion; // Provide version info before the initialize of protocol handler. McClient do not rely on version
         private string username;
         private string uuid;
         private string sessionid;
@@ -105,7 +106,13 @@ namespace MinecraftClient
         public byte GetCurrentSlot() { return CurrentSlot; }
         public int GetGamemode() { return gamemode; }
         public bool GetNetworkPacketCaptureEnabled() { return networkPacketCaptureEnabled; }
-        public int GetProtocolVersion() { return handler.GetProtocolVersion(); }
+        public int GetProtocolVersion() 
+        {
+            if (handler != null)
+                return handler.GetProtocolVersion();
+            else
+                return protocolVersion;
+        }
 
         // get bots list for unloading them by commands
         public List<ChatBot> GetLoadedChatBots()
@@ -170,6 +177,7 @@ namespace MinecraftClient
             this.username = user;
             this.host = server_ip;
             this.port = port;
+            this.protocolVersion = protocolversion;
 
             if (!singlecommand)
             {
