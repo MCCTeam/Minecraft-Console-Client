@@ -171,7 +171,7 @@ namespace MinecraftClient
             this.username = user;
             this.host = server_ip;
             this.port = port;
-            this.protocolVersion = protocolversion;
+            this.protocolversion = protocolversion;
 
             if (!singlecommand)
             {
