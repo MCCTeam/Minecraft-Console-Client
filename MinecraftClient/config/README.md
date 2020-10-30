@@ -213,7 +213,7 @@ Using the Script Scheduler
 
 The script scheduler allows you to perform scripts on various events.
 Simply enable the ScriptScheduler bot and specify a tasks file in your INI file.
-Please read `sample-tasks.ini` for learning how to make your own task file.
+Please read [`sample-tasks.ini`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-tasks.ini) for learning how to make your own task file.
 
 Using the hangman game
 ------
@@ -244,7 +244,7 @@ Using the AutoRespond feature
 
 The AutoRespond bot allows you to automatically react on specific chat messages or server announcements.
 You can use either a string to detect in chat messages, or an advanced regular expression.
-For more information about how to define match rules, please refer to `sample-matches.ini`
+For more information about how to define match rules, please refer to [`sample-matches.ini`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini)
 
 Using the Auto Attack
 ------
