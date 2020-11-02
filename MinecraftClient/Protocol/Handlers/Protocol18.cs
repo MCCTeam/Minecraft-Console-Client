@@ -1573,7 +1573,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // Currently hardcoded to false
                 // TODO: Update to reflect the real player state
                 if (protocolversion >= MC116Version)
-                fields.AddRange(dataTypes.GetBool(false));
+                    fields.AddRange(dataTypes.GetBool(false));
 
                 SendPacket(PacketTypesOut.InteractEntity, fields);
                 return true;
@@ -1595,6 +1595,11 @@ namespace MinecraftClient.Protocol.Handlers
                 fields.AddRange(dataTypes.GetFloat(Y));
                 fields.AddRange(dataTypes.GetFloat(Z));
                 fields.AddRange(dataTypes.GetVarInt(hand));
+                // Is player Sneaking (Only 1.16 and above)
+                // Currently hardcoded to false
+                // TODO: Update to reflect the real player state
+                if (protocolversion >= MC116Version)
+                    fields.AddRange(dataTypes.GetBool(false));
                 SendPacket(PacketTypesOut.InteractEntity, fields);
                 return true;
             }
@@ -1610,6 +1615,11 @@ namespace MinecraftClient.Protocol.Handlers
                 fields.AddRange(dataTypes.GetVarInt(EntityID));
                 fields.AddRange(dataTypes.GetVarInt(type));
                 fields.AddRange(dataTypes.GetVarInt(hand));
+                // Is player Sneaking (Only 1.16 and above)
+                // Currently hardcoded to false
+                // TODO: Update to reflect the real player state
+                if (protocolversion >= MC116Version)
+                    fields.AddRange(dataTypes.GetBool(false));
                 SendPacket(PacketTypesOut.InteractEntity, fields);
                 return true;
             }
