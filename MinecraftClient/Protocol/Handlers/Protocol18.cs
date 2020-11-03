@@ -47,6 +47,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC1161Version = 736;
         internal const int MC1162Version = 751;
         internal const int MC1163Version = 753;
+        internal const int MC1164Version = 754;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -85,13 +86,13 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1163Version))
+            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1164Version))
             {
                 Translations.WriteLineFormatted("extra.inventory_disabled");
                 handler.SetInventoryEnabled(false);
             }
 
-            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1163Version))
+            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1164Version))
             {
                 Translations.WriteLineFormatted("extra.entity_disabled");
                 handler.SetEntityHandlingEnabled(false);
@@ -113,7 +114,7 @@ namespace MinecraftClient.Protocol.Handlers
             // Entity palette
             if (protocolversion >= MC113Version)
             {
-                if (protocolversion > MC1163Version && handler.GetEntityHandlingEnabled())
+                if (protocolversion > MC1164Version && handler.GetEntityHandlingEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.entity"));
                 if (protocolversion >= MC1162Version)
                     entityPalette = new EntityPalette1162();
@@ -130,7 +131,7 @@ namespace MinecraftClient.Protocol.Handlers
             // Item palette
             if (protocolversion >= MC116Version)
             {
-                if (protocolversion > MC1163Version && handler.GetInventoryEnabled())
+                if (protocolversion > MC1164Version && handler.GetInventoryEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.item"));
                 if (protocolversion >= MC1162Version)
                     itemPalette = new ItemPalette1162();
