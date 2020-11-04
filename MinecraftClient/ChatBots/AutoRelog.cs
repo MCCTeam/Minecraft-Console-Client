@@ -10,22 +10,29 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class AutoRelog : ChatBot
     {
+        private static Random random = new Random();
         private string[] dictionary = new string[0];
         private int attempts;
-        private int delay;
+        private int delayMin;
+        private int delayMax;
 
         /// <summary>
         /// This bot automatically re-join the server if kick message contains predefined string
         /// </summary>
-        /// <param name="DelayBeforeRelog">Delay before re-joining the server (in seconds)</param>
+        /// <param name="DelayBeforeRelogMin">Minimum delay before re-joining the server (in seconds)</param>
+        /// <param name="DelayBeforeRelogMax">Maximum delay before re-joining the server (in seconds)</param>
         /// <param name="retries">Number of retries if connection fails (-1 = infinite)</param>
-        public AutoRelog(int DelayBeforeRelog, int retries)
+        public AutoRelog(int DelayBeforeRelogMin, int DelayBeforeRelogMax, int retries)
         {
             attempts = retries;
             if (attempts == -1) { attempts = int.MaxValue; }
             McClient.ReconnectionAttemptsLeft = attempts;
-            delay = DelayBeforeRelog;
-            if (delay < 1) { delay = 1; }
+            delayMin = DelayBeforeRelogMin;
+            delayMax = DelayBeforeRelogMax;
+            if (delayMin < 1)
+                delayMin = 1;
+            if (delayMax < delayMin)
+                delayMax = delayMin;
             LogDebugToConsoleTranslated("bot.autoRelog.launch", attempts);
         }
 
@@ -63,7 +70,7 @@ namespace MinecraftClient.ChatBots
         {
             if (reason == DisconnectReason.UserLogout)
             {
-                LogDebugToConsoleTranslated("bot.autoRelog.ignore");
+                LogDebugToConsoleTranslated("bot.autoRelog.ignore_user_logout");
             }
             else
             {
@@ -74,10 +81,7 @@ namespace MinecraftClient.ChatBots
 
                 if (Settings.AutoRelog_IgnoreKickMessage)
                 {
-                    LogDebugToConsoleTranslated("bot.autoRelog.reconnect_always");
-                    LogToConsoleTranslated("bot.autoRelog.wait", delay);
-                    System.Threading.Thread.Sleep(delay * 1000);
-                    ReconnectToTheServer();
+                    LaunchDelayedReconnection(null);
                     return true;
                 }
 
@@ -85,11 +89,7 @@ namespace MinecraftClient.ChatBots
                 {
                     if (comp.Contains(msg))
                     {
-                        LogDebugToConsoleTranslated("bot.autoRelog.reconnect", msg);
-                        LogToConsoleTranslated("bot.autoRelog.wait", delay);
-                        System.Threading.Thread.Sleep(delay * 1000);
-                        McClient.ReconnectionAttemptsLeft = attempts;
-                        ReconnectToTheServer();
+                        LaunchDelayedReconnection(msg);
                         return true;
                     }
                 }
@@ -100,11 +100,20 @@ namespace MinecraftClient.ChatBots
             return false;
         }
 
+        private void LaunchDelayedReconnection(string msg)
+        {
+            int delay = random.Next(delayMin, delayMax);
+            LogDebugToConsoleTranslated(String.IsNullOrEmpty(msg) ? "bot.autoRelog.reconnect_always" : "bot.autoRelog.reconnect", msg);
+            LogToConsoleTranslated("bot.autoRelog.wait", delay);
+            System.Threading.Thread.Sleep(delay * 1000);
+            ReconnectToTheServer();
+        }
+
         public static bool OnDisconnectStatic(DisconnectReason reason, string message)
         {
             if (Settings.AutoRelog_Enabled)
             {
-                AutoRelog bot = new AutoRelog(Settings.AutoRelog_Delay, Settings.AutoRelog_Retries);
+                AutoRelog bot = new AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries);
                 bot.Initialize();
                 return bot.OnDisconnect(reason, message);
             }

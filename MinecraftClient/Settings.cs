@@ -129,7 +129,8 @@ namespace MinecraftClient
 
         //AutoRelog Settings
         public static bool AutoRelog_Enabled = false;
-        public static int AutoRelog_Delay = 10;
+        public static int AutoRelog_Delay_Min = 10;
+        public static int AutoRelog_Delay_Max = 10;
         public static int AutoRelog_Retries = 3;
         public static bool AutoRelog_IgnoreKickMessage = false;
         public static string AutoRelog_KickMessagesFile = "kickmessages.txt";
@@ -414,10 +415,23 @@ namespace MinecraftClient
                                             switch (argName.ToLower())
                                             {
                                                 case "enabled": AutoRelog_Enabled = str2bool(argValue); break;
-                                                case "delay": AutoRelog_Delay = str2int(argValue); break;
                                                 case "retries": AutoRelog_Retries = str2int(argValue); break;
                                                 case "ignorekickmessage": AutoRelog_IgnoreKickMessage = str2bool(argValue); break;
                                                 case "kickmessagesfile": AutoRelog_KickMessagesFile = argValue; break;
+
+                                                case "delay":
+                                                    string[] delayParts = argValue.Split('-');
+                                                    if (delayParts.Length == 1)
+                                                    {
+                                                        AutoRelog_Delay_Min = str2int(delayParts[0]);
+                                                        AutoRelog_Delay_Max = AutoRelog_Delay_Min;
+                                                    }
+                                                    else
+                                                    {
+                                                        AutoRelog_Delay_Min = str2int(delayParts[0]);
+                                                        AutoRelog_Delay_Max = str2int(delayParts[1]);
+                                                    }
+                                                    break;
                                             }
                                             break;
 
