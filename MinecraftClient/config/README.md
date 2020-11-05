@@ -179,8 +179,9 @@ Detecting chat messages
 
 Minecraft Console Client can parse messages from the server in order to detect private and public messages.
 This is useful for reacting to messages eg when using the AutoRespond, Hangman game, or RemoteControl bots.
-However, for unusual chat formats, so you may need to tinker with the ChatFormat section of the config file.
-Building regular expressions can be a bit tricky, so you might want to try them out eg on regex101.com
+However, for unusual chat formats, so you may need to tinker with the ChatFormat section `MinecraftClient.ini`.
+Building regular expressions can be a bit tricky, so you might want to try them out eg on https://regex101.com
+You can test that your MCC instance properly detects chat messages using [sample-script-with-chatbot.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-script-with-chatbot.cs).
 
 About Replay Mod feature
 ------
