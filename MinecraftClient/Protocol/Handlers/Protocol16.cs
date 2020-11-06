@@ -845,5 +845,10 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch { return false; }
         }
+
+        public bool SelectTrade(int selectedSlot)
+        {
+            return false; //Currently not implemented
+        }
     }
 }

@@ -1449,6 +1449,15 @@ namespace MinecraftClient
             // TODO Open sign editor first https://wiki.vg/Protocol#Open_Sign_Editor
             return handler.SendUpdateSign(location, line1, line2, line3, line4);
         }
+
+        /// <summary>
+        /// Select villager trade
+        /// </summary>
+        /// <param name="selectedSlot">The slot of the trade, starts at 0.</param>
+        public bool SelectTrade(int selectedSlot)
+        {
+            return handler.SelectTrade(selectedSlot);
+        }
         
         /// <summary>
         /// Update command block
@@ -2245,6 +2254,20 @@ namespace MinecraftClient
                 }
                 DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
             }
+        }
+        /// <summary>
+        /// Called when tradeList is recieved after interacting with villager
+        /// </summary>
+        /// <param name="windowID">Window ID</param>
+        /// <param name="size">Total Amount of trades the villager has.</param>
+        /// <param name="trades">List of trades.</param>
+        /// <param name="villagerLevel">The level the villager is.</param>
+        /// <param name="experience">The amount of experience the villager has.</param>
+        /// <param name="isRegularVillager">True if regular villagers and false if the wandering trader.</param>
+        /// <param name="canRestock">If the villager can restock his trades at a workstation, True for regular villagers and false for the wandering trader.</param>
+        public void OnTradeList(int windowID, int size, List<Trade> trades, int villagerLevel, int experience, bool isRegularVillager, bool canRestock)
+        {
+            DispatchBotEvent(bot => bot.OnTradeList(windowID, size, trades, villagerLevel, experience, isRegularVillager, canRestock));
         }
         #endregion
     }

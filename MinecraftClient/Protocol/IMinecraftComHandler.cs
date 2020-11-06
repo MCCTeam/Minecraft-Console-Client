@@ -330,5 +330,17 @@ namespace MinecraftClient.Protocol
         /// <param name="objectivename">The name of the objective the score belongs to</param>
         /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
         void OnUpdateScore(string entityname, byte action, string objectivename, int value);
+
+        /// <summary>
+        /// Called when tradeList is received from server
+        /// </summary>
+        /// <param name="windowID">Window ID</param>
+        /// <param name="size">Total Amount of trades the villager has.</param>
+        /// <param name="trades">List of trades.</param>
+        /// <param name="villagerLevel">The level the villager is.</param>
+        /// <param name="experience">The amount of experience the villager has.</param>
+        /// <param name="isRegularVillager">True if regular villagers and false if the wandering trader.</param>
+        /// <param name="canRestock">If the villager can restock his trades at a workstation, True for regular villagers and false for the wandering trader.</param>
+        void OnTradeList(int windowID, int size, List<Trade> trades, int villagerLevel, int experience, bool isRegularVillager, bool canRestock);
     }
 }

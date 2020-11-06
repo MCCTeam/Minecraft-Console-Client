@@ -229,5 +229,11 @@ namespace MinecraftClient.Protocol
         /// <param name="mode">command block mode</param>
         /// <param name="flags">command block flags</param>
         bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags);
+
+        /// <summary>
+        /// Select villager trade
+        /// </summary>
+        /// <param name="selectedSlot">The slot of the trade, starts at 0.</param>
+        bool SelectTrade(int selectedSlot);
     }
 }
