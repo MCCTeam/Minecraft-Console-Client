@@ -2259,15 +2259,14 @@ namespace MinecraftClient
         /// Called when tradeList is recieved after interacting with villager
         /// </summary>
         /// <param name="windowID">Window ID</param>
-        /// <param name="size">Total Amount of trades the villager has.</param>
         /// <param name="trades">List of trades.</param>
         /// <param name="villagerLevel">The level the villager is.</param>
         /// <param name="experience">The amount of experience the villager has.</param>
         /// <param name="isRegularVillager">True if regular villagers and false if the wandering trader.</param>
         /// <param name="canRestock">If the villager can restock his trades at a workstation, True for regular villagers and false for the wandering trader.</param>
-        public void OnTradeList(int windowID, int size, List<Trade> trades, int villagerLevel, int experience, bool isRegularVillager, bool canRestock)
+        public void OnTradeList(int windowID, List<Trade> trades, int villagerLevel, int experience, bool isRegularVillager, bool canRestock)
         {
-            DispatchBotEvent(bot => bot.OnTradeList(windowID, size, trades, villagerLevel, experience, isRegularVillager, canRestock));
+            DispatchBotEvent(bot => bot.OnTradeList(windowID, trades, villagerLevel, experience, isRegularVillager, canRestock));
         }
         #endregion
     }

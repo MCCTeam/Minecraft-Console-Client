@@ -848,7 +848,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool SelectTrade(int selectedSlot)
         {
-            return false; //Currently not implemented
+            return false; //MC 1.13+
         }
     }
 }

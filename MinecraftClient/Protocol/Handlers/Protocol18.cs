@@ -431,7 +431,7 @@ namespace MinecraftClient.Protocol.Handlers
                         int iconcount = dataTypes.ReadNextVarInt(packetData);
                         handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
                         break;
-					case PacketTypesIn.TradeList:
+				    case PacketTypesIn.TradeList:
                         if ((protocolversion >= MC114Version) && (handler.GetInventoryEnabled()))
                         {
                             // MC 1.14 or greater
@@ -447,7 +447,7 @@ namespace MinecraftClient.Protocol.Handlers
                             int experience = dataTypes.ReadNextVarInt(packetData);
                             bool isRegularVillager = dataTypes.ReadNextBool(packetData);
                             bool canRestock = dataTypes.ReadNextBool(packetData);
-                            handler.OnTradeList(windowID, size, trades, villagerLevel, experience, isRegularVillager, canRestock);
+                            handler.OnTradeList(windowID, trades, villagerLevel, experience, isRegularVillager, canRestock);
                         }
                         break;
                     case PacketTypesIn.Title:
@@ -1899,8 +1899,8 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         public bool SelectTrade(int selectedSlot)
-        {   // MC 1.14 or greater
-            if (protocolversion >= MC114Version)
+        {   // MC 1.13 or greater
+            if (protocolversion >= MC113Version)
             {
                 try
                 {

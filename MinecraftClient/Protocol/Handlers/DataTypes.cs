@@ -619,8 +619,7 @@ namespace MinecraftClient.Protocol.Handlers
             Item inputItem1 = ReadNextItemSlot(cache, itemPalette);
             Item outputItem = ReadNextItemSlot(cache, itemPalette);
             Item inputItem2 = null;
-            bool hasSecondItem = ReadNextBool(cache);
-            if (hasSecondItem)
+            if (ReadNextBool(cache)) //check if villager has second item
             {
                 inputItem2 = ReadNextItemSlot(cache, itemPalette);
             }
@@ -631,7 +630,7 @@ namespace MinecraftClient.Protocol.Handlers
             int specialPrice = ReadNextInt(cache);
             float priceMultiplier = ReadNextFloat(cache);
             int demand = ReadNextInt(cache);
-            return new Trade(inputItem1, outputItem, hasSecondItem, inputItem2, tradeDisabled, numberOfTradeUses, maximumNumberOfTradeUses, xp, specialPrice, priceMultiplier, demand);      
+            return new Trade(inputItem1, outputItem, inputItem2, tradeDisabled, numberOfTradeUses, maximumNumberOfTradeUses, xp, specialPrice, priceMultiplier, demand);      
         }
 
         /// <summary>
