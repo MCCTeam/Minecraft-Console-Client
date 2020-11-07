@@ -4,29 +4,29 @@
      /// </summary>
     public class Trade
     {
-        public Item inputItem1;
-        public Item outputItem;
-        public Item inputItem2;
-        public bool tradeDisabled;
-        public int numberOfTradeUses;
-        public int maximumNumberOfTradeUses;
-        public int xp;
-        public int specialPrice;
-        public float priceMultiplier;
-        public int demand;
+        public Item InputItem1;
+        public Item OutputItem;
+        public Item InputItem2;
+        public bool TradeDisabled;
+        public int NumberOfTradeUses;
+        public int MaximumNumberOfTradeUses;
+        public int Xp;
+        public int SpecialPrice;
+        public float PriceMultiplier;
+        public int Demand;
 
         public Trade(Item inputItem1, Item outputItem, Item inputItem2, bool tradeDisabled, int numberOfTradeUses, int maximumNumberOfTradeUses, int xp, int specialPrice, float priceMultiplier, int demand)
         {
-            this.inputItem1 = inputItem1;
-            this.outputItem = outputItem;
-            this.inputItem2 = inputItem2;
-            this.tradeDisabled = tradeDisabled;
-            this.numberOfTradeUses = numberOfTradeUses;
-            this.maximumNumberOfTradeUses = maximumNumberOfTradeUses;
-            this.xp = xp;
-            this.specialPrice = specialPrice;
-            this.priceMultiplier = priceMultiplier;
-            this.demand = demand;
+            this.InputItem1 = inputItem1;
+            this.OutputItem = outputItem;
+            this.InputItem2 = inputItem2;
+            this.TradeDisabled = tradeDisabled;
+            this.NumberOfTradeUses = numberOfTradeUses;
+            this.MaximumNumberOfTradeUses = maximumNumberOfTradeUses;
+            this.Xp = xp;
+            this.SpecialPrice = specialPrice;
+            this.PriceMultiplier = priceMultiplier;
+            this.Demand = demand;
         }
     }
 }

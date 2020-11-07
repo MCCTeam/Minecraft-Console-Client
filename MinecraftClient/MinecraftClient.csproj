@@ -215,6 +215,7 @@
     <Compile Include="Inventory\Trade.cs" />
     <Compile Include="Protocol\ReplayHandler.cs" />
     <Compile Include="Translations.cs" />
+    <Compile Include="Inventory\VillagerInfo.cs" />
     <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />

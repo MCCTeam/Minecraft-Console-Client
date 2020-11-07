@@ -443,11 +443,14 @@ namespace MinecraftClient.Protocol.Handlers
                                 Trade trade = dataTypes.ReadNextTrade(packetData, itemPalette);
                                     trades.Add(trade);
                             }
-                            int villagerLevel = dataTypes.ReadNextVarInt(packetData);
-                            int experience = dataTypes.ReadNextVarInt(packetData);
-                            bool isRegularVillager = dataTypes.ReadNextBool(packetData);
-                            bool canRestock = dataTypes.ReadNextBool(packetData);
-                            handler.OnTradeList(windowID, trades, villagerLevel, experience, isRegularVillager, canRestock);
+                            VillagerInfo villagerInfo = new VillagerInfo()
+                            {
+                                Level = dataTypes.ReadNextVarInt(packetData),
+                                Experience = dataTypes.ReadNextVarInt(packetData),
+                                IsRegularVillager = dataTypes.ReadNextBool(packetData),
+                                CanRestock = dataTypes.ReadNextBool(packetData)
+                            };
+                            handler.OnTradeList(windowID, trades, villagerInfo);
                         }
                         break;
                     case PacketTypesIn.Title:
