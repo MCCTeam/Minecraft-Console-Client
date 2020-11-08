@@ -36,7 +36,7 @@ MCC.LoadBot(new VkMessager(vkToken, chatId, botCommunityId));
 internal class VkLongPoolClient
 {
 	/* VK Client*/
-	public VKAPI(string token, string botCommunityId, Action<string, string, string, string, string, string> onMessageReceivedCallback, IWebProxy webProxy = null)
+	public VkLongPoolClient(string token, string botCommunityId, Action<string, string, string, string, string, string> onMessageReceivedCallback, IWebProxy webProxy = null)
 		{
 			Token = token;
 			BotCommunityId = botCommunityId;
