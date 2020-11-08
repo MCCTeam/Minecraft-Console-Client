@@ -227,7 +227,7 @@ namespace MinecraftClient
         /// <param name="windowID">Window ID</param>
         /// <param name="trades">List of trades.</param>
         /// <param name="villagerInfo">Contains Level, Experience, IsRegularVillager and CanRestock .</param>
-        public virtual void OnTradeList(int windowID, List<Trade> trades, VillagerInfo villagerInfo) { }
+        public virtual void OnTradeList(int windowID, List<VillagerTrade> trades, VillagerInfo villagerInfo) { }
 
         /// <summary>
         /// Called when received a title from the server

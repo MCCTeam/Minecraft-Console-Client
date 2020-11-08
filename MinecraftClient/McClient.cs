@@ -2255,16 +2255,18 @@ namespace MinecraftClient
                 DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
             }
         }
+
         /// <summary>
         /// Called when tradeList is recieved after interacting with villager
         /// </summary>
         /// <param name="windowID">Window ID</param>
         /// <param name="trades">List of trades.</param>
         /// <param name="villagerInfo">Contains Level, Experience, IsRegularVillager and CanRestock .</param>
-        public void OnTradeList(int windowID, List<Trade> trades, VillagerInfo villagerInfo)
+        public void OnTradeList(int windowID, List<VillagerTrade> trades, VillagerInfo villagerInfo)
         {
             DispatchBotEvent(bot => bot.OnTradeList(windowID, trades, villagerInfo));
         }
+
         #endregion
     }
 }

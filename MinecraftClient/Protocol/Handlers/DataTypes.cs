@@ -614,7 +614,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single villager trade from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The item that was read or NULL for an empty slot</returns>
-        public Trade ReadNextTrade(Queue<byte> cache, ItemPalette itemPalette)
+        public VillagerTrade ReadNextTrade(Queue<byte> cache, ItemPalette itemPalette)
         {
             Item inputItem1 = ReadNextItemSlot(cache, itemPalette);
             Item outputItem = ReadNextItemSlot(cache, itemPalette);
@@ -630,7 +630,7 @@ namespace MinecraftClient.Protocol.Handlers
             int specialPrice = ReadNextInt(cache);
             float priceMultiplier = ReadNextFloat(cache);
             int demand = ReadNextInt(cache);
-            return new Trade(inputItem1, outputItem, inputItem2, tradeDisabled, numberOfTradeUses, maximumNumberOfTradeUses, xp, specialPrice, priceMultiplier, demand);      
+            return new VillagerTrade(inputItem1, outputItem, inputItem2, tradeDisabled, numberOfTradeUses, maximumNumberOfTradeUses, xp, specialPrice, priceMultiplier, demand);
         }
 
         /// <summary>

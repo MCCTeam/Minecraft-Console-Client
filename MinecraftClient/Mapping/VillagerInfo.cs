@@ -1,8 +1,8 @@
-﻿namespace MinecraftClient.Mapping
-{
-    /// <summary>
-    /// Properties of a villager
+﻿namespace MinecraftClient
+{   /// <summary>
+    /// Information of a villager
     /// </summary>
+
     public class VillagerInfo
     {
         public int Level { get; set; }

@@ -1,8 +1,9 @@
 ﻿namespace MinecraftClient.Inventory
-{    /// <summary>
-     /// Represents a trade of a villager
-     /// </summary>
-    public class Trade
+{
+    /// <summary>
+    /// Represents a trade of a villager
+    /// </summary>
+    public class VillagerTrade
     {
         public Item InputItem1;
         public Item OutputItem;
@@ -15,7 +16,7 @@
         public float PriceMultiplier;
         public int Demand;
 
-        public Trade(Item inputItem1, Item outputItem, Item inputItem2, bool tradeDisabled, int numberOfTradeUses, int maximumNumberOfTradeUses, int xp, int specialPrice, float priceMultiplier, int demand)
+        public VillagerTrade(Item inputItem1, Item outputItem, Item inputItem2, bool tradeDisabled, int numberOfTradeUses, int maximumNumberOfTradeUses, int xp, int specialPrice, float priceMultiplier, int demand)
         {
             this.InputItem1 = inputItem1;
             this.OutputItem = outputItem;

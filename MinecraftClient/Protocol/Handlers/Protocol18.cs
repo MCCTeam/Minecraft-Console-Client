@@ -437,10 +437,10 @@ namespace MinecraftClient.Protocol.Handlers
                             // MC 1.14 or greater
                             int windowID = dataTypes.ReadNextVarInt(packetData);
                             int size = dataTypes.ReadNextByte(packetData);
-                            List<Trade> trades = new List<Trade>();
+                            List<VillagerTrade> trades = new List<VillagerTrade>();
                             for (int tradeId = 0; tradeId < size; tradeId++)
                             {
-                                Trade trade = dataTypes.ReadNextTrade(packetData, itemPalette);
+                                VillagerTrade trade = dataTypes.ReadNextTrade(packetData, itemPalette);
                                     trades.Add(trade);
                             }
                             VillagerInfo villagerInfo = new VillagerInfo()
