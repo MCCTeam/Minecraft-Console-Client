@@ -1,5 +1,6 @@
 ﻿namespace MinecraftClient
-{   /// <summary>
+{
+    /// <summary>
     /// Information of a villager
     /// </summary>
 
