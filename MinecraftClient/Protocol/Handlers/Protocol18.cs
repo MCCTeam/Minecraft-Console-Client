@@ -1902,7 +1902,8 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         public bool SelectTrade(int selectedSlot)
-        {   // MC 1.13 or greater
+        {
+            // MC 1.13 or greater
             if (protocolversion >= MC113Version)
             {
                 try
