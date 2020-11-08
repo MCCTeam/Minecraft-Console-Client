@@ -174,7 +174,6 @@ internal class VkLongPoolClient
 			try
 			{
                 string json = CallVkMethod("users.get", "user_ids=" + user_id + "&name_case=" + name_case);
-				Console.WriteLine(json);
 				if (json != "")
 				{
                     var firstname = Regex.Match(json, "{\"first_name\":\"(.*)\",\"id\":(.*)").Groups[1].Value;
