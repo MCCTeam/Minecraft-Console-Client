@@ -1449,6 +1449,15 @@ namespace MinecraftClient
             // TODO Open sign editor first https://wiki.vg/Protocol#Open_Sign_Editor
             return handler.SendUpdateSign(location, line1, line2, line3, line4);
         }
+
+        /// <summary>
+        /// Select villager trade
+        /// </summary>
+        /// <param name="selectedSlot">The slot of the trade, starts at 0.</param>
+        public bool SelectTrade(int selectedSlot)
+        {
+            return handler.SelectTrade(selectedSlot);
+        }
         
         /// <summary>
         /// Update command block
@@ -2246,6 +2255,18 @@ namespace MinecraftClient
                 DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
             }
         }
+
+        /// <summary>
+        /// Called when tradeList is recieved after interacting with villager
+        /// </summary>
+        /// <param name="windowID">Window ID</param>
+        /// <param name="trades">List of trades.</param>
+        /// <param name="villagerInfo">Contains Level, Experience, IsRegularVillager and CanRestock .</param>
+        public void OnTradeList(int windowID, List<VillagerTrade> trades, VillagerInfo villagerInfo)
+        {
+            DispatchBotEvent(bot => bot.OnTradeList(windowID, trades, villagerInfo));
+        }
+
         #endregion
     }
 }

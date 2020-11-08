@@ -220,7 +220,15 @@ namespace MinecraftClient
         /// <param name="locked"></param>
         /// <param name="iconcount"></param>
         public virtual void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount) { }
-        
+
+        /// <summary>
+        /// Called when tradeList is received from server
+        /// </summary>
+        /// <param name="windowID">Window ID</param>
+        /// <param name="trades">List of trades.</param>
+        /// <param name="villagerInfo">Contains Level, Experience, IsRegularVillager and CanRestock .</param>
+        public virtual void OnTradeList(int windowID, List<VillagerTrade> trades, VillagerInfo villagerInfo) { }
+
         /// <summary>
         /// Called when received a title from the server
         /// <param name="action"> 0 = set title, 1 = set subtitle, 3 = set action bar, 4 = set times and display, 4 = hide, 5 = reset</param>
@@ -1224,6 +1232,15 @@ namespace MinecraftClient
         protected bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
             return Handler.UpdateSign(location, line1, line2, line3, line4);
+        }
+
+        /// <summary>
+        /// Selects villager trade
+        /// </summary>
+        /// <param name="selectedSlot">Trade slot to select, starts at 0.</param>
+        protected bool SelectTrade(int selectedSlot)
+        {
+            return Handler.SelectTrade(selectedSlot);
         }
         
         /// <summary>

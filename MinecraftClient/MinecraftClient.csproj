@@ -212,8 +212,10 @@
     <Compile Include="Protocol\Handlers\SocketWrapper.cs" />
     <Compile Include="Protocol\DataTypeGenerator.cs" />
     <Compile Include="FileMonitor.cs" />
+    <Compile Include="Inventory\VillagerTrade.cs" />
     <Compile Include="Protocol\ReplayHandler.cs" />
     <Compile Include="Translations.cs" />
+    <Compile Include="Inventory\VillagerInfo.cs" />
     <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />

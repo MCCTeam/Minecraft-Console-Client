@@ -432,6 +432,28 @@ namespace MinecraftClient.Protocol.Handlers
                         int iconcount = dataTypes.ReadNextVarInt(packetData);
                         handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
                         break;
+                    case PacketTypesIn.TradeList:
+                        if ((protocolversion >= MC114Version) && (handler.GetInventoryEnabled()))
+                        {
+                            // MC 1.14 or greater
+                            int windowID = dataTypes.ReadNextVarInt(packetData);
+                            int size = dataTypes.ReadNextByte(packetData);
+                            List<VillagerTrade> trades = new List<VillagerTrade>();
+                            for (int tradeId = 0; tradeId < size; tradeId++)
+                            {
+                                VillagerTrade trade = dataTypes.ReadNextTrade(packetData, itemPalette);
+                                    trades.Add(trade);
+                            }
+                            VillagerInfo villagerInfo = new VillagerInfo()
+                            {
+                                Level = dataTypes.ReadNextVarInt(packetData),
+                                Experience = dataTypes.ReadNextVarInt(packetData),
+                                IsRegularVillager = dataTypes.ReadNextBool(packetData),
+                                CanRestock = dataTypes.ReadNextBool(packetData)
+                            };
+                            handler.OnTradeList(windowID, trades, villagerInfo);
+                        }
+                        break;
                     case PacketTypesIn.Title:
                         if (protocolversion >= MC18Version)
                         {
@@ -1888,6 +1910,25 @@ namespace MinecraftClient.Protocol.Handlers
             catch (SocketException) { return false; }
             catch (System.IO.IOException) { return false; }
             catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool SelectTrade(int selectedSlot)
+        {
+            // MC 1.13 or greater
+            if (protocolversion >= MC113Version)
+            {
+                try
+                {
+                    List<byte> packet = new List<byte>();
+                    packet.AddRange(dataTypes.GetVarInt(selectedSlot));
+                    SendPacket(PacketTypesOut.SelectTrade, packet);
+                    return true;
+                }
+                catch (SocketException) { return false; }
+                catch (System.IO.IOException) { return false; }
+                catch (ObjectDisposedException) { return false; }
+            }
+            else { return false; }
         }
     }
 }
