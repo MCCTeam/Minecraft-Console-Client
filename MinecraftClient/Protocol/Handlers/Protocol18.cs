@@ -431,7 +431,7 @@ namespace MinecraftClient.Protocol.Handlers
                         int iconcount = dataTypes.ReadNextVarInt(packetData);
                         handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
                         break;
-				    case PacketTypesIn.TradeList:
+                    case PacketTypesIn.TradeList:
                         if ((protocolversion >= MC114Version) && (handler.GetInventoryEnabled()))
                         {
                             // MC 1.14 or greater
