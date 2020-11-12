@@ -863,7 +863,7 @@ namespace MinecraftClient
         /// <param name="location">Location</param>
         protected bool DigBlock(Location location, bool swingArms = true, bool lookatblock = true)
         {
-            return Handler.DigBlock(location);
+            return Handler.DigBlock(location, swingArms, lookatblock);
         }
 
         /// <summary>
