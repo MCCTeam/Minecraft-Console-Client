@@ -1402,7 +1402,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Location of block to dig</param>
         /// <param name="swingArms">Also perform the "arm swing" animation</param>
-        public bool DigBlock(Location location, bool swingArms = true)
+        public bool DigBlock(Location location, bool swingArms = true, bool lookatblock = true)
         {
             if (GetTerrainEnabled())
             {
@@ -1410,7 +1410,8 @@ namespace MinecraftClient
                 Direction blockFace = Direction.Down;
 
                 // Look at block before attempting to break it
-                UpdateLocation(GetCurrentLocation(), location);
+                if (lookatblock)
+                    UpdateLocation(GetCurrentLocation(), location);
 
                 // Send dig start and dig end, will need to wait for server response to know dig result
                 // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
