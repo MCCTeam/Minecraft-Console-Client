@@ -860,10 +860,12 @@ namespace MinecraftClient
         /// <summary>
         /// Attempt to dig a block at the specified location
         /// </summary>
-        /// <param name="location">Location</param>
-        protected bool DigBlock(Location location)
+        /// <param name="location">Location of block to dig</param>
+        /// <param name="swingArms">Also perform the "arm swing" animation</param>
+        /// <param name="lookAtBlock">Also look at the block before digging</param>
+        protected bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
         {
-            return Handler.DigBlock(location);
+            return Handler.DigBlock(location, swingArms, lookAtBlock);
         }
 
         /// <summary>
