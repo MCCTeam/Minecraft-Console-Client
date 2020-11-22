@@ -206,6 +206,7 @@ namespace MinecraftClient
             {
                 client = ProxyHandler.newTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
+                client.ReceiveTimeout = 10 * 1000; // 10 seconds
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Translations.WriteLine("mcc.version_supported");
 
