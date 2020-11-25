@@ -3,6 +3,7 @@ using System.Collections.Generic;
 //using System.Linq;
 //using System.Text;
 using MinecraftClient.Mapping;
+using System.IO;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -42,6 +43,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (protocolversion >= Protocol18Handler.MC19Version)
             {
+                DateTime start = DateTime.Now;
                 // 1.9 and above chunk format
                 // Unloading chunks is handled by a separate packet
                 for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
@@ -58,6 +60,7 @@ namespace MinecraftClient.Protocol.Handlers
                         // Vanilla Minecraft will use at least 4 bits per block
                         if (bitsPerBlock < 4)
                             bitsPerBlock = 4;
+                        
 
                         // MC 1.9 to 1.12 will set palette length field to 0 when palette
                         // is not used, MC 1.13+ does not send the field at all in this case
@@ -79,45 +82,98 @@ namespace MinecraftClient.Protocol.Handlers
 
                         Chunk chunk = new Chunk();
 
-                        if (dataArray.Length > 0)
+                        if (protocolversion >= Protocol18Handler.MC116Version)
                         {
-                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
+                            Queue<ulong> dataQueue = new Queue<ulong>(dataArray);
+                            int startOffset = 0 - bitsPerBlock;
+                            if (dataArray.Length > 0)
                             {
-                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
+                                for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                                 {
-                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
+                                    for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                                     {
-                                        int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
-
-                                        int startLong = (blockNumber * bitsPerBlock) / 64;
-                                        int startOffset = (blockNumber * bitsPerBlock) % 64;
-                                        int endLong = ((blockNumber + 1) * bitsPerBlock - 1) / 64;
-
-                                        // TODO: In the future a single ushort may not store the entire block id;
-                                        // the Block code may need to change if block state IDs go beyond 65535
-                                        ushort blockId;
-                                        if (startLong == endLong)
+                                        for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
                                         {
-                                            blockId = (ushort)((dataArray[startLong] >> startOffset) & valueMask);
-                                        }
-                                        else
-                                        {
-                                            int endOffset = 64 - startOffset;
-                                            blockId = (ushort)((dataArray[startLong] >> startOffset | dataArray[endLong] << endOffset) & valueMask);
-                                        }
+                                            // Block Count
+                                            int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
+                                            // Long bit index
+                                            startOffset += bitsPerBlock;
 
-                                        if (usePalette)
-                                        {
-                                            // Get the real block ID out of the palette
-                                            blockId = (ushort)palette[blockId];
-                                        }
+                                            // Skip if bit spanned
+                                            if (64 - startOffset < bitsPerBlock)
+                                            {
+                                                dataQueue.Dequeue();
+                                                startOffset = 0;
+                                            }
 
-                                        chunk[blockX, blockY, blockZ] = new Block(blockId);
+                                            // TODO: In the future a single ushort may not store the entire block id;
+                                            // the Block code may need to change if block state IDs go beyond 65535
+                                            ushort blockId;
+                                            blockId = (ushort)((dataQueue.Peek() >> startOffset) & valueMask);
+                                            if (paletteLength <= blockId)
+                                            {
+                                                Console.WriteLine("Palette length is {0} but BlockID is {1}. (pbp: {2}, blockNumber: {3})",
+                                                    paletteLength,
+                                                    blockId,
+                                                    bitsPerBlock,
+                                                    blockNumber);
+                                                throw new Exception("Palette length not match");
+                                            }
+
+                                            if (usePalette)
+                                            {
+                                                // Get the real block ID out of the palette
+                                                blockId = (ushort)palette[blockId];
+                                            }
+
+                                            chunk[blockX, blockY, blockZ] = new Block(blockId);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        }
+                        else
+                        {
+                            if (dataArray.Length > 0)
+                            {
+                                for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
+                                {
+                                    for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
+                                    {
+                                        for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
+                                        {
+                                            int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
+
+                                            int startLong = (blockNumber * bitsPerBlock) / 64;
+                                            int startOffset = (blockNumber * bitsPerBlock) % 64;
+                                            int endLong = ((blockNumber + 1) * bitsPerBlock - 1) / 64;
+
+                                            // TODO: In the future a single ushort may not store the entire block id;
+                                            // the Block code may need to change if block state IDs go beyond 65535
+                                            ushort blockId;
+                                            if (startLong == endLong)
+                                            {
+                                                blockId = (ushort)((dataArray[startLong] >> startOffset) & valueMask);
+                                            }
+                                            else
+                                            {
+                                                int endOffset = 64 - startOffset;
+                                                blockId = (ushort)((dataArray[startLong] >> startOffset | dataArray[endLong] << endOffset) & valueMask);
+                                            }
+
+                                            if (usePalette)
+                                            {
+                                                // Get the real block ID out of the palette
+                                                blockId = (ushort)palette[blockId];
+                                            }
+
+                                            chunk[blockX, blockY, blockZ] = new Block(blockId);
+                                        }
                                     }
                                 }
                             }
                         }
-
                         //We have our chunk, save the chunk into the world
                         if (handler.GetWorld()[chunkX, chunkZ] == null)
                             handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
@@ -134,6 +190,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 // Sky light is not sent in the nether or the end
                                 dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
                         }
+                        //Console.WriteLine("Finished chunk data in " + (DateTime.Now - start).TotalMilliseconds + "ms");
                     }
                 }
 

@@ -80,7 +80,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
             this.packetPalette = new PacketTypeHandler(protocolVersion).GetTypeHandler();
 
-            if (handler.GetTerrainEnabled() && protocolversion > MC1152Version)
+            if (handler.GetTerrainEnabled() && protocolversion > MC1164Version)
             {
                 Translations.WriteLineFormatted("extra.terrainandmovement_disabled");
                 handler.SetTerrainEnabled(false);
@@ -101,8 +101,10 @@ namespace MinecraftClient.Protocol.Handlers
             // Block palette
             if (protocolversion >= MC113Version)
             {
-                if (protocolVersion > MC1152Version && handler.GetTerrainEnabled())
+                if (protocolVersion > MC1164Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.block"));
+                if (protocolVersion >= MC116Version)
+                    Block.Palette = new Palette116();
                 if (protocolVersion >= MC115Version)
                     Block.Palette = new Palette115();
                 else if (protocolVersion >= MC114Version)
@@ -398,6 +400,8 @@ namespace MinecraftClient.Protocol.Handlers
                             int chunkX = dataTypes.ReadNextInt(packetData);
                             int chunkZ = dataTypes.ReadNextInt(packetData);
                             bool chunksContinuous = dataTypes.ReadNextBool(packetData);
+                            if (protocolversion >= MC116Version && protocolversion <= MC1161Version)
+                                dataTypes.ReadNextBool(packetData); // Ignore old data - 1.16 to 1.16.1 only
                             ushort chunkMask = protocolversion >= MC19Version
                                 ? (ushort)dataTypes.ReadNextVarInt(packetData)
                                 : dataTypes.ReadNextUShort(packetData);
@@ -413,8 +417,17 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 if (protocolversion >= MC114Version)
                                     dataTypes.ReadNextNbt(packetData);  // Heightmaps - 1.14 and above
+                                int biomesLength = 0;
+                                if (protocolversion >= MC1162Version)
+                                    if (chunksContinuous)
+                                        biomesLength = dataTypes.ReadNextVarInt(packetData); // Biomes length - 1.16.2 and above
                                 if (protocolversion >= MC115Version && chunksContinuous)
-                                    dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
+                                    if (protocolversion >= MC1162Version)
+                                    {
+                                        for (int i = 0; i < biomesLength; i++)
+                                            dataTypes.ReadNextVarInt(packetData); // Biomes - 1.16.2 and above
+                                    }
+                                    else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
                                 int dataSize = dataTypes.ReadNextVarInt(packetData);
                                 pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
                             }
@@ -1035,7 +1048,7 @@ namespace MinecraftClient.Protocol.Handlers
                         innerException.GetType()),
                     innerException);
             }
-        }
+}
 
         /// <summary>
         /// Start the updating thread. Should be called after login success.
