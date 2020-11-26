@@ -3,7 +3,6 @@ using System.Collections.Generic;
 //using System.Linq;
 //using System.Text;
 using MinecraftClient.Mapping;
-using System.IO;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -15,7 +14,6 @@ namespace MinecraftClient.Protocol.Handlers
         private int protocolversion;
         private DataTypes dataTypes;
         private IMinecraftComHandler handler;
-        private TimeSpan totalTime;
 
         /// <summary>
         /// Initialize a new Terrain Decoder
@@ -44,7 +42,6 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (protocolversion >= Protocol18Handler.MC19Version)
             {
-                DateTime start = DateTime.Now;
                 // 1.9 and above chunk format
                 // Unloading chunks is handled by a separate packet
                 for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
@@ -190,9 +187,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 // Sky light is not sent in the nether or the end
                                 dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
                         }
-                        var now = DateTime.Now - start;
-                        totalTime += now;
-                        //Console.WriteLine("Finished chunk data in " + now.TotalMilliseconds + "ms. Total time spended: " + totalTime.TotalSeconds + "s");
                     }
                 }
 
