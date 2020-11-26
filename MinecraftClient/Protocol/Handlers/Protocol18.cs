@@ -1057,7 +1057,7 @@ namespace MinecraftClient.Protocol.Handlers
                         innerException.GetType()),
                     innerException);
             }
-}
+        }
 
         /// <summary>
         /// Start the updating thread. Should be called after login success.
