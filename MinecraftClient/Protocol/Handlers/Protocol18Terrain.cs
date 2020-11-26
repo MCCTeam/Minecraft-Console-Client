@@ -15,6 +15,7 @@ namespace MinecraftClient.Protocol.Handlers
         private int protocolversion;
         private DataTypes dataTypes;
         private IMinecraftComHandler handler;
+        private TimeSpan totalTime;
 
         /// <summary>
         /// Initialize a new Terrain Decoder
@@ -84,7 +85,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                         if (protocolversion >= Protocol18Handler.MC116Version)
                         {
-                            Queue<ulong> dataQueue = new Queue<ulong>(dataArray);
+                            int longIndex = 0;
                             int startOffset = 0 - bitsPerBlock;
                             if (dataArray.Length > 0)
                             {
@@ -99,17 +100,17 @@ namespace MinecraftClient.Protocol.Handlers
                                             // Long bit index
                                             startOffset += bitsPerBlock;
 
-                                            // Skip if bit spanned
+                                            // Next long if bit spanned
                                             if (64 - startOffset < bitsPerBlock)
                                             {
-                                                dataQueue.Dequeue();
                                                 startOffset = 0;
+                                                longIndex++;
                                             }
 
                                             // TODO: In the future a single ushort may not store the entire block id;
                                             // the Block code may need to change if block state IDs go beyond 65535
                                             ushort blockId;
-                                            blockId = (ushort)((dataQueue.Peek() >> startOffset) & valueMask);
+                                            blockId = (ushort)((dataArray[longIndex] >> startOffset) & valueMask);
                                             if (paletteLength <= blockId)
                                             {
                                                 Console.WriteLine("Palette length is {0} but BlockID is {1}. (pbp: {2}, blockNumber: {3})",
@@ -131,7 +132,6 @@ namespace MinecraftClient.Protocol.Handlers
                                     }
                                 }
                             }
-                            
                         }
                         else
                         {
@@ -190,7 +190,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 // Sky light is not sent in the nether or the end
                                 dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
                         }
-                        //Console.WriteLine("Finished chunk data in " + (DateTime.Now - start).TotalMilliseconds + "ms");
+                        var now = DateTime.Now - start;
+                        totalTime += now;
+                        //Console.WriteLine("Finished chunk data in " + now.TotalMilliseconds + "ms. Total time spended: " + totalTime.TotalSeconds + "s");
                     }
                 }
 

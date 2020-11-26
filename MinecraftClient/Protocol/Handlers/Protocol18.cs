@@ -422,12 +422,21 @@ namespace MinecraftClient.Protocol.Handlers
                                     if (chunksContinuous)
                                         biomesLength = dataTypes.ReadNextVarInt(packetData); // Biomes length - 1.16.2 and above
                                 if (protocolversion >= MC115Version && chunksContinuous)
+                                {
                                     if (protocolversion >= MC1162Version)
                                     {
                                         for (int i = 0; i < biomesLength; i++)
-                                            dataTypes.ReadNextVarInt(packetData); // Biomes - 1.16.2 and above
+                                        {
+                                            // Biomes - 1.16.2 and above
+                                            // Don't use ReadNextVarInt because it cost too much time
+                                            while (true)
+                                            {
+                                                if ((dataTypes.ReadNextByte(packetData) & 0x80) != 128) break;
+                                            }
+                                        }
                                     }
                                     else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
+                                }
                                 int dataSize = dataTypes.ReadNextVarInt(packetData);
                                 pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
                             }
