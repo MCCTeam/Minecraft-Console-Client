@@ -287,6 +287,31 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read a long from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        /// <returns>The long value</returns>
+        public long ReadNextVarLong(Queue<byte> cache)
+        {
+            int numRead = 0;
+            long result = 0;
+            byte read;
+            do
+            {
+                read = ReadNextByte(cache);
+                long value = (read & 0b01111111);
+                result |= (value << (7 * numRead));
+
+                numRead++;
+                if (numRead > 10)
+                {
+                    throw new OverflowException("VarLong is too big");
+                }
+            } while ((read & 0b10000000) != 0);
+            return result;
+        }
+
+        /// <summary>
         /// Read a single byte from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The byte that was read</returns>
