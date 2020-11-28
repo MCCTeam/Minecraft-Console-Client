@@ -429,10 +429,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         {
                                             // Biomes - 1.16.2 and above
                                             // Don't use ReadNextVarInt because it cost too much time
-                                            while (true)
-                                            {
-                                                if ((dataTypes.ReadNextByte(packetData) & 0x80) != 128) break;
-                                            }
+                                            dataTypes.SkipNextVarInt(packetData);
                                         }
                                     }
                                     else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above

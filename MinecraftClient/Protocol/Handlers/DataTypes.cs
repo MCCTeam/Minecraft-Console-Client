@@ -268,6 +268,18 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Skip a VarInt from a cache of bytes with better performance
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        public void SkipNextVarInt(Queue<byte> cache)
+        {
+            while (true)
+            {
+                if ((ReadNextByte(cache) & 0x80) != 128) break;
+            }
+        }
+
+        /// <summary>
         /// Read an "extended short", which is actually an int of some kind, from the cache of bytes.
         /// This is only done with forge.  It looks like it's a normal short, except that if the high
         /// bit is set, it has an extra byte.
