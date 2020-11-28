@@ -139,6 +139,8 @@
     <Compile Include="Inventory\ItemType.cs" />
     <Compile Include="Inventory\ItemTypeExtensions.cs" />
     <Compile Include="Inventory\WindowActionType.cs" />
+    <Compile Include="WinAPI\ConsoleIcon.cs" />
+    <Compile Include="WinAPI\WindowsVersion.cs" />
     <Compile Include="WinForms\Menus\Scripts.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -232,7 +234,6 @@
     <Compile Include="Protocol\ReplayHandler.cs" />
     <Compile Include="Translations.cs" />
     <Compile Include="Inventory\VillagerInfo.cs" />
-    <Compile Include="WinAPI\ConsoleIcon.cs" />
     <Compile Include="ConsoleIO.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />
     <Compile Include="Crypto\Streams\BouncyAes\BufferedBlockCipher.cs" />
@@ -371,7 +372,6 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Commands\List.cs" />
     <Compile Include="Mapping\Location.cs" />
-    <Compile Include="WinAPI\WindowsVersion.cs" />
     <Compile Include="WinForms\Menu.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -384,13 +384,6 @@
     <Compile Include="WinForms\Menus\Store Scripts.Designer.cs">
       <DependentUpon>Store Scripts.cs</DependentUpon>
     </Compile>
-    <Compile Include="WinForms\ServerMenus\mc.megacraft.org.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WinForms\ServerMenus\mc.megacraft.org.Designer.cs">
-      <DependentUpon>mc.megacraft.org.cs</DependentUpon>
-    </Compile>
-    <Compile Include="WinForms\UHWIDEngine.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
@@ -434,9 +427,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="WinForms\Menus\Store Scripts.resx">
       <DependentUpon>Store Scripts.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WinForms\ServerMenus\mc.megacraft.org.resx">
-      <DependentUpon>mc.megacraft.org.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -50,14 +50,6 @@ namespace MinecraftClient.WinForms
             OpenChildForm(new Scripts());
         }
 
-        private void pictureBox3_Click(object sender, EventArgs e)
-        {
-            if (Login.client.GetServerHost() == "mc.megacraft.org" || Login.client.GetServerHost() == "megacraft.org")
-            {
-                OpenChildForm(new MinecraftClient.WinForms.ServerMenus.mc_megacraft_org());
-            }
-        }
-
         private void Menu_FormClosing(object sender, FormClosingEventArgs e)
         {
 

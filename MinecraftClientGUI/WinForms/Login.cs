@@ -376,153 +376,96 @@ namespace MinecraftClient
         /// <summary>
         /// Static initialization of build information, read from assembly information
         /// </summary>
-        public static string GetPublicIP()
-        {
-            using (System.Net.WebClient wc = new System.Net.WebClient())
-            {
-                return wc.DownloadString("https://api.ipify.org");
-            }
-            return "";
-        }
-        public static bool Authorize()
-        {
-            try
-            {
-                using (WebClient wc = new WebClient())
-                {
-                    string done = wc.DownloadString("https://raw.githubusercontent.com/Nekiplay/Minecraft-Console-Client-Premium-ServerSide/master/auth/users/" + GetLicenseCode());
-                    if (done != "" && done.Contains("True") && !done.Contains("404: Not Found"))
-                    {
-                        return true;
-
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                return false;
-            } catch
-            {
-                return false;
-            }
-        }
         private void button1_Click(object sender, EventArgs e)
         {
-            if (Authorize())
+            TimeZoneInfo moscowZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+            DateTime localtime = DateTime.Now;
+            DateTime localmoscowTime = TimeZoneInfo.ConvertTime(localtime, moscowZone);
+
+            if (textBox2.Text == "megacraft.org")
+                textBox2.Text = "mc.megacraft.org";
+
+            if (!File.Exists("config.ini"))
+                File.Create("config.ini").Close();
+
+            INIManager ini = new INIManager(Application.StartupPath + "\\config.ini");
+            try { ini.WritePrivateString("LoginMenu", "Login", textBox1.Text); } catch { }
+            try { ini.WritePrivateString("LoginMenu", "Server", textBox2.Text); } catch { }
+            try { ini.WritePrivateString("LoginMenu", "Password", textBox3.Text); } catch { }
+
+            Console.WriteLine("Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors", MCLowestVersion, MCHighestVersion, Version);
+
+            //Build information to facilitate processing of bug reports
+            if (BuildInfo != null)
             {
-                TimeZoneInfo moscowZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
-                DateTime localtime = DateTime.Now;
-                DateTime localmoscowTime = TimeZoneInfo.ConvertTime(localtime, moscowZone);
+                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
+            }
 
-                if (textBox2.Text == "megacraft.org")
-                    textBox2.Text = "mc.megacraft.org";
+            //Setup ConsoleIO
+            ConsoleIO.LogPrefix = "§8[MCC] ";
+            ConsoleIO.BasicIO = false;
+            ConsoleIO.BasicIO_NoColor = false;
 
-                if (!File.Exists("config.ini"))
-                    File.Create("config.ini").Close();
+            //Take advantage of Windows 10 / Mac / Linux UTF-8 console
+            if (isUsingMono || WindowsVersion.WinMajorVersion >= 10)
+            {
+                Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+            }
 
-                INIManager ini = new INIManager(Application.StartupPath + "\\config.ini");
-                try { ini.WritePrivateString("LoginMenu", "Login", textBox1.Text); } catch { }
-                try { ini.WritePrivateString("LoginMenu", "Server", textBox2.Text); } catch { }
-                try { ini.WritePrivateString("LoginMenu", "Password", textBox3.Text); } catch { }
+            //Process ini configuration file
+            if (System.IO.File.Exists("MinecraftClient.ini"))
+            {
+                Settings.LoadSettings("MinecraftClient.ini");
+            }
+            else Settings.WriteDefaultSettings("MinecraftClient.ini");
 
-                Console.WriteLine("Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors", MCLowestVersion, MCHighestVersion, Version);
+            //Load external translation file. Should be called AFTER settings loaded
+            Translations.LoadExternalTranslationFile(Settings.Language);
 
-                //Build information to facilitate processing of bug reports
-                if (BuildInfo != null)
-                {
-                    ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
-                }
+            //Other command-line arguments
 
-                //Setup ConsoleIO
-                ConsoleIO.LogPrefix = "§8[MCC] ";
-                ConsoleIO.BasicIO = false;
-                ConsoleIO.BasicIO_NoColor = false;
+            if (Settings.ConsoleTitle != "")
+            {
+                Settings.Username = "New Window";
+                Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
+            }
 
-                //Take advantage of Windows 10 / Mac / Linux UTF-8 console
-                if (isUsingMono || WindowsVersion.WinMajorVersion >= 10)
-                {
-                    Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
-                }
+            //Test line to troubleshoot invisible colors
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLineFormatted(Translations.Get("debug.color_test", "[0123456789ABCDEF]: [§00§11§22§33§44§55§66§77§88§99§aA§bB§cC§dD§eE§fF§r]"));
+            }
 
-                //Process ini configuration file
-                if (System.IO.File.Exists("MinecraftClient.ini"))
-                {
-                    Settings.LoadSettings("MinecraftClient.ini");
-                }
-                else Settings.WriteDefaultSettings("MinecraftClient.ini");
-
-                //Load external translation file. Should be called AFTER settings loaded
-                Translations.LoadExternalTranslationFile(Settings.Language);
-
-                //Other command-line arguments
-
-                if (Settings.ConsoleTitle != "")
-                {
-                    Settings.Username = "New Window";
-                    Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
-                }
-
-                //Test line to troubleshoot invisible colors
+            //Load cached sessions from disk if necessary
+            if (Settings.SessionCaching == CacheType.Disk)
+            {
+                bool cacheLoaded = SessionCache.InitializeDiskCache();
                 if (Settings.DebugMessages)
-                {
-                    ConsoleIO.WriteLineFormatted(Translations.Get("debug.color_test", "[0123456789ABCDEF]: [§00§11§22§33§44§55§66§77§88§99§aA§bB§cC§dD§eE§fF§r]"));
-                }
-
-                //Load cached sessions from disk if necessary
-                if (Settings.SessionCaching == CacheType.Disk)
-                {
-                    bool cacheLoaded = SessionCache.InitializeDiskCache();
-                    if (Settings.DebugMessages)
-                        Translations.WriteLineFormatted(cacheLoaded ? "debug.session_cache_ok" : "debug.session_cache_fail");
-                }
-
-                //Asking the user to type in missing data such as Username and Password
-
-                if (Settings.Login == "")
-                {
-                    Settings.Login = textBox1.Text;
-                }
-                if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
-                {
-                    Settings.Password = textBox3.Text;
-                }
-                if (Settings.ServerIP == "")
-                {
-                    Settings.SetServerIP(textBox2.Text);
-                }
-                InitializeClient();
-                MinecraftClient.WinForms.Menu main = new MinecraftClient.WinForms.Menu();
-                this.Hide();
-                main.Show();
+                    Translations.WriteLineFormatted(cacheLoaded ? "debug.session_cache_ok" : "debug.session_cache_fail");
             }
-            else
+
+            //Asking the user to type in missing data such as Username and Password
+
+            if (Settings.Login == "")
             {
-                TimeZoneInfo moscowZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
-                DateTime localtime = DateTime.Now;
-                DateTime localmoscowTime = TimeZoneInfo.ConvertTime(localtime, moscowZone);
-
-                MessageBox.Show("Ошибка авторзаций");
+                Settings.Login = textBox1.Text;
             }
-        }
-        private static string Crypt(string text)
-        {
-            string rtnStr = string.Empty;
-            foreach (char c in text) // Цикл, которым мы и криптуем "текст"
+            if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
             {
-                rtnStr += (char)((int)c ^ 1); //Число можно взять любое.
+                Settings.Password = textBox3.Text;
             }
-            return rtnStr; //Возвращаем уже закриптованную строку. 
+            if (Settings.ServerIP == "")
+            {
+                Settings.SetServerIP(textBox2.Text);
+            }
+            InitializeClient();
+            MinecraftClient.WinForms.Menu main = new MinecraftClient.WinForms.Menu();
+            this.Hide();
+            main.Show();
         }
 
-        public static string GetLicenseCode()
-        {
-            
-            return UHWID.UHWIDEngine.AdvancedUid;
-        }
         private void Login_Load(object sender, EventArgs e)
         {
-            textBox4.Text = GetLicenseCode();
             if (!File.Exists("config.ini"))
                 File.Create("config.ini").Close();
 

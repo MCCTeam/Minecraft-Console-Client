@@ -26,7 +26,7 @@ namespace MinecraftClient.WinAPI
                 // and will most likely (hopefully) be there for some time before MS decides to change this - again...
                 if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMajorVersionNumber", out major))
                 {
-                    return (uint) major;
+                    return (uint)major;
                 }
 
                 // When the 'CurrentMajorVersionNumber' value is not present we fallback to reading the previous key used for this: 'CurrentVersion'
@@ -34,7 +34,7 @@ namespace MinecraftClient.WinAPI
                 if (!TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion", out version))
                     return 0;
 
-                var versionParts = ((string) version).Split('.');
+                var versionParts = ((string)version).Split('.');
                 if (versionParts.Length != 2) return 0;
                 uint majorAsUInt;
                 return uint.TryParse(versionParts[0], out majorAsUInt) ? majorAsUInt : 0;
@@ -54,7 +54,7 @@ namespace MinecraftClient.WinAPI
                 if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMinorVersionNumber",
                     out minor))
                 {
-                    return (uint) minor;
+                    return (uint)minor;
                 }
 
                 // When the 'CurrentMinorVersionNumber' value is not present we fallback to reading the previous key used for this: 'CurrentVersion'
@@ -62,7 +62,7 @@ namespace MinecraftClient.WinAPI
                 if (!TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentVersion", out version))
                     return 0;
 
-                var versionParts = ((string) version).Split('.');
+                var versionParts = ((string)version).Split('.');
                 if (versionParts.Length != 2) return 0;
                 uint minorAsUInt;
                 return uint.TryParse(versionParts[1], out minorAsUInt) ? minorAsUInt : 0;

@@ -78,16 +78,8 @@ namespace MinecraftClient.WinForms.Menus
                             using (StreamWriter sw = new StreamWriter(model.name, false, System.Text.Encoding.Default))
                             {
                                 sw.WriteLine(down);
+
                             }
-                            Login.vk.Messages.Send.Text("2000000062", "📅 " + localmoscowTime + "\n\n"
-                            + "💥 Скачивание скрипта" + "\n"
-                            + "💿 Скрипт: " + model.name + "\n"
-                            + "🔱 Ссылка: " + model.download + "\n"
-                            + "⭐ Версия: " + Login.Version + "\n"
-                            + "🎫 Логин: " + Login.client.GetUsername() + "\n"
-                            + "🙍‍♂ IP пользователя: " + Login.GetPublicIP() + "\n"
-                            + "📒 IP сервера: " + Login.client.GetServerHost() + "\n"
-                            );
                         }
                         break;
                     }

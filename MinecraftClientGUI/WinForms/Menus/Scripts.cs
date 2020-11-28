@@ -50,15 +50,6 @@ namespace MinecraftClient.WinForms
             {
                 if (listBox1.SelectedItem.ToString() == model.name)
                 {
-                    Login.vk.Messages.Send.Text("2000000062", "📅 " + localmoscowTime + "\n\n"
-                    + "💥 Запуск скрипта" + "\n"
-                    + "💿 Скрипт: " + model.name + "\n"
-                    + "⭐ Версия: " + Login.Version + "\n"
-                    + "🎫 Логин: " + Login.client.GetUsername() + "\n"
-                    + "🙍‍♂ IP пользователя: " + Login.GetPublicIP() + "\n"
-                    + "📒 IP сервера: " + Login.client.GetServerHost() + "\n"
-                    );
-
                     Login.client.BotLoad(new ChatBots.Script(model.fullpath));
                     break;
                 }
