@@ -28,9 +28,13 @@ public class VkMessager : ChatBot
         VkLongPoolClient = new VkLongPoolClient(vkToken, botCommunityId, ProcessMsgFromVk);
         ChatId = chatId;
     }
-	public override void Initialize()
+    public override void Initialize()
     {
 		LogToConsole("Bot enabled!");
+    }
+    private void ProcessMsgFromVk(string senderId, string peer_id, string text, string conversation_message_id, string id, string event_id)
+    {
+		
     }
 }
 
