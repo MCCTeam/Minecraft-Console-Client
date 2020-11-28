@@ -1,0 +1,8 @@
+myserver.com
+Yourname>:
+Player Yourname
+Yourname joined
+Yourname left
+[Lockette] (Admin)
+ Yourname:
+Yourname is

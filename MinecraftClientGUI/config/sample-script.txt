@@ -1,0 +1,8 @@
+# This is a sample script for Minecraft Console Client
+# Any line beginning with "#" is ignored and treated as a comment.
+# Allowed instructions: see README file for an updated list of instructions.
+
+send Hello World! I'm a bot scripted using Minecraft Console Client.
+wait 60
+send Now quitting. Bye :)
+exit
