@@ -268,6 +268,19 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Skip a VarInt from a cache of bytes with better performance
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        public void SkipNextVarInt(Queue<byte> cache)
+        {
+            while (true)
+            {
+                if ((ReadNextByte(cache) & 0x80) != 128)
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Read an "extended short", which is actually an int of some kind, from the cache of bytes.
         /// This is only done with forge.  It looks like it's a normal short, except that if the high
         /// bit is set, it has an extra byte.
@@ -284,6 +297,31 @@ namespace MinecraftClient.Protocol.Handlers
                 high = ReadNextByte(cache);
             }
             return ((high & 0xFF) << 15) | low;
+        }
+
+        /// <summary>
+        /// Read a long from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        /// <returns>The long value</returns>
+        public long ReadNextVarLong(Queue<byte> cache)
+        {
+            int numRead = 0;
+            long result = 0;
+            byte read;
+            do
+            {
+                read = ReadNextByte(cache);
+                long value = (read & 0x7F);
+                result |= (value << (7 * numRead));
+
+                numRead++;
+                if (numRead > 10)
+                {
+                    throw new OverflowException("VarLong is too big");
+                }
+            } while ((read & 0x80) != 0);
+            return result;
         }
 
         /// <summary>

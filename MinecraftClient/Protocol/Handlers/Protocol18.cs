@@ -80,7 +80,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
             this.packetPalette = new PacketTypeHandler(protocolVersion).GetTypeHandler();
 
-            if (handler.GetTerrainEnabled() && protocolversion > MC1152Version)
+            if (handler.GetTerrainEnabled() && protocolversion > MC1164Version)
             {
                 Translations.WriteLineFormatted("extra.terrainandmovement_disabled");
                 handler.SetTerrainEnabled(false);
@@ -101,9 +101,11 @@ namespace MinecraftClient.Protocol.Handlers
             // Block palette
             if (protocolversion >= MC113Version)
             {
-                if (protocolVersion > MC1152Version && handler.GetTerrainEnabled())
+                if (protocolVersion > MC1164Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.block"));
-                if (protocolVersion >= MC115Version)
+                if (protocolVersion >= MC116Version)
+                    Block.Palette = new Palette116();
+                else if (protocolVersion >= MC115Version)
                     Block.Palette = new Palette115();
                 else if (protocolVersion >= MC114Version)
                     Block.Palette = new Palette114();
@@ -398,6 +400,8 @@ namespace MinecraftClient.Protocol.Handlers
                             int chunkX = dataTypes.ReadNextInt(packetData);
                             int chunkZ = dataTypes.ReadNextInt(packetData);
                             bool chunksContinuous = dataTypes.ReadNextBool(packetData);
+                            if (protocolversion >= MC116Version && protocolversion <= MC1161Version)
+                                dataTypes.ReadNextBool(packetData); // Ignore old data - 1.16 to 1.16.1 only
                             ushort chunkMask = protocolversion >= MC19Version
                                 ? (ushort)dataTypes.ReadNextVarInt(packetData)
                                 : dataTypes.ReadNextUShort(packetData);
@@ -413,8 +417,23 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 if (protocolversion >= MC114Version)
                                     dataTypes.ReadNextNbt(packetData);  // Heightmaps - 1.14 and above
+                                int biomesLength = 0;
+                                if (protocolversion >= MC1162Version)
+                                    if (chunksContinuous)
+                                        biomesLength = dataTypes.ReadNextVarInt(packetData); // Biomes length - 1.16.2 and above
                                 if (protocolversion >= MC115Version && chunksContinuous)
-                                    dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
+                                {
+                                    if (protocolversion >= MC1162Version)
+                                    {
+                                        for (int i = 0; i < biomesLength; i++)
+                                        {
+                                            // Biomes - 1.16.2 and above
+                                            // Don't use ReadNextVarInt because it cost too much time
+                                            dataTypes.SkipNextVarInt(packetData);
+                                        }
+                                    }
+                                    else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
+                                }
                                 int dataSize = dataTypes.ReadNextVarInt(packetData);
                                 pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
                             }
@@ -514,35 +533,62 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketTypesIn.MultiBlockChange:
                         if (handler.GetTerrainEnabled())
                         {
-                            int chunkX = dataTypes.ReadNextInt(packetData);
-                            int chunkZ = dataTypes.ReadNextInt(packetData);
-                            int recordCount = protocolversion < MC18Version
-                                ? (int)dataTypes.ReadNextShort(packetData)
-                                : dataTypes.ReadNextVarInt(packetData);
-
-                            for (int i = 0; i < recordCount; i++)
+                            if (protocolversion >= MC1162Version)
                             {
-                                byte locationXZ;
-                                ushort blockIdMeta;
-                                int blockY;
-
-                                if (protocolversion < MC18Version)
+                                long chunkSection = dataTypes.ReadNextLong(packetData);
+                                int sectionX = (int)(chunkSection >> 42);
+                                int sectionY = (int)((chunkSection << 44) >> 44);
+                                int sectionZ = (int)((chunkSection << 22) >> 42);
+                                dataTypes.ReadNextBool(packetData); // Useless boolean
+                                int blocksSize = dataTypes.ReadNextVarInt(packetData);
+                                for (int i = 0; i < blocksSize; i++)
                                 {
-                                    blockIdMeta = dataTypes.ReadNextUShort(packetData);
-                                    blockY = (ushort)dataTypes.ReadNextByte(packetData);
-                                    locationXZ = dataTypes.ReadNextByte(packetData);
-                                }
-                                else
-                                {
-                                    locationXZ = dataTypes.ReadNextByte(packetData);
-                                    blockY = (ushort)dataTypes.ReadNextByte(packetData);
-                                    blockIdMeta = (ushort)dataTypes.ReadNextVarInt(packetData);
-                                }
+                                    ulong block = (ulong)dataTypes.ReadNextVarLong(packetData);
+                                    int blockId = (int)(block >> 12);
+                                    int localX = (int)((block >> 8) & 0x0F);
+                                    int localZ = (int)((block >> 4) & 0x0F);
+                                    int localY = (int)(block & 0x0F);
 
-                                int blockX = locationXZ >> 4;
-                                int blockZ = locationXZ & 0x0F;
-                                Block block = new Block(blockIdMeta);
-                                handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
+                                    Block b = new Block((ushort)blockId);
+                                    int blockX = (sectionX * 16) + localX;
+                                    int blockY = (sectionY * 16) + localY;
+                                    int blockZ = (sectionZ * 16) + localZ;
+                                    var l = new Location(blockX, blockY, blockZ);
+                                    handler.GetWorld().SetBlock(l, b);
+                                }
+                            }
+                            else
+                            {
+                                int chunkX = dataTypes.ReadNextInt(packetData);
+                                int chunkZ = dataTypes.ReadNextInt(packetData);
+                                int recordCount = protocolversion < MC18Version
+                                    ? (int)dataTypes.ReadNextShort(packetData)
+                                    : dataTypes.ReadNextVarInt(packetData);
+
+                                for (int i = 0; i < recordCount; i++)
+                                {
+                                    byte locationXZ;
+                                    ushort blockIdMeta;
+                                    int blockY;
+
+                                    if (protocolversion < MC18Version)
+                                    {
+                                        blockIdMeta = dataTypes.ReadNextUShort(packetData);
+                                        blockY = (ushort)dataTypes.ReadNextByte(packetData);
+                                        locationXZ = dataTypes.ReadNextByte(packetData);
+                                    }
+                                    else
+                                    {
+                                        locationXZ = dataTypes.ReadNextByte(packetData);
+                                        blockY = (ushort)dataTypes.ReadNextByte(packetData);
+                                        blockIdMeta = (ushort)dataTypes.ReadNextVarInt(packetData);
+                                    }
+
+                                    int blockX = locationXZ >> 4;
+                                    int blockZ = locationXZ & 0x0F;
+                                    Block block = new Block(blockIdMeta);
+                                    handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
+                                }
                             }
                         }
                         break;
