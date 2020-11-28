@@ -108,7 +108,7 @@ namespace MinecraftClient.Protocol.Handlers
                                             // the Block code may need to change if block state IDs go beyond 65535
                                             ushort blockId;
                                             blockId = (ushort)((dataArray[longIndex] >> startOffset) & valueMask);
-                                            if (paletteLength <= blockId)
+                                            if (usePalette && paletteLength <= blockId)
                                             {
                                                 Console.WriteLine("Palette length is {0} but BlockID is {1}. (pbp: {2}, blockNumber: {3})",
                                                     paletteLength,
