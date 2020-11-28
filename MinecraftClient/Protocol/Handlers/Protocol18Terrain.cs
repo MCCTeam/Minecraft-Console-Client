@@ -58,7 +58,6 @@ namespace MinecraftClient.Protocol.Handlers
                         // Vanilla Minecraft will use at least 4 bits per block
                         if (bitsPerBlock < 4)
                             bitsPerBlock = 4;
-                        
 
                         // MC 1.9 to 1.12 will set palette length field to 0 when palette
                         // is not used, MC 1.13+ does not send the field at all in this case
@@ -76,101 +75,92 @@ namespace MinecraftClient.Protocol.Handlers
                         // EG, if bitsPerBlock = 5, valueMask = 00011111 in binary
                         uint valueMask = (uint)((1 << bitsPerBlock) - 1);
 
+                        // Block IDs are packed in the array of 64-bits integers
                         ulong[] dataArray = dataTypes.ReadNextULongArray(cache);
 
                         Chunk chunk = new Chunk();
 
-                        if (protocolversion >= Protocol18Handler.MC116Version)
+                        if (dataArray.Length > 0)
                         {
                             int longIndex = 0;
                             int startOffset = 0 - bitsPerBlock;
-                            if (dataArray.Length > 0)
-                            {
-                                for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
-                                {
-                                    for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
-                                    {
-                                        for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                        {
-                                            // Block Count
-                                            int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
-                                            // Long bit index
-                                            startOffset += bitsPerBlock;
 
-                                            // Next long if bit spanned
-                                            if (64 - startOffset < bitsPerBlock)
+                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
+                            {
+                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
+                                {
+                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
+                                    {
+                                        // NOTICE: In the future a single ushort may not store the entire block id;
+                                        // the Block class may need to change if block state IDs go beyond 65535
+                                        ushort blockId;
+
+                                        // Calculate location of next block ID inside the array of Longs
+                                        startOffset += bitsPerBlock;
+                                        bool overlap = false;
+
+                                        if ((startOffset + bitsPerBlock) > 64)
+                                        {
+                                            if (protocolversion >= Protocol18Handler.MC116Version)
                                             {
+                                                // In MC 1.16+, padding is applied to prevent overlapping between Longs:
+                                                // [      LONG INTEGER      ][      LONG INTEGER      ]
+                                                // [Block][Block][Block]XXXXX[Block][Block][Block]XXXXX
+
+                                                // When overlapping, move forward to the beginning of the next Long
                                                 startOffset = 0;
                                                 longIndex++;
                                             }
-
-                                            // TODO: In the future a single ushort may not store the entire block id;
-                                            // the Block code may need to change if block state IDs go beyond 65535
-                                            ushort blockId;
-                                            blockId = (ushort)((dataArray[longIndex] >> startOffset) & valueMask);
-                                            if (usePalette && paletteLength <= blockId)
-                                            {
-                                                Console.WriteLine("Palette length is {0} but BlockID is {1}. (pbp: {2}, blockNumber: {3})",
-                                                    paletteLength,
-                                                    blockId,
-                                                    bitsPerBlock,
-                                                    blockNumber);
-                                                throw new Exception("Palette length not match");
-                                            }
-
-                                            if (usePalette)
-                                            {
-                                                // Get the real block ID out of the palette
-                                                blockId = (ushort)palette[blockId];
-                                            }
-
-                                            chunk[blockX, blockY, blockZ] = new Block(blockId);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (dataArray.Length > 0)
-                            {
-                                for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
-                                {
-                                    for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
-                                    {
-                                        for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                        {
-                                            int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
-
-                                            int startLong = (blockNumber * bitsPerBlock) / 64;
-                                            int startOffset = (blockNumber * bitsPerBlock) % 64;
-                                            int endLong = ((blockNumber + 1) * bitsPerBlock - 1) / 64;
-
-                                            // TODO: In the future a single ushort may not store the entire block id;
-                                            // the Block code may need to change if block state IDs go beyond 65535
-                                            ushort blockId;
-                                            if (startLong == endLong)
-                                            {
-                                                blockId = (ushort)((dataArray[startLong] >> startOffset) & valueMask);
-                                            }
                                             else
                                             {
-                                                int endOffset = 64 - startOffset;
-                                                blockId = (ushort)((dataArray[startLong] >> startOffset | dataArray[endLong] << endOffset) & valueMask);
-                                            }
+                                                // In MC 1.15 and lower, block IDs can overlap between Longs:
+                                                // [      LONG INTEGER      ][      LONG INTEGER      ]
+                                                // [Block][Block][Block][Blo  ck][Block][Block][Block][
 
-                                            if (usePalette)
-                                            {
-                                                // Get the real block ID out of the palette
-                                                blockId = (ushort)palette[blockId];
+                                                // Detect when we reached the next Long or switch to overlap mode
+                                                if (startOffset >= 64)
+                                                {
+                                                    startOffset -= 64;
+                                                    longIndex++;
+                                                }
+                                                else overlap = true;
                                             }
-
-                                            chunk[blockX, blockY, blockZ] = new Block(blockId);
                                         }
+
+                                        // Extract Block ID
+                                        if (overlap)
+                                        {
+                                            int endOffset = 64 - startOffset;
+                                            blockId = (ushort)((dataArray[longIndex] >> startOffset | dataArray[longIndex + 1] << endOffset) & valueMask);
+                                        }
+                                        else
+                                        {
+                                            blockId = (ushort)((dataArray[longIndex] >> startOffset) & valueMask);
+                                        }
+
+                                        // Map small IDs to actual larger block IDs
+                                        if (usePalette)
+                                        {
+                                            if (paletteLength <= blockId)
+                                            {
+                                                int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
+                                                throw new IndexOutOfRangeException(String.Format("Block ID {0} is outside Palette range 0-{1}! (bitsPerBlock: {2}, blockNumber: {3})",
+                                                    blockId,
+                                                    paletteLength - 1,
+                                                    bitsPerBlock,
+                                                    blockNumber));
+                                            }
+
+                                            blockId = (ushort)palette[blockId];
+                                        }
+
+                                        // We have our block, save the block into the chunk
+                                        chunk[blockX, blockY, blockZ] = new Block(blockId);
                                     }
                                 }
                             }
                         }
+
                         //We have our chunk, save the chunk into the world
                         if (handler.GetWorld()[chunkX, chunkZ] == null)
                             handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
