@@ -275,7 +275,8 @@ namespace MinecraftClient.Protocol.Handlers
         {
             while (true)
             {
-                if ((ReadNextByte(cache) & 0x80) != 128) break;
+                if ((ReadNextByte(cache) & 0x80) != 128)
+                    break;
             }
         }
 
@@ -311,7 +312,7 @@ namespace MinecraftClient.Protocol.Handlers
             do
             {
                 read = ReadNextByte(cache);
-                long value = (read & 0b01111111);
+                long value = (read & 0x7F);
                 result |= (value << (7 * numRead));
 
                 numRead++;
@@ -319,7 +320,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     throw new OverflowException("VarLong is too big");
                 }
-            } while ((read & 0b10000000) != 0);
+            } while ((read & 0x80) != 0);
             return result;
         }
 
