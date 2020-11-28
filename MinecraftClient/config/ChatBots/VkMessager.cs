@@ -18,6 +18,22 @@ MCC.LoadBot(new VkMessager(vkToken, chatId, botCommunityId));
 
 //MCCScript Extensions
 
+public class VkMessager : ChatBot
+{
+    private VkLongPoolClient VkLongPoolClient { get; set; }
+    private readonly string ChatId;
+
+    public VkMessager(string vkToken, string chatId, string botCommunityId)
+    {
+        VkLongPoolClient = new VkLongPoolClient(vkToken, botCommunityId, ProcessMsgFromVk);
+        ChatId = chatId;
+    }
+	public override void Initialize()
+    {
+		LogToConsole("Bot enabled!");
+    }
+}
+
 /// <summary>
 /// This bot forwarding messages between Minecraft and VKonrakte chats.
 /// Shares only messages that starts with dot ("."). Example: .Hello!
