@@ -18,26 +18,6 @@ MCC.LoadBot(new VkMessager(vkToken, chatId, botCommunityId));
 
 //MCCScript Extensions
 
-public class VkMessager : ChatBot
-{
-    private VkLongPoolClient VkLongPoolClient { get; set; }
-    private readonly string ChatId;
-
-    public VkMessager(string vkToken, string chatId, string botCommunityId)
-    {
-        VkLongPoolClient = new VkLongPoolClient(vkToken, botCommunityId, ProcessMsgFromVk);
-        ChatId = chatId;
-    }
-    public override void Initialize()
-    {
-		LogToConsole("Bot enabled!");
-    }
-    private void ProcessMsgFromVk(string senderId, string peer_id, string text, string conversation_message_id, string id, string event_id)
-    {
-		
-    }
-}
-
 /// <summary>
 /// This bot forwarding messages between Minecraft and VKonrakte chats.
 /// Shares only messages that starts with dot ("."). Example: .Hello!
@@ -48,6 +28,27 @@ public class VkMessager : ChatBot
 /// - VK ChatId (typically 2000000001, etc.)
 /// - Bot's CommunityId
 /// </summary>
+public class VkMessager : ChatBot
+{
+    private VkLongPoolClient VkLongPoolClient { get; set; }
+    private readonly string ChatId;
+
+    public VkMessager(string vkToken, string chatId, string botCommunityId)
+    {
+        VkLongPoolClient = new VkLongPoolClient(vkToken, botCommunityId, ProcessMsgFromVk);
+        ChatId = chatId;
+    }
+
+    public override void Initialize()
+    {
+        LogToConsole("Bot enabled!");
+    }
+
+    private void ProcessMsgFromVk(string senderId, string peer_id, string text, string conversation_message_id, string id, string event_id)
+    {
+        
+    }
+}
 
 /// <summary>
 /// Client for VK Community (bot) LongPool API.
