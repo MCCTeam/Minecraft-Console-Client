@@ -8,7 +8,7 @@ public class QIWI_DonationBot : ChatBot
 {	
 	public override void Initialize()
     {
-		Donation donation = new Donation("", OnDonate);
+		Donation donation = new Donation("token", OnDonate);
 		LogToConsole("Бот запужен");
 	}
 	
