@@ -64,21 +64,25 @@ public class Donation
                     wc.Encoding = Encoding.UTF8;
                     string response = wc.DownloadString("https://donate.qiwi.com/api/stream/v1/widgets/" + token + "/events?&limit=1");
 
-                    string nickname = Regex.Match(response, "\"DONATION_SENDER\":\"(.*)\",\"DONATION_AMOUNT\"").Groups[1].Value;
-                    string ammountst = Regex.Match(response, "\"DONATION_AMOUNT\":(.*)},\"voteResults\"").Groups[1].Value;
-                    double ammount = 0;
-                    if (ammountst != "")
+                    string type = Regex.Match(response, "\"type\":\"(.*)\",\"status\":\"(.*)\"").Groups[1].Value;
+                    if (type == "DONATION")
                     {
-                        ammountst = ammountst.Replace(".", ",").Replace(" ", "");
-                        ammount = double.Parse(ammountst);
-                    }
-                    string currency = Regex.Match(response, "\"DONATION_CURRENCY\":\"(.*)\",\"DONATION_SENDER\"").Groups[1].Value;
-                    string message = Regex.Match(response, "\"DONATION_MESSAGE\":\"(.*)\",\"DONATION_CURRENCY\":\"(.*)\"").Groups[1].Value;
-                    if (nickname != "")
-                    {
-                        foreach (Action<string, double, string, string> action in onDonation)
+                        string nickname = Regex.Match(response, "\"DONATION_SENDER\":\"(.*)\",\"DONATION_AMOUNT\"").Groups[1].Value;
+                        string ammountst = Regex.Match(response, "\"DONATION_AMOUNT\":(.*)},\"voteResults\"").Groups[1].Value;
+                        double ammount = 0;
+                        if (ammountst != "")
                         {
-                            action(nickname, ammount, currency, message);
+                            ammountst = ammountst.Replace(".", ",").Replace(" ", "");
+                            ammount = double.Parse(ammountst);
+                        }
+                        string currency = Regex.Match(response, "\"DONATION_CURRENCY\":\"(.*)\",\"DONATION_SENDER\"").Groups[1].Value;
+                        string message = Regex.Match(response, "\"DONATION_MESSAGE\":\"(.*)\",\"DONATION_CURRENCY\":\"(.*)\"").Groups[1].Value;
+                        if (nickname != "")
+                        {
+                            foreach (Action<string, double, string, string> action in onDonation)
+                            {
+                                action(nickname, ammount, currency, message);
+                            }
                         }
                     }
                 }
