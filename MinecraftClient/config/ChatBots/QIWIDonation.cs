@@ -37,17 +37,17 @@ public class QIWI_DonationBot : ChatBot
 public class Donation
 {
     private string token;
-    private List<Action<string, float, string, string>> onDonation { get; set; }
-    public Donation(string token, List<Action<string, float, string, string>> onDonation)
+    private List<Action<string, double, string, string>> onDonation { get; set; }
+    public Donation(string token, List<Action<string, double, string, string>> onDonation)
     {
         this.token = token;
         this.onDonation = onDonation;
         StartAsync();
     }
-    public Donation(string token, Action<string, float, string, string> onDonation)
+    public Donation(string token, Action<string, double, string, string> onDonation)
     {
         this.token = token;
-        this.onDonation = new List<Action<string, float, string, string>>();
+        this.onDonation = new List<Action<string, double, string, string>>();
         this.onDonation.Add(onDonation);
         StartAsync();
     }
@@ -66,17 +66,17 @@ public class Donation
 
                     string nickname = Regex.Match(response, "\"DONATION_SENDER\":\"(.*)\",\"DONATION_AMOUNT\"").Groups[1].Value;
                     string ammountst = Regex.Match(response, "\"DONATION_AMOUNT\":(.*)},\"voteResults\"").Groups[1].Value;
-                    float ammount = 0;
+                    double ammount = 0;
                     if (ammountst != "")
                     {
                         ammountst = ammountst.Replace(".", ",").Replace(" ", "");
-                        ammount = float.Parse(ammountst);
+                        ammount = double.Parse(ammountst);
                     }
                     string currency = Regex.Match(response, "\"DONATION_CURRENCY\":\"(.*)\",\"DONATION_SENDER\"").Groups[1].Value;
                     string message = Regex.Match(response, "\"DONATION_MESSAGE\":\"(.*)\",\"DONATION_CURRENCY\":\"(.*)\"").Groups[1].Value;
                     if (nickname != "")
                     {
-                        foreach (Action<string, float, string, string> action in onDonation)
+                        foreach (Action<string, double, string, string> action in onDonation)
                         {
                             action(nickname, ammount, currency, message);
                         }
