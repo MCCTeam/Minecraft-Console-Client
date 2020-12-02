@@ -7,25 +7,26 @@ MCC.LoadBot(new QIWI_DonationBot());
 
 public class QIWI_DonationBot : ChatBot
 {	
-	public override void Initialize()
-    {
+        //More info: https://github.com/Nekiplay/QIWI-API
+        public override void Initialize()
+        {
 		QIWI.Donation donation = new QIWI.Donation("token", OnDonate);
-        QIWI.Wallet wallet = new QIWI.Wallet("token");
-        Console.WriteLine("Номер телефона: " + wallet.Identification.Phone()
-            + "\nПочта: " + wallet.Identification.Mail()
-            + "\nБаланс: " + wallet.Balance.RUB(wallet.Identification.Phone()) + " RUB"
-            );
-        Console.WriteLine("Имя: " + wallet.Identification.Last_Name(wallet.Identification.Phone()) + " " + wallet.Identification.First_Name(wallet.Identification.Phone()) + " " + wallet.Identification.Middle_Name(wallet.Identification.Phone()));
+                QIWI.Wallet wallet = new QIWI.Wallet("token");
+                Console.WriteLine("Номер телефона: " + wallet.Identification.Phone()
+                + "\nПочта: " + wallet.Identification.Mail()
+                + "\nБаланс: " + wallet.Balance.RUB(wallet.Identification.Phone()) + " RUB"
+                );
+                Console.WriteLine("Имя: " + wallet.Identification.Last_Name(wallet.Identification.Phone()) + " " + wallet.Identification.First_Name(wallet.Identification.Phone()) + " " + wallet.Identification.Middle_Name(wallet.Identification.Phone()));
 		LogToConsole("Бот запужен");
 	}
 	
-	private void OnDonate(string nickname, float ammount, string currency, string message)
-    {
-        LogToConsole("Ник: " + nickname);
-        LogToConsole("Сумма: " + ammount);
-        LogToConsole("Валюта: " + currency);
-        LogToConsole("Сообщение: " + message);
-    }
+        private void OnDonate(string nickname, float ammount, string currency, string message)
+        {
+        	LogToConsole("Ник: " + nickname);
+        	LogToConsole("Сумма: " + ammount);
+        	LogToConsole("Валюта: " + currency);
+        	LogToConsole("Сообщение: " + message);
+        }
 		
 	public override void Update()
 	{
@@ -36,7 +37,7 @@ public class QIWI_DonationBot : ChatBot
 
 	}
 	public override void GetText(string text, string json)
-    {
+        {
 		string text1 = GetVerbatim(text);
 	}
 }
