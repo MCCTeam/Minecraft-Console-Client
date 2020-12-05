@@ -1338,6 +1338,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             string version = "";
             TcpClient tcp = ProxyHandler.newTcpClient(host, port);
+            tcp.ReceiveTimeout = 30000; // 30 seconds
             tcp.ReceiveBufferSize = 1024 * 1024;
             SocketWrapper socketWrapper = new SocketWrapper(tcp);
             DataTypes dataTypes = new DataTypes(MC18Version);
