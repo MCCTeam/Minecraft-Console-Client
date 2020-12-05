@@ -21,13 +21,54 @@ MCC.LoadBot(new VkMessager(vkToken, chatId, botCommunityId));
 /// <summary>
 /// This bot forwarding messages between Minecraft and VKonrakte chats.
 /// Shares only messages that starts with dot ("."). Example: .Hello!
-/// Also, send message to VK when any player joins or leaves.
 /// 
 /// Needs: 
 /// - VK Community token (also LongPool API with NewMessageEvent, api >= 5.80),
 /// - VK ChatId (typically 2000000001, etc.)
 /// - Bot's CommunityId
 /// </summary>
+public class VkMessager : ChatBot
+{
+    private VkLongPoolClient VkLongPoolClient { get; set; }
+    private readonly string ChatId;
+
+    public VkMessager(string vkToken, string chatId, string botCommunityId)
+    {
+        VkLongPoolClient = new VkLongPoolClient(vkToken, botCommunityId, ProcessMsgFromVk);
+        ChatId = chatId;
+    }
+
+    public override void Initialize()
+    {
+        LogToConsole("Bot enabled!");
+    }
+
+    public override void GetText(string text)
+    {
+        // Here you can process a message coming from the Minecraft chat
+        // Example below: Forward a message to VKonrakte if it starts with a dot
+
+        string message = "";
+        string username = "";
+        text = GetVerbatim(text);
+
+        if (IsChatMessage(GetVerbatim(text), ref message, ref username) && message.StartsWith("."))
+        {
+            this.VkLongPoolClient.Messages_Send_Text(this.ChatId, text);
+        }
+    }
+
+    private void ProcessMsgFromVk(string senderId, string peer_id, string text, string conversation_message_id, string id, string event_id)
+    {
+        // Here you can process a message coming from VKonrakte
+        // Example below: Forward a message to Minecraft if it starts wit a dot
+
+        if (text.StartsWith("."))
+        {
+            SendText(text);
+        }
+    }
+}
 
 /// <summary>
 /// Client for VK Community (bot) LongPool API.
