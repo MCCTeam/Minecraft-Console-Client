@@ -12,20 +12,20 @@ public class QIWI_DonationBot : ChatBot
         {
 		QIWI.Donation donation = new QIWI.Donation("token", OnDonate);
                 QIWI.Wallet wallet = new QIWI.Wallet("token");
-                Console.WriteLine("Номер телефона: " + wallet.Identification.Phone()
-                + "\nПочта: " + wallet.Identification.Mail()
-                + "\nБаланс: " + wallet.Balance.RUB(wallet.Identification.Phone()) + " RUB"
+                Console.WriteLine("Phone: " + wallet.Identification.Phone()
+                + "\nMail: " + wallet.Identification.Mail()
+                + "\nBalance: " + wallet.Balance.RUB(wallet.Identification.Phone()) + " RUB"
                 );
-                Console.WriteLine("Имя: " + wallet.Identification.Last_Name(wallet.Identification.Phone()) + " " + wallet.Identification.First_Name(wallet.Identification.Phone()) + " " + wallet.Identification.Middle_Name(wallet.Identification.Phone()));
-		LogToConsole("Бот запужен");
+                Console.WriteLine("Name: " + wallet.Identification.Last_Name(wallet.Identification.Phone()) + " " + wallet.Identification.First_Name(wallet.Identification.Phone()) + " " + wallet.Identification.Middle_Name(wallet.Identification.Phone()));
+		LogToConsole("Bot enabled");
 	}
 	
         private void OnDonate(string nickname, float ammount, string currency, string message)
         {
-        	LogToConsole("Ник: " + nickname);
-        	LogToConsole("Сумма: " + ammount);
-        	LogToConsole("Валюта: " + currency);
-        	LogToConsole("Сообщение: " + message);
+        	LogToConsole("Nickname: " + nickname);
+        	LogToConsole("Ammount: " + ammount);
+        	LogToConsole("Currency: " + currency);
+        	LogToConsole("Message: " + message);
         }
 		
 	public override void Update()
