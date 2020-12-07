@@ -56,7 +56,7 @@ namespace MinecraftClient.Commands
                                         else if (health < 15)
                                             color = "§e";  // Yellow
 
-                                        string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity.Location.X, 2), Math.Round(entity.Location.Y, 2), Math.Round(entity.Location.Y, 2));
+                                        string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity.Location.X, 2), Math.Round(entity.Location.Y, 2), Math.Round(entity.Location.Z, 2));
                                         string done = Translations.Replace("([cmd.entityCmd.entity]): {0}\n [MCC] Type: {1}", id, type);
                                         if (!String.IsNullOrEmpty(nickname))
                                             done += Translations.Replace("\n [MCC] ([cmd.entityCmd.nickname]): {0}", nickname);
