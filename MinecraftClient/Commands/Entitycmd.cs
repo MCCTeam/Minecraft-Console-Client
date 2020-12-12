@@ -146,7 +146,7 @@ namespace MinecraftClient.Commands
                         EntityPose pose = entity2.Value.Pose;
                         EntityType type = entity2.Value.Type;
                         Item item = entity2.Value.Item;
-                        string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity2.Value.Location.X, 2), Math.Round(entity2.Value.Location.Y, 2), Math.Round(entity2.Value.Location.Y, 2));
+                        string location = String.Format("X:{0}, Y:{1}, Z:{2}", Math.Round(entity2.Value.Location.X, 2), Math.Round(entity2.Value.Location.Y, 2), Math.Round(entity2.Value.Location.Z, 2));
 
                         if (type == EntityType.Item || type == EntityType.ItemFrame || type == EntityType.EyeOfEnder || type == EntityType.Egg || type == EntityType.EnderPearl || type == EntityType.Potion || type == EntityType.Fireball || type == EntityType.FireworkRocket)
                             response.Add(Translations.Replace(" #{0}: ([cmd.entityCmd.type]): {1}, ([cmd.entityCmd.item]): {2}, ([cmd.entityCmd.location]): {3}", id, type, item.Type, location));
