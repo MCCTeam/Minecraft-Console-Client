@@ -7,7 +7,7 @@ namespace MinecraftClient
 {
     /// <summary>
     /// This class parses JSON data and returns an object describing that data.
-    /// Really lightweight JSON handling by ORelio - (c) 2013 - 2014
+    /// Really lightweight JSON handling by ORelio - (c) 2013 - 2020
     /// </summary>
     public static class Json
     {
@@ -51,12 +51,14 @@ namespace MinecraftClient
             try
             {
                 JSONData data;
+                SkipSpaces(toparse, ref cursorpos);
                 switch (toparse[cursorpos])
                 {
                     //Object
                     case '{':
                         data = new JSONData(JSONData.DataType.Object);
                         cursorpos++;
+                        SkipSpaces(toparse, ref cursorpos);
                         while (toparse[cursorpos] != '}')
                         {
                             if (toparse[cursorpos] == '"')
@@ -75,6 +77,7 @@ namespace MinecraftClient
                     case '[':
                         data = new JSONData(JSONData.DataType.Array);
                         cursorpos++;
+                        SkipSpaces(toparse, ref cursorpos);
                         while (toparse[cursorpos] != ']')
                         {
                             if (toparse[cursorpos] == ',') { cursorpos++; }
@@ -95,10 +98,10 @@ namespace MinecraftClient
                                 try //Unicode character \u0123
                                 {
                                     if (toparse[cursorpos + 1] == 'u'
-                                        && isHex(toparse[cursorpos + 2])
-                                        && isHex(toparse[cursorpos + 3])
-                                        && isHex(toparse[cursorpos + 4])
-                                        && isHex(toparse[cursorpos + 5]))
+                                        && IsHex(toparse[cursorpos + 2])
+                                        && IsHex(toparse[cursorpos + 3])
+                                        && IsHex(toparse[cursorpos + 4])
+                                        && IsHex(toparse[cursorpos + 5]))
                                     {
                                         //"abc\u0123abc" => "0123" => 0123 => Unicode char n°0123 => Add char to string
                                         data.StringValue += char.ConvertFromUtf32(int.Parse(toparse.Substring(cursorpos + 2, 4), System.Globalization.NumberStyles.HexNumber));
@@ -164,16 +167,21 @@ namespace MinecraftClient
                         if (toparse[cursorpos] == 'e') { cursorpos++; data.StringValue = "false"; }
                         break;
 
+                    //Null field
+                    case 'n':
+                        data = new JSONData(JSONData.DataType.String);
+                        cursorpos++;
+                        if (toparse[cursorpos] == 'u') { cursorpos++; }
+                        if (toparse[cursorpos] == 'l') { cursorpos++; }
+                        if (toparse[cursorpos] == 'l') { cursorpos++; data.StringValue = "null"; }
+                        break;
+
                     //Unknown data
                     default:
                         cursorpos++;
                         return String2Data(toparse, ref cursorpos);
                 }
-                while (cursorpos < toparse.Length
-                    && (char.IsWhiteSpace(toparse[cursorpos])
-                    || toparse[cursorpos] == '\r'
-                    || toparse[cursorpos] == '\n'))
-                    cursorpos++;
+                SkipSpaces(toparse, ref cursorpos);
                 return data;
             }
             catch (IndexOutOfRangeException)
@@ -183,10 +191,24 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Small function for checking if a char is an hexadecimal char (0-9 A-F a-f)
+        /// Check if a char is an hexadecimal char (0-9 A-F a-f)
         /// </summary>
         /// <param name="c">Char to test</param>
         /// <returns>True if hexadecimal</returns>
-        private static bool isHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
+        private static bool IsHex(char c) { return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')); }
+
+        /// <summary>
+        /// Advance the cursor to skip white spaces and line breaks
+        /// </summary>
+        /// <param name="toparse">String to parse</param>
+        /// <param name="cursorpos">Cursor position to update</param>
+        private static void SkipSpaces(string toparse, ref int cursorpos)
+        {
+            while (cursorpos < toparse.Length
+                    && (char.IsWhiteSpace(toparse[cursorpos])
+                    || toparse[cursorpos] == '\r'
+                    || toparse[cursorpos] == '\n'))
+                cursorpos++;
+        }
     }
 }
