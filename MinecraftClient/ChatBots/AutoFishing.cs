@@ -102,7 +102,17 @@ namespace MinecraftClient.ChatBots
                 }
             }
         }
-        
+
+        public override bool OnDisconnect(DisconnectReason reason, string message)
+        {
+            fishingRod = null;
+            LastPos = new Location();
+            CaughtTime = DateTime.Now;
+            isFishing = false;
+            useItemCounter = 0;
+            return base.OnDisconnect(reason, message);
+        }
+
         /// <summary>
         /// Called when detected a fish is caught
         /// </summary>
