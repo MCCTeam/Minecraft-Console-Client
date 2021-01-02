@@ -15,7 +15,7 @@ namespace MinecraftClient.Protocol
     /// </summary>
     public class ProxiedWebRequest
     {
-        private readonly string httpVersion = "HTTP/1.1"; // Use 1.0 here because 1.1 server may send chunked data
+        private readonly string httpVersion = "HTTP/1.0"; // Use 1.0 here because 1.1 server may send chunked data
 
         private Uri uri;
         private string host { get => uri.Host; }
