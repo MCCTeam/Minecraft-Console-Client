@@ -215,6 +215,7 @@
     <Compile Include="FileMonitor.cs" />
     <Compile Include="Inventory\VillagerTrade.cs" />
     <Compile Include="Protocol\MicrosoftAuthentication.cs" />
+    <Compile Include="Protocol\ProxiedWebRequest.cs" />
     <Compile Include="Protocol\ReplayHandler.cs" />
     <Compile Include="Translations.cs" />
     <Compile Include="Inventory\VillagerInfo.cs" />
