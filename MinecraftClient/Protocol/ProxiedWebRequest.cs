@@ -41,6 +41,11 @@ namespace MinecraftClient.Protocol
             SetupBasicHeaders();
         }
 
+        /// <summary>
+        /// Create a new http request with cookies
+        /// </summary>
+        /// <param name="url">Target URL</param>
+        /// <param name="cookies">Cookies to use</param>
         public ProxiedWebRequest(string url, NameValueCollection cookies)
         {
             uri = new Uri(url);
