@@ -459,6 +459,10 @@ namespace MinecraftClient.Protocol
             catch (Exception e)
             {
                 ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
+                }
                 return LoginResult.WrongPassword; // Might not always be wrong password
             }
         }

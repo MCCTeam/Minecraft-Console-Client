@@ -8,6 +8,7 @@ using System.Collections.Specialized;
 using System.Net.Sockets;
 using MinecraftClient.Proxy;
 using System.Net.Security;
+using System.Collections;
 
 namespace MinecraftClient.Protocol
 {
@@ -99,16 +100,18 @@ namespace MinecraftClient.Protocol
                 requestMessage.Add(string.Format("{0}: {1}", key, value));
             }
             requestMessage.Add(""); // <CR><LF>
-            requestMessage.Add(""); // <CR><LF>
             if (body != "")
             {
                 requestMessage.Add(body);
             }
-            foreach (string l in requestMessage)
+            else requestMessage.Add(""); // <CR><LF>
+            if (Settings.DebugMessages)
             {
-                ConsoleIO.WriteLine("< " + l);
+                foreach (string l in requestMessage)
+                {
+                    ConsoleIO.WriteLine("< " + l);
+                }
             }
-            
             Response response = Response.Empty();
             AutoTimeout.Perform(() =>
             {
@@ -159,7 +162,7 @@ namespace MinecraftClient.Protocol
                 
                 while (msg.Peek() != "")
                 {
-                    string[] header = msg.Dequeue().Split(':');
+                    string[] header = msg.Dequeue().Split(new char[] { ':' }, 2); // Split first ':' only
                     string key = header[0].ToLower(); // Key is case-insensitive
                     string value = header[1];
                     if (key == "set-cookie")
@@ -170,10 +173,10 @@ namespace MinecraftClient.Protocol
                         string cvalue = tmp[1].Trim();
                         cookies.Add(cname, cvalue);
                     }
-                    //else
-                    //{
+                    else
+                    {
                         headers.Add(key, value.Trim());
-                    //}
+                    }
                 }
                 msg.Dequeue();
                 if (msg.Count > 0) 
@@ -261,9 +264,13 @@ namespace MinecraftClient.Protocol
                 }
                 if (Body != "")
                 {
-                    //sb.AppendLine();
-                    //sb.AppendLine("Body: ");
-                    //sb.AppendLine(Body);
+                    sb.AppendLine();
+                    if (Body.Length > 200)
+                    {
+                        sb.AppendLine("Body: (Truncated to 200 characters)");
+                    }
+                    else sb.AppendLine("Body: ");
+                    sb.AppendLine(Body.Length > 200 ? Body.Substring(0, 200) + "..." : Body);
                 }
                 return sb.ToString();
             }

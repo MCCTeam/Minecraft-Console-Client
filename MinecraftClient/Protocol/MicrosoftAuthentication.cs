@@ -44,7 +44,7 @@ namespace MinecraftClient.Protocol
             //Console.WriteLine("PPFT: {0}", PPFT);
             //Console.WriteLine();
             //Console.WriteLine("urlPost: {0}", urlPost);
-            ConsoleIO.WriteLine(response.ToString());
+
             return new PreAuthResponse()
             {
                 UrlPost = urlPost,
@@ -72,6 +72,11 @@ namespace MinecraftClient.Protocol
                  + "&PPFT=" + Uri.EscapeDataString(preAuth.PPFT);
 
             var response = request.Post("application/x-www-form-urlencoded", postData);
+
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLine(response.ToString());
+            }
 
             if (response.StatusCode >= 300 && response.StatusCode <= 399)
             {
@@ -110,8 +115,6 @@ namespace MinecraftClient.Protocol
             }
             else
             {
-                ConsoleIO.WriteLine(response.ToString());
-                File.WriteAllText(@"S:\a.html", response.Body);
                 throw new Exception("Unexpected response. Check your credentials. Response code: " + response.StatusCode);
             }
         }
@@ -138,6 +141,10 @@ namespace MinecraftClient.Protocol
                 + "\"TokenType\": \"JWT\""
                 + "}";
             var response = request.Post("application/json", payload);
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLine(response.ToString());
+            }
             if (response.StatusCode == 200)
             {
                 string jsonString = response.Body;
@@ -182,6 +189,10 @@ namespace MinecraftClient.Protocol
                 + "\"TokenType\": \"JWT\""
                 + "}";
             var response = request.Post("application/json", payload);
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLine(response.ToString());
+            }
             if (response.StatusCode == 200)
             {
                 string jsonString = response.Body;
@@ -263,6 +274,11 @@ namespace MinecraftClient.Protocol
             string payload = "{\"identityToken\": \"XBL3.0 x=" + userHash + ";" + xstsToken + "\"}";
             var response = request.Post("application/json", payload);
 
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLine(response.ToString());
+            }
+
             string jsonString = response.Body;
             // See https://github.com/ORelio/Sharp-Tools/issues/1
             jsonString = jsonString.Replace("[ ]", "[]");
@@ -280,6 +296,12 @@ namespace MinecraftClient.Protocol
             var request = new ProxiedWebRequest(ownership);
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
             var response = request.Get();
+
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLine(response.ToString());
+            }
+
             string jsonString = response.Body;
             // See https://github.com/ORelio/Sharp-Tools/issues/1
             jsonString = jsonString.Replace("[ ]", "[]");
@@ -292,6 +314,12 @@ namespace MinecraftClient.Protocol
             var request = new ProxiedWebRequest(profile);
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
             var response = request.Get();
+
+            if (Settings.DebugMessages)
+            {
+                ConsoleIO.WriteLine(response.ToString());
+            }
+
             string jsonString = response.Body;
             // See https://github.com/ORelio/Sharp-Tools/issues/1
             jsonString = jsonString.Replace("[ ]", "[]");
@@ -315,19 +343,6 @@ namespace MinecraftClient.Protocol
     /// </summary>
     static class Request
     {
-        static public HttpWebRequest Create(string url)
-        {
-            return (HttpWebRequest)WebRequest.Create(url);
-        }
-
-        static public string ReadBody(WebResponse e)
-        {
-            using (var sr = new StreamReader(e.GetResponseStream()))
-            {
-                return sr.ReadToEnd();
-            }
-        }
-
         static public Dictionary<string, string> ParseQueryString(string query)
         {
             return query.Split('&')
