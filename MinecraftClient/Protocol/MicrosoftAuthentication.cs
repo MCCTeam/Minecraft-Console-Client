@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Net;
 using System.Text.RegularExpressions;
-using System.IO;
 using System.Collections.Specialized;
 
 namespace MinecraftClient.Protocol

@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Net;
 using System.Collections.Specialized;
 using System.Net.Sockets;
 using MinecraftClient.Proxy;
 using System.Net.Security;
-using System.Collections;
 
 namespace MinecraftClient.Protocol
 {
