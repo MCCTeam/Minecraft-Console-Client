@@ -16,7 +16,7 @@ namespace MinecraftClient.Protocol
     /// </summary>
     public class ProxiedWebRequest
     {
-        private readonly string httpVersion = "HTTP/1.0"; // Use 1.0 here because 1.1 server may send chunked data
+        private readonly string httpVersion = "HTTP/1.1"; // Use 1.0 here because 1.1 server may send chunked data
 
         private Uri uri;
         private string host { get => uri.Host; }
@@ -43,8 +43,8 @@ namespace MinecraftClient.Protocol
         public ProxiedWebRequest(string url, NameValueCollection cookies)
         {
             uri = new Uri(url);
-            SetupBasicHeaders();
             Headers.Add("Cookie", GetCookieString(cookies));
+            SetupBasicHeaders();
         }
 
         /// <summary>
@@ -104,6 +104,11 @@ namespace MinecraftClient.Protocol
             {
                 requestMessage.Add(body);
             }
+            foreach (string l in requestMessage)
+            {
+                ConsoleIO.WriteLine("< " + l);
+            }
+            
             Response response = Response.Empty();
             AutoTimeout.Perform(() =>
             {
@@ -160,16 +165,15 @@ namespace MinecraftClient.Protocol
                     if (key == "set-cookie")
                     {
                         string[] cookie = value.Split(';'); // cookie options are ignored
-                        List<string> tmp = cookie[0].Split('=').ToList();
-                        string cname = tmp[0];
-                        tmp.RemoveAt(0);
-                        string cvalue = string.Join("", tmp);
+                        string[] tmp = cookie[0].Split(new char[] { '=' }, 2); // Split first '=' only
+                        string cname = tmp[0].Trim();
+                        string cvalue = tmp[1].Trim();
                         cookies.Add(cname, cvalue);
                     }
-                    else
-                    {
+                    //else
+                    //{
                         headers.Add(key, value.Trim());
-                    }
+                    //}
                 }
                 msg.Dequeue();
                 if (msg.Count > 0) 
@@ -203,19 +207,13 @@ namespace MinecraftClient.Protocol
         private static string GetCookieString(NameValueCollection cookies)
         {
             var sb = new StringBuilder();
-            if (cookies.Count > 1)
+            foreach (string key in cookies)
             {
-                foreach (string key in cookies)
-                {
-                    var value = cookies[key];
-                    sb.Append(string.Format("{0}={1}; ", key, value));
-                }
+                var value = cookies[key];
+                sb.Append(string.Format("{0}={1}; ", key, value));
             }
-            else
-            {
-                sb.Append(string.Format("{0}={1}", cookies.Keys[0], cookies[0]));
-            }
-            return sb.ToString();
+            string result = sb.ToString();
+            return result.Remove(result.Length - 2); // Remove "; " at the end
         }
 
         /// <summary>
@@ -247,9 +245,9 @@ namespace MinecraftClient.Protocol
             {
                 var sb = new StringBuilder();
                 sb.AppendLine("Status code: " + StatusCode);
+                sb.AppendLine("Headers:");
                 foreach (string key in Headers)
                 {
-                    sb.AppendLine("Headers:");
                     sb.AppendLine(string.Format("  {0}: {1}", key, Headers[key]));
                 }
                 if (Cookies.Count > 0)
@@ -263,9 +261,9 @@ namespace MinecraftClient.Protocol
                 }
                 if (Body != "")
                 {
-                    sb.AppendLine();
-                    sb.AppendLine("Body: ");
-                    sb.AppendLine(Body);
+                    //sb.AppendLine();
+                    //sb.AppendLine("Body: ");
+                    //sb.AppendLine(Body);
                 }
                 return sb.ToString();
             }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Collections.Specialized;
 
 namespace MinecraftClient.Protocol
 {
@@ -27,12 +28,11 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public PreAuthResponse PreAuth()
         {
-            var request = Request.Create(authorize);
+            var request = new ProxiedWebRequest(authorize);
             request.UserAgent = userAgent;
-            request.CookieContainer = new CookieContainer();
-            var response = (HttpWebResponse)request.GetResponse();
+            var response = request.Get();
 
-            string html = Request.ReadBody(response);
+            string html = response.Body;
 
             string PPFT = ppft.Match(html).Groups[1].Value;
             string urlPost = this.urlPost.Match(html).Groups[1].Value;
@@ -44,9 +44,7 @@ namespace MinecraftClient.Protocol
             //Console.WriteLine("PPFT: {0}", PPFT);
             //Console.WriteLine();
             //Console.WriteLine("urlPost: {0}", urlPost);
-
-            response.Close();
-
+            ConsoleIO.WriteLine(response.ToString());
             return new PreAuthResponse()
             {
                 UrlPost = urlPost,
@@ -65,44 +63,32 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public UserLoginResponse UserLogin(string email, string password, PreAuthResponse preAuth)
         {
-            var request = Request.Create(preAuth.UrlPost);
+            var request = new ProxiedWebRequest(preAuth.UrlPost, preAuth.Cookie);
             request.UserAgent = userAgent;
-            request.AllowAutoRedirect = false; // Need to save the redirect URL
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.CookieContainer = new CookieContainer();
-            request.CookieContainer.Add(preAuth.Cookie);
 
             string postData = "login=" + Uri.EscapeDataString(email)
                  + "&loginfmt=" + Uri.EscapeDataString(email)
                  + "&passwd=" + Uri.EscapeDataString(password)
                  + "&PPFT=" + Uri.EscapeDataString(preAuth.PPFT);
-            byte[] data = Encoding.UTF8.GetBytes(postData);
 
-            request.ContentLength = data.Length;
-            using (var stream = request.GetRequestStream())
-            {
-                stream.Write(data, 0, data.Length);
-            }
+            var response = request.Post("application/x-www-form-urlencoded", postData);
 
-            var response = (HttpWebResponse)request.GetResponse();
-
-            if ((int)response.StatusCode >= 300 && (int)response.StatusCode <= 399)
+            if (response.StatusCode >= 300 && response.StatusCode <= 399)
             {
                 string url = response.Headers.Get("Location");
                 string hash = url.Split('#')[1];
 
-                var request2 = Request.Create(url);
-                var response2 = (HttpWebResponse)request2.GetResponse();
+                var request2 = new ProxiedWebRequest(url);
+                var response2 = request2.Get();
 
-                if ((int)response2.StatusCode != 200)
+                if (response2.StatusCode != 200)
                 {
                     throw new Exception("Authentication failed");
                 }
 
                 if (string.IsNullOrEmpty(hash))
                 {
-                    if (confirm.IsMatch(Request.ReadBody(response2)))
+                    if (confirm.IsMatch(response2.Body))
                     {
                         throw new Exception("Activity confirmation required");
                     }
@@ -115,9 +101,6 @@ namespace MinecraftClient.Protocol
                 //    Console.WriteLine("{0}: {1}", pair.Key, pair.Value);
                 //}
 
-                response.Close();
-                response2.Close();
-
                 return new UserLoginResponse()
                 {
                     AccessToken = dict["access_token"],
@@ -127,7 +110,9 @@ namespace MinecraftClient.Protocol
             }
             else
             {
-                throw new Exception("Unexpected response. Check your credentials");
+                ConsoleIO.WriteLine(response.ToString());
+                File.WriteAllText(@"S:\a.html", response.Body);
+                throw new Exception("Unexpected response. Check your credentials. Response code: " + response.StatusCode);
             }
         }
 
@@ -138,12 +123,9 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public XblAuthenticateResponse XblAuthenticate(UserLoginResponse loginResponse)
         {
-            var request = Request.Create(xbl);
-            request.Method = "POST";
+            var request = new ProxiedWebRequest(xbl);
             request.UserAgent = userAgent;
-            request.ContentType = "application/json";
             request.Accept = "application/json";
-            request.Headers.Add("Accept-Encoding", "gzip");
             request.Headers.Add("x-xbl-contract-version", "0");
 
             string payload = "{"
@@ -155,17 +137,10 @@ namespace MinecraftClient.Protocol
                 + "\"RelyingParty\": \"http://auth.xboxlive.com\","
                 + "\"TokenType\": \"JWT\""
                 + "}";
-
-            byte[] data = Encoding.UTF8.GetBytes(payload);
-            request.ContentLength = data.Length;
-            using (var stream = request.GetRequestStream())
+            var response = request.Post("application/json", payload);
+            if (response.StatusCode == 200)
             {
-                stream.Write(data, 0, data.Length);
-            }
-            try
-            {
-                var response = (HttpWebResponse)request.GetResponse();
-                string jsonString = Request.ReadBody(response);
+                string jsonString = response.Body;
                 //Console.WriteLine(jsonString);
 
                 Json.JSONData json = Json.ParseJson(jsonString);
@@ -177,7 +152,7 @@ namespace MinecraftClient.Protocol
                     UserHash = userHash
                 };
             }
-            catch (WebException)
+            else
             {
                 throw new Exception("XBL Authentication failed");
             }
@@ -191,10 +166,8 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public XSTSAuthenticateResponse XSTSAuthenticate(XblAuthenticateResponse xblResponse)
         {
-            var request = Request.Create(xsts);
-            request.Method = "POST";
+            var request = new ProxiedWebRequest(xsts);
             request.UserAgent = userAgent;
-            request.ContentType = "application/json";
             request.Accept = "application/json";
             request.Headers.Add("x-xbl-contract-version", "1");
 
@@ -208,16 +181,10 @@ namespace MinecraftClient.Protocol
                 + "\"RelyingParty\": \"rp://api.minecraftservices.com/\","
                 + "\"TokenType\": \"JWT\""
                 + "}";
-            byte[] data = Encoding.UTF8.GetBytes(payload);
-            request.ContentLength = data.Length;
-            using (var stream = request.GetRequestStream())
+            var response = request.Post("application/json", payload);
+            if (response.StatusCode == 200)
             {
-                stream.Write(data, 0, data.Length);
-            }
-            try
-            {
-                var response = (HttpWebResponse)request.GetResponse();
-                string jsonString = Request.ReadBody(response);
+                string jsonString = response.Body;
                 Json.JSONData json = Json.ParseJson(jsonString);
                 string token = json.Properties["Token"].StringValue;
                 string userHash = json.Properties["DisplayClaims"].Properties["xui"].DataArray[0].Properties["uhs"].StringValue;
@@ -227,12 +194,11 @@ namespace MinecraftClient.Protocol
                     UserHash = userHash
                 };
             }
-            catch (WebException err)
+            else
             {
-                var resp = (HttpWebResponse)err.Response;
-                if ((int)resp.StatusCode == 401)
+                if (response.StatusCode == 401)
                 {
-                    Json.JSONData json = Json.ParseJson(Request.ReadBody(resp));
+                    Json.JSONData json = Json.ParseJson(response.Body);
                     if (json.Properties["XErr"].StringValue == "2148916233")
                     {
                         throw new Exception("The account doesn't have an Xbox account");
@@ -254,7 +220,7 @@ namespace MinecraftClient.Protocol
         {
             public string UrlPost;
             public string PPFT;
-            public CookieCollection Cookie;
+            public NameValueCollection Cookie;
         }
 
         public struct UserLoginResponse
@@ -291,25 +257,16 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public string LoginWithXbox(string userHash, string xstsToken)
         {
-            var request = Request.Create(loginWithXbox);
-            request.Method = "POST";
-            request.ContentType = "application/json";
+            var request = new ProxiedWebRequest(loginWithXbox);
             request.Accept = "application/json";
 
             string payload = "{\"identityToken\": \"XBL3.0 x=" + userHash + ";" + xstsToken + "\"}";
-            byte[] data = Encoding.UTF8.GetBytes(payload);
-            request.ContentLength = data.Length;
-            using (var stream = request.GetRequestStream())
-            {
-                stream.Write(data, 0, data.Length);
-            }
-            var response = (HttpWebResponse)request.GetResponse();
+            var response = request.Post("application/json", payload);
 
-            string jsonString = Request.ReadBody(response);
+            string jsonString = response.Body;
             // See https://github.com/ORelio/Sharp-Tools/issues/1
             jsonString = jsonString.Replace("[ ]", "[]");
             Json.JSONData json = Json.ParseJson(jsonString);
-            response.Close();
             return json.Properties["access_token"].StringValue;
         }
 
@@ -320,27 +277,25 @@ namespace MinecraftClient.Protocol
         /// <returns>True if the user own the game</returns>
         public bool UserHasGame(string accessToken)
         {
-            var request = Request.Create(ownership);
+            var request = new ProxiedWebRequest(ownership);
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
-            var response = (HttpWebResponse)request.GetResponse();
-            string jsonString = Request.ReadBody(response);
+            var response = request.Get();
+            string jsonString = response.Body;
             // See https://github.com/ORelio/Sharp-Tools/issues/1
             jsonString = jsonString.Replace("[ ]", "[]");
             Json.JSONData json = Json.ParseJson(jsonString);
-            response.Close();
             return json.Properties["items"].DataArray.Count > 0;
         }
 
         public UserProfile GetUserProfile(string accessToken)
         {
-            var request = Request.Create(profile);
+            var request = new ProxiedWebRequest(profile);
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
-            var response = (HttpWebResponse)request.GetResponse();
-            string jsonString = Request.ReadBody(response);
+            var response = request.Get();
+            string jsonString = response.Body;
             // See https://github.com/ORelio/Sharp-Tools/issues/1
             jsonString = jsonString.Replace("[ ]", "[]");
             Json.JSONData json = Json.ParseJson(jsonString);
-            response.Close();
             return new UserProfile()
             {
                 UUID = json.Properties["id"].StringValue,
