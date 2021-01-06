@@ -431,7 +431,7 @@ namespace MinecraftClient.Protocol
 
         private static LoginResult MicrosoftLogin(string email, string password, out SessionToken session)
         {
-            session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") }; // <- What is this?
+            session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
             var ms = new XboxLive();
             var mc = new MinecraftWithXbox();
 
