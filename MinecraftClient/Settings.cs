@@ -25,6 +25,7 @@ namespace MinecraftClient
         public static string Login = "";
         public static string Username = "";
         public static string Password = "";
+        public static ProtocolHandler.AccountType AccountType = ProtocolHandler.AccountType.Mojang;
         public static string ServerIP = "";
         public static ushort ServerPort = 25565;
         public static string ServerVersion = "";
@@ -262,6 +263,9 @@ namespace MinecraftClient
                                             {
                                                 case "login": Login = argValue; break;
                                                 case "password": Password = argValue; break;
+                                                case "type": AccountType = argValue == "mojang" 
+                                                        ? ProtocolHandler.AccountType.Mojang 
+                                                        : ProtocolHandler.AccountType.Microsoft; break;
                                                 case "serverip": if (!SetServerIP(argValue)) serverAlias = argValue; ; break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
