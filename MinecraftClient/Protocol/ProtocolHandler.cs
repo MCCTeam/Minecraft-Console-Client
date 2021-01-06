@@ -328,6 +328,7 @@ namespace MinecraftClient.Protocol
         }
 
         public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError };
+        public enum AccountType { Mojang, Microsoft };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -336,7 +337,20 @@ namespace MinecraftClient.Protocol
         /// <param name="pass">Password</param>
         /// <param name="session">In case of successful login, will contain session information for multiplayer</param>
         /// <returns>Returns the status of the login (Success, Failure, etc.)</returns>
-        public static LoginResult GetLogin(string user, string pass, out SessionToken session)
+        public static LoginResult GetLogin(string user, string pass, AccountType type, out SessionToken session)
+        {
+            if (type == AccountType.Microsoft)
+            {
+                return MicrosoftLogin(user, pass, out session);
+            }
+            else if (type == AccountType.Mojang)
+            {
+                return MojangLogin(user, pass, out session);
+            }
+            else throw new InvalidOperationException("Account type must be Mojang or Microsoft");
+        }
+
+        private static LoginResult MojangLogin(string user, string pass, out SessionToken session)
         {
             session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
 
@@ -412,6 +426,44 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
                 return LoginResult.OtherError;
+            }
+        }
+
+        private static LoginResult MicrosoftLogin(string email, string password, out SessionToken session)
+        {
+            session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+            var ms = new XboxLive();
+            var mc = new MinecraftWithXbox();
+
+            try
+            {
+                var msaResponse = ms.UserLogin(email, password, ms.PreAuth());
+                var xblResponse = ms.XblAuthenticate(msaResponse);
+                var xsts = ms.XSTSAuthenticate(xblResponse); // Might throw even password correct
+
+                string accessToken = mc.LoginWithXbox(xsts.UserHash, xsts.Token);
+                bool hasGame = mc.UserHasGame(accessToken);
+                if (hasGame)
+                {
+                    var profile = mc.GetUserProfile(accessToken);
+                    session.PlayerName = profile.UserName;
+                    session.PlayerID = profile.UUID;
+                    session.ID = accessToken;
+                    return LoginResult.Success;
+                }
+                else
+                {
+                    return LoginResult.NotPremium;
+                }
+            }
+            catch (Exception e)
+            {
+                ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
+                }
+                return LoginResult.WrongPassword; // Might not always be wrong password
             }
         }
 
