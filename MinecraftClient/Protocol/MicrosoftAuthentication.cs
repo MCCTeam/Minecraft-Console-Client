@@ -278,8 +278,6 @@ namespace MinecraftClient.Protocol
             }
 
             string jsonString = response.Body;
-            // See https://github.com/ORelio/Sharp-Tools/issues/1
-            jsonString = jsonString.Replace("[ ]", "[]");
             Json.JSONData json = Json.ParseJson(jsonString);
             return json.Properties["access_token"].StringValue;
         }
@@ -301,8 +299,6 @@ namespace MinecraftClient.Protocol
             }
 
             string jsonString = response.Body;
-            // See https://github.com/ORelio/Sharp-Tools/issues/1
-            jsonString = jsonString.Replace("[ ]", "[]");
             Json.JSONData json = Json.ParseJson(jsonString);
             return json.Properties["items"].DataArray.Count > 0;
         }
@@ -319,8 +315,6 @@ namespace MinecraftClient.Protocol
             }
 
             string jsonString = response.Body;
-            // See https://github.com/ORelio/Sharp-Tools/issues/1
-            jsonString = jsonString.Replace("[ ]", "[]");
             Json.JSONData json = Json.ParseJson(jsonString);
             return new UserProfile()
             {
