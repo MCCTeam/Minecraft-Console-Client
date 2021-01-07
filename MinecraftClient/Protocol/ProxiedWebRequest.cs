@@ -18,16 +18,16 @@ namespace MinecraftClient.Protocol
         private readonly string httpVersion = "HTTP/1.0"; // Use 1.0 here because 1.1 server may send chunked data
 
         private Uri uri;
-        private string host { get => uri.Host; }
-        private int port { get => uri.Port; }
-        private string path { get => uri.PathAndQuery; }
-        private bool isSecure { get => uri.Scheme == "https"; }
+        private string host { get { return uri.Host; } }
+        private int port { get { return uri.Port; } }
+        private string path { get { return uri.PathAndQuery; } }
+        private bool isSecure { get { return uri.Scheme == "https"; } }
 
         public NameValueCollection Headers = new NameValueCollection();
 
-        public string UserAgent { get => Headers.Get("User-Agent"); set => Headers.Set("User-Agent", value); }
-        public string Accept { get => Headers.Get("Accept"); set => Headers.Set("Accept", value); }
-        public string Cookie { set => Headers.Set("Cookie", value); }
+        public string UserAgent { get { return Headers.Get("User-Agent"); } set { Headers.Set("User-Agent", value); } }
+        public string Accept { get { return Headers.Get("Accept"); } set { Headers.Set("Accept", value); } }
+        public string Cookie { set { Headers.Set("Cookie", value); } }
 
         /// <summary>
         /// Create a new http request
