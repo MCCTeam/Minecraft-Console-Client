@@ -18,6 +18,8 @@ namespace MinecraftClient.Protocol
         private Regex ppft = new Regex("sFTTag:'.*value=\"(.*)\"\\/>'");
         private Regex urlPost = new Regex("urlPost:'(.+?(?=\'))");
         private Regex confirm = new Regex("identity\\/confirm");
+        private Regex invalidAccount = new Regex("Sign in to", RegexOptions.IgnoreCase);
+        private Regex twoFA = new Regex("Help us protect your account", RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Pre-authentication
@@ -113,7 +115,16 @@ namespace MinecraftClient.Protocol
             }
             else
             {
-                throw new Exception("Unexpected response. Check your credentials. Response code: " + response.StatusCode);
+                if (twoFA.IsMatch(response.Body))
+                {
+                    // TODO: Handle 2FA
+                    throw new Exception("2FA enabled. Try to disable it in Microsoft account setting");
+                }
+                else if (invalidAccount.IsMatch(response.Body))
+                {
+                    throw new Exception("Invalid credentials. Check your credentials");
+                }
+                else throw new Exception("Unexpected response. Check your credentials. Response code: " + response.StatusCode);
             }
         }
 
