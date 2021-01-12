@@ -93,11 +93,7 @@ namespace MinecraftClient.Protocol
 
                 if (string.IsNullOrEmpty(hash))
                 {
-                    if (confirm.IsMatch(response2.Body))
-                    {
-                        throw new Exception("Activity confirmation required");
-                    }
-                    else throw new Exception("Invalid credentials or 2FA enabled");
+                    throw new Exception("Cannot extract access token");
                 }
                 var dict = Request.ParseQueryString(hash);
 
