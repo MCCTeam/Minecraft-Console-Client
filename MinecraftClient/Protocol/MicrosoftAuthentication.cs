@@ -114,7 +114,7 @@ namespace MinecraftClient.Protocol
                 if (twoFA.IsMatch(response.Body))
                 {
                     // TODO: Handle 2FA
-                    throw new Exception("2FA enabled. Try to disable it in Microsoft account setting");
+                    throw new Exception("2FA enabled but not supported yet. Try to disable it in Microsoft account settings");
                 }
                 else if (invalidAccount.IsMatch(response.Body))
                 {
