@@ -50,7 +50,8 @@ namespace MinecraftClient.ChatBots
             ShiftClick,
             WaitForUpdate,
             ResetCraftArea,
-            Repeat
+            Repeat,
+            CheckResult
         }
 
         /// <summary>
@@ -571,6 +572,8 @@ namespace MinecraftClient.ChatBots
             {
                 // Wait for server to send us the crafting result
                 actionSteps.Add(new ActionStep(ActionType.WaitForUpdate, inventoryInUse, 0));
+                // Check the crafting result is the item we want
+                actionSteps.Add(new ActionStep(ActionType.CheckResult, inventoryInUse, recipe.ResultItem));
                 // Put item back to inventory. (Using shift-click can take all item at once)
                 actionSteps.Add(new ActionStep(ActionType.ShiftClick, inventoryInUse, 0));
                 // We need to wait for server to update us after taking item from crafting result
@@ -590,6 +593,8 @@ namespace MinecraftClient.ChatBots
         private void StopCrafting()
         {
             actionSteps.Clear();
+            // Put item back to inventory or they will be dropped
+            ClearCraftingArea(inventoryInUse);
             // Closing inventory can make server to update our inventory
             // Useful when
             // - There are some items left in the crafting area
@@ -646,6 +651,22 @@ namespace MinecraftClient.ChatBots
                         else craftingFailed = true;
                         break;
 
+                    // Compare the crafting result with the recipe result
+                    case ActionType.CheckResult:
+                        if (GetInventories()[step.InventoryID].Items.ContainsKey(0)
+                            && GetInventories()[step.InventoryID].Items[0].Type == step.ItemType)
+                        {
+                            // OK
+                            break;
+                        }
+                        else
+                        {
+                            // Bad, reset everything
+                            ClearCraftingArea(step.InventoryID);
+                            index = 0;
+                        }
+                        break;
+
                     case ActionType.WaitForUpdate:
                         if (step.InventoryID != -2)
                         {
@@ -656,7 +677,7 @@ namespace MinecraftClient.ChatBots
 
                     case ActionType.ResetCraftArea:
                         if (step.InventoryID != -2)
-                            CloseInventory(step.InventoryID);
+                            ClearCraftingArea(step.InventoryID);
                         else
                             craftingFailed = true;
                         break;
@@ -694,6 +715,41 @@ namespace MinecraftClient.ChatBots
                     // we want to do that failed step again so decrease index by 1
                     index--;
                     LogToConsoleTranslated("bot.autoCraft.craft_fail");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Put any item left in the crafting area back to inventory
+        /// </summary>
+        /// <param name="inventoryId">Inventory ID to operate with</param>
+        private void ClearCraftingArea(int inventoryId)
+        {
+            if (GetInventories().ContainsKey(inventoryId))
+            {
+                var inventory = GetInventories()[inventoryId];
+                int areaStart = 1;
+                int areaEnd = 4;
+                if (inventory.Type == ContainerType.Crafting)
+                {
+                    areaEnd = 9;
+                }
+                List<int> emptySlots = inventory.GetEmpytSlots().Where(s => s > 9).ToList();
+                for (int i = areaStart; i <= areaEnd; i++)
+                {
+                    if (inventory.Items.ContainsKey(i))
+                    {
+                        if (emptySlots.Count != 0)
+                        {
+                            WindowAction(inventoryId, i, WindowActionType.LeftClick);
+                            WindowAction(inventoryId, emptySlots[0], WindowActionType.LeftClick);
+                            emptySlots.RemoveAt(0);
+                        }
+                        else
+                        {
+                            WindowAction(inventoryId, i, WindowActionType.DropItemStack);
+                        }
+                    }
                 }
             }
         }
