@@ -47,7 +47,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC1161Version = 736;
         internal const int MC1162Version = 751;
         internal const int MC1163Version = 753;
-        internal const int MC1164Version = 754;
+        internal const int MC1165Version = 754; // Renamed from 1.16.4 to 1.16.5 as they have same no.
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -80,19 +80,19 @@ namespace MinecraftClient.Protocol.Handlers
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
             this.packetPalette = new PacketTypeHandler(protocolVersion).GetTypeHandler();
 
-            if (handler.GetTerrainEnabled() && protocolversion > MC1164Version)
+            if (handler.GetTerrainEnabled() && protocolversion > MC1165Version)
             {
                 Translations.WriteLineFormatted("extra.terrainandmovement_disabled");
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1164Version))
+            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1165Version))
             {
                 Translations.WriteLineFormatted("extra.inventory_disabled");
                 handler.SetInventoryEnabled(false);
             }
 
-            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1164Version))
+            if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1165Version))
             {
                 Translations.WriteLineFormatted("extra.entity_disabled");
                 handler.SetEntityHandlingEnabled(false);
@@ -101,7 +101,7 @@ namespace MinecraftClient.Protocol.Handlers
             // Block palette
             if (protocolversion >= MC113Version)
             {
-                if (protocolVersion > MC1164Version && handler.GetTerrainEnabled())
+                if (protocolVersion > MC1165Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.block"));
                 if (protocolVersion >= MC116Version)
                     Block.Palette = new Palette116();
@@ -116,7 +116,7 @@ namespace MinecraftClient.Protocol.Handlers
             // Entity palette
             if (protocolversion >= MC113Version)
             {
-                if (protocolversion > MC1164Version && handler.GetEntityHandlingEnabled())
+                if (protocolversion > MC1165Version && handler.GetEntityHandlingEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.entity"));
                 if (protocolversion >= MC1162Version)
                     entityPalette = new EntityPalette1162();
@@ -133,7 +133,7 @@ namespace MinecraftClient.Protocol.Handlers
             // Item palette
             if (protocolversion >= MC116Version)
             {
-                if (protocolversion > MC1164Version && handler.GetInventoryEnabled())
+                if (protocolversion > MC1165Version && handler.GetInventoryEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.item"));
                 if (protocolversion >= MC1162Version)
                     itemPalette = new ItemPalette1162();
