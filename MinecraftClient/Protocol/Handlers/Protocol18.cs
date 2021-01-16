@@ -47,7 +47,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC1161Version = 736;
         internal const int MC1162Version = 751;
         internal const int MC1163Version = 753;
-        internal const int MC1165Version = 754; // Renamed from 1.16.4 to 1.16.5 as they have same no.
+        internal const int MC1165Version = 754;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;

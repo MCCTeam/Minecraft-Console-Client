@@ -305,7 +305,7 @@ namespace MinecraftClient.Protocol
                 case 736: return "1.16.1";
                 case 751: return "1.16.2";
                 case 753: return "1.16.3";
-                case 754: return "1.16.5"; // 754 => 1.16.4/1.16.5 (they share the same no.)
+                case 754: return "1.16.5";
                 default: return "0.0";
             }
         }
