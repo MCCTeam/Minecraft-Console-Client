@@ -57,7 +57,12 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         /// <returns>Packet type</returns>
         public PacketTypesIn GetIncommingTypeById(int packetId)
         {
-            return GetListIn()[packetId];
+            PacketTypesIn p;
+            if (GetListIn().TryGetValue(packetId, out p))
+            {
+                return p;
+            }
+            else return PacketTypesIn.Unknown;
         }
 
         /// <summary>
@@ -77,7 +82,12 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         /// <returns>Packet type</returns>
         public PacketTypesOut GetOutgoingTypeById(int packetId)
         {
-            return GetListOut()[packetId];
+            PacketTypesOut p;
+            if (GetListOut().TryGetValue(packetId, out p))
+            {
+                return p;
+            }
+            else return PacketTypesOut.Unknown;
         }
 
         /// <summary>
