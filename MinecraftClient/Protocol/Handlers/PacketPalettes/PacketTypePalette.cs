@@ -38,6 +38,8 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 
         private Dictionary<PacketTypesOut, int> reverseMappingOut = new Dictionary<PacketTypesOut, int>();
 
+        private bool forgeEnabled = false;
+
         public PacketTypePalette()
         {
             foreach (var p in GetListIn())
@@ -57,7 +59,19 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         /// <returns>Packet type</returns>
         public PacketTypesIn GetIncommingTypeById(int packetId)
         {
-            return GetListIn()[packetId];
+            PacketTypesIn p;
+            if (GetListIn().TryGetValue(packetId, out p))
+            {
+                return p;
+            }
+            else if (forgeEnabled)
+            {
+                if (Settings.DebugMessages)
+                    ConsoleIO.WriteLogLine("Ignoring unknown packet ID of 0x" + packetId.ToString("X2"));
+                return PacketTypesIn.Unknown;
+            }
+            else
+                throw new KeyNotFoundException("Packet ID of 0x" + packetId.ToString("X2") + " doesn't exist!");
         }
 
         /// <summary>
@@ -77,7 +91,19 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         /// <returns>Packet type</returns>
         public PacketTypesOut GetOutgoingTypeById(int packetId)
         {
-            return GetListOut()[packetId];
+            PacketTypesOut p;
+            if (GetListOut().TryGetValue(packetId, out p))
+            {
+                return p;
+            }
+            else if (forgeEnabled)
+            {
+                if (Settings.DebugMessages)
+                    ConsoleIO.WriteLogLine("Ignoring unknown packet ID of 0x" + packetId.ToString("X2"));
+                return PacketTypesOut.Unknown;
+            }
+            else
+                throw new KeyNotFoundException("Packet ID of 0x" + packetId.ToString("X2") + " doesn't exist!");
         }
 
         /// <summary>
@@ -107,6 +133,20 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         public Dictionary<int ,PacketTypesOut> GetMappingOut()
         {
             return GetListOut();
+        }
+
+        /// <summary>
+        /// Enable forge or disable forge
+        /// </summary>
+        /// <remarks>
+        /// Have a rare chance that forge mod may modify packet ID.
+        /// Ignore packet type not found when forge enabled to
+        /// prevent program crash.
+        /// </remarks>
+        /// <param name="enabled"></param>
+        public void SetForgeEnabled(bool enabled)
+        {
+            this.forgeEnabled = enabled;
         }
     }
 }
