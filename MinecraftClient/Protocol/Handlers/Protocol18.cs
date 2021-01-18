@@ -78,7 +78,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.handler = handler;
             this.pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
-            this.packetPalette = new PacketTypeHandler(protocolVersion).GetTypeHandler();
+            this.packetPalette = new PacketTypeHandler(protocolVersion, forgeInfo != null).GetTypeHandler();
 
             if (handler.GetTerrainEnabled() && protocolversion > MC1165Version)
             {
