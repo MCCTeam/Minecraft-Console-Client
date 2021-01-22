@@ -37,6 +37,7 @@ namespace MinecraftClient.Protocol
         void SetNetworkPacketCaptureEnabled(bool enabled);
         int GetProtocolVersion();
         Container GetInventory(int inventoryID);
+        ILogger GetLogger();
 
         /// <summary>
         /// Called when a network packet received or sent

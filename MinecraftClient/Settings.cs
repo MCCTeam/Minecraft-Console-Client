@@ -94,11 +94,17 @@ namespace MinecraftClient
         public static bool InventoryHandling = false;
         public static string PrivateMsgsCmdName = "tell";
         public static CacheType SessionCaching = CacheType.Disk;
-        public static bool DebugMessages = false;
         public static bool ResolveSrvRecords = true;
         public static bool ResolveSrvRecordsShortTimeout = true;
         public static bool EntityHandling = false;
         public static bool AutoRespawn = false;
+
+        // Logging
+        public static bool DebugMessages = false;
+        public static bool ChatMessages = true;
+        public static bool InfoMessages = true;
+        public static bool WarningMessages = true;
+        public static bool ErrorMessages = true;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -286,6 +292,10 @@ namespace MinecraftClient
                                                 case "inventoryhandling": InventoryHandling = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
+                                                case "chatmessages": ChatMessages = str2bool(argValue); break;
+                                                case "warningmessages": WarningMessages = str2bool(argValue); break;
+                                                case "errormessages": ErrorMessages = str2bool(argValue); break;
+                                                case "infomessages": InfoMessages = str2bool(argValue); break;
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
 
                                                 case "botowners":
