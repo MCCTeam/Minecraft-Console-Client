@@ -26,14 +26,12 @@ namespace MinecraftClient
 
         public void Debug(string msg, params object[] args)
         {
-            if (debugEnabled)
-                Log("§8[DEBUG] " + msg, args);
+            Debug(string.Format(msg, args));
         }
 
         public void Debug(object msg)
         {
-            if (debugEnabled)
-                Log("§8[DEBUG] " + msg.ToString());
+            Debug(msg.ToString());
         }
 
         public void Info(object msg)
@@ -62,14 +60,12 @@ namespace MinecraftClient
 
         public void Warn(string msg, params object[] args)
         {
-            if (warnEnabled)
-                Log("§6[WARN] " + msg, args);
+            Warn(string.Format(msg, args));
         }
 
         public void Warn(object msg)
         {
-            if (warnEnabled)
-                Log("§6[WARN] " + msg.ToString());
+            Warn(msg.ToString());
         }
 
         public void Error(string msg)
@@ -80,14 +76,12 @@ namespace MinecraftClient
 
         public void Error(string msg, params object[] args)
         {
-            if (errorEnabled)
-                Log("§c[ERROR] " + msg, args);
+            Error(string.Format(msg, args));
         }
 
         public void Error(object msg)
         {
-            if (errorEnabled)
-                Log("§c[ERROR] " + msg.ToString());
+            Error(msg.ToString());
         }
 
         public void Chat(string msg)
