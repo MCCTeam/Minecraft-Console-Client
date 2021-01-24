@@ -105,6 +105,7 @@ namespace MinecraftClient
         public static bool InfoMessages = true;
         public static bool WarningMessages = true;
         public static bool ErrorMessages = true;
+        public static Regex ChatFilter = null;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -296,6 +297,7 @@ namespace MinecraftClient
                                                 case "warningmessages": WarningMessages = str2bool(argValue); break;
                                                 case "errormessages": ErrorMessages = str2bool(argValue); break;
                                                 case "infomessages": InfoMessages = str2bool(argValue); break;
+                                                case "chatfilter": ChatFilter = new Regex(argValue); break;
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
 
                                                 case "botowners":

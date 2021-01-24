@@ -93,19 +93,23 @@ namespace MinecraftClient
         public void Chat(string msg)
         {
             if (chatEnabled)
-                Log(msg);
+            {
+                if (Settings.ChatFilter != null && Settings.ChatFilter.IsMatch(msg))
+                {
+                    Debug("[Logger] One Chat message filtered");
+                }
+                else Log(msg);
+            }
         }
 
         public void Chat(string msg, params object[] args)
         {
-            if (chatEnabled)
-                Log(string.Format(msg, args));
+            Chat(string.Format(msg, args));
         }
 
         public void Chat(object msg)
         {
-            if (chatEnabled)
-                Log(msg.ToString());
+            Chat(msg.ToString());
         }
 
         private void Log(object msg)
