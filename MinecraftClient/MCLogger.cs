@@ -12,11 +12,11 @@ namespace MinecraftClient
         private bool infoEnabled = true;
         private bool errorEnabled = true;
         private bool chatEnabled = true;
-        public bool DebugEnabled { get => debugEnabled; set => debugEnabled = value; }
-        public bool WarnEnabled { get => warnEnabled; set => warnEnabled = value; }
-        public bool InfoEnabled { get => infoEnabled; set => infoEnabled = value; }
-        public bool ErrorEnabled { get => errorEnabled; set => errorEnabled = value; }
-        public bool ChatEnabled { get => chatEnabled; set => chatEnabled = value; }
+        public bool DebugEnabled { get { return debugEnabled; } set { debugEnabled = value; } }
+        public bool WarnEnabled { get { return warnEnabled; } set { warnEnabled = value; } }
+        public bool InfoEnabled { get { return infoEnabled; } set { infoEnabled = value; } }
+        public bool ErrorEnabled { get { return errorEnabled; } set { errorEnabled = value; } }
+        public bool ChatEnabled { get { return chatEnabled; } set { chatEnabled = value; } }
 
         public void Debug(string msg)
         {
@@ -90,7 +90,7 @@ namespace MinecraftClient
             {
                 if (Settings.ChatFilter != null && Settings.ChatFilter.IsMatch(msg))
                 {
-                    Debug("[Logger] One Chat message filtered");
+                    Debug("[Logger] One Chat message filtered: " + msg);
                 }
                 else Log(msg);
             }

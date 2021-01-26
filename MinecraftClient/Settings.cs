@@ -204,7 +204,7 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, Logging };
 
 
         /// <summary>
@@ -253,6 +253,7 @@ namespace MinecraftClient
                                     case "mailer": pMode = ParseMode.Mailer; break;
                                     case "autodrop": pMode = ParseMode.AutoDrop; break;
                                     case "replaymod": pMode = ParseMode.ReplayMod; break;
+                                    case "logging": pMode = ParseMode.Logging; break;
 
                                     default: pMode = ParseMode.Default; break;
                                 }
@@ -292,12 +293,6 @@ namespace MinecraftClient
                                                 case "enableentityhandling": EntityHandling = str2bool(argValue); break;
                                                 case "inventoryhandling": InventoryHandling = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
-                                                case "debugmessages": DebugMessages = str2bool(argValue); break;
-                                                case "chatmessages": ChatMessages = str2bool(argValue); break;
-                                                case "warningmessages": WarningMessages = str2bool(argValue); break;
-                                                case "errormessages": ErrorMessages = str2bool(argValue); break;
-                                                case "infomessages": InfoMessages = str2bool(argValue); break;
-                                                case "chatfilter": ChatFilter = new Regex(argValue); break;
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
 
                                                 case "botowners":
@@ -405,6 +400,18 @@ namespace MinecraftClient
                                                         ServerForceForge = str2bool(argValue);
                                                     }
                                                     break;
+                                            }
+                                            break;
+
+                                        case ParseMode.Logging:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "debugmessages": DebugMessages = str2bool(argValue); break;
+                                                case "chatmessages": ChatMessages = str2bool(argValue); break;
+                                                case "warningmessages": WarningMessages = str2bool(argValue); break;
+                                                case "errormessages": ErrorMessages = str2bool(argValue); break;
+                                                case "infomessages": InfoMessages = str2bool(argValue); break;
+                                                case "chatfilter": ChatFilter = new Regex(argValue); break;
                                             }
                                             break;
 

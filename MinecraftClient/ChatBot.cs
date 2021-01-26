@@ -704,7 +704,7 @@ namespace MinecraftClient
         /// <param name="text">Log text to write</param>
         protected void LogToConsole(object text)
         {
-            if (_handler == null && master == null)
+            if (_handler == null || master == null)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", this.GetType().Name, text));
             else
                 Handler.Log.Info(String.Format("[{0}] {1}", this.GetType().Name, text));
