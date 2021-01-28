@@ -94,11 +94,21 @@ namespace MinecraftClient
         public static bool InventoryHandling = false;
         public static string PrivateMsgsCmdName = "tell";
         public static CacheType SessionCaching = CacheType.Disk;
-        public static bool DebugMessages = false;
         public static bool ResolveSrvRecords = true;
         public static bool ResolveSrvRecordsShortTimeout = true;
         public static bool EntityHandling = false;
         public static bool AutoRespawn = false;
+
+        // Logging
+        public enum FilterModeEnum { Blacklist, Whitelist }
+        public static bool DebugMessages = false;
+        public static bool ChatMessages = true;
+        public static bool InfoMessages = true;
+        public static bool WarningMessages = true;
+        public static bool ErrorMessages = true;
+        public static Regex ChatFilter = null;
+        public static Regex DebugFilter = null;
+        public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -197,7 +207,7 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod };
+        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, Logging };
 
 
         /// <summary>
@@ -246,6 +256,7 @@ namespace MinecraftClient
                                     case "mailer": pMode = ParseMode.Mailer; break;
                                     case "autodrop": pMode = ParseMode.AutoDrop; break;
                                     case "replaymod": pMode = ParseMode.ReplayMod; break;
+                                    case "logging": pMode = ParseMode.Logging; break;
 
                                     default: pMode = ParseMode.Default; break;
                                 }
@@ -285,8 +296,9 @@ namespace MinecraftClient
                                                 case "enableentityhandling": EntityHandling = str2bool(argValue); break;
                                                 case "inventoryhandling": InventoryHandling = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
-                                                case "debugmessages": DebugMessages = str2bool(argValue); break;
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
+                                                // Backward compatible so people can still enable debug with old config format
+                                                case "debugmessages": DebugMessages = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -392,6 +404,25 @@ namespace MinecraftClient
                                                         ServerAutodetectForge = false;
                                                         ServerForceForge = str2bool(argValue);
                                                     }
+                                                    break;
+                                            }
+                                            break;
+
+                                        case ParseMode.Logging:
+                                            switch (argName.ToLower())
+                                            {
+                                                case "debugmessages": DebugMessages = str2bool(argValue); break;
+                                                case "chatmessages": ChatMessages = str2bool(argValue); break;
+                                                case "warningmessages": WarningMessages = str2bool(argValue); break;
+                                                case "errormessages": ErrorMessages = str2bool(argValue); break;
+                                                case "infomessages": InfoMessages = str2bool(argValue); break;
+                                                case "chatfilter": ChatFilter = new Regex(argValue); break;
+                                                case "debugfilter": DebugFilter = new Regex(argValue); break;
+                                                case "filtermode":
+                                                    if (argValue.ToLower().StartsWith("white"))
+                                                        FilterMode = FilterModeEnum.Whitelist;
+                                                    else
+                                                        FilterMode = FilterModeEnum.Blacklist;
                                                     break;
                                             }
                                             break;

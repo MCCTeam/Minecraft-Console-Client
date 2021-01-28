@@ -107,6 +107,7 @@ namespace MinecraftClient
         public int GetGamemode() { return gamemode; }
         public bool GetNetworkPacketCaptureEnabled() { return networkPacketCaptureEnabled; }
         public int GetProtocolVersion() { return protocolversion; }
+        public ILogger GetLogger() { return this.Log; }
 
         // get bots list for unloading them by commands
         public List<ChatBot> GetLoadedChatBots()
@@ -118,6 +119,8 @@ namespace MinecraftClient
         IMinecraftCom handler;
         Thread cmdprompt;
         Thread timeoutdetector;
+
+        public ILogger Log;
 
         /// <summary>
         /// Starts the main chat client
@@ -173,6 +176,13 @@ namespace MinecraftClient
             this.port = port;
             this.protocolversion = protocolversion;
 
+            this.Log = new MCLogger();
+            Log.DebugEnabled = Settings.DebugMessages;
+            Log.InfoEnabled = Settings.InfoMessages;
+            Log.ChatEnabled = Settings.ChatMessages;
+            Log.WarnEnabled = Settings.WarningMessages;
+            Log.ErrorEnabled = Settings.ErrorMessages;
+
             if (!singlecommand)
             {
                 /* Load commands from Commands namespace */
@@ -208,7 +218,7 @@ namespace MinecraftClient
                 client.ReceiveBufferSize = 1024 * 1024;
                 client.ReceiveTimeout = 30000; // 30 seconds
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
-                Translations.WriteLine("mcc.version_supported");
+                Log.Info(Translations.Get("mcc.version_supported"));
 
                 try
                 {
@@ -217,7 +227,7 @@ namespace MinecraftClient
                         if (singlecommand)
                         {
                             handler.SendChatMessage(command);
-                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.single_cmd", command));
+                            Log.Info(Translations.Get("mcc.single_cmd", command));
                             Thread.Sleep(5000);
                             handler.Disconnect();
                             Thread.Sleep(1000);
@@ -228,7 +238,7 @@ namespace MinecraftClient
                                 BotLoad(bot, false);
                             botsOnHold.Clear();
 
-                            Translations.WriteLine("mcc.joined", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar));
+                            Log.Info(Translations.Get("mcc.joined", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
 
                             cmdprompt = new Thread(new ThreadStart(CommandPrompt));
                             cmdprompt.Name = "MCC Command prompt";
@@ -241,21 +251,21 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        Translations.WriteLine("error.login_failed");
+                        Log.Error(Translations.Get("error.login_failed"));
                         retry = true;
                     }
                 }
                 catch (Exception e)
                 {
-                    ConsoleIO.WriteLineFormatted("§8" + e.GetType().Name + ": " + e.Message);
-                    Translations.WriteLine("error.join");
+                    Log.Error(e.GetType().Name + ": " + e.Message);
+                    Log.Error(Translations.Get("error.join"));
                     retry = true;
                 }
             }
             catch (SocketException e)
             {
-                ConsoleIO.WriteLineFormatted("§8" + e.Message);
-                Translations.WriteLine("error.connect");
+                Log.Error(e.Message);
+                Log.Error(Translations.Get("error.connect"));
                 retry = true;
             }
 
@@ -263,7 +273,7 @@ namespace MinecraftClient
             {
                 if (ReconnectionAttemptsLeft > 0)
                 {
-                    ConsoleIO.WriteLogLine(Translations.Get("mcc.reconnect", ReconnectionAttemptsLeft));
+                    Log.Info(Translations.Get("mcc.reconnect", ReconnectionAttemptsLeft));
                     Thread.Sleep(5000);
                     ReconnectionAttemptsLeft--;
                     Program.Restart();
@@ -316,7 +326,7 @@ namespace MinecraftClient
                                 }
                                 else if (response_msg.Length > 0)
                                 {
-                                    ConsoleIO.WriteLogLine(response_msg);
+                                    Log.Info(response_msg);
                                 }
                             }
                             else SendText(text);
@@ -394,7 +404,7 @@ namespace MinecraftClient
                     {
                         if (!(e is ThreadAbortException))
                         {
-                            ConsoleIO.WriteLogLine(Translations.Get("icmd.error", bot.ToString(), e.ToString()));
+                            Log.Warn(Translations.Get("icmd.error", bot.ToString(), e.ToString()));
                         }
                         else throw; //ThreadAbortException should not be caught
                     }
@@ -430,7 +440,7 @@ namespace MinecraftClient
                         }
                         catch (Exception e)
                         {
-                            ConsoleIO.WriteLogLine(e.Message);
+                            Log.Warn(e.Message);
                         }
                     }
                 }
@@ -489,17 +499,17 @@ namespace MinecraftClient
             {
                 case ChatBot.DisconnectReason.ConnectionLost:
                     message = Translations.Get("mcc.disconnect.lost");
-                    ConsoleIO.WriteLine(message);
+                    Log.Info(message);
                     break;
 
                 case ChatBot.DisconnectReason.InGameKick:
-                    Translations.WriteLine("mcc.disconnect.server");
-                    ConsoleIO.WriteLineFormatted(message);
+                    Log.Info(Translations.Get("mcc.disconnect.server"));
+                    Log.Info(message);
                     break;
 
                 case ChatBot.DisconnectReason.LoginRejected:
-                    ConsoleIO.WriteLine("mcc.disconnect.login");
-                    ConsoleIO.WriteLineFormatted(message);
+                    Log.Info(Translations.Get("mcc.disconnect.login"));
+                    Log.Info(message);
                     break;
 
                 case ChatBot.DisconnectReason.UserLogout:
@@ -516,7 +526,7 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLogLine("OnDisconnect: Got error from " + bot.ToString() + ": " + e.ToString());
+                        Log.Warn("OnDisconnect: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
@@ -541,7 +551,7 @@ namespace MinecraftClient
                 {
                     if (!(e is ThreadAbortException))
                     {
-                        ConsoleIO.WriteLogLine("Update: Got error from " + bot.ToString() + ": " + e.ToString());
+                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
                 }
@@ -1515,7 +1525,7 @@ namespace MinecraftClient
                         string parentMethodName = method.Name;
 
                         //Display a meaningful error message to help debugging the ChatBot
-                        ConsoleIO.WriteLogLine(parentMethodName + ": Got error from " + bot.ToString() + ": " + e.ToString());
+                        Log.Error(parentMethodName + ": Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught here as in can happen when disconnecting from server
                 }
@@ -1560,7 +1570,7 @@ namespace MinecraftClient
             {
                 inventoryHandlingRequested = false;
                 inventoryHandlingEnabled = true;
-                Translations.WriteLogLine("extra.inventory_enabled");
+                Log.Info(Translations.Get("extra.inventory_enabled"));
             }
 
             ClearInventories();
@@ -1577,7 +1587,7 @@ namespace MinecraftClient
             {
                 terrainAndMovementsEnabled = true;
                 terrainAndMovementsRequested = false;
-                Translations.WriteLogLine("extra.terrainandmovement_enabled");
+                Log.Info(Translations.Get("extra.terrainandmovement_enabled"));
             }
 
             if (terrainAndMovementsEnabled)
@@ -1702,11 +1712,11 @@ namespace MinecraftClient
                 text = ChatParser.ParseText(json, links);
             }
 
-            ConsoleIO.WriteLineFormatted(text, true);
+            Log.Chat(text);
 
             if (Settings.DisplayChatLinks)
                 foreach (string link in links)
-                    ConsoleIO.WriteLogLine(Translations.Get("mcc.link", link), false);
+                    Log.Chat(Translations.Get("mcc.link", link), false);
 
             DispatchBotEvent(bot => bot.GetText(text));
             DispatchBotEvent(bot => bot.GetText(text, json));
@@ -1734,8 +1744,8 @@ namespace MinecraftClient
 
             if (inventoryID != 0)
             {
-                ConsoleIO.WriteLogLine(Translations.Get("extra.inventory_open", inventoryID, inventory.Title));
-                Translations.WriteLogLine("extra.inventory_interact");
+                Log.Info(Translations.Get("extra.inventory_open", inventoryID, inventory.Title));
+                Log.Info(Translations.Get("extra.inventory_interact"));
                 DispatchBotEvent(bot => bot.OnInventoryOpen(inventoryID));
             }
         }
@@ -1751,7 +1761,7 @@ namespace MinecraftClient
 
             if (inventoryID != 0)
             {
-                ConsoleIO.WriteLogLine(Translations.Get("extra.inventory_close", inventoryID));
+                Log.Info(Translations.Get("extra.inventory_close", inventoryID));
                 DispatchBotEvent(bot => bot.OnInventoryClose(inventoryID));
             }
         }
@@ -2084,12 +2094,12 @@ namespace MinecraftClient
             {
                 if (Settings.AutoRespawn)
                 {
-                    Translations.WriteLogLine("mcc.player_dead_respawn");
+                    Log.Info(Translations.Get("mcc.player_dead_respawn"));
                     respawnTicks = 10;
                 }
                 else
                 {
-                    Translations.WriteLogLine("mcc.player_dead");
+                    Log.Info(Translations.Get("mcc.player_dead"));
                 }
                 DispatchBotEvent(bot => bot.OnDeath());
             }
