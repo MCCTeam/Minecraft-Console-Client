@@ -67,6 +67,7 @@ namespace MinecraftClient.Protocol.Handlers
         SocketWrapper socketWrapper;
         DataTypes dataTypes;
         Thread netRead;
+        ILogger log;
 
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo forgeInfo)
         {
@@ -79,22 +80,23 @@ namespace MinecraftClient.Protocol.Handlers
             this.pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
             this.packetPalette = new PacketTypeHandler(protocolVersion, forgeInfo != null).GetTypeHandler();
+            this.log = handler.GetLogger();
 
             if (handler.GetTerrainEnabled() && protocolversion > MC1165Version)
             {
-                Translations.WriteLineFormatted("extra.terrainandmovement_disabled");
+                log.Error(Translations.Get("extra.terrainandmovement_disabled"));
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1165Version))
             {
-                Translations.WriteLineFormatted("extra.inventory_disabled");
+                log.Error(Translations.Get("extra.inventory_disabled"));
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled() && (protocolversion < MC110Version || protocolversion > MC1165Version))
             {
-                Translations.WriteLineFormatted("extra.entity_disabled");
+                log.Error(Translations.Get("extra.entity_disabled"));
                 handler.SetEntityHandlingEnabled(false);
             }
 
@@ -1189,12 +1191,12 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else if (packetID == 0x02) //Login successful
                 {
-                    Translations.WriteLineFormatted("mcc.server_offline");
+                    log.Info(Translations.Get("mcc.server_offline"));
                     login_phase = false;
 
                     if (!pForge.CompleteForgeHandshake())
                     {
-                        Translations.WriteLineFormatted("error.forge");
+                        log.Error(Translations.Get("error.forge"));
                         return false;
                     }
 
@@ -1214,12 +1216,11 @@ namespace MinecraftClient.Protocol.Handlers
             System.Security.Cryptography.RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverKey);
             byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
 
-            if (Settings.DebugMessages)
-                Translations.WriteLineFormatted("debug.crypto");
+            log.Debug(Translations.Get("debug.crypto"));
 
             if (serverIDhash != "-")
             {
-                Translations.WriteLine("mcc.session");
+                log.Info(Translations.Get("mcc.session"));
                 if (!ProtocolHandler.SessionCheck(uuid, sessionID, CryptoHandler.getServerHash(serverIDhash, serverKey, secretKey)))
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
@@ -1254,7 +1255,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     if (!pForge.CompleteForgeHandshake())
                     {
-                        Translations.WriteLineFormatted("error.forge_encrypt");
+                        log.Error(Translations.Get("error.forge_encrypt"));
                         return false;
                     }
 
