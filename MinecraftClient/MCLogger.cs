@@ -26,12 +26,12 @@ namespace MinecraftClient
                 {
                     var shouldLog = Settings.DebugFilter.IsMatch(msg); // assumed whitelist mode
                     if (Settings.FilterMode == Settings.FilterModeEnum.Blacklist)
-                        shouldLog = !shouldLog; // blacklist mode so filp result
-                    if (shouldLog)
-                        Log("§8[DEBUG] " + msg);
-                    // Don't inform msg filtered as may mess debug msg again
+                        shouldLog = !shouldLog; // blacklist mode so flip result
+                    if (!shouldLog)
+                        return;
+                    // Don't write debug lines here as it could cause a stack overflow
                 }
-                else Log("§8[DEBUG] " + msg);
+                Log("§8[DEBUG] " + msg);
             }
         }
 
