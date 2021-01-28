@@ -21,7 +21,18 @@ namespace MinecraftClient
         public void Debug(string msg)
         {
             if (debugEnabled)
-                Log("§8[DEBUG] " + msg);
+            {
+                if (Settings.DebugFilter != null)
+                {
+                    var shouldLog = Settings.DebugFilter.IsMatch(msg); // assumed whitelist mode
+                    if (Settings.FilterMode == Settings.FilterModeEnum.Blacklist)
+                        shouldLog = !shouldLog; // blacklist mode so filp result
+                    if (shouldLog)
+                        Log("§8[DEBUG] " + msg);
+                    // Don't inform msg filtered as may mess debug msg again
+                }
+                else Log("§8[DEBUG] " + msg);
+            }
         }
 
         public void Debug(string msg, params object[] args)
@@ -88,9 +99,14 @@ namespace MinecraftClient
         {
             if (chatEnabled)
             {
-                if (Settings.ChatFilter != null && Settings.ChatFilter.IsMatch(msg))
+                if (Settings.ChatFilter != null)
                 {
-                    Debug("[Logger] One Chat message filtered: " + msg);
+                    var shouldLog = Settings.ChatFilter.IsMatch(msg); // assumed whitelist mode
+                    if (Settings.FilterMode == Settings.FilterModeEnum.Blacklist)
+                        shouldLog = !shouldLog; // blacklist mode so flip result
+                    if (shouldLog)
+                        Log(msg);
+                    else Debug("[Logger] One Chat message filtered: " + msg);
                 }
                 else Log(msg);
             }

@@ -100,12 +100,15 @@ namespace MinecraftClient
         public static bool AutoRespawn = false;
 
         // Logging
+        public enum FilterModeEnum { Blacklist, Whitelist }
         public static bool DebugMessages = false;
         public static bool ChatMessages = true;
         public static bool InfoMessages = true;
         public static bool WarningMessages = true;
         public static bool ErrorMessages = true;
         public static Regex ChatFilter = null;
+        public static Regex DebugFilter = null;
+        public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -294,6 +297,8 @@ namespace MinecraftClient
                                                 case "inventoryhandling": InventoryHandling = str2bool(argValue); break;
                                                 case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
+                                                // Backward compatible so people can still enable debug with old config format
+                                                case "debugmessages": DebugMessages = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();
@@ -412,6 +417,13 @@ namespace MinecraftClient
                                                 case "errormessages": ErrorMessages = str2bool(argValue); break;
                                                 case "infomessages": InfoMessages = str2bool(argValue); break;
                                                 case "chatfilter": ChatFilter = new Regex(argValue); break;
+                                                case "debugfilter": DebugFilter = new Regex(argValue); break;
+                                                case "filtermode":
+                                                    if (argValue.ToLower().StartsWith("white"))
+                                                        FilterMode = FilterModeEnum.Whitelist;
+                                                    else
+                                                        FilterMode = FilterModeEnum.Blacklist;
+                                                    break;
                                             }
                                             break;
 
