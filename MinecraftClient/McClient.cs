@@ -1757,8 +1757,13 @@ namespace MinecraftClient
         public void OnInventoryClose(int inventoryID)
         {
             if (inventories.ContainsKey(inventoryID))
-                inventories.Remove(inventoryID);
-
+            {
+                if (inventoryID == 0)
+                    inventories[0].Items.Clear(); // Don't delete player inventory
+                else
+                    inventories.Remove(inventoryID);
+            }
+                
             if (inventoryID != 0)
             {
                 Log.Info(Translations.Get("extra.inventory_close", inventoryID));
