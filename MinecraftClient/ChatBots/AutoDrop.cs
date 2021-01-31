@@ -200,6 +200,12 @@ namespace MinecraftClient.ChatBots
         {
             if (inventoryUpdated != -1)
             {
+                if (!GetInventories().ContainsKey(inventoryUpdated))
+                {
+                    // Inventory updated but no inventory ?
+                    LogDebugToConsoleTranslated("bot.autoDrop.no_inventory", inventoryUpdated);
+                    return;
+                }
                 var inventory = GetInventories()[inventoryUpdated];
                 var items = inventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
                 if (dropMode == Mode.Include)
