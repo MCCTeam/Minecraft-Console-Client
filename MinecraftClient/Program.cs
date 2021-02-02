@@ -137,14 +137,22 @@ namespace MinecraftClient
 
             //Asking the user to type in missing data such as Username and Password
 
-            if (Settings.Login == "")
+            if (Settings.AccountType == ProtocolHandler.AccountType.Microsoft
+                && Settings.LoginMethod == "browser")
             {
-                Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
-                Settings.Login = Console.ReadLine();
+                // Login with browser. Skip ask email and password
             }
-            if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
+            else
             {
-                RequestPassword();
+                if (Settings.Login == "")
+                {
+                    Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
+                    Settings.Login = Console.ReadLine();
+                }
+                if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
+                {
+                    RequestPassword();
+                }
             }
 
             startupargs = args;
@@ -209,7 +217,6 @@ namespace MinecraftClient
                         SessionCache.Store(Settings.Login.ToLower(), session);
                     }
                 }
-
             }
 
             if (result == ProtocolHandler.LoginResult.Success)
