@@ -494,8 +494,19 @@ namespace MinecraftClient.Protocol
                 "When you see a blank page after signing in, copy the link from browser and paste it below"
             };
             ConsoleIO.WriteLine(string.Join("\n", askOpenLike));
-            string link = ConsoleIO.ReadLine();
-            string hash = link.Split('#')[1];
+            string[] parts = { };
+            while (true)
+            {
+                string link = ConsoleIO.ReadLine();
+                parts = link.Split('#');
+                if (parts.Length < 2)
+                {
+                    ConsoleIO.WriteLine("Invalid link. Please try again.");
+                    continue;
+                }
+                else break;
+            }
+            string hash = parts[1];
             var dict = Request.ParseQueryString(hash);
             var msaResponse = new XboxLive.UserLoginResponse()
             {

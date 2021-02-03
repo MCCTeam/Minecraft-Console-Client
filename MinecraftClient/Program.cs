@@ -136,24 +136,21 @@ namespace MinecraftClient
             }
 
             //Asking the user to type in missing data such as Username and Password
-
-            if (Settings.AccountType == ProtocolHandler.AccountType.Microsoft
-                && Settings.LoginMethod == "browser")
+            bool useBrowser = Settings.AccountType == ProtocolHandler.AccountType.Microsoft && Settings.LoginMethod == "browser";
+            if (Settings.Login == "")
             {
-                // Login with browser. Skip ask email and password
+                if (useBrowser)
+                    ConsoleIO.WriteLine("Press Enter to skip session cache checking and continue sign-in with browser");
+                Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
+                Settings.Login = Console.ReadLine();
             }
-            else
+            if (Settings.Password == "" 
+                && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower()))
+                && !useBrowser)
             {
-                if (Settings.Login == "")
-                {
-                    Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
-                    Settings.Login = Console.ReadLine();
-                }
-                if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
-                {
-                    RequestPassword();
-                }
+                RequestPassword();
             }
+            
 
             startupargs = args;
             InitializeClient();
