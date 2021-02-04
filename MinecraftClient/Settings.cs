@@ -278,9 +278,9 @@ namespace MinecraftClient
                                                 case "type": AccountType = argValue == "mojang" 
                                                         ? ProtocolHandler.AccountType.Mojang 
                                                         : ProtocolHandler.AccountType.Microsoft; break;
-                                                case "method": LoginMethod = argValue.ToLower() == "mcc"
-                                                        ? "mcc"
-                                                        : "browser"; break;
+                                                case "method": LoginMethod = argValue.ToLower() == "browser"
+                                                        ? "browser"
+                                                        : "mcc"; break;
                                                 case "serverip": if (!SetServerIP(argValue)) serverAlias = argValue; ; break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;

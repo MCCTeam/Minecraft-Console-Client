@@ -483,7 +483,7 @@ namespace MinecraftClient.Protocol
         public static LoginResult MicrosoftBrowserLogin(out SessionToken session)
         {
             var ms = new XboxLive();
-            string[] askOpenLike =
+            string[] askOpenLink =
             {
                 "Copy the following link to your browser and login to your Microsoft Account",
                 ">>>>>>>>>>>>>>>>>>>>>>",
@@ -491,13 +491,21 @@ namespace MinecraftClient.Protocol
                 ms.SignInUrl,
                 "",
                 "<<<<<<<<<<<<<<<<<<<<<<",
-                "When you see a blank page after signing in, copy the link from browser and paste it below"
+                "NOTICE: Once successfully logged in, you will see a blank page in your web browser.",
+                "Copy the contents of your browser's address bar and paste it below to complete the login process.",
             };
-            ConsoleIO.WriteLine(string.Join("\n", askOpenLike));
+            ConsoleIO.WriteLine(string.Join("\n", askOpenLink));
             string[] parts = { };
             while (true)
             {
                 string link = ConsoleIO.ReadLine();
+                if (string.IsNullOrEmpty(link))
+                {
+                    ConsoleIO.WriteLine("Login cancelled.");
+                    Program.Exit();
+                    session = new SessionToken();
+                    return LoginResult.OtherError;
+                }
                 parts = link.Split('#');
                 if (parts.Length < 2)
                 {
