@@ -13,10 +13,38 @@ assignees: ''
  - [ ] I have set `debugmessages=true` in config to diagnose my issue
  - [ ] I have redacted session tokens and passwords before attaching screenshots
 
-**Bug description**
-A bug report should contain the following items:
-* A clear and concise description of what the bug is
-* Steps to reproduce the behavior
-* What I expected to happen instead
-* If applicable, add screenshots to help explain your problem
-* Specify which kind of operating system you are running
+
+---
+## Expected Behavior
+
+
+---
+## Actual Behavior
+
+
+---
+## Steps to Reproduce the Problem
+
+  1. Login to [...] server
+  2. Use [...] command
+  3.
+
+---
+## Screenshot (If applicable)
+
+
+
+---
+## Anythings that could help diagnosing the bug
+(config, log output)
+
+
+
+---
+## Specifications
+
+  - Console Client version: 
+  - Device: (Desktop, Laptop, VPS, Raspberry Pi, etc)
+  - Operating System: 
+  - Minecraft version:
+  - Server address (If applicable):
