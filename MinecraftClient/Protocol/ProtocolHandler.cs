@@ -330,7 +330,7 @@ namespace MinecraftClient.Protocol
             return Protocol18Forge.ServerForceForge(protocol);
         }
 
-        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError };
+        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError, UserCancel };
         public enum AccountType { Mojang, Microsoft };
 
         /// <summary>
@@ -501,10 +501,8 @@ namespace MinecraftClient.Protocol
                 string link = ConsoleIO.ReadLine();
                 if (string.IsNullOrEmpty(link))
                 {
-                    ConsoleIO.WriteLine("Login cancelled.");
-                    Program.Exit();
                     session = new SessionToken();
-                    return LoginResult.OtherError;
+                    return LoginResult.UserCancel;
                 }
                 parts = link.Split('#');
                 if (parts.Length < 2)

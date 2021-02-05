@@ -319,6 +319,7 @@ namespace MinecraftClient
                     case ProtocolHandler.LoginResult.NotPremium: failureReason = "error.login.premium"; break;
                     case ProtocolHandler.LoginResult.OtherError: failureReason = "error.login.network"; break;
                     case ProtocolHandler.LoginResult.SSLError: failureReason = "error.login.ssl"; break;
+                    case ProtocolHandler.LoginResult.UserCancel: failureReason = "error.login.cancel"; break;
                     default: failureReason = "error.login.unknown"; break;
                 }
                 failureMessage += Translations.Get(failureReason);
