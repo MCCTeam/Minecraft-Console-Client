@@ -151,11 +151,18 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                do
+                bool keepUpdating = true;
+                Stopwatch stopWatch = new Stopwatch();
+                while (keepUpdating)
                 {
-                    Thread.Sleep(100);
+                    stopWatch.Start();
+                    keepUpdating = Update();
+                    stopWatch.Stop();
+                    int elapsed = stopWatch.Elapsed.Milliseconds;
+                    stopWatch.Reset();
+                    if (elapsed < 100)
+                        Thread.Sleep(100 - elapsed);
                 }
-                while (Update());
             }
             catch (System.IO.IOException) { }
             catch (SocketException) { }
