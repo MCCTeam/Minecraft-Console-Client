@@ -330,7 +330,7 @@ namespace MinecraftClient.Protocol
             return Protocol18Forge.ServerForceForge(protocol);
         }
 
-        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError };
+        public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError, UserCancel };
         public enum AccountType { Mojang, Microsoft };
 
         /// <summary>
@@ -344,7 +344,10 @@ namespace MinecraftClient.Protocol
         {
             if (type == AccountType.Microsoft)
             {
-                return MicrosoftLogin(user, pass, out session);
+                if (Settings.LoginMethod == "mcc")
+                    return MicrosoftMCCLogin(user, pass, out session);
+                else
+                    return MicrosoftBrowserLogin(out session);
             }
             else if (type == AccountType.Mojang)
             {
@@ -353,6 +356,13 @@ namespace MinecraftClient.Protocol
             else throw new InvalidOperationException("Account type must be Mojang or Microsoft");
         }
 
+        /// <summary>
+        /// Login using Mojang account. Will be outdated after account migration
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="pass"></param>
+        /// <param name="session"></param>
+        /// <returns></returns>
         private static LoginResult MojangLogin(string user, string pass, out SessionToken session)
         {
             session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
@@ -432,7 +442,101 @@ namespace MinecraftClient.Protocol
             }
         }
 
-        private static LoginResult MicrosoftLogin(string email, string password, out SessionToken session)
+        /// <summary>
+        /// Sign-in to Microsoft Account without using browser. Only works if 2FA is disabled.
+        /// Might not work well in some rare cases.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <param name="session"></param>
+        /// <returns></returns>
+        private static LoginResult MicrosoftMCCLogin(string email, string password, out SessionToken session)
+        {
+            var ms = new XboxLive();
+            try
+            {
+                var msaResponse = ms.UserLogin(email, password, ms.PreAuth());
+                return MicrosoftLogin(msaResponse, out session);
+            }
+            catch (Exception e)
+            {
+                session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+                ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
+                }
+                return LoginResult.WrongPassword; // Might not always be wrong password
+            }
+        }
+
+        /// <summary>
+        /// Sign-in to Microsoft Account by asking user to open sign-in page using browser. 
+        /// </summary>
+        /// <remarks>
+        /// The downside is this require user to copy and paste lengthy content from and to console.
+        /// Sign-in page: 218 chars
+        /// Response URL: around 1500 chars
+        /// </remarks>
+        /// <param name="session"></param>
+        /// <returns></returns>
+        public static LoginResult MicrosoftBrowserLogin(out SessionToken session)
+        {
+            var ms = new XboxLive();
+            string[] askOpenLink =
+            {
+                "Copy the following link to your browser and login to your Microsoft Account",
+                ">>>>>>>>>>>>>>>>>>>>>>",
+                "",
+                ms.SignInUrl,
+                "",
+                "<<<<<<<<<<<<<<<<<<<<<<",
+                "NOTICE: Once successfully logged in, you will see a blank page in your web browser.",
+                "Copy the contents of your browser's address bar and paste it below to complete the login process.",
+            };
+            ConsoleIO.WriteLine(string.Join("\n", askOpenLink));
+            string[] parts = { };
+            while (true)
+            {
+                string link = ConsoleIO.ReadLine();
+                if (string.IsNullOrEmpty(link))
+                {
+                    session = new SessionToken();
+                    return LoginResult.UserCancel;
+                }
+                parts = link.Split('#');
+                if (parts.Length < 2)
+                {
+                    ConsoleIO.WriteLine("Invalid link. Please try again.");
+                    continue;
+                }
+                else break;
+            }
+            string hash = parts[1];
+            var dict = Request.ParseQueryString(hash);
+            var msaResponse = new XboxLive.UserLoginResponse()
+            {
+                AccessToken = dict["access_token"],
+                RefreshToken = dict["refresh_token"],
+                ExpiresIn = int.Parse(dict["expires_in"])
+            };
+            try
+            {
+                return MicrosoftLogin(msaResponse, out session);
+            }
+            catch (Exception e)
+            {
+                session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+                ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
+                }
+                return LoginResult.WrongPassword; // Might not always be wrong password
+            }
+        }
+
+        private static LoginResult MicrosoftLogin(XboxLive.UserLoginResponse msaResponse, out SessionToken session)
         {
             session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
             var ms = new XboxLive();
@@ -440,7 +544,6 @@ namespace MinecraftClient.Protocol
 
             try
             {
-                var msaResponse = ms.UserLogin(email, password, ms.PreAuth());
                 var xblResponse = ms.XblAuthenticate(msaResponse);
                 var xsts = ms.XSTSAuthenticate(xblResponse); // Might throw even password correct
 

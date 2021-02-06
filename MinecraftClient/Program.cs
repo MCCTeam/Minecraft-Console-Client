@@ -136,16 +136,21 @@ namespace MinecraftClient
             }
 
             //Asking the user to type in missing data such as Username and Password
-
+            bool useBrowser = Settings.AccountType == ProtocolHandler.AccountType.Microsoft && Settings.LoginMethod == "browser";
             if (Settings.Login == "")
             {
+                if (useBrowser)
+                    ConsoleIO.WriteLine("Press Enter to skip session cache checking and continue sign-in with browser");
                 Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
                 Settings.Login = Console.ReadLine();
             }
-            if (Settings.Password == "" && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower())))
+            if (Settings.Password == "" 
+                && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower()))
+                && !useBrowser)
             {
                 RequestPassword();
             }
+            
 
             startupargs = args;
             InitializeClient();
@@ -209,7 +214,6 @@ namespace MinecraftClient
                         SessionCache.Store(Settings.Login.ToLower(), session);
                     }
                 }
-
             }
 
             if (result == ProtocolHandler.LoginResult.Success)
@@ -315,6 +319,7 @@ namespace MinecraftClient
                     case ProtocolHandler.LoginResult.NotPremium: failureReason = "error.login.premium"; break;
                     case ProtocolHandler.LoginResult.OtherError: failureReason = "error.login.network"; break;
                     case ProtocolHandler.LoginResult.SSLError: failureReason = "error.login.ssl"; break;
+                    case ProtocolHandler.LoginResult.UserCancel: failureReason = "error.login.cancel"; break;
                     default: failureReason = "error.login.unknown"; break;
                 }
                 failureMessage += Translations.Get(failureReason);
