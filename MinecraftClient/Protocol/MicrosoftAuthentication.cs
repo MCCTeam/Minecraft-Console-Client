@@ -21,6 +21,8 @@ namespace MinecraftClient.Protocol
         private Regex invalidAccount = new Regex("Sign in to", RegexOptions.IgnoreCase);
         private Regex twoFA = new Regex("Help us protect your account", RegexOptions.IgnoreCase);
 
+        public string SignInUrl { get { return authorize; } }
+
         /// <summary>
         /// Pre-authentication
         /// </summary>
@@ -114,7 +116,7 @@ namespace MinecraftClient.Protocol
                 if (twoFA.IsMatch(response.Body))
                 {
                     // TODO: Handle 2FA
-                    throw new Exception("2FA enabled but not supported yet. Try to disable it in Microsoft account settings");
+                    throw new Exception("2FA enabled but not supported yet. Use browser sign-in method or try to disable 2FA in Microsoft account settings");
                 }
                 else if (invalidAccount.IsMatch(response.Body))
                 {
