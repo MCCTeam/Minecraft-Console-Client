@@ -356,7 +356,7 @@ namespace MinecraftClient
         /// Send text to the server. Can be anything such as chat messages or commands
         /// </summary>
         /// <param name="text">Text to send to the server</param>
-        /// <param name="sendImmediately">Whether the message should be sent immediately rather than being queued to avoid chat spam</param>
+        /// <param name="sendImmediately">Bypass send queue (Deprecated, still there for compatibility purposes but ignored)</param>
         /// <returns>TRUE if successfully sent (Deprectated, always returns TRUE for compatibility purposes with existing scripts)</returns>
         protected bool SendText(string text, bool sendImmediately = false)
         {
