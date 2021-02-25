@@ -238,7 +238,6 @@ namespace MinecraftClient
         {
             base.SendText(text is string ? (string)text : text.ToString());
             tickHandler.WaitOne();
-            Thread.Sleep(1000);
             return true;
         }
 
