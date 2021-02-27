@@ -193,6 +193,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { return false; }
             catch (SocketException) { return false; }
             catch (NullReferenceException) { return false; }
+            catch (Ionic.Zlib.ZlibException) { return false; }
             return true;
         }
 
