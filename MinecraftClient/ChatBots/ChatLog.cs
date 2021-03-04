@@ -19,6 +19,7 @@ namespace MinecraftClient.ChatBots
         private bool savePrivate = true;
         private bool saveInternal = true;
         private string logfile;
+        private object logfileLock = new object();
 
         /// <summary>
         /// This bot saves the messages received in the specified file, with some filters and date/time tagging.
@@ -112,16 +113,18 @@ namespace MinecraftClient.ChatBots
         {
             if (dateandtime)
                 tosave = GetTimestamp() + ' ' + tosave;
-
-            string directory = Path.GetDirectoryName(logfile);
-            if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-            FileStream stream = new FileStream(logfile, FileMode.OpenOrCreate);
-            StreamWriter writer = new StreamWriter(stream);
-            stream.Seek(0, SeekOrigin.End);
-            writer.WriteLine(tosave);
-            writer.Dispose();
-            stream.Close();
+            lock (logfileLock)
+            {
+                string directory = Path.GetDirectoryName(logfile);
+                if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+                FileStream stream = new FileStream(logfile, FileMode.OpenOrCreate);
+                StreamWriter writer = new StreamWriter(stream);
+                stream.Seek(0, SeekOrigin.End);
+                writer.WriteLine(tosave);
+                writer.Dispose();
+                stream.Close();
+            }
         }
     }
 }
