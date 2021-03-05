@@ -40,6 +40,7 @@ namespace MinecraftClient
         private McClient _handler = null;
         private ChatBot master = null;
         private List<string> registeredPluginChannels = new List<String>();
+        private List<string> registeredCommands = new List<string>();
         private McClient Handler
         {
             get
@@ -781,6 +782,10 @@ namespace MinecraftClient
         /// </summary>
         protected void UnloadBot()
         {
+            foreach (string cmdName in registeredCommands)
+            {
+                Handler.UnregisterCommand(cmdName);
+            }
             Handler.BotUnLoad(this);
         }
 
@@ -1261,7 +1266,7 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Register a command in command prompt
+        /// Register a command in command prompt. Command will be automatically unregistered when unloading ChatBot
         /// </summary>
         /// <param name="cmdName">Name of the command</param>
         /// <param name="cmdDesc">Description/usage of the command</param>
@@ -1269,6 +1274,7 @@ namespace MinecraftClient
         /// <returns>True if successfully registered</returns>
         protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
         {
+            registeredCommands.Add(cmdName.ToLower());
             return Handler.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
         }
 

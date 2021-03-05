@@ -629,6 +629,26 @@ namespace MinecraftClient
             }
         }
 
+        /// <summary>
+        /// Unregister a console command
+        /// </summary>
+        /// <remarks>
+        /// There is no check for the command is registered by above method or is embedded command.
+        /// Which mean this can unload any command
+        /// </remarks>
+        /// <param name="cmdName">The name of command to be unregistered</param>
+        /// <returns></returns>
+        public bool UnregisterCommand(string cmdName)
+        {
+            if (cmds.ContainsKey(cmdName.ToLower()))
+            {
+                cmds.Remove(cmdName.ToLower());
+                cmd_names.Remove(cmdName.ToLower());
+                return true;
+            }
+            else return false;
+        }
+
         #region Management: Load/Unload ChatBots and Enable/Disable settings
 
         /// <summary>
