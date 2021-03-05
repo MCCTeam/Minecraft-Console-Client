@@ -1274,8 +1274,10 @@ namespace MinecraftClient
         /// <returns>True if successfully registered</returns>
         protected bool RegisterChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
         {
-            registeredCommands.Add(cmdName.ToLower());
-            return Handler.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
+            bool result = Handler.RegisterCommand(cmdName, cmdDesc, cmdUsage, callback);
+            if (result)
+                registeredCommands.Add(cmdName.ToLower());
+            return result;
         }
 
         /// <summary>
