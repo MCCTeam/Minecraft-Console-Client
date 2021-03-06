@@ -10,6 +10,7 @@ namespace MinecraftClient.Logger
     {
         private string logFile;
         private bool prependTimestamp;
+        private object logFileLock = new object();
 
         public FileLogLogger(string file, bool prependTimestamp = false)
         {
@@ -35,12 +36,15 @@ namespace MinecraftClient.Logger
                 string directory = Path.GetDirectoryName(logFile);
                 if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
-                FileStream stream = new FileStream(logFile, FileMode.OpenOrCreate);
-                StreamWriter writer = new StreamWriter(stream);
-                stream.Seek(0, SeekOrigin.End);
-                writer.WriteLine(msg);
-                writer.Dispose();
-                stream.Close();
+                lock (logFileLock)
+                {
+                    FileStream stream = new FileStream(logFile, FileMode.OpenOrCreate);
+                    StreamWriter writer = new StreamWriter(stream);
+                    stream.Seek(0, SeekOrigin.End);
+                    writer.WriteLine(msg);
+                    writer.Dispose();
+                    stream.Close();
+                }
             }
             catch (Exception e)
             {
