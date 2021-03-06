@@ -119,7 +119,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DefaultConfigResource.resx</DependentUpon>
     </Compile>
-    <Compile Include="ILogger.cs" />
+    <Compile Include="Logger\FileLogLogger.cs" />
+    <Compile Include="Logger\ILogger.cs" />
     <Compile Include="INIFile.cs" />
     <Compile Include="Inventory\Container.cs" />
     <Compile Include="Inventory\ContainerType.cs" />
@@ -136,6 +137,7 @@
     <Compile Include="Inventory\ItemType.cs" />
     <Compile Include="Inventory\ItemTypeExtensions.cs" />
     <Compile Include="Inventory\WindowActionType.cs" />
+    <Compile Include="Logger\LoggerBase.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette112.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette113.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette114.cs" />
@@ -158,7 +160,7 @@
     <Compile Include="Mapping\EntityPalettes\EntityPaletteGenerator.cs" />
     <Compile Include="Mapping\EntityTypeExtensions.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
-    <Compile Include="MCLogger.cs" />
+    <Compile Include="Logger\FilteredLogger.cs" />
     <Compile Include="Protocol\EntityActionType.cs" />
     <Compile Include="Protocol\GuidExtensions.cs" />
     <Compile Include="Protocol\Handlers\Compression\DeflateStream.cs" />

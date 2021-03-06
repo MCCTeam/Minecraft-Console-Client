@@ -12,6 +12,7 @@ using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
+using MinecraftClient.Logger;
 
 namespace MinecraftClient
 {
@@ -176,7 +177,9 @@ namespace MinecraftClient
             this.port = port;
             this.protocolversion = protocolversion;
 
-            this.Log = new MCLogger();
+            this.Log = Settings.LogToFile 
+                ? new FileLogLogger(Settings.ExpandVars(Settings.LogFile), Settings.PrependTimestamp) 
+                : new FilteredLogger();
             Log.DebugEnabled = Settings.DebugMessages;
             Log.InfoEnabled = Settings.InfoMessages;
             Log.ChatEnabled = Settings.ChatMessages;
