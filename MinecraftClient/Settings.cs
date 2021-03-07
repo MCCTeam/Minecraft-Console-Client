@@ -110,6 +110,9 @@ namespace MinecraftClient
         public static Regex ChatFilter = null;
         public static Regex DebugFilter = null;
         public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
+        public static bool LogToFile = false;
+        public static string LogFile = "console-log.txt";
+        public static bool PrependTimestamp = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -428,6 +431,9 @@ namespace MinecraftClient
                                                     else
                                                         FilterMode = FilterModeEnum.Blacklist;
                                                     break;
+                                                case "logtofile": LogToFile = str2bool(argValue); break;
+                                                case "logfile": LogFile = argValue; break;
+                                                case "prependtimestamp": PrependTimestamp = str2bool(argValue); break;
                                             }
                                             break;
 

@@ -17,6 +17,7 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
+using MinecraftClient.Logger;
 
 namespace MinecraftClient.Protocol.Handlers
 {
