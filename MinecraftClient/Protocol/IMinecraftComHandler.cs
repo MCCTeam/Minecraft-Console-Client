@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
+using MinecraftClient.Logger;
 
 namespace MinecraftClient.Protocol
 {
