@@ -106,6 +106,7 @@ namespace MinecraftClient.Mapping
             this.Equipment = new Dictionary<int, Item>();
             this.Item = new Item(ItemType.Air, 0, null);
         }
+
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type and location
         /// </summary>
@@ -123,6 +124,7 @@ namespace MinecraftClient.Mapping
             this.Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
             this.Pitch = pitch * (1 / 256) * 360;
         }
+
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type, location, name and UUID
         /// </summary>

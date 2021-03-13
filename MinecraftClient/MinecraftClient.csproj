@@ -161,7 +161,6 @@
     <Compile Include="Mapping\EntityTypeExtensions.cs" />
     <Compile Include="Mapping\MaterialExtensions.cs" />
     <Compile Include="Logger\FilteredLogger.cs" />
-    <Compile Include="Mapping\Vector3.cs" />
     <Compile Include="Protocol\EntityActionType.cs" />
     <Compile Include="Protocol\GuidExtensions.cs" />
     <Compile Include="Protocol\Handlers\Compression\DeflateStream.cs" />

@@ -167,18 +167,18 @@ namespace MinecraftClient.Mapping
             double x = -Math.Cos(rotY) * Math.Sin(rotX);
             double y = -Math.Sin(rotY);
             double z = Math.Cos(rotY) * Math.Cos(rotX);
-            Vector3 vector = new Vector3((float)x, (float)y, (float)z);
+            Location vector = new Location(x, y, z);
             for (int i = 0; i < 5; i++)
             {
-                Vector3 v = vector.Multiply(i);
-                Location l = location.EyesLocation() + new Location(v.X, v.Y, v.Z);
-                l.X = Math.Floor(l.X);
-                l.Y = Math.Floor(l.Y);
-                l.Z = Math.Floor(l.Z);
-                Block b = GetBlock(l);
+                Location newVector = vector * i;
+                Location blockLocation = location.EyesLocation() + new Location(newVector.X, newVector.Y, newVector.Z);
+                blockLocation.X = Math.Floor(blockLocation.X);
+                blockLocation.Y = Math.Floor(blockLocation.Y);
+                blockLocation.Z = Math.Floor(blockLocation.Z);
+                Block b = GetBlock(blockLocation);
                 if (b.Type != Material.Air)
                 {
-                    return l;
+                    return blockLocation;
                 }
             }
             return new Location();
