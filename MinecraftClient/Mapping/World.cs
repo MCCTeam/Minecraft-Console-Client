@@ -152,5 +152,36 @@ namespace MinecraftClient.Mapping
         {
             chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
         }
+
+        /// <summary>
+        /// Get the location of block of the entity is looking
+        /// </summary>
+        /// <param name="location">Location of the entity</param>
+        /// <param name="yaw">Yaw of the entity</param>
+        /// <param name="pitch">Pitch of the entity</param>
+        /// <returns>Location of the block or empty Location if no block was found</returns>
+        public Location GetLookingBlockLocation(Location location, double yaw, double pitch)
+        {
+            double rotX = (Math.PI / 180) * yaw;
+            double rotY = (Math.PI / 180) * pitch;
+            double x = -Math.Cos(rotY) * Math.Sin(rotX);
+            double y = -Math.Sin(rotY);
+            double z = Math.Cos(rotY) * Math.Cos(rotX);
+            Location vector = new Location(x, y, z);
+            for (int i = 0; i < 5; i++)
+            {
+                Location newVector = vector * i;
+                Location blockLocation = location.EyesLocation() + new Location(newVector.X, newVector.Y, newVector.Z);
+                blockLocation.X = Math.Floor(blockLocation.X);
+                blockLocation.Y = Math.Floor(blockLocation.Y);
+                blockLocation.Z = Math.Floor(blockLocation.Z);
+                Block b = GetBlock(blockLocation);
+                if (b.Type != Material.Air)
+                {
+                    return blockLocation;
+                }
+            }
+            return new Location();
+        }
     }
 }
