@@ -410,7 +410,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (living)
             {
-                byte entityHeadPitch = ReadNextByte(cache);
+                entityPitch = ReadNextByte(cache);
             }
             else
             {
@@ -421,7 +421,7 @@ namespace MinecraftClient.Protocol.Handlers
             short velocityY = ReadNextShort(cache);
             short velocityZ = ReadNextShort(cache);
 
-            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ));
+            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch);
         }
 
         /// <summary>
