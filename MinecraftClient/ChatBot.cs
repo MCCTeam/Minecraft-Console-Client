@@ -1016,7 +1016,25 @@ namespace MinecraftClient
         {
             return Handler.GetGamemode();
         }
-        
+
+        /// <summary>
+        /// Return the head yaw of the client player
+        /// </summary>
+        /// <returns>Yaw of the client player</returns>
+        protected float GetYaw()
+        {
+            return Handler.GetYaw();
+        }
+
+        /// <summary>
+        /// Return the head pitch of the client player
+        /// </summary>
+        /// <returns>Pitch of the client player</returns>
+        protected float GetPitch()
+        {
+            return Handler.GetPitch();
+        }
+
         /// <summary>
         /// Return the UserUUID of the current account
         /// </summary>

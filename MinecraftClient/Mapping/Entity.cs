@@ -55,6 +55,18 @@ namespace MinecraftClient.Mapping
         public Location Location;
 
         /// <summary>
+        /// Entity head yaw
+        /// </summary>
+        /// <remarks>Untested</remarks>
+        public float Yaw = 0;
+
+        /// <summary>
+        /// Entity head pitch
+        /// </summary>
+        /// <remarks>Untested</remarks>
+        public float Pitch = 0;
+
+        /// <summary>
         /// Health of the entity
         /// </summary>
         public float Health;
@@ -93,6 +105,23 @@ namespace MinecraftClient.Mapping
             this.Health = 1.0f;
             this.Equipment = new Dictionary<int, Item>();
             this.Item = new Item(ItemType.Air, 0, null);
+        }
+        /// <summary>
+        /// Create a new entity based on Entity ID, Entity Type and location
+        /// </summary>
+        /// <param name="ID">Entity ID</param>
+        /// <param name="type">Entity Type Enum</param>
+        /// <param name="location">Entity location</param>
+        public Entity(int ID, EntityType type, Location location, byte yaw, byte pitch)
+        {
+            this.ID = ID;
+            this.Type = type;
+            this.Location = location;
+            this.Health = 1.0f;
+            this.Equipment = new Dictionary<int, Item>();
+            this.Item = new Item(ItemType.Air, 0, null);
+            this.Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
+            this.Pitch = pitch * (1 / 256) * 360;
         }
         /// <summary>
         /// Create a new entity based on Entity ID, Entity Type, location, name and UUID

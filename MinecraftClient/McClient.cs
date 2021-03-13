@@ -50,8 +50,10 @@ namespace MinecraftClient
         private Queue<Location> steps;
         private Queue<Location> path;
         private Location location;
-        private float? yaw;
-        private float? pitch;
+        private float? _yaw; // Used for calculation ONLY!!! Doesn't reflect the client yaw
+        private float? _pitch; // Used for calculation ONLY!!! Doesn't reflect the client pitch
+        private float playerYaw;
+        private float playerPitch;
         private double motionY;
 
         private string host;
@@ -98,6 +100,8 @@ namespace MinecraftClient
         public string GetUserUUID() { return uuid; }
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
+        public float GetYaw() { return playerYaw; }
+        public float GetPitch() { return playerPitch; }
         public World GetWorld() { return world; }
         public Double GetServerTPS() { return averageTPS; }
         public float GetHealth() { return playerHealth; }
@@ -576,7 +580,7 @@ namespace MinecraftClient
                 {
                     for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
                     {
-                        if (yaw == null || pitch == null)
+                        if (_yaw == null || _pitch == null)
                         {
                             if (steps != null && steps.Count > 0)
                             {
@@ -593,12 +597,14 @@ namespace MinecraftClient
                                 location = Movement.HandleGravity(world, location, ref motionY);
                             }
                         }
-                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yaw, pitch);
+                        playerYaw = _yaw == null ? playerYaw : _yaw.Value;
+                        playerPitch = _pitch == null ? playerPitch : _pitch.Value;
+                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
                     }
                     // First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
                     // Once yaw and pitch have been sent, switch back to location-only updates (without yaw and pitch)
-                    yaw = null;
-                    pitch = null;
+                    _yaw = null;
+                    _pitch = null;
                 }
             }
 
@@ -916,7 +922,7 @@ namespace MinecraftClient
                 {
                     // 1-step path to the desired location without checking anything
                     UpdateLocation(location, location); // Update yaw and pitch to look at next step
-                    handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), yaw, pitch);
+                    handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
                     return true;
                 }
                 else
@@ -1651,8 +1657,8 @@ namespace MinecraftClient
         /// <param name="pitch">Pitch to look at</param>
         public void UpdateLocation(Location location, float yaw, float pitch)
         {
-            this.yaw = yaw;
-            this.pitch = pitch;
+            this._yaw = yaw;
+            this._pitch = pitch;
             UpdateLocation(location, false);
         }
 
