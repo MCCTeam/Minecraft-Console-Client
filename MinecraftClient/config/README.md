@@ -19,6 +19,25 @@ Then, open a terminal in this folder and run "mono MinecraftClient.exe".
 If you cannot authenticate on Mono, you'll need to run "mozroots --import --ask-remove" once.
 If Mono crashes, retry with mono-complete instead of mono-runtime. Use at least Mono v4.0.
 
+Using Docker do the following:
+```bash
+# Using HTTPS
+git clone https://github.com/ORelio/Minecraft-Console-Client.git
+
+# Using SSH
+git clone git@github.com:ORelio/Minecraft-Console-Client.git
+
+cd Minecraft-Console-Client/Docker
+
+docker build -t minecraft-console-client:latest .
+# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
+docker run -it -v <PATH_ON_YOUR_MASCHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
+```
+
+Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P`, `CTRL + Q`.
+
+To reattach use the `docker attach` command.
+
 Using Configuration files & Enabling bots
 ------
 
