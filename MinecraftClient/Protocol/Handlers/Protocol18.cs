@@ -1006,6 +1006,14 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnEntityMetadata(EntityID, metadata);
                         }
                         break;
+                    case PacketTypesIn.EntityStatus:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int entityId = dataTypes.ReadNextInt(packetData);
+                            byte status = dataTypes.ReadNextByte(packetData);
+                            handler.OnEntityStatus(entityId, status);
+                        }
+                        break;
                     case PacketTypesIn.TimeUpdate:
                         long WorldAge = dataTypes.ReadNextLong(packetData);
                         long TimeOfday = dataTypes.ReadNextLong(packetData);

@@ -113,6 +113,7 @@ namespace MinecraftClient
         public bool GetNetworkPacketCaptureEnabled() { return networkPacketCaptureEnabled; }
         public int GetProtocolVersion() { return protocolversion; }
         public ILogger GetLogger() { return this.Log; }
+        public int GetPlayerEntityID() { return playerEntityID; }
 
         // get bots list for unloading them by commands
         public List<ChatBot> GetLoadedChatBots()
@@ -2073,6 +2074,19 @@ namespace MinecraftClient
             if (EntityID == playerEntityID)
             {
                 DispatchBotEvent(bot => bot.OnPlayerProperty(prop));
+            }
+        }
+
+        /// <summary>
+        /// Called when the status of an entity have been changed
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="status">Status ID</param>
+        public void OnEntityStatus(int entityID, byte status)
+        {
+            if (entityID == playerEntityID)
+            {
+                DispatchBotEvent(bot => bot.OnPlayerStatus(status));
             }
         }
 
