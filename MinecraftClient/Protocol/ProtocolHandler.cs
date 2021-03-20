@@ -85,8 +85,8 @@ namespace MinecraftClient.Protocol
             {
                 try
                 {
-                    if (Protocol16Handler.doPing(serverIP, serverPort, ref protocolversionTmp)
-                        || Protocol18Handler.doPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp))
+                    if (Protocol18Handler.doPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp)
+                        || Protocol16Handler.doPing(serverIP, serverPort, ref protocolversionTmp))
                     {
                         success = true;
                     }
