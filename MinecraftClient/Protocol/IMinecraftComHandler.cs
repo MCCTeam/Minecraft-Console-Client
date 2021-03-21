@@ -210,6 +210,13 @@ namespace MinecraftClient.Protocol
         void OnEntityProperties(int entityID, Dictionary<string, Double> prop);
 
         /// <summary>
+        /// Called when the status of an entity have been changed
+        /// </summary>
+        /// <param name="entityID">Entity ID</param>
+        /// <param name="status">Status ID</param>
+        void OnEntityStatus(int entityID, byte status);
+
+        /// <summary>
         /// Called when the world age has been updated
         /// </summary>
         /// <param name="WorldAge">World age</param>
