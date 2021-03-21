@@ -336,6 +336,12 @@ namespace MinecraftClient
         public virtual void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata) { }
 
         /// <summary>
+        /// Called when the status of client player have been changed
+        /// </summary>
+        /// <param name="statusId"></param>
+        public virtual void OnPlayerStatus(byte statusId) { }
+
+        /// <summary>
         /// Called when a network packet received or sent
         /// </summary>
         /// <remarks>
