@@ -16,13 +16,14 @@ namespace MinecraftClient.ChatBots
         private int attackCooldownCounter = 6;
         private Double attackSpeed = 4;
         private Double attackCooldownSecond;
+        private bool overrideAttackSpeed = false;
         private int attackRange = 4;
         private Double serverTPS;
         private float health = 100;
         private bool singleMode = true;
         private bool priorityDistance = true;
 
-        public AutoAttack(string mode, string priority)
+        public AutoAttack(string mode, string priority, bool overrideAttackSpeed = false, double cooldownSecond = 1)
         {
             if (mode == "single")
                 singleMode = true;
@@ -35,6 +36,13 @@ namespace MinecraftClient.ChatBots
             else if (priority == "health")
                 priorityDistance = false;
             else LogToConsoleTranslated("bot.autoAttack.priority", priority);
+
+            if (overrideAttackSpeed)
+            {
+                this.overrideAttackSpeed = overrideAttackSpeed;
+                this.attackCooldownSecond = cooldownSecond;
+                attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSecond / 0.1) + 1);
+            }
         }
 
         public override void Initialize()
@@ -137,6 +145,8 @@ namespace MinecraftClient.ChatBots
 
         public override void OnPlayerProperty(Dictionary<string, double> prop)
         {
+            if (overrideAttackSpeed)
+                return;
             foreach (var attackSpeedKey in new[] { "generic.attackSpeed", "minecraft:generic.attack_speed" })
             {
                 // adjust auto attack cooldown for maximum attack damage
@@ -155,6 +165,8 @@ namespace MinecraftClient.ChatBots
 
         public override void OnServerTpsUpdate(double tps)
         {
+            if (overrideAttackSpeed)
+                return;
             serverTPS = tps;
             // re-calculate attack speed
             attackCooldownSecond = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
