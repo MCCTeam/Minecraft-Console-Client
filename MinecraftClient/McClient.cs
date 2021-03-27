@@ -114,12 +114,7 @@ namespace MinecraftClient
         public int GetProtocolVersion() { return protocolversion; }
         public ILogger GetLogger() { return this.Log; }
         public int GetPlayerEntityID() { return playerEntityID; }
-
-        // get bots list for unloading them by commands
-        public List<ChatBot> GetLoadedChatBots()
-        {
-            return bots;
-        }
+        public List<ChatBot> GetLoadedChatBots() { return new List<ChatBot>(bots); }
 
         TcpClient client;
         IMinecraftCom handler;
@@ -669,9 +664,9 @@ namespace MinecraftClient
             b.SetHandler(this);
             bots.Add(b);
             if (init)
-                b.Initialize();
+                DispatchBotEvent(bot => bot.Initialize(), new ChatBot[] { b });
             if (this.handler != null)
-                b.AfterGameJoined();
+                DispatchBotEvent(bot => bot.AfterGameJoined(), new ChatBot[] { b });
             Settings.SingleCommand = "";
         }
 
