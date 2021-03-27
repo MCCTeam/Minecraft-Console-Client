@@ -579,8 +579,17 @@ namespace MinecraftClient
                                                 case "enabled": AutoAttack_Enabled = str2bool(argValue); break;
                                                 case "mode": AutoAttack_Mode = argValue.ToLower(); break;
                                                 case "priority": AutoAttack_Priority = argValue.ToLower(); break;
-                                                case "overrideattackspeed": AutoAttack_OverrideAttackSpeed = str2bool(argValue); break;
-                                                case "cooldownsecond": AutoAttack_CooldownSecond = str2int(argValue); break;
+                                                case "cooldownsecond": 
+                                                    if (argValue.ToLower() == "auto")
+                                                    {
+                                                        AutoAttack_OverrideAttackSpeed = false;
+                                                    }
+                                                    else
+                                                    {
+                                                        AutoAttack_OverrideAttackSpeed = true;
+                                                        AutoAttack_CooldownSecond = str2float(argValue);
+                                                    }
+                                                    break;
                                             }
                                             break;
 
@@ -725,6 +734,23 @@ namespace MinecraftClient
                 return Convert.ToInt32(str.Trim());
             }
             catch {
+                ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Convert the specified string to a float number, defaulting to zero if invalid argument
+        /// </summary>
+        /// <param name="str">String to parse as a float number</param>
+        /// <returns>Float number</returns>
+        public static float str2float(string str)
+        {
+            float f;
+            if (float.TryParse(str.Trim(), out f))
+                return f;
+            else
+            {
                 ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
                 return 0;
             }

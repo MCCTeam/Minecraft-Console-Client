@@ -39,9 +39,16 @@ namespace MinecraftClient.ChatBots
 
             if (overrideAttackSpeed)
             {
-                this.overrideAttackSpeed = overrideAttackSpeed;
-                this.attackCooldownSecond = cooldownSecond;
-                attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSecond / 0.1) + 1);
+                if (cooldownSecond <= 0)
+                {
+                    LogToConsoleTranslated("bot.autoAttack.invalidcooldown");
+                }
+                else
+                {
+                    this.overrideAttackSpeed = overrideAttackSpeed;
+                    this.attackCooldownSecond = cooldownSecond;
+                    attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSecond / 0.1) + 1);
+                }
             }
         }
 
