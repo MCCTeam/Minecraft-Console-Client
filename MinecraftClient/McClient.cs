@@ -26,7 +26,9 @@ namespace MinecraftClient
         private static readonly List<string> cmd_names = new List<string>();
         private static readonly Dictionary<string, Command> cmds = new Dictionary<string, Command>();
         private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
-        private static bool CommandLoaded = false;
+
+        private static bool commandsLoaded = false;
+        private Queue<string> commandQueue = new Queue<string>();
 
         private Queue<string> chatQueue = new Queue<string>();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
@@ -289,56 +291,66 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Allows the user to send chat messages, commands, and to leave the server.
+        /// Allows the user to send chat messages, commands, and leave the server.
+        /// Enqueue text typed in the command prompt for processing on the main thread.
         /// </summary>
         private void CommandPrompt()
         {
             try
             {
-                string text = "";
                 Thread.Sleep(500);
-                handler.SendRespawnPacket();
-
                 while (client.Client.Connected)
                 {
-                    text = ConsoleIO.ReadLine();
-                    if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
+                    string text = ConsoleIO.ReadLine();
+                    lock (commandQueue)
                     {
-                        //Process a request from the GUI
-                        string[] command = text.Substring(1).Split((char)0x00);
-                        switch (command[0].ToLower())
-                        {
-                            case "autocomplete":
-                                if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
-                                else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
-                                break;
-                        }
+                        commandQueue.Enqueue(text);
                     }
-                    else
-                    {
-                        text = text.Trim();
-                        if (text.Length > 0)
-                        {
-                            if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
-                            {
-                                string response_msg = "";
-                                string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
-                                if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
-                                {
-                                    SendText(text);
-                                }
-                                else if (response_msg.Length > 0)
-                                {
-                                    Log.Info(response_msg);
-                                }
-                            }
-                            else SendText(text);
-                        }
-                    }
-                }
+                }   
             }
             catch (IOException) { }
             catch (NullReferenceException) { }
+        }
+
+        /// <summary>
+        /// Allows the user to send chat messages, commands, and leave the server.
+        /// Process text from the MCC command prompt on the main thread.
+        /// </summary>
+        private void HandleCommandPromptText(string text)
+        {
+            if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
+            {
+                //Process a request from the GUI
+                string[] command = text.Substring(1).Split((char)0x00);
+                switch (command[0].ToLower())
+                {
+                    case "autocomplete":
+                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
+                        else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
+                        break;
+                }
+            }
+            else
+            {
+                text = text.Trim();
+                if (text.Length > 0)
+                {
+                    if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
+                    {
+                        string response_msg = "";
+                        string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
+                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
+                        {
+                            SendText(text);
+                        }
+                        else if (response_msg.Length > 0)
+                        {
+                            Log.Info(response_msg);
+                        }
+                    }
+                    else SendText(text);
+                }
+            }
         }
 
         /// <summary>
@@ -426,7 +438,7 @@ namespace MinecraftClient
         {
             /* Load commands from the 'Commands' namespace */
 
-            if (!CommandLoaded)
+            if (!commandsLoaded)
             {
                 Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
                 foreach (Type type in cmds_classes)
@@ -447,7 +459,7 @@ namespace MinecraftClient
                         }
                     }
                 }
-                CommandLoaded = true;
+                commandsLoaded = true;
             }
         }
 
@@ -557,6 +569,14 @@ namespace MinecraftClient
                         Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
                     else throw; //ThreadAbortException should not be caught
+                }
+            }
+
+            lock (commandQueue)
+            {
+                if (commandQueue.Count > 0)
+                {
+                    HandleCommandPromptText(commandQueue.Dequeue());
                 }
             }
 
