@@ -174,7 +174,7 @@ namespace MinecraftClient
         public static string AutoAttack_Mode = "single";
         public static string AutoAttack_Priority = "distance";
         public static bool AutoAttack_OverrideAttackSpeed = false;
-        public static double AutoAttack_CooldownSecond = 1;
+        public static double AutoAttack_CooldownSeconds = 1;
 
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;
@@ -579,7 +579,7 @@ namespace MinecraftClient
                                                 case "enabled": AutoAttack_Enabled = str2bool(argValue); break;
                                                 case "mode": AutoAttack_Mode = argValue.ToLower(); break;
                                                 case "priority": AutoAttack_Priority = argValue.ToLower(); break;
-                                                case "cooldownsecond": 
+                                                case "cooldownseconds": 
                                                     if (argValue.ToLower() == "auto")
                                                     {
                                                         AutoAttack_OverrideAttackSpeed = false;
@@ -587,7 +587,7 @@ namespace MinecraftClient
                                                     else
                                                     {
                                                         AutoAttack_OverrideAttackSpeed = true;
-                                                        AutoAttack_CooldownSecond = str2float(argValue);
+                                                        AutoAttack_CooldownSeconds = str2float(argValue);
                                                     }
                                                     break;
                                             }
