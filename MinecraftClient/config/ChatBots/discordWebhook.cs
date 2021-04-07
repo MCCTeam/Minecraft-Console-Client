@@ -12,7 +12,7 @@ class SkinAPI
     private int scale;
     private bool overlay;
     private string fallbackSkin;
-        
+
     public SkinAPI(string newCurrentSkinMode = "flatFace", string newFallbackSkin = "MHF_Steve", int newSize = 512, int newScale = 10, bool newOverlay = true)
     {
         skinModes.Add("flatFace", "https://crafatar.com/avatars/{0}");
@@ -41,7 +41,7 @@ class SkinAPI
 
     public string getSkinURL(string UUID)
     {
-        string parameters = string.Join("&", "size=" + size, "scale=" + scale,"default=" + fallbackSkin, (overlay ? "overlay" : ""));
+        string parameters = string.Join("&", "size=" + size, "scale=" + scale, "default=" + fallbackSkin, (overlay ? "overlay" : ""));
         return string.Format(skinModes[currentSkinMode], UUID + "?" + parameters);
     }
 
@@ -73,16 +73,20 @@ class DiscordWebhook : ChatBot
 {
     private string webhookURL;
     private bool sendPrivate;
+    private bool sendServer;
     private bool getUUIDFromMojang;
-    private bool pauseSending;
+    private bool togglesending;
     private bool allowMentions;
     private bool onlyPrivate;
+    private Dictionary<string, string> messageContains = new Dictionary<string, string>();
+    private Dictionary<string, string> messageFrom = new Dictionary<string, string>();
     SkinAPI sAPI = new SkinAPI();
 
     public DiscordWebhook()
     {
         getUUIDFromMojang = true;
-        pauseSending = true;
+        sendServer = true;
+        togglesending = false;
         allowMentions = false;
         onlyPrivate = false;
     }
@@ -91,13 +95,14 @@ class DiscordWebhook : ChatBot
     {
         base.Initialize();
         LogToConsole("Made by Daenges.\nThank you to Crafatar for providing the beautiful avatars!");
-        LogToConsole("Please set a Webhook with '/discordwebhook changeurl [URL]' and activate the Bot with '/discordwebhook pausesending'. For further information type '/discordwebhook help'.");
+        LogToConsole("Please set a Webhook with '/dw changeurl [URL]' and activate the Bot with '/dw pausesending'. For further information type '/dw help'.");
         RegisterChatBotCommand("discordWebhook", "/DiscordWebhook 'size', 'scale', 'fallbackSkin', 'overlay', 'skintype'", getHelp(), commandHandler);
+        RegisterChatBotCommand("dw", "/DiscordWebhook 'size', 'scale', 'fallbackSkin', 'overlay', 'skintype'", getHelp(), commandHandler);
     }
 
     public override void GetText(string text)
     {
-        if (!pauseSending)
+        if (togglesending)
         {
             string message = "";
             string username = "";
@@ -107,9 +112,13 @@ class DiscordWebhook : ChatBot
             {
                 sendWebhook(username, message);
             }
-            if (IsPrivateMessage(text, ref message, ref username) && sendPrivate)
+            else if (IsPrivateMessage(text, ref message, ref username) && sendPrivate)
             {
                 sendWebhook(username, "[Private Message]: " + message);
+            }
+            else if (sendServer)
+            {
+                sendWebhook("[Server]", text);
             }
         }
     }
@@ -121,43 +130,90 @@ class DiscordWebhook : ChatBot
         sAPI = new SkinAPI(newCurrentSkinType, newFallbackSkin, newSize, newScale, newOverlay);
     }
 
+    public string addPingsToMessage(string username, string msg)
+    {
+        string pings = "";
+        foreach (string word in msg.Split(' '))
+        {
+            if (messageContains.ContainsKey(word.ToLower())) { pings += string.Join(" ", messageContains[word.ToLower()]); }
+        }
+        if (messageFrom.ContainsKey(username.ToLower()))
+        {
+            pings += messageFrom[username.ToLower()];
+        }
+        return pings;
+    }
+
     public void sendWebhook(string username, string msg)
     {
-        HTTP.Post(webhookURL, new NameValueCollection()
+        msg += " " + addPingsToMessage(username, msg);
+
+        if (webhookURL != "" && webhookURL != null)
         {
-            {
-                "username",
-                username
-            },
-            {
-                "content",
-                msg
-            },
-            {
-                "avatar_url",
-                sAPI.getSkinURL(getUUIDFromMojang ? sAPI.getUUIDFromMojang(username) : sAPI.getUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()))
-            }
+            HTTP.Post(webhookURL, new NameValueCollection()
+                {
+                    {
+                        "username",
+                        username
+                    },
+                    {
+                        "content",
+                        msg
+                    },
+                    {
+                        "avatar_url",
+                        username == "[Server]" ? "https://headdb.org/img/renders/852252f1-184f-32ce-ae9a-e1a633878cb3.png" : sAPI.getSkinURL(getUUIDFromMojang ? sAPI.getUUIDFromMojang(username) : sAPI.getUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()))
+                    }
+                }
+                    );
         }
-        );
+        else
+        {
+            LogToConsole("No webhook link provided. Please enter one with '/discordwebhook changeurl [link]'");
+        }
     }
 
     public string getHelp()
     {
-        return "/discordWebhook 'size', 'scale', 'fallbackSkin', 'overlay', 'skintype', 'uuidfrommojang', 'sendprivate', 'changeurl', 'pausesending', 'allowmentions', 'onlyprivate', 'help'";
+        return "/discordWebhook 'size', 'scale', 'fallbackSkin', 'overlay', 'skintype', 'uuidfrommojang', 'sendprivate', 'changeurl', 'togglesending', 'allowmentions', 'onlyprivate', 'help'";
+    }
+
+    public List<string> getStringsInQuotes(string rawData)
+    {
+        List<string> result = new List<string> { "" };
+        int currentResultPos = 0;
+        bool startCopy = false;
+
+        foreach (char c in rawData)
+        {
+            if (c == '\"')
+            {
+                if (startCopy) { result[currentResultPos] = result[currentResultPos].Replace("\"", ""); currentResultPos++; result.Add(""); }
+                startCopy = !startCopy;
+            }
+            if (startCopy)
+            {
+                result[currentResultPos] += c.ToString();
+            }
+        }
+
+        return result;
     }
 
     public string commandHandler(string cmd, string[] args)
     {
         if (args.Length > 0)
         {
-            switch(args[0])
+            switch (args[0])
             {
                 case "size":
 
-                    try {
+                    try
+                    {
                         sAPI.setSize(int.Parse(args[1]));
                         return "Changed headsize to " + args[1] + " pixel.";
-                    } catch (Exception)
+                    }
+                    catch (Exception)
                     {
                         return "That was not a number.";
                     }
@@ -172,7 +228,7 @@ class DiscordWebhook : ChatBot
                     {
                         return "That was not a number.";
                     }
-                        
+
 
                 case "fallbackskin":
                     sAPI.toggleFallbackSkin();
@@ -194,9 +250,76 @@ class DiscordWebhook : ChatBot
                         {
                             return "This mode does not exsist. ('flatFace', 'cubeHead', 'fullSkin')";
                         }
-                    } else
+                    }
+                    else
                     {
                         return "Enter a value! ('flatFace', 'cubeHead', 'fullSkin')";
+                    }
+
+                case "ping":
+                    if (args[1] == "message")
+                    {
+                        if (args[2] == "add")
+                        {
+                            List<string> tempList = getStringsInQuotes(string.Join(" ", args));
+                            if (tempList.Count >= 2)
+                            {
+                                messageContains.Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
+                                return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                            }
+                            else
+                            {
+                                return "Too many arguments";
+                            }
+
+                        }
+                        else
+                        {
+                            List<string> tempList = getStringsInQuotes(string.Join(" ", args));
+                            if (messageContains.ContainsKey(tempList[0].ToLower()))
+                            {
+                                messageContains.Remove(tempList[0].ToLower());
+                                return "Removed " + tempList[0].ToLower();
+                            }
+                            else
+                            {
+                                return "This key does not exsist.";
+                            }
+                        }
+                    }
+                    if (args[1] == "sender")
+                    {
+                        if (args[2] == "add")
+                        {
+                            List<string> tempList = getStringsInQuotes(string.Join(" ", args));
+                            if (tempList.Count >= 2)
+                            {
+                                messageFrom.Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
+                                return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                            }
+                            else
+                            {
+                                return "Too many arguments";
+                            }
+
+                        }
+                        else
+                        {
+                            List<string> tempList = getStringsInQuotes(string.Join(" ", args));
+                            if (messageFrom.ContainsKey(tempList[0].ToLower()))
+                            {
+                                messageFrom.Remove(tempList[0].ToLower());
+                                return "Removed " + tempList[0].ToLower();
+                            }
+                            else
+                            {
+                                return "This key does not exsist.";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return "This is not a valid option. /discordwebhook ping message/sender add/remove \"Keywords in message\" \"@Pings @To @Append @To @Message\"";
                     }
 
                 case "uuidfrommojang":
@@ -215,16 +338,21 @@ class DiscordWebhook : ChatBot
                     onlyPrivate = !onlyPrivate;
                     return "Only private messages are sent: " + onlyPrivate.ToString();
 
-                case "pausesending":
-                    pauseSending = !pauseSending;
-                    return "Paused sending messages to Discord: " + pauseSending.ToString();
+                case "sendservermsg":
+                    sendServer = !sendServer;
+                    return "Server messages get forewarded: " + sendServer.ToString();
+
+                case "togglesending":
+                    togglesending = !togglesending;
+                    return "Forewarding messages to Discord: " + togglesending.ToString();
 
                 case "changeurl":
                     if (args.Length > 1)
                     {
                         setWebhook(args[1]);
                         return "Changed webhook URL to: " + args[1];
-                    } else 
+                    }
+                    else
                     {
                         return "Enter a valid Discord Webhook link.";
                     }
