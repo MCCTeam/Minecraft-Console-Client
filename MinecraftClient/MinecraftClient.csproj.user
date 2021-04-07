@@ -16,4 +16,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <StartArguments>TestBot - localhost</StartArguments>
   </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>4</LangVersion>
+  </PropertyGroup>
 </Project>
