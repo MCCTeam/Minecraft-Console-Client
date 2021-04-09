@@ -229,7 +229,7 @@ namespace MinecraftClient
                 if (Settings.DebugMessages)
                     Translations.WriteLine("debug.session_id", session.ID);
 
-                //ProtocolHandler.RealmsListWorlds(Settings.Username, PlayerID, sessionID); //TODO REMOVE
+                ProtocolHandler.RealmsListWorlds(Settings.Username, session.PlayerID, session.ID); //TODO REMOVE
 
                 if (Settings.ServerIP == "")
                 {

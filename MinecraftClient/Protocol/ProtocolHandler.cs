@@ -681,7 +681,7 @@ namespace MinecraftClient.Protocol
         {
             string result = "";
             string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-            DoHTTPSGet("mcoapi.minecraft.net", "/worlds", cookies, ref result);
+            DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies, ref result);
             Console.WriteLine(result);
         }
 
@@ -704,7 +704,7 @@ namespace MinecraftClient.Protocol
             http_request.Add("User-Agent: Java/1.6.0_27");
             http_request.Add("Accept-Charset: ISO-8859-1,UTF-8;q=0.7,*;q=0.7");
             http_request.Add("Connection: close");
-            http_request.Add("");
+            http_request.Add("\r\n");
             return DoHTTPSRequest(http_request, host, ref result);
         }
 
