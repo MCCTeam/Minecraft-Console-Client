@@ -704,7 +704,8 @@ namespace MinecraftClient.Protocol
             http_request.Add("User-Agent: Java/1.6.0_27");
             http_request.Add("Accept-Charset: ISO-8859-1,UTF-8;q=0.7,*;q=0.7");
             http_request.Add("Connection: close");
-            http_request.Add("\r\n");
+            http_request.Add("");
+            http_request.Add("");
             return DoHTTPSRequest(http_request, host, ref result);
         }
 
