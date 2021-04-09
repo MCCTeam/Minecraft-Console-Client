@@ -9,13 +9,13 @@ class WebhoookSettings
     /// <summary>
     /// All variables for the main class.
     /// </summary>
-    public string webhookURL { get; set; }
-    public bool sendPrivateMsg { get; set; }
-    public bool sendPublicMsg { get; set; }
-    public bool sendServerMsg { get; set; }
-    public bool getUUIDFromMojang { get; set; }
-    public bool togglesending { get; set; }
-    public bool allowMentions { get; set; }
+    public string WebhookURL { get; set; }
+    public bool SendPrivateMsg { get; set; }
+    public bool SendPublicMsg { get; set; }
+    public bool SendServerMsg { get; set; }
+    public bool GetUUIDDirectlyFromMojang { get; set; }
+    public bool Togglesending { get; set; }
+    public bool AllowMentions { get; set; }
     private Dictionary<string, List<string>> messageCache = new Dictionary<string, List<string>>();
     private Dictionary<string, string> messageContains = new Dictionary<string, string>();
     private Dictionary<string, string> messageFrom = new Dictionary<string, string>();
@@ -23,36 +23,43 @@ class WebhoookSettings
     /// <summary>
     /// All variables for the API class
     /// </summary>
+
+    private string currentSkinMode;
+    private int size;
+    private int scale;
+    private bool overlay;
+    private string fallbackSkin;
+
     private Dictionary<string, string> skinModes = new Dictionary<string, string>();
-    public string currentSkinMode
+    public string CurrentSkinMode
     {
-        //set { if(skinModes.ContainsKey(value)) { this.currentSkinMode = value; } }
-        //get { return this.currentSkinMode; }
-        get; set;
+        set { if (skinModes.ContainsKey(value)) { currentSkinMode = value; } }
+        get { return currentSkinMode; }
+        //get; set;
     }
-    public int size
+    public int Size
     {
-        //set { if (value <= 512) { this.size = value; } }
-        //get { return this.size; }
-        get; set;
+        set { if (value <= 512) { size = value; } }
+        get { return size; }
+        //get; set;
     }
-    public int scale
+    public int Scale
     {
-        //set { if (value <= 10) { this.scale = value; } }
-        //get { return this.scale; }
-        get; set;
+        set { if (value <= 10) { this.scale = value; } }
+        get { return scale; }
+        //get; set;
     }
-    public bool overlay
+    public bool Overlay
     {
-        //set { this.overlay = value; }
-        //get { return this.overlay; }
-        get; set;
+        set { overlay = value; }
+        get { return overlay; }
+        //get; set;
     }
-    public string fallbackSkin
+    public string FallbackSkin
     {
-        //set { if (value == "MHF_Steve" || value == "MHF_Alex") { this.fallbackSkin = value; } }
-        //get { return this.fallbackSkin; }
-        get; set;
+        set { if (value == "MHF_Steve" || value == "MHF_Alex") { fallbackSkin = value; } }
+        get { return fallbackSkin; }
+        //get; set;
     }
 
     /// <summary>
@@ -66,12 +73,12 @@ class WebhoookSettings
         skinModes.Add("fullSkin", "https://crafatar.com/renders/body/{0}");
 
         // Define standard values for main class //
-        sendPrivateMsg = true;
-        sendPublicMsg = true;
-        sendServerMsg = true;
-        getUUIDFromMojang = true;
-        togglesending = true;
-        allowMentions = false;
+        SendPrivateMsg = true;
+        SendPublicMsg = true;
+        SendServerMsg = true;
+        GetUUIDDirectlyFromMojang = false;
+        Togglesending = true;
+        AllowMentions = false;
         currentSkinMode = "flatFace";
 
         // Define standard values for API class //
@@ -123,7 +130,17 @@ class SkinAPI
     /// <returns></returns>
     public string GetUUIDFromPlayerList(string name, Dictionary<string, string> playerList)
     {
-        return playerList.FirstOrDefault(x => name.Contains(x.Value)).Key.Replace("-", "");
+        foreach (string key in playerList.Keys)
+        {
+            if (name.ToLower().Contains(playerList[key].ToLower()))
+            {
+                return key.Replace("-", "");
+            }
+        }
+        //return playerList.FirstOrDefault(x => name.Contains(x.Value)).Key.Replace("-", "");
+
+        // Falback if player leaves the server.
+        return GetUUIDFromMojang(name);
     }
 
     /// <summary>
@@ -133,8 +150,8 @@ class SkinAPI
     /// <returns></returns>
     public string GetSkinURLCrafatar(string UUID)
     {
-        string parameters = string.Join("&", "size=" + settings.size, "scale=" + settings.scale, "default=" + settings.fallbackSkin, (settings.overlay ? "overlay" : ""));
-        return string.Format(settings.GetSkinModes()[settings.currentSkinMode], UUID + "?" + parameters);
+        string parameters = string.Join("&", "size=" + settings.Size, "scale=" + settings.Scale, "default=" + settings.FallbackSkin, (settings.Overlay ? "overlay" : ""));
+        return string.Format(settings.GetSkinModes()[settings.CurrentSkinMode], UUID + "?" + parameters);
     }
 }
 
@@ -169,21 +186,27 @@ class DiscordWebhook : ChatBot
 
     public override void GetText(string text)
     {
-        if (settings.togglesending)
+        if (settings.Togglesending)
         {
             string message = "";
             string username = "";
-            text = settings.allowMentions ? GetVerbatim(text) : GetVerbatim(text).Replace("@", "[at]");
+            username = GetVerbatim(username);
+            text = settings.AllowMentions ? GetVerbatim(text) : GetVerbatim(text).Replace("@", "[at]");
 
-            if (IsChatMessage(text, ref message, ref username) && settings.sendPublicMsg)
+            if (IsChatMessage(text, ref message, ref username) && settings.SendPublicMsg)
             {
                 SendWebhook(username, message);
             }
-            else if (IsPrivateMessage(text, ref message, ref username) && settings.sendPrivateMsg)
+            else if (IsPrivateMessage(text, ref message, ref username) && settings.SendPrivateMsg)
             {
                 SendWebhook(username, "[Private Message]: " + message);
             }
-            else if (settings.sendPublicMsg)
+            else if (text.Contains(":")) // Some servers have strange chat formats.
+            {
+                var messageArray = text.Split(new[] { ':' }, 2);
+                SendWebhook(messageArray[0], messageArray[1]);
+            }
+            else if (settings.SendPublicMsg)
             {
                 SendWebhook("[Server]", text);
             }
@@ -208,11 +231,11 @@ class DiscordWebhook : ChatBot
     {
         msg += " " + AddPingsToMessage(username, msg);
 
-        if (settings.webhookURL != "" && settings.webhookURL != null)
+        if (settings.WebhookURL != "" && settings.WebhookURL != null)
         {
             try
             {
-                HTTP.Post(settings.webhookURL, new NameValueCollection()
+                HTTP.Post(settings.WebhookURL, new NameValueCollection()
                     {
                         {
                             "username",
@@ -224,7 +247,7 @@ class DiscordWebhook : ChatBot
                         },
                         {
                             "avatar_url",
-                            username == "[Server]" ? "https://headdb.org/img/renders/852252f1-184f-32ce-ae9a-e1a633878cb3.png" : sAPI.GetSkinURLCrafatar(settings.getUUIDFromMojang ? sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()))
+                            username == "[Server]" ? sAPI.GetSkinURLCrafatar("f78a4d8dd51b4b3998a3230f2de0c670") : sAPI.GetSkinURLCrafatar(settings.GetUUIDDirectlyFromMojang ? sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()))
                         }
                     }
                         );
@@ -233,7 +256,10 @@ class DiscordWebhook : ChatBot
             {
                 /// Mostly exception due to too many requests.
                 LogToConsole("An error occured while posting messages to Discord! (Enable Debug to view it.)");
-                LogDebugToConsole(e.ToString());
+                LogToConsole(string.Format("Requested Link {0}; Username {1}; message: {2}; error: {3}",
+                    username == "[Server]" ?
+                    sAPI.GetSkinURLCrafatar("f78a4d8dd51b4b3998a3230f2de0c670") : sAPI.GetSkinURLCrafatar(settings.GetUUIDDirectlyFromMojang ?
+                    sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID())), username, msg, e.ToString()));
             }
         }
         else
@@ -279,7 +305,7 @@ class DiscordWebhook : ChatBot
 
                     try
                     {
-                        settings.size = int.Parse(args[1]);
+                        settings.Size = int.Parse(args[1]);
                         return "Changed headsize to " + args[1] + " pixel.";
                     }
                     catch (Exception)
@@ -290,7 +316,7 @@ class DiscordWebhook : ChatBot
                 case "scale":
                     try
                     {
-                        settings.scale = int.Parse(args[1]);
+                        settings.Scale = int.Parse(args[1]);
                         return "Changed scale to " + args[1] + ".";
                     }
                     catch (Exception)
@@ -300,19 +326,19 @@ class DiscordWebhook : ChatBot
 
 
                 case "fallbackskin":
-                    settings.fallbackSkin = settings.fallbackSkin == "MHF_Steve" ? "MHF_Alex" : "MHF_Steve";
-                    return "Changed fallback skin to: " + settings.fallbackSkin;
+                    settings.FallbackSkin = settings.FallbackSkin == "MHF_Steve" ? "MHF_Alex" : "MHF_Steve";
+                    return "Changed fallback skin to: " + settings.FallbackSkin;
 
                 case "overlay":
-                    settings.overlay = !settings.overlay;
-                    return "Changed the overlay to: " + settings.overlay;
+                    settings.Overlay = !settings.Overlay;
+                    return "Changed the overlay to: " + settings.Overlay;
 
                 case "skintype":
                     if (args.Length > 1)
                     {
                         if (settings.GetSkinModes().ContainsKey(args[1]))
                         {
-                            settings.currentSkinMode = args[1];
+                            settings.CurrentSkinMode = args[1];
                             return "Changed skin mode to " + args[1];
                         }
                         else
@@ -392,30 +418,30 @@ class DiscordWebhook : ChatBot
                     }
 
                 case "uuidfrommojang":
-                    settings.getUUIDFromMojang = !settings.getUUIDFromMojang;
-                    return "Getting UUID's from Mojang: " + settings.getUUIDFromMojang.ToString();
+                    settings.GetUUIDDirectlyFromMojang = !settings.GetUUIDDirectlyFromMojang;
+                    return "Getting UUID's from Mojang: " + settings.GetUUIDDirectlyFromMojang.ToString();
 
                 case "sendprivate":
-                    settings.sendPrivateMsg = !settings.sendPrivateMsg;
-                    return "Send private messages: " + settings.sendPrivateMsg.ToString();
+                    settings.SendPrivateMsg = !settings.SendPrivateMsg;
+                    return "Send private messages: " + settings.SendPrivateMsg.ToString();
 
                 case "allowmentions":
-                    settings.allowMentions = !settings.allowMentions;
-                    return "People can @Members: " + settings.allowMentions.ToString();
+                    settings.AllowMentions = !settings.AllowMentions;
+                    return "People can @Members: " + settings.AllowMentions.ToString();
 
 
                 case "sendservermsg":
-                    settings.sendServerMsg = !settings.sendServerMsg;
-                    return "Server messages get forewarded: " + settings.sendServerMsg.ToString();
+                    settings.SendServerMsg = !settings.SendServerMsg;
+                    return "Server messages get forewarded: " + settings.SendServerMsg.ToString();
 
                 case "togglesending":
-                    settings.togglesending = !settings.togglesending;
-                    return "Forewarding messages to Discord: " + settings.togglesending.ToString();
+                    settings.Togglesending = !settings.Togglesending;
+                    return "Forewarding messages to Discord: " + settings.Togglesending.ToString();
 
                 case "changeurl":
                     if (args.Length > 1)
                     {
-                        settings.webhookURL = args[1];
+                        settings.WebhookURL = args[1];
                         return "Changed webhook URL to: " + args[1];
                     }
                     else
