@@ -8,6 +8,7 @@ class WebhoookSettings
 {
     #region All variables for the main class
     public string WebhookURL { get; set; }
+    public int SecondsToSaveInCache { get; set; }
     public bool SendPrivateMsg { get; set; }
     public bool SendPublicMsg { get; set; }
     public bool SendServerMsg { get; set; }
@@ -24,6 +25,7 @@ class WebhoookSettings
     private int size;
     private int scale;
     private bool overlay;
+    private bool checkUUID;
     private string fallbackSkin;
 
     private Dictionary<string, string> skinModes = new Dictionary<string, string>();
@@ -46,6 +48,11 @@ class WebhoookSettings
     {
         set { overlay = value; }
         get { return overlay; }
+    }
+    public bool CheckUUID
+    {
+        set { checkUUID = value; }
+        get { return checkUUID; }
     }
     public string FallbackSkin
     {
@@ -70,8 +77,10 @@ class WebhoookSettings
         SendServerMsg = true;
         GetUUIDDirectlyFromMojang = false;
         Togglesending = true;
+        checkUUID = true;
         AllowMentions = false;
         currentSkinMode = "flatFace";
+        SecondsToSaveInCache = 10;
 
         // Define standard values for API class
         size = 100;
@@ -110,7 +119,11 @@ class SkinAPI
     public string GetUUIDFromMojang(string name)
     {
         WebClient wc = new WebClient();
-        return Json.ParseJson(wc.DownloadString("https://api.mojang.com/users/profiles/minecraft/" + name)).Properties["id"].StringValue;
+        try
+        {
+            return Json.ParseJson(wc.DownloadString("https://api.mojang.com/users/profiles/minecraft/" + name)).Properties["id"].StringValue;
+        }
+        catch (Exception) { return "00000000000000000000000000000000"; }
     }
 
     /// <summary>
@@ -147,6 +160,84 @@ class SkinAPI
     }
 }
 
+class Message
+{
+    private string senderName;
+    private string senderUUID;
+    private string content;
+    private DateTime time;
+
+    public Message(string sN, string sU, string c, DateTime t)
+    {
+        senderName = sN;
+        senderUUID = sU;
+        content = c;
+        time = t;
+    }
+
+    public string SenderName
+    {
+        get { return senderName; }
+    }
+    public string SenderUUID
+    {
+        get { return senderUUID; }
+    }
+    public DateTime Time
+    {
+        get { return time; }
+    }
+    public string Content
+    {
+        get { return content; }
+        set { content = value; }
+    }
+}
+
+class MessageCache
+{
+    private WebhoookSettings settings;
+    private Message msg;
+    public Message Msg { get { return msg; } }
+
+    public MessageCache(WebhoookSettings s)
+    {
+        msg = null;
+        settings = s;
+    }
+
+
+    public Message Add(Message newMsg)
+    {
+        if (msg == null)
+        {
+            msg = newMsg;
+            return null;
+        }
+        else
+        {
+            if ((msg.SenderUUID == newMsg.SenderUUID && settings.CheckUUID) || (msg.SenderName == newMsg.SenderName && !settings.CheckUUID))
+            {
+                msg.Content += "\n" + newMsg.Content;
+                return null;
+            }
+            else
+            {
+                Message temp = msg;
+                msg = newMsg;
+                return temp;
+            }
+        }
+    }
+
+    public Message Clear()
+    {
+        Message temp = msg;
+        msg = null;
+        return temp;
+    }
+}
+
 class HTTP
 {
     public static byte[] Post(string url, NameValueCollection pairs)
@@ -161,19 +252,30 @@ class HTTP
 class DiscordWebhook : ChatBot
 {
     private WebhoookSettings settings = new WebhoookSettings();
-    SkinAPI sAPI;
+    private SkinAPI sAPI;
+    private MessageCache cache;
 
     public DiscordWebhook()
     {
         sAPI = new SkinAPI(settings);
+        cache = new MessageCache(settings);
     }
 
     public override void Initialize()
     {
-        LogToConsole("Made by Daenges.\nThank you to Crafatar for providing the beautiful avatars!");
-        LogToConsole("Please set a Webhook with '/discordwebhook changeurl [URL]' and activate the Bot with '/discordwebhook pausesending'. For further information type '/discordwebhook help'.");
+        LogToConsole("Made by Daenges.\nSpecial thanks to Crafatar for providing the beautiful avatars!");
+        LogToConsole("Please set a Webhook with '/dw changeurl [URL]'. For further information type '/discordwebhook help'.");
         RegisterChatBotCommand("discordWebhook", "/DiscordWebhook 'size', 'scale', 'fallbackSkin', 'overlay', 'skintype'", GetHelp(), CommandHandler);
         RegisterChatBotCommand("dw", "/DiscordWebhook 'size', 'scale', 'fallbackSkin', 'overlay', 'skintype'", GetHelp(), CommandHandler);
+    }
+
+    public override void Update()
+    {
+        if (cache.Msg != null && (DateTime.Now - cache.Msg.Time).TotalSeconds >= settings.SecondsToSaveInCache)
+        {
+            SendWebhook(cache.Clear());
+            LogDebugToConsole("Cleared cache!");
+        }
     }
 
     public override void GetText(string text)
@@ -184,24 +286,44 @@ class DiscordWebhook : ChatBot
             string username = "";
             username = GetVerbatim(username);
             text = settings.AllowMentions ? GetVerbatim(text) : GetVerbatim(text).Replace("@", "[at]");
+            Message msg = null;
 
             if (IsChatMessage(text, ref message, ref username) && settings.SendPublicMsg)
             {
-                SendWebhook(username, message);
+                msg = cache.Add(new Message(username,
+                    settings.CheckUUID ? settings.GetUUIDDirectlyFromMojang ? sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()) : "00000000000000000000000000000000",
+                    message,
+                    DateTime.Now));
+
             }
             else if (IsPrivateMessage(text, ref message, ref username) && settings.SendPrivateMsg)
             {
-                SendWebhook(username, "[Private Message]: " + message);
+                msg = cache.Add(new Message(username,
+                   settings.CheckUUID ? settings.GetUUIDDirectlyFromMojang ? sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()) : "00000000000000000000000000000000",
+                   message,
+                   DateTime.Now));
             }
             else if (text.Contains(":")) // Some servers have strange chat formats.
             {
                 var messageArray = text.Split(new[] { ':' }, 2);
-                SendWebhook(messageArray[0], messageArray[1]);
+                msg = cache.Add(new Message(messageArray[0],
+                   settings.CheckUUID ? settings.GetUUIDDirectlyFromMojang ? sAPI.GetUUIDFromMojang(messageArray[0]) : sAPI.GetUUIDFromPlayerList(messageArray[0], GetOnlinePlayersWithUUID()) : "00000000000000000000000000000000",
+                   messageArray[1],
+                   DateTime.Now));
             }
             else if (settings.SendPublicMsg)
             {
-                SendWebhook("[Server]", text);
+                msg = cache.Add(new Message("[Server]",
+                  "",
+                  text,
+                  DateTime.Now));
+
             }
+            if (msg == null)
+            {
+                LogDebugToConsole("Saved message to cache.");
+            }
+            else { SendWebhook(msg); }
         }
     }
 
@@ -219,39 +341,37 @@ class DiscordWebhook : ChatBot
         return pings;
     }
 
-    public void SendWebhook(string username, string msg)
+    public void SendWebhook(Message msg)
     {
-        msg += " " + AddPingsToMessage(username, msg);
+        msg.Content += " " + AddPingsToMessage(msg.SenderName, msg.Content);
 
         if (settings.WebhookURL != "" && settings.WebhookURL != null)
         {
+            LogDebugToConsole("Send webhook request to Discord.");
             try
             {
                 HTTP.Post(settings.WebhookURL, new NameValueCollection()
                     {
                         {
                             "username",
-                            username
+                            msg.SenderName
                         },
                         {
                             "content",
-                            msg
+                            msg.Content
                         },
                         {
                             "avatar_url",
-                            username == "[Server]" ? sAPI.GetSkinURLCrafatar("f78a4d8dd51b4b3998a3230f2de0c670") : sAPI.GetSkinURLCrafatar(settings.GetUUIDDirectlyFromMojang ? sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()))
+                            msg.SenderName == "[Server]" ? sAPI.GetSkinURLCrafatar("f78a4d8dd51b4b3998a3230f2de0c670") : sAPI.GetSkinURLCrafatar(msg.SenderUUID)
                         }
                     }
-                        );
+                );
             }
             catch (Exception e)
             {
-                /// Mostly exception due to too many requests.
                 LogToConsole("An error occured while posting messages to Discord! (Enable Debug to view it.)");
-                LogToConsole(string.Format("Requested Link {0}; Username {1}; message: {2}; error: {3}",
-                    username == "[Server]" ?
-                    sAPI.GetSkinURLCrafatar("f78a4d8dd51b4b3998a3230f2de0c670") : sAPI.GetSkinURLCrafatar(settings.GetUUIDDirectlyFromMojang ?
-                    sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID())), username, msg, e.ToString()));
+                LogDebugToConsole(string.Format("Requested Link {0}; Username {1}; message: {2}; error: {3}",
+                    msg.SenderName == "[Server]" ? sAPI.GetSkinURLCrafatar("f78a4d8dd51b4b3998a3230f2de0c670") : sAPI.GetSkinURLCrafatar(msg.SenderUUID), msg.SenderName, msg.Content, e.ToString()));
             }
         }
         else
