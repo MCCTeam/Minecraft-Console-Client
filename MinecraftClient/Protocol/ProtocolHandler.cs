@@ -682,7 +682,41 @@ namespace MinecraftClient.Protocol
             string result = "";
             string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
             DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies, ref result);
-            Console.WriteLine(result);
+            //Console.WriteLine(result);
+            Json.JSONData realmsWorlds = Json.ParseJson(result);
+            if (realmsWorlds.Properties.ContainsKey("servers")
+                && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
+                && realmsWorlds.Properties["servers"].DataArray.Count > 0)
+            {
+                List<string> availableWorlds = new List<string>();
+                foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
+                {
+                    if (realmsServer.Properties.ContainsKey("name")
+                        && realmsServer.Properties.ContainsKey("owner")
+                        && realmsServer.Properties.ContainsKey("remoteSubscriptionId")
+                        && realmsServer.Properties.ContainsKey("daysLeft"))
+                    {
+                        int daysLeft;
+                        if (int.TryParse(realmsServer.Properties["daysLeft"].StringValue, out daysLeft))
+                        {
+                            if (daysLeft > 0)
+                            {
+                                availableWorlds.Add(String.Format("{0} - {1} ({2})",
+                                    realmsServer.Properties["remoteSubscriptionId"].StringValue,
+                                    realmsServer.Properties["name"].StringValue,
+                                    realmsServer.Properties["owner"].StringValue));
+                            }
+                        }
+                    }
+                }
+                if (availableWorlds.Count > 0)
+                {
+                    ConsoleIO.WriteLine("You have access to the following Realms worlds"); //TODO put in Translations
+                    foreach (var world in availableWorlds)
+                        ConsoleIO.WriteLine(world);
+                    ConsoleIO.WriteLine("Use realms:worldid as server IP to join the Realms world"); //TODO put in Translations
+                }
+            }
         }
 
         /// <summary>
