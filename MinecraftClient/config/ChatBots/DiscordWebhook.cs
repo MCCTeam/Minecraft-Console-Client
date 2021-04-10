@@ -15,9 +15,11 @@ class WebhoookSettings
     public bool GetUUIDDirectlyFromMojang { get; set; }
     public bool Togglesending { get; set; }
     public bool AllowMentions { get; set; }
+    public bool NormalChatDetection { get; set; }
     private Dictionary<string, List<string>> messageCache = new Dictionary<string, List<string>>();
     private Dictionary<string, string> messageContains = new Dictionary<string, string>();
     private Dictionary<string, string> messageFrom = new Dictionary<string, string>();
+    private List<string> ignoredPlayers = new List<string>();
     #endregion
 
     #region All variables for the API class
@@ -76,6 +78,7 @@ class WebhoookSettings
         SendPublicMsg = true;
         SendServerMsg = true;
         GetUUIDDirectlyFromMojang = false;
+        NormalChatDetection = true;
         Togglesending = true;
         checkUUID = true;
         AllowMentions = false;
@@ -99,6 +102,8 @@ class WebhoookSettings
     public void SetCachedMessages(Dictionary<string, List<string>> value) { this.messageCache = value; }
 
     public Dictionary<string, string> GetSkinModes() { return this.skinModes; }
+
+    public List<string> GetIgnoredPlayers() { return ignoredPlayers; }
 }
 
 class SkinAPI
@@ -216,7 +221,9 @@ class MessageCache
         }
         else
         {
-            if ((msg.SenderUUID == newMsg.SenderUUID && settings.CheckUUID) || (msg.SenderName == newMsg.SenderName && !settings.CheckUUID))
+            if (((msg.SenderUUID == newMsg.SenderUUID && settings.CheckUUID)
+                || (msg.SenderName == newMsg.SenderName && !settings.CheckUUID))
+                && msg.Content.Length + newMsg.Content.Length <= 2000)
             {
                 msg.Content += "\n" + newMsg.Content;
                 return null;
@@ -284,34 +291,42 @@ class DiscordWebhook : ChatBot
         {
             string message = "";
             string username = "";
-            username = GetVerbatim(username);
             text = settings.AllowMentions ? GetVerbatim(text) : GetVerbatim(text).Replace("@", "[at]");
             Message msg = null;
 
-            if (IsChatMessage(text, ref message, ref username) && settings.SendPublicMsg)
+            if (IsChatMessage(text, ref message, ref username) && settings.SendPublicMsg && settings.NormalChatDetection)
             {
-                msg = cache.Add(new Message(username,
-                    settings.CheckUUID ? settings.GetUUIDDirectlyFromMojang ? sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()) : "00000000000000000000000000000000",
-                    message,
-                    DateTime.Now));
+                if (!settings.GetIgnoredPlayers().Contains(username))
+                {
+                    msg = cache.Add(new Message(username,
+                        settings.CheckUUID ? settings.GetUUIDDirectlyFromMojang ? sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()) : "00000000000000000000000000000000",
+                        message,
+                        DateTime.Now));
+                }
 
             }
             else if (IsPrivateMessage(text, ref message, ref username) && settings.SendPrivateMsg)
             {
-                msg = cache.Add(new Message(username,
+                if (!settings.GetIgnoredPlayers().Contains(username))
+                {
+                    msg = cache.Add(new Message(username,
                    settings.CheckUUID ? settings.GetUUIDDirectlyFromMojang ? sAPI.GetUUIDFromMojang(username) : sAPI.GetUUIDFromPlayerList(username, GetOnlinePlayersWithUUID()) : "00000000000000000000000000000000",
                    message,
                    DateTime.Now));
+                }
             }
-            else if (text.Contains(":")) // Some servers have strange chat formats.
+            else if (text.Contains(":") && settings.SendPublicMsg) // Some servers have strange chat formats.
             {
                 var messageArray = text.Split(new[] { ':' }, 2);
-                msg = cache.Add(new Message(messageArray[0],
+                if (!settings.GetIgnoredPlayers().Contains(messageArray[0]))
+                {
+                    msg = cache.Add(new Message(messageArray[0],
                    settings.CheckUUID ? settings.GetUUIDDirectlyFromMojang ? sAPI.GetUUIDFromMojang(messageArray[0]) : sAPI.GetUUIDFromPlayerList(messageArray[0], GetOnlinePlayersWithUUID()) : "00000000000000000000000000000000",
                    messageArray[1],
                    DateTime.Now));
+                }
             }
-            else if (settings.SendPublicMsg)
+            else if (settings.SendServerMsg)
             {
                 msg = cache.Add(new Message("[Server]",
                   "",
@@ -330,9 +345,14 @@ class DiscordWebhook : ChatBot
     public string AddPingsToMessage(string username, string msg)
     {
         string pings = "";
-        foreach (string word in msg.Split(' '))
+        if (settings.GetMessageContains().Count > 0)
         {
-            if (settings.GetMessageContains().ContainsKey(word.ToLower())) { pings += string.Join(" ", settings.GetMessageContains()[word.ToLower()]); }
+            msg = new string(msg.Where(c => !char.IsPunctuation(c)).ToArray());
+
+            foreach (string word in msg.Split(' '))
+            {
+                if (settings.GetMessageContains().ContainsKey(word.ToLower())) { pings += string.Join(" ", settings.GetMessageContains()[word.ToLower()]); }
+            }
         }
         if (settings.GetMessageFrom().ContainsKey(username.ToLower()))
         {
@@ -382,7 +402,7 @@ class DiscordWebhook : ChatBot
 
     public string GetHelp()
     {
-        return "/discordWebhook 'size', 'scale', 'fallbackSkin', 'overlay', 'skintype', 'uuidfrommojang', 'sendprivate', 'changeurl', 'togglesending', 'allowmentions', 'onlyprivate', 'help'";
+        return "/discordWebhook or /dw 'avatar', 'secondstosaveincache', 'ping', 'uuidfrommojang', 'normalchatdetection', 'toggleignored', 'checkuuid', 'sendprivate', 'changeurl', 'togglesending', 'allowmentions', 'onlyprivate', 'help', 'getsettings'";
     }
 
     public List<string> GetStringsInQuotes(string rawData)
@@ -413,54 +433,79 @@ class DiscordWebhook : ChatBot
         {
             switch (args[0])
             {
-                case "size":
-
-                    try
-                    {
-                        settings.Size = int.Parse(args[1]);
-                        return "Changed headsize to " + args[1] + " pixel.";
-                    }
-                    catch (Exception)
-                    {
-                        return "That was not a number.";
-                    }
-
-                case "scale":
-                    try
-                    {
-                        settings.Scale = int.Parse(args[1]);
-                        return "Changed scale to " + args[1] + ".";
-                    }
-                    catch (Exception)
-                    {
-                        return "That was not a number.";
-                    }
-
-
-                case "fallbackskin":
-                    settings.FallbackSkin = settings.FallbackSkin == "MHF_Steve" ? "MHF_Alex" : "MHF_Steve";
-                    return "Changed fallback skin to: " + settings.FallbackSkin;
-
-                case "overlay":
-                    settings.Overlay = !settings.Overlay;
-                    return "Changed the overlay to: " + settings.Overlay;
-
-                case "skintype":
+                case "avatar":
                     if (args.Length > 1)
                     {
-                        if (settings.GetSkinModes().ContainsKey(args[1]))
+                        if (args[1] == "size")
                         {
-                            settings.CurrentSkinMode = args[1];
-                            return "Changed skin mode to " + args[1];
+
+                            try
+                            {
+                                settings.Size = int.Parse(args[2]);
+                                return "Changed headsize to " + args[2] + " pixel.";
+                            }
+                            catch (Exception)
+                            {
+                                return "That was not a number.";
+                            }
                         }
-                        else
+
+                        if (args[1] == "scale")
                         {
-                            return "This mode does not exsist. ('flatFace', 'cubeHead', 'fullSkin')";
+                            try
+                            {
+                                settings.Scale = int.Parse(args[2]);
+                                return "Changed scale to " + args[2] + ".";
+                            }
+                            catch (Exception)
+                            {
+                                return "That was not a number.";
+                            }
+                        }
+
+                        if (args[1] == "fallbackskin")
+                        {
+                            settings.FallbackSkin = settings.FallbackSkin == "MHF_Steve" ? "MHF_Alex" : "MHF_Steve";
+                            return "Changed fallback skin to: " + settings.FallbackSkin;
+                        }
+
+                        if (args[1] == "overlay")
+                        {
+                            settings.Overlay = !settings.Overlay;
+                            return "Changed the overlay to: " + settings.Overlay;
+                        }
+
+                        if (args[1] == "skintype")
+                        {
+                            if (args.Length > 2)
+                            {
+                                if (settings.GetSkinModes().ContainsKey(args[2]))
+                                {
+                                    settings.CurrentSkinMode = args[2];
+                                    return "Changed skin mode to " + args[2];
+                                }
+                                else
+                                {
+                                    return "This mode does not exsist. ('flatFace', 'cubeHead', 'fullSkin')";
+                                }
+                            }
+                            else
+                            {
+                                return "Enter a value! ('flatFace', 'cubeHead', 'fullSkin')";
+                            }
                         }
                     }
-                    else
+                    return "This was not a valid option! Try '/dw avatar size/scale/skintype [value]' or '/dw avatar overlay/fallbackskin'.";
+
+                case "secondstosaveincache":
+                    try
                     {
-                        return "Enter a value! ('flatFace', 'cubeHead', 'fullSkin')";
+                        settings.SecondsToSaveInCache = int.Parse(args[1]);
+                        return "Changed the maximum time for a message in cache to " + args[1] + " seconds.";
+                    }
+                    catch (Exception)
+                    {
+                        return "That was not a number.";
                     }
 
                 case "ping":
@@ -526,12 +571,16 @@ class DiscordWebhook : ChatBot
                     }
                     else
                     {
-                        return "This is not a valid option. /discordwebhook ping message/sender add/remove \"Keywords in message\" \"@Pings @To @Append @To @Message\"";
+                        return "This is not a valid option. /discordwebhook ping message/sender add/remove \"Keywords in message\" \"@here\"";
                     }
 
                 case "uuidfrommojang":
                     settings.GetUUIDDirectlyFromMojang = !settings.GetUUIDDirectlyFromMojang;
                     return "Getting UUID's from Mojang: " + settings.GetUUIDDirectlyFromMojang.ToString();
+
+                case "checkuuid":
+                    settings.CheckUUID = !settings.CheckUUID;
+                    return "Getting UUID's: " + settings.CheckUUID.ToString();
 
                 case "sendprivate":
                     settings.SendPrivateMsg = !settings.SendPrivateMsg;
@@ -541,6 +590,9 @@ class DiscordWebhook : ChatBot
                     settings.AllowMentions = !settings.AllowMentions;
                     return "People can @Members: " + settings.AllowMentions.ToString();
 
+                case "normalchatdetection":
+                    settings.NormalChatDetection = !settings.NormalChatDetection;
+                    return "Detect messages with the regular chat detection: " + settings.NormalChatDetection.ToString();
 
                 case "sendservermsg":
                     settings.SendServerMsg = !settings.SendServerMsg;
@@ -549,6 +601,22 @@ class DiscordWebhook : ChatBot
                 case "togglesending":
                     settings.Togglesending = !settings.Togglesending;
                     return "Forewarding messages to Discord: " + settings.Togglesending.ToString();
+
+                case "toggleignored":
+                    if (args.Length >= 2)
+                    {
+                        if (settings.GetIgnoredPlayers().Contains(args[1]))
+                        {
+                            settings.GetIgnoredPlayers().Remove(args[1]);
+                            return "Unignored: " + args[1];
+                        }
+                        else
+                        {
+                            settings.GetIgnoredPlayers().Add(args[1]);
+                            return "Ignored: " + args[1];
+                        }
+                    }
+                    else { return "Enter a playername."; }
 
                 case "changeurl":
                     if (args.Length > 1)
@@ -560,6 +628,24 @@ class DiscordWebhook : ChatBot
                     {
                         return "Enter a valid Discord Webhook link.";
                     }
+
+                case "getsettings":
+                    return "WebhookURL: " + settings.WebhookURL + "\r\n" +
+                        "SecondsToSaveInCache: " + settings.SecondsToSaveInCache.ToString() + "\r\n" +
+                        "SendPrivateMsg: " + settings.SendPrivateMsg.ToString() + "\r\n" +
+                        "SendPublicMsg: " + settings.SendPublicMsg.ToString() + "\r\n" +
+                        "SendServerMsg: " + settings.SendServerMsg.ToString() + "\r\n" +
+                        "GetUUIDDirectlyFromMojang: " + settings.GetUUIDDirectlyFromMojang.ToString() + "\r\n" +
+                        "ToggleSending: " + settings.Togglesending.ToString() + "\r\n" +
+                        "AllowMentions: " + settings.AllowMentions.ToString() + "\r\n" +
+                        "NormalChatDetection: " + settings.NormalChatDetection.ToString() + "\r\n" +
+                        "CurrentSkinMode: " + settings.CurrentSkinMode + "\r\n" +
+                        "Size: " + settings.Size.ToString() + "\r\n" +
+                        "Scale: " + settings.Scale.ToString() + "\r\n" +
+                        "Overlay: " + settings.Overlay.ToString() + "\r\n" +
+                        "CheckUUID: " + settings.CheckUUID.ToString() + "\r\n" +
+                        "IgnoredPlayers: " + string.Join(" ;", settings.GetIgnoredPlayers()) + "\r\n" +
+                        "FallbackSkin: " + settings.FallbackSkin;
 
                 case "help":
                     return GetHelp();
