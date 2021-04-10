@@ -234,7 +234,22 @@ namespace MinecraftClient
                 if (Settings.ServerIP == "")
                 {
                     Translations.Write("mcc.ip");
-                    Settings.SetServerIP(Console.ReadLine());
+                    string addressInput = Console.ReadLine();
+                    if (addressInput.StartsWith("realms:"))
+                    {
+                        string worldId = addressInput.Substring(7, addressInput.Length - 7);
+                        string RealmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, Settings.Username, session.PlayerID, session.ID);
+                        if (RealmsAddress != "")
+                        {
+                            addressInput = RealmsAddress;
+                        }
+                        else
+                        {
+                            // TODO: Handle failure
+                            Exit(0);
+                        }
+                    }
+                    Settings.SetServerIP(addressInput);
                 }
 
                 //Get server version

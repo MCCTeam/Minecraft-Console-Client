@@ -675,8 +675,12 @@ namespace MinecraftClient.Protocol
             catch { return false; }
         }
 
-        //Test method currently not working
-        //See https://github.com/ORelio/Minecraft-Console-Client/issues/51
+        /// <summary>
+        /// Retrieve available Realms worlds of a player and display them
+        /// </summary>
+        /// <param name="username">Player Minecraft username</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="accesstoken">Access token</param>
         public static void RealmsListWorlds(string username, string uuid, string accesstoken)
         {
             string result = "";
@@ -716,6 +720,37 @@ namespace MinecraftClient.Protocol
                         ConsoleIO.WriteLine(world);
                     ConsoleIO.WriteLine("Use realms:worldid as server IP to join the Realms world"); //TODO put in Translations
                 }
+            }
+        }
+
+        /// <summary>
+        /// Get the server address of a Realms world by world ID
+        /// </summary>
+        /// <param name="worldId">The world ID of the Realms world</param>
+        /// <param name="username">Player Minecraft username</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="accesstoken">Access token</param>
+        /// <returns>Server address (host:port) or empty string if failure</returns>
+        public static string GetRealmsWorldServerAddress(string worldId, string username, string uuid, string accesstoken)
+        {
+            string result = "";
+            string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
+            int statusCode = DoHTTPSGet("pc.realms.minecraft.net", "/worlds/v1/" + worldId + "/join/pc", cookies, ref result);
+            if (statusCode == 200)
+            {
+                Json.JSONData serverAddress = Json.ParseJson(result);
+                if (serverAddress.Properties.ContainsKey("address"))
+                    return serverAddress.Properties["address"].StringValue;
+                else
+                {
+                    ConsoleIO.WriteLine("Cannot retrieve the server IP of your Realms world"); //TODO put in Translations
+                    return "";
+                }
+            }
+            else
+            {
+                ConsoleIO.WriteLine("You do not have access to this Realms world"); //TODO put in Translations
+                return "";
             }
         }
 
