@@ -6,9 +6,7 @@ MCC.LoadBot(new DiscordWebhook());
 //MCCScript Extensions
 class WebhoookSettings
 {
-    /// <summary>
-    /// All variables for the main class.
-    /// </summary>
+    #region All variables for the main class
     public string WebhookURL { get; set; }
     public bool SendPrivateMsg { get; set; }
     public bool SendPublicMsg { get; set; }
@@ -19,11 +17,9 @@ class WebhoookSettings
     private Dictionary<string, List<string>> messageCache = new Dictionary<string, List<string>>();
     private Dictionary<string, string> messageContains = new Dictionary<string, string>();
     private Dictionary<string, string> messageFrom = new Dictionary<string, string>();
+    #endregion
 
-    /// <summary>
-    /// All variables for the API class
-    /// </summary>
-
+    #region All variables for the API class
     private string currentSkinMode;
     private int size;
     private int scale;
@@ -35,44 +31,40 @@ class WebhoookSettings
     {
         set { if (skinModes.ContainsKey(value)) { currentSkinMode = value; } }
         get { return currentSkinMode; }
-        //get; set;
     }
     public int Size
     {
         set { if (value <= 512) { size = value; } }
         get { return size; }
-        //get; set;
     }
     public int Scale
     {
         set { if (value <= 10) { this.scale = value; } }
         get { return scale; }
-        //get; set;
     }
     public bool Overlay
     {
         set { overlay = value; }
         get { return overlay; }
-        //get; set;
     }
     public string FallbackSkin
     {
         set { if (value == "MHF_Steve" || value == "MHF_Alex") { fallbackSkin = value; } }
         get { return fallbackSkin; }
-        //get; set;
     }
+    #endregion
 
     /// <summary>
     /// Setup standard settings.
     /// </summary>
     public WebhoookSettings()
     {
-        // Set preconfigured skinModes //
+        // Set preconfigured skinModes
         skinModes.Add("flatFace", "https://crafatar.com/avatars/{0}");
         skinModes.Add("cubeHead", "https://crafatar.com/renders/head/{0}");
         skinModes.Add("fullSkin", "https://crafatar.com/renders/body/{0}");
 
-        // Define standard values for main class //
+        // Define standard values for main class
         SendPrivateMsg = true;
         SendPublicMsg = true;
         SendServerMsg = true;
@@ -81,7 +73,7 @@ class WebhoookSettings
         AllowMentions = false;
         currentSkinMode = "flatFace";
 
-        // Define standard values for API class //
+        // Define standard values for API class
         size = 100;
         scale = 4;
         overlay = true;
