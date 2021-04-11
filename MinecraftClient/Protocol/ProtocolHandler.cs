@@ -681,7 +681,7 @@ namespace MinecraftClient.Protocol
         /// <param name="username">Player Minecraft username</param>
         /// <param name="uuid">Player UUID</param>
         /// <param name="accesstoken">Access token</param>
-        public static void RealmsListWorlds(string username, string uuid, string accesstoken)
+        public static List<string> RealmsListWorlds(string username, string uuid, string accesstoken)
         {
             string result = "";
             string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
@@ -693,11 +693,12 @@ namespace MinecraftClient.Protocol
                 && realmsWorlds.Properties["servers"].DataArray.Count > 0)
             {
                 List<string> availableWorlds = new List<string>();
+                int index = 0;
                 foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
                 {
                     if (realmsServer.Properties.ContainsKey("name")
                         && realmsServer.Properties.ContainsKey("owner")
-                        && realmsServer.Properties.ContainsKey("remoteSubscriptionId")
+                        && realmsServer.Properties.ContainsKey("id")
                         && realmsServer.Properties.ContainsKey("daysLeft"))
                     {
                         int daysLeft;
@@ -705,8 +706,9 @@ namespace MinecraftClient.Protocol
                         {
                             if (daysLeft > 0)
                             {
-                                availableWorlds.Add(String.Format("{0} - {1} ({2})",
-                                    realmsServer.Properties["remoteSubscriptionId"].StringValue,
+                                availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
+                                    index++,
+                                    realmsServer.Properties["id"].StringValue,
                                     realmsServer.Properties["name"].StringValue,
                                     realmsServer.Properties["owner"].StringValue));
                             }
@@ -720,7 +722,9 @@ namespace MinecraftClient.Protocol
                         ConsoleIO.WriteLine(world);
                     ConsoleIO.WriteLine("Use realms:worldid as server IP to join the Realms world"); //TODO put in Translations
                 }
+                return availableWorlds;
             }
+            return null;
         }
 
         /// <summary>
