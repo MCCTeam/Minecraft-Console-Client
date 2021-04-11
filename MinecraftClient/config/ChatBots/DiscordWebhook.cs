@@ -4,13 +4,16 @@
 MCC.LoadBot(new DiscordWebhook());
 
 //MCCScript Extensions
+/// <summary>
+/// Stores all settings for the script.
+/// </summary>
 class WebhoookSettings
 {
     #region All variables for the main class
     public string WebhookURL { get; set; }
     public int SecondsToSaveInCache { get; set; }
     public bool SendPrivateMsg { get; set; }
-    public bool SendPublicMsg { get; set; }
+    public bool CustomChatDetection { get; set; }
     public bool SendServerMsg { get; set; }
     public bool GetUUIDDirectlyFromMojang { get; set; }
     public bool Togglesending { get; set; }
@@ -75,7 +78,7 @@ class WebhoookSettings
 
         // Define standard values for main class
         SendPrivateMsg = true;
-        SendPublicMsg = true;
+        CustomChatDetection = true;
         SendServerMsg = true;
         GetUUIDDirectlyFromMojang = false;
         NormalChatDetection = true;
@@ -140,14 +143,13 @@ class SkinAPI
     /// <returns></returns>
     public string GetUUIDFromPlayerList(string name, Dictionary<string, string> playerList)
     {
-        foreach (string key in playerList.Keys)
+        foreach (KeyValuePair<string, string> player in playerList)
         {
-            if (name.ToLower().Contains(playerList[key].ToLower()))
+            if (name.ToLower().Contains(player.Value.ToLower()))
             {
-                return key.Replace("-", "");
+                return player.Key.Replace("-", "");
             }
         }
-        //return playerList.FirstOrDefault(x => name.Contains(x.Value)).Key.Replace("-", "");
 
         // Falback if player leaves the server.
         return GetUUIDFromMojang(name);
@@ -165,6 +167,9 @@ class SkinAPI
     }
 }
 
+/// <summary>
+/// Stores messages in a uniform format.
+/// </summary>
 class Message
 {
     private string senderName;
@@ -172,6 +177,13 @@ class Message
     private string content;
     private DateTime time;
 
+    /// <summary>
+    /// Initialize a Message.
+    /// </summary>
+    /// <param name="sN"> Player IGN </param>
+    /// <param name="sU"> Player UUID </param>
+    /// <param name="c"> Message content </param>
+    /// <param name="t"></param>
     public Message(string sN, string sU, string c, DateTime t)
     {
         senderName = sN;
@@ -199,6 +211,10 @@ class Message
     }
 }
 
+/// <summary>
+/// Caches messages, until it is emptied by update(), or
+/// a message from another user is entered.
+/// </summary>
 class MessageCache
 {
     private WebhoookSettings settings;
@@ -211,7 +227,13 @@ class MessageCache
         settings = s;
     }
 
-
+    /// <summary>
+    /// Add a Message to cache.
+    /// Current message gets appended, if the new message is from the same sender.
+    /// Otherwise the current message is given back and the new message is saved.
+    /// </summary>
+    /// <param name ="newMsg"> New message to add. </param>
+    /// <returns>Current saved message, if the new message is from another player.</returns>
     public Message Add(Message newMsg)
     {
         if (msg == null)
@@ -237,6 +259,10 @@ class MessageCache
         }
     }
 
+    /// <summary>
+    /// Clears the cache.
+    /// </summary>
+    /// <returns>Current message</returns>
     public Message Clear()
     {
         Message temp = msg;
@@ -294,7 +320,7 @@ class DiscordWebhook : ChatBot
             text = settings.AllowMentions ? GetVerbatim(text) : GetVerbatim(text).Replace("@", "[at]");
             Message msg = null;
 
-            if (IsChatMessage(text, ref message, ref username) && settings.SendPublicMsg && settings.NormalChatDetection)
+            if (IsChatMessage(text, ref message, ref username) && settings.NormalChatDetection)
             {
                 if (!settings.GetIgnoredPlayers().Contains(username))
                 {
@@ -315,7 +341,7 @@ class DiscordWebhook : ChatBot
                    DateTime.Now));
                 }
             }
-            else if (text.Contains(":") && settings.SendPublicMsg) // Some servers have strange chat formats.
+            else if (text.Contains(":") && settings.CustomChatDetection) // Some servers have strange chat formats.
             {
                 var messageArray = text.Split(new[] { ':' }, 2);
                 if (!settings.GetIgnoredPlayers().Contains(messageArray[0]))
@@ -342,6 +368,13 @@ class DiscordWebhook : ChatBot
         }
     }
 
+    /// <summary>
+    /// Appends pings to the discord message content, if
+    /// given keywords are included.
+    /// </summary>
+    /// <param name="username">Minecraft IGN</param>
+    /// <param name="msg">Message content</param>
+    /// <returns>Message plus appended pings</returns>
     public string AddPingsToMessage(string username, string msg)
     {
         string pings = "";
@@ -361,6 +394,10 @@ class DiscordWebhook : ChatBot
         return pings;
     }
 
+    /// <summary>
+    /// Sends the message to the discord webhook.
+    /// </summary>
+    /// <param name="msg">Message that will be sent.</param>
     public void SendWebhook(Message msg)
     {
         msg.Content += " " + AddPingsToMessage(msg.SenderName, msg.Content);
@@ -400,11 +437,27 @@ class DiscordWebhook : ChatBot
         }
     }
 
+    /// <summary>
+    /// Help Page
+    /// </summary>
+    /// <returns>Help Page</returns>
     public string GetHelp()
     {
-        return "/discordWebhook or /dw 'avatar', 'secondstosaveincache', 'ping', 'uuidfrommojang', 'normalchatdetection', 'toggleignored', 'checkuuid', 'sendprivate', 'changeurl', 'togglesending', 'allowmentions', 'onlyprivate', 'help', 'getsettings'";
+        return "/discordWebhook or /dw 'avatar', 'secondstosaveincache', " +
+            "'ping', 'uuidfrommojang'," +
+            " 'normalchatdetection', 'customchatdetection'," +
+            " 'toggleignored', 'checkuuid'," +
+            " 'sendprivate', 'changeurl'," +
+            " 'togglesending', 'allowmentions'," +
+            " 'onlyprivate', 'help', 'getsettings'";
     }
 
+    /// <summary>
+    /// Returns an array of strings, which are in quotes.
+    /// "\"Hello\" \"There\"" => ["Hello", "There"]
+    /// </summary>
+    /// <param name="rawData">Raw string</param>
+    /// <returns>Array with words in quotes.</returns>
     public List<string> GetStringsInQuotes(string rawData)
     {
         List<string> result = new List<string> { "" };
@@ -427,6 +480,12 @@ class DiscordWebhook : ChatBot
         return result;
     }
 
+    /// <summary>
+    /// Handles all commands.
+    /// </summary>
+    /// <param name="cmd">Whole command</param>
+    /// <param name="args">Only arguments</param>
+    /// <returns></returns>
     public string CommandHandler(string cmd, string[] args)
     {
         if (args.Length > 0)
@@ -594,6 +653,10 @@ class DiscordWebhook : ChatBot
                     settings.NormalChatDetection = !settings.NormalChatDetection;
                     return "Detect messages with the regular chat detection: " + settings.NormalChatDetection.ToString();
 
+                case "customchatdetection":
+                    settings.CustomChatDetection = !settings.CustomChatDetection;
+                    return "Detect messages with the custom chat detection: " + settings.CustomChatDetection.ToString();
+
                 case "sendservermsg":
                     settings.SendServerMsg = !settings.SendServerMsg;
                     return "Server messages get forewarded: " + settings.SendServerMsg.ToString();
@@ -633,12 +696,13 @@ class DiscordWebhook : ChatBot
                     return "WebhookURL: " + settings.WebhookURL + "\r\n" +
                         "SecondsToSaveInCache: " + settings.SecondsToSaveInCache.ToString() + "\r\n" +
                         "SendPrivateMsg: " + settings.SendPrivateMsg.ToString() + "\r\n" +
-                        "SendPublicMsg: " + settings.SendPublicMsg.ToString() + "\r\n" +
+                        "SendPublicMsg: " + settings.CustomChatDetection.ToString() + "\r\n" +
                         "SendServerMsg: " + settings.SendServerMsg.ToString() + "\r\n" +
                         "GetUUIDDirectlyFromMojang: " + settings.GetUUIDDirectlyFromMojang.ToString() + "\r\n" +
                         "ToggleSending: " + settings.Togglesending.ToString() + "\r\n" +
                         "AllowMentions: " + settings.AllowMentions.ToString() + "\r\n" +
                         "NormalChatDetection: " + settings.NormalChatDetection.ToString() + "\r\n" +
+                        "CustomChatDetection: " + settings.CustomChatDetection.ToString() + "\r\n" +
                         "CurrentSkinMode: " + settings.CurrentSkinMode + "\r\n" +
                         "Size: " + settings.Size.ToString() + "\r\n" +
                         "Scale: " + settings.Scale.ToString() + "\r\n" +
