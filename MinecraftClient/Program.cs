@@ -231,32 +231,42 @@ namespace MinecraftClient
                     Translations.WriteLine("debug.session_id", session.ID);
 
                 List<string> availableWorlds = new List<string>();
-                if (Settings.DisplayRealmsWorld)
+                if (Settings.MinecraftRealmsEnabled && !String.IsNullOrEmpty(session.ID))
                     availableWorlds = ProtocolHandler.RealmsListWorlds(Settings.Username, session.PlayerID, session.ID);
 
                 if (Settings.ServerIP == "")
                 {
                     Translations.Write("mcc.ip");
                     string addressInput = Console.ReadLine();
-                    if (Settings.DisplayRealmsWorld && addressInput.StartsWith("realms:"))
+                    if (addressInput.StartsWith("realms:"))
                     {
-                        if (availableWorlds.Count == 0)
+                        if (Settings.MinecraftRealmsEnabled)
                         {
-                            HandleFailure("This Realms world does not exist or access was denied", false, ChatBot.DisconnectReason.LoginRejected);
-                            return;
-                        }
-                        int worldIndex = Convert.ToUInt16(addressInput.Split(':')[1]);
-                        string worldId = availableWorlds[worldIndex];
-                        string RealmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, Settings.Username, session.PlayerID, session.ID);
-                        if (RealmsAddress != "")
-                        {
-                            addressInput = RealmsAddress;
-                            isRealms = true;
-                            Settings.ServerVersion = MCHighestVersion;
+                            if (availableWorlds.Count == 0)
+                            {
+                                // TODO translate
+                                HandleFailure("This Realms world does not exist or access was denied", false, ChatBot.DisconnectReason.LoginRejected);
+                                return;
+                            }
+                            int worldIndex = Convert.ToUInt16(addressInput.Split(':')[1]);
+                            string worldId = availableWorlds[worldIndex];
+                            string RealmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, Settings.Username, session.PlayerID, session.ID);
+                            if (RealmsAddress != "")
+                            {
+                                addressInput = RealmsAddress;
+                                isRealms = true;
+                                Settings.ServerVersion = MCHighestVersion;
+                            }
+                            else
+                            {
+                                // TODO translate
+                                HandleFailure("Realms server may require some time to start up. Please retry again later.", false, ChatBot.DisconnectReason.LoginRejected);
+                                return;
+                            }
                         }
                         else
                         {
-                            HandleFailure("Realms server may require some time to start up. Please retry again later.", false, ChatBot.DisconnectReason.LoginRejected);
+                            HandleFailure("Trying to join a Realms world but Realms support is disabled in config", false, null); // TODO translate
                             return;
                         }
                     }
