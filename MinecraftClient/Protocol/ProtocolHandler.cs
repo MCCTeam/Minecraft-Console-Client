@@ -749,7 +749,8 @@ namespace MinecraftClient.Protocol
             }
             else
             {
-                ConsoleIO.WriteLine("You do not have access to this Realms world"); //TODO put in Translations
+                ConsoleIO.WriteLine("This Realms world does not exist or access was denied"); //TODO put in Translations
+
                 return "";
             }
         }
