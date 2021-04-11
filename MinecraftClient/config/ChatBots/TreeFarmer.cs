@@ -44,7 +44,7 @@ public class TreeFarmer : ChatBot
             case Material.Air:
                 // No tree, plant something
                 ChangeSlot(1);
-                SendPlaceBlock(sapling);
+                SendPlaceBlock(sapling, Direction.Up);
                 break;
             default:
                 // Other block, cannot grow trees here
