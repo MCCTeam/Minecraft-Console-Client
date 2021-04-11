@@ -246,7 +246,9 @@ namespace MinecraftClient
                         else
                         {
                             // TODO: Handle failure
-                            Exit(0);
+                            HandleFailure("Message goes here", false, ChatBot.DisconnectReason.LoginRejected); // or ServiceUnavailable or add a new value in enum if you think it's more appropriate
+                            return;
+
                         }
                     }
                     Settings.SetServerIP(addressInput);
