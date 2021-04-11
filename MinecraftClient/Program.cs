@@ -230,13 +230,15 @@ namespace MinecraftClient
                 if (Settings.DebugMessages)
                     Translations.WriteLine("debug.session_id", session.ID);
 
-                List<string> availableWorlds = ProtocolHandler.RealmsListWorlds(Settings.Username, session.PlayerID, session.ID);
+                List<string> availableWorlds = new List<string>();
+                if (Settings.DisplayRealmsWorld)
+                    availableWorlds = ProtocolHandler.RealmsListWorlds(Settings.Username, session.PlayerID, session.ID);
 
                 if (Settings.ServerIP == "")
                 {
                     Translations.Write("mcc.ip");
                     string addressInput = Console.ReadLine();
-                    if (addressInput.StartsWith("realms:"))
+                    if (Settings.DisplayRealmsWorld && addressInput.StartsWith("realms:"))
                     {
                         if (availableWorlds.Count == 0)
                         {
