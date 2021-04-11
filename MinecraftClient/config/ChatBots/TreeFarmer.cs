@@ -38,7 +38,7 @@ public class TreeFarmer : ChatBot
                 DigBlock(new Location(sapling.X, sapling.Y + 3, sapling.Z));
                 Thread.Sleep(100);
                 // 4
-                DigBlock(new Location(sapling.X, sapling.Y + 4, sapling.Z);
+                DigBlock(new Location(sapling.X, sapling.Y + 4, sapling.Z));
                 Thread.Sleep(100);
                 break;
             case Material.Air:
