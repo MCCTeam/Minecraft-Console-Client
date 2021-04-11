@@ -720,7 +720,7 @@ namespace MinecraftClient.Protocol
                     ConsoleIO.WriteLine("You have access to the following Realms worlds"); //TODO put in Translations
                     foreach (var world in availableWorlds)
                         ConsoleIO.WriteLine(world);
-                    ConsoleIO.WriteLine("Use realms:worldid as server IP to join the Realms world"); //TODO put in Translations
+                    ConsoleIO.WriteLine("Use realms:index as server IP to join the Realms world"); //TODO put in Translations
                 }
                 return availableWorlds;
             }
