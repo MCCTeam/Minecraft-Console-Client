@@ -230,7 +230,7 @@ namespace MinecraftClient
                 if (Settings.DebugMessages)
                     Translations.WriteLine("debug.session_id", session.ID);
 
-                List<String> availableWorlds = ProtocolHandler.RealmsListWorlds(Settings.Username, session.PlayerID, session.ID);
+                List<string> availableWorlds = ProtocolHandler.RealmsListWorlds(Settings.Username, session.PlayerID, session.ID);
 
                 if (Settings.ServerIP == "")
                 {
@@ -238,14 +238,13 @@ namespace MinecraftClient
                     string addressInput = Console.ReadLine();
                     if (addressInput.StartsWith("realms:"))
                     {
-                        if (availableWorlds == null)
+                        if (availableWorlds.Count == 0)
                         {
-                            // TODO: Handle failure?
+                            HandleFailure("This Realms world does not exist or access was denied", false, ChatBot.DisconnectReason.LoginRejected);
                             return;
                         }
                         int worldIndex = Convert.ToUInt16(addressInput.Split(':')[1]);
-                        string[] worldString = availableWorlds[worldIndex].Split(' ');
-                        string worldId = worldString[worldString.Length - 1];
+                        string worldId = availableWorlds[worldIndex];
                         string RealmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, Settings.Username, session.PlayerID, session.ID);
                         if (RealmsAddress != "")
                         {
@@ -255,10 +254,8 @@ namespace MinecraftClient
                         }
                         else
                         {
-                            // TODO: Handle failure
-                            HandleFailure("Realms server may require some time to start up. Please retry again later.", false, ChatBot.DisconnectReason.LoginRejected); // or ServiceUnavailable or add a new value in enum if you think it's more appropriate
+                            HandleFailure("Realms server may require some time to start up. Please retry again later.", false, ChatBot.DisconnectReason.LoginRejected);
                             return;
-
                         }
                     }
                     Settings.SetServerIP(addressInput);

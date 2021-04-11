@@ -681,18 +681,19 @@ namespace MinecraftClient.Protocol
         /// <param name="username">Player Minecraft username</param>
         /// <param name="uuid">Player UUID</param>
         /// <param name="accesstoken">Access token</param>
+        /// <returns>List of ID of available Realms worlds</returns>
         public static List<string> RealmsListWorlds(string username, string uuid, string accesstoken)
         {
             string result = "";
             string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
             DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies, ref result);
-            //Console.WriteLine(result);
             Json.JSONData realmsWorlds = Json.ParseJson(result);
+            List<string> realmsWorldsResult = new List<string>(); // Store world ID
             if (realmsWorlds.Properties.ContainsKey("servers")
                 && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
                 && realmsWorlds.Properties["servers"].DataArray.Count > 0)
             {
-                List<string> availableWorlds = new List<string>();
+                List<string> availableWorlds = new List<string>(); // Store string to print
                 int index = 0;
                 foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
                 {
@@ -711,6 +712,7 @@ namespace MinecraftClient.Protocol
                                     realmsServer.Properties["id"].StringValue,
                                     realmsServer.Properties["name"].StringValue,
                                     realmsServer.Properties["owner"].StringValue));
+                                realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
                             }
                         }
                     }
@@ -722,9 +724,8 @@ namespace MinecraftClient.Protocol
                         ConsoleIO.WriteLine(world);
                     ConsoleIO.WriteLine("Use realms:index as server IP to join the Realms world"); //TODO put in Translations
                 }
-                return availableWorlds;
             }
-            return null;
+            return realmsWorldsResult;
         }
 
         /// <summary>
