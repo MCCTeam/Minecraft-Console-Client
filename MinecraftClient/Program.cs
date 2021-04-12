@@ -219,6 +219,7 @@ namespace MinecraftClient
             if (result == ProtocolHandler.LoginResult.Success)
             {
                 Settings.Username = session.PlayerName;
+                bool isRealms = false;
 
                 if (Settings.ConsoleTitle != "")
                     Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
@@ -229,12 +230,45 @@ namespace MinecraftClient
                 if (Settings.DebugMessages)
                     Translations.WriteLine("debug.session_id", session.ID);
 
-                //ProtocolHandler.RealmsListWorlds(Settings.Username, PlayerID, sessionID); //TODO REMOVE
+                List<string> availableWorlds = new List<string>();
+                if (Settings.MinecraftRealmsEnabled && !String.IsNullOrEmpty(session.ID))
+                    availableWorlds = ProtocolHandler.RealmsListWorlds(Settings.Username, session.PlayerID, session.ID);
 
                 if (Settings.ServerIP == "")
                 {
                     Translations.Write("mcc.ip");
-                    Settings.SetServerIP(Console.ReadLine());
+                    string addressInput = Console.ReadLine();
+                    if (addressInput.StartsWith("realms:"))
+                    {
+                        if (Settings.MinecraftRealmsEnabled)
+                        {
+                            if (availableWorlds.Count == 0)
+                            {
+                                HandleFailure(Translations.Get("error.realms.access_denied"), false, ChatBot.DisconnectReason.LoginRejected);
+                                return;
+                            }
+                            int worldIndex = Convert.ToUInt16(addressInput.Split(':')[1]);
+                            string worldId = availableWorlds[worldIndex];
+                            string RealmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, Settings.Username, session.PlayerID, session.ID);
+                            if (RealmsAddress != "")
+                            {
+                                addressInput = RealmsAddress;
+                                isRealms = true;
+                                Settings.ServerVersion = MCHighestVersion;
+                            }
+                            else
+                            {
+                                HandleFailure(Translations.Get("error.realms.server_unavailable"), false, ChatBot.DisconnectReason.LoginRejected);
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            HandleFailure(Translations.Get("error.realms.disabled"), false, null);
+                            return;
+                        }
+                    }
+                    Settings.SetServerIP(addressInput);
                 }
 
                 //Get server version
@@ -259,7 +293,7 @@ namespace MinecraftClient
                 }
 
                 //Retrieve server info if version is not manually set OR if need to retrieve Forge information
-                if (protocolversion == 0 || Settings.ServerAutodetectForge || (Settings.ServerForceForge && !ProtocolHandler.ProtocolMayForceForge(protocolversion)))
+                if (!isRealms && (protocolversion == 0 || Settings.ServerAutodetectForge || (Settings.ServerForceForge && !ProtocolHandler.ProtocolMayForceForge(protocolversion))))
                 {
                     if (protocolversion != 0)
                         Translations.WriteLine("mcc.forge");
@@ -272,7 +306,7 @@ namespace MinecraftClient
                 }
 
                 //Force-enable Forge support?
-                if (Settings.ServerForceForge && forgeInfo == null)
+                if (!isRealms && Settings.ServerForceForge && forgeInfo == null)
                 {
                     if (ProtocolHandler.ProtocolMayForceForge(protocolversion))
                     {

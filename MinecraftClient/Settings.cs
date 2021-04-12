@@ -99,6 +99,7 @@ namespace MinecraftClient
         public static bool ResolveSrvRecordsShortTimeout = true;
         public static bool EntityHandling = false;
         public static bool AutoRespawn = false;
+        public static bool MinecraftRealmsEnabled = true;
 
         // Logging
         public enum FilterModeEnum { Blacklist, Whitelist }
@@ -308,6 +309,7 @@ namespace MinecraftClient
                                                 case "autorespawn": AutoRespawn = str2bool(argValue); break;
                                                 // Backward compatible so people can still enable debug with old config format
                                                 case "debugmessages": DebugMessages = str2bool(argValue); break;
+                                                case "minecraftrealms": MinecraftRealmsEnabled = str2bool(argValue); break;
 
                                                 case "botowners":
                                                     Bots_Owners.Clear();

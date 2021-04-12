@@ -675,14 +675,88 @@ namespace MinecraftClient.Protocol
             catch { return false; }
         }
 
-        //Test method currently not working
-        //See https://github.com/ORelio/Minecraft-Console-Client/issues/51
-        public static void RealmsListWorlds(string username, string uuid, string accesstoken)
+        /// <summary>
+        /// Retrieve available Realms worlds of a player and display them
+        /// </summary>
+        /// <param name="username">Player Minecraft username</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="accesstoken">Access token</param>
+        /// <returns>List of ID of available Realms worlds</returns>
+        public static List<string> RealmsListWorlds(string username, string uuid, string accesstoken)
         {
             string result = "";
             string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-            DoHTTPSGet("mcoapi.minecraft.net", "/worlds", cookies, ref result);
-            Console.WriteLine(result);
+            DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies, ref result);
+            Json.JSONData realmsWorlds = Json.ParseJson(result);
+            List<string> realmsWorldsResult = new List<string>(); // Store world ID
+            if (realmsWorlds.Properties.ContainsKey("servers")
+                && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
+                && realmsWorlds.Properties["servers"].DataArray.Count > 0)
+            {
+                List<string> availableWorlds = new List<string>(); // Store string to print
+                int index = 0;
+                foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
+                {
+                    if (realmsServer.Properties.ContainsKey("name")
+                        && realmsServer.Properties.ContainsKey("owner")
+                        && realmsServer.Properties.ContainsKey("id")
+                        && realmsServer.Properties.ContainsKey("daysLeft"))
+                    {
+                        int daysLeft;
+                        if (int.TryParse(realmsServer.Properties["daysLeft"].StringValue, out daysLeft))
+                        {
+                            if (daysLeft > 0)
+                            {
+                                availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
+                                    index++,
+                                    realmsServer.Properties["id"].StringValue,
+                                    realmsServer.Properties["name"].StringValue,
+                                    realmsServer.Properties["owner"].StringValue));
+                                realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
+                            }
+                        }
+                    }
+                }
+                if (availableWorlds.Count > 0)
+                {
+                    Translations.WriteLine("mcc.realms_available");
+                    foreach (var world in availableWorlds)
+                        ConsoleIO.WriteLine(world);
+                    Translations.WriteLine("mcc.realms_join");
+                }
+            }
+            return realmsWorldsResult;
+        }
+
+        /// <summary>
+        /// Get the server address of a Realms world by world ID
+        /// </summary>
+        /// <param name="worldId">The world ID of the Realms world</param>
+        /// <param name="username">Player Minecraft username</param>
+        /// <param name="uuid">Player UUID</param>
+        /// <param name="accesstoken">Access token</param>
+        /// <returns>Server address (host:port) or empty string if failure</returns>
+        public static string GetRealmsWorldServerAddress(string worldId, string username, string uuid, string accesstoken)
+        {
+            string result = "";
+            string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
+            int statusCode = DoHTTPSGet("pc.realms.minecraft.net", "/worlds/v1/" + worldId + "/join/pc", cookies, ref result);
+            if (statusCode == 200)
+            {
+                Json.JSONData serverAddress = Json.ParseJson(result);
+                if (serverAddress.Properties.ContainsKey("address"))
+                    return serverAddress.Properties["address"].StringValue;
+                else
+                {
+                    Translations.WriteLine("error.realms.ip_error");
+                    return "";
+                }
+            }
+            else
+            {
+                Translations.WriteLine("error.realms.access_denied");
+                return "";
+            }
         }
 
         /// <summary>
@@ -704,6 +778,7 @@ namespace MinecraftClient.Protocol
             http_request.Add("User-Agent: Java/1.6.0_27");
             http_request.Add("Accept-Charset: ISO-8859-1,UTF-8;q=0.7,*;q=0.7");
             http_request.Add("Connection: close");
+            http_request.Add("");
             http_request.Add("");
             return DoHTTPSRequest(http_request, host, ref result);
         }
