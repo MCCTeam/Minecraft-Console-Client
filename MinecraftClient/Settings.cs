@@ -718,8 +718,16 @@ namespace MinecraftClient
         /// <param name="settingsfile">File to (over)write</param>
         public static void WriteDefaultSettings(string settingsfile)
         {
-            // Use embedded default config
-            File.WriteAllText(settingsfile, "# Minecraft Console Client v" + Program.Version + "\r\n" + DefaultConfigResource.MinecraftClient, Encoding.UTF8);
+            // Load embedded default config and adjust line break for the current operating system
+            string settingsContents = String.Join(Environment.NewLine, 
+                DefaultConfigResource.MinecraftClient.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
+
+            // Write configuration file with current version number
+            File.WriteAllText(settingsfile,
+                "# Minecraft Console Client v"
+                + Program.Version
+                + Environment.NewLine
+                + settingsContents, Encoding.UTF8);
         }
 
         /// <summary>
