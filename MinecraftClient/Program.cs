@@ -244,8 +244,7 @@ namespace MinecraftClient
                         {
                             if (availableWorlds.Count == 0)
                             {
-                                // TODO translate
-                                HandleFailure("This Realms world does not exist or access was denied", false, ChatBot.DisconnectReason.LoginRejected);
+                                HandleFailure(Translations.Get("error.realms.access_denied"), false, ChatBot.DisconnectReason.LoginRejected);
                                 return;
                             }
                             int worldIndex = Convert.ToUInt16(addressInput.Split(':')[1]);
@@ -259,14 +258,13 @@ namespace MinecraftClient
                             }
                             else
                             {
-                                // TODO translate
-                                HandleFailure("Realms server may require some time to start up. Please retry again later.", false, ChatBot.DisconnectReason.LoginRejected);
+                                HandleFailure(Translations.Get("error.realms.server_unavailable"), false, ChatBot.DisconnectReason.LoginRejected);
                                 return;
                             }
                         }
                         else
                         {
-                            HandleFailure("Trying to join a Realms world but Realms support is disabled in config", false, null); // TODO translate
+                            HandleFailure(Translations.Get("error.realms.disabled"), false, null);
                             return;
                         }
                     }

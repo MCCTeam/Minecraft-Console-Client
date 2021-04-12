@@ -719,10 +719,10 @@ namespace MinecraftClient.Protocol
                 }
                 if (availableWorlds.Count > 0)
                 {
-                    ConsoleIO.WriteLine("You have access to the following Realms worlds"); //TODO put in Translations
+                    Translations.WriteLine("mcc.realms_available");
                     foreach (var world in availableWorlds)
                         ConsoleIO.WriteLine(world);
-                    ConsoleIO.WriteLine("Use realms:index as server IP to join the Realms world"); //TODO put in Translations
+                    Translations.WriteLine("mcc.realms_join");
                 }
             }
             return realmsWorldsResult;
@@ -748,14 +748,13 @@ namespace MinecraftClient.Protocol
                     return serverAddress.Properties["address"].StringValue;
                 else
                 {
-                    ConsoleIO.WriteLine("Cannot retrieve the server IP of your Realms world"); //TODO put in Translations
+                    Translations.WriteLine("error.realms.ip_error");
                     return "";
                 }
             }
             else
             {
-                ConsoleIO.WriteLine("This Realms world does not exist or access was denied"); //TODO put in Translations
-
+                Translations.WriteLine("error.realms.access_denied");
                 return "";
             }
         }
