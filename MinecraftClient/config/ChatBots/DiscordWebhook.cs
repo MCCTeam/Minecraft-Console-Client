@@ -449,7 +449,8 @@ class DiscordWebhook : ChatBot
             " 'toggleignored', 'checkuuid'," +
             " 'sendprivate', 'changeurl'," +
             " 'togglesending', 'allowmentions'," +
-            " 'onlyprivate', 'help', 'getsettings'";
+            " 'onlyprivate', 'help'," +
+            " 'getsettings', 'quit'";
     }
 
     /// <summary>
@@ -501,7 +502,7 @@ class DiscordWebhook : ChatBot
                             try
                             {
                                 settings.Size = int.Parse(args[2]);
-                                return "Changed headsize to " + args[2] + " pixel.";
+                                return "Changed avatarsize to " + args[2] + " pixel.";
                             }
                             catch (Exception)
                             {
@@ -568,70 +569,74 @@ class DiscordWebhook : ChatBot
                     }
 
                 case "ping":
-                    if (args[1] == "message")
+                    if (args.Length > 1)
                     {
-                        if (args[2] == "add")
+                        if (args[1] == "message")
                         {
-                            List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
-                            if (tempList.Count >= 2)
+                            if (args[2] == "add")
                             {
-                                settings.GetMessageContains().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
-                                return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
+                                if (tempList.Count >= 2)
+                                {
+                                    settings.GetMessageContains().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
+                                    return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                }
+                                else
+                                {
+                                    return "Too many arguments";
+                                }
+
                             }
                             else
                             {
-                                return "Too many arguments";
+                                List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
+                                if (settings.GetMessageContains().ContainsKey(tempList[0].ToLower()))
+                                {
+                                    settings.GetMessageContains().Remove(tempList[0].ToLower());
+                                    return "Removed " + tempList[0].ToLower();
+                                }
+                                else
+                                {
+                                    return "This key does not exsist.";
+                                }
                             }
+                        }
+                        if (args[1] == "sender")
+                        {
+                            if (args[2] == "add")
+                            {
+                                List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
+                                if (tempList.Count >= 2)
+                                {
+                                    settings.GetMessageFrom().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
+                                    return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                }
+                                else
+                                {
+                                    return "Too many arguments";
+                                }
 
+                            }
+                            else
+                            {
+                                List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
+                                if (settings.GetMessageFrom().ContainsKey(tempList[0].ToLower()))
+                                {
+                                    settings.GetMessageFrom().Remove(tempList[0].ToLower());
+                                    return "Removed " + tempList[0].ToLower();
+                                }
+                                else
+                                {
+                                    return "This key does not exsist.";
+                                }
+                            }
                         }
                         else
                         {
-                            List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
-                            if (settings.GetMessageContains().ContainsKey(tempList[0].ToLower()))
-                            {
-                                settings.GetMessageContains().Remove(tempList[0].ToLower());
-                                return "Removed " + tempList[0].ToLower();
-                            }
-                            else
-                            {
-                                return "This key does not exsist.";
-                            }
+                            return "This is not a valid option. /discordwebhook ping message/sender add/remove \"Keywords in message\" \"@here <@DiscordID> <@&RoleID>\"";
                         }
                     }
-                    if (args[1] == "sender")
-                    {
-                        if (args[2] == "add")
-                        {
-                            List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
-                            if (tempList.Count >= 2)
-                            {
-                                settings.GetMessageFrom().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
-                                return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
-                            }
-                            else
-                            {
-                                return "Too many arguments";
-                            }
-
-                        }
-                        else
-                        {
-                            List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
-                            if (settings.GetMessageFrom().ContainsKey(tempList[0].ToLower()))
-                            {
-                                settings.GetMessageFrom().Remove(tempList[0].ToLower());
-                                return "Removed " + tempList[0].ToLower();
-                            }
-                            else
-                            {
-                                return "This key does not exsist.";
-                            }
-                        }
-                    }
-                    else
-                    {
-                        return "This is not a valid option. /discordwebhook ping message/sender add/remove \"Keywords in message\" \"@here\"";
-                    }
+                    else { return "This is not a valid option. /discordwebhook ping message/sender add/remove \"Keywords in message\" \"@here <@DiscordID> <@&RoleID>\""; }
 
                 case "uuidfrommojang":
                     settings.GetUUIDDirectlyFromMojang = !settings.GetUUIDDirectlyFromMojang;
@@ -713,6 +718,10 @@ class DiscordWebhook : ChatBot
 
                 case "help":
                     return GetHelp();
+
+                case "quit":
+                    UnloadBot();
+                    return "Turned discordwebhook off!";
 
                 default:
                     return GetHelp();
