@@ -22,6 +22,7 @@ class WebhoookSettings
     private Dictionary<string, List<string>> messageCache = new Dictionary<string, List<string>>();
     private Dictionary<string, string> messageContains = new Dictionary<string, string>();
     private Dictionary<string, string> messageFrom = new Dictionary<string, string>();
+    private Dictionary<string, string> namesToUuidMojangCache = new Dictionary<string, string>();
     private List<string> ignoredPlayers = new List<string>();
     #endregion
 
@@ -96,16 +97,10 @@ class WebhoookSettings
     }
 
     public Dictionary<string, string> GetMessageContains() { return this.messageContains; }
-    public void SetMessageContains(Dictionary<string, string> value) { this.messageContains = value; }
-
     public Dictionary<string, string> GetMessageFrom() { return this.messageFrom; }
-    public void SetMessageFrom(Dictionary<string, string> value) { this.messageFrom = value; }
-
     public Dictionary<string, List<string>> GetCachedMessages() { return this.messageCache; }
-    public void SetCachedMessages(Dictionary<string, List<string>> value) { this.messageCache = value; }
-
     public Dictionary<string, string> GetSkinModes() { return this.skinModes; }
-
+    public Dictionary<string, string> GetNamesToUuidMojangCache() { return this.namesToUuidMojangCache; }
     public List<string> GetIgnoredPlayers() { return ignoredPlayers; }
 }
 
@@ -126,12 +121,19 @@ class SkinAPI
     /// <returns></returns>
     public string GetUUIDFromMojang(string name)
     {
-        WebClient wc = new WebClient();
-        try
+        if (settings.GetNamesToUuidMojangCache().ContainsKey(name))
+            return settings.GetNamesToUuidMojangCache()[name];
+
+        using (WebClient wc = new WebClient())
         {
-            return Json.ParseJson(wc.DownloadString("https://api.mojang.com/users/profiles/minecraft/" + name)).Properties["id"].StringValue;
+            try
+            {
+                string uuid = Json.ParseJson(wc.DownloadString("https://api.mojang.com/users/profiles/minecraft/" + name)).Properties["id"].StringValue;
+                settings.GetNamesToUuidMojangCache().Add(name, uuid);
+                return uuid;
+            }
+            catch (Exception) { return "00000000000000000000000000000000"; }
         }
-        catch (Exception) { return "00000000000000000000000000000000"; }
     }
 
     /// <summary>
