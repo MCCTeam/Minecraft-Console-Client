@@ -313,6 +313,22 @@ class DiscordWebhook : ChatBot
         }
     }
 
+    public override void OnPlayerJoin(Guid uuid, string name)
+    {
+        if (settings.GetNamesToUuidMojangCache().ContainsKey(name))
+        {
+            settings.GetNamesToUuidMojangCache().Remove(name);
+        }
+    }
+
+    public override void OnPlayerLeave(Guid uuid, string name)
+    {
+        if (!settings.GetNamesToUuidMojangCache().ContainsKey(name))
+        {
+            settings.GetNamesToUuidMojangCache().Add(name, uuid.ToString());
+        }
+    }
+
     public override void GetText(string text)
     {
         if (settings.Togglesending)
