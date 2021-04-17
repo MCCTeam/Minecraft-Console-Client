@@ -101,7 +101,7 @@ class WebhoookSettings
     public Dictionary<string, List<string>> GetCachedMessages() { return this.messageCache; }
     public Dictionary<string, string> GetSkinModes() { return this.skinModes; }
     public Dictionary<string, string> GetNamesToUuidMojangCache() { return this.namesToUuidMojangCache; }
-    public void resetUUIDCache() { namesToUuidMojangCache = new Dictionary<string, string>(); }
+    public void resetUUIDCache() { namesToUuidMojangCache.Clear(); }
     public List<string> GetIgnoredPlayers() { return ignoredPlayers; }
 }
 
