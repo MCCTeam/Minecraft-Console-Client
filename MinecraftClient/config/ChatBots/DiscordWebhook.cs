@@ -101,6 +101,7 @@ class WebhoookSettings
     public Dictionary<string, List<string>> GetCachedMessages() { return this.messageCache; }
     public Dictionary<string, string> GetSkinModes() { return this.skinModes; }
     public Dictionary<string, string> GetNamesToUuidMojangCache() { return this.namesToUuidMojangCache; }
+    public void resetUUIDCache() { namesToUuidMojangCache = new Dictionary<string, string>(); }
     public List<string> GetIgnoredPlayers() { return ignoredPlayers; }
 }
 
@@ -327,6 +328,12 @@ class DiscordWebhook : ChatBot
         {
             settings.GetNamesToUuidMojangCache().Add(name, uuid.ToString());
         }
+    }
+
+    public override bool OnDisconnect(DisconnectReason reason, string message)
+    {
+        settings.resetUUIDCache();
+        return false;
     }
 
     public override void GetText(string text)
@@ -747,4 +754,5 @@ class DiscordWebhook : ChatBot
         }
         else { return GetHelp(); }
     }
+}
 }
