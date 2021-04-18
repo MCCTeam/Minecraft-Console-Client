@@ -531,7 +531,11 @@ namespace MinecraftClient
                     throw new InvalidOperationException(Translations.Get("exception.user_logout"));
             }
 
-            foreach (ChatBot bot in bots.ToArray())
+            //Process AutoRelog last to make sure other bots can perform their cleanup tasks first (issue #1517)
+            List<ChatBot> onDisconnectBotList = bots.Where(bot => !(bot is AutoRelog)).ToList();
+            onDisconnectBotList.AddRange(bots.Where(bot => bot is AutoRelog));
+
+            foreach (ChatBot bot in onDisconnectBotList)
             {
                 try
                 {
