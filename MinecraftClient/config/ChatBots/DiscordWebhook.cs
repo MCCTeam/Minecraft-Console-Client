@@ -755,4 +755,4 @@ class DiscordWebhook : ChatBot
         else { return GetHelp(); }
     }
 }
-}
+
