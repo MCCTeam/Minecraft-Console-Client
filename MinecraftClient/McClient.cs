@@ -225,6 +225,13 @@ namespace MinecraftClient
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Log.Info(Translations.Get("mcc.version_supported"));
 
+                if (!singlecommand)
+                {
+                    timeoutdetector = new Thread(new ThreadStart(TimeoutDetector));
+                    timeoutdetector.Name = "MCC Connection timeout detector";
+                    timeoutdetector.Start();
+                }
+
                 try
                 {
                     if (handler.Login())
@@ -248,10 +255,6 @@ namespace MinecraftClient
                             cmdprompt = new Thread(new ThreadStart(CommandPrompt));
                             cmdprompt.Name = "MCC Command prompt";
                             cmdprompt.Start();
-
-                            timeoutdetector = new Thread(new ThreadStart(TimeoutDetector));
-                            timeoutdetector.Name = "MCC Connection timeout detector";
-                            timeoutdetector.Start();
                         }
                     }
                     else
@@ -276,6 +279,11 @@ namespace MinecraftClient
 
             if (retry)
             {
+                if (timeoutdetector != null)
+                {
+                    timeoutdetector.Abort();
+                    timeoutdetector = null;
+                }
                 if (ReconnectionAttemptsLeft > 0)
                 {
                     Log.Info(Translations.Get("mcc.reconnect", ReconnectionAttemptsLeft));
@@ -358,10 +366,7 @@ namespace MinecraftClient
         /// </summary>
         private void TimeoutDetector()
         {
-            lock (lastKeepAliveLock)
-            {
-                lastKeepAlive = DateTime.Now;
-            }
+            UpdateKeepAlive();
             do
             {
                 Thread.Sleep(TimeSpan.FromSeconds(15));
@@ -375,6 +380,17 @@ namespace MinecraftClient
                 }
             }
             while (true);
+        }
+
+        /// <summary>
+        /// Update last keep alive to current time
+        /// </summary>
+        private void UpdateKeepAlive()
+        {
+            lock (lastKeepAliveLock)
+            {
+                lastKeepAlive = DateTime.Now;
+            }
         }
 
         /// <summary>
@@ -1747,10 +1763,7 @@ namespace MinecraftClient
         /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
         public void OnTextReceived(string text, bool isJson)
         {
-            lock (lastKeepAliveLock)
-            {
-                lastKeepAlive = DateTime.Now;
-            }
+            UpdateKeepAlive();
 
             List<string> links = new List<string>();
             string json = null;
@@ -1776,10 +1789,7 @@ namespace MinecraftClient
         /// </summary>
         public void OnServerKeepAlive()
         {
-            lock (lastKeepAliveLock)
-            {
-                lastKeepAlive = DateTime.Now;
-            }
+            UpdateKeepAlive();
         }
 
         /// <summary>
@@ -2116,6 +2126,8 @@ namespace MinecraftClient
         /// <param name="TimeOfDay"></param>
         public void OnTimeUpdate(long WorldAge, long TimeOfDay)
         {
+            // TimeUpdate sent every server tick hence used as timeout detect
+            UpdateKeepAlive();
             // calculate server tps
             if (lastAge != 0)
             {
