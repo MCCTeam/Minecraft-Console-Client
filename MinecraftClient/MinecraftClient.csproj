@@ -119,7 +119,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DefaultConfigResource.resx</DependentUpon>
     </Compile>
-    <Compile Include="ExitCleanUp.cs" />
     <Compile Include="Logger\FileLogLogger.cs" />
     <Compile Include="Logger\ILogger.cs" />
     <Compile Include="INIFile.cs" />
@@ -363,6 +362,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Commands\List.cs" />
     <Compile Include="Mapping\Location.cs" />
+    <Compile Include="WinAPI\ExitCleanUp.cs" />
     <Compile Include="WinAPI\WindowsVersion.cs" />
   </ItemGroup>
   <ItemGroup>

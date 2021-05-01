@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace MinecraftClient
+namespace MinecraftClient.WinAPI
 {
     /// <summary>
     /// Perform clean up before quitting application
