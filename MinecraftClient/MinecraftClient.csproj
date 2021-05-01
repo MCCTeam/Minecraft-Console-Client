@@ -119,6 +119,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DefaultConfigResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="ExitCleanUp.cs" />
     <Compile Include="Logger\FileLogLogger.cs" />
     <Compile Include="Logger\ILogger.cs" />
     <Compile Include="INIFile.cs" />
