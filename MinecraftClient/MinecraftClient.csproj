@@ -362,6 +362,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Commands\List.cs" />
     <Compile Include="Mapping\Location.cs" />
+    <Compile Include="WinAPI\ExitCleanUp.cs" />
     <Compile Include="WinAPI\WindowsVersion.cs" />
   </ItemGroup>
   <ItemGroup>

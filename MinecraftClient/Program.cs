@@ -150,6 +150,15 @@ namespace MinecraftClient
             {
                 RequestPassword();
             }
+
+            // Setup exit cleaning code
+            ExitCleanUp.Add(delegate () 
+            {
+                // Do NOT use Program.Exit() as creating new Thread cause program to freeze
+                if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
+            });
             
 
             startupargs = args;
