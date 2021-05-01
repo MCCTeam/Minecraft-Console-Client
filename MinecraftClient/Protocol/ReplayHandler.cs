@@ -31,6 +31,7 @@ namespace MinecraftClient.Protocol
         private BinaryWriter recordStream;
         private DateTime recordStartTime;
         private DateTime lastPacketTime;
+        private bool prepareCleanUp = false;
         private bool cleanedUp = false;
 
         private static bool logOutput = true;
@@ -111,8 +112,7 @@ namespace MinecraftClient.Protocol
         {
             if (!cleanedUp)
             {
-                MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
-                MetaData.SaveToFile();
+                prepareCleanUp = true;
                 CloseRecordStream();
                 CreateReplayFile();
                 cleanedUp = true;
@@ -135,6 +135,9 @@ namespace MinecraftClient.Protocol
         public void CreateReplayFile(string replayFileName)
         {
             WriteLog("Creating replay file.");
+
+            MetaData.duration = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
+            MetaData.SaveToFile();
 
             using (Stream recordingFile = new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Open))
             {
@@ -163,7 +166,7 @@ namespace MinecraftClient.Protocol
         /// <param name="replayFileName"></param>
         public void CreateBackupReplay(string replayFileName)
         {
-            if (cleanedUp)
+            if (cleanedUp || prepareCleanUp)
                 return;
             WriteDebugLog("Creating backup replay file.");
 
