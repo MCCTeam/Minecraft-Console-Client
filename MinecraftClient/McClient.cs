@@ -504,8 +504,6 @@ namespace MinecraftClient
                 timeoutdetector = null;
             }
 
-            Thread.Sleep(1000);
-
             if (client != null)
                 client.Close();
         }
