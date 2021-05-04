@@ -28,10 +28,12 @@ namespace MinecraftClient
         private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
 
         private static bool commandsLoaded = false;
-        private Queue<string> commandQueue = new Queue<string>();
 
         private Queue<string> chatQueue = new Queue<string>();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
+
+        private Action threadTasks;
+        private object threadTasksLock = new object();
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
         private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
@@ -310,10 +312,7 @@ namespace MinecraftClient
                 while (client.Client.Connected)
                 {
                     string text = ConsoleIO.ReadLine();
-                    lock (commandQueue)
-                    {
-                        commandQueue.Enqueue(text);
-                    }
+                    ScheduleTask(delegate () { HandleCommandPromptText(text); });
                 }   
             }
             catch (IOException) { }
@@ -592,14 +591,6 @@ namespace MinecraftClient
                 }
             }
 
-            lock (commandQueue)
-            {
-                if (commandQueue.Count > 0)
-                {
-                    HandleCommandPromptText(commandQueue.Dequeue());
-                }
-            }
-
             lock (chatQueue)
             {
                 if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
@@ -650,6 +641,15 @@ namespace MinecraftClient
                 if (respawnTicks == 0)
                     SendRespawnPacket();
             }
+
+            if (threadTasks != null)
+            {
+                lock (threadTasksLock)
+                {
+                    threadTasks();
+                    threadTasks = null;
+                }
+            }
         }
 
         /// <summary>
@@ -692,6 +692,18 @@ namespace MinecraftClient
                 return true;
             }
             else return false;
+        }
+
+        /// <summary>
+        /// Schedule a task to run on the main thread
+        /// </summary>
+        /// <param name="task">Task to run</param>
+        public void ScheduleTask(Action task)
+        {
+            lock (threadTasksLock)
+            {
+                threadTasks += task;
+            }
         }
 
         #region Management: Load/Unload ChatBots and Enable/Disable settings
