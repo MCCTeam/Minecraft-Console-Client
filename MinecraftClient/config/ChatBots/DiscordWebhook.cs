@@ -78,7 +78,7 @@ class WebhoookSettings
         skinModes.Add("fullSkin", "https://crafatar.com/renders/body/{0}");
 
         // Define standard values for main class
-        WebhookURL = "Your URL";
+        WebhookURL = "Your URL";                // Enter your Webhook URL here to start the bot with it predefined.
         SendPrivateMsg = true;
         CustomChatDetection = true;
         SendServerMsg = true;
