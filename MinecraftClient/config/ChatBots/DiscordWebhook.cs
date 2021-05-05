@@ -78,7 +78,7 @@ class WebhoookSettings
         skinModes.Add("fullSkin", "https://crafatar.com/renders/body/{0}");
 
         // Define standard values for main class
-		WebhookURL = "Your URL";
+        WebhookURL = "Your URL";
         SendPrivateMsg = true;
         CustomChatDetection = true;
         SendServerMsg = true;
