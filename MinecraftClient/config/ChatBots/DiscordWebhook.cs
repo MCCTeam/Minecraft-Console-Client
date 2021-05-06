@@ -78,6 +78,7 @@ class WebhoookSettings
         skinModes.Add("fullSkin", "https://crafatar.com/renders/body/{0}");
 
         // Define standard values for main class
+        WebhookURL = "Your URL";                // Enter your Webhook URL here to start the bot with it predefined.
         SendPrivateMsg = true;
         CustomChatDetection = true;
         SendServerMsg = true;
@@ -427,7 +428,7 @@ class DiscordWebhook : ChatBot
     {
         msg.Content += " " + AddPingsToMessage(msg.SenderName, msg.Content);
 
-        if (settings.WebhookURL != "" && settings.WebhookURL != null)
+        if (settings.WebhookURL != "" && settings.WebhookURL != "Your URL")
         {
             LogDebugToConsole("Send webhook request to Discord.");
             try
