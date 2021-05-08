@@ -370,47 +370,79 @@ namespace MinecraftClient.Protocol
             try
             {
                 string result = "";
-                string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
-                if (code == 200)
+                int code = 0;
+                if (Settings.UseMCLeaks)
                 {
-                    if (result.Contains("availableProfiles\":[]}"))
+                    string json_request = "{\"token\": \""+user+"\"}";
+                    code = DoHTTPSPost("auth.mcleaks.net", "/v1/redeem", json_request, ref result);
+                    if (code == 200)
                     {
-                        return LoginResult.NotPremium;
+                        result = result.Split('\n')[1];
+                        Json.JSONData loginResponse = Json.ParseJson(result);
+                        if (loginResponse.Properties["success"].StringValue == "true")
+                        {
+                            session.ID = loginResponse.Properties["result"].Properties["session"].StringValue;
+                            session.PlayerName = loginResponse.Properties["result"].Properties["mcname"].StringValue;
+                            string newResult = "";
+                            DoHTTPSGet("api.mojang.com", "/users/profiles/minecraft/"+session.PlayerName, "", ref newResult);
+                            Json.JSONData UUIDJSON = Json.ParseJson(newResult);
+                            session.PlayerID = UUIDJSON.Properties["id"].StringValue;
+                            return LoginResult.Success;
+                        }
+                        else
+                        {
+                            return LoginResult.WrongPassword;
+                        }
                     }
                     else
                     {
-                        Json.JSONData loginResponse = Json.ParseJson(result);
-                        if (loginResponse.Properties.ContainsKey("accessToken")
-                            && loginResponse.Properties.ContainsKey("selectedProfile")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
-                            && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
-                        {
-                            session.ID = loginResponse.Properties["accessToken"].StringValue;
-                            session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
-                            session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
-                            return LoginResult.Success;
-                        }
-                        else return LoginResult.InvalidResponse;
+                        return LoginResult.OtherError;
                     }
                 }
-                else if (code == 403)
-                {
-                    if (result.Contains("UserMigratedException"))
+                else {
+                    string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
+                    code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
+                    if (code == 200)
                     {
-                        return LoginResult.AccountMigrated;
+                        if (result.Contains("availableProfiles\":[]}"))
+                        {
+                            return LoginResult.NotPremium;
+                        }
+                        else
+                        {
+                            Json.JSONData loginResponse = Json.ParseJson(result);
+                            if (loginResponse.Properties.ContainsKey("accessToken")
+                                && loginResponse.Properties.ContainsKey("selectedProfile")
+                                && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("id")
+                                && loginResponse.Properties["selectedProfile"].Properties.ContainsKey("name"))
+                            {
+                                session.ID = loginResponse.Properties["accessToken"].StringValue;
+                                session.PlayerID = loginResponse.Properties["selectedProfile"].Properties["id"].StringValue;
+                                session.PlayerName = loginResponse.Properties["selectedProfile"].Properties["name"].StringValue;
+                                return LoginResult.Success;
+                            }
+                            else return LoginResult.InvalidResponse;
+                        }
                     }
-                    else return LoginResult.WrongPassword;
+                    else if (code == 403)
+                    {
+                        if (result.Contains("UserMigratedException"))
+                        {
+                            return LoginResult.AccountMigrated;
+                        }
+                        else return LoginResult.WrongPassword;
+                    }
+                    else if (code == 503)
+                    {
+                        return LoginResult.ServiceUnavailable;
+                    }
+                    else
+                    {
+                        ConsoleIO.WriteLineFormatted(Translations.Get("error.http_code", code));
+                        return LoginResult.OtherError;
+                    }
                 }
-                else if (code == 503)
-                {
-                    return LoginResult.ServiceUnavailable;
-                }
-                else
-                {
-                    ConsoleIO.WriteLineFormatted(Translations.Get("error.http_code", code));
-                    return LoginResult.OtherError;
-                }
+
             }
             catch (System.Security.Authentication.AuthenticationException e)
             {
@@ -584,7 +616,17 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 string json_request = "{\"accessToken\": \"" + JsonEncode(session.ID) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/validate", json_request, ref result);
+                int code = 0;
+                if (Settings.UseMCLeaks)
+                {
+                    code = DoHTTPSPost("35.156.90.191", "/validate", json_request, ref result);
+                }
+                else
+                {
+                    code = DoHTTPSPost("authserver.mojang.com", "/validate", json_request, ref result);
+                }
+
+                
                 if (code == 204)
                 {
                     return LoginResult.Success;
@@ -617,7 +659,15 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/refresh", json_request, ref result);
+                int code = 0;
+                if (Settings.UseMCLeaks)
+                {
+                    code = DoHTTPSPost("35.156.90.191", "/refresh", json_request, ref result);
+                }
+                else
+                {
+                    code = DoHTTPSPost("authserver.mojang.com", "/refresh", json_request, ref result);
+                }
                 if (code == 200)
                 {
                     if (result == null)
@@ -663,13 +713,22 @@ namespace MinecraftClient.Protocol
         /// <param name="accesstoken">Session ID</param>
         /// <param name="serverhash">Server ID</param>
         /// <returns>TRUE if session was successfully checked</returns>
-        public static bool SessionCheck(string uuid, string accesstoken, string serverhash)
+        public static bool SessionCheck(string uuid, string accesstoken, string serverhash, string username)
         {
             try
             {
                 string result = "";
-                string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
-                int code = DoHTTPSPost("sessionserver.mojang.com", "/session/minecraft/join", json_request, ref result);
+                int code = 0;
+                if (Settings.UseMCLeaks)
+                {
+                    string json_request = "{\"session\":\"" + accesstoken + "\",\"mcname\":\"" + username + "\",\"serverhash\":\"" + serverhash + "\",\"server\":\"" + Settings.ServerIP + ":" + Settings.ServerPort + "\"}";
+                    code = DoHTTPSPost("auth.mcleaks.net", "/v1/joinserver", json_request, ref result);
+                }
+                else
+                {
+                    string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
+                    code = DoHTTPSPost("sessionserver.mojang.com", "/session/minecraft/join", json_request, ref result);
+                }
                 return (code >= 200 && code < 300);
             }
             catch { return false; }
@@ -767,7 +826,7 @@ namespace MinecraftClient.Protocol
         /// <param name="cookies">Cookies for making the request</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        private static int DoHTTPSGet(string host, string endpoint, string cookies, ref string result)
+        public static int DoHTTPSGet(string host, string endpoint, string cookies, ref string result)
         {
             List<String> http_request = new List<string>();
             http_request.Add("GET " + endpoint + " HTTP/1.1");

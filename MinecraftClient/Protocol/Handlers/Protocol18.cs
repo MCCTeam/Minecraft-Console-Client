@@ -1238,7 +1238,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (serverIDhash != "-")
             {
                 log.Info(Translations.Get("mcc.session"));
-                if (!ProtocolHandler.SessionCheck(uuid, sessionID, CryptoHandler.getServerHash(serverIDhash, serverKey, secretKey)))
+                if (!ProtocolHandler.SessionCheck(uuid, sessionID, CryptoHandler.getServerHash(serverIDhash, serverKey, secretKey), Settings.Username))
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
                     return false;
