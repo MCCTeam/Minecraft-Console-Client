@@ -61,7 +61,7 @@ namespace MinecraftClient
         /// <remarks>
         /// <see cref="Update"/> method can be overridden by child class so need an extra update method
         /// </remarks>
-        public void UpdateInternal()
+        public sealed void UpdateInternal()
         {
             lock (delayTasksLock)
             {
