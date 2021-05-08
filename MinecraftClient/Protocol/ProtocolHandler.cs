@@ -371,7 +371,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 int code = 0;
-                if (Settings.UseMCLeaks)
+                if (Settings.LoginMethod == "mcleaks")
                 {
                     string json_request = "{\"token\": \""+user+"\"}";
                     code = DoHTTPSPost("auth.mcleaks.net", "/v1/redeem", json_request, ref result);
@@ -617,7 +617,7 @@ namespace MinecraftClient.Protocol
                 string result = "";
                 string json_request = "{\"accessToken\": \"" + JsonEncode(session.ID) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
                 int code = 0;
-                if (Settings.UseMCLeaks)
+                if (Settings.LoginMethod == "mcleaks")
                 {
                     code = DoHTTPSPost("35.156.90.191", "/validate", json_request, ref result);
                 }
@@ -660,7 +660,7 @@ namespace MinecraftClient.Protocol
                 string result = "";
                 string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
                 int code = 0;
-                if (Settings.UseMCLeaks)
+                if (Settings.LoginMethod == "mcleaks")
                 {
                     code = DoHTTPSPost("35.156.90.191", "/refresh", json_request, ref result);
                 }
@@ -719,7 +719,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 int code = 0;
-                if (Settings.UseMCLeaks)
+                if (Settings.LoginMethod == "mcleaks")
                 {
                     string json_request = "{\"session\":\"" + accesstoken + "\",\"mcname\":\"" + username + "\",\"serverhash\":\"" + serverhash + "\",\"server\":\"" + Settings.ServerIP + ":" + Settings.ServerPort + "\"}";
                     code = DoHTTPSPost("auth.mcleaks.net", "/v1/joinserver", json_request, ref result);

@@ -34,8 +34,6 @@ namespace MinecraftClient
         public static bool ServerAutodetectForge = true;
         public static string SingleCommand = "";
         public static string ConsoleTitle = "";
-        public static bool UseMCLeaks = false;
-        public static string newMCLeaksUsername = "";
         //Proxy Settings
         public static bool ProxyEnabledLogin = false;
         public static bool ProxyEnabledIngame = false;
@@ -287,8 +285,9 @@ namespace MinecraftClient
                                                         : ProtocolHandler.AccountType.Microsoft; break;
                                                 case "method": LoginMethod = argValue.ToLower() == "browser"
                                                         ? "browser"
+                                                        : argValue.ToLower() == "mcleaks"
+                                                        ? "mcleaks"
                                                         : "mcc"; break;
-                                                case "mcleaks": UseMCLeaks = str2bool(argValue); Console.WriteLine(argValue); break;
                                                 case "serverip": if (!SetServerIP(argValue)) serverAlias = argValue; ; break;
                                                 case "singlecommand": SingleCommand = argValue; break;
                                                 case "language": Language = argValue; break;
