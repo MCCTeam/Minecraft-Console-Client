@@ -619,7 +619,7 @@ namespace MinecraftClient.Protocol
                 int code = 0;
                 if (Settings.UseMCLeaks)
                 {
-                    code = DoHTTPSPost("35.156.90.191", "/validate", json_request, ref result);
+                    code == 403;
                 }
                 else
                 {
@@ -662,7 +662,8 @@ namespace MinecraftClient.Protocol
                 int code = 0;
                 if (Settings.UseMCLeaks)
                 {
-                    code = DoHTTPSPost("35.156.90.191", "/refresh", json_request, ref result);
+                    code = 403;
+                    result = "InvalidToken";
                 }
                 else
                 {
