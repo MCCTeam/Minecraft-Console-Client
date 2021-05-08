@@ -580,6 +580,7 @@ namespace MinecraftClient
                 try
                 {
                     bot.Update();
+                    bot.UpdateInternal();
                 }
                 catch (Exception e)
                 {
