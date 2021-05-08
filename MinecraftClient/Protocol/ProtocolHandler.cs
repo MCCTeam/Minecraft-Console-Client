@@ -399,7 +399,8 @@ namespace MinecraftClient.Protocol
                         return LoginResult.OtherError;
                     }
                 }
-                else {
+                else
+                {
                     string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
                     code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
                     if (code == 200)
@@ -442,7 +443,6 @@ namespace MinecraftClient.Protocol
                         return LoginResult.OtherError;
                     }
                 }
-
             }
             catch (System.Security.Authentication.AuthenticationException e)
             {
@@ -619,7 +619,7 @@ namespace MinecraftClient.Protocol
                 int code = 0;
                 if (Settings.LoginMethod == "mcleaks")
                 {
-                    code = DoHTTPSPost("35.156.90.191", "/validate", json_request, ref result);
+                    code == 403;
                 }
                 else
                 {
@@ -662,7 +662,8 @@ namespace MinecraftClient.Protocol
                 int code = 0;
                 if (Settings.LoginMethod == "mcleaks")
                 {
-                    code = DoHTTPSPost("35.156.90.191", "/refresh", json_request, ref result);
+                    code = 403;
+                    result = "InvalidToken";
                 }
                 else
                 {
@@ -826,7 +827,7 @@ namespace MinecraftClient.Protocol
         /// <param name="cookies">Cookies for making the request</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        public static int DoHTTPSGet(string host, string endpoint, string cookies, ref string result)
+        private static int DoHTTPSGet(string host, string endpoint, string cookies, ref string result)
         {
             List<String> http_request = new List<string>();
             http_request.Add("GET " + endpoint + " HTTP/1.1");
