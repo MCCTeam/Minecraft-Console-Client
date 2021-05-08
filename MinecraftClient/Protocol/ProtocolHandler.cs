@@ -827,7 +827,7 @@ namespace MinecraftClient.Protocol
         /// <param name="cookies">Cookies for making the request</param>
         /// <param name="result">Request result</param>
         /// <returns>HTTP Status code</returns>
-        public static int DoHTTPSGet(string host, string endpoint, string cookies, ref string result)
+        private static int DoHTTPSGet(string host, string endpoint, string cookies, ref string result)
         {
             List<String> http_request = new List<string>();
             http_request.Add("GET " + endpoint + " HTTP/1.1");
