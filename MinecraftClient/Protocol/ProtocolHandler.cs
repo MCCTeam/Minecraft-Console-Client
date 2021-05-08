@@ -331,7 +331,7 @@ namespace MinecraftClient.Protocol
         }
 
         public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError, UserCancel };
-        public enum AccountType { Mojang, Microsoft };
+        public enum AccountType { Mojang, Microsoft, MCLeaks };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -371,7 +371,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 int code = 0;
-                if (Settings.LoginMethod == "mcleaks")
+                if (Settings.AccountType == AccountType.MCLeaks)
                 {
                     string json_request = "{\"token\": \""+user+"\"}";
                     code = DoHTTPSPost("auth.mcleaks.net", "/v1/redeem", json_request, ref result);
@@ -617,7 +617,7 @@ namespace MinecraftClient.Protocol
                 string result = "";
                 string json_request = "{\"accessToken\": \"" + JsonEncode(session.ID) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
                 int code = 0;
-                if (Settings.LoginMethod == "mcleaks")
+                if (Settings.AccountType == AccountType.MCLeaks)
                 {
                     code == 403;
                 }
@@ -660,7 +660,7 @@ namespace MinecraftClient.Protocol
                 string result = "";
                 string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
                 int code = 0;
-                if (Settings.LoginMethod == "mcleaks")
+                if (Settings.AccountType == AccountType.MCLeaks)
                 {
                     code = 403;
                     result = "InvalidToken";
@@ -720,7 +720,7 @@ namespace MinecraftClient.Protocol
             {
                 string result = "";
                 int code = 0;
-                if (Settings.LoginMethod == "mcleaks")
+                if (Settings.AccountType == AccountType.MCLeaks)
                 {
                     string json_request = "{\"session\":\"" + accesstoken + "\",\"mcname\":\"" + username + "\",\"serverhash\":\"" + serverhash + "\",\"server\":\"" + Settings.ServerIP + ":" + Settings.ServerPort + "\"}";
                     code = DoHTTPSPost("auth.mcleaks.net", "/v1/joinserver", json_request, ref result);

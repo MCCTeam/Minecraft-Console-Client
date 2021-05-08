@@ -281,12 +281,12 @@ namespace MinecraftClient
                                                 case "login": Login = argValue; break;
                                                 case "password": Password = argValue; break;
                                                 case "type": AccountType = argValue == "mojang" 
-                                                        ? ProtocolHandler.AccountType.Mojang 
+                                                        ? ProtocolHandler.AccountType.Mojang
+                                                        : argValue.ToLower() == "mcleaks"
+                                                        ? ProtocolHandler.AccountType.MCLeaks
                                                         : ProtocolHandler.AccountType.Microsoft; break;
                                                 case "method": LoginMethod = argValue.ToLower() == "browser"
                                                         ? "browser"
-                                                        : argValue.ToLower() == "mcleaks"
-                                                        ? "mcleaks"
                                                         : "mcc"; break;
                                                 case "serverip": if (!SetServerIP(argValue)) serverAlias = argValue; ; break;
                                                 case "singlecommand": SingleCommand = argValue; break;
