@@ -442,7 +442,6 @@ namespace MinecraftClient.Protocol
                         return LoginResult.OtherError;
                     }
                 }
-
             }
             catch (System.Security.Authentication.AuthenticationException e)
             {
