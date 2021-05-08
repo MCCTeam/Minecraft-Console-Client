@@ -41,6 +41,8 @@ namespace MinecraftClient
         private ChatBot master = null;
         private List<string> registeredPluginChannels = new List<String>();
         private List<string> registeredCommands = new List<string>();
+        private object delayTasksLock = new object();
+        private List<DelayedTask> delayTasks = new List<DelayedTask>();
         private McClient Handler
         {
             get
@@ -50,6 +52,39 @@ namespace MinecraftClient
                 if (_handler != null)
                     return _handler;
                 throw new InvalidOperationException(Translations.Get("exception.chatbot.init"));
+            }
+        }
+
+        /// <summary>
+        /// Will be called every ~100ms.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Update"/> method can be overridden by child class so need an extra update method
+        /// </remarks>
+        public sealed void UpdateInternal()
+        {
+            lock (delayTasksLock)
+            {
+                if (delayTasks.Count > 0)
+                {
+                    List<int> tasksToRemove = new List<int>();
+                    for (int i = 0; i < delayTasks.Count; i++)
+                    {
+                        if (delayTasks[i].Tick())
+                        {
+                            Handler.ScheduleTask(delayTasks[i].Task);
+                            tasksToRemove.Add(i);
+                        }
+                    }
+                    if (tasksToRemove.Count > 0)
+                    {
+                        tasksToRemove.Sort((a, b) => b.CompareTo(a)); // descending sort
+                        foreach (int index in tasksToRemove)
+                        {
+                            delayTasks.RemoveAt(index);
+                        }
+                    }
+                }
             }
         }
 
@@ -1355,6 +1390,38 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Schedule a task to run on main thread
+        /// </summary>
+        /// <param name="task">Task to run</param>
+        /// <param name="delayTicks">Run the task after X ticks (1 tick delay = ~100ms). 0 for no delay</param>
+        /// <example>
+        /// // Delay ~10 seconds
+        /// ScheduleTask(delegate () 
+        /// { 
+        ///     /** Your code here **/
+        ///     Console.WriteLine("10 seconds has passed");
+        /// }, 100);
+        /// </example>
+        protected void ScheduleTask(Action task, int delayTicks = 0)
+        {
+            if (task != null)
+            {
+                if (delayTicks <= 0)
+                {
+                    // Immediately schedule to run on next update
+                    Handler.ScheduleTask(task);
+                }
+                else
+                {
+                    lock (delayTasksLock)
+                    {
+                        delayTasks.Add(new DelayedTask(task, delayTicks));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Command runner definition.
         /// Returned string will be the output of the command
         /// </summary>
@@ -1396,6 +1463,47 @@ namespace MinecraftClient
                 this._cmdDesc = cmdDesc;
                 this._cmdUsage = cmdUsage;
                 this.Runner = callback;
+            }
+        }
+
+        private class DelayedTask
+        {
+            private Action task;
+            private int Counter;
+
+            public Action Task { get { return task; } }
+
+            public DelayedTask(Action task)
+                : this(task, 0)
+            { }
+
+            public DelayedTask(Action task, int delayTicks)
+            {
+                this.task = task;
+                Counter = delayTicks;
+            }
+
+            /// <summary>
+            /// Tick the counter
+            /// </summary>
+            /// <returns>Return true if counted to zero</returns>
+            public bool Tick()
+            {
+                Counter--;
+                if (Counter <= 0)
+                    return true;
+                return false;
+            }
+
+            /// <summary>
+            /// Execute the task
+            /// </summary>
+            public void Execute()
+            {
+                if (task != null)
+                {
+                    task();
+                }
             }
         }
     }
