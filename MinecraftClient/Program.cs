@@ -215,7 +215,7 @@ namespace MinecraftClient
 
                 if (result != ProtocolHandler.LoginResult.Success)
                 {
-                    Translations.WriteLine("mcc.connecting", Settings.AccountType == ProtocolHandler.AccountType.Mojang ? "Minecraft.net" : "Microsoft");
+                    Translations.WriteLine("mcc.connecting", Settings.AccountType == ProtocolHandler.AccountType.Mojang ? "Minecraft.net" : Settings.AccountType == ProtocolHandler.AccountType.MCLeaks ? "MCLeaks" : "Microsoft");
                     result = ProtocolHandler.GetLogin(Settings.Login, Settings.Password, Settings.AccountType, out session);
 
                     if (result == ProtocolHandler.LoginResult.Success && Settings.SessionCaching != CacheType.None)

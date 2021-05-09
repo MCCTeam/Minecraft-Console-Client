@@ -41,7 +41,7 @@ namespace MinecraftClient.Protocol.Session
             session.ClientID = fields[3];
 
             Guid temp;
-            if (!JwtRegex.IsMatch(session.ID))
+            if (!JwtRegex.IsMatch(session.ID) && Settings.AccountType != ProtocolHandler.AccountType.MCLeaks)
                 throw new InvalidDataException("Invalid session ID");
             if (!ChatBot.IsValidName(session.PlayerName))
                 throw new InvalidDataException("Invalid player name");

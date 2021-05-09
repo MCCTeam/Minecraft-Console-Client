@@ -349,7 +349,7 @@ namespace MinecraftClient.Protocol
                 else
                     return MicrosoftBrowserLogin(out session);
             }
-            else if (type == AccountType.Mojang)
+            else if (type == AccountType.Mojang || type == AccountType.MCLeaks)
             {
                 return MojangLogin(user, pass, out session);
             }
@@ -619,7 +619,8 @@ namespace MinecraftClient.Protocol
                 int code = 0;
                 if (Settings.AccountType == AccountType.MCLeaks)
                 {
-                    code == 403;
+                    //Assume yes, since there is no API to check
+                    code = 204;
                 }
                 else
                 {
@@ -662,6 +663,7 @@ namespace MinecraftClient.Protocol
                 int code = 0;
                 if (Settings.AccountType == AccountType.MCLeaks)
                 {
+                    //Impossible with MCLeaks
                     code = 403;
                     result = "InvalidToken";
                 }
