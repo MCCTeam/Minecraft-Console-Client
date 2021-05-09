@@ -280,11 +280,13 @@ namespace MinecraftClient
                                             {
                                                 case "login": Login = argValue; break;
                                                 case "password": Password = argValue; break;
-                                                case "type": AccountType = argValue == "mojang" 
-                                                        ? ProtocolHandler.AccountType.Mojang
-                                                        : argValue.ToLower() == "mcleaks"
-                                                        ? ProtocolHandler.AccountType.MCLeaks
-                                                        : ProtocolHandler.AccountType.Microsoft; break;
+                                                case "type":
+                                                        AccountType = switch(argValue.ToLower())
+                                                        {
+                                                            case "mojang": ProtocolHandler.AccountType.Mojang; break;
+                                                            case "mcleaks": ProtocolHandler.AccountType.MCLeaks; break;
+                                                            case "microsoft":ProtocolHandler.AccountType.Microsoft; break;
+                                                        }
                                                 case "method": LoginMethod = argValue.ToLower() == "browser"
                                                         ? "browser"
                                                         : "mcc"; break;
