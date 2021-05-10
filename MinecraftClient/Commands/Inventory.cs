@@ -80,13 +80,17 @@ namespace MinecraftClient.Commands
                                 Container inventory = handler.GetInventory(inventoryId);
                                 if (inventory == null)
                                     return Translations.Get("cmd.inventory.not_exist", inventoryId);
+                                SortedDictionary<int, Item> itemsSorted = new SortedDictionary<int, Item>(inventory.Items);
                                 List<string> response = new List<string>();
                                 response.Add(Translations.Get("cmd.inventory.inventory") + " #" + inventoryId + " - " + inventory.Title + "§8");
-                                foreach (KeyValuePair<int, Item> item in inventory.Items)
+                                int selectedHotbar = handler.GetCurrentSlot() + 1;
+                                foreach (KeyValuePair<int, Item> item in itemsSorted)
                                 {
                                     int hotbar;
                                     bool isHotbar = inventory.IsHotbar(item.Key, out hotbar);
-                                    string hotbarString = isHotbar ? (hotbar + 1).ToString() : "*";
+                                    string hotbarString = isHotbar ? (hotbar + 1).ToString() : " ";
+                                    if ((hotbar + 1) == selectedHotbar)
+                                        hotbarString = ">" + hotbarString;
                                     response.Add(String.Format("{0,2} | #{1,-2}: {2}", hotbarString, item.Key, item.Value.ToString()));
                                 }
                                 if (inventoryId == 0) 
