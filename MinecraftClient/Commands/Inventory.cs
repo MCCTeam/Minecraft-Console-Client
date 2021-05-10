@@ -78,29 +78,21 @@ namespace MinecraftClient.Commands
                                 else return Translations.Get("cmd.inventory.close_fail", inventoryId);
                             case "list":
                                 Container inventory = handler.GetInventory(inventoryId);
-                                if(inventory==null)
+                                if (inventory == null)
                                     return Translations.Get("cmd.inventory.not_exist", inventoryId);
                                 List<string> response = new List<string>();
                                 response.Add(Translations.Get("cmd.inventory.inventory") + " #" + inventoryId + " - " + inventory.Title + "§8");
                                 foreach (KeyValuePair<int, Item> item in inventory.Items)
                                 {
-                                    string displayName = item.Value.DisplayName;
-                                    if (String.IsNullOrEmpty(displayName))
-                                    {
-                                        if (item.Value.Damage != 0)
-                                            response.Add(String.Format(" #{0}: {1} x{2} | {3}: {4}", item.Key, item.Value.Type, item.Value.Count, Translations.Get("cmd.inventory.damage"), item.Value.Damage));
-                                        else
-                                            response.Add(String.Format(" #{0}: {1} x{2}", item.Key, item.Value.Type, item.Value.Count));
-                                    }
-                                    else
-                                    {
-                                        if (item.Value.Damage != 0)
-                                            response.Add(String.Format(" #{0}: {1} x{2} - {3}§8 | {4}: {5}", item.Key, item.Value.Type, item.Value.Count, displayName, Translations.Get("cmd.inventory.damage"), item.Value.Damage));
-                                        else
-                                            response.Add(String.Format(" #{0}: {1} x{2} - {3}§8", item.Key, item.Value.Type, item.Value.Count, displayName));
-                                    }
+                                    int hotbar;
+                                    bool isHotbar = inventory.IsHotbar(item.Key, out hotbar);
+                                    string hotbarString = isHotbar ? (hotbar + 1).ToString() : "*";
+                                    response.Add(String.Format("{0,2} | #{1,-2}: {2}", hotbarString, item.Key, item.Value.ToString()));
+                                    //response.Add(String.Format(" {,3} #{0}: {1}", item.Key, item.Value.ToString()));
+                                    
                                 }
-                                if (inventoryId == 0) response.Add(Translations.Get("cmd.inventory.hotbar", (handler.GetCurrentSlot() + 1)));
+                                if (inventoryId == 0) 
+                                    response.Add(Translations.Get("cmd.inventory.hotbar", (handler.GetCurrentSlot() + 1)));
                                 return String.Join("\n", response.ToArray());
                             case "click":
                                 if (args.Length >= 3)

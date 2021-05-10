@@ -115,5 +115,22 @@ namespace MinecraftClient.Inventory
                 return 0;
             }
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("x{0,-2} {1}", Count, Type.ToString());
+            string displayName = DisplayName;
+            if (!String.IsNullOrEmpty(displayName))
+            {
+                sb.AppendFormat(" - {0}§8", displayName);
+            }
+            int damage = Damage;
+            if (damage != 0)
+            {
+                sb.AppendFormat(" | {0}: {1}", Translations.Get("cmd.inventory.damage"), damage);
+            }
+            return sb.ToString();
+        }
     }
 }

@@ -7,11 +7,16 @@ namespace MinecraftClient.Inventory
 {
     public static class ContainerTypeExtensions
     {
+        /// <summary>
+        /// Zero-based
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public static int SlotCount(this ContainerType c)
         {
             switch (c)
             {
-                case ContainerType.PlayerInventory: return 44;
+                case ContainerType.PlayerInventory: return 45;
                 case ContainerType.Generic_9x3: return 62;
                 case ContainerType.Generic_9x6: return 89;
                 case ContainerType.Generic_3x3: return 44;
