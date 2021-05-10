@@ -88,8 +88,6 @@ namespace MinecraftClient.Commands
                                     bool isHotbar = inventory.IsHotbar(item.Key, out hotbar);
                                     string hotbarString = isHotbar ? (hotbar + 1).ToString() : "*";
                                     response.Add(String.Format("{0,2} | #{1,-2}: {2}", hotbarString, item.Key, item.Value.ToString()));
-                                    //response.Add(String.Format(" {,3} #{0}: {1}", item.Key, item.Value.ToString()));
-                                    
                                 }
                                 if (inventoryId == 0) 
                                     response.Add(Translations.Get("cmd.inventory.hotbar", (handler.GetCurrentSlot() + 1)));
