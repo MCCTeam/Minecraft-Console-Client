@@ -26,13 +26,21 @@ namespace MinecraftClient.Commands
                 ItemType itemType;
                 if (Enum.TryParse(arg, true, out itemType))
                 {
-                    var p = handler.GetPlayerInventory();
+                    int inventoryId;
+                    var inventories = handler.GetInventories();
+                    List<int> availableIds = inventories.Keys.ToList();
+                    availableIds.Remove(0); // remove player inventory ID from list
+                    if (availableIds.Count == 1)
+                        inventoryId = availableIds[0]; // one container, use it
+                    else
+                        inventoryId = 0;
+                    var p = inventories[inventoryId];
                     int[] targetItems = p.SearchItem(itemType);
                     foreach (int slot in targetItems)
                     {
-                        handler.DoWindowAction(0, slot, WindowActionType.DropItemStack);
+                        handler.DoWindowAction(inventoryId, slot, WindowActionType.DropItemStack);
                     }
-                    return Translations.Get("cmd.dropItem.dropped", itemType.ToString());
+                    return Translations.Get("cmd.dropItem.dropped", itemType.ToString(), inventoryId);
                 }
                 else
                 {
