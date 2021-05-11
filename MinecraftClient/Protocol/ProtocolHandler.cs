@@ -331,7 +331,7 @@ namespace MinecraftClient.Protocol
         }
 
         public enum LoginResult { OtherError, ServiceUnavailable, SSLError, Success, WrongPassword, AccountMigrated, NotPremium, LoginRequired, InvalidToken, InvalidResponse, NullError, UserCancel };
-        public enum AccountType { Mojang, Microsoft, MCLeaks };
+        public enum AccountType { Mojang, Microsoft, MCLeaks, TheAltening };
 
         /// <summary>
         /// Allows to login to a premium Minecraft account using the Yggdrasil authentication scheme.
@@ -349,11 +349,11 @@ namespace MinecraftClient.Protocol
                 else
                     return MicrosoftBrowserLogin(out session);
             }
-            else if (type == AccountType.Mojang || type == AccountType.MCLeaks)
+            else if (type == AccountType.Mojang || type == AccountType.MCLeaks || type == AccountType.TheAltening)
             {
                 return MojangLogin(user, pass, out session);
             }
-            else throw new InvalidOperationException("Account type must be Mojang or Microsoft");
+            else throw new InvalidOperationException("Account type must be Mojang, Microsoft, MCLeaks, or TheAltening.");
         }
 
         /// <summary>
@@ -402,7 +402,15 @@ namespace MinecraftClient.Protocol
                 else
                 {
                     string json_request = "{\"agent\": { \"name\": \"Minecraft\", \"version\": 1 }, \"username\": \"" + JsonEncode(user) + "\", \"password\": \"" + JsonEncode(pass) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                    code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
+                    if (Settings.AccountType == AccountType.TheAltening)
+                    {
+                        code = DoHTTPPost("authserver.thealtening.com", "/authenticate", json_request, ref result);
+                        result = result.Split('\n')[1];
+                    }
+                    else
+                    {
+                        code = DoHTTPSPost("authserver.mojang.com", "/authenticate", json_request, ref result);
+                    }
                     if (code == 200)
                     {
                         if (result.Contains("availableProfiles\":[]}"))
@@ -622,6 +630,10 @@ namespace MinecraftClient.Protocol
                     //Assume yes, since there is no API to check
                     code = 204;
                 }
+                else if (Settings.AccountType == AccountType.TheAltening)
+                {
+                    code = DoHTTPPost("authserver.thealtening.com", "/validate", json_request, ref result);
+                }
                 else
                 {
                     code = DoHTTPSPost("authserver.mojang.com", "/validate", json_request, ref result);
@@ -661,9 +673,9 @@ namespace MinecraftClient.Protocol
                 string result = "";
                 string json_request = "{ \"accessToken\": \"" + JsonEncode(currentsession.ID) + "\", \"clientToken\": \"" + JsonEncode(currentsession.ClientID) + "\", \"selectedProfile\": { \"id\": \"" + JsonEncode(currentsession.PlayerID) + "\", \"name\": \"" + JsonEncode(currentsession.PlayerName) + "\" } }";
                 int code = 0;
-                if (Settings.AccountType == AccountType.MCLeaks)
+                if (Settings.AccountType == AccountType.MCLeaks || Settings.AccountType == AccountType.TheAltening)
                 {
-                    //Impossible with MCLeaks
+                    //Impossible with MCLeaks and no clue if this is possible with theAltening
                     code = 403;
                     result = "InvalidToken";
                 }
@@ -726,6 +738,10 @@ namespace MinecraftClient.Protocol
                 {
                     string json_request = "{\"session\":\"" + accesstoken + "\",\"mcname\":\"" + username + "\",\"serverhash\":\"" + serverhash + "\",\"server\":\"" + Settings.ServerIP + ":" + Settings.ServerPort + "\"}";
                     code = DoHTTPSPost("auth.mcleaks.net", "/v1/joinserver", json_request, ref result);
+                }
+                else if (Settings.AccountType == AccountType.TheAltening) {
+                    string json_request = "{\"accessToken\":\"" + accesstoken + "\",\"selectedProfile\":\"" + uuid + "\",\"serverId\":\"" + serverhash + "\"}";
+                    code = DoHTTPPost("sessionserver.thealtening.com", "/session/minecraft/join", json_request, ref result);
                 }
                 else
                 {
@@ -868,6 +884,28 @@ namespace MinecraftClient.Protocol
         }
 
         /// <summary>
+        /// Make a HTTP POST request to the specified endpoint of the Mojang API
+        /// </summary>
+        /// <param name="host">Host to connect to</param>
+        /// <param name="endpoint">Endpoint for making the request</param>
+        /// <param name="request">Request payload</param>
+        /// <param name="result">Request result</param>
+        /// <returns>HTTP Status code</returns>
+        private static int DoHTTPPost(string host, string endpoint, string request, ref string result)
+        {
+            List<String> http_request = new List<string>();
+            http_request.Add("POST " + endpoint + " HTTP/1.1");
+            http_request.Add("Host: " + host);
+            http_request.Add("User-Agent: MCC/" + Program.Version);
+            http_request.Add("Content-Type: application/json");
+            http_request.Add("Content-Length: " + Encoding.ASCII.GetBytes(request).Length);
+            http_request.Add("Connection: close");
+            http_request.Add("");
+            http_request.Add(request);
+            return DoHTTPRequest(http_request, host, ref result);
+        }
+
+        /// <summary>
         /// Manual HTTPS request since we must directly use a TcpClient because of the proxy.
         /// This method connects to the server, enables SSL, do the request and read the response.
         /// </summary>
@@ -912,6 +950,66 @@ namespace MinecraftClient.Protocol
                         statusCode = Settings.str2int(raw_result.Split(' ')[1]);
                     }
                     else statusCode = 520; //Web server is returning an unknown error
+                }
+                catch (Exception e)
+                {
+                    if (!(e is System.Threading.ThreadAbortException))
+                    {
+                        exception = e;
+                    }
+                }
+            }, TimeSpan.FromSeconds(30));
+            result = postResult;
+            if (exception != null)
+                throw exception;
+            return statusCode;
+        }
+
+        /// <summary>
+        /// Manual HTTP request since we must directly use a TcpClient because of the proxy.
+        /// This method connects to the server, enables SSL, do the request and read the response.
+        /// </summary>
+        /// <param name="headers">Request headers and optional body (POST)</param>
+        /// <param name="host">Host to connect to</param>
+        /// <param name="result">Request result</param>
+        /// <returns>HTTP Status code</returns>
+        private static int DoHTTPRequest(List<string> headers, string host, ref string result)
+        {
+            string postResult = null;
+            int statusCode = 520;
+            Exception exception = null;
+            AutoTimeout.Perform(() =>
+            {
+                try
+                {
+                    if (Settings.DebugMessages)
+                        ConsoleIO.WriteLineFormatted(Translations.Get("debug.request", host));
+
+                    using (TcpClient client = ProxyHandler.newTcpClient(host, 80, true))
+                    using (NetworkStream stream = client.GetStream())
+                    {
+                        if (Settings.DebugMessages)
+                            foreach (string line in headers)
+                                ConsoleIO.WriteLineFormatted("§8> " + line);
+
+                        stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())), 0, Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())).Length);
+                        System.IO.StreamReader sr = new System.IO.StreamReader(stream);
+                        string raw_result = sr.ReadToEnd();
+
+                        if (Settings.DebugMessages)
+                        {
+                            ConsoleIO.WriteLine("");
+                            foreach (string line in raw_result.Split('\n'))
+                                ConsoleIO.WriteLineFormatted("§8< " + line);
+                        }
+
+                        if (raw_result.StartsWith("HTTP/1.1"))
+                        {
+                            postResult = raw_result.Substring(raw_result.IndexOf("\r\n\r\n") + 4);
+                            statusCode = Settings.str2int(raw_result.Split(' ')[1]);
+                        }
+                        else statusCode = 520; //Web server is returning an unknown error
+                    }
                 }
                 catch (Exception e)
                 {
