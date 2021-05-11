@@ -200,11 +200,11 @@ namespace MinecraftClient.Inventory
         /// <returns>True if given slot ID is a hotbar slot</returns>
         public bool IsHotbar(int slotId, out int hotbar)
         {
-            int hotbarStart = Type.SlotCount() - 8;
+            int hotbarStart = Type.SlotCount() - 9;
             // Remove offhand slot
             if (Type == ContainerType.PlayerInventory)
                 hotbarStart--;
-            if ((slotId >= hotbarStart) && (slotId <= hotbarStart + 8))
+            if ((slotId >= hotbarStart) && (slotId <= hotbarStart + 9))
             {
                 hotbar = slotId - hotbarStart;
                 return true;
