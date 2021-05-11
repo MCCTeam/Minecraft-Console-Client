@@ -625,14 +625,10 @@ namespace MinecraftClient.Protocol
                 string result = "";
                 string json_request = "{\"accessToken\": \"" + JsonEncode(session.ID) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
                 int code = 0;
-                if (Settings.AccountType == AccountType.MCLeaks)
+                if (Settings.AccountType == AccountType.MCLeaks || Settings.AccountType == AccountType.TheAltening)
                 {
                     //Assume yes, since there is no API to check
                     code = 204;
-                }
-                else if (Settings.AccountType == AccountType.TheAltening)
-                {
-                    code = DoHTTPPost("authserver.thealtening.com", "/validate", json_request, ref result);
                 }
                 else
                 {
