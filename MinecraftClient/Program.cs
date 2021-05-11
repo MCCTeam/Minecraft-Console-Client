@@ -454,7 +454,6 @@ namespace MinecraftClient
                         string command = " ";
                         ConsoleIO.WriteLineFormatted(Translations.Get("mcc.disconnected", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
                         Translations.WriteLineFormatted("mcc.press_exit");
-                        Program.Exit();
                         while (command.Length > 0)
                         {
                             if (!ConsoleIO.BasicIO)

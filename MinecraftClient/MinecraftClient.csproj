@@ -76,6 +76,7 @@
     <Compile Include="ChatBots\AutoDrop.cs" />
     <Compile Include="ChatBots\Mailer.cs" />
     <Compile Include="ChatBots\ReplayCapture.cs" />
+    <Compile Include="Commands\DropItem.cs" />
     <Compile Include="Commands\Entitycmd.cs" />
     <Compile Include="ChatBots\Alerts.cs" />
     <Compile Include="ChatBots\AntiAFK.cs" />
