@@ -735,6 +735,15 @@ namespace MinecraftClient
             }
         }
 
+        /// <summary>
+        /// Get a list of disallowed characters in chat
+        /// </summary>
+        /// <returns></returns>
+        public static char[] GetDisallowedChatCharacters()
+        {
+            return new char[] { (char)167, (char)127 }; // Minecraft color code and ASCII code DEL
+        }
+
         #region Management: Load/Unload ChatBots and Enable/Disable settings
 
         /// <summary>
@@ -1021,6 +1030,8 @@ namespace MinecraftClient
         {
             lock (chatQueue)
             {
+                if (String.IsNullOrEmpty(text))
+                    return;
                 int maxLength = handler.GetMaxChatMessageLength();
                 if (text.Length > maxLength) //Message is too long?
                 {
