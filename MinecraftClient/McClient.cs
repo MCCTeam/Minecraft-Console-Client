@@ -1005,10 +1005,6 @@ namespace MinecraftClient
         {
             lock (chatQueue)
             {
-                foreach (char disallowedChar in GetDisallowedChatCharacters())
-                {
-                    text = text.Replace(disallowedChar.ToString(), String.Empty);
-                }
                 if (String.IsNullOrEmpty(text))
                     return;
                 int maxLength = handler.GetMaxChatMessageLength();
