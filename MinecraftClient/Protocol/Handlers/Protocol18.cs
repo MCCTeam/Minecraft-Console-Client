@@ -18,6 +18,7 @@ using System.Diagnostics;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 using MinecraftClient.Logger;
+using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -422,7 +423,10 @@ namespace MinecraftClient.Protocol.Handlers
                                 int compressedDataSize = dataTypes.ReadNextInt(packetData);
                                 byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
                                 byte[] decompressed = ZlibUtils.Decompress(compressed);
-                                pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
+                                new Task(new Action(() =>
+                                {
+                                    pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
+                                })).Start();
                             }
                             else
                             {
@@ -446,7 +450,10 @@ namespace MinecraftClient.Protocol.Handlers
                                     else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
                                 }
                                 int dataSize = dataTypes.ReadNextVarInt(packetData);
-                                pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
+                                new Task(new Action(() =>
+                                {
+                                    pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
+                                })).Start();
                             }
                         }
                         break;

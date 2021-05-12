@@ -699,6 +699,7 @@ namespace MinecraftClient
         /// Schedule a task to run on the main thread
         /// </summary>
         /// <param name="task">Task to run</param>
+        /// <returns>Any result returned from delegate</returns>
         public object ScheduleTask(Delegate task)
         {
             var taskAndResult = new TaskWithResult(task);
