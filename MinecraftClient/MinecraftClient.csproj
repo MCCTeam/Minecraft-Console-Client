@@ -222,6 +222,7 @@
     <Compile Include="Protocol\MicrosoftAuthentication.cs" />
     <Compile Include="Protocol\ProxiedWebRequest.cs" />
     <Compile Include="Protocol\ReplayHandler.cs" />
+    <Compile Include="TaskWithResult.cs" />
     <Compile Include="Translations.cs" />
     <Compile Include="Inventory\VillagerInfo.cs" />
     <Compile Include="WinAPI\ConsoleIcon.cs" />

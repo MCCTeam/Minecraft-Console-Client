@@ -72,7 +72,7 @@ namespace MinecraftClient
                     {
                         if (delayTasks[i].Tick())
                         {
-                            Handler.ScheduleTask(delayTasks[i].Task);
+                            delayTasks[i].Task.DynamicInvoke();
                             tasksToRemove.Add(i);
                         }
                     }
@@ -1390,35 +1390,42 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Schedule a task to run on main thread
+        /// Schedule a task to run on main thread. Returned value cannot be retrieved
         /// </summary>
         /// <param name="task">Task to run</param>
         /// <param name="delayTicks">Run the task after X ticks (1 tick delay = ~100ms). 0 for no delay</param>
         /// <example>
         /// // Delay ~10 seconds
-        /// ScheduleTask(delegate () 
+        /// ScheduleTaskDelayed(new Action(() => 
         /// { 
         ///     /** Your code here **/
         ///     Console.WriteLine("10 seconds has passed");
-        /// }, 100);
+        /// }), 100);
         /// </example>
-        protected void ScheduleTask(Action task, int delayTicks = 0)
+        protected void ScheduleTaskDelayed(Delegate task, int delayTicks = 0)
         {
-            if (task != null)
+            if (delayTicks <= 0)
             {
-                if (delayTicks <= 0)
+                // Immediately schedule to run on next update
+                Handler.ScheduleTask(task);
+            }
+            else
+            {
+                lock (delayTasksLock)
                 {
-                    // Immediately schedule to run on next update
-                    Handler.ScheduleTask(task);
-                }
-                else
-                {
-                    lock (delayTasksLock)
-                    {
-                        delayTasks.Add(new DelayedTask(task, delayTicks));
-                    }
+                    delayTasks.Add(new DelayedTask(task, delayTicks));
                 }
             }
+        }
+
+        /// <summary>
+        /// Schedule a task to run on main thread.
+        /// </summary>
+        /// <param name="task">Task to run</param>
+        /// <returns>Any value returned from the task</returns>
+        protected object ScheduleTask(Delegate task)
+        {
+            return Handler.ScheduleTask(task);
         }
 
         /// <summary>
@@ -1468,16 +1475,16 @@ namespace MinecraftClient
 
         private class DelayedTask
         {
-            private Action task;
+            private Delegate task;
             private int Counter;
 
-            public Action Task { get { return task; } }
+            public Delegate Task { get { return task; } }
 
-            public DelayedTask(Action task)
+            public DelayedTask(Delegate task)
                 : this(task, 0)
             { }
 
-            public DelayedTask(Action task, int delayTicks)
+            public DelayedTask(Delegate task, int delayTicks)
             {
                 this.task = task;
                 Counter = delayTicks;
@@ -1493,17 +1500,6 @@ namespace MinecraftClient
                 if (Counter <= 0)
                     return true;
                 return false;
-            }
-
-            /// <summary>
-            /// Execute the task
-            /// </summary>
-            public void Execute()
-            {
-                if (task != null)
-                {
-                    task();
-                }
             }
         }
     }

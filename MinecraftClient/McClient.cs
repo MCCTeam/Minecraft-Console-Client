@@ -32,7 +32,7 @@ namespace MinecraftClient
         private Queue<string> chatQueue = new Queue<string>();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
 
-        private Action threadTasks;
+        private Queue<TaskWithResult> threadTasks = new Queue<TaskWithResult>();
         private object threadTasksLock = new object();
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
@@ -312,7 +312,7 @@ namespace MinecraftClient
                 while (client.Client.Connected)
                 {
                     string text = ConsoleIO.ReadLine();
-                    ScheduleTask(delegate () { HandleCommandPromptText(text); });
+                    ScheduleTask(new Action(() => { HandleCommandPromptText(text); }));
                 }   
             }
             catch (IOException) { }
@@ -641,12 +641,14 @@ namespace MinecraftClient
                     SendRespawnPacket();
             }
 
-            if (threadTasks != null)
+            
+            lock (threadTasksLock)
             {
-                lock (threadTasksLock)
+                while (threadTasks.Count > 0)
                 {
-                    threadTasks();
-                    threadTasks = null;
+                    var taskToRun = threadTasks.Dequeue();
+                    taskToRun.Execute();
+                    taskToRun.Release();
                 }
             }
         }
@@ -697,12 +699,15 @@ namespace MinecraftClient
         /// Schedule a task to run on the main thread
         /// </summary>
         /// <param name="task">Task to run</param>
-        public void ScheduleTask(Action task)
+        public object ScheduleTask(Delegate task)
         {
+            var taskAndResult = new TaskWithResult(task);
             lock (threadTasksLock)
             {
-                threadTasks += task;
+                threadTasks.Enqueue(taskAndResult);
             }
+            taskAndResult.Block();
+            return taskAndResult.Result;
         }
 
         #region Management: Load/Unload ChatBots and Enable/Disable settings
