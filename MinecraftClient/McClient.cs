@@ -701,13 +701,38 @@ namespace MinecraftClient
         /// <param name="task">Task to run</param>
         public object ScheduleTask(Delegate task)
         {
-            var taskAndResult = new TaskWithResult(task);
-            lock (threadTasksLock)
+            if (!InvokeRequired())
             {
-                threadTasks.Enqueue(taskAndResult);
+                return task.DynamicInvoke();
             }
-            taskAndResult.Block();
-            return taskAndResult.Result;
+            else
+            {
+                var taskAndResult = new TaskWithResult(task);
+                lock (threadTasksLock)
+                {
+                    threadTasks.Enqueue(taskAndResult);
+                }
+                taskAndResult.Block();
+                return taskAndResult.Result;
+            }
+        }
+
+        /// <summary>
+        /// Check if calling thread is main thread or other thread
+        /// </summary>
+        /// <returns>True if calling thread is other thread</returns>
+        public bool InvokeRequired()
+        {
+            int callingThreadId = Thread.CurrentThread.ManagedThreadId;
+            if (handler != null)
+            {
+                return handler.GetNetReadThreadId() != callingThreadId;
+            }
+            else
+            {
+                // net read thread (main thread) not yet ready
+                return false;
+            }
         }
 
         #region Management: Load/Unload ChatBots and Enable/Disable settings

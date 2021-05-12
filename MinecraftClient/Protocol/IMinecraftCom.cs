@@ -235,5 +235,11 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="selectedSlot">The slot of the trade, starts at 0.</param>
         bool SelectTrade(int selectedSlot);
+
+        /// <summary>
+        /// Get net read thread (main thread) ID
+        /// </summary>
+        /// <returns>Net read thread ID</returns>
+        int GetNetReadThreadId();
     }
 }

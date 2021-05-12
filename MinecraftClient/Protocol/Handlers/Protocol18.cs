@@ -67,7 +67,7 @@ namespace MinecraftClient.Protocol.Handlers
         PacketTypePalette packetPalette;
         SocketWrapper socketWrapper;
         DataTypes dataTypes;
-        Thread netRead;
+        Thread netRead; // main thread
         ILogger log;
 
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo forgeInfo)
@@ -1110,6 +1110,15 @@ namespace MinecraftClient.Protocol.Handlers
             netRead = new Thread(new ThreadStart(Updater));
             netRead.Name = "ProtocolPacketHandler";
             netRead.Start();
+        }
+
+        /// <summary>
+        /// Get net read thread (main thread) ID
+        /// </summary>
+        /// <returns>Net read thread ID</returns>
+        public int GetNetReadThreadId()
+        {
+            return netRead != null ? netRead.ManagedThreadId : -1;
         }
 
         /// <summary>
