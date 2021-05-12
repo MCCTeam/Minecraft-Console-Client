@@ -41,6 +41,13 @@ namespace MinecraftClient.Protocol
         ILogger GetLogger();
 
         /// <summary>
+        /// Schedule a task to run on the main thread
+        /// </summary>
+        /// <param name="task">Task to run</param>
+        /// <returns>Any result returned from delegate</returns>
+        object ScheduleTask(Delegate task);
+
+        /// <summary>
         /// Called when a network packet received or sent
         /// </summary>
         /// <remarks>
