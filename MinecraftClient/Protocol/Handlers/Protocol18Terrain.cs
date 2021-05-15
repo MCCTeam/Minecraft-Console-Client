@@ -162,12 +162,12 @@ namespace MinecraftClient.Protocol.Handlers
                         }
 
                         //We have our chunk, save the chunk into the world
-                        handler.ScheduleTask(new Action(() => 
+                        handler.InvokeOnMainThread(() =>
                         {
                             if (handler.GetWorld()[chunkX, chunkZ] == null)
                                 handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
                             handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
-                        }));
+                        });
 
                         //Pre-1.14 Lighting data
                         if (protocolversion < Protocol18Handler.MC114Version)
@@ -192,10 +192,10 @@ namespace MinecraftClient.Protocol.Handlers
                 if (chunksContinuous && chunkMask == 0)
                 {
                     //Unload the entire chunk column
-                    handler.ScheduleTask(new Action(() =>
+                    handler.InvokeOnMainThread(() =>
                     {
                         handler.GetWorld()[chunkX, chunkZ] = null;
-                    }));
+                    });
                 }
                 else
                 {
@@ -214,12 +214,12 @@ namespace MinecraftClient.Protocol.Handlers
                                         chunk[blockX, blockY, blockZ] = new Block(queue.Dequeue());
 
                             //We have our chunk, save the chunk into the world
-                            handler.ScheduleTask(new Action(() =>
+                            handler.InvokeOnMainThread(() =>
                             {
                                 if (handler.GetWorld()[chunkX, chunkZ] == null)
                                     handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
                                 handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
-                            }));
+                            });
                         }
                     }
 
@@ -248,10 +248,10 @@ namespace MinecraftClient.Protocol.Handlers
                 if (chunksContinuous && chunkMask == 0)
                 {
                     //Unload the entire chunk column
-                    handler.ScheduleTask(new Action(() =>
+                    handler.InvokeOnMainThread(() =>
                     {
                         handler.GetWorld()[chunkX, chunkZ] = null;
-                    }));
+                    });
                 }
                 else
                 {
@@ -297,12 +297,12 @@ namespace MinecraftClient.Protocol.Handlers
                                     for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
                                         chunk[blockX, blockY, blockZ] = new Block(blockTypes.Dequeue(), blockMeta.Dequeue());
 
-                            handler.ScheduleTask(new Action(() =>
+                            handler.InvokeOnMainThread(() =>
                             {
                                 if (handler.GetWorld()[chunkX, chunkZ] == null)
                                     handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
                                 handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
-                            }));
+                            });
                         }
                     }
                 }

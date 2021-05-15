@@ -1402,12 +1402,13 @@ namespace MinecraftClient
         ///     Console.WriteLine("10 seconds has passed");
         /// }), 100);
         /// </example>
-        protected void ScheduleTaskDelayed(Delegate task, int delayTicks = 0)
+        // TODO: Adapt to new IMinecraftComHandler API
+        /*protected void ScheduleTaskDelayed(Delegate task, int delayTicks = 0)
         {
             if (delayTicks <= 0)
             {
                 // Immediately schedule to run on next update
-                Handler.ScheduleTask(task);
+                Handler.InvokeOnMainThread(task);
             }
             else
             {
@@ -1416,17 +1417,19 @@ namespace MinecraftClient
                     delayTasks.Add(new DelayedTask(task, delayTicks));
                 }
             }
-        }
+        }*/
 
         /// <summary>
         /// Schedule a task to run on main thread.
         /// </summary>
         /// <param name="task">Task to run</param>
         /// <returns>Any value returned from the task</returns>
+        // TODO: Adapt to new IMinecraftComHandler API
+        /*
         protected object ScheduleTask(Delegate task)
         {
-            return Handler.ScheduleTask(task);
-        }
+            return Handler.InvokeOnMainThread(task);
+        }*/
 
         /// <summary>
         /// Command runner definition.

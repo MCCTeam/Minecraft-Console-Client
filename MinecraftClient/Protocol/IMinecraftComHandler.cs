@@ -41,11 +41,24 @@ namespace MinecraftClient.Protocol
         ILogger GetLogger();
 
         /// <summary>
-        /// Schedule a task to run on the main thread
+        /// Invoke a task on the main thread, wait for completion and retrieve return value.
         /// </summary>
-        /// <param name="task">Task to run</param>
-        /// <returns>Any result returned from delegate</returns>
-        object ScheduleTask(Delegate task);
+        /// <param name="task">Task to run with any type or return value</param>
+        /// <returns>Any result returned from task, result type is inferred from the task</returns>
+        /// <example>bool result = InvokeOnMainThread(methodThatReturnsAbool);</example>
+        /// <example>bool result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
+        /// <example>int result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
+        /// <typeparam name="T">Type of the return value</typeparam>
+        T InvokeOnMainThread<T>(Func<T> task);
+
+        /// <summary>
+        /// Invoke a task on the main thread and wait for completion
+        /// </summary>
+        /// <param name="task">Task to run without return value</param>
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument));</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); });</example>
+        void InvokeOnMainThread(Action task);
 
         /// <summary>
         /// Called when a network packet received or sent
