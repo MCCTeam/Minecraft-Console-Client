@@ -32,7 +32,7 @@ namespace MinecraftClient
         private Queue<string> chatQueue = new Queue<string>();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
 
-        private Queue<TaskWithResult> threadTasks = new Queue<TaskWithResult>();
+        private Queue<Action> threadTasks = new Queue<Action>();
         private object threadTasksLock = new object();
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
@@ -302,7 +302,6 @@ namespace MinecraftClient
 
         /// <summary>
         /// Allows the user to send chat messages, commands, and leave the server.
-        /// Enqueue text typed in the command prompt for processing on the main thread.
         /// </summary>
         private void CommandPrompt()
         {
@@ -312,7 +311,7 @@ namespace MinecraftClient
                 while (client.Client.Connected)
                 {
                     string text = ConsoleIO.ReadLine();
-                    ScheduleTask(new Action(() => { HandleCommandPromptText(text); }));
+                    InvokeOnMainThread(() => HandleCommandPromptText(text));
                 }   
             }
             catch (IOException) { }
@@ -641,14 +640,12 @@ namespace MinecraftClient
                     SendRespawnPacket();
             }
 
-            
             lock (threadTasksLock)
             {
                 while (threadTasks.Count > 0)
                 {
-                    var taskToRun = threadTasks.Dequeue();
-                    taskToRun.Execute();
-                    taskToRun.Release();
+                    Action taskToRun = threadTasks.Dequeue();
+                    taskToRun();
                 }
             }
         }
@@ -696,26 +693,41 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Schedule a task to run on the main thread
+        /// Invoke a task on the main thread, wait for completion and retrieve return value.
         /// </summary>
-        /// <param name="task">Task to run</param>
-        /// <returns>Any result returned from delegate</returns>
-        public object ScheduleTask(Delegate task)
+        /// <param name="task">Task to run with any type or return value</param>
+        /// <returns>Any result returned from task, result type is inferred from the task</returns>
+        /// <example>bool result = InvokeOnMainThread(methodThatReturnsAbool);</example>
+        /// <example>bool result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
+        /// <example>int result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
+        /// <typeparam name="T">Type of the return value</typeparam>
+        public T InvokeOnMainThread<T>(Func<T> task)
         {
             if (!InvokeRequired())
             {
-                return task.DynamicInvoke();
+                return task();
             }
             else
             {
-                var taskAndResult = new TaskWithResult(task);
+                TaskWithResult<T> taskWithResult = new TaskWithResult<T>(task);
                 lock (threadTasksLock)
                 {
-                    threadTasks.Enqueue(taskAndResult);
+                    threadTasks.Enqueue(taskWithResult.ExecuteSynchronously);
                 }
-                taskAndResult.Block();
-                return taskAndResult.Result;
+                return taskWithResult.WaitGetResult();
             }
+        }
+
+        /// <summary>
+        /// Invoke a task on the main thread and wait for completion
+        /// </summary>
+        /// <param name="task">Task to run without return value</param>
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument));</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); });</example>
+        public void InvokeOnMainThread(Action task)
+        {
+            InvokeOnMainThread(() => { task(); return true; });
         }
 
         /// <summary>

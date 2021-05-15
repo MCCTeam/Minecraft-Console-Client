@@ -423,10 +423,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 int compressedDataSize = dataTypes.ReadNextInt(packetData);
                                 byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
                                 byte[] decompressed = ZlibUtils.Decompress(compressed);
-                                new Task(new Action(() =>
-                                {
+                                new Thread(() => {
                                     pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
-                                })).Start();
+                                }).Start();
                             }
                             else
                             {
@@ -450,10 +449,9 @@ namespace MinecraftClient.Protocol.Handlers
                                     else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
                                 }
                                 int dataSize = dataTypes.ReadNextVarInt(packetData);
-                                new Task(new Action(() =>
-                                {
+                                new Thread(() => {
                                     pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
-                                })).Start();
+                                }).Start();
                             }
                         }
                         break;
