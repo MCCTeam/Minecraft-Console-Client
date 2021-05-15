@@ -45,6 +45,21 @@ namespace MinecraftClient.Commands
                             }
                             else return GetCmdDescTranslated();
                         }
+                        else if (args[0].ToLower() == "creativedelete")
+                        {
+                            if (args.Length >= 2)
+                            {
+                                int slot = int.Parse(args[1]);
+                                if (handler.GetGamemode() == 1)
+                                {
+                                    if (handler.DoCreativeGive(slot, ItemType.Null, 0, null))
+                                        return Translations.Get("cmd.inventory.creative_delete", slot);
+                                    else return Translations.Get("cmd.inventory.creative_fail");
+                                }
+                                else return Translations.Get("cmd.inventory.need_creative");
+                            }
+                            else return GetCmdDescTranslated();
+                        }
                         else if (args[0].ToLower().StartsWith("p"))
                         {
                             // player inventory is always ID 0
@@ -177,7 +192,7 @@ namespace MinecraftClient.Commands
 
         private string GetAvailableActions()
         {
-            return Translations.Get("cmd.inventory.help.available") + ": list, close, click, drop.";
+            return Translations.Get("cmd.inventory.help.available") + ": list, close, click, drop, creativegive, creativedelete.";
         }
 
         private string GetBasicUsage()
@@ -187,12 +202,7 @@ namespace MinecraftClient.Commands
 
         private string GetHelp()
         {
-            return Translations.Get("cmd.inventory.help.help", GetAvailableActions(), GetCreativeGiveHelp());
-        }
-
-        private string GetCreativeGiveHelp()
-        {
-            return Translations.Get("cmd.inventory.help.usage") + ": /inventory creativegive <slot> <itemtype> <count>";
+            return Translations.Get("cmd.inventory.help.help", GetAvailableActions());
         }
 
         private string GetSubCommandHelp(string cmd)
@@ -200,13 +210,17 @@ namespace MinecraftClient.Commands
             switch (cmd)
             {
                 case "list":
-                    return Translations.Get("cmd.inventory.help.list") + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> list";
+                    return Translations.Get("cmd.inventory.help.list") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> list";
                 case "close":
-                    return Translations.Get("cmd.inventory.help.close") + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> close";
+                    return Translations.Get("cmd.inventory.help.close") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> close";
                 case "click":
-                    return Translations.Get("cmd.inventory.help.click") + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> click <slot> [left|right|middle]. \nDefault is left click";
+                    return Translations.Get("cmd.inventory.help.click") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> click <slot> [left|right|middle]. \nDefault is left click";
                 case "drop":
-                    return Translations.Get("cmd.inventory.help.drop") + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> drop <slot> [all]. \nAll means drop full stack";
+                    return Translations.Get("cmd.inventory.help.drop") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> drop <slot> [all]. \nAll means drop full stack";
+                case "creativegive":
+                    return Translations.Get("cmd.inventory.help.creativegive") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory creativegive <slot> <itemtype> <amount>";
+                case "creativedelete":
+                    return Translations.Get("cmd.inventory.help.creativedelete") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory creativedelete <slot>";
                 case "help":
                     return GetHelp();
                 default:
