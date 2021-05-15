@@ -764,13 +764,16 @@ namespace MinecraftClient
         /// </summary>
         public void BotLoad(ChatBot b, bool init = true)
         {
-            b.SetHandler(this);
-            bots.Add(b);
-            if (init)
-                DispatchBotEvent(bot => bot.Initialize(), new ChatBot[] { b });
-            if (this.handler != null)
-                DispatchBotEvent(bot => bot.AfterGameJoined(), new ChatBot[] { b });
-            Settings.SingleCommand = "";
+            InvokeOnMainThread(() =>
+            {
+                b.SetHandler(this);
+                bots.Add(b);
+                if (init)
+                    DispatchBotEvent(bot => bot.Initialize(), new ChatBot[] { b });
+                if (this.handler != null)
+                    DispatchBotEvent(bot => bot.AfterGameJoined(), new ChatBot[] { b });
+                Settings.SingleCommand = "";
+            });
         }
 
         /// <summary>
@@ -778,14 +781,17 @@ namespace MinecraftClient
         /// </summary>
         public void BotUnLoad(ChatBot b)
         {
-            bots.RemoveAll(item => object.ReferenceEquals(item, b));
-
-            // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
-            var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
-            foreach (var entry in botRegistrations)
+            InvokeOnMainThread(() =>
             {
-                UnregisterPluginChannel(entry.Key, b);
-            }
+                bots.RemoveAll(item => object.ReferenceEquals(item, b));
+
+                // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
+                var botRegistrations = registeredBotPluginChannels.Where(entry => entry.Value.Contains(b)).ToList();
+                foreach (var entry in botRegistrations)
+                {
+                    UnregisterPluginChannel(entry.Key, b);
+                }
+            });
         }
 
         /// <summary>
@@ -793,7 +799,7 @@ namespace MinecraftClient
         /// </summary>
         public void BotClear()
         {
-            bots.Clear();
+            InvokeOnMainThread(bots.Clear);
         }
 
         /// <summary>
@@ -813,57 +819,6 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Enable or disable Terrain and Movements.
-        /// Please note that Enabling will be deferred until next relog, respawn or world change.
-        /// </summary>
-        /// <param name="enabled">Enabled</param>
-        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
-        public bool SetTerrainEnabled(bool enabled)
-        {
-            if (enabled)
-            {
-                if (!terrainAndMovementsEnabled)
-                {
-                    terrainAndMovementsRequested = true;
-                    return false;
-                }
-            }
-            else
-            {
-                terrainAndMovementsEnabled = false;
-                terrainAndMovementsRequested = false;
-                locationReceived = false;
-                world.Clear();
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Enable or disable Inventories.
-        /// Please note that Enabling will be deferred until next relog.
-        /// </summary>
-        /// <param name="enabled">Enabled</param>
-        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
-        public bool SetInventoryEnabled(bool enabled)
-        {
-            if (enabled)
-            {
-                if (!inventoryHandlingEnabled)
-                {
-                    inventoryHandlingRequested = true;
-                    return false;
-                }
-            }
-            else
-            {
-                inventoryHandlingEnabled = false;
-                inventoryHandlingRequested = false;
-                inventories.Clear();
-            }
-            return true;
-        }
-
-        /// <summary>
         /// Get entity handling status
         /// </summary>
         /// <returns></returns>
@@ -874,6 +829,63 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Enable or disable Terrain and Movements.
+        /// Please note that Enabling will be deferred until next relog, respawn or world change.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetTerrainEnabled(bool enabled)
+        {
+            return InvokeOnMainThread(() =>
+            {
+                if (enabled)
+                {
+                    if (!terrainAndMovementsEnabled)
+                    {
+                        terrainAndMovementsRequested = true;
+                        return false;
+                    }
+                }
+                else
+                {
+                    terrainAndMovementsEnabled = false;
+                    terrainAndMovementsRequested = false;
+                    locationReceived = false;
+                    world.Clear();
+                }
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// Enable or disable Inventories.
+        /// Please note that Enabling will be deferred until next relog.
+        /// </summary>
+        /// <param name="enabled">Enabled</param>
+        /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
+        public bool SetInventoryEnabled(bool enabled)
+        {
+            return InvokeOnMainThread(() =>
+            {
+                if (enabled)
+                {
+                    if (!inventoryHandlingEnabled)
+                    {
+                        inventoryHandlingRequested = true;
+                        return false;
+                    }
+                }
+                else
+                {
+                    inventoryHandlingEnabled = false;
+                    inventoryHandlingRequested = false;
+                    inventories.Clear();
+                }
+                return true;
+            });
+        }
+
+        /// <summary>
         /// Enable or disable Entity handling.
         /// Please note that Enabling will be deferred until next relog.
         /// </summary>
@@ -881,23 +893,26 @@ namespace MinecraftClient
         /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
         public bool SetEntityHandlingEnabled(bool enabled)
         {
-            if (!enabled)
+            return InvokeOnMainThread(() =>
             {
-                if (entityHandlingEnabled)
+                if (!enabled)
                 {
-                    entityHandlingEnabled = false;
-                    return true;
+                    if (entityHandlingEnabled)
+                    {
+                        entityHandlingEnabled = false;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
+                    // Entity Handling cannot be enabled in runtime (or after joining server)
                     return false;
                 }
-            }
-            else
-            {
-                // Entity Handling cannot be enabled in runtime (or after joining server)
-                return false;
-            }
+            });
         }
 
         /// <summary>
@@ -909,7 +924,7 @@ namespace MinecraftClient
         /// <param name="enabled"></param>
         public void SetNetworkPacketCaptureEnabled(bool enabled)
         {
-            networkPacketCaptureEnabled = enabled;
+            InvokeOnMainThread(() => { networkPacketCaptureEnabled = enabled; });
         }
 
         #endregion
@@ -959,9 +974,12 @@ namespace MinecraftClient
         /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
         public Container GetInventory(int inventoryID)
         {
-            if (inventories.ContainsKey(inventoryID))
-                return inventories[inventoryID];
-            return null;
+            return InvokeOnMainThread(() =>
+            {
+                if (inventories.ContainsKey(inventoryID))
+                    return inventories[inventoryID];
+                return null;
+            });
         }
 
         /// <summary>
@@ -1075,7 +1093,7 @@ namespace MinecraftClient
         /// <returns>True if packet successfully sent</returns>
         public bool SendRespawnPacket()
         {
-            return handler.SendRespawnPacket();
+            return InvokeOnMainThread<bool>(handler.SendRespawnPacket);
         }
 
         /// <summary>
@@ -1085,17 +1103,20 @@ namespace MinecraftClient
         /// <param name="bot">The bot to register the channel for.</param>
         public void RegisterPluginChannel(string channel, ChatBot bot)
         {
-            if (registeredBotPluginChannels.ContainsKey(channel))
+            InvokeOnMainThread(() =>
             {
-                registeredBotPluginChannels[channel].Add(bot);
-            }
-            else
-            {
-                List<ChatBot> bots = new List<ChatBot>();
-                bots.Add(bot);
-                registeredBotPluginChannels[channel] = bots;
-                SendPluginChannelMessage("REGISTER", Encoding.UTF8.GetBytes(channel), true);
-            }
+                if (registeredBotPluginChannels.ContainsKey(channel))
+                {
+                    registeredBotPluginChannels[channel].Add(bot);
+                }
+                else
+                {
+                    List<ChatBot> bots = new List<ChatBot>();
+                    bots.Add(bot);
+                    registeredBotPluginChannels[channel] = bots;
+                    SendPluginChannelMessage("REGISTER", Encoding.UTF8.GetBytes(channel), true);
+                }
+            });
         }
 
         /// <summary>
@@ -1105,16 +1126,19 @@ namespace MinecraftClient
         /// <param name="bot">The bot to unregister the channel for.</param>
         public void UnregisterPluginChannel(string channel, ChatBot bot)
         {
-            if (registeredBotPluginChannels.ContainsKey(channel))
+            InvokeOnMainThread(() =>
             {
-                List<ChatBot> registeredBots = registeredBotPluginChannels[channel];
-                registeredBots.RemoveAll(item => object.ReferenceEquals(item, bot));
-                if (registeredBots.Count == 0)
+                if (registeredBotPluginChannels.ContainsKey(channel))
                 {
-                    registeredBotPluginChannels.Remove(channel);
-                    SendPluginChannelMessage("UNREGISTER", Encoding.UTF8.GetBytes(channel), true);
+                    List<ChatBot> registeredBots = registeredBotPluginChannels[channel];
+                    registeredBots.RemoveAll(item => object.ReferenceEquals(item, bot));
+                    if (registeredBots.Count == 0)
+                    {
+                        registeredBotPluginChannels.Remove(channel);
+                        SendPluginChannelMessage("UNREGISTER", Encoding.UTF8.GetBytes(channel), true);
+                    }
                 }
-            }
+            });
         }
 
         /// <summary>
@@ -1127,18 +1151,21 @@ namespace MinecraftClient
         /// <returns>Whether the packet was sent: true if it was sent, false if there was a connection error or it wasn't registered.</returns>
         public bool SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false)
         {
-            if (!sendEvenIfNotRegistered)
+            return InvokeOnMainThread(() =>
             {
-                if (!registeredBotPluginChannels.ContainsKey(channel))
+                if (!sendEvenIfNotRegistered)
                 {
-                    return false;
+                    if (!registeredBotPluginChannels.ContainsKey(channel))
+                    {
+                        return false;
+                    }
+                    if (!registeredServerPluginChannels.Contains(channel))
+                    {
+                        return false;
+                    }
                 }
-                if (!registeredServerPluginChannels.Contains(channel))
-                {
-                    return false;
-                }
-            }
-            return handler.SendPluginChannelPacket(channel, data);
+                return handler.SendPluginChannelPacket(channel, data);
+            });
         }
 
         /// <summary>
@@ -1147,7 +1174,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool SendEntityAction(EntityActionType entityAction)
         {
-            return handler.SendEntityAction(playerEntityID, (int)entityAction);
+            return InvokeOnMainThread(() => handler.SendEntityAction(playerEntityID, (int)entityAction));
         }
 
         /// <summary>
@@ -1156,7 +1183,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnHand()
         {
-            return handler.SendUseItem(0);
+            return InvokeOnMainThread(() => handler.SendUseItem(0));
         }
 
         /// <summary>
@@ -1165,287 +1192,290 @@ namespace MinecraftClient
         /// <returns>TRUE if the slot was successfully clicked</returns>
         public bool DoWindowAction(int windowId, int slotId, WindowActionType action)
         {
-            Item item = null;
-            if (inventories.ContainsKey(windowId) && inventories[windowId].Items.ContainsKey(slotId))
-                item = inventories[windowId].Items[slotId];
-
-            // Inventory update must be after sending packet
-            bool result = handler.SendWindowAction(windowId, slotId, action, item);
-
-            // Update our inventory base on action type
-            var inventory = GetInventory(windowId);
-            var playerInventory = GetInventory(0);
-            if (inventory != null)
+            return InvokeOnMainThread(() =>
             {
-                switch (action)
-                {
-                    case WindowActionType.LeftClick:
-                        // Check if cursor have item (slot -1)
-                        if (playerInventory.Items.ContainsKey(-1))
-                        {
-                            // When item on cursor and clicking slot 0, nothing will happen
-                            if (slotId == 0) break;
+                Item item = null;
+                if (inventories.ContainsKey(windowId) && inventories[windowId].Items.ContainsKey(slotId))
+                    item = inventories[windowId].Items[slotId];
 
-                            // Check target slot also have item?
-                            if (inventory.Items.ContainsKey(slotId))
+                // Inventory update must be after sending packet
+                bool result = handler.SendWindowAction(windowId, slotId, action, item);
+
+                // Update our inventory base on action type
+                var inventory = GetInventory(windowId);
+                var playerInventory = GetInventory(0);
+                if (inventory != null)
+                {
+                    switch (action)
+                    {
+                        case WindowActionType.LeftClick:
+                            // Check if cursor have item (slot -1)
+                            if (playerInventory.Items.ContainsKey(-1))
                             {
-                                // Check if both item are the same?
-                                if (inventory.Items[slotId].Type == playerInventory.Items[-1].Type)
+                                // When item on cursor and clicking slot 0, nothing will happen
+                                if (slotId == 0) break;
+
+                                // Check target slot also have item?
+                                if (inventory.Items.ContainsKey(slotId))
                                 {
-                                    int maxCount = inventory.Items[slotId].Type.StackCount();
-                                    // Check item stacking
-                                    if ((inventory.Items[slotId].Count + playerInventory.Items[-1].Count) <= maxCount)
+                                    // Check if both item are the same?
+                                    if (inventory.Items[slotId].Type == playerInventory.Items[-1].Type)
                                     {
-                                        // Put cursor item to target
-                                        inventory.Items[slotId].Count += playerInventory.Items[-1].Count;
-                                        playerInventory.Items.Remove(-1);
+                                        int maxCount = inventory.Items[slotId].Type.StackCount();
+                                        // Check item stacking
+                                        if ((inventory.Items[slotId].Count + playerInventory.Items[-1].Count) <= maxCount)
+                                        {
+                                            // Put cursor item to target
+                                            inventory.Items[slotId].Count += playerInventory.Items[-1].Count;
+                                            playerInventory.Items.Remove(-1);
+                                        }
+                                        else
+                                        {
+                                            // Leave some item on cursor
+                                            playerInventory.Items[-1].Count -= (maxCount - inventory.Items[slotId].Count);
+                                            inventory.Items[slotId].Count = maxCount;
+                                        }
                                     }
                                     else
                                     {
-                                        // Leave some item on cursor
-                                        playerInventory.Items[-1].Count -= (maxCount - inventory.Items[slotId].Count);
-                                        inventory.Items[slotId].Count = maxCount;
+                                        // Swap two items
+                                        var itemTmp = playerInventory.Items[-1];
+                                        playerInventory.Items[-1] = inventory.Items[slotId];
+                                        inventory.Items[slotId] = itemTmp;
                                     }
                                 }
                                 else
                                 {
-                                    // Swap two items
-                                    var itemTmp = playerInventory.Items[-1];
-                                    playerInventory.Items[-1] = inventory.Items[slotId];
-                                    inventory.Items[slotId] = itemTmp;
+                                    // Put cursor item to target
+                                    inventory.Items[slotId] = playerInventory.Items[-1];
+                                    playerInventory.Items.Remove(-1);
                                 }
                             }
                             else
                             {
-                                // Put cursor item to target
-                                inventory.Items[slotId] = playerInventory.Items[-1];
-                                playerInventory.Items.Remove(-1);
-                            }
-                        }
-                        else
-                        {
-                            // Check target slot have item?
-                            if (inventory.Items.ContainsKey(slotId))
-                            {
-                                // When taking item from slot 0, server will update us
-                                if (slotId == 0) break;
+                                // Check target slot have item?
+                                if (inventory.Items.ContainsKey(slotId))
+                                {
+                                    // When taking item from slot 0, server will update us
+                                    if (slotId == 0) break;
 
-                                // Put target slot item to cursor
-                                playerInventory.Items[-1] = inventory.Items[slotId];
-                                inventory.Items.Remove(slotId);
-                            }
-                        }
-                        break;
-                    case WindowActionType.RightClick:
-                        // Check if cursor have item (slot -1)
-                        if (playerInventory.Items.ContainsKey(-1))
-                        {
-                            // When item on cursor and clicking slot 0, nothing will happen
-                            if (slotId == 0) break;
-
-                            // Check target slot have item?
-                            if (inventory.Items.ContainsKey(slotId))
-                            {
-                                // Check if both item are the same?
-                                if (inventory.Items[slotId].Type == playerInventory.Items[-1].Type)
-                                {
-                                    // Check item stacking
-                                    if (inventory.Items[slotId].Count < inventory.Items[slotId].Type.StackCount())
-                                    {
-                                        // Drop 1 item count from cursor
-                                        playerInventory.Items[-1].Count--;
-                                        inventory.Items[slotId].Count++;
-                                    }
-                                }
-                                else
-                                {
-                                    // Swap two items
-                                    var itemTmp = playerInventory.Items[-1];
-                                    playerInventory.Items[-1] = inventory.Items[slotId];
-                                    inventory.Items[slotId] = itemTmp;
-                                }
-                            }
-                            else
-                            {
-                                // Drop 1 item count from cursor
-                                var itemTmp = playerInventory.Items[-1];
-                                var itemClone = new Item(itemTmp.Type, 1, itemTmp.NBT);
-                                inventory.Items[slotId] = itemClone;
-                                playerInventory.Items[-1].Count--;
-                            }
-                        }
-                        else
-                        {
-                            // Check target slot have item?
-                            if (inventory.Items.ContainsKey(slotId))
-                            {
-                                if (slotId == 0)
-                                {
-                                    // no matter how many item in slot 0, only 1 will be taken out
-                                    // Also server will update us
-                                    break;
-                                }
-                                if (inventory.Items[slotId].Count == 1)
-                                {
-                                    // Only 1 item count. Put it to cursor
+                                    // Put target slot item to cursor
                                     playerInventory.Items[-1] = inventory.Items[slotId];
                                     inventory.Items.Remove(slotId);
                                 }
-                                else
+                            }
+                            break;
+                        case WindowActionType.RightClick:
+                            // Check if cursor have item (slot -1)
+                            if (playerInventory.Items.ContainsKey(-1))
+                            {
+                                // When item on cursor and clicking slot 0, nothing will happen
+                                if (slotId == 0) break;
+
+                                // Check target slot have item?
+                                if (inventory.Items.ContainsKey(slotId))
                                 {
-                                    // Take half of the item stack to cursor
-                                    if (inventory.Items[slotId].Count % 2 == 0)
+                                    // Check if both item are the same?
+                                    if (inventory.Items[slotId].Type == playerInventory.Items[-1].Type)
                                     {
-                                        // Can be evenly divided
-                                        Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item(itemTmp.Type, itemTmp.Count / 2, itemTmp.NBT);
-                                        inventory.Items[slotId].Count = itemTmp.Count / 2;
+                                        // Check item stacking
+                                        if (inventory.Items[slotId].Count < inventory.Items[slotId].Type.StackCount())
+                                        {
+                                            // Drop 1 item count from cursor
+                                            playerInventory.Items[-1].Count--;
+                                            inventory.Items[slotId].Count++;
+                                        }
                                     }
                                     else
                                     {
-                                        // Cannot be evenly divided. item count on cursor is always larger than item on inventory
-                                        Item itemTmp = inventory.Items[slotId];
-                                        playerInventory.Items[-1] = new Item(itemTmp.Type, (itemTmp.Count + 1) / 2, itemTmp.NBT);
-                                        inventory.Items[slotId].Count = (itemTmp.Count - 1) / 2;
+                                        // Swap two items
+                                        var itemTmp = playerInventory.Items[-1];
+                                        playerInventory.Items[-1] = inventory.Items[slotId];
+                                        inventory.Items[slotId] = itemTmp;
                                     }
                                 }
-                            }
-                        }
-                        break;
-                    case WindowActionType.ShiftClick:
-                        if (slotId == 0) break;
-                        if (inventory.Items.ContainsKey(slotId))
-                        {
-                            /* Target slot have item */
-
-                            int upperStartSlot = 9;
-                            int upperEndSlot = 35;
-                            
-                            switch (inventory.Type)
-                            {
-                                case ContainerType.PlayerInventory:
-                                    upperStartSlot = 9;
-                                    upperEndSlot = 35;
-                                    break;
-                                case ContainerType.Crafting:
-                                    upperStartSlot = 1;
-                                    upperEndSlot = 9;
-                                    break;
-                                // TODO: Define more container type here
-                            }
-
-                            // Cursor have item or not doesn't matter
-                            // If hotbar already have same item, will put on it first until every stack are full
-                            // If no more same item , will put on the first empty slot (smaller slot id)
-                            // If inventory full, item will not move
-                            if (slotId <= upperEndSlot)
-                            {
-                                // Clicked slot is on upper side inventory, put it to hotbar
-                                // Now try to find same item and put on them
-                                var itemsClone = playerInventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
-                                foreach (KeyValuePair<int, Item> _item in itemsClone)
+                                else
                                 {
-                                    if (_item.Key <= upperEndSlot) continue;
-
-                                    int maxCount = _item.Value.Type.StackCount();
-                                    if (_item.Value.Type == inventory.Items[slotId].Type && _item.Value.Count < maxCount)
-                                    {
-                                        // Put item on that stack
-                                        int spaceLeft = maxCount - _item.Value.Count;
-                                        if (inventory.Items[slotId].Count <= spaceLeft)
-                                        {
-                                            // Can fit into the stack
-                                            inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
-                                            inventory.Items.Remove(slotId);
-                                        }
-                                        else
-                                        {
-                                            inventory.Items[slotId].Count -= spaceLeft;
-                                            inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
-                                        }
-                                    }
-                                }
-                                if (inventory.Items[slotId].Count > 0)
-                                {
-                                    int[] emptySlots = inventory.GetEmpytSlots();
-                                    int emptySlot = -2;
-                                    foreach (int slot in emptySlots)
-                                    {
-                                        if (slot <= upperEndSlot) continue;
-                                        emptySlot = slot;
-                                        break;
-                                    }
-                                    if (emptySlot != -2)
-                                    {
-                                        var itemTmp = inventory.Items[slotId];
-                                        inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
-                                        inventory.Items.Remove(slotId);
-                                    }
+                                    // Drop 1 item count from cursor
+                                    var itemTmp = playerInventory.Items[-1];
+                                    var itemClone = new Item(itemTmp.Type, 1, itemTmp.NBT);
+                                    inventory.Items[slotId] = itemClone;
+                                    playerInventory.Items[-1].Count--;
                                 }
                             }
                             else
                             {
-                                // Clicked slot is on hotbar, put it to upper inventory
-                                // Now try to find same item and put on them
-                                var itemsClone = playerInventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
-                                foreach (KeyValuePair<int, Item> _item in itemsClone)
+                                // Check target slot have item?
+                                if (inventory.Items.ContainsKey(slotId))
                                 {
-                                    if (_item.Key < upperStartSlot) continue;
-                                    if (_item.Key >= upperEndSlot) break;
-
-                                    int maxCount = _item.Value.Type.StackCount();
-                                    if (_item.Value.Type == inventory.Items[slotId].Type && _item.Value.Count < maxCount)
+                                    if (slotId == 0)
                                     {
-                                        // Put item on that stack
-                                        int spaceLeft = maxCount - _item.Value.Count;
-                                        if (inventory.Items[slotId].Count <= spaceLeft)
+                                        // no matter how many item in slot 0, only 1 will be taken out
+                                        // Also server will update us
+                                        break;
+                                    }
+                                    if (inventory.Items[slotId].Count == 1)
+                                    {
+                                        // Only 1 item count. Put it to cursor
+                                        playerInventory.Items[-1] = inventory.Items[slotId];
+                                        inventory.Items.Remove(slotId);
+                                    }
+                                    else
+                                    {
+                                        // Take half of the item stack to cursor
+                                        if (inventory.Items[slotId].Count % 2 == 0)
                                         {
-                                            // Can fit into the stack
-                                            inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
-                                            inventory.Items.Remove(slotId);
+                                            // Can be evenly divided
+                                            Item itemTmp = inventory.Items[slotId];
+                                            playerInventory.Items[-1] = new Item(itemTmp.Type, itemTmp.Count / 2, itemTmp.NBT);
+                                            inventory.Items[slotId].Count = itemTmp.Count / 2;
                                         }
                                         else
                                         {
-                                            inventory.Items[slotId].Count -= spaceLeft;
-                                            inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
+                                            // Cannot be evenly divided. item count on cursor is always larger than item on inventory
+                                            Item itemTmp = inventory.Items[slotId];
+                                            playerInventory.Items[-1] = new Item(itemTmp.Type, (itemTmp.Count + 1) / 2, itemTmp.NBT);
+                                            inventory.Items[slotId].Count = (itemTmp.Count - 1) / 2;
                                         }
                                     }
                                 }
-                                if (inventory.Items[slotId].Count > 0)
+                            }
+                            break;
+                        case WindowActionType.ShiftClick:
+                            if (slotId == 0) break;
+                            if (inventory.Items.ContainsKey(slotId))
+                            {
+                                /* Target slot have item */
+
+                                int upperStartSlot = 9;
+                                int upperEndSlot = 35;
+
+                                switch (inventory.Type)
                                 {
-                                    int[] emptySlots = inventory.GetEmpytSlots();
-                                    int emptySlot = -2;
-                                    foreach (int slot in emptySlots)
-                                    {
-                                        if (slot < upperStartSlot) continue;
-                                        if (slot >= upperEndSlot) break;
-                                        emptySlot = slot;
+                                    case ContainerType.PlayerInventory:
+                                        upperStartSlot = 9;
+                                        upperEndSlot = 35;
                                         break;
-                                    }
-                                    if (emptySlot != -2)
+                                    case ContainerType.Crafting:
+                                        upperStartSlot = 1;
+                                        upperEndSlot = 9;
+                                        break;
+                                    // TODO: Define more container type here
+                                }
+
+                                // Cursor have item or not doesn't matter
+                                // If hotbar already have same item, will put on it first until every stack are full
+                                // If no more same item , will put on the first empty slot (smaller slot id)
+                                // If inventory full, item will not move
+                                if (slotId <= upperEndSlot)
+                                {
+                                    // Clicked slot is on upper side inventory, put it to hotbar
+                                    // Now try to find same item and put on them
+                                    var itemsClone = playerInventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
+                                    foreach (KeyValuePair<int, Item> _item in itemsClone)
                                     {
-                                        var itemTmp = inventory.Items[slotId];
-                                        inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
-                                        inventory.Items.Remove(slotId);
+                                        if (_item.Key <= upperEndSlot) continue;
+
+                                        int maxCount = _item.Value.Type.StackCount();
+                                        if (_item.Value.Type == inventory.Items[slotId].Type && _item.Value.Count < maxCount)
+                                        {
+                                            // Put item on that stack
+                                            int spaceLeft = maxCount - _item.Value.Count;
+                                            if (inventory.Items[slotId].Count <= spaceLeft)
+                                            {
+                                                // Can fit into the stack
+                                                inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
+                                                inventory.Items.Remove(slotId);
+                                            }
+                                            else
+                                            {
+                                                inventory.Items[slotId].Count -= spaceLeft;
+                                                inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
+                                            }
+                                        }
+                                    }
+                                    if (inventory.Items[slotId].Count > 0)
+                                    {
+                                        int[] emptySlots = inventory.GetEmpytSlots();
+                                        int emptySlot = -2;
+                                        foreach (int slot in emptySlots)
+                                        {
+                                            if (slot <= upperEndSlot) continue;
+                                            emptySlot = slot;
+                                            break;
+                                        }
+                                        if (emptySlot != -2)
+                                        {
+                                            var itemTmp = inventory.Items[slotId];
+                                            inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
+                                            inventory.Items.Remove(slotId);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // Clicked slot is on hotbar, put it to upper inventory
+                                    // Now try to find same item and put on them
+                                    var itemsClone = playerInventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
+                                    foreach (KeyValuePair<int, Item> _item in itemsClone)
+                                    {
+                                        if (_item.Key < upperStartSlot) continue;
+                                        if (_item.Key >= upperEndSlot) break;
+
+                                        int maxCount = _item.Value.Type.StackCount();
+                                        if (_item.Value.Type == inventory.Items[slotId].Type && _item.Value.Count < maxCount)
+                                        {
+                                            // Put item on that stack
+                                            int spaceLeft = maxCount - _item.Value.Count;
+                                            if (inventory.Items[slotId].Count <= spaceLeft)
+                                            {
+                                                // Can fit into the stack
+                                                inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
+                                                inventory.Items.Remove(slotId);
+                                            }
+                                            else
+                                            {
+                                                inventory.Items[slotId].Count -= spaceLeft;
+                                                inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
+                                            }
+                                        }
+                                    }
+                                    if (inventory.Items[slotId].Count > 0)
+                                    {
+                                        int[] emptySlots = inventory.GetEmpytSlots();
+                                        int emptySlot = -2;
+                                        foreach (int slot in emptySlots)
+                                        {
+                                            if (slot < upperStartSlot) continue;
+                                            if (slot >= upperEndSlot) break;
+                                            emptySlot = slot;
+                                            break;
+                                        }
+                                        if (emptySlot != -2)
+                                        {
+                                            var itemTmp = inventory.Items[slotId];
+                                            inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
+                                            inventory.Items.Remove(slotId);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        break;
-                    case WindowActionType.DropItem:
-                        if (inventory.Items.ContainsKey(slotId))
-                            inventory.Items[slotId].Count--;
-                        
-                        if (inventory.Items[slotId].Count <= 0)
-                            inventory.Items.Remove(slotId);
-                        break;
-                    case WindowActionType.DropItemStack:
-                        inventory.Items.Remove(slotId);
-                        break;
-                }
-            }
+                            break;
+                        case WindowActionType.DropItem:
+                            if (inventory.Items.ContainsKey(slotId))
+                                inventory.Items[slotId].Count--;
 
-            return result;
+                            if (inventory.Items[slotId].Count <= 0)
+                                inventory.Items.Remove(slotId);
+                            break;
+                        case WindowActionType.DropItemStack:
+                            inventory.Items.Remove(slotId);
+                            break;
+                    }
+                }
+
+                return result;
+            });
         }
 
         /// <summary>
@@ -1459,7 +1489,7 @@ namespace MinecraftClient
         /// <returns>TRUE if item given successfully</returns>
         public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> nbt = null)
         {
-            return handler.SendCreativeInventoryAction(slot, itemType, count, nbt);
+            return InvokeOnMainThread(() => handler.SendCreativeInventoryAction(slot, itemType, count, nbt));
         }
 
         /// <summary>
@@ -1469,7 +1499,7 @@ namespace MinecraftClient
         /// <returns>TRUE if animation successfully done</returns>
         public bool DoAnimation(int animation)
         {
-            return handler.SendAnimation(animation, playerEntityID);
+            return InvokeOnMainThread(() => handler.SendAnimation(animation, playerEntityID));
         }
 
         /// <summary>
@@ -1480,13 +1510,16 @@ namespace MinecraftClient
         /// <remarks>Sending close window for inventory 0 can cause server to update our inventory if there are any item in the crafting area</remarks>
         public bool CloseInventory(int windowId)
         {
-            if (inventories.ContainsKey(windowId))
+            return InvokeOnMainThread(() =>
             {
-                if (windowId != 0)
-                    inventories.Remove(windowId);
-                return handler.SendCloseWindow(windowId);
-            }
-            return false;
+                if (inventories.ContainsKey(windowId))
+                {
+                    if (windowId != 0)
+                        inventories.Remove(windowId);
+                    return handler.SendCloseWindow(windowId);
+                }
+                return false;
+            });
         }
 
         /// <summary>
@@ -1495,13 +1528,14 @@ namespace MinecraftClient
         /// <returns>TRUE if the uccessfully clear</returns>
         public bool ClearInventories()
         {
-            if (inventoryHandlingEnabled)
+            if (!inventoryHandlingEnabled)
+                return false;
+            return InvokeOnMainThread(() =>
             {
                 inventories.Clear();
                 inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
                 return true;
-            }
-            else { return false; }
+            });
         }
 
         /// <summary>
@@ -1513,18 +1547,21 @@ namespace MinecraftClient
         /// <returns>TRUE if interaction succeeded</returns>
         public bool InteractEntity(int EntityID, int type, Hand hand = Hand.MainHand)
         {
-            if (entities.ContainsKey(EntityID))
+            return InvokeOnMainThread(() =>
             {
-                if (type == 0)
+                if (entities.ContainsKey(EntityID))
                 {
-                    return handler.SendInteractEntity(EntityID, type, (int)hand);
+                    if (type == 0)
+                    {
+                        return handler.SendInteractEntity(EntityID, type, (int)hand);
+                    }
+                    else
+                    {
+                        return handler.SendInteractEntity(EntityID, type);
+                    }
                 }
-                else
-                {
-                    return handler.SendInteractEntity(EntityID, type);
-                }
-            }
-            else { return false; }
+                else return false;
+            });
         }
 
         /// <summary>
@@ -1535,7 +1572,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully placed</returns>
         public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return handler.SendPlayerBlockPlacement((int)hand, location, blockFace);
+            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace));
         }
 
         /// <summary>
@@ -1546,7 +1583,9 @@ namespace MinecraftClient
         /// <param name="lookAtBlock">Also look at the block before digging</param>
         public bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
         {
-            if (GetTerrainEnabled())
+            if (!GetTerrainEnabled())
+                return false;
+            return InvokeOnMainThread(() =>
             {
                 // TODO select best face from current player location
                 Direction blockFace = Direction.Down;
@@ -1560,8 +1599,7 @@ namespace MinecraftClient
                 return handler.SendPlayerDigging(0, location, blockFace)
                     && (!swingArms || DoAnimation((int)Hand.MainHand))
                     && handler.SendPlayerDigging(2, location, blockFace);
-            }
-            else return false;
+            });
         }
 
         /// <summary>
@@ -1573,8 +1611,11 @@ namespace MinecraftClient
         {
             if (slot >= 0 && slot <= 8)
             {
-                CurrentSlot = Convert.ToByte(slot);
-                return handler.SendHeldItemChange(slot);
+                return InvokeOnMainThread(() =>
+                {
+                    CurrentSlot = Convert.ToByte(slot);
+                    return handler.SendHeldItemChange(slot);
+                });
             }
             else return false;
         }
@@ -1590,7 +1631,7 @@ namespace MinecraftClient
         public bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
             // TODO Open sign editor first https://wiki.vg/Protocol#Open_Sign_Editor
-            return handler.SendUpdateSign(location, line1, line2, line3, line4);
+            return InvokeOnMainThread(() => handler.SendUpdateSign(location, line1, line2, line3, line4));
         }
 
         /// <summary>
@@ -1599,7 +1640,7 @@ namespace MinecraftClient
         /// <param name="selectedSlot">The slot of the trade, starts at 0.</param>
         public bool SelectTrade(int selectedSlot)
         {
-            return handler.SelectTrade(selectedSlot);
+            return InvokeOnMainThread(() => handler.SelectTrade(selectedSlot));
         }
         
         /// <summary>
@@ -1611,7 +1652,7 @@ namespace MinecraftClient
         /// <param name="flags">command block flags</param>
         public bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
         {
-            return handler.UpdateCommandBlock(location, command, mode, flags);
+            return InvokeOnMainThread(() => handler.UpdateCommandBlock(location, command, mode, flags));
         }
         #endregion
 

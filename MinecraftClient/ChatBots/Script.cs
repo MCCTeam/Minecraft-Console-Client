@@ -24,7 +24,6 @@ namespace MinecraftClient.ChatBots
         private string owner;
         private bool csharp;
         private Thread thread;
-        private ManualResetEvent tpause;
         private Dictionary<string, object> localVars;
 
         public Script(string filename)
@@ -157,12 +156,11 @@ namespace MinecraftClient.ChatBots
                 //Initialize thread on first update
                 if (thread == null)
                 {
-                    tpause = new ManualResetEvent(false);
                     thread = new Thread(() =>
                     {
                         try
                         {
-                            CSharpRunner.Run(this, tpause, lines, args, localVars);
+                            CSharpRunner.Run(this, lines, args, localVars);
                         }
                         catch (CSharpException e)
                         {
@@ -173,16 +171,14 @@ namespace MinecraftClient.ChatBots
                             LogToConsole(e.InnerException);
                         }
                     });
+                    thread.Name = "MCC Script - " + file;
                     thread.Start();
                 }
 
-                //Let the thread run for a short span of time
-                if (thread != null)
+                //Unload bot once the thread has finished running
+                if (thread != null && !thread.IsAlive)
                 {
-                    tpause.Set();
-                    tpause.Reset();
-                    if (!thread.IsAlive)
-                        UnloadBot();
+                    UnloadBot();
                 }
             }
             else //Classic MCC script interpreter
