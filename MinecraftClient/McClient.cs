@@ -301,63 +301,89 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Allows the user to send chat messages, commands, and leave the server.
+        /// Called ~10 times per second by the protocol handler
         /// </summary>
-        private void CommandPrompt()
+        public void OnUpdate()
         {
-            try
+            foreach (ChatBot bot in bots.ToArray())
             {
-                Thread.Sleep(500);
-                while (client.Client.Connected)
+                try
                 {
-                    string text = ConsoleIO.ReadLine();
-                    InvokeOnMainThread(() => HandleCommandPromptText(text));
-                }   
+                    bot.Update();
+                    bot.UpdateInternal();
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
             }
-            catch (IOException) { }
-            catch (NullReferenceException) { }
+
+            lock (chatQueue)
+            {
+                if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
+                {
+                    string text = chatQueue.Dequeue();
+                    handler.SendChatMessage(text);
+                    nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
+                }
+            }
+
+            if (terrainAndMovementsEnabled && locationReceived)
+            {
+                lock (locationLock)
+                {
+                    for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    {
+                        if (_yaw == null || _pitch == null)
+                        {
+                            if (steps != null && steps.Count > 0)
+                            {
+                                location = steps.Dequeue();
+                            }
+                            else if (path != null && path.Count > 0)
+                            {
+                                Location next = path.Dequeue();
+                                steps = Movement.Move2Steps(location, next, ref motionY);
+                                UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
+                            }
+                            else
+                            {
+                                location = Movement.HandleGravity(world, location, ref motionY);
+                            }
+                        }
+                        playerYaw = _yaw == null ? playerYaw : _yaw.Value;
+                        playerPitch = _pitch == null ? playerPitch : _pitch.Value;
+                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
+                    }
+                    // First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
+                    // Once yaw and pitch have been sent, switch back to location-only updates (without yaw and pitch)
+                    _yaw = null;
+                    _pitch = null;
+                }
+            }
+
+            if (Settings.AutoRespawn && respawnTicks > 0)
+            {
+                respawnTicks--;
+                if (respawnTicks == 0)
+                    SendRespawnPacket();
+            }
+
+            lock (threadTasksLock)
+            {
+                while (threadTasks.Count > 0)
+                {
+                    Action taskToRun = threadTasks.Dequeue();
+                    taskToRun();
+                }
+            }
         }
 
-        /// <summary>
-        /// Allows the user to send chat messages, commands, and leave the server.
-        /// Process text from the MCC command prompt on the main thread.
-        /// </summary>
-        private void HandleCommandPromptText(string text)
-        {
-            if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
-            {
-                //Process a request from the GUI
-                string[] command = text.Substring(1).Split((char)0x00);
-                switch (command[0].ToLower())
-                {
-                    case "autocomplete":
-                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
-                        else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
-                        break;
-                }
-            }
-            else
-            {
-                text = text.Trim();
-                if (text.Length > 0)
-                {
-                    if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
-                    {
-                        string response_msg = "";
-                        string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
-                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
-                        {
-                            SendText(text);
-                        }
-                        else if (response_msg.Length > 0)
-                        {
-                            Log.Info(response_msg);
-                        }
-                    }
-                    else SendText(text);
-                }
-            }
-        }
+        #region Connection Lost and Disconnect from Server
 
         /// <summary>
         /// Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive is too old.
@@ -388,92 +414,6 @@ namespace MinecraftClient
             lock (lastKeepAliveLock)
             {
                 lastKeepAlive = DateTime.Now;
-            }
-        }
-
-        /// <summary>
-        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
-        /// </summary>
-        /// <param name="command">The command</param>
-        /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
-        /// <param name="localVars">Local variables passed along with the command</param>
-        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
-        {
-            /* Process the provided command */
-
-            string command_name = command.Split(' ')[0].ToLower();
-            if (command_name == "help")
-            {
-                if (Command.hasArg(command))
-                {
-                    string help_cmdname = Command.getArgs(command)[0].ToLower();
-                    if (help_cmdname == "help")
-                    {
-                        response_msg = Translations.Get("icmd.help");
-                    }
-                    else if (cmds.ContainsKey(help_cmdname))
-                    {
-                        response_msg = cmds[help_cmdname].GetCmdDescTranslated();
-                    }
-                    else response_msg = Translations.Get("icmd.unknown", command_name);
-                }
-                else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Settings.internalCmdChar);
-            }
-            else if (cmds.ContainsKey(command_name))
-            {
-                response_msg = cmds[command_name].Run(this, command, localVars);
-                foreach (ChatBot bot in bots.ToArray())
-                {
-                    try
-                    {
-                        bot.OnInternalCommand(command_name, string.Join(" ",Command.getArgs(command)),response_msg);
-                    }
-                    catch (Exception e)
-                    {
-                        if (!(e is ThreadAbortException))
-                        {
-                            Log.Warn(Translations.Get("icmd.error", bot.ToString(), e.ToString()));
-                        }
-                        else throw; //ThreadAbortException should not be caught
-                    }
-                }
-            }
-            else
-            {
-                response_msg = Translations.Get("icmd.unknown", command_name);
-                return false;
-            }
-            
-            return true;
-        }
-
-        public void LoadCommands()
-        {
-            /* Load commands from the 'Commands' namespace */
-
-            if (!commandsLoaded)
-            {
-                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
-                foreach (Type type in cmds_classes)
-                {
-                    if (type.IsSubclassOf(typeof(Command)))
-                    {
-                        try
-                        {
-                            Command cmd = (Command)Activator.CreateInstance(type);
-                            cmds[cmd.CmdName.ToLower()] = cmd;
-                            cmd_names.Add(cmd.CmdName.ToLower());
-                            foreach (string alias in cmd.getCMDAliases())
-                                cmds[alias.ToLower()] = cmd;
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Warn(e.Message);
-                        }
-                    }
-                }
-                commandsLoaded = true;
             }
         }
 
@@ -567,85 +507,65 @@ namespace MinecraftClient
                 Program.HandleFailure();
         }
 
+        #endregion
+
+        #region Command prompt and internal MCC commands
+
         /// <summary>
-        /// Called ~10 times per second by the protocol handler
+        /// Allows the user to send chat messages, commands, and leave the server.
         /// </summary>
-        public void OnUpdate()
+        private void CommandPrompt()
         {
-            foreach (ChatBot bot in bots.ToArray())
+            try
             {
-                try
+                Thread.Sleep(500);
+                while (client.Client.Connected)
                 {
-                    bot.Update();
-                    bot.UpdateInternal();
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
+                    string text = ConsoleIO.ReadLine();
+                    InvokeOnMainThread(() => HandleCommandPromptText(text));
                 }
             }
+            catch (IOException) { }
+            catch (NullReferenceException) { }
+        }
 
-            lock (chatQueue)
+        /// <summary>
+        /// Allows the user to send chat messages, commands, and leave the server.
+        /// Process text from the MCC command prompt on the main thread.
+        /// </summary>
+        private void HandleCommandPromptText(string text)
+        {
+            if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
             {
-                if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
+                //Process a request from the GUI
+                string[] command = text.Substring(1).Split((char)0x00);
+                switch (command[0].ToLower())
                 {
-                    string text = chatQueue.Dequeue();
-                    handler.SendChatMessage(text);
-                    nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
+                    case "autocomplete":
+                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
+                        else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
+                        break;
                 }
             }
-
-            if (terrainAndMovementsEnabled && locationReceived)
+            else
             {
-                lock (locationLock)
+                text = text.Trim();
+                if (text.Length > 0)
                 {
-                    for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
                     {
-                        if (_yaw == null || _pitch == null)
+                        string response_msg = "";
+                        string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
+                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
                         {
-                            if (steps != null && steps.Count > 0)
-                            {
-                                location = steps.Dequeue();
-                            }
-                            else if (path != null && path.Count > 0)
-                            {
-                                Location next = path.Dequeue();
-                                steps = Movement.Move2Steps(location, next, ref motionY);
-                                UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
-                            }
-                            else
-                            {
-                                location = Movement.HandleGravity(world, location, ref motionY);
-                            }
+                            SendText(text);
                         }
-                        playerYaw = _yaw == null ? playerYaw : _yaw.Value;
-                        playerPitch = _pitch == null ? playerPitch : _pitch.Value;
-                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
+                        else if (response_msg.Length > 0)
+                        {
+                            Log.Info(response_msg);
+                        }
                     }
-                    // First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
-                    // Once yaw and pitch have been sent, switch back to location-only updates (without yaw and pitch)
-                    _yaw = null;
-                    _pitch = null;
-                }
-            }
-
-            if (Settings.AutoRespawn && respawnTicks > 0)
-            {
-                respawnTicks--;
-                if (respawnTicks == 0)
-                    SendRespawnPacket();
-            }
-
-            lock (threadTasksLock)
-            {
-                while (threadTasks.Count > 0)
-                {
-                    Action taskToRun = threadTasks.Dequeue();
-                    taskToRun();
+                    else SendText(text);
                 }
             }
         }
@@ -691,6 +611,96 @@ namespace MinecraftClient
             }
             else return false;
         }
+
+        /// <summary>
+        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
+        /// </summary>
+        /// <param name="command">The command</param>
+        /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <param name="localVars">Local variables passed along with the command</param>
+        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
+        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
+        {
+            /* Process the provided command */
+
+            string command_name = command.Split(' ')[0].ToLower();
+            if (command_name == "help")
+            {
+                if (Command.hasArg(command))
+                {
+                    string help_cmdname = Command.getArgs(command)[0].ToLower();
+                    if (help_cmdname == "help")
+                    {
+                        response_msg = Translations.Get("icmd.help");
+                    }
+                    else if (cmds.ContainsKey(help_cmdname))
+                    {
+                        response_msg = cmds[help_cmdname].GetCmdDescTranslated();
+                    }
+                    else response_msg = Translations.Get("icmd.unknown", command_name);
+                }
+                else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Settings.internalCmdChar);
+            }
+            else if (cmds.ContainsKey(command_name))
+            {
+                response_msg = cmds[command_name].Run(this, command, localVars);
+                foreach (ChatBot bot in bots.ToArray())
+                {
+                    try
+                    {
+                        bot.OnInternalCommand(command_name, string.Join(" ", Command.getArgs(command)), response_msg);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            Log.Warn(Translations.Get("icmd.error", bot.ToString(), e.ToString()));
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
+            }
+            else
+            {
+                response_msg = Translations.Get("icmd.unknown", command_name);
+                return false;
+            }
+
+            return true;
+        }
+
+        public void LoadCommands()
+        {
+            /* Load commands from the 'Commands' namespace */
+
+            if (!commandsLoaded)
+            {
+                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
+                foreach (Type type in cmds_classes)
+                {
+                    if (type.IsSubclassOf(typeof(Command)))
+                    {
+                        try
+                        {
+                            Command cmd = (Command)Activator.CreateInstance(type);
+                            cmds[cmd.CmdName.ToLower()] = cmd;
+                            cmd_names.Add(cmd.CmdName.ToLower());
+                            foreach (string alias in cmd.getCMDAliases())
+                                cmds[alias.ToLower()] = cmd;
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Warn(e.Message);
+                        }
+                    }
+                }
+                commandsLoaded = true;
+            }
+        }
+
+        #endregion
+
+        #region Thread-Invoke: Cross-thread method calls
 
         /// <summary>
         /// Invoke a task on the main thread, wait for completion and retrieve return value.
@@ -751,14 +761,7 @@ namespace MinecraftClient
             }
         }
 
-        /// <summary>
-        /// Get a list of disallowed characters in chat
-        /// </summary>
-        /// <returns></returns>
-        public static char[] GetDisallowedChatCharacters()
-        {
-            return new char[] { (char)167, (char)127 }; // Minecraft color code and ASCII code DEL
-        }
+        #endregion
 
         #region Management: Load/Unload ChatBots and Enable/Disable settings
 
@@ -953,6 +956,15 @@ namespace MinecraftClient
         public int GetMaxChatMessageLength()
         {
             return handler.GetMaxChatMessageLength();
+        }
+
+        /// <summary>
+        /// Get a list of disallowed characters in chat
+        /// </summary>
+        /// <returns></returns>
+        public static char[] GetDisallowedChatCharacters()
+        {
+            return new char[] { (char)167, (char)127 }; // Minecraft color code and ASCII code DEL
         }
 
         /// <summary>
