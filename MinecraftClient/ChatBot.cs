@@ -1182,6 +1182,18 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Use Creative Mode to delete items from the regular/survival Player Inventory
+        /// </summary>
+        /// <remarks>(obviously) requires to be in creative mode</remarks>
+        /// </summary>
+        /// <param name="slot">Inventory slot to clear</param>
+        /// <returns>TRUE if item cleared successfully</returns>
+        protected bool CreativeDelete(int slot)
+        {
+            return CreativeGive(slot, ItemType.Null, 0, null);
+        }
+
+        /// <summary>
         /// Plays animation (Player arm swing)
         /// </summary>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
