@@ -700,20 +700,16 @@ namespace MinecraftClient.Protocol
                     if (realmsServer.Properties.ContainsKey("name")
                         && realmsServer.Properties.ContainsKey("owner")
                         && realmsServer.Properties.ContainsKey("id")
-                        && realmsServer.Properties.ContainsKey("daysLeft"))
+                        && realmsServer.Properties.ContainsKey("expired"))
                     {
-                        int daysLeft;
-                        if (int.TryParse(realmsServer.Properties["daysLeft"].StringValue, out daysLeft))
+                        if (realmsServer.Properties["expired"].StringValue == "false")
                         {
-                            if (daysLeft > 0)
-                            {
-                                availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
-                                    index++,
-                                    realmsServer.Properties["id"].StringValue,
-                                    realmsServer.Properties["name"].StringValue,
-                                    realmsServer.Properties["owner"].StringValue));
-                                realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
-                            }
+                            availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
+                                index++,
+                                realmsServer.Properties["id"].StringValue,
+                                realmsServer.Properties["name"].StringValue,
+                                realmsServer.Properties["owner"].StringValue));
+                            realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
                         }
                     }
                 }
