@@ -18,6 +18,7 @@ using System.Diagnostics;
 using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 using MinecraftClient.Logger;
+using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -67,7 +68,7 @@ namespace MinecraftClient.Protocol.Handlers
         PacketTypePalette packetPalette;
         SocketWrapper socketWrapper;
         DataTypes dataTypes;
-        Thread netRead;
+        Thread netRead; // main thread
         ILogger log;
 
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo forgeInfo)
@@ -422,7 +423,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 int compressedDataSize = dataTypes.ReadNextInt(packetData);
                                 byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
                                 byte[] decompressed = ZlibUtils.Decompress(compressed);
-                                pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
+                                new Task(() => {
+                                    pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
+                                }).Start();
                             }
                             else
                             {
@@ -446,7 +449,9 @@ namespace MinecraftClient.Protocol.Handlers
                                     else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
                                 }
                                 int dataSize = dataTypes.ReadNextVarInt(packetData);
-                                pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
+                                new Task(() => {
+                                    pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
+                                }).Start();
                             }
                         }
                         break;
@@ -1110,6 +1115,15 @@ namespace MinecraftClient.Protocol.Handlers
             netRead = new Thread(new ThreadStart(Updater));
             netRead.Name = "ProtocolPacketHandler";
             netRead.Start();
+        }
+
+        /// <summary>
+        /// Get net read thread (main thread) ID
+        /// </summary>
+        /// <returns>Net read thread ID</returns>
+        public int GetNetReadThreadId()
+        {
+            return netRead != null ? netRead.ManagedThreadId : -1;
         }
 
         /// <summary>

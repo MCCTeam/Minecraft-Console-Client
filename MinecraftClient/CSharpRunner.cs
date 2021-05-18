@@ -22,14 +22,13 @@ namespace MinecraftClient
         /// Run the specified C# script file
         /// </summary>
         /// <param name="apiHandler">ChatBot handler for accessing ChatBot API</param>
-        /// <param name="tickHandler">Tick handler for waiting after some API calls</param>
         /// <param name="lines">Lines of the script file to run</param>
         /// <param name="args">Arguments to pass to the script</param>
         /// <param name="localVars">Local variables passed along with the script</param>
         /// <param name="run">Set to false to compile and cache the script without launching it</param>
         /// <exception cref="CSharpException">Thrown if an error occured</exception>
         /// <returns>Result of the execution, returned by the script</returns>
-        public static object Run(ChatBot apiHandler, ManualResetEvent tickHandler, string[] lines, string[] args, Dictionary<string, object> localVars, bool run = true)
+        public static object Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object> localVars, bool run = true)
         {
             //Script compatibility check for handling future versions differently
             if (lines.Length < 1 || lines[0] != "//MCCScript 1.0")
@@ -140,7 +139,7 @@ namespace MinecraftClient
                         .GetType()
                         .GetMethod("__run")
                         .Invoke(compiledScript,
-                            new object[] { new CSharpAPI(apiHandler, tickHandler, localVars), args });
+                            new object[] { new CSharpAPI(apiHandler, localVars), args });
                 }
                 catch (Exception e) { throw new CSharpException(CSErrorType.RuntimeError, e); }
             }
@@ -196,11 +195,6 @@ namespace MinecraftClient
     public class CSharpAPI : ChatBot
     {
         /// <summary>
-        /// Thread blocking utility for stopping execution when making a ChatBot API call
-        /// </summary>
-        private ManualResetEvent tickHandler;
-
-        /// <summary>
         /// Holds local variables passed along with the script
         /// </summary>
         private Dictionary<string, object> localVars;
@@ -211,10 +205,9 @@ namespace MinecraftClient
         /// <param name="apiHandler">ChatBot API Handler</param>
         /// <param name="tickHandler">ChatBot tick handler</param>
         /// <param name="localVars">Local variables passed along with the script</param>
-        public CSharpAPI(ChatBot apiHandler, ManualResetEvent tickHandler, Dictionary<string , object> localVars)
+        public CSharpAPI(ChatBot apiHandler, Dictionary<string , object> localVars)
         {
             SetMaster(apiHandler);
-            this.tickHandler = tickHandler;
             this.localVars = localVars;
         }
 
@@ -237,7 +230,6 @@ namespace MinecraftClient
         public bool SendText(object text)
         {
             base.SendText(text is string ? (string)text : text.ToString());
-            tickHandler.WaitOne();
             return true;
         }
 
@@ -252,7 +244,6 @@ namespace MinecraftClient
             if (localVars == null)
                 localVars = this.localVars;
             bool result = base.PerformInternalCommand(command, localVars);
-            tickHandler.WaitOne();
             return result;
         }
 
@@ -267,7 +258,6 @@ namespace MinecraftClient
             if (extraAttempts == -999999)
                 base.ReconnectToTheServer();
             else base.ReconnectToTheServer(extraAttempts);
-            tickHandler.WaitOne();
         }
 
         /// <summary>
@@ -276,7 +266,6 @@ namespace MinecraftClient
         new public void DisconnectAndExit()
         {
             base.DisconnectAndExit();
-            tickHandler.WaitOne();
         }
 
         /// <summary>
@@ -286,7 +275,6 @@ namespace MinecraftClient
         new public void LoadBot(ChatBot bot)
         {
             base.LoadBot(bot);
-            tickHandler.WaitOne();
         }
 
         /// <summary>
@@ -406,7 +394,7 @@ namespace MinecraftClient
             ChatBots.Script.LookForScript(ref script);
             try { lines = File.ReadAllLines(script, Encoding.UTF8); }
             catch (Exception e) { throw new CSharpException(CSErrorType.FileReadError, e); }
-            return CSharpRunner.Run(this, tickHandler, lines, args, localVars);
+            return CSharpRunner.Run(this, lines, args, localVars);
         }
     }
 }

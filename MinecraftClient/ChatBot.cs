@@ -42,7 +42,7 @@ namespace MinecraftClient
         private List<string> registeredPluginChannels = new List<String>();
         private List<string> registeredCommands = new List<string>();
         private object delayTasksLock = new object();
-        private List<DelayedTask> delayTasks = new List<DelayedTask>();
+        private List<TaskWithDelay> delayedTasks = new List<TaskWithDelay>();
         private McClient Handler
         {
             get
@@ -65,14 +65,14 @@ namespace MinecraftClient
         {
             lock (delayTasksLock)
             {
-                if (delayTasks.Count > 0)
+                if (delayedTasks.Count > 0)
                 {
                     List<int> tasksToRemove = new List<int>();
-                    for (int i = 0; i < delayTasks.Count; i++)
+                    for (int i = 0; i < delayedTasks.Count; i++)
                     {
-                        if (delayTasks[i].Tick())
+                        if (delayedTasks[i].Tick())
                         {
-                            Handler.ScheduleTask(delayTasks[i].Task);
+                            delayedTasks[i].Task();
                             tasksToRemove.Add(i);
                         }
                     }
@@ -81,7 +81,7 @@ namespace MinecraftClient
                         tasksToRemove.Sort((a, b) => b.CompareTo(a)); // descending sort
                         foreach (int index in tasksToRemove)
                         {
-                            delayTasks.RemoveAt(index);
+                            delayedTasks.RemoveAt(index);
                         }
                     }
                 }
@@ -1182,6 +1182,18 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Use Creative Mode to delete items from the regular/survival Player Inventory
+        /// </summary>
+        /// <remarks>(obviously) requires to be in creative mode</remarks>
+        /// </summary>
+        /// <param name="slot">Inventory slot to clear</param>
+        /// <returns>TRUE if item cleared successfully</returns>
+        protected bool CreativeDelete(int slot)
+        {
+            return CreativeGive(slot, ItemType.Null, 0, null);
+        }
+
+        /// <summary>
         /// Plays animation (Player arm swing)
         /// </summary>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
@@ -1390,34 +1402,59 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Schedule a task to run on main thread
+        /// Invoke a task on the main thread, wait for completion and retrieve return value.
+        /// </summary>
+        /// <param name="task">Task to run with any type or return value</param>
+        /// <returns>Any result returned from task, result type is inferred from the task</returns>
+        /// <example>bool result = InvokeOnMainThread(methodThatReturnsAbool);</example>
+        /// <example>bool result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
+        /// <example>int result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
+        /// <typeparam name="T">Type of the return value</typeparam>
+        protected T InvokeOnMainThread<T>(Func<T> task)
+        {
+            return Handler.InvokeOnMainThread(task);
+        }
+
+        /// <summary>
+        /// Invoke a task on the main thread and wait for completion
+        /// </summary>
+        /// <param name="task">Task to run without return value</param>
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument));</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); });</example>
+        protected void InvokeOnMainThread(Action task)
+        {
+            Handler.InvokeOnMainThread(task);
+        }
+
+        /// <summary>
+        /// Schedule a task to run on the main thread, and do not wait for completion
         /// </summary>
         /// <param name="task">Task to run</param>
         /// <param name="delayTicks">Run the task after X ticks (1 tick delay = ~100ms). 0 for no delay</param>
         /// <example>
-        /// // Delay ~10 seconds
-        /// ScheduleTask(delegate () 
-        /// { 
-        ///     /** Your code here **/
-        ///     Console.WriteLine("10 seconds has passed");
-        /// }, 100);
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing, 10);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument), 10);</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); }, 10);</example>
         /// </example>
-        protected void ScheduleTask(Action task, int delayTicks = 0)
+        protected void ScheduleOnMainThread(Action task, int delayTicks = 0)
         {
-            if (task != null)
+            lock (delayTasksLock)
             {
-                if (delayTicks <= 0)
-                {
-                    // Immediately schedule to run on next update
-                    Handler.ScheduleTask(task);
-                }
-                else
-                {
-                    lock (delayTasksLock)
-                    {
-                        delayTasks.Add(new DelayedTask(task, delayTicks));
-                    }
-                }
+                delayedTasks.Add(new TaskWithDelay(task, delayTicks));
+            }
+        }
+
+        /// <summary>
+        /// Schedule a task to run on the main thread, and do not wait for completion
+        /// </summary>
+        /// <param name="task">Task to run</param>
+        /// <param name="delay">Run the task after the specified delay</param>
+        protected void ScheduleOnMainThread(Action task, TimeSpan delay)
+        {
+            lock (delayTasksLock)
+            {
+                delayedTasks.Add(new TaskWithDelay(task, delay));
             }
         }
 
@@ -1463,47 +1500,6 @@ namespace MinecraftClient
                 this._cmdDesc = cmdDesc;
                 this._cmdUsage = cmdUsage;
                 this.Runner = callback;
-            }
-        }
-
-        private class DelayedTask
-        {
-            private Action task;
-            private int Counter;
-
-            public Action Task { get { return task; } }
-
-            public DelayedTask(Action task)
-                : this(task, 0)
-            { }
-
-            public DelayedTask(Action task, int delayTicks)
-            {
-                this.task = task;
-                Counter = delayTicks;
-            }
-
-            /// <summary>
-            /// Tick the counter
-            /// </summary>
-            /// <returns>Return true if counted to zero</returns>
-            public bool Tick()
-            {
-                Counter--;
-                if (Counter <= 0)
-                    return true;
-                return false;
-            }
-
-            /// <summary>
-            /// Execute the task
-            /// </summary>
-            public void Execute()
-            {
-                if (task != null)
-                {
-                    task();
-                }
             }
         }
     }

@@ -32,7 +32,7 @@ namespace MinecraftClient
         private Queue<string> chatQueue = new Queue<string>();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
 
-        private Action threadTasks;
+        private Queue<Action> threadTasks = new Queue<Action>();
         private object threadTasksLock = new object();
 
         private readonly List<ChatBot> bots = new List<ChatBot>();
@@ -301,64 +301,89 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Allows the user to send chat messages, commands, and leave the server.
-        /// Enqueue text typed in the command prompt for processing on the main thread.
+        /// Called ~10 times per second by the protocol handler
         /// </summary>
-        private void CommandPrompt()
+        public void OnUpdate()
         {
-            try
+            foreach (ChatBot bot in bots.ToArray())
             {
-                Thread.Sleep(500);
-                while (client.Client.Connected)
+                try
                 {
-                    string text = ConsoleIO.ReadLine();
-                    ScheduleTask(delegate () { HandleCommandPromptText(text); });
-                }   
+                    bot.Update();
+                    bot.UpdateInternal();
+                }
+                catch (Exception e)
+                {
+                    if (!(e is ThreadAbortException))
+                    {
+                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
+                    }
+                    else throw; //ThreadAbortException should not be caught
+                }
             }
-            catch (IOException) { }
-            catch (NullReferenceException) { }
+
+            lock (chatQueue)
+            {
+                if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
+                {
+                    string text = chatQueue.Dequeue();
+                    handler.SendChatMessage(text);
+                    nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
+                }
+            }
+
+            if (terrainAndMovementsEnabled && locationReceived)
+            {
+                lock (locationLock)
+                {
+                    for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    {
+                        if (_yaw == null || _pitch == null)
+                        {
+                            if (steps != null && steps.Count > 0)
+                            {
+                                location = steps.Dequeue();
+                            }
+                            else if (path != null && path.Count > 0)
+                            {
+                                Location next = path.Dequeue();
+                                steps = Movement.Move2Steps(location, next, ref motionY);
+                                UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
+                            }
+                            else
+                            {
+                                location = Movement.HandleGravity(world, location, ref motionY);
+                            }
+                        }
+                        playerYaw = _yaw == null ? playerYaw : _yaw.Value;
+                        playerPitch = _pitch == null ? playerPitch : _pitch.Value;
+                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
+                    }
+                    // First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
+                    // Once yaw and pitch have been sent, switch back to location-only updates (without yaw and pitch)
+                    _yaw = null;
+                    _pitch = null;
+                }
+            }
+
+            if (Settings.AutoRespawn && respawnTicks > 0)
+            {
+                respawnTicks--;
+                if (respawnTicks == 0)
+                    SendRespawnPacket();
+            }
+
+            lock (threadTasksLock)
+            {
+                while (threadTasks.Count > 0)
+                {
+                    Action taskToRun = threadTasks.Dequeue();
+                    taskToRun();
+                }
+            }
         }
 
-        /// <summary>
-        /// Allows the user to send chat messages, commands, and leave the server.
-        /// Process text from the MCC command prompt on the main thread.
-        /// </summary>
-        private void HandleCommandPromptText(string text)
-        {
-            if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
-            {
-                //Process a request from the GUI
-                string[] command = text.Substring(1).Split((char)0x00);
-                switch (command[0].ToLower())
-                {
-                    case "autocomplete":
-                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
-                        else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
-                        break;
-                }
-            }
-            else
-            {
-                text = text.Trim();
-                if (text.Length > 0)
-                {
-                    if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
-                    {
-                        string response_msg = "";
-                        string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
-                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
-                        {
-                            SendText(text);
-                        }
-                        else if (response_msg.Length > 0)
-                        {
-                            Log.Info(response_msg);
-                        }
-                    }
-                    else SendText(text);
-                }
-            }
-        }
+        #region Connection Lost and Disconnect from Server
 
         /// <summary>
         /// Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive is too old.
@@ -389,92 +414,6 @@ namespace MinecraftClient
             lock (lastKeepAliveLock)
             {
                 lastKeepAlive = DateTime.Now;
-            }
-        }
-
-        /// <summary>
-        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
-        /// </summary>
-        /// <param name="command">The command</param>
-        /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
-        /// <param name="localVars">Local variables passed along with the command</param>
-        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
-        {
-            /* Process the provided command */
-
-            string command_name = command.Split(' ')[0].ToLower();
-            if (command_name == "help")
-            {
-                if (Command.hasArg(command))
-                {
-                    string help_cmdname = Command.getArgs(command)[0].ToLower();
-                    if (help_cmdname == "help")
-                    {
-                        response_msg = Translations.Get("icmd.help");
-                    }
-                    else if (cmds.ContainsKey(help_cmdname))
-                    {
-                        response_msg = cmds[help_cmdname].GetCmdDescTranslated();
-                    }
-                    else response_msg = Translations.Get("icmd.unknown", command_name);
-                }
-                else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Settings.internalCmdChar);
-            }
-            else if (cmds.ContainsKey(command_name))
-            {
-                response_msg = cmds[command_name].Run(this, command, localVars);
-                foreach (ChatBot bot in bots.ToArray())
-                {
-                    try
-                    {
-                        bot.OnInternalCommand(command_name, string.Join(" ",Command.getArgs(command)),response_msg);
-                    }
-                    catch (Exception e)
-                    {
-                        if (!(e is ThreadAbortException))
-                        {
-                            Log.Warn(Translations.Get("icmd.error", bot.ToString(), e.ToString()));
-                        }
-                        else throw; //ThreadAbortException should not be caught
-                    }
-                }
-            }
-            else
-            {
-                response_msg = Translations.Get("icmd.unknown", command_name);
-                return false;
-            }
-            
-            return true;
-        }
-
-        public void LoadCommands()
-        {
-            /* Load commands from the 'Commands' namespace */
-
-            if (!commandsLoaded)
-            {
-                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
-                foreach (Type type in cmds_classes)
-                {
-                    if (type.IsSubclassOf(typeof(Command)))
-                    {
-                        try
-                        {
-                            Command cmd = (Command)Activator.CreateInstance(type);
-                            cmds[cmd.CmdName.ToLower()] = cmd;
-                            cmd_names.Add(cmd.CmdName.ToLower());
-                            foreach (string alias in cmd.getCMDAliases())
-                                cmds[alias.ToLower()] = cmd;
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Warn(e.Message);
-                        }
-                    }
-                }
-                commandsLoaded = true;
             }
         }
 
@@ -568,85 +507,65 @@ namespace MinecraftClient
                 Program.HandleFailure();
         }
 
+        #endregion
+
+        #region Command prompt and internal MCC commands
+
         /// <summary>
-        /// Called ~10 times per second by the protocol handler
+        /// Allows the user to send chat messages, commands, and leave the server.
         /// </summary>
-        public void OnUpdate()
+        private void CommandPrompt()
         {
-            foreach (ChatBot bot in bots.ToArray())
+            try
             {
-                try
+                Thread.Sleep(500);
+                while (client.Client.Connected)
                 {
-                    bot.Update();
-                    bot.UpdateInternal();
-                }
-                catch (Exception e)
-                {
-                    if (!(e is ThreadAbortException))
-                    {
-                        Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
+                    string text = ConsoleIO.ReadLine();
+                    InvokeOnMainThread(() => HandleCommandPromptText(text));
                 }
             }
+            catch (IOException) { }
+            catch (NullReferenceException) { }
+        }
 
-            lock (chatQueue)
+        /// <summary>
+        /// Allows the user to send chat messages, commands, and leave the server.
+        /// Process text from the MCC command prompt on the main thread.
+        /// </summary>
+        private void HandleCommandPromptText(string text)
+        {
+            if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
             {
-                if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
+                //Process a request from the GUI
+                string[] command = text.Substring(1).Split((char)0x00);
+                switch (command[0].ToLower())
                 {
-                    string text = chatQueue.Dequeue();
-                    handler.SendChatMessage(text);
-                    nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
+                    case "autocomplete":
+                        if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
+                        else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
+                        break;
                 }
             }
-
-            if (terrainAndMovementsEnabled && locationReceived)
+            else
             {
-                lock (locationLock)
+                text = text.Trim();
+                if (text.Length > 0)
                 {
-                    for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
                     {
-                        if (_yaw == null || _pitch == null)
+                        string response_msg = "";
+                        string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
+                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
                         {
-                            if (steps != null && steps.Count > 0)
-                            {
-                                location = steps.Dequeue();
-                            }
-                            else if (path != null && path.Count > 0)
-                            {
-                                Location next = path.Dequeue();
-                                steps = Movement.Move2Steps(location, next, ref motionY);
-                                UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
-                            }
-                            else
-                            {
-                                location = Movement.HandleGravity(world, location, ref motionY);
-                            }
+                            SendText(text);
                         }
-                        playerYaw = _yaw == null ? playerYaw : _yaw.Value;
-                        playerPitch = _pitch == null ? playerPitch : _pitch.Value;
-                        handler.SendLocationUpdate(location, Movement.IsOnGround(world, location), _yaw, _pitch);
+                        else if (response_msg.Length > 0)
+                        {
+                            Log.Info(response_msg);
+                        }
                     }
-                    // First 2 updates must be player position AND look, and player must not move (to conform with vanilla)
-                    // Once yaw and pitch have been sent, switch back to location-only updates (without yaw and pitch)
-                    _yaw = null;
-                    _pitch = null;
-                }
-            }
-
-            if (Settings.AutoRespawn && respawnTicks > 0)
-            {
-                respawnTicks--;
-                if (respawnTicks == 0)
-                    SendRespawnPacket();
-            }
-
-            if (threadTasks != null)
-            {
-                lock (threadTasksLock)
-                {
-                    threadTasks();
-                    threadTasks = null;
+                    else SendText(text);
                 }
             }
         }
@@ -694,16 +613,155 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Schedule a task to run on the main thread
+        /// Perform an internal MCC command (not a server command, use SendText() instead for that!)
         /// </summary>
-        /// <param name="task">Task to run</param>
-        public void ScheduleTask(Action task)
+        /// <param name="command">The command</param>
+        /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
+        /// <param name="localVars">Local variables passed along with the command</param>
+        /// <returns>TRUE if the command was indeed an internal MCC command</returns>
+        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
         {
-            lock (threadTasksLock)
+            /* Process the provided command */
+
+            string command_name = command.Split(' ')[0].ToLower();
+            if (command_name == "help")
             {
-                threadTasks += task;
+                if (Command.hasArg(command))
+                {
+                    string help_cmdname = Command.getArgs(command)[0].ToLower();
+                    if (help_cmdname == "help")
+                    {
+                        response_msg = Translations.Get("icmd.help");
+                    }
+                    else if (cmds.ContainsKey(help_cmdname))
+                    {
+                        response_msg = cmds[help_cmdname].GetCmdDescTranslated();
+                    }
+                    else response_msg = Translations.Get("icmd.unknown", command_name);
+                }
+                else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Settings.internalCmdChar);
+            }
+            else if (cmds.ContainsKey(command_name))
+            {
+                response_msg = cmds[command_name].Run(this, command, localVars);
+                foreach (ChatBot bot in bots.ToArray())
+                {
+                    try
+                    {
+                        bot.OnInternalCommand(command_name, string.Join(" ", Command.getArgs(command)), response_msg);
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is ThreadAbortException))
+                        {
+                            Log.Warn(Translations.Get("icmd.error", bot.ToString(), e.ToString()));
+                        }
+                        else throw; //ThreadAbortException should not be caught
+                    }
+                }
+            }
+            else
+            {
+                response_msg = Translations.Get("icmd.unknown", command_name);
+                return false;
+            }
+
+            return true;
+        }
+
+        public void LoadCommands()
+        {
+            /* Load commands from the 'Commands' namespace */
+
+            if (!commandsLoaded)
+            {
+                Type[] cmds_classes = Program.GetTypesInNamespace("MinecraftClient.Commands");
+                foreach (Type type in cmds_classes)
+                {
+                    if (type.IsSubclassOf(typeof(Command)))
+                    {
+                        try
+                        {
+                            Command cmd = (Command)Activator.CreateInstance(type);
+                            cmds[cmd.CmdName.ToLower()] = cmd;
+                            cmd_names.Add(cmd.CmdName.ToLower());
+                            foreach (string alias in cmd.getCMDAliases())
+                                cmds[alias.ToLower()] = cmd;
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Warn(e.Message);
+                        }
+                    }
+                }
+                commandsLoaded = true;
             }
         }
+
+        #endregion
+
+        #region Thread-Invoke: Cross-thread method calls
+
+        /// <summary>
+        /// Invoke a task on the main thread, wait for completion and retrieve return value.
+        /// </summary>
+        /// <param name="task">Task to run with any type or return value</param>
+        /// <returns>Any result returned from task, result type is inferred from the task</returns>
+        /// <example>bool result = InvokeOnMainThread(methodThatReturnsAbool);</example>
+        /// <example>bool result = InvokeOnMainThread(() => methodThatReturnsAbool(argument));</example>
+        /// <example>int result = InvokeOnMainThread(() => { yourCode(); return 42; });</example>
+        /// <typeparam name="T">Type of the return value</typeparam>
+        public T InvokeOnMainThread<T>(Func<T> task)
+        {
+            if (!InvokeRequired)
+            {
+                return task();
+            }
+            else
+            {
+                TaskWithResult<T> taskWithResult = new TaskWithResult<T>(task);
+                lock (threadTasksLock)
+                {
+                    threadTasks.Enqueue(taskWithResult.ExecuteSynchronously);
+                }
+                return taskWithResult.WaitGetResult();
+            }
+        }
+
+        /// <summary>
+        /// Invoke a task on the main thread and wait for completion
+        /// </summary>
+        /// <param name="task">Task to run without return value</param>
+        /// <example>InvokeOnMainThread(methodThatReturnsNothing);</example>
+        /// <example>InvokeOnMainThread(() => methodThatReturnsNothing(argument));</example>
+        /// <example>InvokeOnMainThread(() => { yourCode(); });</example>
+        public void InvokeOnMainThread(Action task)
+        {
+            InvokeOnMainThread(() => { task(); return true; });
+        }
+
+        /// <summary>
+        /// Check if running on a different thread and InvokeOnMainThread is required
+        /// </summary>
+        /// <returns>True if calling thread is not the main thread</returns>
+        public bool InvokeRequired
+        {
+            get
+            {
+                int callingThreadId = Thread.CurrentThread.ManagedThreadId;
+                if (handler != null)
+                {
+                    return handler.GetNetReadThreadId() != callingThreadId;
+                }
+                else
+                {
+                    // net read thread (main thread) not yet ready
+                    return false;
+                }
+            }
+        }
+
+        #endregion
 
         #region Management: Load/Unload ChatBots and Enable/Disable settings
 
@@ -712,6 +770,12 @@ namespace MinecraftClient
         /// </summary>
         public void BotLoad(ChatBot b, bool init = true)
         {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => BotLoad(b, init));
+                return;
+            }
+
             b.SetHandler(this);
             bots.Add(b);
             if (init)
@@ -726,6 +790,12 @@ namespace MinecraftClient
         /// </summary>
         public void BotUnLoad(ChatBot b)
         {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => BotUnLoad(b));
+                return;
+            }
+
             bots.RemoveAll(item => object.ReferenceEquals(item, b));
 
             // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
@@ -741,7 +811,7 @@ namespace MinecraftClient
         /// </summary>
         public void BotClear()
         {
-            bots.Clear();
+            InvokeOnMainThread(bots.Clear);
         }
 
         /// <summary>
@@ -761,6 +831,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get entity handling status
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>Entity Handling cannot be enabled in runtime (or after joining server)</remarks>
+        public bool GetEntityHandlingEnabled()
+        {
+            return entityHandlingEnabled;
+        }
+
+        /// <summary>
         /// Enable or disable Terrain and Movements.
         /// Please note that Enabling will be deferred until next relog, respawn or world change.
         /// </summary>
@@ -768,6 +848,9 @@ namespace MinecraftClient
         /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
         public bool SetTerrainEnabled(bool enabled)
         {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => SetTerrainEnabled(enabled));
+
             if (enabled)
             {
                 if (!terrainAndMovementsEnabled)
@@ -794,6 +877,9 @@ namespace MinecraftClient
         /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
         public bool SetInventoryEnabled(bool enabled)
         {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => SetInventoryEnabled(enabled));
+
             if (enabled)
             {
                 if (!inventoryHandlingEnabled)
@@ -812,16 +898,6 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Get entity handling status
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>Entity Handling cannot be enabled in runtime (or after joining server)</remarks>
-        public bool GetEntityHandlingEnabled()
-        {
-            return entityHandlingEnabled;
-        }
-
-        /// <summary>
         /// Enable or disable Entity handling.
         /// Please note that Enabling will be deferred until next relog.
         /// </summary>
@@ -829,6 +905,9 @@ namespace MinecraftClient
         /// <returns>TRUE if the setting was applied immediately, FALSE if delayed.</returns>
         public bool SetEntityHandlingEnabled(bool enabled)
         {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => SetEntityHandlingEnabled(enabled));
+
             if (!enabled)
             {
                 if (entityHandlingEnabled)
@@ -857,6 +936,12 @@ namespace MinecraftClient
         /// <param name="enabled"></param>
         public void SetNetworkPacketCaptureEnabled(bool enabled)
         {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => SetNetworkPacketCaptureEnabled(enabled));
+                return;
+            }
+
             networkPacketCaptureEnabled = enabled;
         }
 
@@ -871,6 +956,15 @@ namespace MinecraftClient
         public int GetMaxChatMessageLength()
         {
             return handler.GetMaxChatMessageLength();
+        }
+
+        /// <summary>
+        /// Get a list of disallowed characters in chat
+        /// </summary>
+        /// <returns></returns>
+        public static char[] GetDisallowedChatCharacters()
+        {
+            return new char[] { (char)167, (char)127 }; // Minecraft color code and ASCII code DEL
         }
 
         /// <summary>
@@ -907,6 +1001,9 @@ namespace MinecraftClient
         /// <returns> Item Dictionary indexed by Slot ID (Check wiki.vg for slot ID)</returns>
         public Container GetInventory(int inventoryID)
         {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => GetInventory(inventoryID));
+
             if (inventories.ContainsKey(inventoryID))
                 return inventories[inventoryID];
             return null;
@@ -991,6 +1088,8 @@ namespace MinecraftClient
         {
             lock (chatQueue)
             {
+                if (String.IsNullOrEmpty(text))
+                    return;
                 int maxLength = handler.GetMaxChatMessageLength();
                 if (text.Length > maxLength) //Message is too long?
                 {
@@ -1021,6 +1120,9 @@ namespace MinecraftClient
         /// <returns>True if packet successfully sent</returns>
         public bool SendRespawnPacket()
         {
+            if (InvokeRequired)
+                return InvokeOnMainThread<bool>(SendRespawnPacket);
+
             return handler.SendRespawnPacket();
         }
 
@@ -1031,6 +1133,12 @@ namespace MinecraftClient
         /// <param name="bot">The bot to register the channel for.</param>
         public void RegisterPluginChannel(string channel, ChatBot bot)
         {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => RegisterPluginChannel(channel, bot));
+                return;
+            }
+
             if (registeredBotPluginChannels.ContainsKey(channel))
             {
                 registeredBotPluginChannels[channel].Add(bot);
@@ -1051,6 +1159,12 @@ namespace MinecraftClient
         /// <param name="bot">The bot to unregister the channel for.</param>
         public void UnregisterPluginChannel(string channel, ChatBot bot)
         {
+            if (InvokeRequired)
+            {
+                InvokeOnMainThread(() => UnregisterPluginChannel(channel, bot));
+                return;
+            }
+
             if (registeredBotPluginChannels.ContainsKey(channel))
             {
                 List<ChatBot> registeredBots = registeredBotPluginChannels[channel];
@@ -1073,6 +1187,9 @@ namespace MinecraftClient
         /// <returns>Whether the packet was sent: true if it was sent, false if there was a connection error or it wasn't registered.</returns>
         public bool SendPluginChannelMessage(string channel, byte[] data, bool sendEvenIfNotRegistered = false)
         {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => SendPluginChannelMessage(channel, data, sendEvenIfNotRegistered));
+
             if (!sendEvenIfNotRegistered)
             {
                 if (!registeredBotPluginChannels.ContainsKey(channel))
@@ -1093,7 +1210,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool SendEntityAction(EntityActionType entityAction)
         {
-            return handler.SendEntityAction(playerEntityID, (int)entityAction);
+            return InvokeOnMainThread(() => handler.SendEntityAction(playerEntityID, (int)entityAction));
         }
 
         /// <summary>
@@ -1102,7 +1219,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnHand()
         {
-            return handler.SendUseItem(0);
+            return InvokeOnMainThread(() => handler.SendUseItem(0));
         }
 
         /// <summary>
@@ -1111,6 +1228,9 @@ namespace MinecraftClient
         /// <returns>TRUE if the slot was successfully clicked</returns>
         public bool DoWindowAction(int windowId, int slotId, WindowActionType action)
         {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => DoWindowAction(windowId, slotId, action));
+
             Item item = null;
             if (inventories.ContainsKey(windowId) && inventories[windowId].Items.ContainsKey(slotId))
                 item = inventories[windowId].Items[slotId];
@@ -1266,7 +1386,7 @@ namespace MinecraftClient
 
                             int upperStartSlot = 9;
                             int upperEndSlot = 35;
-                            
+
                             switch (inventory.Type)
                             {
                                 case ContainerType.PlayerInventory:
@@ -1381,7 +1501,7 @@ namespace MinecraftClient
                     case WindowActionType.DropItem:
                         if (inventory.Items.ContainsKey(slotId))
                             inventory.Items[slotId].Count--;
-                        
+
                         if (inventory.Items[slotId].Count <= 0)
                             inventory.Items.Remove(slotId);
                         break;
@@ -1405,7 +1525,7 @@ namespace MinecraftClient
         /// <returns>TRUE if item given successfully</returns>
         public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> nbt = null)
         {
-            return handler.SendCreativeInventoryAction(slot, itemType, count, nbt);
+            return InvokeOnMainThread(() => handler.SendCreativeInventoryAction(slot, itemType, count, nbt));
         }
 
         /// <summary>
@@ -1415,7 +1535,7 @@ namespace MinecraftClient
         /// <returns>TRUE if animation successfully done</returns>
         public bool DoAnimation(int animation)
         {
-            return handler.SendAnimation(animation, playerEntityID);
+            return InvokeOnMainThread(() => handler.SendAnimation(animation, playerEntityID));
         }
 
         /// <summary>
@@ -1426,6 +1546,9 @@ namespace MinecraftClient
         /// <remarks>Sending close window for inventory 0 can cause server to update our inventory if there are any item in the crafting area</remarks>
         public bool CloseInventory(int windowId)
         {
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => CloseInventory(windowId));
+
             if (inventories.ContainsKey(windowId))
             {
                 if (windowId != 0)
@@ -1441,13 +1564,15 @@ namespace MinecraftClient
         /// <returns>TRUE if the uccessfully clear</returns>
         public bool ClearInventories()
         {
-            if (inventoryHandlingEnabled)
-            {
-                inventories.Clear();
-                inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
-                return true;
-            }
-            else { return false; }
+            if (!inventoryHandlingEnabled)
+                return false;
+
+            if (InvokeRequired)
+                return InvokeOnMainThread<bool>(ClearInventories);
+
+            inventories.Clear();
+            inventories[0] = new Container(0, ContainerType.PlayerInventory, "Player Inventory");
+            return true;
         }
 
         /// <summary>
@@ -1457,20 +1582,23 @@ namespace MinecraftClient
         /// <param name="type">0: interact, 1: attack, 2: interact at</param>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
         /// <returns>TRUE if interaction succeeded</returns>
-        public bool InteractEntity(int EntityID, int type, Hand hand = Hand.MainHand)
+        public bool InteractEntity(int entityID, int type, Hand hand = Hand.MainHand)
         {
-            if (entities.ContainsKey(EntityID))
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => InteractEntity(entityID, type, hand));
+
+            if (entities.ContainsKey(entityID))
             {
                 if (type == 0)
                 {
-                    return handler.SendInteractEntity(EntityID, type, (int)hand);
+                    return handler.SendInteractEntity(entityID, type, (int)hand);
                 }
                 else
                 {
-                    return handler.SendInteractEntity(EntityID, type);
+                    return handler.SendInteractEntity(entityID, type);
                 }
             }
-            else { return false; }
+            else return false;
         }
 
         /// <summary>
@@ -1481,7 +1609,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully placed</returns>
         public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return handler.SendPlayerBlockPlacement((int)hand, location, blockFace);
+            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace));
         }
 
         /// <summary>
@@ -1492,22 +1620,24 @@ namespace MinecraftClient
         /// <param name="lookAtBlock">Also look at the block before digging</param>
         public bool DigBlock(Location location, bool swingArms = true, bool lookAtBlock = true)
         {
-            if (GetTerrainEnabled())
-            {
-                // TODO select best face from current player location
-                Direction blockFace = Direction.Down;
+            if (!GetTerrainEnabled())
+                return false;
 
-                // Look at block before attempting to break it
-                if (lookAtBlock)
-                    UpdateLocation(GetCurrentLocation(), location);
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => DigBlock(location, swingArms, lookAtBlock));
 
-                // Send dig start and dig end, will need to wait for server response to know dig result
-                // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
-                return handler.SendPlayerDigging(0, location, blockFace)
-                    && (!swingArms || DoAnimation((int)Hand.MainHand))
-                    && handler.SendPlayerDigging(2, location, blockFace);
-            }
-            else return false;
+            // TODO select best face from current player location
+            Direction blockFace = Direction.Down;
+
+            // Look at block before attempting to break it
+            if (lookAtBlock)
+                UpdateLocation(GetCurrentLocation(), location);
+
+            // Send dig start and dig end, will need to wait for server response to know dig result
+            // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
+            return handler.SendPlayerDigging(0, location, blockFace)
+                && (!swingArms || DoAnimation((int)Hand.MainHand))
+                && handler.SendPlayerDigging(2, location, blockFace);
         }
 
         /// <summary>
@@ -1517,12 +1647,14 @@ namespace MinecraftClient
         /// <returns>TRUE if the slot was changed</returns>
         public bool ChangeSlot(short slot)
         {
-            if (slot >= 0 && slot <= 8)
-            {
-                CurrentSlot = Convert.ToByte(slot);
-                return handler.SendHeldItemChange(slot);
-            }
-            else return false;
+            if (slot < 0 || slot > 8)
+                return false;
+
+            if (InvokeRequired)
+                return InvokeOnMainThread(() => ChangeSlot(slot));
+
+            CurrentSlot = Convert.ToByte(slot);
+            return handler.SendHeldItemChange(slot);
         }
 
         /// <summary>
@@ -1536,7 +1668,7 @@ namespace MinecraftClient
         public bool UpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
             // TODO Open sign editor first https://wiki.vg/Protocol#Open_Sign_Editor
-            return handler.SendUpdateSign(location, line1, line2, line3, line4);
+            return InvokeOnMainThread(() => handler.SendUpdateSign(location, line1, line2, line3, line4));
         }
 
         /// <summary>
@@ -1545,7 +1677,7 @@ namespace MinecraftClient
         /// <param name="selectedSlot">The slot of the trade, starts at 0.</param>
         public bool SelectTrade(int selectedSlot)
         {
-            return handler.SelectTrade(selectedSlot);
+            return InvokeOnMainThread(() => handler.SelectTrade(selectedSlot));
         }
         
         /// <summary>
@@ -1557,7 +1689,7 @@ namespace MinecraftClient
         /// <param name="flags">command block flags</param>
         public bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
         {
-            return handler.UpdateCommandBlock(location, command, mode, flags);
+            return InvokeOnMainThread(() => handler.UpdateCommandBlock(location, command, mode, flags));
         }
         #endregion
 

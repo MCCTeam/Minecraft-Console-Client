@@ -201,6 +201,15 @@ namespace MinecraftClient.Protocol.Handlers
             netRead.Start();
         }
 
+        /// <summary>
+        /// Get net read thread (main thread) ID
+        /// </summary>
+        /// <returns>Net read thread ID</returns>
+        public int GetNetReadThreadId()
+        {
+            return netRead != null ? netRead.ManagedThreadId : -1;
+        }
+
         public void Dispose()
         {
             try
