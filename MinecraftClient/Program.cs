@@ -256,18 +256,28 @@ namespace MinecraftClient
                                 HandleFailure(Translations.Get("error.realms.access_denied"), false, ChatBot.DisconnectReason.LoginRejected);
                                 return;
                             }
-                            int worldIndex = Convert.ToUInt16(addressInput.Split(':')[1]);
-                            string worldId = availableWorlds[worldIndex];
-                            string RealmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, Settings.Username, session.PlayerID, session.ID);
-                            if (RealmsAddress != "")
+                            int worldIndex = 0;
+                            string worldId = addressInput.Split(':')[1];
+                            if (!availableWorlds.Contains(worldId) && int.TryParse(worldId, out worldIndex) && worldIndex < availableWorlds.Count)
+                                worldId = availableWorlds[worldIndex];
+                            if (availableWorlds.Contains(worldId))
                             {
-                                addressInput = RealmsAddress;
-                                isRealms = true;
-                                Settings.ServerVersion = MCHighestVersion;
+                                string RealmsAddress = ProtocolHandler.GetRealmsWorldServerAddress(worldId, Settings.Username, session.PlayerID, session.ID);
+                                if (RealmsAddress != "")
+                                {
+                                    addressInput = RealmsAddress;
+                                    isRealms = true;
+                                    Settings.ServerVersion = MCHighestVersion;
+                                }
+                                else
+                                {
+                                    HandleFailure(Translations.Get("error.realms.server_unavailable"), false, ChatBot.DisconnectReason.LoginRejected);
+                                    return;
+                                }
                             }
                             else
                             {
-                                HandleFailure(Translations.Get("error.realms.server_unavailable"), false, ChatBot.DisconnectReason.LoginRejected);
+                                HandleFailure(Translations.Get("error.realms.server_id"), false, ChatBot.DisconnectReason.LoginRejected);
                                 return;
                             }
                         }

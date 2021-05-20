@@ -402,6 +402,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\config\MinecraftClient.ini" />
+    <None Include="Resources\lang\de.ini" />
     <None Include="Resources\lang\en.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
