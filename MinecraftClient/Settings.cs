@@ -207,33 +207,46 @@ namespace MinecraftClient
         public static bool ReplayMod_Enabled = false;
         public static int ReplayMod_BackupInterval = 3000;
 
-
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
+        //Temporary Server Alias storage when server list is not loaded yet
+        private static string ServerAliasTemp = null;
 
-        private enum ParseMode { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, Logging };
-
+        //Mapping for settings sections in the INI file
+        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, Logging };
 
         /// <summary>
-        /// Load settings from the give INI file
+        /// Get settings section from name
         /// </summary>
-        /// <param name="settingsfile">File to load</param>
-        public static void LoadSettings(string settingsfile)
+        /// <param name="name">Section name</param>
+        /// <returns>Section enum</returns>
+        private static Section GetSection(string name)
         {
-            ConsoleIO.WriteLogLine("[Settings] Loading Settings from " + Path.GetFullPath(settingsfile));
-            if (File.Exists(settingsfile))
+            Section pMode;
+            if (Enum.TryParse(name, true, out pMode))
+                return pMode;
+            return Section.Default;
+        }
+
+        /// <summary>
+        /// Load settings from the given INI file
+        /// </summary>
+        /// <param name="file">File to load</param>
+        public static void LoadFile(string file)
+        {
+            ConsoleIO.WriteLogLine("[Settings] Loading Settings from " + Path.GetFullPath(file));
+            if (File.Exists(file))
             {
                 try
                 {
-                    string serverAlias = "";
-                    string[] Lines = File.ReadAllLines(settingsfile);
-                    ParseMode pMode = ParseMode.Default;
+                    string[] Lines = File.ReadAllLines(file);
+                    Section section = Section.Default;
                     foreach (string lineRAW in Lines)
                     {
-                        string line = pMode == ParseMode.Main && lineRAW.ToLower().Trim().StartsWith("password")
+                        string line = section == Section.Main && lineRAW.ToLower().Trim().StartsWith("password")
                             ? lineRAW.Trim() //Do not strip # in passwords
                             : lineRAW.Split('#')[0].Trim();
 
@@ -241,32 +254,7 @@ namespace MinecraftClient
                         {
                             if (line[0] == '[' && line[line.Length - 1] == ']')
                             {
-                                switch (line.Substring(1, line.Length - 2).ToLower())
-                                {
-                                    case "alerts": pMode = ParseMode.Alerts; break;
-                                    case "antiafk": pMode = ParseMode.AntiAFK; break;
-                                    case "autorelog": pMode = ParseMode.AutoRelog; break;
-                                    case "chatlog": pMode = ParseMode.ChatLog; break;
-                                    case "hangman": pMode = ParseMode.Hangman; break;
-                                    case "main": pMode = ParseMode.Main; break;
-                                    case "mcsettings": pMode = ParseMode.MCSettings; break;
-                                    case "scriptscheduler": pMode = ParseMode.ScriptScheduler; break;
-                                    case "remotecontrol": pMode = ParseMode.RemoteControl; break;
-                                    case "proxy": pMode = ParseMode.Proxy; break;
-                                    case "appvars": pMode = ParseMode.AppVars; break;
-                                    case "autorespond": pMode = ParseMode.AutoRespond; break;
-                                    case "chatformat": pMode = ParseMode.ChatFormat; break;
-                                    case "autoattack": pMode = ParseMode.AutoAttack; break;
-                                    case "autofishing": pMode = ParseMode.AutoFishing; break;
-                                    case "autoeat": pMode = ParseMode.AutoEat; break;
-                                    case "autocraft": pMode = ParseMode.AutoCraft; break;
-                                    case "mailer": pMode = ParseMode.Mailer; break;
-                                    case "autodrop": pMode = ParseMode.AutoDrop; break;
-                                    case "replaymod": pMode = ParseMode.ReplayMod; break;
-                                    case "logging": pMode = ParseMode.Logging; break;
-
-                                    default: pMode = ParseMode.Default; break;
-                                }
+                                section = GetSection(line.Substring(1, line.Length - 2).ToLower());
                             }
                             else
                             {
@@ -274,437 +262,7 @@ namespace MinecraftClient
                                 if (line.Length > (argName.Length + 1))
                                 {
                                     string argValue = line.Substring(argName.Length + 1);
-                                    switch (pMode)
-                                    {
-                                        case ParseMode.Main:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "login": Login = argValue; break;
-                                                case "password": Password = argValue; break;
-                                                case "type": AccountType = argValue == "mojang" 
-                                                        ? ProtocolHandler.AccountType.Mojang 
-                                                        : ProtocolHandler.AccountType.Microsoft; break;
-                                                case "method": LoginMethod = argValue.ToLower() == "browser"
-                                                        ? "browser"
-                                                        : "mcc"; break;
-                                                case "serverip": if (!SetServerIP(argValue)) serverAlias = argValue; ; break;
-                                                case "singlecommand": SingleCommand = argValue; break;
-                                                case "language": Language = argValue; break;
-                                                case "consoletitle": ConsoleTitle = argValue; break;
-                                                case "timestamps": ConsoleIO.EnableTimestamps = str2bool(argValue); break;
-                                                case "exitonfailure": interactiveMode = !str2bool(argValue); break;
-                                                case "playerheadicon": playerHeadAsIcon = str2bool(argValue); break;
-                                                case "chatbotlogfile": chatbotLogFile = argValue; break;
-                                                case "mcversion": ServerVersion = argValue; break;
-                                                case "messagecooldown": messageCooldown = TimeSpan.FromSeconds(str2int(argValue)); break;
-                                                case "scriptcache": CacheScripts = str2bool(argValue); break;
-                                                case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); break;
-                                                case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); break;
-                                                case "showchatlinks": DisplayChatLinks = str2bool(argValue); break;
-                                                case "terrainandmovements": TerrainAndMovements = str2bool(argValue); break;
-                                                case "entityhandling": EntityHandling = str2bool(argValue); break;
-                                                case "enableentityhandling": EntityHandling = str2bool(argValue); break;
-                                                case "inventoryhandling": InventoryHandling = str2bool(argValue); break;
-                                                case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); break;
-                                                case "autorespawn": AutoRespawn = str2bool(argValue); break;
-                                                // Backward compatible so people can still enable debug with old config format
-                                                case "debugmessages": DebugMessages = str2bool(argValue); break;
-                                                case "minecraftrealms": MinecraftRealmsEnabled = str2bool(argValue); break;
-
-                                                case "botowners":
-                                                    Bots_Owners.Clear();
-                                                    string[] names = argValue.ToLower().Split(',');
-                                                    if (!argValue.Contains(",") && argValue.ToLower().EndsWith(".txt") && File.Exists(argValue))
-                                                        names = File.ReadAllLines(argValue);
-                                                    foreach (string name in names)
-                                                        if (!String.IsNullOrWhiteSpace(name))
-                                                            Bots_Owners.Add(name.Trim());
-                                                    break;
-
-                                                case "internalcmdchar":
-                                                    switch (argValue.ToLower())
-                                                    {
-                                                        case "none": internalCmdChar = ' '; break;
-                                                        case "slash": internalCmdChar = '/'; break;
-                                                        case "backslash": internalCmdChar = '\\'; break;
-                                                    }
-                                                    break;
-
-                                                case "sessioncache":
-                                                    if (argValue == "none") { SessionCaching = CacheType.None; }
-                                                    else if (argValue == "memory") { SessionCaching = CacheType.Memory; }
-                                                    else if (argValue == "disk") { SessionCaching = CacheType.Disk; }
-                                                    break;
-
-                                                case "accountlist":
-                                                    if (File.Exists(argValue))
-                                                    {
-                                                        foreach (string account_line in File.ReadAllLines(argValue))
-                                                        {
-                                                            //Each line contains account data: 'Alias,Login,Password'
-                                                            string[] account_data = account_line.Split('#')[0].Trim().Split(',');
-                                                            if (account_data.Length == 3)
-                                                                Accounts[account_data[0].ToLower()]
-                                                                    = new KeyValuePair<string, string>(account_data[1], account_data[2]);
-                                                        }
-
-                                                        //Try user value against aliases after load
-                                                        Settings.SetAccount(Login);
-                                                    }
-                                                    break;
-
-                                                case "serverlist":
-                                                    if (File.Exists(argValue))
-                                                    {
-                                                        //Backup current server info
-                                                        string server_host_temp = ServerIP;
-                                                        ushort server_port_temp = ServerPort;
-
-                                                        foreach (string server_line in File.ReadAllLines(argValue))
-                                                        {
-                                                            //Each line contains server data: 'Alias,Host:Port'
-                                                            string[] server_data = server_line.Split('#')[0].Trim().Split(',');
-                                                            server_data[0] = server_data[0].ToLower();
-                                                            if (server_data.Length == 2
-                                                                && server_data[0] != "localhost"
-                                                                && !server_data[0].Contains('.')
-                                                                && SetServerIP(server_data[1]))
-                                                                Servers[server_data[0]]
-                                                                    = new KeyValuePair<string, ushort>(ServerIP, ServerPort);
-                                                        }
-
-                                                        //Restore current server info
-                                                        ServerIP = server_host_temp;
-                                                        ServerPort = server_port_temp;
-
-                                                        //Try server value against aliases after load
-                                                        SetServerIP(serverAlias);
-                                                    }
-                                                    break;
-
-                                                case "brandinfo":
-                                                    switch (argValue.Trim().ToLower())
-                                                    {
-                                                        case "mcc": BrandInfo = MCCBrandInfo; break;
-                                                        case "vanilla": BrandInfo = "vanilla"; break;
-                                                        default: BrandInfo = null; break;
-                                                    }
-                                                    break;
-
-                                                case "resolvesrvrecords":
-                                                    if (argValue.Trim().ToLower() == "fast")
-                                                    {
-                                                        ResolveSrvRecords = true;
-                                                        ResolveSrvRecordsShortTimeout = true;
-                                                    }
-                                                    else
-                                                    {
-                                                        ResolveSrvRecords = str2bool(argValue);
-                                                        ResolveSrvRecordsShortTimeout = false;
-                                                    }
-                                                    break;
-
-                                                case "mcforge":
-                                                    if (argValue.ToLower() == "auto")
-                                                    {
-                                                        ServerAutodetectForge = true;
-                                                        ServerForceForge = false;
-                                                    }
-                                                    else
-                                                    {
-                                                        ServerAutodetectForge = false;
-                                                        ServerForceForge = str2bool(argValue);
-                                                    }
-                                                    break;
-                                            }
-                                            break;
-
-                                        case ParseMode.Logging:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "debugmessages": DebugMessages = str2bool(argValue); break;
-                                                case "chatmessages": ChatMessages = str2bool(argValue); break;
-                                                case "warningmessages": WarningMessages = str2bool(argValue); break;
-                                                case "errormessages": ErrorMessages = str2bool(argValue); break;
-                                                case "infomessages": InfoMessages = str2bool(argValue); break;
-                                                case "chatfilter": ChatFilter = new Regex(argValue); break;
-                                                case "debugfilter": DebugFilter = new Regex(argValue); break;
-                                                case "filtermode":
-                                                    if (argValue.ToLower().StartsWith("white"))
-                                                        FilterMode = FilterModeEnum.Whitelist;
-                                                    else
-                                                        FilterMode = FilterModeEnum.Blacklist;
-                                                    break;
-                                                case "logtofile": LogToFile = str2bool(argValue); break;
-                                                case "logfile": LogFile = argValue; break;
-                                                case "prependtimestamp": PrependTimestamp = str2bool(argValue); break;
-                                            }
-                                            break;
-
-                                        case ParseMode.Alerts:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": Alerts_Enabled = str2bool(argValue); break;
-                                                case "alertsfile": Alerts_MatchesFile = argValue; break;
-                                                case "excludesfile": Alerts_ExcludesFile = argValue; break;
-                                                case "beeponalert": Alerts_Beep_Enabled = str2bool(argValue); break;
-                                            }
-                                            break;
-
-                                        case ParseMode.AntiAFK:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": AntiAFK_Enabled = str2bool(argValue); break;
-                                                case "delay": AntiAFK_Delay = str2int(argValue); break;
-                                                case "command": AntiAFK_Command = argValue == "" ? "/ping" : argValue; break;
-                                            }
-                                            break;
-
-                                        case ParseMode.AutoRelog:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": AutoRelog_Enabled = str2bool(argValue); break;
-                                                case "retries": AutoRelog_Retries = str2int(argValue); break;
-                                                case "ignorekickmessage": AutoRelog_IgnoreKickMessage = str2bool(argValue); break;
-                                                case "kickmessagesfile": AutoRelog_KickMessagesFile = argValue; break;
-
-                                                case "delay":
-                                                    string[] delayParts = argValue.Split('-');
-                                                    if (delayParts.Length == 1)
-                                                    {
-                                                        AutoRelog_Delay_Min = str2int(delayParts[0]);
-                                                        AutoRelog_Delay_Max = AutoRelog_Delay_Min;
-                                                    }
-                                                    else
-                                                    {
-                                                        AutoRelog_Delay_Min = str2int(delayParts[0]);
-                                                        AutoRelog_Delay_Max = str2int(delayParts[1]);
-                                                    }
-                                                    break;
-                                            }
-                                            break;
-
-                                        case ParseMode.ChatLog:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": ChatLog_Enabled = str2bool(argValue); break;
-                                                case "timestamps": ChatLog_DateTime = str2bool(argValue); break;
-                                                case "filter": ChatLog_Filter = ChatBots.ChatLog.str2filter(argValue); break;
-                                                case "logfile": ChatLog_File = argValue; break;
-                                            }
-                                            break;
-
-                                        case ParseMode.Hangman:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": Hangman_Enabled = str2bool(argValue); break;
-                                                case "english": Hangman_English = str2bool(argValue); break;
-                                                case "wordsfile": Hangman_FileWords_EN = argValue; break;
-                                                case "fichiermots": Hangman_FileWords_FR = argValue; break;
-                                            }
-                                            break;
-
-                                        case ParseMode.ScriptScheduler:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": ScriptScheduler_Enabled = str2bool(argValue); break;
-                                                case "tasksfile": ScriptScheduler_TasksFile = argValue; break;
-                                            }
-                                            break;
-
-                                        case ParseMode.RemoteControl:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": RemoteCtrl_Enabled = str2bool(argValue); break;
-                                                case "autotpaccept": RemoteCtrl_AutoTpaccept = str2bool(argValue); break;
-                                                case "tpaccepteveryone": RemoteCtrl_AutoTpaccept_Everyone = str2bool(argValue); break;
-                                            }
-                                            break;
-
-                                        case ParseMode.ChatFormat:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "builtins": ChatFormat_Builtins = str2bool(argValue); break;
-                                                case "public": ChatFormat_Public = new Regex(argValue); break;
-                                                case "private": ChatFormat_Private = new Regex(argValue); break;
-                                                case "tprequest": ChatFormat_TeleportRequest = new Regex(argValue); break;
-                                            }
-                                            break;
-
-                                        case ParseMode.Proxy:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled":
-                                                    ProxyEnabledLogin = ProxyEnabledIngame = str2bool(argValue);
-                                                    if (argValue.Trim().ToLower() == "login")
-                                                        ProxyEnabledLogin = true;
-                                                    break;
-                                                case "type":
-                                                    argValue = argValue.ToLower();
-                                                    if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
-                                                    else if (argValue == "socks4") { proxyType = Proxy.ProxyHandler.Type.SOCKS4; }
-                                                    else if (argValue == "socks4a") { proxyType = Proxy.ProxyHandler.Type.SOCKS4a; }
-                                                    else if (argValue == "socks5") { proxyType = Proxy.ProxyHandler.Type.SOCKS5; }
-                                                    break;
-                                                case "server":
-                                                    string[] host_splitted = argValue.Split(':');
-                                                    if (host_splitted.Length == 1)
-                                                    {
-                                                        ProxyHost = host_splitted[0];
-                                                        ProxyPort = 80;
-                                                    }
-                                                    else if (host_splitted.Length == 2)
-                                                    {
-                                                        ProxyHost = host_splitted[0];
-                                                        ProxyPort = str2int(host_splitted[1]);
-                                                    }
-                                                    break;
-                                                case "username": ProxyUsername = argValue; break;
-                                                case "password": ProxyPassword = argValue; break;
-                                            }
-                                            break;
-
-                                        case ParseMode.AppVars:
-                                            SetVar(argName, argValue);
-                                            break;
-
-                                        case ParseMode.AutoRespond:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": AutoRespond_Enabled = str2bool(argValue); break;
-                                                case "matchesfile": AutoRespond_Matches = argValue; break;
-                                            }
-                                            break;
-                                        case ParseMode.AutoAttack:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": AutoAttack_Enabled = str2bool(argValue); break;
-                                                case "mode": AutoAttack_Mode = argValue.ToLower(); break;
-                                                case "priority": AutoAttack_Priority = argValue.ToLower(); break;
-                                                case "cooldownseconds": 
-                                                    if (argValue.ToLower() == "auto")
-                                                    {
-                                                        AutoAttack_OverrideAttackSpeed = false;
-                                                    }
-                                                    else
-                                                    {
-                                                        AutoAttack_OverrideAttackSpeed = true;
-                                                        AutoAttack_CooldownSeconds = str2float(argValue);
-                                                    }
-                                                    break;
-                                            }
-                                            break;
-
-                                        case ParseMode.AutoFishing:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": AutoFishing_Enabled = str2bool(argValue); break;
-                                                case "antidespawn": AutoFishing_Antidespawn = str2bool(argValue); break;
-                                            }
-                                            break;
-
-                                        case ParseMode.AutoEat:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": AutoEat_Enabled = str2bool(argValue); break;
-                                                case "threshold": AutoEat_hungerThreshold = str2int(argValue); break;
-                                            }
-                                            break;
-
-                                        case ParseMode.AutoCraft:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": AutoCraft_Enabled = str2bool(argValue); break;
-                                                case "configfile": AutoCraft_configFile = argValue; break;
-                                            }
-                                            break;
-
-                                        case ParseMode.AutoDrop:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": AutoDrop_Enabled = str2bool(argValue); break;
-                                                case "mode": AutoDrop_Mode = argValue; break;
-                                                case "items": AutoDrop_items = argValue; break;
-                                            }
-                                            break;
-
-                                        case ParseMode.MCSettings:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": MCSettings_Enabled = str2bool(argValue); break;
-                                                case "locale": MCSettings_Locale = argValue; break;
-                                                case "difficulty":
-                                                    switch (argValue.ToLower())
-                                                    {
-                                                        case "peaceful": MCSettings_Difficulty = 0; break;
-                                                        case "easy": MCSettings_Difficulty = 1; break;
-                                                        case "normal": MCSettings_Difficulty = 2; break;
-                                                        case "difficult": MCSettings_Difficulty = 3; break;
-                                                    }
-                                                    break;
-                                                case "renderdistance":
-                                                    MCSettings_RenderDistance = 2;
-                                                    if (argValue.All(Char.IsDigit))
-                                                    {
-                                                        MCSettings_RenderDistance = (byte)str2int(argValue);
-                                                    }
-                                                    else
-                                                    {
-                                                        switch (argValue.ToLower())
-                                                        {
-                                                            case "tiny": MCSettings_RenderDistance = 2; break;
-                                                            case "short": MCSettings_RenderDistance = 4; break;
-                                                            case "medium": MCSettings_RenderDistance = 8; break;
-                                                            case "far": MCSettings_RenderDistance = 16; break;
-                                                        }
-                                                    }
-                                                    break;
-                                                case "chatmode":
-                                                    switch (argValue.ToLower())
-                                                    {
-                                                        case "enabled": MCSettings_ChatMode = 0; break;
-                                                        case "commands": MCSettings_ChatMode = 1; break;
-                                                        case "disabled": MCSettings_ChatMode = 2; break;
-                                                    }
-                                                    break;
-                                                case "chatcolors": MCSettings_ChatColors = str2bool(argValue); break;
-                                                case "skin_cape": MCSettings_Skin_Cape = str2bool(argValue); break;
-                                                case "skin_jacket": MCSettings_Skin_Jacket = str2bool(argValue); break;
-                                                case "skin_sleeve_left": MCSettings_Skin_Sleeve_Left = str2bool(argValue); break;
-                                                case "skin_sleeve_right": MCSettings_Skin_Sleeve_Right = str2bool(argValue); break;
-                                                case "skin_pants_left": MCSettings_Skin_Pants_Left = str2bool(argValue); break;
-                                                case "skin_pants_right": MCSettings_Skin_Pants_Right = str2bool(argValue); break;
-                                                case "skin_hat": MCSettings_Skin_Hat = str2bool(argValue); break;
-                                                case "main_hand":
-                                                    switch (argValue.ToLower())
-                                                    {
-                                                        case "left": MCSettings_MainHand = 0; break;
-                                                        case "right": MCSettings_MainHand = 1; break;
-                                                    }
-                                                    break;
-                                            }
-                                            break;
-
-                                        case ParseMode.Mailer:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": Mailer_Enabled = str2bool(argValue); break;
-                                                case "database": Mailer_DatabaseFile = argValue; break;
-                                                case "ignorelist": Mailer_IgnoreListFile = argValue; break;
-                                                case "publicinteractions": Mailer_PublicInteractions = str2bool(argValue); break;
-                                                case "maxmailsperplayer": Mailer_MaxMailsPerPlayer = str2int(argValue); break;
-                                                case "maxdatabasesize": Mailer_MaxDatabaseSize = str2int(argValue); break;
-                                                case "retentiondays": Mailer_MailRetentionDays = str2int(argValue); break;
-                                            }
-                                            break;
-                                        case ParseMode.ReplayMod:
-                                            switch (argName.ToLower())
-                                            {
-                                                case "enabled": ReplayMod_Enabled = str2bool(argValue); break;
-                                                case "backupinterval": ReplayMod_BackupInterval = str2int(argValue); break;
-                                            }
-                                            break;
-                                    }
+                                    LoadSingleSetting(section, argName, argValue);
                                 }
                             }
                         }
@@ -712,6 +270,504 @@ namespace MinecraftClient
                 }
                 catch (IOException) { }
             }
+        }
+
+        /// <summary>
+        /// Load settings from the command line
+        /// </summary>
+        /// <param name="args">Command-line arguments</param>
+        /// <exception cref="System.ArgumentException">Thrown on invalid arguments</exception>
+        public static void LoadArguments(string[] args)
+        {
+            int positionalIndex = 0;
+
+            foreach (string argument in args)
+            {
+                if (argument.StartsWith("--"))
+                {
+                    //Load settings as --setting=value and --section.setting=value
+                    if (!argument.Contains("="))
+                        throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
+                    Section section = Section.Main;
+                    string argName = argument.Substring(2).Split('=')[0];
+                    string argValue = argument.Substring(argName.Length + 3);
+                    if (argName.Contains('.'))
+                    {
+                        string sectionName = argName.Split('.')[0];
+                        section = GetSection(sectionName);
+                        if (section == Section.Default)
+                            throw new ArgumentException(Translations.Get("error.setting.unknown_section", argument, sectionName));
+                        argName = argName.Split('.')[1];
+                    }
+                    if (!LoadSingleSetting(section, argName, argValue))
+                        throw new ArgumentException(Translations.Get("error.setting.unknown_or_invalid", argument));
+                }
+                else if (argument.StartsWith("-") && argument.Length > 1)
+                {
+                    //Keep single dash arguments as unsupported for now (future use)
+                    throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
+                }
+                else
+                {
+                    switch (positionalIndex)
+                    {
+                        case 0: Login = argument; break;
+                        case 1: Password = argument; break;
+                        case 2: if (!SetServerIP(argument)) ServerAliasTemp = argument; break;
+                        case 3: SingleCommand = argument; break;
+                    }
+                    positionalIndex++;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Load a single setting from INI file or command-line argument
+        /// </summary>
+        /// <param name="section">Settings section</param>
+        /// <param name="argName">Setting name</param>
+        /// <param name="argValue">Setting value</param>
+        /// <returns>TRUE if setting was valid</returns>
+        private static bool LoadSingleSetting(Section section, string argName, string argValue)
+        {
+            switch (section)
+            {
+                case Section.Main:
+                    switch (argName.ToLower())
+                    {
+                        case "login": Login = argValue; return true;
+                        case "password": Password = argValue; return true;
+                        case "type": AccountType = argValue == "mojang"
+                                ? ProtocolHandler.AccountType.Mojang
+                                : ProtocolHandler.AccountType.Microsoft; return true;
+                        case "method": LoginMethod = argValue.ToLower() == "browser"
+                                ? "browser"
+                                : "mcc"; return true;
+                        case "serverip": if (!SetServerIP(argValue)) ServerAliasTemp = argValue; return true;
+                        case "singlecommand": SingleCommand = argValue; return true;
+                        case "language": Language = argValue; return true;
+                        case "consoletitle": ConsoleTitle = argValue; return true;
+                        case "timestamps": ConsoleIO.EnableTimestamps = str2bool(argValue); return true;
+                        case "exitonfailure": interactiveMode = !str2bool(argValue); return true;
+                        case "playerheadicon": playerHeadAsIcon = str2bool(argValue); return true;
+                        case "chatbotlogfile": chatbotLogFile = argValue; return true;
+                        case "mcversion": ServerVersion = argValue; return true;
+                        case "messagecooldown": messageCooldown = TimeSpan.FromSeconds(str2int(argValue)); return true;
+                        case "scriptcache": CacheScripts = str2bool(argValue); return true;
+                        case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); return true;
+                        case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); return true;
+                        case "showchatlinks": DisplayChatLinks = str2bool(argValue); return true;
+                        case "terrainandmovements": TerrainAndMovements = str2bool(argValue); return true;
+                        case "entityhandling": EntityHandling = str2bool(argValue); return true;
+                        case "enableentityhandling": EntityHandling = str2bool(argValue); return true;
+                        case "inventoryhandling": InventoryHandling = str2bool(argValue); return true;
+                        case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); return true;
+                        case "autorespawn": AutoRespawn = str2bool(argValue); return true;
+                        // Backward compatible so people can still enable debug with old config format
+                        case "debugmessages": DebugMessages = str2bool(argValue); return true;
+                        case "minecraftrealms": MinecraftRealmsEnabled = str2bool(argValue); return true;
+
+                        case "botowners":
+                            Bots_Owners.Clear();
+                            string[] names = argValue.ToLower().Split(',');
+                            if (!argValue.Contains(",") && argValue.ToLower().EndsWith(".txt") && File.Exists(argValue))
+                                names = File.ReadAllLines(argValue);
+                            foreach (string name in names)
+                                if (!String.IsNullOrWhiteSpace(name))
+                                    Bots_Owners.Add(name.Trim());
+                            return true;
+
+                        case "internalcmdchar":
+                            switch (argValue.ToLower())
+                            {
+                                case "none": internalCmdChar = ' '; break;
+                                case "slash": internalCmdChar = '/'; break;
+                                case "backslash": internalCmdChar = '\\'; break;
+                            }
+                            return true;
+
+                        case "sessioncache":
+                            if (argValue == "none") { SessionCaching = CacheType.None; }
+                            else if (argValue == "memory") { SessionCaching = CacheType.Memory; }
+                            else if (argValue == "disk") { SessionCaching = CacheType.Disk; }
+                            return true;
+
+                        case "accountlist":
+                            if (File.Exists(argValue))
+                            {
+                                foreach (string account_line in File.ReadAllLines(argValue))
+                                {
+                                    //Each line contains account data: 'Alias,Login,Password'
+                                    string[] account_data = account_line.Split('#')[0].Trim().Split(',');
+                                    if (account_data.Length == 3)
+                                        Accounts[account_data[0].ToLower()]
+                                            = new KeyValuePair<string, string>(account_data[1], account_data[2]);
+                                }
+
+                                //Try user value against aliases after load
+                                SetAccount(Login);
+                            }
+                            return true;
+
+                        case "serverlist":
+                            if (File.Exists(argValue))
+                            {
+                                //Backup current server info
+                                string server_host_temp = ServerIP;
+                                ushort server_port_temp = ServerPort;
+
+                                foreach (string server_line in File.ReadAllLines(argValue))
+                                {
+                                    //Each line contains server data: 'Alias,Host:Port'
+                                    string[] server_data = server_line.Split('#')[0].Trim().Split(',');
+                                    server_data[0] = server_data[0].ToLower();
+                                    if (server_data.Length == 2
+                                        && server_data[0] != "localhost"
+                                        && !server_data[0].Contains('.')
+                                        && SetServerIP(server_data[1]))
+                                        Servers[server_data[0]]
+                                            = new KeyValuePair<string, ushort>(ServerIP, ServerPort);
+                                }
+
+                                //Restore current server info
+                                ServerIP = server_host_temp;
+                                ServerPort = server_port_temp;
+
+                                //Try server value against aliases after load
+                                if (!String.IsNullOrEmpty(ServerAliasTemp))
+                                {
+                                    SetServerIP(ServerAliasTemp);
+                                    ServerAliasTemp = null;
+                                }
+                            }
+                            return true;
+
+                        case "brandinfo":
+                            switch (argValue.Trim().ToLower())
+                            {
+                                case "mcc": BrandInfo = MCCBrandInfo; break;
+                                case "vanilla": BrandInfo = "vanilla"; break;
+                                default: BrandInfo = null; break;
+                            }
+                            return true;
+
+                        case "resolvesrvrecords":
+                            if (argValue.Trim().ToLower() == "fast")
+                            {
+                                ResolveSrvRecords = true;
+                                ResolveSrvRecordsShortTimeout = true;
+                            }
+                            else
+                            {
+                                ResolveSrvRecords = str2bool(argValue);
+                                ResolveSrvRecordsShortTimeout = false;
+                            }
+                            return true;
+
+                        case "mcforge":
+                            if (argValue.ToLower() == "auto")
+                            {
+                                ServerAutodetectForge = true;
+                                ServerForceForge = false;
+                            }
+                            else
+                            {
+                                ServerAutodetectForge = false;
+                                ServerForceForge = str2bool(argValue);
+                            }
+                            return true;
+                    }
+                    break;
+
+                case Section.Logging:
+                    switch (argName.ToLower())
+                    {
+                        case "debugmessages": DebugMessages = str2bool(argValue); return true;
+                        case "chatmessages": ChatMessages = str2bool(argValue); return true;
+                        case "warningmessages": WarningMessages = str2bool(argValue); return true;
+                        case "errormessages": ErrorMessages = str2bool(argValue); return true;
+                        case "infomessages": InfoMessages = str2bool(argValue); return true;
+                        case "chatfilter": ChatFilter = new Regex(argValue); return true;
+                        case "debugfilter": DebugFilter = new Regex(argValue); return true;
+                        case "filtermode":
+                            if (argValue.ToLower().StartsWith("white"))
+                                FilterMode = FilterModeEnum.Whitelist;
+                            else
+                                FilterMode = FilterModeEnum.Blacklist;
+                            return true;
+                        case "logtofile": LogToFile = str2bool(argValue); return true;
+                        case "logfile": LogFile = argValue; return true;
+                        case "prependtimestamp": PrependTimestamp = str2bool(argValue); return true;
+                    }
+                    break;
+
+                case Section.Alerts:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": Alerts_Enabled = str2bool(argValue); return true;
+                        case "alertsfile": Alerts_MatchesFile = argValue; return true;
+                        case "excludesfile": Alerts_ExcludesFile = argValue; return true;
+                        case "beeponalert": Alerts_Beep_Enabled = str2bool(argValue); return true;
+                    }
+                    break;
+
+                case Section.AntiAFK:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": AntiAFK_Enabled = str2bool(argValue); return true;
+                        case "delay": AntiAFK_Delay = str2int(argValue); return true;
+                        case "command": AntiAFK_Command = argValue == "" ? "/ping" : argValue; return true;
+                    }
+                    break;
+
+                case Section.AutoRelog:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": AutoRelog_Enabled = str2bool(argValue); return true;
+                        case "retries": AutoRelog_Retries = str2int(argValue); return true;
+                        case "ignorekickmessage": AutoRelog_IgnoreKickMessage = str2bool(argValue); return true;
+                        case "kickmessagesfile": AutoRelog_KickMessagesFile = argValue; return true;
+
+                        case "delay":
+                            string[] delayParts = argValue.Split('-');
+                            if (delayParts.Length == 1)
+                            {
+                                AutoRelog_Delay_Min = str2int(delayParts[0]);
+                                AutoRelog_Delay_Max = AutoRelog_Delay_Min;
+                            }
+                            else
+                            {
+                                AutoRelog_Delay_Min = str2int(delayParts[0]);
+                                AutoRelog_Delay_Max = str2int(delayParts[1]);
+                            }
+                            return true;
+                    }
+                    break;
+
+                case Section.ChatLog:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": ChatLog_Enabled = str2bool(argValue); return true;
+                        case "timestamps": ChatLog_DateTime = str2bool(argValue); return true;
+                        case "filter": ChatLog_Filter = ChatBots.ChatLog.str2filter(argValue); return true;
+                        case "logfile": ChatLog_File = argValue; return true;
+                    }
+                    break;
+
+                case Section.Hangman:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": Hangman_Enabled = str2bool(argValue); return true;
+                        case "english": Hangman_English = str2bool(argValue); return true;
+                        case "wordsfile": Hangman_FileWords_EN = argValue; return true;
+                        case "fichiermots": Hangman_FileWords_FR = argValue; return true;
+                    }
+                    break;
+
+                case Section.ScriptScheduler:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": ScriptScheduler_Enabled = str2bool(argValue); return true;
+                        case "tasksfile": ScriptScheduler_TasksFile = argValue; return true;
+                    }
+                    break;
+
+                case Section.RemoteControl:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": RemoteCtrl_Enabled = str2bool(argValue); return true;
+                        case "autotpaccept": RemoteCtrl_AutoTpaccept = str2bool(argValue); return true;
+                        case "tpaccepteveryone": RemoteCtrl_AutoTpaccept_Everyone = str2bool(argValue); return true;
+                    }
+                    break;
+
+                case Section.ChatFormat:
+                    switch (argName.ToLower())
+                    {
+                        case "builtins": ChatFormat_Builtins = str2bool(argValue); return true;
+                        case "public": ChatFormat_Public = new Regex(argValue); return true;
+                        case "private": ChatFormat_Private = new Regex(argValue); return true;
+                        case "tprequest": ChatFormat_TeleportRequest = new Regex(argValue); return true;
+                    }
+                    break;
+
+                case Section.Proxy:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled":
+                            ProxyEnabledLogin = ProxyEnabledIngame = str2bool(argValue);
+                            if (argValue.Trim().ToLower() == "login")
+                                ProxyEnabledLogin = true;
+                            return true;
+                        case "type":
+                            argValue = argValue.ToLower();
+                            if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
+                            else if (argValue == "socks4") { proxyType = Proxy.ProxyHandler.Type.SOCKS4; }
+                            else if (argValue == "socks4a") { proxyType = Proxy.ProxyHandler.Type.SOCKS4a; }
+                            else if (argValue == "socks5") { proxyType = Proxy.ProxyHandler.Type.SOCKS5; }
+                            return true;
+                        case "server":
+                            string[] host_splitted = argValue.Split(':');
+                            if (host_splitted.Length == 1)
+                            {
+                                ProxyHost = host_splitted[0];
+                                ProxyPort = 80;
+                            }
+                            else if (host_splitted.Length == 2)
+                            {
+                                ProxyHost = host_splitted[0];
+                                ProxyPort = str2int(host_splitted[1]);
+                            }
+                            return true;
+                        case "username": ProxyUsername = argValue; return true;
+                        case "password": ProxyPassword = argValue; return true;
+                    }
+                    break;
+
+                case Section.AppVars:
+                    SetVar(argName, argValue);
+                    return true;
+
+                case Section.AutoRespond:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": AutoRespond_Enabled = str2bool(argValue); return true;
+                        case "matchesfile": AutoRespond_Matches = argValue; return true;
+                    }
+                    break;
+
+                case Section.AutoAttack:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": AutoAttack_Enabled = str2bool(argValue); return true;
+                        case "mode": AutoAttack_Mode = argValue.ToLower(); return true;
+                        case "priority": AutoAttack_Priority = argValue.ToLower(); return true;
+                        case "cooldownseconds":
+                            if (argValue.ToLower() == "auto")
+                            {
+                                AutoAttack_OverrideAttackSpeed = false;
+                            }
+                            else
+                            {
+                                AutoAttack_OverrideAttackSpeed = true;
+                                AutoAttack_CooldownSeconds = str2float(argValue);
+                            }
+                            return true;
+                    }
+                    break;
+
+                case Section.AutoFishing:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": AutoFishing_Enabled = str2bool(argValue); return true;
+                        case "antidespawn": AutoFishing_Antidespawn = str2bool(argValue); return true;
+                    }
+                    break;
+
+                case Section.AutoEat:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": AutoEat_Enabled = str2bool(argValue); return true;
+                        case "threshold": AutoEat_hungerThreshold = str2int(argValue); return true;
+                    }
+                    break;
+
+                case Section.AutoCraft:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": AutoCraft_Enabled = str2bool(argValue); return true;
+                        case "configfile": AutoCraft_configFile = argValue; return true;
+                    }
+                    break;
+
+                case Section.AutoDrop:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": AutoDrop_Enabled = str2bool(argValue); return true;
+                        case "mode": AutoDrop_Mode = argValue; return true;
+                        case "items": AutoDrop_items = argValue; return true;
+                    }
+                    break;
+
+                case Section.MCSettings:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": MCSettings_Enabled = str2bool(argValue); return true;
+                        case "locale": MCSettings_Locale = argValue; return true;
+                        case "difficulty":
+                            switch (argValue.ToLower())
+                            {
+                                case "peaceful": MCSettings_Difficulty = 0; break;
+                                case "easy": MCSettings_Difficulty = 1; break;
+                                case "normal": MCSettings_Difficulty = 2; break;
+                                case "difficult": MCSettings_Difficulty = 3; break;
+                            }
+                            return true;
+                        case "renderdistance":
+                            MCSettings_RenderDistance = 2;
+                            if (argValue.All(Char.IsDigit))
+                            {
+                                MCSettings_RenderDistance = (byte)str2int(argValue);
+                            }
+                            else
+                            {
+                                switch (argValue.ToLower())
+                                {
+                                    case "tiny": MCSettings_RenderDistance = 2; break;
+                                    case "short": MCSettings_RenderDistance = 4; break;
+                                    case "medium": MCSettings_RenderDistance = 8; break;
+                                    case "far": MCSettings_RenderDistance = 16; break;
+                                }
+                            }
+                            return true;
+                        case "chatmode":
+                            switch (argValue.ToLower())
+                            {
+                                case "enabled": MCSettings_ChatMode = 0; break;
+                                case "commands": MCSettings_ChatMode = 1; break;
+                                case "disabled": MCSettings_ChatMode = 2; break;
+                            }
+                            return true;
+                        case "chatcolors": MCSettings_ChatColors = str2bool(argValue); return true;
+                        case "skin_cape": MCSettings_Skin_Cape = str2bool(argValue); return true;
+                        case "skin_jacket": MCSettings_Skin_Jacket = str2bool(argValue); return true;
+                        case "skin_sleeve_left": MCSettings_Skin_Sleeve_Left = str2bool(argValue); return true;
+                        case "skin_sleeve_right": MCSettings_Skin_Sleeve_Right = str2bool(argValue); return true;
+                        case "skin_pants_left": MCSettings_Skin_Pants_Left = str2bool(argValue); return true;
+                        case "skin_pants_right": MCSettings_Skin_Pants_Right = str2bool(argValue); return true;
+                        case "skin_hat": MCSettings_Skin_Hat = str2bool(argValue); return true;
+                        case "main_hand":
+                            switch (argValue.ToLower())
+                            {
+                                case "left": MCSettings_MainHand = 0; break;
+                                case "right": MCSettings_MainHand = 1; break;
+                            }
+                            return true;
+                    }
+                    break;
+
+                case Section.Mailer:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": Mailer_Enabled = str2bool(argValue); return true;
+                        case "database": Mailer_DatabaseFile = argValue; return true;
+                        case "ignorelist": Mailer_IgnoreListFile = argValue; return true;
+                        case "publicinteractions": Mailer_PublicInteractions = str2bool(argValue); return true;
+                        case "maxmailsperplayer": Mailer_MaxMailsPerPlayer = str2int(argValue); return true;
+                        case "maxdatabasesize": Mailer_MaxDatabaseSize = str2int(argValue); return true;
+                        case "retentiondays": Mailer_MailRetentionDays = str2int(argValue); return true;
+                    }
+                    break;
+
+                case Section.ReplayMod:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": ReplayMod_Enabled = str2bool(argValue); return true;
+                        case "backupinterval": ReplayMod_BackupInterval = str2int(argValue); return true;
+                    }
+                    break;
+            }
+            return false;
         }
 
         /// <summary>

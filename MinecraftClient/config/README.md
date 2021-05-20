@@ -50,25 +50,59 @@ You can have several INI files and drag & drop one of them over MinecraftClient.
 Command-line usage
 ------
 
-**MinecraftClient.exe username password server:**
+Quick usage:
 
-This will automatically connect you to the chosen server.
-To specify a server and ask password interactively, use "" as password.
-To specify offline mode with no password, use "-" as password.
+```
+MinecraftClient.exe --help
+MinecraftClient.exe <username> <password> <server>
+MinecraftClient.exe <username> <password> <server> "/mycommand"
+MinecraftClient.exe --setting=value [--other settings]
+MinecraftClient.exe --section.setting=value [--other settings]
+MinecraftClient.exe <settings-file.ini> [--other settings]
+```
+You can mix and match arguments by following theses rules:
+ * First positional argument may be either the login or settings file
+ * Other positional arguments are read in order: login, password, server, command
+ * Arguments starting with `--` can be in any order and position
 
-**MinecraftClient.exe username password server "/mycommand":**
+Examples and further explanations:
 
-This will automatically send "/mycommand" to the server and close.
-To send several commands and maybe stay connected, use the Scripting bot instead.
+```
+MinecraftClient.exe <login> <password> <server>
+```
 
-**MinecraftClient.exe myconfig.ini:**
+* This will automatically connect you to the chosen server.
+* You may omit password and/or server to specify e.g. only the login
+* To specify a server but ask password interactively, use `""` as password.
+* To specify offline mode with no password, use `-` as password.
 
-This will load the specified configuration file
-If the file contains login / password / server ip, it will automatically connect.
+```
+MinecraftClient.exe <login> <password> <server> "/mycommand"
+```
 
-**MinecraftClient.exe myconfig.ini othername otherpassword otherIP:**
+* This will automatically send `/mycommand` to the server and close.
+* To send several commands and/or stay connected, use the ScriptScheduler bot instead.
 
-Load the specified configuration file and override some settings from the file.
+```
+MinecraftClient.exe <myconfig.ini>
+```
+
+* This will load the specified configuration file
+* If the file contains login / password / server ip, it will automatically connect.
+
+```
+MinecraftClient.exe --setting=value [--other settings]
+```
+
+* Specify settings on the command-line, see possible value in the configuration file
+* Use `--section.setting=value` for settings outside the `[Main]` section
+* Example: `--antiafk.enabled=true` for enabling the AntiAFK bot
+
+```
+MinecraftClient.exe <myconfig.ini> <login> <password> <server> [--other settings]
+```
+
+* Load the specified configuration file and override some settings from the file
 
 Internal commands
 ------
