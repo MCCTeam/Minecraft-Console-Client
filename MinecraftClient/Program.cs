@@ -79,7 +79,7 @@ namespace MinecraftClient
             //Process ini configuration file
             if (args.Length >= 1 && System.IO.File.Exists(args[0]) && System.IO.Path.GetExtension(args[0]).ToLower() == ".ini")
             {
-                Settings.LoadSettings(args[0]);
+                Settings.LoadFile(args[0]);
 
                 //remove ini configuration file from arguments array
                 List<string> args_tmp = args.ToList<string>();
@@ -88,7 +88,7 @@ namespace MinecraftClient
             }
             else if (System.IO.File.Exists("MinecraftClient.ini"))
             {
-                Settings.LoadSettings("MinecraftClient.ini");
+                Settings.LoadFile("MinecraftClient.ini");
             }
             else Settings.WriteDefaultSettings("MinecraftClient.ini");
 
@@ -98,20 +98,26 @@ namespace MinecraftClient
             //Other command-line arguments
             if (args.Length >= 1)
             {
-                Settings.Login = args[0];
-                if (args.Length >= 2)
+                if (args.Contains("--help"))
                 {
-                    Settings.Password = args[1];
-                    if (args.Length >= 3)
-                    {
-                        Settings.SetServerIP(args[2]);
+                    Console.WriteLine("Command-Line Help:");
+                    Console.WriteLine("MinecraftClient.exe <username> <password> <server>");
+                    Console.WriteLine("MinecraftClient.exe <username> <password> <server> \"/mycommand\"");
+                    Console.WriteLine("MinecraftClient.exe --setting=value [--other settings]");
+                    Console.WriteLine("MinecraftClient.exe --section.setting=value [--other settings]");
+                    Console.WriteLine("MinecraftClient.exe <settings-file.ini> [--other settings]");
+                    return;
+                }
 
-                        //Single command?
-                        if (args.Length >= 4)
-                        {
-                            Settings.SingleCommand = args[3];
-                        }
-                    }
+                try
+                {
+                    Settings.LoadArguments(args);
+                }
+                catch (ArgumentException e)
+                {
+                    Settings.interactiveMode = false;
+                    HandleFailure(e.Message);
+                    return;
                 }
             }
 
