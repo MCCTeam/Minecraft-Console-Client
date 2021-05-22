@@ -1270,12 +1270,18 @@ namespace MinecraftClient.Protocol.Handlers
             socketWrapper.SwitchToEncrypted(secretKey);
 
             //Process the next packet
-            int packetID = -1;
-            Queue<byte> packetData = new Queue<byte>();
+            int loopPrevention = UInt16.MaxValue;
             while (true)
             {
+                int packetID = -1;
+                Queue<byte> packetData = new Queue<byte>();
                 ReadNextPacket(ref packetID, packetData);
-                if (packetID == 0x00) //Login rejected
+                if (packetID < 0 || loopPrevention-- < 0) // Failed to read packet or too many iterations (issue #1150)
+                {
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.invalid_encrypt"));
+                    return false;
+                }
+                else if (packetID == 0x00) //Login rejected
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, ChatParser.ParseText(dataTypes.ReadNextString(packetData)));
                     return false;
