@@ -35,6 +35,8 @@ namespace MinecraftClient.ChatBots
             private string actionPrivate;
             private string actionOther;
             private bool ownersOnly;
+            private TimeSpan cooldown;
+            private DateTime cooldownExpiration;
 
             /// <summary>
             /// Create a respond rule from a regex and a reponse message or command
@@ -44,7 +46,8 @@ namespace MinecraftClient.ChatBots
             /// <param name="actionPrivate">Internal command to run for private messages</param>
             /// <param name="actionOther">Internal command to run for any other messages</param>
             /// <param name="ownersOnly">Only match messages from bot owners</param>
-            public RespondRule(Regex regex, string actionPublic, string actionPrivate, string actionOther, bool ownersOnly)
+            /// <param name="cooldown">Minimal cooldown between two matches</param>
+            public RespondRule(Regex regex, string actionPublic, string actionPrivate, string actionOther, bool ownersOnly, TimeSpan cooldown)
             {
                 this.regex = regex;
                 this.match = null;
@@ -52,6 +55,8 @@ namespace MinecraftClient.ChatBots
                 this.actionPrivate = actionPrivate;
                 this.actionOther = actionOther;
                 this.ownersOnly = ownersOnly;
+                this.cooldown = cooldown;
+                this.cooldownExpiration = DateTime.MinValue;
             }
 
             /// <summary>
@@ -61,7 +66,8 @@ namespace MinecraftClient.ChatBots
             /// <param name="actionPublic">Internal command to run for public messages</param>
             /// <param name="actionPrivate">Internal command to run for private messages</param>
             /// <param name="ownersOnly">Only match messages from bot owners</param>
-            public RespondRule(string match, string actionPublic, string actionPrivate, string actionOther, bool ownersOnly)
+            /// <param name="cooldown">Minimal cooldown between two matches</param>
+            public RespondRule(string match, string actionPublic, string actionPrivate, string actionOther, bool ownersOnly, TimeSpan cooldown)
             {
                 this.regex = null;
                 this.match = match;
@@ -69,6 +75,8 @@ namespace MinecraftClient.ChatBots
                 this.actionPrivate = actionPrivate;
                 this.actionOther = actionOther;
                 this.ownersOnly = ownersOnly;
+                this.cooldown = cooldown;
+                this.cooldownExpiration = DateTime.MinValue;
             }
 
             /// <summary>
@@ -81,6 +89,9 @@ namespace MinecraftClient.ChatBots
             /// <returns>Internal command to run as a response to this user, or null if no match has been detected</returns>
             public string Match(string username, string message, MessageType msgType, Dictionary<string, object> localVars)
             {
+                if (DateTime.Now < cooldownExpiration)
+                    return null;
+
                 string toSend = null;
 
                 if (ownersOnly && (String.IsNullOrEmpty(username) || !Settings.Bots_Owners.Contains(username.ToLower())))
@@ -100,6 +111,7 @@ namespace MinecraftClient.ChatBots
                 {
                     if (regex.IsMatch(message))
                     {
+                        cooldownExpiration = DateTime.Now + cooldown;
                         Match regexMatch = regex.Match(message);
                         localVars["match_0"] = regexMatch.Groups[0].Value;
                         for (int i = regexMatch.Groups.Count - 1; i >= 1; i--)
@@ -116,6 +128,7 @@ namespace MinecraftClient.ChatBots
                 {
                     if (message.ToLower().Contains(match.ToLower()))
                     {
+                        cooldownExpiration = DateTime.Now + cooldown;
                         localVars["match_0"] = message;
                         localVars["match_u"] = username;
                         return toSend.Replace("$u", username);
@@ -123,6 +136,24 @@ namespace MinecraftClient.ChatBots
                 }
 
                 return null;
+            }
+
+            /// <summary>
+            /// Get a string representation of the RespondRule
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
+            {
+                return Translations.Get(
+                    "bot.autoRespond.match",
+                    match,
+                    regex,
+                    actionPublic,
+                    actionPrivate,
+                    actionOther,
+                    ownersOnly,
+                    (int)cooldown.TotalSeconds
+                );
             }
         }
 
@@ -139,10 +170,10 @@ namespace MinecraftClient.ChatBots
                 string matchActionPrivate = null;
                 string matchActionOther = null;
                 bool ownersOnly = false;
+                TimeSpan cooldown = TimeSpan.Zero;
                 respondRules = new List<RespondRule>();
 
-                if (Settings.DebugMessages)
-                    LogToConsole("Loading matches from file: " + System.IO.Path.GetFullPath(matchesFile));
+                LogDebugToConsoleTranslated("bot.autoRespond.loading", System.IO.Path.GetFullPath(matchesFile));
 
                 foreach (string lineRAW in File.ReadAllLines(matchesFile, Encoding.UTF8))
                 {
@@ -154,13 +185,14 @@ namespace MinecraftClient.ChatBots
                             switch (line.Substring(1, line.Length - 2).ToLower())
                             {
                                 case "match":
-                                    CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly);
+                                    CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly, cooldown);
                                     matchRegex = null;
                                     matchString = null;
                                     matchAction = null;
                                     matchActionPrivate = null;
                                     matchActionOther = null;
                                     ownersOnly = false;
+                                    cooldown = TimeSpan.Zero;
                                     break;
                             }
                         }
@@ -178,16 +210,17 @@ namespace MinecraftClient.ChatBots
                                     case "actionprivate": matchActionPrivate = argValue; break;
                                     case "actionother": matchActionOther = argValue; break;
                                     case "ownersonly": ownersOnly = Settings.str2bool(argValue); break;
+                                    case "cooldown": cooldown = TimeSpan.FromSeconds(Settings.str2int(argValue)); break;
                                 }
                             }
                         }
                     }
                 }
-                CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly);
+                CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly, cooldown);
             }
             else
             {
-                LogToConsole("File not found: '" + System.IO.Path.GetFullPath(matchesFile) + "'");
+                LogToConsoleTranslated("bot.autoRespond.file_not_found", System.IO.Path.GetFullPath(matchesFile));
                 UnloadBot(); //No need to keep the bot active
             }
         }
@@ -200,21 +233,32 @@ namespace MinecraftClient.ChatBots
         /// <param name="matchAction">Action if the matching message is public</param>
         /// <param name="matchActionPrivate">Action if the matching message is private</param>
         /// <param name="ownersOnly">Only match messages from bot owners</param>
-        private void CheckAddMatch(Regex matchRegex, string matchString, string matchAction, string matchActionPrivate, string matchActionOther, bool ownersOnly)
+        /// <param name="cooldown">Minimal cooldown between two matches</param>
+        private void CheckAddMatch(Regex matchRegex, string matchString, string matchAction, string matchActionPrivate, string matchActionOther, bool ownersOnly, TimeSpan cooldown)
         {
-            if (matchAction != null || matchActionPrivate != null || matchActionOther != null)
+            if (matchRegex != null || matchString != null || matchAction != null || matchActionPrivate != null || matchActionOther != null || ownersOnly || cooldown != TimeSpan.Zero)
             {
-                if (matchRegex != null)
+                RespondRule rule = matchRegex != null
+                    ? new RespondRule(matchRegex, matchAction, matchActionPrivate, matchActionOther, ownersOnly, cooldown)
+                    : new RespondRule(matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly, cooldown);
+
+                if (matchAction != null || matchActionPrivate != null || matchActionOther != null)
                 {
-                    respondRules.Add(new RespondRule(matchRegex, matchAction, matchActionPrivate, matchActionOther, ownersOnly));
+                    if (matchRegex != null || matchString != null)
+                    {
+                        respondRules.Add(rule);
+                        LogDebugToConsoleTranslated("bot.autoRespond.loaded_match", rule);
+                    }
+                    else LogDebugToConsoleTranslated("bot.autoRespond.no_trigger", rule);
                 }
-                else if (matchString != null)
-                {
-                    respondRules.Add(new RespondRule(matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly));
-                }
+                else LogDebugToConsoleTranslated("bot.autoRespond.no_action", rule);
             }
         }
 
+        /// <summary>
+        /// Process messages from the server and test them against all matches
+        /// </summary>
+        /// <param name="text">Text from the server</param>
         public override void GetText(string text)
         {
             //Remove colour codes
@@ -239,7 +283,7 @@ namespace MinecraftClient.ChatBots
                     if (!String.IsNullOrEmpty(toPerform))
                     {
                         string response = null;
-                        LogToConsole(toPerform);
+                        LogToConsoleTranslated("bot.autoRespond.match_run", toPerform);
                         PerformInternalCommand(toPerform, ref response, localVars);
                         if (!String.IsNullOrEmpty(response))
                             LogToConsole(response);
