@@ -98,6 +98,9 @@ namespace MinecraftClient.Commands
                                 SortedDictionary<int, Item> itemsSorted = new SortedDictionary<int, Item>(inventory.Items);
                                 List<string> response = new List<string>();
                                 response.Add(Translations.Get("cmd.inventory.inventory") + " #" + inventoryId + " - " + inventory.Title + "§8");
+                                string asciiArt = inventory.Type.GetAsciiArt();
+                                if (asciiArt != null && Settings.DisplayInventoryLayout)
+                                    response.Add(asciiArt);
                                 int selectedHotbar = handler.GetCurrentSlot() + 1;
                                 foreach (KeyValuePair<int, Item> item in itemsSorted)
                                 {
