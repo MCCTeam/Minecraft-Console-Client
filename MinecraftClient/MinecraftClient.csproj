@@ -393,6 +393,12 @@
   <ItemGroup>
     <Content Include="Protocol\Dns\Records\totla.txt" />
     <Content Include="Resources\AppIcon.ico" />
+    <Content Include="Resources\containers\ContainerType.BrewingStand.txt" />
+    <Content Include="Resources\containers\ContainerType.Crafting.txt" />
+    <Content Include="Resources\containers\ContainerType.Generic_3x3.txt" />
+    <Content Include="Resources\containers\ContainerType.Generic_9x3.txt" />
+    <Content Include="Resources\containers\ContainerType.Generic_9x6.txt" />
+    <Content Include="Resources\containers\ContainerType.PlayerInventory.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DefaultConfigResource.resx">

@@ -91,6 +91,7 @@ namespace MinecraftClient
         public static bool DisplaySystemMessages = true;
         public static bool DisplayXPBarMessages = true;
         public static bool DisplayChatLinks = true;
+        public static bool DisplayInventoryLayout = true;
         public static bool TerrainAndMovements = false;
         public static bool InventoryHandling = false;
         public static string PrivateMsgsCmdName = "tell";
@@ -357,6 +358,7 @@ namespace MinecraftClient
                         case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); return true;
                         case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); return true;
                         case "showchatlinks": DisplayChatLinks = str2bool(argValue); return true;
+                        case "showinventorylayout": DisplayInventoryLayout = str2bool(argValue); return true;
                         case "terrainandmovements": TerrainAndMovements = str2bool(argValue); return true;
                         case "entityhandling": EntityHandling = str2bool(argValue); return true;
                         case "enableentityhandling": EntityHandling = str2bool(argValue); return true;
