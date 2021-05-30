@@ -604,14 +604,20 @@ class DiscordWebhook : ChatBot
                                 List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
                                 if (tempList.Count >= 2)
                                 {
-                                    settings.GetMessageContains().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
-                                    return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                    if (!settings.GetMessageContains().ContainsKey(tempList[0].ToLower()))
+                                    {
+                                        settings.GetMessageContains().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
+                                        return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                    } 
+                                    else
+                                    {
+                                        return "This ping already exists";
+                                    }
                                 }
                                 else
                                 {
                                     return "Too many arguments";
                                 }
-
                             }
                             else
                             {
@@ -634,14 +640,20 @@ class DiscordWebhook : ChatBot
                                 List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
                                 if (tempList.Count >= 2)
                                 {
-                                    settings.GetMessageFrom().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
-                                    return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                    if (!settings.GetMessageFrom().ContainsKey(tempList[0].ToLower()))
+                                    {
+                                        settings.GetMessageFrom().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
+                                        return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                    }
+                                    else
+                                    {
+                                        return "This ping already exists";
+                                    }
                                 }
                                 else
                                 {
                                     return "Too many arguments";
                                 }
-
                             }
                             else
                             {
@@ -756,4 +768,3 @@ class DiscordWebhook : ChatBot
         else { return GetHelp(); }
     }
 }
-
