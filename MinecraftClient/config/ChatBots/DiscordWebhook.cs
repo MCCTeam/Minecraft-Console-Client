@@ -406,11 +406,11 @@ class DiscordWebhook : ChatBot
         string pings = "";
         if (settings.GetMessageContains().Count > 0)
         {
-            msg = new string(msg.Where(c => !char.IsPunctuation(c)).ToArray());
+            msg = new string(msg.Where(c => !char.IsPunctuation(c)).ToArray()).ToLower();
 
-            foreach (string word in msg.Split(' '))
+            foreach (KeyValuePair<string, string> keyPhrase in settings.GetMessageContains())
             {
-                if (settings.GetMessageContains().ContainsKey(word.ToLower())) { pings += string.Join(" ", settings.GetMessageContains()[word.ToLower()]); }
+                if (msg.Contains(keyPhrase.Key)) { pings += string.Join(" ", keyPhrase.Value); }
             }
         }
         if (settings.GetMessageFrom().ContainsKey(username.ToLower()))
@@ -608,7 +608,7 @@ class DiscordWebhook : ChatBot
                                     {
                                         settings.GetMessageContains().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
                                         return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
-                                    } 
+                                    }
                                     else
                                     {
                                         return "This ping already exists";
@@ -768,3 +768,4 @@ class DiscordWebhook : ChatBot
         else { return GetHelp(); }
     }
 }
+
