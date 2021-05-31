@@ -406,11 +406,11 @@ class DiscordWebhook : ChatBot
         string pings = "";
         if (settings.GetMessageContains().Count > 0)
         {
-            msg = new string(msg.Where(c => !char.IsPunctuation(c)).ToArray());
+            msg = new string(msg.Where(c => !char.IsPunctuation(c)).ToArray()).ToLower();
 
-            foreach (string word in msg.Split(' '))
+            foreach (KeyValuePair<string, string> keyPhrase in settings.GetMessageContains())
             {
-                if (settings.GetMessageContains().ContainsKey(word.ToLower())) { pings += string.Join(" ", settings.GetMessageContains()[word.ToLower()]); }
+                if (msg.Contains(keyPhrase.Key)) { pings += string.Join(" ", keyPhrase.Value); }
             }
         }
         if (settings.GetMessageFrom().ContainsKey(username.ToLower()))
@@ -604,14 +604,20 @@ class DiscordWebhook : ChatBot
                                 List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
                                 if (tempList.Count >= 2)
                                 {
-                                    settings.GetMessageContains().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
-                                    return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                    if (!settings.GetMessageContains().ContainsKey(tempList[0].ToLower()))
+                                    {
+                                        settings.GetMessageContains().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
+                                        return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                    }
+                                    else
+                                    {
+                                        return "This ping already exists";
+                                    }
                                 }
                                 else
                                 {
                                     return "Too many arguments";
                                 }
-
                             }
                             else
                             {
@@ -634,14 +640,20 @@ class DiscordWebhook : ChatBot
                                 List<string> tempList = GetStringsInQuotes(string.Join(" ", args));
                                 if (tempList.Count >= 2)
                                 {
-                                    settings.GetMessageFrom().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
-                                    return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                    if (!settings.GetMessageFrom().ContainsKey(tempList[0].ToLower()))
+                                    {
+                                        settings.GetMessageFrom().Add(tempList[0].ToLower(), string.Join(" ", tempList[1]));
+                                        return "Added " + tempList[0].ToLower() + " " + string.Join(" ", tempList[1]);
+                                    }
+                                    else
+                                    {
+                                        return "This ping already exists";
+                                    }
                                 }
                                 else
                                 {
                                     return "Too many arguments";
                                 }
-
                             }
                             else
                             {
