@@ -14,14 +14,35 @@
 
 ## 下载
 
-从这里获得最新的exe文件[开发构建](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)。
-这是个.NET可执行文件，它也能运行于Mac OS和Linux系统。
+从最新的[开发构建](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)处获取exe文件。
+这是一个同样兼容于macOS以及Linux的.NET可执行文件。
 
 ## 如何使用
 
-
 在此查看[示例配置文件](MinecraftClient/config/) ，其中有基础使用教程 README 文件。<br>
 更多帮助和信息可以从[我的世界官方论坛](http://www.minecraftforum.net/topic/1314800-/)中查询。
+
+## 从原代码编译
+
+首先，下载[原代码zip压缩包](https://github.com/ORelio/Minecraft-Console-Client/archive/master.zip)，将其解压并进入`MinecraftClient`文件夹
+
+编辑 `MinecraftClient.csproj` 的[第四行](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4)，将编译目标设置为 `Release`:
+
+```xml
+<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+```
+
+### 在Windows环境下
+
+1. 找到 `C:\Windows\Microsoft.NET\Framework\v4.X.XXXXX` 下的 `MSBuild.exe`
+2. 将 `MinecraftClient.csproj` 拖到 `MSBuild.exe` 上方并放开以开始编译
+3. 如果编译成功，您将可以在 `MinecraftClient\bin\Release` 路径下找到 `MinecraftClient.exe`
+
+### 在macOS/Linux环境下
+
+1. 安装[Mono Framework](https://www.mono-project.com/download/stable/#download-lin)
+2. 在终端内执行 `msbuild MinecraftClient.csproj`
+3. 如果编译成功，您将可以在 `MinecraftClient\bin\Release` 路径下找到 `MinecraftClient.exe`
 
 ## 贡献代码
 
