@@ -119,22 +119,22 @@
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="ContainerType_BrewingStand" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>resources\containers\containertype.brewingstand.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Resources\containers\ContainerType.BrewingStand.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="ContainerType_Crafting" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>resources\containers\containertype.crafting.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Resources\containers\ContainerType.Crafting.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="ContainerType_Generic_3x3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>resources\containers\containertype.generic_3x3.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Resources\containers\ContainerType.Generic_3x3.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="ContainerType_Generic_9x3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>resources\containers\containertype.generic_9x3.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Resources\containers\ContainerType.Generic_9x3.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="ContainerType_Generic_9x6" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>resources\containers\containertype.generic_9x6.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Resources\containers\ContainerType.Generic_9x6.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="ContainerType_PlayerInventory" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>resources\containers\containertype.playerinventory.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>Resources\containers\ContainerType.PlayerInventory.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="MinecraftClient" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\config\MinecraftClient.ini;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
