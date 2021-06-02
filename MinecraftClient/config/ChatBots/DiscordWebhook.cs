@@ -317,17 +317,33 @@ class DiscordWebhook : ChatBot
 
     public override void OnPlayerJoin(Guid uuid, string name)
     {
-        if (settings.GetNamesToUuidMojangCache().ContainsKey(name))
+        if (uuid.ToString() != string.Empty && name != string.Empty &&
+            uuid.ToString() != null && name != null)
         {
-            settings.GetNamesToUuidMojangCache().Remove(name);
+            if (settings.GetNamesToUuidMojangCache().ContainsKey(name))
+            {
+                settings.GetNamesToUuidMojangCache().Remove(name);
+            }
+        }
+        else
+        {
+            LogDebugToConsole(string.Format("Invalid player joined the game! UUID: {0}, Playername: {1}", uuid.ToString(), name));
         }
     }
 
     public override void OnPlayerLeave(Guid uuid, string name)
     {
-        if (!settings.GetNamesToUuidMojangCache().ContainsKey(name))
+        if (uuid.ToString() != string.Empty && name != string.Empty &&
+            uuid.ToString() != null && name != null)
         {
-            settings.GetNamesToUuidMojangCache().Add(name, uuid.ToString());
+            if (!settings.GetNamesToUuidMojangCache().ContainsKey(name))
+            {
+                settings.GetNamesToUuidMojangCache().Add(name, uuid.ToString());
+            }
+        }
+        else
+        {
+            LogDebugToConsole(string.Format("Invalid player left the game! UUID: {0}, Playername: {1}", uuid.ToString(), name));
         }
     }
 
@@ -768,4 +784,3 @@ class DiscordWebhook : ChatBot
         else { return GetHelp(); }
     }
 }
-
