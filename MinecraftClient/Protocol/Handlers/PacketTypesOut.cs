@@ -56,6 +56,7 @@ namespace MinecraftClient.Protocol.Handlers
         Spectate,
         PlayerBlockPlacement,
         UseItem,
+        Pong,
         PrepareCraftingGrid, // For 1.12 - 1.12.1 only
         EnchantItem, // For 1.13.2 or below
         GenerateStructure, // Added in 1.16
