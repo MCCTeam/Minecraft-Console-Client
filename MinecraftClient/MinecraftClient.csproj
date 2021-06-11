@@ -207,6 +207,7 @@
     <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette115.cs" />
     <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette116.cs" />
     <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette1162.cs" />
+    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette117.cs" />
     <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette17.cs" />
     <Compile Include="Protocol\Handlers\PacketPalettes\PacketPaletteHelper.cs" />
     <Compile Include="Protocol\Handlers\PacketType18Handler.cs" />
