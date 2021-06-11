@@ -1442,7 +1442,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                             //Retrieve protocol version number for handling this server
                             if (versionData.Properties.ContainsKey("protocol"))
-                                protocolversion = dataTypes.Atoi(versionData.Properties["protocol"].StringValue);
+                                protocolversion = int.Parse(versionData.Properties["protocol"].StringValue);
 
                             // Check for forge on the server.
                             Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);
