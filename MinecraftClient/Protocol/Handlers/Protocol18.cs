@@ -849,17 +849,24 @@ namespace MinecraftClient.Protocol.Handlers
                     case PacketTypesIn.ResourcePackSend:
                         string url = dataTypes.ReadNextString(packetData);
                         string hash = dataTypes.ReadNextString(packetData);
-                        bool forced = dataTypes.ReadNextBool(packetData);
-                        String forcedMessage = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                        bool forced = true; // Assume forced for MC 1.16 and below
+                        if (protocolversion >= MC117Version)
+                        {
+                            forced = dataTypes.ReadNextBool(packetData);
+                            String forcedMessage = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                        }
                         // Some server plugins may send invalid resource packs to probe the client and we need to ignore them (issue #1056)
                         if (hash.Length != 40)
                             break;
-                        //Send back "accepted" and "successfully loaded" responses for plugins making use of resource pack mandatory
-                        byte[] responseHeader = new byte[0];
-                        if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
-                            responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
-                        SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
-                        SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
+                        //Send back "accepted" and "successfully loaded" responses for plugins or server config making use of resource pack mandatory
+                        if (forced)
+                        {
+                            byte[] responseHeader = new byte[0];
+                            if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
+                                responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
+                            SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
+                            SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
+                        }
                         break;
                     case PacketTypesIn.SpawnEntity:
                         if (handler.GetEntityHandlingEnabled())
