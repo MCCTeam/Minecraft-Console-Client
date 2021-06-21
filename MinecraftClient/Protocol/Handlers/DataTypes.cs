@@ -1059,15 +1059,5 @@ namespace MinecraftClient.Protocol.Handlers
                 result.AddRange(array);
             return result.ToArray();
         }
-
-        /// <summary>
-        /// C-like atoi function for parsing an int from string
-        /// </summary>
-        /// <param name="str">String to parse</param>
-        /// <returns>Int parsed</returns>
-        public int Atoi(string str)
-        {
-            return int.Parse(new string(str.Trim().TakeWhile(char.IsDigit).ToArray()));
-        }
     }
 }

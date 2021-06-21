@@ -42,7 +42,7 @@ Using Configuration files & Enabling bots
 ------
 
 Simply open the INI configuration file with a text editor and change the values.
-To enable a bot change the "enabled" value in the INI file from "false" to "true".
+To enable a bot change the `enabled` value in the INI file from `false` to `true`.
 You will still be able to send and receive chat messages when a bot is loaded.
 You can remove or comment some lines from the INI file to use the default values instead.
 You can have several INI files and drag & drop one of them over MinecraftClient.exe
@@ -108,8 +108,8 @@ Internal commands
 ------
 
 These commands can be performed from the chat prompt, scripts or remote control.
-From chat prompt, commands must by default be prepended with a slash, eg. /quit
-In scripts and remote control, no slash is needed to perform the command.
+From chat prompt, commands must by default be prepended with a slash, eg. `/quit`
+In scripts and remote control, no slash is needed to perform the command, eg. `quit`
 
  - `quit` or `exit`: disconnect from the server and close the application
  - `reco [account]`: disconnect and reconnect to the server
@@ -140,14 +140,14 @@ The purpose of this is to give them an easy-to-remember alias and to avoid typin
 As what you are typing can be read by the server admin if using the remote control feature,
 using aliases is really important for privacy and for safely switching between accounts.
 
-To use these files, simply take a look at sample-accounts.txt and sample-servers.txt.
-Once you have created your files, fill the 'accountlist' and 'serverlist' fields in INI file.
+To use these files, simply take a look at [`sample-accounts.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-accounts.txt) and [`sample-servers.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-servers.txt).
+Once you have created your files, fill the `accountlist` and `serverlist` fields in INI file.
 
 Interacting with the Minecraft world
 ------
 
 By default, Minecraft Console Client cannot interact with the world around you.
-However for some versions of the game you can enable the terrainandmovements setting.
+However for some versions of the game you can enable the `terrainandmovements` setting.
 
 This feature will allow you to properly fall on ground, pickup items and move around.
 There is a C# API for reading terrain data around the player and moving from C# scripts.
@@ -159,15 +159,15 @@ sent back to the server in a spammy way (that's how Minecraft works).
 How to write a script file
 ------
 
-A script file can be launched by using /script <filename> in the client's command prompt.
-The client will automatically look for your script in the current directory or "scripts" subfolder.
-If the file extension is .txt or .cs, you may omit it and the client will still find the script.
+A script file can be launched by using `/script <filename>` in the client's command prompt.
+The client will automatically look for your script in the current directory or `scripts` subfolder.
+If the file extension is `.txt` or `.cs`, you may omit it and the client will autodectect the extension.
 
 Regarding the script file, it is a text file with one instruction per line.
-Any line beginning with "#" is ignored and treated as a comment.
-Allowed instructions are given in "Internal commands" section.
+Any line beginning with `#` is ignored and treated as a comment.
+Allowed instructions are given in [Internal commands](#internal-commands) section.
 
-Application variables defined using the 'set' command or [AppVars] INI section can be used.
+Application variables defined using the `set` command or `[AppVars]` INI section can be used.
 The following read-only variables can also be used: %username%, %login%, %serverip%, %serverport%
 
 How to write a C# script
@@ -181,7 +181,7 @@ C# scripts can be used for creating your own ChatBot without recompiling the who
 These bots are embedded in a script file, which is compiled and loaded on the fly.
 ChatBots can access plugin channels for communicating with some server plugins.
 
-For knowing everything the API has to offer, you can look at [CSharpRunner.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) and [ChatBot.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs).
+For knowing everything the API has to offer, you can look at [`CSharpRunner.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) and [`ChatBot.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs).
 
 The structure of the C# file must be like this:
 ```csharp
@@ -195,11 +195,11 @@ MCC.LoadBot(<instance of your class which extends the ChatBot class>);
 ```
 The first line always needs to be `//MCCScript 1.0` comment, as the program requires it to determine the version of the script.
 
-Everything between `//MCCScript 1.0` and `//MCCScript Extensions` comments will be treated as code, that part of the code will be inserted into the constructor during the compile time. The main part of the script has access to the [CSharpRunner.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) API while the ChatBot defined in the Extensions section will use the [ChatBot.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs) API.
+Everything between `//MCCScript 1.0` and `//MCCScript Extensions` comments will be treated as code, that part of the code will be inserted into a class method at compile time. The main part of the script has access to the [`CSharpRunner.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) API while the ChatBot defined in the Extensions section will use the [`ChatBot.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs) API.
 
-You can include C# libraries/namespaces using the following syntax: `//using <name>;`. Example: `//using System.Net;`
+You can include standard .NET libraries/namespaces using the following syntax: `//using <name>;`. Example: `//using System.Net;`
 
-Some sample scripts and optional Chatbots are made available in the [config](https://github.com/ORelio/Minecraft-Console-Client/tree/master/MinecraftClient/config) folder.
+Some sample scripts and optional Chatbots are made available in the [`config`](https://github.com/ORelio/Minecraft-Console-Client/tree/master/MinecraftClient/config) folder.
 
 Using HTTP/Socks proxies
 ------
@@ -215,7 +215,7 @@ Connecting to servers when ping is disabled
 
 On some servers, the server list ping feature has been disabled, which prevents Minecraft Console Client
 from pinging the server to determine the Minecraft version to use. To connect to this kind of servers,
-find out which Minecraft version is running on the server, and fill in the 'mcversion' field in INI file.
+find out which Minecraft version is running on the server, and fill in the `mcversion` field in INI file.
 This will disable the ping step while connecting, but requires you to manually provide the version to use.
 Recent versions of Minecraft Console Client may also prompt you for MC version in case of ping failure.
 
@@ -232,27 +232,25 @@ Detecting chat messages
 
 Minecraft Console Client can parse messages from the server in order to detect private and public messages.
 This is useful for reacting to messages eg when using the AutoRespond, Hangman game, or RemoteControl bots.
-However, for unusual chat formats, so you may need to tinker with the ChatFormat section `MinecraftClient.ini`.
-Building regular expressions can be a bit tricky, so you might want to try them out eg on https://regex101.com
-You can test that your MCC instance properly detects chat messages using [sample-script-with-chatbot.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-script-with-chatbot.cs).
+However, for unusual chat formats, so you may need to tinker with the ChatFormat section `MinecraftClient.ini`. This section defines the chat format by the means of regular expressions. Building regular expressions can be a bit tricky, so you might want to try them out eg on https://regex101.com - See also issue [#1640](https://github.com/ORelio/Minecraft-Console-Client/issues/1640) for more explanations on regular expressions. You can test that your MCC instance properly detects chat messages using [`sample-script-with-chatbot.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-script-with-chatbot.cs).
 
 About Replay Mod feature
 ------
 Replay Mod is _A Minecraft Mod to record, relive and share your experience._ You can see more at https://www.replaymod.com/
 
-MCC supports recording and saving your game to a file which can be used by Replay Mod. You can simply enable ReplayMod in the `.ini` setting to use this feature. The only limitation is the client player (you) will not be shown in the replay. Please be reminded that you MUST exit MCC with `/quit` command or use `/replay stop` command before closing MCC as your replay will become corrupt if you force-close MCC with CTRL+C or the [X] button.
+MCC supports recording and saving your game to a file which can be used by Replay Mod. You can simply enable ReplayMod in the `.ini` setting to use this feature. The only limitation is the client player (you) will not be shown in the replay. Please note that when recording is in progress, you SHOULD exit MCC with the `/quit` command or use `/replay stop` command before closing MCC as your replay may become corrupt if you force-close MCC with CTRL+C or the [X] button.
 
 Using the Alerts bot
 ------
 
-Write in alerts.txt the words you want the console to beep/alert you on.
-Write in alerts-exclude.txt the words you want NOT to be alerted on.
-For example write Yourname in alerts and <Yourname\> in alerts-exclude.txt to avoid alerts when you are talking.
+Write in [`alerts.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/alerts.txt) the words you want the console to beep/alert you on.
+Write in [`alerts-exclude.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/alerts-exclude.txt) the words you want NOT to be alerted on.
+For example write `Yourname` in `alerts.txt` and `<Yourname>` in `alerts-exclude.txt` to avoid alerts when you are talking.
 
 Using the AutoRelog bot
 ------
 
-Write in kickmessages.txt some words, such as "Restarting" for example.
+Write in [`kickmessages.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/kickmessages.txt) some words, such as `Restarting` for example.
 If the kick message contains one of them, you will automatically be re-connected.
 
 - A kick message `Connection has been lost.` is generated by the console itself when connection is lost.
@@ -260,34 +258,30 @@ If the kick message contains one of them, you will automatically be re-connected
 - A kick message `Failed to ping this IP.` is generated when it failed to ping the server.
 
 You can use them for reconnecting when connection is lost or the login failed.
-If you want to always reconnect, set `ignorekickmessage=true` in `MinecraftClient.ini`. Use at own risk!
 
-Using the Script Scheduler
+If you want to always reconnect, set `ignorekickmessage=true` in `MinecraftClient.ini`. Use at own risk! Server staff might not appreciate auto-relog on manual kicks, so always keep server rules in mind when configuring your client.
+
+Using the Script Scheduler / Task Scheduler
 ------
 
-The script scheduler allows you to perform scripts on various events.
-Simply enable the ScriptScheduler bot and specify a tasks file in your INI file.
-Please read [`sample-tasks.ini`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-tasks.ini) for learning how to make your own task file.
+The script scheduler allows you to perform scripts or internal commands on various events such as log on server, time interval, or fixed date and time. Simply enable the ScriptScheduler bot and specify a tasks file in your INI file. Please read [`sample-tasks.ini`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-tasks.ini) for learning how to make your own task file.
 
-Using the hangman game
+Using the Hangman game
 ------
 
-Use `/tell <bot username> start` to start the game.
-Don't forget to add your username in botowners INI setting if you want it to obey.
-Edit the provided configuration files to customize the words and the bot owners.
-If it doesn't respond to bot owners, read the "Detecting chat messages" section.
+Hangman game is one of the first bots ever written for MCC, to demonstrate ChatBot capabilities.
+Create a file with words to guess (examples: [`words-en.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt), [`words-fr.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)) and set it in config inside the `[Hangman]` section. Also set `enabled` to `true`. Then, add your username in the `botowners` INI setting, and finally, connect to the server and use `/tell <bot username> start` to start the game. If the bot does not respond to bot owners, see the [Detecting chat messages](#detecting-chat-messages) section.
 
 Using the Remote Control
 ------
 
 When the remote control bot is enabled, you can send commands to your bot using whispers.
-Don't forget to add your username in botowners INI setting if you want it to obey.
-If it doesn't respond to bot owners, read the "Detecting chat messages" section.
-Please note that server admins can read what you type and output from the bot.
-They can also impersonate bot owners with `/nick`. See [#1142](https://github.com/ORelio/Minecraft-Console-Client/issues/1142) for more info.
+Don't forget to add your username in the `botowners` INI setting if you want it to obey.
+If it does not respond to bot owners, read the [Detecting chat messages](#detecting-chat-messages) section.
+**Please note that server admins can read what you type and output from the bot. They can also impersonate bot owners with `/nick`, so do not use Remote Control if you do not trust server admins. See [#1142](https://github.com/ORelio/Minecraft-Console-Client/issues/1142) for more info.**
 
 To perform a command simply do the following: `/tell <yourbot> <thecommand>`
-Where `<thecommand>` is an internal command as described in "Internal commands" section.
+Where `<thecommand>` is an internal command as described in [Internal commands](#internal-commands) section.
 You can remotely send chat messages or commands using `/tell <yourbot> send <thetext>`
 
 Remote control system can by default auto-accept `/tpa` and `/tpahere` requests from the bot owners.
@@ -298,20 +292,21 @@ Using the AutoRespond feature
 
 The AutoRespond bot allows you to automatically react on specific chat messages or server announcements.
 You can use either a string to detect in chat messages, or an advanced regular expression.
-For more information about how to define match rules, please refer to [`sample-matches.ini`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini)
+For more information about how to define match rules, please refer to [`sample-matches.ini`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini).
+See [Detecting chat messages](#detecting-chat-messages) if your messages are not detected or to learn more about regular expressions.
 
 Using the Auto Attack
 ------
 
 The AutoAttack bot allows you to automatically attack mobs around you within radius of 4 block.
-To use this bot, you will need to enable **Entity Handling** in the config file first.
+To use this bot, you will need to enable **Entity Handling** in the configuration file first.
 
 Using the Auto Fishing
 ------
 
 The AutoFish bot can automatically fish for you.
-To use this bot, you will need to enable **Entity Handling** in the config file first.
-If you want to get an alert message when the fishing rod was broken, enable **Inventory Handling** in the config file.
+To use this bot, you will need to enable **Entity Handling** in the configuration file first.
+If you want to get an alert message when the fishing rod was broken, enable **Inventory Handling** in the configuration file.
 A fishing rod with **Mending enchantment** is strongly recommended.
 
 Steps for using this bot:
@@ -321,7 +316,7 @@ Steps for using this bot:
 4. Do `/useitem` and you should see "threw a fishing rod"
 5. To stop fishing, do `/useitem` again
 
-Using the Mailer
+Using the Mailer bot
 ------
 
 The Mailer bot can store and relay mails much like Essential's /mail command.
@@ -337,7 +332,7 @@ The bot also offers a /mailer command from the MCC command prompt:
 * `/mailer removeignored [NAME]`: Lift the mailer restriction for this player
 * `/mailer getignored`: Show all ignored players
 
-**CAUTION:** The bot identifies players by their name (Not by UUID!).
+**CAUTION: The bot identifies players by their name (Not by UUID!).**
 A nickname plugin or a minecraft rename may cause mails going to the wrong player!
 Never write something to the bot you wouldn't say in the normal chat (You have been warned!)
 
@@ -349,7 +344,7 @@ Using the AutoCraft bot
 ------
 
 The AutoCraft bot can automatically craft items for you as long as you have defined the item recipe.
-You can get the default config by running the bot at lease once.
+The bot will automatically generate a default configuration file on first launch, when `enabled` is set to `true` in the `[AutoCraft]` section in config. To use this bot, you will also need to enable **Inventory Handling** in the configuration file.
 
 Useful commands description:
 * `/autocraft reload`: Reload the config from disk. You can load your edited AutoCraft config without restarting the client.
@@ -375,7 +370,7 @@ slot1=stone            # slot start with 1, count from left to right, top to bot
 ```
 
 1. You need to give your recipe a **name** so that you could start them later by name.
-2. The size of crafting area needed for your recipe, 2x2(player inventory) or 3x3(crafting table). If you need to use the crafting table, make sure to set the **table coordinate** in the `[AutoCraft]` section.
+2. The size of crafting area needed for your recipe, 2x2 (player inventory) or 3x3 (crafting table). If you need to use the crafting table, make sure to set the **table coordinate** in the `[AutoCraft]` section.
 3. The expected crafting result.
 
 Then you need to define the position of each crafting materials. 
@@ -384,17 +379,17 @@ Slots are indexed as follow:
 2x2
 ```
 ╔═══╦═══╗
-║ 1 ║ 2 ║
+║ 1 ║ 2 ║
 ╠═══╬═══╣
-║ 3 ║ 4 ║
+║ 3 ║ 4 ║
 ╚═══╩═══╝
 ```
 3x3
 ```
 ╔═══╦═══╦═══╗
-║ 1 ║ 2 ║ 3 ║
+║ 1 ║ 2 ║ 3 ║
 ╠═══╬═══╬═══╣
-║ 4 ║ 5 ║ 6 ║
+║ 4 ║ 5 ║ 6 ║
 ╠═══╬═══╬═══╣
 ║ 7 ║ 8 ║ 9 ║ 
 ╚═══╩═══╩═══╝
@@ -402,9 +397,9 @@ Slots are indexed as follow:
 Simply use `slotIndex=MaterialName` to define material.  
  e.g. `slot1=coal` and `slot3=stick` will craft a torch.
 
-For the naming of items, please see [ItemType.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).
+For the naming of items, please see [ItemType.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs) for all the material names.
 
-After you finished writing your config, you can use `/autocraft start <recipe name>` to start crafting. Make sure to provide materials for your bot.
+After you finished writing your config, you can use `/autocraft start <recipe name>` to start crafting. Make sure to provide materials for your bot by placing them in inventory first.
 
 Disclaimer
 ------
@@ -448,9 +443,10 @@ Many features would not have been possible without the help of talented contribu
 
 **Code contributions:**
 
-  Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, dbear20, dogwatch, initsuj,
-  JamieSinn, justcool393, lokulin, maxpowa, medxo, milutinke, Pokechu22, ReinforceZwei,
-  repository, TheMeq, TheSnoozer, vkorn, v1RuX, yunusemregul, ZizzyDizzyMC
+  Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, Daenges, dbear20, dogwatch,
+  initsuj, JamieSinn, justcool393, lokulin, maxpowa, medxo, milutinke, Pokechu22,
+  ReinforceZwei, repository, TheMeq, TheSnoozer, vkorn, v1RuX, yunusemregul, ZizzyDizzyMC
+  And all the [GitHub contributors](https://github.com/ORelio/Minecraft-Console-Client/graphs/contributors)!
 
 **Libraries:**
 
@@ -467,13 +463,9 @@ Many features would not have been possible without the help of talented contribu
 
 If you still have any question after reading this file, you can get support here:
 
- - General Questions: http://www.minecraftforum.net/topic/1314800-/ (not maintained by the MCC team)
- - Bugs & Issues: https://github.com/ORelio/Minecraft-Console-Client/issues (where you can contact the MCC team)
-
-Like Minecraft Console Client? You can buy me a coffee here:
-
- - https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=EALHERGB9DQY8
+ - GitHub Issues: https://github.com/ORelio/Minecraft-Console-Client/issues (You can contact the MCC team here)
+ - Minecraft Forums: http://www.minecraftforum.net/topic/1314800-/ (Thead not maintained by the MCC team anymore)
 
 Code contributions, bug reports and any kind of comments are also highly appreciated :)
 
-_© 2012-2020 ORelio & Contributors_
+_© 2012-2021 ORelio & Contributors_
