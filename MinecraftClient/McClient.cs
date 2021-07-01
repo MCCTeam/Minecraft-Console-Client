@@ -2521,6 +2521,10 @@ namespace MinecraftClient
         {
             DispatchBotEvent(bot => bot.OnBlockChange(location, block));
         }
+        public void OnMultiBlockChange(Location location, Block block)
+        {
+            DispatchBotEvent(bot => bot.OnBlockChange(location, block));
+        }
         #endregion
     }
 }

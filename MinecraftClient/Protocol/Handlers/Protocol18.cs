@@ -579,6 +579,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     int blockZ = (sectionZ * 16) + localZ;
                                     var l = new Location(blockX, blockY, blockZ);
                                     handler.GetWorld().SetBlock(l, b);
+                                    handler.OnMultiBlockChange(l, b);
                                 }
                             }
                             else
@@ -612,6 +613,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     int blockZ = locationXZ & 0x0F;
                                     Block block = new Block(blockIdMeta);
                                     handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
+                                    handler.OnMultiBlockChange(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
                                 }
                             }
                         }
