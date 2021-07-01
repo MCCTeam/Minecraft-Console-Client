@@ -1113,15 +1113,21 @@ namespace MinecraftClient.Protocol.Handlers
                         handler.OnUpdateScore(entityname, action3, objectivename2, value);
                         break;
                     case PacketTypesIn.BlockBreakAnimation:
-                        int playerId = dataTypes.ReadNextVarInt(packetData);
-                        Location blockLocation = dataTypes.ReadNextLocation(packetData);
-                        byte stage = dataTypes.ReadNextByte(packetData);
-                        handler.OnBlockBreakAnimation(playerId, blockLocation, stage);
+                        if (handler.GetEntityHandlingEnabled() && handler.GetTerrainEnabled())
+                        {
+                            int playerId = dataTypes.ReadNextVarInt(packetData);
+                            Location blockLocation = dataTypes.ReadNextLocation(packetData);
+                            byte stage = dataTypes.ReadNextByte(packetData);
+                            handler.OnBlockBreakAnimation(playerId, blockLocation, stage);
+                        }
                         break;
                     case PacketTypesIn.EntityAnimation:
-                        int playerId2 = dataTypes.ReadNextVarInt(packetData);
-                        byte animation = dataTypes.ReadNextByte(packetData);
-                        handler.OnEntityAnimation(playerId2, animation);
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int playerId2 = dataTypes.ReadNextVarInt(packetData);
+                            byte animation = dataTypes.ReadNextByte(packetData);
+                            handler.OnEntityAnimation(playerId2, animation);
+                        }
                         break;
                     default:
                         return false; //Ignored packet
