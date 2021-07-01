@@ -1118,6 +1118,11 @@ namespace MinecraftClient.Protocol.Handlers
                         byte stage = dataTypes.ReadNextByte(packetData);
                         handler.OnBlockBreakAnimation(playerId, blockLocation, stage);
                         break;
+                    case PacketTypesIn.EntityAnimation:
+                        int playerId2 = dataTypes.ReadNextVarInt(packetData);
+                        byte animation = dataTypes.ReadNextByte(packetData);
+                        handler.OnEntityAnimation(playerId2, animation);
+                        break;
                     default:
                         return false; //Ignored packet
                 }

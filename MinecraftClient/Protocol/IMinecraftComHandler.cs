@@ -83,8 +83,7 @@ namespace MinecraftClient.Protocol
         /// <param name="text">Text received from the server</param>
         /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
         void OnTextReceived(string text, bool isJson);
-
-        void OnAcknowledgePlayerDigging(Location location, int block, int status, bool successful);
+        void OnEntityAnimation(int entityID, byte animation);
 
         void OnBlockBreakAnimation(int entityId, Location location, byte stage);
 

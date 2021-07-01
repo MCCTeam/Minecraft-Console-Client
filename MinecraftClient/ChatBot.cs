@@ -120,7 +120,9 @@ namespace MinecraftClient
         /// </summary>
         public virtual void OnBlockBreakAnimation(Entity entity, Location location, byte stage) { }
 
-        public virtual void OnAcknowledgePlayerDigging(Location location, int block, int status, bool successful) { }
+        public virtual void OnAcknowledgePlayerDigging(Location location, Block block, int status, bool successful) { }
+
+        public virtual void OnEntityAnimation(Entity entity, byte animation) { }
 
         /// <summary>
         /// Any text sent by the server will be sent here by MinecraftCom

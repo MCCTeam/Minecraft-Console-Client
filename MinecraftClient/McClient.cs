@@ -2501,7 +2501,7 @@ namespace MinecraftClient
         {
             DispatchBotEvent(bot => bot.OnTradeList(windowID, trades, villagerInfo));
         }
-        private void OnBlockBreakAnimation(int entityId, Location location, byte stage)
+        public void OnBlockBreakAnimation(int entityId, Location location, byte stage)
         {
             if (entities.ContainsKey(entityId))
             {
@@ -2509,9 +2509,13 @@ namespace MinecraftClient
                 DispatchBotEvent(bot => bot.OnBlockBreakAnimation(entity, location, stage));
             }
         }
-        private void OnAcknowledgePlayerDigging(Location location, int block, int status, bool successful)
+        public void OnEntityAnimation(int entityID, byte animation)
         {
-
+            if (entities.ContainsKey(entityID))
+            {
+                Entity entity = entities[entityID];
+                DispatchBotEvent(bot => bot.OnEntityAnimation(entity, animation));
+            }
         }
         #endregion
     }
