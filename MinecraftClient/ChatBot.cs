@@ -116,6 +116,11 @@ namespace MinecraftClient
         public virtual void Update() { }
 
         /// <summary>
+        /// Will be called every player break block in gamemode 0
+        /// </summary>
+        public virtual void OnBlockBreakAnimation(Entity entity, Location location, byte stage) { }
+
+        /// <summary>
         /// Any text sent by the server will be sent here by MinecraftCom
         /// </summary>
         /// <param name="text">Text from the server</param>

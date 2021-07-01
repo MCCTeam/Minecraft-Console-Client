@@ -1112,6 +1112,11 @@ namespace MinecraftClient.Protocol.Handlers
                             value = dataTypes.ReadNextVarInt(packetData);
                         handler.OnUpdateScore(entityname, action3, objectivename2, value);
                         break;
+                    case PacketTypesIn.BlockBreakAnimation:
+                        int playerId = dataTypes.ReadNextVarInt(packetData);
+                        Location blockLocation = dataTypes.ReadNextLocation(packetData);
+                        byte stage = dataTypes.ReadNextByte(packetData);
+                        break;
                     default:
                         return false; //Ignored packet
                 }

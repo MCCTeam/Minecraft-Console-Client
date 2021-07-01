@@ -181,8 +181,8 @@ namespace MinecraftClient
             this.port = port;
             this.protocolversion = protocolversion;
 
-            this.Log = Settings.LogToFile 
-                ? new FileLogLogger(Settings.ExpandVars(Settings.LogFile), Settings.PrependTimestamp) 
+            this.Log = Settings.LogToFile
+                ? new FileLogLogger(Settings.ExpandVars(Settings.LogFile), Settings.PrependTimestamp)
                 : new FilteredLogger();
             Log.DebugEnabled = Settings.DebugMessages;
             Log.InfoEnabled = Settings.InfoMessages;
@@ -975,7 +975,7 @@ namespace MinecraftClient
         {
             return inventories;
         }
-        
+
         /// <summary>
         /// Get all Entities
         /// </summary>
@@ -989,11 +989,11 @@ namespace MinecraftClient
         /// Get all players latency
         /// </summary>
         /// <returns>All players latency</returns>
-        public Dictionary<string, int> GetPlayersLatency() 
-        { 
-            return playersLatency; 
+        public Dictionary<string, int> GetPlayersLatency()
+        {
+            return playersLatency;
         }
-        
+
         /// <summary>
         /// Get client player's inventory items
         /// </summary>
@@ -1397,7 +1397,7 @@ namespace MinecraftClient
                                     upperStartSlot = 1;
                                     upperEndSlot = 9;
                                     break;
-                                // TODO: Define more container type here
+                                    // TODO: Define more container type here
                             }
 
                             // Cursor have item or not doesn't matter
@@ -1679,7 +1679,7 @@ namespace MinecraftClient
         {
             return InvokeOnMainThread(() => handler.SelectTrade(selectedSlot));
         }
-        
+
         /// <summary>
         /// Update command block
         /// </summary>
@@ -1926,7 +1926,7 @@ namespace MinecraftClient
             DispatchBotEvent(bot => bot.GetText(text));
             DispatchBotEvent(bot => bot.GetText(text, json));
         }
-        
+
         /// <summary>
         /// Received a connection keep-alive from the server
         /// </summary>
@@ -1965,7 +1965,7 @@ namespace MinecraftClient
                 else
                     inventories.Remove(inventoryID);
             }
-                
+
             if (inventoryID != 0)
             {
                 Log.Info(Translations.Get("extra.inventory_close", inventoryID));
@@ -2118,7 +2118,7 @@ namespace MinecraftClient
             entities.Add(entity.ID, entity);
             DispatchBotEvent(bot => bot.OnEntitySpawn(entity));
         }
-        
+
         /// <summary>
         /// Called when an entity effects
         /// </summary>
@@ -2415,7 +2415,7 @@ namespace MinecraftClient
         {
             DispatchBotEvent(bot => bot.OnTitle(action, titletext, subtitletext, actionbartext, fadein, stay, fadeout, json));
         }
-        
+
         /// <summary>
         /// Called when coreboardObjective
         /// </summary>
@@ -2429,7 +2429,7 @@ namespace MinecraftClient
             objectivevalue = ChatParser.ParseText(objectivevalue);
             DispatchBotEvent(bot => bot.OnScoreboardObjective(objectivename, mode, objectivevalue, type, json));
         }
-        
+
         /// <summary>
         /// Called when DisplayScoreboard
         /// </summary>
@@ -2501,7 +2501,14 @@ namespace MinecraftClient
         {
             DispatchBotEvent(bot => bot.OnTradeList(windowID, trades, villagerInfo));
         }
-
+        private void OnBlockBreakAnimation(int entityId, Location location, byte stage)
+        {
+            if (entities.ContainsKey(entityId))
+            {
+                Entity entity = entities[entityId];
+                DispatchBotEvent(bot => bot.OnBlockBreakAnimation(entity, location, stage));
+            }
+        }
         #endregion
     }
 }
