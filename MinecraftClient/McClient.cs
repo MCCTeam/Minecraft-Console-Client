@@ -2509,6 +2509,10 @@ namespace MinecraftClient
                 DispatchBotEvent(bot => bot.OnBlockBreakAnimation(entity, location, stage));
             }
         }
+        private void OnAcknowledgePlayerDigging(Location location, int block, int status, bool successful)
+        {
+
+        }
         #endregion
     }
 }

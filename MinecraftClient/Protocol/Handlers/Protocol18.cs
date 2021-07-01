@@ -1116,6 +1116,7 @@ namespace MinecraftClient.Protocol.Handlers
                         int playerId = dataTypes.ReadNextVarInt(packetData);
                         Location blockLocation = dataTypes.ReadNextLocation(packetData);
                         byte stage = dataTypes.ReadNextByte(packetData);
+                        handler.OnBlockBreakAnimation(playerId, blockLocation, stage);
                         break;
                     default:
                         return false; //Ignored packet
