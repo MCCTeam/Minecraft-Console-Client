@@ -629,7 +629,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 short blockId = (short)dataTypes.ReadNextVarInt(packetData);
                                 byte blockMeta = dataTypes.ReadNextByte(packetData);
                                 handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
-                                handler.OnBlockChange(dataTypes.ReadNextLocation(packetData), new Block(blockId, blockMeta));
+                                handler.OnBlockChange(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
                             }
                             else
                             {
