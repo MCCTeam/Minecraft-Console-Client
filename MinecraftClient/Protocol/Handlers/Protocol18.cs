@@ -579,7 +579,6 @@ namespace MinecraftClient.Protocol.Handlers
                                     int blockZ = (sectionZ * 16) + localZ;
                                     var l = new Location(blockX, blockY, blockZ);
                                     handler.GetWorld().SetBlock(l, b);
-                                    handler.OnMultiBlockChange(l, b);
                                 }
                             }
                             else
@@ -613,7 +612,6 @@ namespace MinecraftClient.Protocol.Handlers
                                     int blockZ = locationXZ & 0x0F;
                                     Block block = new Block(blockIdMeta);
                                     handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
-                                    handler.OnMultiBlockChange(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
                                 }
                             }
                         }
@@ -629,12 +627,10 @@ namespace MinecraftClient.Protocol.Handlers
                                 short blockId = (short)dataTypes.ReadNextVarInt(packetData);
                                 byte blockMeta = dataTypes.ReadNextByte(packetData);
                                 handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
-                                handler.OnBlockChange(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
                             }
                             else
                             {
                                 handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
-                                handler.OnBlockChange(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
                             }
                         }
                         break;

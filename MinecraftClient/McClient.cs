@@ -2517,14 +2517,6 @@ namespace MinecraftClient
                 DispatchBotEvent(bot => bot.OnEntityAnimation(entity, animation));
             }
         }
-        public void OnBlockChange(Location location, Block block)
-        {
-            DispatchBotEvent(bot => bot.OnBlockChange(location, block));
-        }
-        public void OnMultiBlockChange(Location location, Block block)
-        {
-            DispatchBotEvent(bot => bot.OnBlockChange(location, block));
-        }
         #endregion
     }
 }
