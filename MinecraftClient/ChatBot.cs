@@ -123,6 +123,7 @@ namespace MinecraftClient
         public virtual void OnAcknowledgePlayerDigging(Location location, Block block, int status, bool successful) { }
 
         public virtual void OnEntityAnimation(Entity entity, byte animation) { }
+        public virtual void OnBlockChange(Location location, Block block) { }
 
         /// <summary>
         /// Any text sent by the server will be sent here by MinecraftCom

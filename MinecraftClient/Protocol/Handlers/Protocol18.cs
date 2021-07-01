@@ -627,8 +627,13 @@ namespace MinecraftClient.Protocol.Handlers
                                 short blockId = (short)dataTypes.ReadNextVarInt(packetData);
                                 byte blockMeta = dataTypes.ReadNextByte(packetData);
                                 handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
+                                handler.OnBlockChange(dataTypes.ReadNextLocation(packetData), new Block(blockId, blockMeta));
                             }
-                            else handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                            else
+                            {
+                                handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                                handler.OnBlockChange(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                            }
                         }
                         break;
                     case PacketTypesIn.MapChunkBulk:
