@@ -51,7 +51,7 @@ namespace MinecraftClient.Protocol
                                 .ThenByDescending(record => record.Weight)
                                 .ThenBy(record => Guid.NewGuid())
                                 .First();
-                            string target = result.DomainName.Value.Trim('.');
+                            string target = result.Target.Value.Trim('.');
                             ConsoleIO.WriteLineFormatted(Translations.Get("mcc.found", target, result.Port, domainVal));
                             domainVal = target;
                             portVal = result.Port;
