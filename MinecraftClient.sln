@@ -7,16 +7,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftClientTestProject"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x86 = Debug|x86
-		Release|x86 = Release|x86
+		Release|Any CPU = Release|Any CPU
+		Debug|Any CPU = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FA8E9883-9A69-4D6F-AA5C-DB6A1A78214E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{FA8E9883-9A69-4D6F-AA5C-DB6A1A78214E}.Debug|x86.Build.0 = Debug|Any CPU
-		{FA8E9883-9A69-4D6F-AA5C-DB6A1A78214E}.Release|x86.ActiveCfg = Release|Any CPU
-		{FA8E9883-9A69-4D6F-AA5C-DB6A1A78214E}.Release|x86.Build.0 = Release|Any CPU
-		{1E2FACE4-F5CA-4323-9641-740C6A551770}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1E2FACE4-F5CA-4323-9641-740C6A551770}.Debug|x86.Build.0 = Debug|Any CPU
+		{1E2FACE4-F5CA-4323-9641-740C6A551770}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E2FACE4-F5CA-4323-9641-740C6A551770}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E2FACE4-F5CA-4323-9641-740C6A551770}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E2FACE4-F5CA-4323-9641-740C6A551770}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA8E9883-9A69-4D6F-AA5C-DB6A1A78214E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA8E9883-9A69-4D6F-AA5C-DB6A1A78214E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA8E9883-9A69-4D6F-AA5C-DB6A1A78214E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA8E9883-9A69-4D6F-AA5C-DB6A1A78214E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
