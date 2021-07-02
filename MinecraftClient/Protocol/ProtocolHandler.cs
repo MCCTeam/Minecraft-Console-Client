@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Net.Security;
+using System.Threading;
 using DnsClient;
 using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers;

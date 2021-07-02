@@ -11,8 +11,8 @@ namespace MinecraftClient
     /// </summary>
     public class FileMonitor : IDisposable
     {
-        private FileSystemWatcher monitor = null;
-        private Thread polling = null;
+        private Tuple<FileSystemWatcher, CancellationTokenSource>? monitor = null;
+        private Tuple<Thread, CancellationTokenSource>? polling = null;
 
         /// <summary>
         /// Create a new FileMonitor and start monitoring
@@ -28,15 +28,14 @@ namespace MinecraftClient
                 ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.init", callerClass, Path.Combine(folder, filename)));
             }
 
-            try
-            {
-                monitor = new FileSystemWatcher();
-                monitor.Path = folder;
-                monitor.IncludeSubdirectories = false;
-                monitor.Filter = filename;
-                monitor.NotifyFilter = NotifyFilters.LastWrite;
-                monitor.Changed += handler;
-                monitor.EnableRaisingEvents = true;
+            try {
+                monitor = new Tuple<FileSystemWatcher, CancellationTokenSource>(new FileSystemWatcher(), new CancellationTokenSource());
+                monitor.Item1.Path = folder;
+                monitor.Item1.IncludeSubdirectories = false;
+                monitor.Item1.Filter = filename;
+                monitor.Item1.NotifyFilter = NotifyFilters.LastWrite;
+                monitor.Item1.Changed += handler;
+                monitor.Item1.EnableRaisingEvents = true;
             }
             catch
             {
@@ -47,9 +46,10 @@ namespace MinecraftClient
                 }
 
                 monitor = null;
-                polling = new Thread(() => PollingThread(folder, filename, handler));
-                polling.Name = String.Format("{0} Polling thread: {1}", this.GetType().Name, Path.Combine(folder, filename));
-                polling.Start();
+                var cancellationTokenSource = new CancellationTokenSource();
+                polling = new Tuple<Thread, CancellationTokenSource>(new Thread(() => PollingThread(folder, filename, handler, cancellationTokenSource.Token)), cancellationTokenSource);
+                polling.Item1.Name = String.Format("{0} Polling thread: {1}", this.GetType().Name, Path.Combine(folder, filename));
+                polling.Item1.Start();
             }
         }
 
@@ -59,9 +59,9 @@ namespace MinecraftClient
         public void Dispose()
         {
             if (monitor != null)
-                monitor.Dispose();
+                monitor.Item1.Dispose();
             if (polling != null)
-                polling.Abort();
+                polling.Item2.Cancel();
         }
 
         /// <summary>
@@ -70,11 +70,11 @@ namespace MinecraftClient
         /// <param name="folder">Folder to monitor</param>
         /// <param name="filename">File name to monitor</param>
         /// <param name="handler">Callback when file changes</param>
-        private void PollingThread(string folder, string filename, FileSystemEventHandler handler)
+        private void PollingThread(string folder, string filename, FileSystemEventHandler handler, CancellationToken cancellationToken)
         {
             string filePath = Path.Combine(folder, filename);
             DateTime lastWrite = GetLastWrite(filePath);
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 Thread.Sleep(5000);
                 DateTime lastWriteNew = GetLastWrite(filePath);

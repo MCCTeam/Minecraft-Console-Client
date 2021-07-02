@@ -35,7 +35,7 @@ namespace MinecraftClient
         public const string MCHighestVersion = "1.17";
         public static readonly string BuildInfo = null;
 
-        private static Thread offlinePrompt = null;
+        private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
         private static bool useMcVersionOnce = false;
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace MinecraftClient
             {
                 // Do NOT use Program.Exit() as creating new Thread cause program to freeze
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
             });
             
@@ -401,7 +401,7 @@ namespace MinecraftClient
             new Thread(new ThreadStart(delegate
             {
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (delaySeconds > 0)
                 {
                     Translations.WriteLine("mcc.restart_delay", delaySeconds);
@@ -420,7 +420,7 @@ namespace MinecraftClient
             new Thread(new ThreadStart(delegate
             {
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
                 Environment.Exit(exitcode);
             })).Start();
@@ -463,53 +463,59 @@ namespace MinecraftClient
                     }
                 }
 
-                if (offlinePrompt == null)
-                {
-                    offlinePrompt = new Thread(new ThreadStart(delegate
-                    {
+                if (offlinePrompt == null) {
+                    var cancellationTokenSource = new CancellationTokenSource();
+                    offlinePrompt = new(new Thread(new ThreadStart(delegate {
                         string command = " ";
                         ConsoleIO.WriteLineFormatted(Translations.Get("mcc.disconnected", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
                         Translations.WriteLineFormatted("mcc.press_exit");
-                        while (command.Length > 0)
-                        {
-                            if (!ConsoleIO.BasicIO)
-                            {
-                                ConsoleIO.Write('>');
-                            }
-                            command = Console.ReadLine().Trim();
-                            if (command.Length > 0)
-                            {
-                                string message = "";
+                        
+                        while (!cancellationTokenSource.IsCancellationRequested) {
+                            while (command.Length > 0) {
+                                if (!ConsoleIO.BasicIO) {
+                                    ConsoleIO.Write('>');
+                                }
 
-                                if (Settings.internalCmdChar != ' '
-                                    && command[0] == Settings.internalCmdChar)
-                                    command = command.Substring(1);
+                                command = Console.ReadLine().Trim();
+                                if (command.Length > 0) {
+                                    string message = "";
 
-                                if (command.StartsWith("reco"))
-                                {
-                                    message = new Commands.Reco().Run(null, Settings.ExpandVars(command), null);
-                                }
-                                else if (command.StartsWith("connect"))
-                                {
-                                    message = new Commands.Connect().Run(null, Settings.ExpandVars(command), null);
-                                }
-                                else if (command.StartsWith("exit") || command.StartsWith("quit"))
-                                {
-                                    message = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
-                                }
-                                else if (command.StartsWith("help"))
-                                {
-                                    ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Reco().GetCmdDescTranslated());
-                                    ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Connect().GetCmdDescTranslated());
-                                }
-                                else ConsoleIO.WriteLineFormatted(Translations.Get("icmd.unknown", command.Split(' ')[0]));
+                                    if (Settings.internalCmdChar != ' '
+                                        && command[0] == Settings.internalCmdChar)
+                                        command = command.Substring(1);
 
-                                if (message != "")
-                                    ConsoleIO.WriteLineFormatted("§8MCC: " + message);
+                                    if (command.StartsWith("reco")) {
+                                        message = new Commands.Reco().Run(null, Settings.ExpandVars(command), null);
+                                    }
+                                    else if (command.StartsWith("connect")) {
+                                        message = new Commands.Connect().Run(null, Settings.ExpandVars(command), null);
+                                    }
+                                    else if (command.StartsWith("exit") || command.StartsWith("quit")) {
+                                        message = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
+                                    }
+                                    else if (command.StartsWith("help")) {
+                                        ConsoleIO.WriteLineFormatted("§8MCC: " +
+                                                                     (Settings.internalCmdChar == ' '
+                                                                         ? ""
+                                                                         : "" + Settings.internalCmdChar) +
+                                                                     new Commands.Reco().GetCmdDescTranslated());
+                                        ConsoleIO.WriteLineFormatted("§8MCC: " +
+                                                                     (Settings.internalCmdChar == ' '
+                                                                         ? ""
+                                                                         : "" + Settings.internalCmdChar) +
+                                                                     new Commands.Connect().GetCmdDescTranslated());
+                                    }
+                                    else
+                                        ConsoleIO.WriteLineFormatted(Translations.Get("icmd.unknown",
+                                            command.Split(' ')[0]));
+
+                                    if (message != "")
+                                        ConsoleIO.WriteLineFormatted("§8MCC: " + message);
+                                }
                             }
                         }
-                    }));
-                    offlinePrompt.Start();
+                    })), cancellationTokenSource);
+                    offlinePrompt.Item1.Start();
                 }
             }
             else

@@ -122,8 +122,8 @@ namespace MinecraftClient
 
         TcpClient client;
         IMinecraftCom handler;
-        Thread cmdprompt;
-        Thread timeoutdetector;
+        Tuple<Thread, CancellationTokenSource>? cmdprompt = null;
+        Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
 
         public ILogger Log;
 
@@ -227,11 +227,10 @@ namespace MinecraftClient
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Log.Info(Translations.Get("mcc.version_supported"));
 
-                if (!singlecommand)
-                {
-                    timeoutdetector = new Thread(new ThreadStart(TimeoutDetector));
-                    timeoutdetector.Name = "MCC Connection timeout detector";
-                    timeoutdetector.Start();
+                if (!singlecommand) {
+                    timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
+                    timeoutdetector.Item1.Name = "MCC Connection timeout detector";
+                    timeoutdetector.Item1.Start(timeoutdetector.Item2.Token);
                 }
 
                 try
@@ -254,9 +253,9 @@ namespace MinecraftClient
 
                             Log.Info(Translations.Get("mcc.joined", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
 
-                            cmdprompt = new Thread(new ThreadStart(CommandPrompt));
-                            cmdprompt.Name = "MCC Command prompt";
-                            cmdprompt.Start();
+                            cmdprompt = new(new Thread(new ParameterizedThreadStart(CommandPrompt)), new CancellationTokenSource());
+                            cmdprompt.Item1.Name = "MCC Command prompt";
+                            cmdprompt.Item1.Start(cmdprompt.Item2.Token);
                         }
                     }
                     else
@@ -283,7 +282,7 @@ namespace MinecraftClient
             {
                 if (timeoutdetector != null)
                 {
-                    timeoutdetector.Abort();
+                    timeoutdetector.Item2.Cancel();
                     timeoutdetector = null;
                 }
                 if (ReconnectionAttemptsLeft > 0)
@@ -388,7 +387,7 @@ namespace MinecraftClient
         /// <summary>
         /// Periodically checks for server keepalives and consider that connection has been lost if the last received keepalive is too old.
         /// </summary>
-        private void TimeoutDetector()
+        private void TimeoutDetector(object? o)
         {
             UpdateKeepAlive();
             do
@@ -403,7 +402,7 @@ namespace MinecraftClient
                     }
                 }
             }
-            while (true);
+            while (! ( (CancellationToken)o! ).IsCancellationRequested);
         }
 
         /// <summary>
@@ -433,12 +432,13 @@ namespace MinecraftClient
                 handler.Dispose();
             }
 
-            if (cmdprompt != null)
-                cmdprompt.Abort();
+            if (cmdprompt != null) {
+                cmdprompt.Item2.Cancel();
+                cmdprompt = null;
+            }
 
-            if (timeoutdetector != null)
-            {
-                timeoutdetector.Abort();
+            if (timeoutdetector != null) {
+                timeoutdetector.Item2.Cancel();
                 timeoutdetector = null;
             }
 
@@ -455,8 +455,8 @@ namespace MinecraftClient
 
             if (timeoutdetector != null)
             {
-                if (Thread.CurrentThread != timeoutdetector)
-                    timeoutdetector.Abort();
+                if (Thread.CurrentThread != timeoutdetector.Item1)
+                    timeoutdetector.Item2.Cancel();
                 timeoutdetector = null;
             }
 
@@ -514,12 +514,12 @@ namespace MinecraftClient
         /// <summary>
         /// Allows the user to send chat messages, commands, and leave the server.
         /// </summary>
-        private void CommandPrompt()
+        private void CommandPrompt(object? o)
         {
             try
             {
                 Thread.Sleep(500);
-                while (client.Client.Connected)
+                while (client.Client.Connected && !((CancellationToken)o!).IsCancellationRequested)
                 {
                     string text = ConsoleIO.ReadLine();
                     InvokeOnMainThread(() => HandleCommandPromptText(text));

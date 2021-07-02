@@ -23,7 +23,7 @@ namespace MinecraftClient.Protocol.Handlers
         private string autocomplete_result = "";
         private bool encrypted = false;
         private int protocolversion;
-        private Thread netRead;
+        private Tuple<Thread, CancellationTokenSource>? netRead = null;
         Crypto.IAesStream s;
         TcpClient c;
 
@@ -60,15 +60,15 @@ namespace MinecraftClient.Protocol.Handlers
             this.c = Client;
         }
 
-        private void Updater()
+        private void Updater(object? o)
         {
             try
             {
-                do
-                {
-                    Thread.Sleep(100);
+                while (!((CancellationToken) o!).IsCancellationRequested) {
+                    do {
+                        Thread.Sleep(100);
+                    } while (Update());
                 }
-                while (Update());
             }
             catch (System.IO.IOException) { }
             catch (SocketException) { }
@@ -194,11 +194,10 @@ namespace MinecraftClient.Protocol.Handlers
             return true; //packet has been successfully skipped
         }
 
-        private void StartUpdating()
-        {
-            netRead = new Thread(new ThreadStart(Updater));
-            netRead.Name = "ProtocolPacketHandler";
-            netRead.Start();
+        private void StartUpdating() {
+            netRead = new(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
+            netRead.Item1.Name = "ProtocolPacketHandler";
+            netRead.Item1.Start(netRead.Item2.Token);
         }
 
         /// <summary>
@@ -207,7 +206,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Net read thread ID</returns>
         public int GetNetReadThreadId()
         {
-            return netRead != null ? netRead.ManagedThreadId : -1;
+            return netRead != null ? netRead.Item1.ManagedThreadId : -1;
         }
 
         public void Dispose()
@@ -216,7 +215,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (netRead != null)
                 {
-                    netRead.Abort();
+                    netRead.Item2.Cancel();
                     c.Close();
                 }
             }
