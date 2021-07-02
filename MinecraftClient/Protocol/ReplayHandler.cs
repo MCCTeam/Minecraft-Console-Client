@@ -9,7 +9,6 @@ using Ionic.Zip;
 using MinecraftClient.Mapping;
 using Org.BouncyCastle.Crypto.Utilities;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
-using System.Runtime.Remoting.Messaging;
 
 namespace MinecraftClient.Protocol
 {
