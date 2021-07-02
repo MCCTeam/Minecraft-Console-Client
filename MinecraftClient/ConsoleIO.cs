@@ -141,9 +141,12 @@ namespace MinecraftClient
                 {
                     if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
                     {
-                        string clip = ReadClipboard();
-                        foreach (char c in clip)
-                            AddChar(c);
+                        if (Settings.DebugMessages) {
+                            Console.WriteLine("ReadClipboard was attempted");
+                        }
+                        //string clip = ReadClipboard(); -- TODO
+                        //foreach (char c in clip)
+                        //    AddChar(c);
                     }
                     else
                     {
@@ -516,23 +519,8 @@ namespace MinecraftClient
         /// Read a string from the Windows clipboard
         /// </summary>
         /// <returns>String from the Windows clipboard</returns>
-        private static string ReadClipboard()
-        {
-            string clipdata = "";
-            Thread staThread = new Thread(new ThreadStart(
-                delegate
-                {
-                    try
-                    {
-                        clipdata = Clipboard.GetText();
-                    }
-                    catch { }
-                }
-            ));
-            staThread.SetApartmentState(ApartmentState.STA);
-            staThread.Start();
-            staThread.Join();
-            return clipdata;
+        private static string ReadClipboard() {
+            throw new NotImplementedException();
         }
 
         #endregion
