@@ -7,7 +7,6 @@ using System.Threading;
 using System.Net;
 using System.IO;
 using System.Drawing;
-using System.Windows.Forms;
 
 namespace MinecraftClient.WinAPI
 {
