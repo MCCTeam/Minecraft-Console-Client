@@ -26,6 +26,7 @@
     <Content Include="Resources\containers\ContainerType.PlayerInventory.txt" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="DnsClient" Version="1.5.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.2.233001">
       <PrivateAssets>all</PrivateAssets>
