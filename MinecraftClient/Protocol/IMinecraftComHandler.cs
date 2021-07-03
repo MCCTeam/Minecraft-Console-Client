@@ -85,11 +85,10 @@ namespace MinecraftClient.Protocol
         void OnTextReceived(string text, bool isJson);
 
         /// <summary>
-        /// Will be called every player break block in gamemode 0
+        /// Will be called every animations of the hit and place block
         /// </summary>
         /// <param name="entityID">Player ID</param>
-        /// <param name="location">Block location</param>
-        /// <param name="stage">Destroy stage, maximum 255</param>
+        /// <param name="animation">0 = LMB, 1 = RMB (RMB Corrent not work)</param>
         void OnEntityAnimation(int entityID, byte animation);
 
         /// <summary>
