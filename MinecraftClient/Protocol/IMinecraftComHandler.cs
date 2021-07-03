@@ -83,9 +83,22 @@ namespace MinecraftClient.Protocol
         /// <param name="text">Text received from the server</param>
         /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
         void OnTextReceived(string text, bool isJson);
+
+        /// <summary>
+        /// Will be called every player break block in gamemode 0
+        /// </summary>
+        /// <param name="entityID">Player ID</param>
+        /// <param name="location">Block location</param>
+        /// <param name="stage">Destroy stage, maximum 255</param>
         void OnEntityAnimation(int entityID, byte animation);
 
-        void OnBlockBreakAnimation(int entityId, Location location, byte stage);
+        /// <summary>
+        /// Will be called every player break block in gamemode 0
+        /// </summary>
+        /// <param name="entityId">Player ID</param>
+        /// <param name="location">Block location</param>
+        /// <param name="stage">Destroy stage, maximum 255</param>
+        void OnBlockBreakAnimation(int entityID, Location location, byte stage);
 
         /// <summary>
         /// This method is called when the protocol handler receives a title
