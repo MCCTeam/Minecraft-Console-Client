@@ -226,6 +226,7 @@ namespace MinecraftClient
         /// Called when an explosion occurs on the server
         /// </summary>
         /// <param name="explode">Explosion location</param>
+        /// <param name="strength">Explosion strength</param>
         /// <param name="recordcount">Amount of blocks blown up</param>
         public virtual void OnExplosion(Location explode, float strength, int recordcount) { }
 
@@ -299,11 +300,11 @@ namespace MinecraftClient
         /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
         public virtual void OnEntityEquipment(Entity entity, int slot, Item item) { }
-        
+
         /// <summary>
         /// Called when an entity has effect applied
         /// </summary>
-        /// <param name="entityid">entity ID</param>
+        /// <param name="entity">entity</param>
         /// <param name="effect">effect id</param>
         /// <param name="amplifier">effect amplifier</param>
         /// <param name="duration">effect duration</param>
@@ -382,7 +383,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="entity">Entity</param>
         /// <param name="metadata">The metadata of the entity</param>
-        /// <param name="protocolversion">Ptotocol version</param>
         public virtual void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata) { }
 
         /// <summary>
