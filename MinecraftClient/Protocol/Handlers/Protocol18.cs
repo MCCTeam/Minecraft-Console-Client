@@ -628,7 +628,10 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte blockMeta = dataTypes.ReadNextByte(packetData);
                                 handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
                             }
-                            else handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                            else
+                            {
+                                handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                            }
                         }
                         break;
                     case PacketTypesIn.MapChunkBulk:
@@ -1111,6 +1114,23 @@ namespace MinecraftClient.Protocol.Handlers
                         if (action3 != 1)
                             value = dataTypes.ReadNextVarInt(packetData);
                         handler.OnUpdateScore(entityname, action3, objectivename2, value);
+                        break;
+                    case PacketTypesIn.BlockBreakAnimation:
+                        if (handler.GetEntityHandlingEnabled() && handler.GetTerrainEnabled())
+                        {
+                            int playerId = dataTypes.ReadNextVarInt(packetData);
+                            Location blockLocation = dataTypes.ReadNextLocation(packetData);
+                            byte stage = dataTypes.ReadNextByte(packetData);
+                            handler.OnBlockBreakAnimation(playerId, blockLocation, stage);
+                        }
+                        break;
+                    case PacketTypesIn.EntityAnimation:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int playerId2 = dataTypes.ReadNextVarInt(packetData);
+                            byte animation = dataTypes.ReadNextByte(packetData);
+                            handler.OnEntityAnimation(playerId2, animation);
+                        }
                         break;
                     default:
                         return false; //Ignored packet
