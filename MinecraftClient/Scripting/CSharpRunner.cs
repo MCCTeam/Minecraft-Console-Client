@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO;
-using Microsoft.CSharp;
-using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Threading;
 using System.ComponentModel;
+using System.Linq;
+using DynamicRun.Builder;
 
 namespace MinecraftClient
 {
@@ -16,7 +15,7 @@ namespace MinecraftClient
     /// </summary>
     class CSharpRunner
     {
-        private static readonly Dictionary<ulong, Assembly> CompileCache = new Dictionary<ulong, Assembly>();
+        private static readonly Dictionary<ulong, byte[]> CompileCache = new Dictionary<ulong, byte[]>();
 
         /// <summary>
         /// Run the specified C# script file
@@ -28,7 +27,7 @@ namespace MinecraftClient
         /// <param name="run">Set to false to compile and cache the script without launching it</param>
         /// <exception cref="CSharpException">Thrown if an error occured</exception>
         /// <returns>Result of the execution, returned by the script</returns>
-        public static object Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object> localVars, bool run = true)
+        public static object? Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object> localVars, bool run = true)
         {
             //Script compatibility check for handling future versions differently
             if (lines.Length < 1 || lines[0] != "//MCCScript 1.0")
@@ -37,7 +36,10 @@ namespace MinecraftClient
 
             //Script hash for determining if it was previously compiled
             ulong scriptHash = QuickHash(lines);
-            Assembly assembly = null;
+            byte[]? assembly = null;
+            
+            Compiler compiler = new Compiler();
+            CompileRunner runner = new CompileRunner();
 
             //No need to compile two scripts at the same time
             lock (CompileCache)
@@ -102,27 +104,17 @@ namespace MinecraftClient
                     });
 
                     //Compile the C# class in memory using all the currently loaded assemblies
-                    CSharpCodeProvider compiler = new CSharpCodeProvider();
-                    CompilerParameters parameters = new CompilerParameters();
-                    parameters.ReferencedAssemblies
-                        .AddRange(AppDomain.CurrentDomain
-                                .GetAssemblies()
-                                .Where(a => !a.IsDynamic)
-                                .Select(a => a.Location).ToArray());
-                    parameters.CompilerOptions = "/t:library";
-                    parameters.GenerateInMemory = true;
-                    parameters.ReferencedAssemblies.AddRange(dlls.ToArray());
-                    CompilerResults result = compiler.CompileAssemblyFromSource(parameters, code);
-
+                    var result = compiler.Compile(code, Guid.NewGuid().ToString());
+                    
                     //Process compile warnings and errors
-                    if (result.Errors.Count > 0)
+                    if (result.Failures != null)
                         throw new CSharpException(CSErrorType.LoadError,
-                            new InvalidOperationException(result.Errors[0].ErrorText));
+                            new InvalidOperationException(result.Failures[0].GetMessage()));
 
                     //Retrieve compiled assembly
-                    assembly = result.CompiledAssembly;
+                    assembly = result.Assembly;
                     if (Settings.CacheScripts)
-                        CompileCache[scriptHash] = result.CompiledAssembly;
+                        CompileCache[scriptHash] = assembly!;
                 }
                 else if (Settings.CacheScripts)
                     assembly = CompileCache[scriptHash];
@@ -131,15 +123,9 @@ namespace MinecraftClient
             //Run the compiled assembly with exception handling
             if (run)
             {
-                try
-                {
-                    object compiledScript = assembly.CreateInstance("ScriptLoader.Script");
-                    return
-                        compiledScript
-                        .GetType()
-                        .GetMethod("__run")
-                        .Invoke(compiledScript,
-                            new object[] { new CSharpAPI(apiHandler, localVars), args });
+                try {
+                    var compiled = runner.Execute(assembly!, args, localVars, apiHandler);
+                    return compiled;
                 }
                 catch (Exception e) { throw new CSharpException(CSErrorType.RuntimeError, e); }
             }
