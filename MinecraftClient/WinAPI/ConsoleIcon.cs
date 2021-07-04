@@ -16,6 +16,12 @@ namespace MinecraftClient.WinAPI
     /// </summary>
     public static class ConsoleIcon
     {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetConsoleIcon(IntPtr hIcon);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, IntPtr lParam);
+        
         /// <summary>
         /// An application sends the WM_SETICON message to associate a new large or small icon with a window.
         /// The system displays the large icon in the ALT+TAB dialog box, and the small icon in the window caption.
@@ -26,26 +32,18 @@ namespace MinecraftClient.WinAPI
         }
 
         private static void SetWindowIcon(System.Drawing.Icon icon) {
-            if (Settings.DebugMessages) {
-                Console.WriteLine("ConsoleIcon.SetWindowIcon Called");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                IntPtr mwHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                IntPtr result01 = SendMessage(mwHandle, (int)WinMessages.SETICON, 0, icon.Handle);
+                IntPtr result02 = SendMessage(mwHandle, (int)WinMessages.SETICON, 1, icon.Handle);
             }
-            return;
-            //IntPtr mwHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
-            //IntPtr result01 = SendMessage(mwHandle, (int)WinMessages.SETICON, 0, icon.Handle);
-            //IntPtr result02 = SendMessage(mwHandle, (int)WinMessages.SETICON, 1, icon.Handle);
         }
 
         /// <summary>
         /// Asynchronously download the player's skin and set the head as console icon
         /// </summary>
         public static void setPlayerIconAsync(string playerName) {
-            if (Settings.DebugMessages) {
-                Console.WriteLine("ConsoleIcon.SetPlayerIconAsync Called");
-            }
-
-            return;
-            
-            if (!Program.isUsingMono) //Windows Only
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 Thread t = new Thread(new ThreadStart(delegate {
                         HttpWebRequest httpWebRequest =
@@ -54,11 +52,9 @@ namespace MinecraftClient.WinAPI
                         try {
                             using (HttpWebResponse httpWebReponse = (HttpWebResponse) httpWebRequest.GetResponse()) {
                                 try {
-                                    Bitmap skin =
-                                        new Bitmap(Image.FromStream(httpWebReponse
-                                            .GetResponseStream())); //Read skin from network
+                                    Bitmap skin = new Bitmap(Image.FromStream(httpWebReponse.GetResponseStream())); //Read skin from network
                                     SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
-                                    // SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
+                                    SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
                                 }
                                 catch (ArgumentException) {
                                     /* Invalid image in HTTP response */
@@ -82,23 +78,16 @@ namespace MinecraftClient.WinAPI
         /// </summary>
         public static void revertToMCCIcon()
         {
-            if (Settings.DebugMessages) {
-                Console.WriteLine("ConsoleIcon.revertToMCCIcon Called");
-            }
-            return;
-           /*
-            if (!Program.isUsingMono) //Windows Only
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) //Windows Only
             {
                 try
                 {
-                    //Icon defaultIcon = Icon.ExtractAssociatedIcon(Environment.SystemDirectory + "\\cmd.exe");
-                    Icon defaultIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+                    Icon defaultIcon = Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
                     SetWindowIcon(Icon.FromHandle(defaultIcon.Handle)); // Windows 10+ (New console)
                     SetConsoleIcon(defaultIcon.Handle); // Windows 8 and lower (Older console)
                 }
                 catch { }
             }
-            */
         }
     }
 }
