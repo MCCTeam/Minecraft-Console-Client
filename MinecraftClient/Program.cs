@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MinecraftClient.Protocol;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
@@ -71,8 +72,14 @@ namespace MinecraftClient
             }
 
             //Take advantage of Windows 10 / Mac / Linux UTF-8 console
-            if (isUsingMono || WindowsVersion.WinMajorVersion >= 10)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                // If we're on windows, check if our version is Win10 or greater.
+                if (WindowsVersion.WinMajorVersion >= 10)
+                    Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+            }
+            else {
+                // Apply to all other operating systems.
                 Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
             }
 
