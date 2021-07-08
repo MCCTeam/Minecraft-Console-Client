@@ -863,14 +863,11 @@ namespace MinecraftClient.Protocol.Handlers
                         if (hash.Length != 40)
                             break;
                         //Send back "accepted" and "successfully loaded" responses for plugins or server config making use of resource pack mandatory
-                        if (forced)
-                        {
-                            byte[] responseHeader = new byte[0];
-                            if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
-                                responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
-                            SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
-                            SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
-                        }
+                        byte[] responseHeader = new byte[0];
+                        if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
+                            responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
+                        SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
+                        SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
                         break;
                     case PacketTypesIn.SpawnEntity:
                         if (handler.GetEntityHandlingEnabled())
