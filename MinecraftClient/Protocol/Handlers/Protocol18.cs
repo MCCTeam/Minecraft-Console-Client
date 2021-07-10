@@ -860,7 +860,7 @@ namespace MinecraftClient.Protocol.Handlers
                             String forcedMessage = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
                         }
                         // Some server plugins may send invalid resource packs to probe the client and we need to ignore them (issue #1056)
-                        if (hash.Length != 40)
+                        if (!url.StartsWith("http") && hash.Length != 40) // Some server may have null hash value
                             break;
                         //Send back "accepted" and "successfully loaded" responses for plugins or server config making use of resource pack mandatory
                         byte[] responseHeader = new byte[0];
