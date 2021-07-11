@@ -75,6 +75,7 @@
     <Compile Include="AutoTimeout.cs" />
     <Compile Include="ChatBots\AutoDrop.cs" />
     <Compile Include="ChatBots\Mailer.cs" />
+    <Compile Include="ChatBots\MineCube.cs" />
     <Compile Include="ChatBots\ReplayCapture.cs" />
     <Compile Include="Commands\DropItem.cs" />
     <Compile Include="Commands\Entitycmd.cs" />
@@ -102,7 +103,6 @@
     <Compile Include="Commands\Dig.cs" />
     <Compile Include="Commands\Inventory.cs" />
     <Compile Include="Commands\Look.cs" />
-    <Compile Include="Commands\MineCube.cs" />
     <Compile Include="Commands\Move.cs" />
     <Compile Include="Commands\Exit.cs" />
     <Compile Include="Commands\Log.cs" />

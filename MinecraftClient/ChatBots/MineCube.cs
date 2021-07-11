@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using MinecraftClient.Mapping;
+using System.Threading;
 
-namespace MinecraftClient.Commands
+
+namespace MinecraftClient.ChatBots
 {
     /// <summary>
     /// A row of blocks that will be mined
@@ -93,65 +94,16 @@ namespace MinecraftClient.Commands
         }
     }
 
-    public class MineCube : Command
+    class MineCube : ChatBot
     {
-        public override string CmdName { get { return "mine"; } }
-        public override string CmdUsage { get { return "mine x y z"; } }
-        public override string CmdDesc { get { return "mine a cube from the current position to the given coordinates"; } }
-
-        private McClient global_handler;
-
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override void Initialize()
         {
-            if (!handler.GetTerrainEnabled())
+            if (!GetTerrainEnabled())
             {
-                return Translations.Get("extra.terrainandmovement_required");
+                LogToConsole(Translations.Get("extra.terrainandmovement_required"));
+                UnLoadBot(this);
             }
-
-            string[] args = getArgs(command);
-            Location startBlock;
-            Location stopBlock;
-
-            if (args.Length > 2)
-            {
-                if (args.Length > 5)
-                {
-                    startBlock = new Location(
-                    double.Parse(args[0]),
-                    double.Parse(args[1]),
-                    double.Parse(args[2])
-                    );
-
-                    stopBlock = new Location(
-                    double.Parse(args[3]),
-                    double.Parse(args[4]),
-                    double.Parse(args[5])
-                    );
-                }
-                else
-                {
-                    // Sometimes GetCurrentLocation() function returns false coordinates. (Maybe a bug.)
-                    var temp = handler.GetCurrentLocation();
-                    startBlock.X = Math.Round(temp.X);
-                    startBlock.Y = Math.Round(temp.Y);
-                    startBlock.Z = Math.Round(temp.Z);
-
-                    stopBlock = new Location(
-                    double.Parse(args[0]),
-                    double.Parse(args[1]),
-                    double.Parse(args[2])
-                    );
-                }
-
-
-                global_handler = handler;
-                Thread newThread = new Thread(() => GetMinableBlocksAsCube(startBlock, stopBlock));
-                newThread.Start();
-
-                return "Started mining from " + startBlock.ToString() + " to " + stopBlock.ToString();
-            }
-
-            return "Command not successfull";
+            RegisterChatBotCommand("mine", "Mine a cube from a to b", "/mine x y z OR /mine x1 y1 z1 x2 y2 z2", evaluateCommand);
         }
 
         public void Mine(Cube cubeToMine)
@@ -162,12 +114,12 @@ namespace MinecraftClient.Commands
                 {
                     foreach (Location loc in r.BlocksToMine)
                     {
-                        if(getHeadLocation(global_handler.GetCurrentLocation()).Distance(loc) > 5)
+                        if (getHeadLocation(GetCurrentLocation()).Distance(loc) > 5)
                         {
                             // Unable to detect when walking is over and goal is reached.
-                            if (global_handler.MoveTo(new Location(loc.X, loc.Y + 1, loc.Z)))
+                            if (MoveToLocation(new Location(loc.X, loc.Y + 1, loc.Z)))
                             {
-                                while (global_handler.GetCurrentLocation().Distance(loc) > 2)
+                                while (GetCurrentLocation().Distance(loc) > 2)
                                 {
                                     Thread.Sleep(200);
                                 }
@@ -176,13 +128,13 @@ namespace MinecraftClient.Commands
                             // but the client either denies walking or walks to the goal block.
                             else
                             {
-                                Console.WriteLine("Unable to walk to: " + loc.ToString());
+                                LogToConsole("Unable to walk to: " + loc.ToString());
                             }
                         }
                         // Unable to check when breaking is over.
-                        if (global_handler.DigBlock(loc))
+                        if (DigBlock(loc))
                         {
-                            while (global_handler.GetWorld().GetBlock(loc).Type != Material.Air)
+                            while (GetWorld().GetBlock(loc).Type != Material.Air)
                             {
                                 Thread.Sleep(100);
                             }
@@ -190,18 +142,18 @@ namespace MinecraftClient.Commands
                         }
                         else
                         {
-                            Console.WriteLine("Unable to break this block: " + loc.ToString());
+                            LogToConsole("Unable to break this block: " + loc.ToString());
                         }
                     }
                 }
             }
-            Console.WriteLine("Mining finished.");
+            LogToConsole("Mining finished.");
         }
 
-        public void GetMinableBlocksAsCube(Location startBlock, Location stopBlock)
+        public Cube GetMinableBlocksAsCube(Location startBlock, Location stopBlock)
         {
-            Console.WriteLine("StartPos: " + startBlock.ToString() + " EndPos: " + stopBlock.ToString());
-            
+            LogToConsole("StartPos: " + startBlock.ToString() + " EndPos: " + stopBlock.ToString());
+
             // Initialize cube to mine
             Cube cubeToMine = new Cube();
 
@@ -213,19 +165,19 @@ namespace MinecraftClient.Commands
             int[] iterateY = getNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Y))).ToArray();
             int[] iterateZ = getNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Z))).ToArray();
 
-            Console.WriteLine("Iterate on X: 0-" + (iterateX.Length - 1).ToString() + " Y: 0-" + (iterateY.Length - 1).ToString() + " Z: 0-" + (iterateZ.Length - 1).ToString());
+            LogToConsole("Iterate on X: 0-" + (iterateX.Length - 1).ToString() + " Y: 0-" + (iterateY.Length - 1).ToString() + " Z: 0-" + (iterateZ.Length - 1).ToString());
 
             // Iterate through all coordinates relative to the start block
-            foreach(int y in iterateY)
+            foreach (int y in iterateY)
             {
                 Layer tempLayer = new Layer();
-                foreach(int x in iterateX)
+                foreach (int x in iterateX)
                 {
                     Row tempRow = new Row();
                     foreach (int z in iterateZ)
                     {
                         Location tempLocation = new Location(Math.Round(startBlock.X + x), Math.Round(startBlock.Y + y), Math.Round(startBlock.Z + z));
-                        if (isMinable(global_handler.GetWorld().GetBlock(tempLocation).Type))
+                        if (isMinable(GetWorld().GetBlock(tempLocation).Type))
                         {
                             tempRow.BlocksToMine.Add(tempLocation);
                         }
@@ -241,7 +193,7 @@ namespace MinecraftClient.Commands
                 }
             }
 
-            Mine(cubeToMine);
+            return cubeToMine;
         }
 
         /// <summary>
@@ -259,9 +211,10 @@ namespace MinecraftClient.Commands
                 {
                     tempList.Add(i);
                 }
-            } else
+            }
+            else
             {
-                for(int i = start; i >= stop; i--)
+                for (int i = start; i >= stop; i--)
                 {
                     tempList.Add(i);
                 }
@@ -283,6 +236,52 @@ namespace MinecraftClient.Commands
                 block != Material.Bedrock &&
                 !block.IsLiquid()
                     );
+        }
+
+        private string evaluateCommand(string command, string[] args)
+        {
+
+            if (args.Length > 2)
+            {
+                Location startBlock;
+                Location stopBlock;
+
+                if (args.Length > 5)
+                {
+                    startBlock = new Location(
+                    double.Parse(args[0]),
+                    double.Parse(args[1]),
+                    double.Parse(args[2])
+                    );
+
+                    stopBlock = new Location(
+                    double.Parse(args[3]),
+                    double.Parse(args[4]),
+                    double.Parse(args[5])
+                    );
+                }
+                else
+                {
+                    // Sometimes GetCurrentLocation() function returns false coordinates. (Maybe a bug.)
+                    var temp = GetCurrentLocation();
+                    startBlock.X = Math.Round(temp.X);
+                    startBlock.Y = Math.Round(temp.Y);
+                    startBlock.Z = Math.Round(temp.Z);
+
+                    stopBlock = new Location(
+                    double.Parse(args[0]),
+                    double.Parse(args[1]),
+                    double.Parse(args[2])
+                    );
+                }
+                LogToConsole("StartPos: " + startBlock.ToString() + " StopPos: " + stopBlock.ToString());
+
+                Thread tempThread = new Thread(() => Mine(GetMinableBlocksAsCube(startBlock, stopBlock)));
+                tempThread.Start();
+
+                return "Mining has finished.";
+            }
+            return "Invalid command syntax";
         }
     }
 }
