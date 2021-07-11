@@ -134,15 +134,16 @@ namespace MinecraftClient.ChatBots
                         // Unable to check when breaking is over.
                         if (DigBlock(loc))
                         {
-                            while (GetWorld().GetBlock(loc).Type != Material.Air)
+                            short i = 0; // Maximum wait time of 10 sec.
+                            while (GetWorld().GetBlock(loc).Type != Material.Air && i <= 100)
                             {
                                 Thread.Sleep(100);
+                                i++;
                             }
-                            Thread.Sleep(800);
                         }
                         else
                         {
-                            LogToConsole("Unable to break this block: " + loc.ToString());
+                            LogDebugToConsole("Unable to break this block: " + loc.ToString());
                         }
                     }
                 }
@@ -165,7 +166,7 @@ namespace MinecraftClient.ChatBots
             int[] iterateY = getNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Y))).ToArray();
             int[] iterateZ = getNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Z))).ToArray();
 
-            LogToConsole("Iterate on X: 0-" + (iterateX.Length - 1).ToString() + " Y: 0-" + (iterateY.Length - 1).ToString() + " Z: 0-" + (iterateZ.Length - 1).ToString());
+            LogDebugToConsole("Iterate on X: 0-" + (iterateX.Length - 1).ToString() + " Y: 0-" + (iterateY.Length - 1).ToString() + " Z: 0-" + (iterateZ.Length - 1).ToString());
 
             // Iterate through all coordinates relative to the start block
             foreach (int y in iterateY)
@@ -191,6 +192,14 @@ namespace MinecraftClient.ChatBots
                 {
                     cubeToMine.addLayer(tempLayer);
                 }
+            }
+
+            // Remove later ;D
+            printCubeToConsole(cubeToMine);
+
+            if (Settings.DebugMessages)
+            {
+                printCubeToConsole(cubeToMine);
             }
 
             return cubeToMine;
@@ -238,6 +247,29 @@ namespace MinecraftClient.ChatBots
                     );
         }
 
+        /// <summary>
+        /// Prints a whole cube to the console. Separated in layers and rows.
+        /// </summary>
+        /// <param name="cubeToPrint">Some cube</param>
+        private void printCubeToConsole(Cube cubeToPrint)
+        {
+            LogToConsole("Cube generated:");
+            foreach (Layer lay in cubeToPrint.LayersToMine)
+            {
+                LogToConsole("Layer:");
+                foreach (Row r in lay.RowsToMine)
+                {
+                    string generatedRow = "Row: ";
+                    foreach (Location loc in r.BlocksToMine)
+                    {
+                        generatedRow += loc.ToString() + "; ";
+                    }
+                    LogToConsole(generatedRow);
+                }
+            }
+            LogToConsole("End of cube.");
+        }
+
         private string evaluateCommand(string command, string[] args)
         {
 
@@ -274,12 +306,11 @@ namespace MinecraftClient.ChatBots
                     double.Parse(args[2])
                     );
                 }
-                LogToConsole("StartPos: " + startBlock.ToString() + " StopPos: " + stopBlock.ToString());
 
                 Thread tempThread = new Thread(() => Mine(GetMinableBlocksAsCube(startBlock, stopBlock)));
                 tempThread.Start();
 
-                return "Mining has finished.";
+                return "Start mining.";
             }
             return "Invalid command syntax";
         }
