@@ -102,6 +102,7 @@
     <Compile Include="Commands\Dig.cs" />
     <Compile Include="Commands\Inventory.cs" />
     <Compile Include="Commands\Look.cs" />
+    <Compile Include="Commands\MineCube.cs" />
     <Compile Include="Commands\Move.cs" />
     <Compile Include="Commands\Exit.cs" />
     <Compile Include="Commands\Log.cs" />

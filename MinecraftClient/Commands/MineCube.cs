@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using MinecraftClient.Mapping;
 
@@ -59,7 +57,6 @@ namespace MinecraftClient.Commands
         public Layer(List<Row> rTM = null)
         {
             rowsToMine = rTM ?? new List<Row>();
-            //rowsToMine.Add(new Row());
         }
     }
 
@@ -93,7 +90,6 @@ namespace MinecraftClient.Commands
         public Cube(List<Layer> lTM = null)
         {
             layersToMine = lTM ?? new List<Layer>();
-            //layersToMine.Add(new Layer());
         }
     }
 
@@ -107,6 +103,11 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
+            if (!handler.GetTerrainEnabled())
+            {
+                return Translations.Get("extra.terrainandmovement_required");
+            }
+
             string[] args = getArgs(command);
             Location startBlock;
             Location stopBlock;
@@ -185,7 +186,7 @@ namespace MinecraftClient.Commands
                             {
                                 Thread.Sleep(100);
                             }
-                            //Thread.Sleep(800);
+                            Thread.Sleep(800);
                         }
                         else
                         {
