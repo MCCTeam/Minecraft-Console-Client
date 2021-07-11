@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using MinecraftClient.Mapping;
+using MinecraftClient.Inventory;
 using System.Threading;
-
 
 namespace MinecraftClient.ChatBots
 {
@@ -245,6 +245,205 @@ namespace MinecraftClient.ChatBots
                 block != Material.Bedrock &&
                 !block.IsLiquid()
                     );
+        }
+
+        private void selectCorrectSlotInHotbar(ItemType[] tools)
+        {
+            if (GetInventoryEnabled())
+            {
+                foreach (ItemType tool in tools)
+                {
+                    int[] tempArray = GetPlayerInventory().SearchItem(tool);
+                    if(tempArray.Length > 0 && tempArray[0] < 10)
+                    {
+                        ChangeSlot(Convert.ToInt16(tempArray[0]));
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the right tool for the job
+        /// </summary>
+        /// <param name="block">Enter the Material of a block</param>
+        /// <returns>The right tool cathegory as string</returns>
+        private ItemType[] getCorrectToolForBlock(Material block)
+        {
+            List<Material> pickaxe = new List<Material>(new Material[]
+            {
+                Material.Ice,
+                Material.PackedIce,
+                Material.BlueIce,
+                Material.FrostedIce,
+                Material.Anvil,
+                Material.Bell,
+                Material.RedstoneBlock,
+                Material.BrewingStand,
+                Material.Cauldron,
+                Material.Chain,
+                Material.Hopper,
+                Material.IronBars,
+                Material.IronDoor,
+                Material.IronTrapdoor,
+                Material.Lantern,
+                Material.HeavyWeightedPressurePlate,
+                Material.LightWeightedPressurePlate,
+                Material.IronBlock,
+                Material.LapisBlock,
+                Material.DiamondBlock,
+                Material.EmeraldBlock,
+                Material.GoldBlock,
+                Material.NetheriteBlock,
+                Material.Piston,
+                Material.StickyPiston,
+                Material.Conduit,
+                Material.ShulkerBox,
+                Material.ActivatorRail,
+                Material.DetectorRail,
+                Material.PoweredRail,
+                Material.Rail,
+                Material.Andesite,
+                Material.Basalt,
+                Material.Blackstone,
+                Material.BlastFurnace,
+                Material.CoalOre,
+                Material.Cobblestone,
+                Material.CobblestoneWall,
+                Material.DarkPrismarine,
+                Material.Diorite,
+                Material.Dispenser,
+                Material.Dropper,
+                Material.EnchantingTable,
+                Material.EndStone,
+                Material.EnderChest,
+                Material.Furnace,
+                Material.Granite,
+                Material.Grindstone,
+                Material.Lodestone,
+                Material.MossyCobblestone,
+                Material.NetherBricks,
+                Material.NetherBrickFence,
+                Material.NetherGoldOre,
+                Material.NetherQuartzOre,
+                Material.Netherrack,
+                Material.Observer,
+                Material.Prismarine,
+                Material.PrismarineBricks,
+                Material.PolishedAndesite,
+                Material.PolishedBlackstone,
+                Material.PolishedBlackstoneBricks,
+                Material.PolishedDiorite,
+                Material.PolishedGranite,
+                Material.RedSandstone,
+                Material.RedSandstoneSlab,
+                Material.Sandstone,
+                Material.Smoker,
+                Material.Spawner,
+                Material.Stonecutter,
+                Material.SmoothStone,
+                Material.Stone,
+                Material.StoneBricks,
+                Material.StoneButton,
+                Material.StonePressurePlate,
+                Material.Terracotta,
+                Material.IronOre,
+                Material.LapisOre,
+                Material.DiamondOre,
+                Material.EmeraldOre,
+                Material.GoldOre,
+                Material.RedstoneOre,
+                Material.AncientDebris,
+                Material.CryingObsidian,
+                Material.Obsidian,
+                Material.RespawnAnchor
+
+            });
+            List<Material> shovel = new List<Material>(new Material[] 
+            {
+                Material.Clay,
+                Material.CoarseDirt,
+                Material.Dirt,
+                Material.Farmland,
+                Material.Grass,
+                Material.GrassPath,
+                Material.Gravel,
+                Material.Mycelium,
+                Material.Podzol,
+                Material.RedSand,
+                Material.Sand,
+                Material.SoulSand,
+                Material.SoulSoil
+            });
+            List<Material> axe = new List<Material>(new Material[] 
+            {
+                Material.Cocoa,
+                Material.JackOLantern,
+                Material.Pumpkin,
+                Material.Vine,
+                Material.Melon,
+                Material.BeeNest,
+                Material.MushroomStem,
+                Material.BrownMushroomBlock,
+                Material.RedMushroomBlock,
+                Material.Barrel,
+                Material.Bookshelf,
+                Material.Chest,
+                Material.Beehive,
+                Material.Campfire,
+                Material.CartographyTable,
+                Material.Composter,
+                Material.CraftingTable,
+                Material.DaylightDetector,
+                Material.FletchingTable,
+                Material.Jukebox,
+                Material.Ladder,
+                Material.Lectern,
+                Material.Loom,
+                Material.NoteBlock,
+                Material.SmithingTable,
+                Material.TrappedChest,
+            });
+
+            // Search for keywords instead of every color
+            if (pickaxe.Contains(block) || block.ToString().Contains("Concrete") || block.ToString().Contains("GlazedTerracotta") ||
+                        (block.ToString().Contains("slab") &&
+                        !block.ToString().Contains("Oak") &&
+                        !block.ToString().Contains("Spruce") &&
+                        !block.ToString().Contains("Birch") &&
+                        !block.ToString().Contains("Jungle") &&
+                        !block.ToString().Contains("Arcacia") &&
+                        !block.ToString().Contains("Crimson") &&
+                        !block.ToString().Contains("Warped")))
+            {
+                return new ItemType[] { ItemType.NetheritePickaxe, ItemType.DiamondPickaxe, ItemType.IronPickaxe, ItemType.GoldenPickaxe, ItemType.StonePickaxe, ItemType.WoodenPickaxe};
+            }
+            else if (axe.Contains(block) ||
+                        //block.ToString().Contains("Fence") ||
+                        block.ToString().Contains("Banner") ||
+                        //block.ToString().Contains("Plank") ||
+                        //block.ToString().Contains("Sign") ||
+                        //block.ToString().Contains("Log") ||
+                        block.ToString().Contains("Hyphae") ||
+                        //block.ToString().Contains("Button") && block != Material.StoneButton ||
+                        //block.ToString().Contains("Door") && block != Material.IronDoor ||
+                        //block.ToString().Contains("PressurePlate") && block != Material.StonePressurePlate ||
+                        block.ToString().Contains("Oak") ||
+                        block.ToString().Contains("Spruce") ||
+                        block.ToString().Contains("Birch") ||
+                        block.ToString().Contains("Jungle") ||
+                        block.ToString().Contains("Arcacia") ||
+                        block.ToString().Contains("Crimson") ||
+                        block.ToString().Contains("Warped"))
+                 {
+                     return new ItemType[] { ItemType.NetheriteAxe, ItemType.DiamondAxe, ItemType.IronAxe, ItemType.GoldenAxe, ItemType.StoneAxe, ItemType.WoodenAxe };
+                 }
+            else if (shovel.Contains(block) || block.ToString().Contains("ConcretePowder"))
+            {
+                return new ItemType[] { ItemType.NetheriteShovel, ItemType.DiamondShovel, ItemType.IronShovel, ItemType.GoldenShovel, ItemType.StoneShovel, ItemType.WoodenShovel};
+            }
+          
+            return null;
         }
 
         /// <summary>
