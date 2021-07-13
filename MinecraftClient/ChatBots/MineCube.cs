@@ -45,7 +45,7 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         /// <param name="givenRow"> enter a row that should be added </param>
         /// <returns> Index of the last row </returns>
-        public int addRow(Row givenRow = null)
+        public int AddRow(Row givenRow = null)
         {
             rowsToMine.Add(givenRow ?? new Row());
             return rowsToMine.Count - 1;
@@ -78,7 +78,7 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         /// <param name="givenLayer"> Enter a layer that should be added </param>
         /// <returns> Index of the last layer </returns>
-        public int addLayer(Layer givenLayer = null)
+        public int AddLayer(Layer givenLayer = null)
         {
             layersToMine.Add(givenLayer ?? new Layer());
             return layersToMine.Count - 1;
@@ -101,9 +101,10 @@ namespace MinecraftClient.ChatBots
             if (!GetTerrainEnabled())
             {
                 LogToConsole(Translations.Get("extra.terrainandmovement_required"));
-                UnLoadBot(this);
+                UnloadBot();
+                return;
             }
-            RegisterChatBotCommand("mine", "Mine a cube from a to b", "/mine x y z OR /mine x1 y1 z1 x2 y2 z2", evaluateCommand);
+            RegisterChatBotCommand("mine", "Mine a cube from a to b", "/mine x y z OR /mine x1 y1 z1 x2 y2 z2", EvaluateCommand);
         }
 
         public void Mine(Cube cubeToMine)
@@ -114,7 +115,7 @@ namespace MinecraftClient.ChatBots
                 {
                     foreach (Location loc in r.BlocksToMine)
                     {
-                        if (getHeadLocation(GetCurrentLocation()).Distance(loc) > 5)
+                        if (GetHeadLocation(GetCurrentLocation()).Distance(loc) > 5)
                         {
                             // Unable to detect when walking is over and goal is reached.
                             if (MoveToLocation(new Location(loc.X, loc.Y + 1, loc.Z)))
@@ -155,20 +156,20 @@ namespace MinecraftClient.ChatBots
         {
             LogToConsole("StartPos: " + startBlock.ToString() + " EndPos: " + stopBlock.ToString());
 
-            // Initialize cube to mine
+            // Initialize cube to mine.
             Cube cubeToMine = new Cube();
 
-            // Get the distance between start and finish as Vector
+            // Get the distance between start and finish as Vector.
             Location vectorToStopPosition = stopBlock - startBlock;
 
             // Initialize Iteration process
-            int[] iterateX = getNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.X))).ToArray();
-            int[] iterateY = getNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Y))).ToArray();
-            int[] iterateZ = getNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Z))).ToArray();
+            int[] iterateX = GetNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.X))).ToArray();
+            int[] iterateY = GetNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Y))).ToArray();
+            int[] iterateZ = GetNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Z))).ToArray();
 
             LogDebugToConsole("Iterate on X: 0-" + (iterateX.Length - 1).ToString() + " Y: 0-" + (iterateY.Length - 1).ToString() + " Z: 0-" + (iterateZ.Length - 1).ToString());
 
-            // Iterate through all coordinates relative to the start block
+            // Iterate through all coordinates relative to the start block.
             foreach (int y in iterateY)
             {
                 Layer tempLayer = new Layer();
@@ -178,28 +179,28 @@ namespace MinecraftClient.ChatBots
                     foreach (int z in iterateZ)
                     {
                         Location tempLocation = new Location(Math.Round(startBlock.X + x), Math.Round(startBlock.Y + y), Math.Round(startBlock.Z + z));
-                        if (isMinable(GetWorld().GetBlock(tempLocation).Type))
+                        if (IsMinable(GetWorld().GetBlock(tempLocation).Type))
                         {
                             tempRow.BlocksToMine.Add(tempLocation);
                         }
                     }
                     if (tempRow.BlocksToMine.Count > 0)
                     {
-                        tempLayer.addRow(tempRow);
+                        tempLayer.AddRow(tempRow);
                     }
                 }
                 if (tempLayer.RowsToMine.Count > 0)
                 {
-                    cubeToMine.addLayer(tempLayer);
+                    cubeToMine.AddLayer(tempLayer);
                 }
             }
 
             // Remove later ;D
-            printCubeToConsole(cubeToMine);
+            PrintCubeToConsole(cubeToMine);
 
             if (Settings.DebugMessages)
             {
-                printCubeToConsole(cubeToMine);
+                PrintCubeToConsole(cubeToMine);
             }
 
             return cubeToMine;
@@ -211,7 +212,7 @@ namespace MinecraftClient.ChatBots
         /// <param name="start">Number to start</param>
         /// <param name="end">Number to stop</param>
         /// <returns>All numbers between the first, including the stop number</returns>
-        public List<int> getNumbersFromTo(int start, int stop)
+        public List<int> GetNumbersFromTo(int start, int stop)
         {
             List<int> tempList = new List<int>();
             if (start <= stop)
@@ -231,14 +232,14 @@ namespace MinecraftClient.ChatBots
             return tempList;
         }
 
-        public Func<Location, Location> getHeadLocation = locFeet => new Location(locFeet.X, locFeet.Y + 1, locFeet.Z);
+        public Func<Location, Location> GetHeadLocation = locFeet => new Location(locFeet.X, locFeet.Y + 1, locFeet.Z);
 
         /// <summary>
         /// Checks whether a material is minable
         /// </summary>
         /// <param name="block">Block that should be checked</param>
         /// <returns>Is block minable</returns>
-        private bool isMinable(Material block)
+        private bool IsMinable(Material block)
         {
             return (
                 block != Material.Air &&
@@ -247,7 +248,7 @@ namespace MinecraftClient.ChatBots
                     );
         }
 
-        private void selectCorrectSlotInHotbar(ItemType[] tools)
+        private void SelectCorrectSlotInHotbar(ItemType[] tools)
         {
             if (GetInventoryEnabled())
             {
@@ -273,6 +274,7 @@ namespace MinecraftClient.ChatBots
             // Made with the following ressources: https://minecraft.fandom.com/wiki/Breaking
             // Sorted in alphabetical order.
 
+            // Minable by Any Pickaxe.
             List<Material> pickaxe_class0 = new List<Material>(new Material[]
             {
                 Material.ActivatorRail,
@@ -528,7 +530,8 @@ namespace MinecraftClient.ChatBots
                 Material.YellowTerracotta
 
 
-            });     // Minable by Any Pickaxe
+            });
+            // Minable by Stone, iron, diamond, netherite.
             List<Material> pickaxe_class1 = new List<Material>(new Material[]
             {
                 Material.IronBlock,
@@ -536,7 +539,8 @@ namespace MinecraftClient.ChatBots
                 Material.LapisBlock,
                 Material.LapisOre,
                 Material.Terracotta,
-            });     // Minable by Stone, iron, diamond, netherite
+            });
+            // Minable by Iron, diamond, netherite.
             List<Material> pickaxe_class2 = new List<Material>(new Material[]
             {
                 Material.DiamondBlock,
@@ -546,7 +550,8 @@ namespace MinecraftClient.ChatBots
                 Material.GoldBlock,
                 Material.GoldOre,
                 Material.RedstoneOre,
-            });     // Minable by Iron, diamond, netherite
+            });
+            // Minable by Diamond, Netherite.
             List<Material> pickaxe_class3 = new List<Material>(new Material[]
             {
                 Material.AncientDebris,
@@ -554,8 +559,9 @@ namespace MinecraftClient.ChatBots
                 Material.NetheriteBlock,
                 Material.Obsidian,
                 Material.RespawnAnchor
-            });     // Minable by Diamond, Netherite
+            });
 
+            // Every shovel can mine every block (speed difference).
             List<Material> shovel = new List<Material>(new Material[]
             {
                 Material.BlackConcretePowder,
@@ -590,7 +596,8 @@ namespace MinecraftClient.ChatBots
                 Material.SoulSoil,
                 Material.WhiteConcretePowder,
                 Material.YellowConcretePowder
-            });            // Every shovel can mine every block (speed difference)
+            });
+            // Every axe can mine every block (speed difference).
             List<Material> axe = new List<Material>(new Material[]
             {
                 Material.AcaciaButton,
@@ -754,7 +761,8 @@ namespace MinecraftClient.ChatBots
                 Material.YellowBanner,
                 Material.YellowWallBanner
 
-            });               // Every axe can mine every block (speed difference)
+            });
+            // Every block a shear can mine.
             List<Material> shears = new List<Material>(new Material[] 
             {
                Material.AcaciaLeaves,
@@ -780,7 +788,8 @@ namespace MinecraftClient.ChatBots
                 Material.SpruceLeaves,
                 Material.WhiteWool,
                 Material.YellowWool,
-            });            // Every block a shear can mine
+            });
+            // Every block that is mined with a sword.
             List<Material> sword = new List<Material>(new Material[] 
             {
                 Material.Bamboo,
@@ -791,7 +800,8 @@ namespace MinecraftClient.ChatBots
                 Material.InfestedMossyStoneBricks,
                 Material.InfestedStone,
                 Material.InfestedStoneBricks,
-            });             // Every block that is mined with a sword
+            });
+            // Every block that can be mined with a hoe.
             List<Material> hoe = new List<Material>(new Material[] 
             {
                 Material.AcaciaLeaves,
@@ -807,9 +817,9 @@ namespace MinecraftClient.ChatBots
                 Material.Target,
                 Material.WarpedWartBlock,
                 Material.WetSponge,
-            });               // Every block that can be mined with a hoe
+            });
 
-            // Search for keywords instead of every color
+            // Search for keywords instead of every color.
             if (pickaxe_class0.Contains(block))
             {
                 return new ItemType[] { ItemType.WoodenPickaxe, ItemType.StonePickaxe, ItemType.GoldenPickaxe, ItemType.IronPickaxe, ItemType.DiamondPickaxe, ItemType.NetheritePickaxe };
@@ -853,7 +863,7 @@ namespace MinecraftClient.ChatBots
         /// Prints a whole cube to the console. Separated in layers and rows.
         /// </summary>
         /// <param name="cubeToPrint">Some cube</param>
-        private void printCubeToConsole(Cube cubeToPrint)
+        private void PrintCubeToConsole(Cube cubeToPrint)
         {
             LogToConsole("Cube generated:");
             foreach (Layer lay in cubeToPrint.LayersToMine)
@@ -872,7 +882,7 @@ namespace MinecraftClient.ChatBots
             LogToConsole("End of cube.");
         }
 
-        private string evaluateCommand(string command, string[] args)
+        private string EvaluateCommand(string command, string[] args)
         {
 
             if (args.Length > 2)
