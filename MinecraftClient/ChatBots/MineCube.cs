@@ -134,14 +134,14 @@ namespace MinecraftClient.ChatBots
                             }
                         }
 
-                        DateTime start = DateTime.Now;
+                        //DateTime start = DateTime.Now;
                         // Search this tool in hotbar and select the correct slot
                         SelectCorrectSlotInHotbar(
                             // Returns the correct tool for this type
                             m2t.GetCorrectToolForBlock(
                                 // returns the type of the current block
                                 GetWorld().GetBlock(loc).Type));
-                        LogToConsole("It took " + (DateTime.Now-start).TotalSeconds.ToString() + " seconds to find the correct tool.");
+                        //LogToConsole("It took " + (DateTime.Now-start).TotalSeconds.ToString() + " seconds to find the correct tool.");
 
                         // Unable to check when breaking is over.
                         if (DigBlock(loc))
@@ -340,6 +340,14 @@ namespace MinecraftClient.ChatBots
                     double.Parse(args[1]),
                     double.Parse(args[2])
                     );
+                }
+
+                // Turn the cube around, so the bot always starts from the top.
+                if (stopBlock.Y > startBlock.Y) 
+                {
+                    Location temp = stopBlock;
+                    stopBlock = startBlock;
+                    startBlock = temp;
                 }
 
                 Thread tempThread = new Thread(() => Mine(GetMinableBlocksAsCube(startBlock, stopBlock)));
