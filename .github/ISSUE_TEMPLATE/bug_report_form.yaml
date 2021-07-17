@@ -1,79 +1,98 @@
-name: Bug Report Form
+name: Bug Report
 description: Create a report to help us improve
-title: ""
-labels: [a:bug]
+title: "[BUG] "
+labels: 
+  - "a:bug"
 body:
   - type: checkboxes
     id: prerequisites
     attributes:
-      - label: Prerequisites
-        options:
-          - label: I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)
-            required: true
-          - label: I tried to [look for similar issues](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
-            required: true
-          - label: I have set `debugmessages=true` in config to diagnose my issue
-            required: true
-          - label: I have redacted session tokens and passwords before attaching screenshots
-            required: true
-  - type: markdown
+      label: Prerequisites
+      options:
+        - label: I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)
+          required: true
+        - label: I tried to [look for similar issues](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
+          required: true
+        - label: I have set `debugmessages=true` in config to diagnose my issue
+          required: true
+        - label: I have redacted session tokens and passwords before attaching screenshots
+          required: true
+  - type: input
+    id: mc-version
+    attributes:
+      label: Minecraft Version
+      placeholder: 1.x.x
+    validations:
+      required: true
+  - type: input
+    id: client-version
+    attributes:
+      label: Console Client Version
+      description: Please make sure you are using the latest version
+      placeholder: Latest
+    validations:
+      required: true
+  - type: textarea
     id: expected-behavior
     attributes:
-      label: |
-        Expected Behavior
-      placeholder: What is the expected behavior?
-  - type: markdown
+      label: Expected Behavior
+      placeholder: What do you expect to see?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
     attributes:
+      label: Actual Behavior
+      placeholder: What is the happening?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce-step
+    attributes:
+      label: Steps to Reproduce the bug
+      placeholder: "1. Login to ... server"
       value: |
-        Thanks for taking the time to fill out this bug report!
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Attach screenshot here (If applicable)
+  - type: textarea
+    id: others
+    attributes:
+      label: Anythings that could help diagnosing the bug
+      placeholder: Your configuration file, log output, ...
+      render: txt
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      description: What device you are using to run the client?
+      options:
+        - Desktop
+        - Laptop
+        - VPS
+        - Raspberry Pi
+        - Other
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system is your device running?
+      options:
+        - Windows
+        - Linux
+        - MacOS
+        - Other
   - type: input
-    id: contact
+    id: server-address
     attributes:
-      label: Contact Details
-      description: How can we get in touch with you if we need more info?
-      placeholder: ex. email@example.com
-    validations:
-      required: false
-  - type: textarea
-    id: what-happened
+      label: Server Address (If applicable)
+  - type: markdown
+    id: credit
     attributes:
-      label: What happened?
-      description: Also tell us, what did you expect to happen?
-      placeholder: Tell us what you see!
-      value: "A bug happened!"
-    validations:
-      required: true
-  - type: dropdown
-    id: version
-    attributes:
-      label: Version
-      description: What version of our software are you running?
-      options:
-        - 1.0.2 (Default)
-        - 1.0.3 (Edge)
-    validations:
-      required: true
-  - type: dropdown
-    id: browsers
-    attributes:
-      label: What browsers are you seeing the problem on?
-      multiple: true
-      options:
-        - Firefox
-        - Chrome
-        - Safari
-        - Microsoft Edge
-  - type: textarea
-    id: logs
-    attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: shell
-  - type: checkboxes
-    id: terms
-    attributes:
-      label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com)
-      options:
-        - label: I agree to follow this project's Code of Conduct
-          required: true
+      value: Thank you for filling the bug report. Feel free to submit the report to us.
