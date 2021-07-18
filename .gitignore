@@ -9,3 +9,4 @@
 /.vs/
 SessionCache.ini
 .*
+!/.github
