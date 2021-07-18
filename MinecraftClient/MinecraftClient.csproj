@@ -75,7 +75,7 @@
     <Compile Include="AutoTimeout.cs" />
     <Compile Include="ChatBots\AutoDrop.cs" />
     <Compile Include="ChatBots\Mailer.cs" />
-    <Compile Include="ChatBots\Material2Tool.cs" />
+    <Compile Include="Mapping\Material2Tool.cs" />
     <Compile Include="ChatBots\MineCube.cs" />
     <Compile Include="ChatBots\ReplayCapture.cs" />
     <Compile Include="Commands\DropItem.cs" />
