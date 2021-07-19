@@ -1,0 +1,93 @@
+name: General Question
+description: Request help for using the program
+title: "[Question] "
+labels: 
+  - "a:question"
+body:
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have read and understood the [user manual](https://github.com/ORelio/Minecraft-Console-Client/tree/master/MinecraftClient/config)
+          required: true
+        - label: I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)
+          required: true
+        - label: I tried to [look for similar feature requests](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
+          required: true
+  - type: input
+    id: client-version
+    attributes:
+      label: Console Client Version
+      description: Please make sure you are using the latest version
+      placeholder: Latest
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Description of the Question
+      placeholder: What problem do you encountered?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      placeholder: What is the happening?
+    validations:
+      required: true
+  - type: textarea
+    id: considered-solutions
+    attributes:
+      label: Solutions you've already considered
+      placeholder: "1. Set ... setting in my config"
+      value: |
+        1. 
+        2. 
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Attach screenshot here (If applicable)
+  - type: textarea
+    id: others
+    attributes:
+      label: Anythings that could help us answering the question
+      placeholder: Your configuration file, log output, ...
+      render: txt
+  - type: input
+    id: mc-version
+    attributes:
+      label: Minecraft Version
+      placeholder: 1.x.x
+    validations:
+      required: true
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      description: What device you are using to run the client?
+      options:
+        - Desktop
+        - Laptop
+        - VPS
+        - Raspberry Pi
+        - Other
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system is your device running?
+      options:
+        - Windows
+        - Linux
+        - MacOS
+        - Other
+  - type: input
+    id: server-address
+    attributes:
+      label: Server Address (If applicable)
+  - type: markdown
+    id: credit
+    attributes:
+      value: Thank you for filling the question form. Feel free to submit the form to us.
