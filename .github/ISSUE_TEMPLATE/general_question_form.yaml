@@ -31,13 +31,6 @@ body:
     validations:
       required: true
   - type: textarea
-    id: actual-behavior
-    attributes:
-      label: Actual Behavior
-      placeholder: What is the happening?
-    validations:
-      required: true
-  - type: textarea
     id: considered-solutions
     attributes:
       label: Solutions you've already considered
@@ -60,8 +53,6 @@ body:
     attributes:
       label: Minecraft Version
       placeholder: 1.x.x
-    validations:
-      required: true
   - type: dropdown
     id: device
     attributes:
