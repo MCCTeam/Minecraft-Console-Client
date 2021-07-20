@@ -92,7 +92,7 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.SetTerrainEnabled(false);
             }
 
-            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1165Version))
+            if (handler.GetInventoryEnabled() && (protocolversion < MC110Version || protocolversion > MC1171Version))
             {
                 log.Error(Translations.Get("extra.inventory_disabled"));
                 handler.SetInventoryEnabled(false);
@@ -139,9 +139,11 @@ namespace MinecraftClient.Protocol.Handlers
             // Item palette
             if (protocolversion >= MC116Version)
             {
-                if (protocolversion > MC1165Version && handler.GetInventoryEnabled())
+                if (protocolversion > MC1171Version && handler.GetInventoryEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.item"));
-                if (protocolversion >= MC1162Version)
+                if (protocolversion >= MC117Version)
+                    itemPalette = new ItemPalette1171();
+                else if (protocolversion >= MC1162Version)
                     itemPalette = new ItemPalette1162();
                 else itemPalette = new ItemPalette1161();
             }
@@ -819,6 +821,8 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             byte windowId = dataTypes.ReadNextByte(packetData);
                             short elements = dataTypes.ReadNextShort(packetData);
+                            if (protocolversion >= MC1171Version) // 1.17.1+ only
+                                dataTypes.ReadNextVarInt(packetData); // StateId. Usage unknown
                             Dictionary<int, Item> inventorySlots = new Dictionary<int, Item>();
                             for (short slotId = 0; slotId < elements; slotId++)
                             {
@@ -826,6 +830,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (item != null)
                                     inventorySlots[slotId] = item;
                             }
+                            if (protocolversion >= MC1171Version) // 1.17.1+ only
+                                dataTypes.ReadNextItemSlot(packetData, itemPalette); // CarriedItem. Usage unknown
                             handler.OnWindowItems(windowId, inventorySlots);
                         }
                         break;
@@ -1893,12 +1899,20 @@ namespace MinecraftClient.Protocol.Handlers
 
                 List<byte> packet = new List<byte>();
                 packet.Add((byte)windowId);
+                if (protocolversion >= MC1171Version) // 1.17.1+ only
+                    packet.AddRange(dataTypes.GetVarInt(0)); // StateId. Usage unknown
                 packet.AddRange(dataTypes.GetShort((short)slotId));
                 packet.Add(button);
-                if (protocolversion < MC117Version) packet.AddRange(dataTypes.GetShort(actionNumber));
+                if (protocolversion < MC117Version) 
+                    packet.AddRange(dataTypes.GetShort(actionNumber));
                 if (protocolversion >= MC19Version)
                     packet.AddRange(dataTypes.GetVarInt(mode));
                 else packet.Add(mode);
+                if (protocolversion >= MC117Version)
+                {
+                    // Changed slot. If item gone, use null. If added new item, array of slotId (short) + item
+                    packet.AddRange(dataTypes.GetVarInt(0)); // Array length
+                }
                 packet.AddRange(dataTypes.GetItemSlot(item, itemPalette));
                 SendPacket(PacketTypesOut.ClickWindow, packet);
                 return true;
