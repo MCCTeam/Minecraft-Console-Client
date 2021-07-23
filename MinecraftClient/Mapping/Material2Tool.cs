@@ -8,7 +8,6 @@ namespace MinecraftClient.ChatBots
     {
         // Made with the following ressources: https://minecraft.fandom.com/wiki/Breaking
         // Sorted in alphabetical order.
-
         // Minable by Any Pickaxe.
         private readonly List<Material> pickaxe_tier0 = new List<Material>(new Material[]
         {

@@ -107,6 +107,70 @@ namespace MinecraftClient.ChatBots
             RegisterChatBotCommand("mine", "Mine a cube from a to b", "/mine x y z OR /mine x1 y1 z1 x2 y2 z2", EvaluateCommand);
         }
 
+        /// <summary>
+        /// Dig out a 2 Block high cube and let the bot walk through it
+        /// mining all blocks above it that it can reach.
+        /// </summary>
+        /// <param name="walkingArea">Area that the bot should walk through. (The lower Y coordinate of the 2 high cube.)</param>
+        public void MineCubeUp(Cube walkingArea)
+        {
+            Material2Tool m2t = new Material2Tool();
+            foreach (Layer lay in walkingArea.LayersToMine)
+            {
+                foreach (Row r in lay.RowsToMine)
+                {
+                    foreach (Location loc in r.BlocksToMine)
+                    {
+                        Location currentLoc = GetCurrentLocation();
+
+                        if (MoveToLocation(new Location(loc.X, loc.Y + 1, loc.Z)))
+                        {
+                            while (GetCurrentLocation().Distance(loc) > 1)
+                            {
+                                Thread.Sleep(200);
+                            }
+                        }
+                        else
+                        {
+                            LogToConsole("Unable to walk to: " + loc.X.ToString() + " " + (loc.Y + 1).ToString() + " " + loc.Z.ToString());
+                        }
+
+                        for (int height = Convert.ToInt32(Math.Round(currentLoc.Y)); height < Convert.ToInt32(Math.Round(currentLoc.Y)) + 7; height++)
+                        {
+                            Location mineLocation = new Location(currentLoc.X, height, currentLoc.Y);
+
+                            // Stop mining process if breaking the next block could endager the bot
+                            // through falling blocks or liquids.
+                            if (IsSorroundedByGravityBlocks(mineLocation)) { break; }
+
+                            //DateTime start = DateTime.Now;
+                            // Search this tool in hotbar and select the correct slot
+                            SelectCorrectSlotInHotbar(
+                                // Returns the correct tool for this type
+                                m2t.GetCorrectToolForBlock(
+                                    // returns the type of the current block
+                                    GetWorld().GetBlock(mineLocation).Type));
+
+                            // Unable to check when breaking is over.
+                            if (DigBlock(loc))
+                            {
+                                short i = 0; // Maximum wait time of 10 sec.
+                                while (GetWorld().GetBlock(loc).Type != Material.Air && i <= 100)
+                                {
+                                    Thread.Sleep(100);
+                                    i++;
+                                }
+                            }
+                            else
+                            {
+                                LogDebugToConsole("Unable to break this block: " + loc.ToString());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         public void Mine(Cube cubeToMine)
         {
             Material2Tool m2t = new Material2Tool();
@@ -280,6 +344,28 @@ namespace MinecraftClient.ChatBots
             {
                 LogToConsole("Activate Inventory Handling.");
             }
+        }
+
+        public bool IsSorroundedByGravityBlocks(Location block)
+        {
+            World world = GetWorld();
+            double blockX = Math.Round(block.X);
+            double blockY = Math.Round(block.Y);
+            double blockZ = Math.Round(block.Z);
+
+            List<Material> gravityBlockList = new List<Material>(new Material[] {Material.Gravel, Material.Sand, Material.Scaffolding, Material.Anvil, });
+            List<Material> liquidBlockList = new List<Material>(new Material[] { Material.Water, Material.Lava, });
+
+            return
+                // Block can not fall down on player e.g. Sand, Gravel etc.
+                gravityBlockList.Contains(world.GetBlock(new Location(blockX, blockY + 1, blockZ)).Type) ||
+                
+                // Liquid can not flow down the hole. Liquid is unable to flow diagonally.
+                liquidBlockList.Contains(world.GetBlock(new Location(blockX, blockY + 1, blockZ)).Type) ||
+                liquidBlockList.Contains(world.GetBlock(new Location(blockX - 1, blockY, blockZ)).Type) ||
+                liquidBlockList.Contains(world.GetBlock(new Location(blockX + 1, blockY, blockZ)).Type) ||
+                liquidBlockList.Contains(world.GetBlock(new Location(blockX, blockY, blockZ - 1)).Type) ||
+                liquidBlockList.Contains(world.GetBlock(new Location(blockX, blockY, blockZ + 1)).Type);
         }
 
         /// <summary>
