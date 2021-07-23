@@ -171,6 +171,10 @@ namespace MinecraftClient.ChatBots
             }
         }
 
+        /// <summary>
+        /// Mines out a cube of blocks from top to bottom.
+        /// </summary>
+        /// <param name="cubeToMine">The cube that should be mined.</param>
         public void Mine(Cube cubeToMine)
         {
             Material2Tool m2t = new Material2Tool();
@@ -227,8 +231,15 @@ namespace MinecraftClient.ChatBots
             LogToConsole("Mining finished.");
         }
 
+        /// <summary>
+        /// Creates a cube of blocks out of two coordinates.
+        /// </summary>
+        /// <param name="startBlock">Start Location</param>
+        /// <param name="stopBlock">Stop Location</param>
+        /// <returns>A cube of blocks consisting of Layers, Rows and single blocks</returns>
         public Cube GetMinableBlocksAsCube(Location startBlock, Location stopBlock)
         {
+            Material2Tool m2t = new Material2Tool();
             LogToConsole("StartPos: " + startBlock.ToString() + " EndPos: " + stopBlock.ToString());
 
             // Initialize cube to mine.
@@ -254,7 +265,8 @@ namespace MinecraftClient.ChatBots
                     foreach (int z in iterateZ)
                     {
                         Location tempLocation = new Location(Math.Round(startBlock.X + x), Math.Round(startBlock.Y + y), Math.Round(startBlock.Z + z));
-                        if (IsMinable(GetWorld().GetBlock(tempLocation).Type))
+                        Material tempLocationType = GetWorld().GetBlock(tempLocation).Type;
+                        if (!m2t.IsUnbreakable(tempLocationType) && tempLocationType != Material.Water && tempLocationType != Material.Lava)
                         {
                             tempRow.BlocksToMine.Add(tempLocation);
                         }
@@ -308,20 +320,6 @@ namespace MinecraftClient.ChatBots
         }
 
         public Func<Location, Location> GetHeadLocation = locFeet => new Location(locFeet.X, locFeet.Y + 1, locFeet.Z);
-
-        /// <summary>
-        /// Checks whether a material is minable
-        /// </summary>
-        /// <param name="block">Block that should be checked</param>
-        /// <returns>Is block minable</returns>
-        private bool IsMinable(Material block)
-        {
-            return (
-                block != Material.Air &&
-                block != Material.Bedrock &&
-                !block.IsLiquid()
-                    );
-        }
 
         private void SelectCorrectSlotInHotbar(ItemType[] tools)
         {
