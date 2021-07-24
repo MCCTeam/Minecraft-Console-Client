@@ -104,7 +104,8 @@ namespace MinecraftClient.ChatBots
                 UnloadBot();
                 return;
             }
-            RegisterChatBotCommand("mine", "Mine a cube from a to b", "/mine x y z OR /mine x1 y1 z1 x2 y2 z2", EvaluateCommand);
+            RegisterChatBotCommand("mine", "Mine a cube from a to b", "/mine x y z OR /mine x1 y1 z1 x2 y2 z2", EvaluateMineCommand);
+            RegisterChatBotCommand("mineup", "Walk over a flat cubic platform of blocks and mine everything above you", "/mine x1 y1 z1 x2 y2 z2 (y1 = y2)", EvaluateMineUpCommand);
         }
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace MinecraftClient.ChatBots
         /// mining all blocks above it that it can reach.
         /// </summary>
         /// <param name="walkingArea">Area that the bot should walk through. (The lower Y coordinate of the 2 high cube.)</param>
-        public void MineCubeUp(Cube walkingArea)
+        public void MineUp(Cube walkingArea)
         {
             Material2Tool m2t = new Material2Tool();
             foreach (Layer lay in walkingArea.LayersToMine)
@@ -123,25 +124,31 @@ namespace MinecraftClient.ChatBots
                     {
                         Location currentLoc = GetCurrentLocation();
 
-                        if (MoveToLocation(new Location(loc.X, loc.Y + 1, loc.Z)))
+                        if (MoveToLocation(new Location(loc.X, loc.Y, loc.Z)))
                         {
-                            while (GetCurrentLocation().Distance(loc) > 1)
+                            while (Math.Round(GetCurrentLocation().Distance(loc)) > 1)
                             {
                                 Thread.Sleep(200);
                             }
                         }
                         else
                         {
-                            LogToConsole("Unable to walk to: " + loc.X.ToString() + " " + (loc.Y + 1).ToString() + " " + loc.Z.ToString());
+                            // This block is not reachable for some reason.
+                            // Keep on going with the next collumn.
+                            LogToConsole("Unable to walk to: " + loc.X.ToString() + " " + (loc.Y).ToString() + " " + loc.Z.ToString());
+                            continue;
                         }
 
-                        for (int height = Convert.ToInt32(Math.Round(currentLoc.Y)); height < Convert.ToInt32(Math.Round(currentLoc.Y)) + 7; height++)
+                        for (int height = Convert.ToInt32(Math.Round(currentLoc.Y)) + 2; height < Convert.ToInt32(Math.Round(currentLoc.Y)) + 7; height++)
                         {
-                            Location mineLocation = new Location(currentLoc.X, height, currentLoc.Y);
+                            Location mineLocation = new Location(loc.X, height, loc.Z);
+                            Material mineLocationMaterial = GetWorld().GetBlock(mineLocation).Type;
 
                             // Stop mining process if breaking the next block could endager the bot
                             // through falling blocks or liquids.
                             if (IsSorroundedByGravityBlocks(mineLocation)) { break; }
+                            // Skip this block if it can not be mined.
+                            if (m2t.IsUnbreakable(mineLocationMaterial)) { continue; }
 
                             //DateTime start = DateTime.Now;
                             // Search this tool in hotbar and select the correct slot
@@ -149,7 +156,71 @@ namespace MinecraftClient.ChatBots
                                 // Returns the correct tool for this type
                                 m2t.GetCorrectToolForBlock(
                                     // returns the type of the current block
-                                    GetWorld().GetBlock(mineLocation).Type));
+                                    mineLocationMaterial));
+
+                            // Unable to check when breaking is over.
+                            if (DigBlock(mineLocation))
+                            {
+                                short i = 0; // Maximum wait time of 10 sec.
+                                while (GetWorld().GetBlock(mineLocation).Type != Material.Air && i <= 100)
+                                {
+                                    Thread.Sleep(100);
+                                    i++;
+                                }
+                            }
+                            else
+                            {
+                                LogDebugToConsole("Unable to break this block: " + mineLocation.ToString());
+                            }
+                        }
+                    }
+                }
+            }
+            LogToConsole("Finished mining up.");
+        }
+
+        /// <summary>
+        /// Mines out a cube of blocks from top to bottom.
+        /// </summary>
+        /// <param name="cubeToMine">The cube that should be mined.</param>
+        public void Mine(Cube cubeToMine)
+        {
+            Material2Tool m2t = new Material2Tool();
+            foreach (Layer lay in cubeToMine.LayersToMine)
+            {
+                foreach (Row r in lay.RowsToMine)
+                {
+                    foreach (Location loc in r.BlocksToMine)
+                    {
+                        Material locMaterial = GetWorld().GetBlock(loc).Type;
+                        if (!m2t.IsUnbreakable(locMaterial) && locMaterial != Material.Water && locMaterial != Material.Lava)
+                        {
+                            if (GetHeadLocation(GetCurrentLocation()).Distance(loc) > 5)
+                            {
+                                // Unable to detect when walking is over and goal is reached.
+                                if (MoveToLocation(new Location(loc.X, loc.Y + 1, loc.Z)))
+                                {
+                                    while (GetCurrentLocation().Distance(loc) > 4)
+                                    {
+                                        Thread.Sleep(200);
+                                    }
+                                }
+                                // Some blocks might not be reachable, although approximation would be enough
+                                // but the client either denies walking or walks to the goal block.
+                                else
+                                {
+                                    LogToConsole("Unable to walk to: " + loc.X.ToString() + " " + (loc.Y + 1).ToString() + " " + loc.Z.ToString());
+                                }
+                            }
+
+                            //DateTime start = DateTime.Now;
+                            // Search this tool in hotbar and select the correct slot
+                            SelectCorrectSlotInHotbar(
+                                // Returns the correct tool for this type
+                                m2t.GetCorrectToolForBlock(
+                                    // returns the type of the current block
+                                    GetWorld().GetBlock(loc).Type));
+                            //LogToConsole("It took " + (DateTime.Now-start).TotalSeconds.ToString() + " seconds to find the correct tool.");
 
                             // Unable to check when breaking is over.
                             if (DigBlock(loc))
@@ -169,65 +240,6 @@ namespace MinecraftClient.ChatBots
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Mines out a cube of blocks from top to bottom.
-        /// </summary>
-        /// <param name="cubeToMine">The cube that should be mined.</param>
-        public void Mine(Cube cubeToMine)
-        {
-            Material2Tool m2t = new Material2Tool();
-            foreach (Layer lay in cubeToMine.LayersToMine)
-            {
-                foreach (Row r in lay.RowsToMine)
-                {
-                    foreach (Location loc in r.BlocksToMine)
-                    {
-                        if (GetHeadLocation(GetCurrentLocation()).Distance(loc) > 5)
-                        {
-                            // Unable to detect when walking is over and goal is reached.
-                            if (MoveToLocation(new Location(loc.X, loc.Y + 1, loc.Z)))
-                            {
-                                while (GetCurrentLocation().Distance(loc) > 4)
-                                {
-                                    Thread.Sleep(200);
-                                }
-                            }
-                            // Some blocks might not be reachable, although approximation would be enough
-                            // but the client either denies walking or walks to the goal block.
-                            else
-                            {
-                                LogToConsole("Unable to walk to: " + loc.X.ToString()+ " " + (loc.Y + 1).ToString() + " " + loc.Z.ToString());
-                            }
-                        }
-
-                        //DateTime start = DateTime.Now;
-                        // Search this tool in hotbar and select the correct slot
-                        SelectCorrectSlotInHotbar(
-                            // Returns the correct tool for this type
-                            m2t.GetCorrectToolForBlock(
-                                // returns the type of the current block
-                                GetWorld().GetBlock(loc).Type));
-                        //LogToConsole("It took " + (DateTime.Now-start).TotalSeconds.ToString() + " seconds to find the correct tool.");
-
-                        // Unable to check when breaking is over.
-                        if (DigBlock(loc))
-                        {
-                            short i = 0; // Maximum wait time of 10 sec.
-                            while (GetWorld().GetBlock(loc).Type != Material.Air && i <= 100)
-                            {
-                                Thread.Sleep(100);
-                                i++;
-                            }
-                        }
-                        else
-                        {
-                            LogDebugToConsole("Unable to break this block: " + loc.ToString());
-                        }
-                    }
-                }
-            }
             LogToConsole("Mining finished.");
         }
 
@@ -237,7 +249,7 @@ namespace MinecraftClient.ChatBots
         /// <param name="startBlock">Start Location</param>
         /// <param name="stopBlock">Stop Location</param>
         /// <returns>A cube of blocks consisting of Layers, Rows and single blocks</returns>
-        public Cube GetMinableBlocksAsCube(Location startBlock, Location stopBlock)
+        public Cube GetBlocksAsCube(Location startBlock, Location stopBlock)
         {
             Material2Tool m2t = new Material2Tool();
             LogToConsole("StartPos: " + startBlock.ToString() + " EndPos: " + stopBlock.ToString());
@@ -264,12 +276,7 @@ namespace MinecraftClient.ChatBots
                     Row tempRow = new Row();
                     foreach (int z in iterateZ)
                     {
-                        Location tempLocation = new Location(Math.Round(startBlock.X + x), Math.Round(startBlock.Y + y), Math.Round(startBlock.Z + z));
-                        Material tempLocationType = GetWorld().GetBlock(tempLocation).Type;
-                        if (!m2t.IsUnbreakable(tempLocationType) && tempLocationType != Material.Water && tempLocationType != Material.Lava)
-                        {
-                            tempRow.BlocksToMine.Add(tempLocation);
-                        }
+                        tempRow.BlocksToMine.Add(new Location(Math.Round(startBlock.X + x), Math.Round(startBlock.Y + y), Math.Round(startBlock.Z + z)));
                     }
                     if (tempRow.BlocksToMine.Count > 0)
                     {
@@ -351,8 +358,11 @@ namespace MinecraftClient.ChatBots
             double blockY = Math.Round(block.Y);
             double blockZ = Math.Round(block.Z);
 
-            List<Material> gravityBlockList = new List<Material>(new Material[] {Material.Gravel, Material.Sand, Material.Scaffolding, Material.Anvil, });
+            List<Material> gravityBlockList = new List<Material>(new Material[] {Material.Gravel, Material.Sand, Material.RedSand, Material.Scaffolding, Material.Anvil, });
             List<Material> liquidBlockList = new List<Material>(new Material[] { Material.Water, Material.Lava, });
+
+            var temptype = world.GetBlock(new Location(blockX, blockY + 1, blockZ)).Type;
+            var tempLoc = gravityBlockList.Contains(world.GetBlock(new Location(blockX, blockY + 1, blockZ)).Type);
 
             return
                 // Block can not fall down on player e.g. Sand, Gravel etc.
@@ -389,9 +399,33 @@ namespace MinecraftClient.ChatBots
             LogToConsole("End of cube.");
         }
 
-        private string EvaluateCommand(string command, string[] args)
+        private string EvaluateMineUpCommand(string command, string[] args)
         {
+            Location startBlock = new Location(
+                        double.Parse(args[0]),
+                        double.Parse(args[1]),
+                        double.Parse(args[2])
+                        );
 
+            Location stopBlock = new Location(
+                    double.Parse(args[3]),
+                    double.Parse(args[4]),
+                    double.Parse(args[5])
+                    );
+
+            if (Math.Round(startBlock.Y) != Math.Round(stopBlock.Y))
+            {
+                return "Both blocks must have the same Y value!";
+            }
+
+            Thread tempThread = new Thread(() => MineUp(GetBlocksAsCube(startBlock, stopBlock)));
+            tempThread.Start();
+
+            return "Start mining up.";
+        }
+
+        private string EvaluateMineCommand(string command, string[] args)
+        {
             if (args.Length > 2)
             {
                 Location startBlock;
@@ -427,18 +461,20 @@ namespace MinecraftClient.ChatBots
                 }
 
                 // Turn the cube around, so the bot always starts from the top.
-                if (stopBlock.Y > startBlock.Y) 
+                if (stopBlock.Y > startBlock.Y)
                 {
                     Location temp = stopBlock;
                     stopBlock = startBlock;
                     startBlock = temp;
                 }
 
-                Thread tempThread = new Thread(() => Mine(GetMinableBlocksAsCube(startBlock, stopBlock)));
+                Thread tempThread = new Thread(() => Mine(GetBlocksAsCube(startBlock, stopBlock)));
                 tempThread.Start();
 
-                return "Start mining.";
+                return "Start mining cube.";
             }
+                
+            
             return "Invalid command syntax";
         }
     }
