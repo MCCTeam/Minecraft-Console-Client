@@ -2,7 +2,7 @@
 using MinecraftClient.Mapping;
 using System.Collections.Generic;
 
-namespace MinecraftClient.ChatBots
+namespace MinecraftClient.Mapping
 {
     class Material2Tool
     {
@@ -573,20 +573,20 @@ namespace MinecraftClient.ChatBots
         // Unbreakable Blocks
         private readonly List<Material> unbreakable = new List<Material>(new Material[]
         {
-                Material.CommandBlock,
-                Material.ChainCommandBlock,
-                Material.RepeatingCommandBlock,
-                Material.StructureBlock,
-                Material.Jigsaw,
-                Material.StructureVoid,
+                Material.Air,
                 Material.Barrier,
                 Material.Bedrock,
+                Material.BubbleColumn,
+                Material.ChainCommandBlock,
+                Material.CommandBlock,
                 Material.EndGateway,
                 Material.EndPortal,
                 Material.EndPortalFrame,
+                Material.Jigsaw,
                 Material.NetherPortal,
-                Material.Air,
-                Material.BubbleColumn,
+                Material.RepeatingCommandBlock,
+                Material.StructureBlock,
+                Material.StructureVoid
         });
 
         /// <summary>

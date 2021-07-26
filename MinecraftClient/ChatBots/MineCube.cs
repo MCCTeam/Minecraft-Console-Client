@@ -6,94 +6,6 @@ using System.Threading;
 
 namespace MinecraftClient.ChatBots
 {
-    /// <summary>
-    /// A row of blocks that will be mined
-    /// </summary>
-    public class Row
-    {
-        private List<Location> blocksInRow;
-
-        public List<Location> BlocksToMine
-        {
-            get { return blocksInRow; }
-        }
-
-        /// <summary>
-        /// Initialize a row of blocks
-        /// </summary>
-        /// <param name="bIL"> Enter a list of blocks </param>
-        public Row(List<Location> bIL = null)
-        {
-            blocksInRow = bIL ?? new List<Location>();
-        }
-    }
-
-    /// <summary>
-    /// Several rows are summarized in a layer
-    /// </summary>
-    public class Layer
-    {
-        private List<Row> rowsToMine;
-
-        public List<Row> RowsToMine
-        {
-            get { return rowsToMine; }
-        }
-
-        /// <summary>
-        /// Add a new row to this layer
-        /// </summary>
-        /// <param name="givenRow"> enter a row that should be added </param>
-        /// <returns> Index of the last row </returns>
-        public int AddRow(Row givenRow = null)
-        {
-            rowsToMine.Add(givenRow ?? new Row());
-            return rowsToMine.Count - 1;
-        }
-
-        /// <summary>
-        /// Initialize a layer
-        /// </summary>
-        /// <param name="rTM"> Enter a list of rows </param>
-        public Layer(List<Row> rTM = null)
-        {
-            rowsToMine = rTM ?? new List<Row>();
-        }
-    }
-
-    /// <summary>
-    /// Several layers result in a cube
-    /// </summary>
-    public class Cube
-    {
-        private List<Layer> layersToMine;
-
-        public List<Layer> LayersToMine
-        {
-            get { return layersToMine; }
-        }
-
-        /// <summary>
-        /// Add a new layer to the cube
-        /// </summary>
-        /// <param name="givenLayer"> Enter a layer that should be added </param>
-        /// <returns> Index of the last layer </returns>
-        public int AddLayer(Layer givenLayer = null)
-        {
-            layersToMine.Add(givenLayer ?? new Layer());
-            return layersToMine.Count - 1;
-        }
-
-        /// <summary>
-        /// Initialize a cube
-        /// </summary>
-        /// <param name="lTM"> Enter a list of layers </param>
-        public Cube(List<Layer> lTM = null)
-        {
-            layersToMine = lTM ?? new List<Layer>();
-        }
-    }
-
     class MineCube : ChatBot
     {
         public override void Initialize()
@@ -193,14 +105,14 @@ namespace MinecraftClient.ChatBots
                     foreach (Location loc in r.BlocksToMine)
                     {
                         Material locMaterial = GetWorld().GetBlock(loc).Type;
-                        if (!m2t.IsUnbreakable(locMaterial) && locMaterial != Material.Water && locMaterial != Material.Lava)
+                        if (!m2t.IsUnbreakable(locMaterial))
                         {
                             if (GetHeadLocation(GetCurrentLocation()).Distance(loc) > 5)
                             {
                                 // Unable to detect when walking is over and goal is reached.
                                 if (MoveToLocation(new Location(loc.X, loc.Y + 1, loc.Z)))
                                 {
-                                    while (GetCurrentLocation().Distance(loc) > 4)
+                                    while (GetCurrentLocation().Distance(loc) > 2)
                                     {
                                         Thread.Sleep(200);
                                     }
@@ -241,63 +153,6 @@ namespace MinecraftClient.ChatBots
                 }
             }
             LogToConsole("Mining finished.");
-        }
-
-        /// <summary>
-        /// Creates a cube of blocks out of two coordinates.
-        /// </summary>
-        /// <param name="startBlock">Start Location</param>
-        /// <param name="stopBlock">Stop Location</param>
-        /// <returns>A cube of blocks consisting of Layers, Rows and single blocks</returns>
-        public Cube GetBlocksAsCube(Location startBlock, Location stopBlock)
-        {
-            Material2Tool m2t = new Material2Tool();
-            LogToConsole("StartPos: " + startBlock.ToString() + " EndPos: " + stopBlock.ToString());
-
-            // Initialize cube to mine.
-            Cube cubeToMine = new Cube();
-
-            // Get the distance between start and finish as Vector.
-            Location vectorToStopPosition = stopBlock - startBlock;
-
-            // Initialize Iteration process
-            int[] iterateX = GetNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.X))).ToArray();
-            int[] iterateY = GetNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Y))).ToArray();
-            int[] iterateZ = GetNumbersFromTo(0, Convert.ToInt32(Math.Round(vectorToStopPosition.Z))).ToArray();
-
-            LogDebugToConsole("Iterate on X: 0-" + (iterateX.Length - 1).ToString() + " Y: 0-" + (iterateY.Length - 1).ToString() + " Z: 0-" + (iterateZ.Length - 1).ToString());
-
-            // Iterate through all coordinates relative to the start block.
-            foreach (int y in iterateY)
-            {
-                Layer tempLayer = new Layer();
-                foreach (int x in iterateX)
-                {
-                    Row tempRow = new Row();
-                    foreach (int z in iterateZ)
-                    {
-                        tempRow.BlocksToMine.Add(new Location(Math.Round(startBlock.X + x), Math.Round(startBlock.Y + y), Math.Round(startBlock.Z + z)));
-                    }
-                    if (tempRow.BlocksToMine.Count > 0)
-                    {
-                        tempLayer.AddRow(tempRow);
-                    }
-                }
-                if (tempLayer.RowsToMine.Count > 0)
-                {
-                    cubeToMine.AddLayer(tempLayer);
-                }
-            }
-
-            // Remove later ;D
-            PrintCubeToConsole(cubeToMine);
-
-            if (Settings.DebugMessages)
-            {
-                PrintCubeToConsole(cubeToMine);
-            }
-
-            return cubeToMine;
         }
 
         /// <summary>
@@ -418,7 +273,9 @@ namespace MinecraftClient.ChatBots
                 return "Both blocks must have the same Y value!";
             }
 
-            Thread tempThread = new Thread(() => MineUp(GetBlocksAsCube(startBlock, stopBlock)));
+            CubeFromWorld CFW = new CubeFromWorld();
+            List<Material> materialWhitelist = new List<Material>(new Material[] { Material.Air });
+            Thread tempThread = new Thread(() => MineUp(CFW.GetBlocksAsCube(GetWorld(), startBlock, stopBlock, materialWhitelist, isBlacklist:false)));
             tempThread.Start();
 
             return "Start mining up.";
@@ -429,7 +286,7 @@ namespace MinecraftClient.ChatBots
             if (args.Length > 2)
             {
                 Location startBlock;
-                Location stopBlock;
+                Location stopBlock; 
 
                 if (args.Length > 5)
                 {
@@ -468,7 +325,9 @@ namespace MinecraftClient.ChatBots
                     startBlock = temp;
                 }
 
-                Thread tempThread = new Thread(() => Mine(GetBlocksAsCube(startBlock, stopBlock)));
+                CubeFromWorld CFW = new CubeFromWorld();
+                List<Material> blacklistedMaterials = new List<Material>(new Material[] { Material.Air, Material.Water, Material.Lava });
+                Thread tempThread = new Thread(() => Mine(CFW.GetBlocksAsCube(GetWorld(), startBlock, stopBlock, blacklistedMaterials)));
                 tempThread.Start();
 
                 return "Start mining cube.";
