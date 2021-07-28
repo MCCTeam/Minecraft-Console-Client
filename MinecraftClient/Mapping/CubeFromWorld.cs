@@ -8,20 +8,15 @@ namespace MinecraftClient.Mapping
     /// </summary>
     public class Row
     {
-        private List<Location> blocksInRow;
-
-        public List<Location> BlocksToMine
-        {
-            get { return blocksInRow; }
-        }
+        public readonly List<Location> BlocksInRow;
 
         /// <summary>
         /// Initialize a row of blocks
         /// </summary>
         /// <param name="bIL"> Enter a list of blocks </param>
-        public Row(List<Location> bIL = null)
+        public Row(List<Location> blocksInRow = null)
         {
-            blocksInRow = bIL ?? new List<Location>();
+            BlocksInRow = blocksInRow ?? new List<Location>();
         }
     }
 
@@ -30,31 +25,25 @@ namespace MinecraftClient.Mapping
     /// </summary>
     public class Layer
     {
-        private List<Row> rowsToMine;
-
-        public List<Row> RowsToMine
-        {
-            get { return rowsToMine; }
-        }
+        public readonly List<Row> RowsInLayer;
 
         /// <summary>
         /// Add a new row to this layer
         /// </summary>
         /// <param name="givenRow"> enter a row that should be added </param>
         /// <returns> Index of the last row </returns>
-        public int AddRow(Row givenRow = null)
+        public void AddRow(Row givenRow = null)
         {
-            rowsToMine.Add(givenRow ?? new Row());
-            return rowsToMine.Count - 1;
+            RowsInLayer.Add(givenRow ?? new Row());
         }
 
         /// <summary>
         /// Initialize a layer
         /// </summary>
         /// <param name="rTM"> Enter a list of rows </param>
-        public Layer(List<Row> rTM = null)
+        public Layer(List<Row> rowInLayer = null)
         {
-            rowsToMine = rTM ?? new List<Row>();
+            RowsInLayer = rowInLayer ?? new List<Row>();
         }
     }
 
@@ -63,35 +52,29 @@ namespace MinecraftClient.Mapping
     /// </summary>
     public class Cube
     {
-        private List<Layer> layersToMine;
-
-        public List<Layer> LayersToMine
-        {
-            get { return layersToMine; }
-        }
+        public readonly List<Layer> LayersInCube;
 
         /// <summary>
         /// Add a new layer to the cube
         /// </summary>
         /// <param name="givenLayer"> Enter a layer that should be added </param>
         /// <returns> Index of the last layer </returns>
-        public int AddLayer(Layer givenLayer = null)
+        public void AddLayer(Layer givenLayer = null)
         {
-            layersToMine.Add(givenLayer ?? new Layer());
-            return layersToMine.Count - 1;
+            LayersInCube.Add(givenLayer ?? new Layer());
         }
 
         /// <summary>
         /// Initialize a cube
         /// </summary>
         /// <param name="lTM"> Enter a list of layers </param>
-        public Cube(List<Layer> lTM = null)
+        public Cube(List<Layer> layerInCube = null)
         {
-            layersToMine = lTM ?? new List<Layer>();
+            LayersInCube = layerInCube ?? new List<Layer>();
         }
     }
 
-    public class CubeFromWorld
+    public static class CubeFromWorld
     {
         /// <summary>
         /// Creates a cube of blocks out of two coordinates.
@@ -99,10 +82,8 @@ namespace MinecraftClient.Mapping
         /// <param name="startBlock">Start Location</param>
         /// <param name="stopBlock">Stop Location</param>
         /// <returns>A cube of blocks consisting of Layers, Rows and single blocks</returns>
-        public Cube GetBlocksAsCube(World currentWorld, Location startBlock, Location stopBlock, List<Material> materialList = null, bool isBlacklist = true)
+        public static Cube GetBlocksAsCube(World currentWorld, Location startBlock, Location stopBlock, List<Material> materialList = null, bool isBlacklist = true)
         {
-            Material2Tool m2t = new Material2Tool();
-
             // Initialize cube to mine.
             Cube cubeToMine = new Cube();
 
@@ -133,20 +114,20 @@ namespace MinecraftClient.Mapping
                             // If blacklist == false (whitelist) and it contains the item (true); Add it.
                             if (isBlacklist ^ materialList.Contains(tempLocationMaterial))
                             {
-                                tempRow.BlocksToMine.Add(tempLocation);
+                                tempRow.BlocksInRow.Add(tempLocation);
                             }
                         }
                         else
                         {
-                            tempRow.BlocksToMine.Add(new Location(Math.Round(startBlock.X + x), Math.Round(startBlock.Y + y), Math.Round(startBlock.Z + z)));
+                            tempRow.BlocksInRow.Add(new Location(Math.Round(startBlock.X + x), Math.Round(startBlock.Y + y), Math.Round(startBlock.Z + z)));
                         }
                     }
-                    if (tempRow.BlocksToMine.Count > 0)
+                    if (tempRow.BlocksInRow.Count > 0)
                     {
                         tempLayer.AddRow(tempRow);
                     }
                 }
-                if (tempLayer.RowsToMine.Count > 0)
+                if (tempLayer.RowsInLayer.Count > 0)
                 {
                     cubeToMine.AddLayer(tempLayer);
                 }
@@ -161,7 +142,7 @@ namespace MinecraftClient.Mapping
         /// <param name="start">Number to start</param>
         /// <param name="end">Number to stop</param>
         /// <returns>All numbers between the start and stop number, including the stop number</returns>
-        private List<int> GetNumbersFromTo(int start, int stop)
+        private static List<int> GetNumbersFromTo(int start, int stop)
         {
             List<int> tempList = new List<int>();
             if (start <= stop)

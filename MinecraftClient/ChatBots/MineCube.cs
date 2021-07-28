@@ -17,7 +17,8 @@ namespace MinecraftClient.ChatBots
                 return;
             }
             RegisterChatBotCommand("mine", "Mine a cube from a to b", "/mine x y z OR /mine x1 y1 z1 x2 y2 z2", EvaluateMineCommand);
-            RegisterChatBotCommand("mineup", "Walk over a flat cubic platform of blocks and mine everything above you", "/mine x1 y1 z1 x2 y2 z2 (y1 = y2)", EvaluateMineUpCommand);
+            RegisterChatBotCommand("mineup", "Walk over a flat cubic platform of blocks and mine everything above you", "/mine x1 y1 z1 x2 y2 z2 (y1 = y2)", EvaluateMineCommand);
+            LogToConsole("Mining bot created by Daenges.");
         }
 
         /// <summary>
@@ -27,12 +28,11 @@ namespace MinecraftClient.ChatBots
         /// <param name="walkingArea">Area that the bot should walk through. (The lower Y coordinate of the 2 high cube.)</param>
         public void MineUp(Cube walkingArea)
         {
-            Material2Tool m2t = new Material2Tool();
-            foreach (Layer lay in walkingArea.LayersToMine)
+            foreach (Layer lay in walkingArea.LayersInCube)
             {
-                foreach (Row r in lay.RowsToMine)
+                foreach (Row r in lay.RowsInLayer)
                 {
-                    foreach (Location loc in r.BlocksToMine)
+                    foreach (Location loc in r.BlocksInRow)
                     {
                         Location currentLoc = GetCurrentLocation();
 
@@ -60,13 +60,13 @@ namespace MinecraftClient.ChatBots
                             // through falling blocks or liquids.
                             if (IsSorroundedByGravityBlocks(mineLocation)) { break; }
                             // Skip this block if it can not be mined.
-                            if (m2t.IsUnbreakable(mineLocationMaterial)) { continue; }
+                            if (Material2Tool.IsUnbreakable(mineLocationMaterial)) { continue; }
 
                             //DateTime start = DateTime.Now;
                             // Search this tool in hotbar and select the correct slot
                             SelectCorrectSlotInHotbar(
                                 // Returns the correct tool for this type
-                                m2t.GetCorrectToolForBlock(
+                                Material2Tool.GetCorrectToolForBlock(
                                     // returns the type of the current block
                                     mineLocationMaterial));
 
@@ -97,15 +97,14 @@ namespace MinecraftClient.ChatBots
         /// <param name="cubeToMine">The cube that should be mined.</param>
         public void Mine(Cube cubeToMine)
         {
-            Material2Tool m2t = new Material2Tool();
-            foreach (Layer lay in cubeToMine.LayersToMine)
+            foreach (Layer lay in cubeToMine.LayersInCube)
             {
-                foreach (Row r in lay.RowsToMine)
+                foreach (Row r in lay.RowsInLayer)
                 {
-                    foreach (Location loc in r.BlocksToMine)
+                    foreach (Location loc in r.BlocksInRow)
                     {
                         Material locMaterial = GetWorld().GetBlock(loc).Type;
-                        if (!m2t.IsUnbreakable(locMaterial))
+                        if (!Material2Tool.IsUnbreakable(locMaterial))
                         {
                             if (GetHeadLocation(GetCurrentLocation()).Distance(loc) > 5)
                             {
@@ -129,7 +128,7 @@ namespace MinecraftClient.ChatBots
                             // Search this tool in hotbar and select the correct slot
                             SelectCorrectSlotInHotbar(
                                 // Returns the correct tool for this type
-                                m2t.GetCorrectToolForBlock(
+                                Material2Tool.GetCorrectToolForBlock(
                                     // returns the type of the current block
                                     GetWorld().GetBlock(loc).Type));
                             //LogToConsole("It took " + (DateTime.Now-start).TotalSeconds.ToString() + " seconds to find the correct tool.");
@@ -153,32 +152,6 @@ namespace MinecraftClient.ChatBots
                 }
             }
             LogToConsole("Mining finished.");
-        }
-
-        /// <summary>
-        /// Get all numbers between from and to.
-        /// </summary>
-        /// <param name="start">Number to start</param>
-        /// <param name="end">Number to stop</param>
-        /// <returns>All numbers between the first, including the stop number</returns>
-        public List<int> GetNumbersFromTo(int start, int stop)
-        {
-            List<int> tempList = new List<int>();
-            if (start <= stop)
-            {
-                for (int i = start; i <= stop; i++)
-                {
-                    tempList.Add(i);
-                }
-            }
-            else
-            {
-                for (int i = start; i >= stop; i--)
-                {
-                    tempList.Add(i);
-                }
-            }
-            return tempList;
         }
 
         public Func<Location, Location> GetHeadLocation = locFeet => new Location(locFeet.X, locFeet.Y + 1, locFeet.Z);
@@ -235,52 +208,106 @@ namespace MinecraftClient.ChatBots
         /// Prints a whole cube to the console. Separated in layers and rows.
         /// </summary>
         /// <param name="cubeToPrint">Some cube</param>
-        private void PrintCubeToConsole(Cube cubeToPrint)
-        {
-            LogToConsole("Cube generated:");
-            foreach (Layer lay in cubeToPrint.LayersToMine)
-            {
-                LogToConsole("Layer:");
-                foreach (Row r in lay.RowsToMine)
-                {
-                    string generatedRow = "Row: ";
-                    foreach (Location loc in r.BlocksToMine)
-                    {
-                        generatedRow += loc.ToString() + "; ";
-                    }
-                    LogToConsole(generatedRow);
-                }
-            }
-            LogToConsole("End of cube.");
-        }
+        //private void PrintCubeToConsole(Cube cubeToPrint)
+        //{
+        //    LogToConsole("Cube generated:");
+        //    foreach (Layer lay in cubeToPrint.LayersInCube)
+        //    {
+        //        LogToConsole("Layer:");
+        //        foreach (Row r in lay.RowsInLayer)
+        //        {
+        //            string generatedRow = "Row: ";
+        //            foreach (Location loc in r.BlocksInRow)
+        //            {
+        //                generatedRow += loc.ToString() + "; ";
+        //            }
+        //            LogToConsole(generatedRow);
+        //        }
+        //    }
+        //    LogToConsole("End of cube.");
+        //}
 
-        private string EvaluateMineUpCommand(string command, string[] args)
+        /*private string EvaluateMineUpCommand(string command, string[] args)
         {
-            Location startBlock = new Location(
+            if (args.Length > 2)
+            {
+                Location startBlock;
+                Location stopBlock;
+
+                if (args.Length > 5)
+                {
+                    try
+                    {
+                        startBlock = new Location(
+                                double.Parse(args[0]),
+                                double.Parse(args[1]),
+                                double.Parse(args[2])
+                                );
+
+                        stopBlock = new Location(
+                                double.Parse(args[3]),
+                                double.Parse(args[4]),
+                                double.Parse(args[5])
+                                );
+                    } catch (Exception e)
+                    {
+                        LogDebugToConsole(e.ToString());
+                        return "Please enter correct coordinates as numbers. /mineup <x1> <y1> <z1> <x2> <y2> <z2>";
+                    }
+                }
+                else
+                {
+                    Location tempLoc = GetCurrentLocation();
+                    startBlock = new Location(Math.Round(tempLoc.X),
+                        Math.Round(tempLoc.Y),
+                        Math.Round(tempLoc.Z));
+
+                    try
+                    {
+                        stopBlock = new Location(
                         double.Parse(args[0]),
                         double.Parse(args[1]),
                         double.Parse(args[2])
                         );
+                    }
+                    catch (Exception e)
+                    {
+                        LogDebugToConsole(e.ToString());
+                        return "Please enter correct coordinates as numbers. /mineup <x> <y> <z>";
+                    }
+                }
 
-            Location stopBlock = new Location(
-                    double.Parse(args[3]),
-                    double.Parse(args[4]),
-                    double.Parse(args[5])
-                    );
+                if (Math.Round(startBlock.Y) != Math.Round(stopBlock.Y))
+                {
+                    return "Both blocks must have the same Y value!";
+                }
 
-            if (Math.Round(startBlock.Y) != Math.Round(stopBlock.Y))
-            {
-                return "Both blocks must have the same Y value!";
+                List<Material> materialWhitelist = new List<Material>() { Material.Air };
+                Thread tempThread = new Thread(() => MineUp(CubeFromWorld.GetBlocksAsCube(GetWorld(), startBlock, stopBlock, materialWhitelist, isBlacklist: false)));
+                tempThread.Start();
+                return "Start mining up.";
             }
+            return "Wrong syntax use /mineup <x1> <y1> <z1> <x2> <y2> <z2> OR /mineup <x> <y> <z>";
+        }*/
 
-            CubeFromWorld CFW = new CubeFromWorld();
-            List<Material> materialWhitelist = new List<Material>(new Material[] { Material.Air });
-            Thread tempThread = new Thread(() => MineUp(CFW.GetBlocksAsCube(GetWorld(), startBlock, stopBlock, materialWhitelist, isBlacklist:false)));
-            tempThread.Start();
-
-            return "Start mining up.";
+        ///
+        private string getHelpPage()
+        {
+            return 
+            "Usage of the mine bot:\n" +
+            "/mine <x1> <y1> <z1> <x2> <y2> <z2> OR /mine <x> <y> <z>\n" +
+            "to excavate a cube of blocks from top to bottom. (2 high area above the cube must be dug free by hand.)\n" +
+            "/mineup <x1> <y1> <z1> <x2> <y1> <z2> OR /mineup <x> <y> <z>\n" +
+            "to walk over a quadratic field of blocks and simultaniously mine everything above the head. \n" +
+            "(Mines up to 5 Blocks, stops if gravel or lava would fall. 2 High area below this must be dug fee by hand.)\n";
         }
 
+        /// <summary>
+        /// Evaluates the given command
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
         private string EvaluateMineCommand(string command, string[] args)
         {
             if (args.Length > 2)
@@ -290,51 +317,78 @@ namespace MinecraftClient.ChatBots
 
                 if (args.Length > 5)
                 {
-                    startBlock = new Location(
-                    double.Parse(args[0]),
-                    double.Parse(args[1]),
-                    double.Parse(args[2])
-                    );
+                    try
+                    {
+                        startBlock = new Location(
+                        double.Parse(args[0]),
+                        double.Parse(args[1]),
+                        double.Parse(args[2])
+                        );
 
-                    stopBlock = new Location(
-                    double.Parse(args[3]),
-                    double.Parse(args[4]),
-                    double.Parse(args[5])
-                    );
+                        stopBlock = new Location(
+                        double.Parse(args[3]),
+                        double.Parse(args[4]),
+                        double.Parse(args[5])
+                        );
+
+                    } catch (Exception e) 
+                    {
+                        LogDebugToConsole(e.ToString());
+                        return "Please enter correct coordinates as numbers.\n" + getHelpPage();
+                    }
                 }
                 else
                 {
-                    // Sometimes GetCurrentLocation() function returns false coordinates. (Maybe a bug.)
-                    var temp = GetCurrentLocation();
-                    startBlock.X = Math.Round(temp.X);
-                    startBlock.Y = Math.Round(temp.Y);
-                    startBlock.Z = Math.Round(temp.Z);
+                    Location tempLoc = GetCurrentLocation();
+                    startBlock = new Location(Math.Round(tempLoc.X), 
+                        Math.Round(tempLoc.Y),
+                        Math.Round(tempLoc.Z));
 
-                    stopBlock = new Location(
-                    double.Parse(args[0]),
-                    double.Parse(args[1]),
-                    double.Parse(args[2])
-                    );
+                    try
+                    {
+                        stopBlock = new Location(
+                        double.Parse(args[0]),
+                        double.Parse(args[1]),
+                        double.Parse(args[2])
+                        );
+                    } catch (Exception e)
+                    {
+                        LogDebugToConsole(e.ToString());
+                        return "Please enter correct coordinates as numbers.\n" + getHelpPage();
+                    }
                 }
 
-                // Turn the cube around, so the bot always starts from the top.
-                if (stopBlock.Y > startBlock.Y)
+                if(command.Contains("mineup"))
                 {
-                    Location temp = stopBlock;
-                    stopBlock = startBlock;
-                    startBlock = temp;
+                    if (Math.Round(startBlock.Y) != Math.Round(stopBlock.Y))
+                    {
+                        return "Both blocks must have the same Y value!\n" + getHelpPage();
+                    }
+
+                    List<Material> materialWhitelist = new List<Material>() { Material.Air };
+                    Thread tempThread = new Thread(() => MineUp(CubeFromWorld.GetBlocksAsCube(GetWorld(), startBlock, stopBlock, materialWhitelist, isBlacklist: false)));
+                    tempThread.Start();
+                    return "Start mining up.";
                 }
+                else
+                {
+                    // Turn the cube around, so the bot always starts from the top.
+                    if (stopBlock.Y > startBlock.Y)
+                    {
+                        Location temp = stopBlock;
+                        stopBlock = startBlock;
+                        startBlock = temp;
+                    }
 
-                CubeFromWorld CFW = new CubeFromWorld();
-                List<Material> blacklistedMaterials = new List<Material>(new Material[] { Material.Air, Material.Water, Material.Lava });
-                Thread tempThread = new Thread(() => Mine(CFW.GetBlocksAsCube(GetWorld(), startBlock, stopBlock, blacklistedMaterials)));
-                tempThread.Start();
+                    List<Material> blacklistedMaterials = new List<Material>() { Material.Air, Material.Water, Material.Lava };
+                    Thread tempThread = new Thread(() => Mine(CubeFromWorld.GetBlocksAsCube(GetWorld(), startBlock, stopBlock, blacklistedMaterials)));
+                    tempThread.Start();
 
-                return "Start mining cube.";
+                    return "Start mining cube.";
+                }
             }
                 
-            
-            return "Invalid command syntax";
+            return "Invalid command syntax.\n" + getHelpPage();
         }
     }
 }

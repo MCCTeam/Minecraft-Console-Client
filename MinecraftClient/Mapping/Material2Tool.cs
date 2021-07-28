@@ -4,12 +4,12 @@ using System.Collections.Generic;
 
 namespace MinecraftClient.Mapping
 {
-    class Material2Tool
+    static class Material2Tool
     {
         // Made with the following ressources: https://minecraft.fandom.com/wiki/Breaking
         // Sorted in alphabetical order.
         // Minable by Any Pickaxe.
-        private readonly List<Material> pickaxe_tier0 = new List<Material>(new Material[]
+        private static readonly List<Material> pickaxe_tier0 = new List<Material>(new Material[]
         {
                 Material.ActivatorRail,
                 Material.Andesite,
@@ -257,7 +257,7 @@ namespace MinecraftClient.Mapping
                 Material.YellowTerracotta
         });
         // Minable by Stone, iron, diamond, netherite.
-        private readonly List<Material> pickaxe_tier1 = new List<Material>(new Material[]
+        private static readonly List<Material> pickaxe_tier1 = new List<Material>(new Material[]
         {
                 Material.IronBlock,
                 Material.IronOre,
@@ -266,7 +266,7 @@ namespace MinecraftClient.Mapping
                 Material.Terracotta,
         });
         // Minable by Iron, diamond, netherite.
-        private readonly List<Material> pickaxe_tier2 = new List<Material>(new Material[]
+        private static readonly List<Material> pickaxe_tier2 = new List<Material>(new Material[]
         {
                 Material.DiamondBlock,
                 Material.DiamondOre,
@@ -277,7 +277,7 @@ namespace MinecraftClient.Mapping
                 Material.RedstoneOre,
         });
         // Minable by Diamond, Netherite.
-        private readonly List<Material> pickaxe_tier3 = new List<Material>(new Material[]
+        private static readonly List<Material> pickaxe_tier3 = new List<Material>(new Material[]
         {
                 Material.AncientDebris,
                 Material.CryingObsidian,
@@ -287,7 +287,7 @@ namespace MinecraftClient.Mapping
         });
 
         // Every shovel can mine every block (speed difference).
-        private readonly List<Material> shovel = new List<Material>(new Material[]
+        private static readonly List<Material> shovel = new List<Material>(new Material[]
         {
                 Material.BlackConcretePowder,
                 Material.BlueConcretePowder,
@@ -324,7 +324,7 @@ namespace MinecraftClient.Mapping
                 Material.YellowConcretePowder
         });
         // Every axe can mine every block (speed difference).
-        private readonly List<Material> axe = new List<Material>(new Material[]
+        private static readonly List<Material> axe = new List<Material>(new Material[]
         {
                 Material.AcaciaButton,
                 Material.AcaciaDoor,
@@ -508,7 +508,7 @@ namespace MinecraftClient.Mapping
                 Material.YellowWallBanner
         });
         // Every block a shear can mine.
-        private readonly List<Material> shears = new List<Material>(new Material[]
+        private static readonly List<Material> shears = new List<Material>(new Material[]
         {
                 Material.AcaciaLeaves,
                 Material.BirchLeaves,
@@ -535,7 +535,7 @@ namespace MinecraftClient.Mapping
                 Material.YellowWool,
         });
         // Every block that is mined with a sword.
-        private List<Material> sword = new List<Material>(new Material[]
+        private static readonly List<Material> sword = new List<Material>(new Material[]
         {
                 Material.Bamboo,
                 Material.Cobweb,
@@ -547,7 +547,7 @@ namespace MinecraftClient.Mapping
                 Material.InfestedStoneBricks,
         });
         // Every block that can be mined with a hoe.
-        private readonly List<Material> hoe = new List<Material>(new Material[]
+        private static readonly List<Material> hoe = new List<Material>(new Material[]
         {
                 Material.AcaciaLeaves,
                 Material.BirchLeaves,
@@ -564,14 +564,14 @@ namespace MinecraftClient.Mapping
                 Material.WetSponge,
         });
         // Liquids
-        private readonly List<Material> bucket = new List<Material>(new Material[] 
+        private static readonly List<Material> bucket = new List<Material>(new Material[] 
         {
             Material.Lava, 
             Material.Water
         });
 
         // Unbreakable Blocks
-        private readonly List<Material> unbreakable = new List<Material>(new Material[]
+        private static readonly List<Material> unbreakable = new List<Material>(new Material[]
         {
                 Material.Air,
                 Material.Barrier,
@@ -594,7 +594,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="block">Enter the Material of a block</param>
         /// <returns>Returns a list of tools that can be used, best to worst</returns>
-        public ItemType[] GetCorrectToolForBlock(Material block)
+        public static ItemType[] GetCorrectToolForBlock(Material block)
         {
             if (pickaxe_tier0.Contains(block))
             {
@@ -701,6 +701,6 @@ namespace MinecraftClient.Mapping
             else { return new ItemType[0]; }
         }
 
-        public bool IsUnbreakable(Material block) { return unbreakable.Contains(block); }
+        public static bool IsUnbreakable(Material block) { return unbreakable.Contains(block); }
     }
 }
