@@ -169,9 +169,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { }
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
-            catch (OperationCanceledException) {
-                Console.WriteLine("PROTOCOL18 CANCELLED");
-            }
+            catch (OperationCanceledException) { }
 
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
         }
