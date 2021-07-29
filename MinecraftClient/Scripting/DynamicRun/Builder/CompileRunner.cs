@@ -24,7 +24,7 @@ namespace DynamicRun.Builder
                 GC.WaitForPendingFinalizers();
             }
 
-            Console.WriteLine(assemblyLoadContextWeakRef.Item1.IsAlive ? "Unloading failed!" : "Unloading success!");
+            ConsoleIO.WriteLogLine(assemblyLoadContextWeakRef.Item1.IsAlive ? "Script failed to clean-up" : "Script finished!");
             return assemblyLoadContextWeakRef.Item2;
         }
 

@@ -20,7 +20,7 @@ namespace DynamicRun.Builder
     {
         public CompileResult Compile(string filepath, string fileName)
         {
-            Console.WriteLine($"Starting compilation of: '{fileName}'");
+            ConsoleIO.WriteLogLine($"Starting compilation of: '{fileName}'");
 
             using (var peStream = new MemoryStream())
             {
@@ -28,7 +28,7 @@ namespace DynamicRun.Builder
 
                 if (!result.Success)
                 {
-                    Console.WriteLine("Compilation done with error.");
+                    ConsoleIO.WriteLogLine("Compilation done with error.");
 
                     var failures = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
 
@@ -39,7 +39,7 @@ namespace DynamicRun.Builder
                     };
                 }
 
-                Console.WriteLine("Compilation done without any error.");
+                ConsoleIO.WriteLogLine("Compilation done without any error.");
 
                 peStream.Seek(0, SeekOrigin.Begin);
 
