@@ -141,12 +141,9 @@ namespace MinecraftClient
                 {
                     if (k.Key == ConsoleKey.V && k.Modifiers == ConsoleModifiers.Control)
                     {
-                        if (Settings.DebugMessages) {
-                            Console.WriteLine("ReadClipboard was attempted");
-                        }
-                        //string clip = ReadClipboard(); -- TODO
-                        //foreach (char c in clip)
-                        //    AddChar(c);
+                        string clip = ReadClipboard();
+                        foreach (char c in clip)
+                            AddChar(c);
                     }
                     else
                     {
@@ -516,11 +513,11 @@ namespace MinecraftClient
         #region Clipboard management
 
         /// <summary>
-        /// Read a string from the Windows clipboard
+        /// Read a string from the system clipboard
         /// </summary>
-        /// <returns>String from the Windows clipboard</returns>
+        /// <returns>String from the system clipboard</returns>
         private static string ReadClipboard() {
-            throw new NotImplementedException();
+            return TextCopy.ClipboardService.GetText() ?? "";
         }
 
         #endregion
