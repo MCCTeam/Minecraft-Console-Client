@@ -514,14 +514,20 @@ namespace MinecraftClient
         /// <summary>
         /// Allows the user to send chat messages, commands, and leave the server.
         /// </summary>
-        private void CommandPrompt(object? o)
-        {
+        private void CommandPrompt(object? o) {
+            if (((CancellationToken) o!).IsCancellationRequested)
+                return;
+            
             try
             {
                 Thread.Sleep(500);
                 while (client.Client.Connected && !((CancellationToken)o!).IsCancellationRequested)
                 {
                     string text = ConsoleIO.ReadLine();
+                    
+                    if (((CancellationToken) o!).IsCancellationRequested)
+                        return;
+                    
                     InvokeOnMainThread(() => HandleCommandPromptText(text));
                 }
             }

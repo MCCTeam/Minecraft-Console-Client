@@ -408,7 +408,7 @@ namespace MinecraftClient
             new Thread(new ThreadStart(delegate
             {
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (delaySeconds > 0)
                 {
                     Translations.WriteLine("mcc.restart_delay", delaySeconds);
@@ -427,7 +427,7 @@ namespace MinecraftClient
             new Thread(new ThreadStart(delegate
             {
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
                 Environment.Exit(exitcode);
             })).Start();
@@ -473,11 +473,15 @@ namespace MinecraftClient
                 if (offlinePrompt == null) {
                     var cancellationTokenSource = new CancellationTokenSource();
                     offlinePrompt = new(new Thread(new ThreadStart(delegate {
+                        bool exitThread = false;
                         string command = " ";
                         ConsoleIO.WriteLineFormatted(Translations.Get("mcc.disconnected", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
                         Translations.WriteLineFormatted("mcc.press_exit");
                         
                         while (!cancellationTokenSource.IsCancellationRequested) {
+                            if (exitThread)
+                                return;
+                            
                             while (command.Length > 0) {
                                 if (!ConsoleIO.BasicIO) {
                                     ConsoleIO.Write('>');
@@ -493,9 +497,17 @@ namespace MinecraftClient
 
                                     if (command.StartsWith("reco")) {
                                         message = new Commands.Reco().Run(null, Settings.ExpandVars(command), null);
+                                        if (message == "") {
+                                            exitThread = true;
+                                            break;
+                                        }
                                     }
                                     else if (command.StartsWith("connect")) {
                                         message = new Commands.Connect().Run(null, Settings.ExpandVars(command), null);
+                                        if (message == "") {
+                                            exitThread = true;
+                                            break;
+                                        }
                                     }
                                     else if (command.StartsWith("exit") || command.StartsWith("quit")) {
                                         message = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
@@ -520,6 +532,9 @@ namespace MinecraftClient
                                         ConsoleIO.WriteLineFormatted("§8MCC: " + message);
                                 }
                             }
+                            
+                            if (exitThread)
+                                return;
                         }
                     })), cancellationTokenSource);
                     offlinePrompt.Item1.Start();

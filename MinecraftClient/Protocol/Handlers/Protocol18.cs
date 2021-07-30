@@ -149,8 +149,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Separate thread. Network reading loop.
         /// </summary>
-        private void Updater(object? o)
-        {
+        private void Updater(object? o) {
+            if (((CancellationToken) o!).IsCancellationRequested)
+                return;
+
             try {
                 bool keepUpdating = true;
                 Stopwatch stopWatch = new Stopwatch();
@@ -171,6 +173,9 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { }
             catch (OperationCanceledException) { }
 
+            if (((CancellationToken) o!).IsCancellationRequested)
+                return;
+            
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
         }
 

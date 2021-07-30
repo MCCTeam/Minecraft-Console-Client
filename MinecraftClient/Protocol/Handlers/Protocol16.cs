@@ -62,6 +62,9 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void Updater(object? o)
         {
+            if (((CancellationToken) o!).IsCancellationRequested)
+                return;
+            
             try
             {
                 while (!((CancellationToken) o!).IsCancellationRequested) {
@@ -74,6 +77,9 @@ namespace MinecraftClient.Protocol.Handlers
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
 
+            if (((CancellationToken) o!).IsCancellationRequested)
+                return;
+            
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
         }
 
