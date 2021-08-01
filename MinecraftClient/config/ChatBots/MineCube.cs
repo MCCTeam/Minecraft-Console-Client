@@ -56,7 +56,7 @@ class MineCube : ChatBot
 
                         // Stop mining process if breaking the next block could endager the bot
                         // through falling blocks or liquids.
-                        if (IsSorroundedByGravityBlocks(mineLocation)) { break; }
+                        if (IsGravityBlockAbove(mineLocation) || IsSorroundedByLiquid(mineLocation)) { break; }
                         // Skip this block if it can not be mined.
                         if (Material2Tool.IsUnbreakable(mineLocationMaterial)) { continue; }
 
@@ -102,7 +102,7 @@ class MineCube : ChatBot
                 foreach (Location loc in r.BlocksInRow)
                 {
                     Material locMaterial = GetWorld().GetBlock(loc).Type;
-                    if (!Material2Tool.IsUnbreakable(locMaterial))
+                    if (!Material2Tool.IsUnbreakable(locMaterial) && !IsSorroundedByLiquid(loc))
                     {
                         if (GetHeadLocation(GetCurrentLocation()).Distance(loc) > 5)
                         {
@@ -113,7 +113,7 @@ class MineCube : ChatBot
                                 {
                                     Thread.Sleep(200);
                                 }
-                                
+
                             }
                             else
                             {
@@ -161,7 +161,7 @@ class MineCube : ChatBot
                 int[] tempArray = GetPlayerInventory().SearchItem(tool);
                 // Check whether an item could be found and make sure that it is in
                 // a hotbar slot (36-44).
-                if(tempArray.Length > 0 && tempArray[0] > 35)
+                if (tempArray.Length > 0 && tempArray[0] > 35)
                 {
                     // Changeslot takes numbers from 0-8
                     ChangeSlot(Convert.ToInt16(tempArray[0] - 36));
@@ -171,28 +171,38 @@ class MineCube : ChatBot
         }
         else
         {
-            LogToConsole("Activate Inventory Handling to switch between tools.");
+            LogToConsole("Activate Inventory Handling.");
         }
     }
 
-    public bool IsSorroundedByGravityBlocks(Location block)
+    public bool IsGravityBlockAbove(Location block)
     {
         World world = GetWorld();
         double blockX = Math.Round(block.X);
         double blockY = Math.Round(block.Y);
         double blockZ = Math.Round(block.Z);
 
-        List<Material> gravityBlockList = new List<Material>(new Material[] {Material.Gravel, Material.Sand, Material.RedSand, Material.Scaffolding, Material.Anvil, });
-        List<Material> liquidBlockList = new List<Material>(new Material[] { Material.Water, Material.Lava, });
+        List<Material> gravityBlockList = new List<Material>(new Material[] { Material.Gravel, Material.Sand, Material.RedSand, Material.Scaffolding, Material.Anvil, });
+
 
         var temptype = world.GetBlock(new Location(blockX, blockY + 1, blockZ)).Type;
         var tempLoc = gravityBlockList.Contains(world.GetBlock(new Location(blockX, blockY + 1, blockZ)).Type);
 
         return
             // Block can not fall down on player e.g. Sand, Gravel etc.
-            gravityBlockList.Contains(world.GetBlock(new Location(blockX, blockY + 1, blockZ)).Type) ||
-            
-            // Liquid can not flow down the hole. Liquid is unable to flow diagonally.
+            gravityBlockList.Contains(world.GetBlock(new Location(blockX, blockY + 1, blockZ)).Type);
+    }
+
+    public bool IsSorroundedByLiquid(Location block)
+    {
+        World world = GetWorld();
+        double blockX = Math.Round(block.X);
+        double blockY = Math.Round(block.Y);
+        double blockZ = Math.Round(block.Z);
+
+        List<Material> liquidBlockList = new List<Material>(new Material[] { Material.Water, Material.Lava, });
+
+        return     // Liquid can not flow down the hole. Liquid is unable to flow diagonally.
             liquidBlockList.Contains(world.GetBlock(new Location(blockX, blockY + 1, blockZ)).Type) ||
             liquidBlockList.Contains(world.GetBlock(new Location(blockX - 1, blockY, blockZ)).Type) ||
             liquidBlockList.Contains(world.GetBlock(new Location(blockX + 1, blockY, blockZ)).Type) ||
@@ -203,7 +213,7 @@ class MineCube : ChatBot
     ///
     private string getHelpPage()
     {
-        return 
+        return
         "Usage of the mine bot:\n" +
         "/mine <x1> <y1> <z1> <x2> <y2> <z2> OR /mine <x> <y> <z>\n" +
         "to excavate a cube of blocks from top to bottom. (2 high area above the cube must be dug free by hand.)\n" +
@@ -223,7 +233,7 @@ class MineCube : ChatBot
         if (args.Length > 2)
         {
             Location startBlock;
-            Location stopBlock; 
+            Location stopBlock;
 
             if (args.Length > 5)
             {
@@ -241,7 +251,8 @@ class MineCube : ChatBot
                     double.Parse(args[5])
                     );
 
-                } catch (Exception e) 
+                }
+                catch (Exception e)
                 {
                     LogDebugToConsole(e.ToString());
                     return "Please enter correct coordinates as numbers.\n" + getHelpPage();
@@ -250,7 +261,7 @@ class MineCube : ChatBot
             else
             {
                 Location tempLoc = GetCurrentLocation();
-                startBlock = new Location(Math.Round(tempLoc.X), 
+                startBlock = new Location(Math.Round(tempLoc.X),
                     Math.Round(tempLoc.Y),
                     Math.Round(tempLoc.Z));
 
@@ -261,14 +272,15 @@ class MineCube : ChatBot
                     double.Parse(args[1]),
                     double.Parse(args[2])
                     );
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     LogDebugToConsole(e.ToString());
                     return "Please enter correct coordinates as numbers.\n" + getHelpPage();
                 }
             }
 
-            if(command.Contains("mineup"))
+            if (command.Contains("mineup"))
             {
                 if (Math.Round(startBlock.Y) != Math.Round(stopBlock.Y))
                 {
@@ -297,8 +309,7 @@ class MineCube : ChatBot
                 return "Start mining cube.";
             }
         }
-            
+
         return "Invalid command syntax.\n" + getHelpPage();
     }
 }
-
