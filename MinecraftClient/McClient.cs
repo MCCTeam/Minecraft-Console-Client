@@ -216,7 +216,6 @@ namespace MinecraftClient
 
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
-                    BotLoad(new MineCube());
                 }
             }
 

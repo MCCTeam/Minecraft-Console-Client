@@ -1,10 +1,9 @@
 ﻿using MinecraftClient.Inventory;
-using MinecraftClient.Mapping;
 using System.Collections.Generic;
 
 namespace MinecraftClient.Mapping
 {
-    static class Material2Tool
+    public static class Material2Tool
     {
         // Made with the following ressources: https://minecraft.fandom.com/wiki/Breaking
         // Sorted in alphabetical order.
