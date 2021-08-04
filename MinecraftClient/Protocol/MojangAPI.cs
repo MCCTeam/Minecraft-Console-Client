@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 
-namespace MinecraftClient
+namespace MinecraftClient.Protocol
 {
     public static class MojangAPI
     {
@@ -125,6 +125,7 @@ namespace MinecraftClient
                 {
                     foreach (KeyValuePair<string, Json.JSONData> keyValuePair in jsonData.Properties)
                     {
+                        // Service name to status
                         tempDict.Add(keyValuePair.Key, keyValuePair.Value.StringValue);
                     }
                 }
