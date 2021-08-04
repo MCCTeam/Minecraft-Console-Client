@@ -2,6 +2,13 @@
 using System.Collections.Generic;
 using System.Net;
 
+/// <summary>
+/// !!! ATTENTION !!!
+/// By using this functions you agree to the ToS of the Mojang API.
+/// You should note that all public APIs are rate limited so you are expected to cache the results. 
+/// This is currently set at 600 requests per 10 minutes but this may change.
+/// </summary>
+
 namespace MinecraftClient.Protocol
 {
     public static class MojangAPI
