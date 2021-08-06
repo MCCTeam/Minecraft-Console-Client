@@ -16,8 +16,8 @@ On Mac or Linux you need to install the Mono Runtime:
  - On Mac: http://www.mono-project.com/download/#download-mac
  - On Linux: sudo apt-get install mono-runtime libmono-reflection-cil
 Then, open a terminal in this folder and run "mono MinecraftClient.exe".
-If you cannot authenticate on Mono, you'll need to run "mozroots --import --ask-remove" once.
-If Mono crashes, retry with mono-complete instead of mono-runtime. Use at least Mono v4.0.
+If you cannot authenticate on Mono be cause you have TLS/HTTPS/Certificate errors, you'll need to run `mozroots --import --ask-remove` once or install `ca-certificates-mono` (See [#1708](https://github.com/ORelio/Minecraft-Console-Client/issues/1708#issuecomment-893768862)).
+If Mono crashes, retry with `mono-complete` instead of `mono-runtime`. Use at least Mono v4.0.
 
 Using Docker do the following:
 ```bash
