@@ -142,5 +142,56 @@ namespace MinecraftClient.Protocol
 
             return tempDict;
         }
+
+        /// <summary>
+        /// Obtain links to skin, skinmodel and cape of a player.
+        /// </summary>
+        /// <param uuid="uuid">UUID of a player</param>
+        /// <returns>Dictionary with a link to the skin and cape of a player.</returns>
+        public static Dictionary<string, string> SkinInfo(string uuid)
+        {
+            Dictionary<string, string> tempDict = new Dictionary<string, string>();
+            Dictionary<string, Json.JSONData> textureDict;
+            string base64SkinInfo;
+            Json.JSONData decodedJsonSkinInfo;
+
+            // Perform web request
+            try
+            {
+                // Obtain the Base64 encoded skin information from the API. Discard the rest, since it can be obtained easier through other requests.
+                base64SkinInfo = Json.ParseJson(wc.DownloadString("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid)).Properties["properties"].DataArray[0].Properties["value"].StringValue;
+            }
+            catch (Exception) { return tempDict; }
+
+            // Parse the decoded string to the JSON format.
+            decodedJsonSkinInfo = Json.ParseJson(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64SkinInfo)));
+
+            // Assert temporary variable for readablity.
+            // Contains skin and cape information.
+            textureDict = decodedJsonSkinInfo.Properties["textures"].Properties;
+
+            // Can apparently be missing, if no custom skin is set.
+            // Probably for completely new accounts.
+            if (textureDict.ContainsKey("SKIN"))
+            {
+                // Add the URL leading to the texture of the ingame skin.
+                tempDict.Add("SkinURL", textureDict["SKIN"].Properties.ContainsKey("url") ? textureDict["SKIN"].Properties["url"].StringValue : string.Empty);
+
+                // Detect whether the playermodel is based on Steve or Alex.
+                // If the skin property contains metadata, wich always contains "slim", it is an Alex based skin.
+                tempDict.Add("PlayerModel", textureDict["SKIN"].Properties.ContainsKey("metadata") ? "Alex" : "Steve");
+            }
+            else
+            {
+                // Enter an empty URL if nothing is provided.
+                tempDict.Add("SkinURL", string.Empty);
+            }
+
+            // If a cape exists, add it, otherwise leave string empty.
+            tempDict.Add("CapeURL",
+                textureDict.ContainsKey("CAPE") ? textureDict["CAPE"].Properties["url"].StringValue : string.Empty);
+
+            return tempDict;
+        }
     }
 }
