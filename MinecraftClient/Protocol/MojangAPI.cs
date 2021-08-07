@@ -6,6 +6,7 @@ using System.Net;
 /// By using these functions you agree to the ToS of the Mojang API.
 /// You should note that all public APIs are rate limited so you are expected to cache the results. 
 /// This is currently set at 600 requests per 10 minutes but this may change.
+/// Source: https://wiki.vg/Mojang_API
 /// !!! ATTENTION !!!
 
 namespace MinecraftClient.Protocol
@@ -94,7 +95,7 @@ namespace MinecraftClient.Protocol
                     // DateTimeOffset creationDate = DateTimeOffset.FromUnixTimeMilliseconds(Convert.ToInt64(jsonData.Properties["changedToAt"].StringValue));
                     //
 
-                    // Workaround for converting Unix time to normal time
+                    // Workaround for converting Unix time to normal time.
                     DateTimeOffset creationDate = unixTimeStampToDateTime(Convert.ToDouble(jsonData.Properties["changedToAt"].StringValue));
 
                     // Add Keyvaluepair to dict.
@@ -171,20 +172,24 @@ namespace MinecraftClient.Protocol
             textureDict = decodedJsonSkinInfo.Properties["textures"].Properties;
 
             // Can apparently be missing, if no custom skin is set.
-            // Probably for completely new accounts.
+            // Probably for completely new accounts. 
+            // (Still exists after changing back to Steve or Alex skin.)
             if (textureDict.ContainsKey("SKIN"))
             {
                 // Add the URL leading to the texture of the ingame skin.
                 tempDict.Add("SkinURL", textureDict["SKIN"].Properties.ContainsKey("url") ? textureDict["SKIN"].Properties["url"].StringValue : string.Empty);
 
                 // Detect whether the playermodel is based on Steve or Alex.
-                // If the skin property contains metadata, wich always contains "slim", it is an Alex based skin.
+                // If the skin property contains metadata, which always contains "slim", it is an Alex based skin.
                 tempDict.Add("PlayerModel", textureDict["SKIN"].Properties.ContainsKey("metadata") ? "Alex" : "Steve");
             }
+            // Tested it on several players, this case never occured.
             else
             {
-                // Enter an empty URL if nothing is provided.
+                // This player has assumingly never changed their skin.
+                // Probably a completely new account.
                 tempDict.Add("SkinURL", string.Empty);
+                tempDict.Add("PlayerModel", DefaultModelAlex(uuid) ? "Alex" : "Steve");
             }
 
             // If a cape exists, add it, otherwise leave string empty.
@@ -192,6 +197,25 @@ namespace MinecraftClient.Protocol
                 textureDict.ContainsKey("CAPE") ? textureDict["CAPE"].Properties["url"].StringValue : string.Empty);
 
             return tempDict;
+        }
+
+        /// <summary>
+        /// Gets the playermodel that is assigned to the account by default. 
+        /// (Before the skin is changed for the first time.)
+        /// </summary>
+        /// <param name="uuid">UUID of a Player</param>
+        /// <returns>True if the default model for this UUID is Alex</returns>
+        public static bool DefaultModelAlex(string uuid)
+        {
+            // Evaluate whether a number is even.
+            Func<int, bool> isEven = x => x % 2 == 0;
+
+            // Whether the player has the “Alex?” or “Steve?” skin depends on the Java hashCode of their UUID. 
+            // Steve is used for even hashes.
+            return isEven(Int16.Parse(uuid[7].ToString(), System.Globalization.NumberStyles.AllowHexSpecifier)) ^
+                isEven(Int16.Parse(uuid[15].ToString(), System.Globalization.NumberStyles.AllowHexSpecifier)) ^
+                isEven(Int16.Parse(uuid[23].ToString(), System.Globalization.NumberStyles.AllowHexSpecifier)) ^
+                isEven(Int16.Parse(uuid[31].ToString(), System.Globalization.NumberStyles.AllowHexSpecifier));
         }
     }
 }
