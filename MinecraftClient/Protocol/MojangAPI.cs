@@ -207,15 +207,27 @@ namespace MinecraftClient.Protocol
         /// <returns>True if the default model for this UUID is Alex</returns>
         public static bool DefaultModelAlex(string uuid)
         {
-            // Evaluate whether a number is even.
-            Func<int, bool> isEven = x => x % 2 == 0;
+            return hashCode(uuid) % 2 == 1;
+        }
 
-            // Whether the player has the “Alex?” or “Steve?” skin depends on the Java hashCode of their UUID. 
-            // Steve is used for even hashes.
-            return isEven(Int16.Parse(uuid[7].ToString(), System.Globalization.NumberStyles.AllowHexSpecifier)) ^
-                isEven(Int16.Parse(uuid[15].ToString(), System.Globalization.NumberStyles.AllowHexSpecifier)) ^
-                isEven(Int16.Parse(uuid[23].ToString(), System.Globalization.NumberStyles.AllowHexSpecifier)) ^
-                isEven(Int16.Parse(uuid[31].ToString(), System.Globalization.NumberStyles.AllowHexSpecifier));
+        /// <summary>
+        /// Creates the hash of an UUID
+        /// </summary>
+        /// <param name="hash">UUID of a player.</param>
+        /// <returns></returns>
+        private static int hashCode(string hash)
+        {
+            byte[] data = GuidExtensions.ToLittleEndian(new Guid(hash)).ToByteArray();
+
+            ulong msb = 0;
+            ulong lsb = 0;
+            for (int i = 0; i < 8; i++)
+                msb = (msb << 8) | (uint)(data[i] & 0xff);
+            for (int i = 8; i < 16; i++)
+                lsb = (lsb << 8) | (uint)(data[i] & 0xff);
+            var hilo = msb ^ lsb;
+
+            return ((int)(hilo >> 32)) ^ (int)hilo;
         }
     }
 }
