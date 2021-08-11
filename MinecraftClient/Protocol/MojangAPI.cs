@@ -67,6 +67,51 @@ namespace MinecraftClient.Protocol
     }
 
     /// <summary>
+    /// Information about a players Skin.
+    /// Empty string if not available.
+    /// </summary>
+    public class SkinInfo
+    {
+        public readonly string SkinUrl;
+        public readonly string CapeUrl;
+        public readonly string SkinModel;
+
+        public SkinInfo(string skinUrl = "", string capeUrl = "", string skinModel = "")
+        {
+            SkinUrl = skinUrl;
+            CapeUrl = capeUrl;
+            SkinModel = skinModel;
+        }
+    }
+
+    /// <summary>
+    /// Status of the single Mojang services
+    /// </summary>
+    public class MojangServiceStatus
+    {
+        public readonly string MinecraftNet;
+        public readonly string SessionMinecraftNet;
+        public readonly string AccountMojangCom;
+        public readonly string AuthserverMojangCom;
+        public readonly string SessionserverMojangCom;
+        public readonly string ApiMojangCom;
+        public readonly string TexturesMinecraftNet;
+        public readonly string MojangCom;
+
+        public MojangServiceStatus(string minecraftNet = "", string sessionMinecraftNet = "", string accountMojangCom = "", string authserverMojangCom = "", string sessionserverMojangCom = "", string apiMojangCom = "", string texturesMinecraftNet = "", string mojangCom = "")
+        {
+            MinecraftNet = minecraftNet;
+            SessionMinecraftNet = sessionMinecraftNet;
+            AccountMojangCom = accountMojangCom;
+            AuthserverMojangCom = authserverMojangCom;
+            SessionserverMojangCom = sessionserverMojangCom;
+            ApiMojangCom = apiMojangCom;
+            TexturesMinecraftNet = texturesMinecraftNet;
+            MojangCom = mojangCom;
+        }
+    }
+
+    /// <summary>
     /// Provides methods to easily interact with the Mojang API.
     /// </summary>
     public static class MojangAPI
@@ -202,6 +247,7 @@ namespace MinecraftClient.Protocol
             }
             catch (Exception) { new MojangServiceStatus(); }
 
+<<<<<<< HEAD
             // Convert string to enum values and store them inside a MojangeServiceStatus object.
             return new MojangServiceStatus(minecraftNet: stringToServiceStatus(jsonDataList[0].Properties["minecraft.net"].StringValue),
                 sessionMinecraftNet: stringToServiceStatus(jsonDataList[1].Properties["session.minecraft.net"].StringValue),
@@ -288,6 +334,17 @@ namespace MinecraftClient.Protocol
             var hilo = msb ^ lsb;
 
             return ((int)(hilo >> 32)) ^ (int)hilo;
+=======
+            return new MojangServiceStatus(minecraftNet: jsonDataList[0].Properties["minecraft.net"].StringValue,
+                sessionMinecraftNet: jsonDataList[1].Properties["session.minecraft.net"].StringValue,
+                accountMojangCom: jsonDataList[2].Properties["account.mojang.com"].StringValue,
+                authserverMojangCom: jsonDataList[3].Properties["authserver.mojang.com"].StringValue,
+                sessionserverMojangCom: jsonDataList[4].Properties["sessionserver.mojang.com"].StringValue,
+                apiMojangCom: jsonDataList[5].Properties["api.mojang.com"].StringValue,
+                texturesMinecraftNet: jsonDataList[6].Properties["textures.minecraft.net"].StringValue,
+                mojangCom: jsonDataList[7].Properties["mojang.com"].StringValue
+                );
+>>>>>>> 87f5aa8 (Add custom return types)
         }
 
         /// <summary>
@@ -295,9 +352,8 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param uuid="uuid">UUID of a player</param>
         /// <returns>Dictionary with a link to the skin and cape of a player.</returns>
-        public static Dictionary<string, string> SkinInfo(string uuid)
+        public static SkinInfo GetSkinInfo(string uuid)
         {
-            Dictionary<string, string> tempDict = new Dictionary<string, string>();
             Dictionary<string, Json.JSONData> textureDict;
             string base64SkinInfo;
             Json.JSONData decodedJsonSkinInfo;
@@ -308,7 +364,7 @@ namespace MinecraftClient.Protocol
                 // Obtain the Base64 encoded skin information from the API. Discard the rest, since it can be obtained easier through other requests.
                 base64SkinInfo = Json.ParseJson(wc.DownloadString("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid)).Properties["properties"].DataArray[0].Properties["value"].StringValue;
             }
-            catch (Exception) { return tempDict; }
+            catch (Exception) { return new SkinInfo(); }
 
             // Parse the decoded string to the JSON format.
             decodedJsonSkinInfo = Json.ParseJson(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64SkinInfo)));
@@ -322,27 +378,18 @@ namespace MinecraftClient.Protocol
             // (Still exists after changing back to Steve or Alex skin.)
             if (textureDict.ContainsKey("SKIN"))
             {
-                // Add the URL leading to the texture of the ingame skin.
-                tempDict.Add("SkinURL", textureDict["SKIN"].Properties.ContainsKey("url") ? textureDict["SKIN"].Properties["url"].StringValue : string.Empty);
-
-                // Detect whether the playermodel is based on Steve or Alex.
-                // If the skin property contains metadata, which always contains "slim", it is an Alex based skin.
-                tempDict.Add("PlayerModel", textureDict["SKIN"].Properties.ContainsKey("metadata") ? "Alex" : "Steve");
+                return new SkinInfo(skinUrl: textureDict["SKIN"].Properties.ContainsKey("url") ? textureDict["SKIN"].Properties["url"].StringValue : string.Empty,
+                    capeUrl: textureDict.ContainsKey("CAPE") ? textureDict["CAPE"].Properties["url"].StringValue : string.Empty,
+                    skinModel: textureDict["SKIN"].Properties.ContainsKey("metadata") ? "Alex" : "Steve");
             }
             // Tested it on several players, this case never occured.
             else
             {
                 // This player has assumingly never changed their skin.
                 // Probably a completely new account.
-                tempDict.Add("SkinURL", string.Empty);
-                tempDict.Add("PlayerModel", DefaultModelAlex(uuid) ? "Alex" : "Steve");
+                return new SkinInfo(capeUrl: textureDict.ContainsKey("CAPE") ? textureDict["CAPE"].Properties["url"].StringValue : string.Empty,
+                    skinModel: DefaultModelAlex(uuid) ? "Alex" : "Steve");
             }
-
-            // If a cape exists, add it, otherwise leave string empty.
-            tempDict.Add("CapeURL",
-                textureDict.ContainsKey("CAPE") ? textureDict["CAPE"].Properties["url"].StringValue : string.Empty);
-
-            return tempDict;
         }
 
         /// <summary>
