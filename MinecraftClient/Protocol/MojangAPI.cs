@@ -11,6 +11,9 @@ using System.Net;
 
 namespace MinecraftClient.Protocol
 {
+    // Enum to display the status of different services
+    public enum ServiceStatus { red, yellow, green };
+
     /// <summary>
     /// Information about a players Skin.
     /// Empty string if not available.
@@ -34,16 +37,23 @@ namespace MinecraftClient.Protocol
     /// </summary>
     public class MojangServiceStatus
     {
-        public readonly string MinecraftNet;
-        public readonly string SessionMinecraftNet;
-        public readonly string AccountMojangCom;
-        public readonly string AuthserverMojangCom;
-        public readonly string SessionserverMojangCom;
-        public readonly string ApiMojangCom;
-        public readonly string TexturesMinecraftNet;
-        public readonly string MojangCom;
+        public readonly ServiceStatus MinecraftNet;
+        public readonly ServiceStatus SessionMinecraftNet;
+        public readonly ServiceStatus AccountMojangCom;
+        public readonly ServiceStatus AuthserverMojangCom;
+        public readonly ServiceStatus SessionserverMojangCom;
+        public readonly ServiceStatus ApiMojangCom;
+        public readonly ServiceStatus TexturesMinecraftNet;
+        public readonly ServiceStatus MojangCom;
 
-        public MojangServiceStatus(string minecraftNet = "", string sessionMinecraftNet = "", string accountMojangCom = "", string authserverMojangCom = "", string sessionserverMojangCom = "", string apiMojangCom = "", string texturesMinecraftNet = "", string mojangCom = "")
+        public MojangServiceStatus(ServiceStatus minecraftNet = ServiceStatus.red,
+            ServiceStatus sessionMinecraftNet = ServiceStatus.red,
+            ServiceStatus accountMojangCom = ServiceStatus.red,
+            ServiceStatus authserverMojangCom = ServiceStatus.red,
+            ServiceStatus sessionserverMojangCom = ServiceStatus.red,
+            ServiceStatus apiMojangCom = ServiceStatus.red,
+            ServiceStatus texturesMinecraftNet = ServiceStatus.red,
+            ServiceStatus mojangCom = ServiceStatus.red)
         {
             MinecraftNet = minecraftNet;
             SessionMinecraftNet = sessionMinecraftNet;
@@ -79,6 +89,26 @@ namespace MinecraftClient.Protocol
             return dateTime;
         }
         // Can be removed in newer C# versions.
+
+        /// <summary>
+        /// Converts a string to a ServiceStatus enum.
+        /// </summary>
+        /// <param name="s">string to convert</param>
+        /// <returns>ServiceStatus enum, red as default.</returns>
+        private static ServiceStatus stringToServiceStatus(string s)
+        {
+            ServiceStatus servStat;
+
+            if (Enum.TryParse(s, out servStat))
+            {
+                return servStat;
+            }
+            else
+            {
+                // return red as standard value.
+                return ServiceStatus.red;
+            }
+        }
 
         /// <summary>
         /// Obtain the UUID of a Player through its name
@@ -172,14 +202,15 @@ namespace MinecraftClient.Protocol
             }
             catch (Exception) { new MojangServiceStatus(); }
 
-            return new MojangServiceStatus(minecraftNet: jsonDataList[0].Properties["minecraft.net"].StringValue,
-                sessionMinecraftNet: jsonDataList[1].Properties["session.minecraft.net"].StringValue,
-                accountMojangCom: jsonDataList[2].Properties["account.mojang.com"].StringValue,
-                authserverMojangCom: jsonDataList[3].Properties["authserver.mojang.com"].StringValue,
-                sessionserverMojangCom: jsonDataList[4].Properties["sessionserver.mojang.com"].StringValue,
-                apiMojangCom: jsonDataList[5].Properties["api.mojang.com"].StringValue,
-                texturesMinecraftNet: jsonDataList[6].Properties["textures.minecraft.net"].StringValue,
-                mojangCom: jsonDataList[7].Properties["mojang.com"].StringValue
+            // Convert string to enum values and store them inside a MojangeServiceStatus object.
+            return new MojangServiceStatus(minecraftNet: stringToServiceStatus(jsonDataList[0].Properties["minecraft.net"].StringValue),
+                sessionMinecraftNet: stringToServiceStatus(jsonDataList[1].Properties["session.minecraft.net"].StringValue),
+                accountMojangCom: stringToServiceStatus(jsonDataList[2].Properties["account.mojang.com"].StringValue),
+                authserverMojangCom: stringToServiceStatus(jsonDataList[3].Properties["authserver.mojang.com"].StringValue),
+                sessionserverMojangCom: stringToServiceStatus(jsonDataList[4].Properties["sessionserver.mojang.com"].StringValue),
+                apiMojangCom: stringToServiceStatus(jsonDataList[5].Properties["api.mojang.com"].StringValue),
+                texturesMinecraftNet: stringToServiceStatus(jsonDataList[6].Properties["textures.minecraft.net"].StringValue),
+                mojangCom: stringToServiceStatus(jsonDataList[7].Properties["mojang.com"].StringValue)
                 );
         }
 
