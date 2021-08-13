@@ -6,10 +6,66 @@ using System.Net;
 /// By using these functions you agree to the ToS of the Mojang API.
 /// You should note that all public APIs are rate limited so you are expected to cache the results. 
 /// This is currently set at 600 requests per 10 minutes but this may change.
+/// Source: https://wiki.vg/Mojang_API
 /// !!! ATTENTION !!!
 
 namespace MinecraftClient.Protocol
 {
+    // Enum to display the status of different services
+    public enum ServiceStatus { red, yellow, green };
+
+    /// <summary>
+    /// Information about a players Skin.
+    /// Empty string if not available.
+    /// </summary>
+    public class SkinInfo
+    {
+        public readonly string SkinUrl;
+        public readonly string CapeUrl;
+        public readonly string SkinModel;
+
+        public SkinInfo(string skinUrl = "", string capeUrl = "", string skinModel = "")
+        {
+            SkinUrl = skinUrl;
+            CapeUrl = capeUrl;
+            SkinModel = skinModel;
+        }
+    }
+
+    /// <summary>
+    /// Status of the single Mojang services
+    /// </summary>
+    public class MojangServiceStatus
+    {
+        public readonly ServiceStatus MinecraftNet;
+        public readonly ServiceStatus SessionMinecraftNet;
+        public readonly ServiceStatus AccountMojangCom;
+        public readonly ServiceStatus AuthserverMojangCom;
+        public readonly ServiceStatus SessionserverMojangCom;
+        public readonly ServiceStatus ApiMojangCom;
+        public readonly ServiceStatus TexturesMinecraftNet;
+        public readonly ServiceStatus MojangCom;
+
+        public MojangServiceStatus(ServiceStatus minecraftNet = ServiceStatus.red,
+            ServiceStatus sessionMinecraftNet = ServiceStatus.red,
+            ServiceStatus accountMojangCom = ServiceStatus.red,
+            ServiceStatus authserverMojangCom = ServiceStatus.red,
+            ServiceStatus sessionserverMojangCom = ServiceStatus.red,
+            ServiceStatus apiMojangCom = ServiceStatus.red,
+            ServiceStatus texturesMinecraftNet = ServiceStatus.red,
+            ServiceStatus mojangCom = ServiceStatus.red)
+        {
+            MinecraftNet = minecraftNet;
+            SessionMinecraftNet = sessionMinecraftNet;
+            AccountMojangCom = accountMojangCom;
+            AuthserverMojangCom = authserverMojangCom;
+            SessionserverMojangCom = sessionserverMojangCom;
+            ApiMojangCom = apiMojangCom;
+            TexturesMinecraftNet = texturesMinecraftNet;
+            MojangCom = mojangCom;
+        }
+    }
+
     /// <summary>
     /// Provides methods to easily interact with the Mojang API.
     /// </summary>
@@ -33,6 +89,26 @@ namespace MinecraftClient.Protocol
             return dateTime;
         }
         // Can be removed in newer C# versions.
+
+        /// <summary>
+        /// Converts a string to a ServiceStatus enum.
+        /// </summary>
+        /// <param name="s">string to convert</param>
+        /// <returns>ServiceStatus enum, red as default.</returns>
+        private static ServiceStatus stringToServiceStatus(string s)
+        {
+            ServiceStatus servStat;
+
+            if (Enum.TryParse(s, out servStat))
+            {
+                return servStat;
+            }
+            else
+            {
+                // return red as standard value.
+                return ServiceStatus.red;
+            }
+        }
 
         /// <summary>
         /// Obtain the UUID of a Player through its name
@@ -94,7 +170,7 @@ namespace MinecraftClient.Protocol
                     // DateTimeOffset creationDate = DateTimeOffset.FromUnixTimeMilliseconds(Convert.ToInt64(jsonData.Properties["changedToAt"].StringValue));
                     //
 
-                    // Workaround for converting Unix time to normal time
+                    // Workaround for converting Unix time to normal time.
                     DateTimeOffset creationDate = unixTimeStampToDateTime(Convert.ToDouble(jsonData.Properties["changedToAt"].StringValue));
 
                     // Add Keyvaluepair to dict.
@@ -115,32 +191,103 @@ namespace MinecraftClient.Protocol
         /// Get the Mojang API status
         /// </summary>
         /// <returns>Dictionary of the Mojang services</returns>
-        public static Dictionary<string, string> GetMojangServiceStatus()
+        public static MojangServiceStatus GetMojangServiceStatus()
         {
-            Dictionary<string, string> tempDict = new Dictionary<string, string>();
-            List<Json.JSONData> jsonDataList;
+            List<Json.JSONData> jsonDataList = new List<Json.JSONData>();
 
             // Perform web request
             try
             {
                 jsonDataList = Json.ParseJson(wc.DownloadString("https://status.mojang.com/check")).DataArray;
             }
-            catch (Exception) { return tempDict; }
+            catch (Exception) { new MojangServiceStatus(); }
 
-            // Convert JSONData to string and parse it to a dictionary.
-            foreach (Json.JSONData jsonData in jsonDataList)
+            // Convert string to enum values and store them inside a MojangeServiceStatus object.
+            return new MojangServiceStatus(minecraftNet: stringToServiceStatus(jsonDataList[0].Properties["minecraft.net"].StringValue),
+                sessionMinecraftNet: stringToServiceStatus(jsonDataList[1].Properties["session.minecraft.net"].StringValue),
+                accountMojangCom: stringToServiceStatus(jsonDataList[2].Properties["account.mojang.com"].StringValue),
+                authserverMojangCom: stringToServiceStatus(jsonDataList[3].Properties["authserver.mojang.com"].StringValue),
+                sessionserverMojangCom: stringToServiceStatus(jsonDataList[4].Properties["sessionserver.mojang.com"].StringValue),
+                apiMojangCom: stringToServiceStatus(jsonDataList[5].Properties["api.mojang.com"].StringValue),
+                texturesMinecraftNet: stringToServiceStatus(jsonDataList[6].Properties["textures.minecraft.net"].StringValue),
+                mojangCom: stringToServiceStatus(jsonDataList[7].Properties["mojang.com"].StringValue)
+                );
+        }
+
+        /// <summary>
+        /// Obtain links to skin, skinmodel and cape of a player.
+        /// </summary>
+        /// <param uuid="uuid">UUID of a player</param>
+        /// <returns>Dictionary with a link to the skin and cape of a player.</returns>
+        public static SkinInfo GetSkinInfo(string uuid)
+        {
+            Dictionary<string, Json.JSONData> textureDict;
+            string base64SkinInfo;
+            Json.JSONData decodedJsonSkinInfo;
+
+            // Perform web request
+            try
             {
-                if (jsonData.Properties.Count > 0)
-                {
-                    foreach (KeyValuePair<string, Json.JSONData> keyValuePair in jsonData.Properties)
-                    {
-                        // Service name to status
-                        tempDict.Add(keyValuePair.Key, keyValuePair.Value.StringValue);
-                    }
-                }
+                // Obtain the Base64 encoded skin information from the API. Discard the rest, since it can be obtained easier through other requests.
+                base64SkinInfo = Json.ParseJson(wc.DownloadString("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid)).Properties["properties"].DataArray[0].Properties["value"].StringValue;
             }
+            catch (Exception) { return new SkinInfo(); }
 
-            return tempDict;
+            // Parse the decoded string to the JSON format.
+            decodedJsonSkinInfo = Json.ParseJson(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64SkinInfo)));
+
+            // Assert temporary variable for readablity.
+            // Contains skin and cape information.
+            textureDict = decodedJsonSkinInfo.Properties["textures"].Properties;
+
+            // Can apparently be missing, if no custom skin is set.
+            // Probably for completely new accounts. 
+            // (Still exists after changing back to Steve or Alex skin.)
+            if (textureDict.ContainsKey("SKIN"))
+            {
+                return new SkinInfo(skinUrl: textureDict["SKIN"].Properties.ContainsKey("url") ? textureDict["SKIN"].Properties["url"].StringValue : string.Empty,
+                    capeUrl: textureDict.ContainsKey("CAPE") ? textureDict["CAPE"].Properties["url"].StringValue : string.Empty,
+                    skinModel: textureDict["SKIN"].Properties.ContainsKey("metadata") ? "Alex" : "Steve");
+            }
+            // Tested it on several players, this case never occured.
+            else
+            {
+                // This player has assumingly never changed their skin.
+                // Probably a completely new account.
+                return new SkinInfo(capeUrl: textureDict.ContainsKey("CAPE") ? textureDict["CAPE"].Properties["url"].StringValue : string.Empty,
+                    skinModel: DefaultModelAlex(uuid) ? "Alex" : "Steve");
+            }
+        }
+
+        /// <summary>
+        /// Gets the playermodel that is assigned to the account by default. 
+        /// (Before the skin is changed for the first time.)
+        /// </summary>
+        /// <param name="uuid">UUID of a Player</param>
+        /// <returns>True if the default model for this UUID is Alex</returns>
+        public static bool DefaultModelAlex(string uuid)
+        {
+            return hashCode(uuid) % 2 == 1;
+        }
+
+        /// <summary>
+        /// Creates the hash of an UUID
+        /// </summary>
+        /// <param name="hash">UUID of a player.</param>
+        /// <returns></returns>
+        private static int hashCode(string hash)
+        {
+            byte[] data = GuidExtensions.ToLittleEndian(new Guid(hash)).ToByteArray();
+
+            ulong msb = 0;
+            ulong lsb = 0;
+            for (int i = 0; i < 8; i++)
+                msb = (msb << 8) | (uint)(data[i] & 0xff);
+            for (int i = 8; i < 16; i++)
+                lsb = (lsb << 8) | (uint)(data[i] & 0xff);
+            var hilo = msb ^ lsb;
+
+            return ((int)(hilo >> 32)) ^ (int)hilo;
         }
     }
 }
