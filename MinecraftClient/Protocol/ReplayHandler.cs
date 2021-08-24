@@ -7,7 +7,6 @@ using MinecraftClient.Protocol.Handlers;
 using System.Runtime.InteropServices;
 using Ionic.Zip;
 using MinecraftClient.Mapping;
-using Org.BouncyCastle.Crypto.Utilities;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 
 namespace MinecraftClient.Protocol

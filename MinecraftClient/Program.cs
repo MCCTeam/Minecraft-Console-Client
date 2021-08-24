@@ -389,12 +389,6 @@ namespace MinecraftClient
                     default: failureReason = "error.login.unknown"; break;
                 }
                 failureMessage += Translations.Get(failureReason);
-
-                if (result == ProtocolHandler.LoginResult.SSLError && isUsingMono)
-                {
-                    Translations.WriteLineFormatted("error.login.ssl_help");
-                    return;
-                }
                 HandleFailure(failureMessage, false, ChatBot.DisconnectReason.LoginRejected);
             }
         }
@@ -554,17 +548,6 @@ namespace MinecraftClient
                 Exit();
             }
 
-        }
-
-        /// <summary>
-        /// Detect if the user is running Minecraft Console Client through Mono
-        /// </summary>
-        public static bool isUsingMono
-        {
-            get
-            {
-                return Type.GetType("Mono.Runtime") != null;
-            }
         }
 
         /// <summary>
