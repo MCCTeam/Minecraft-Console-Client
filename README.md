@@ -20,6 +20,10 @@ This exe file is a .NET binary which also works on Mac and Linux.
 Check out the [sample configuration files](MinecraftClient/config/) which includes the how-to-use README.
 Help and more info is also available on the [Minecraft Forum thread](http://www.minecraftforum.net/topic/1314800-/).<br/>
 
+## Getting Help
+
+Check out the [README](MinecraftClient/config/) and existing [Discussions](https://github.com/ORelio/Minecraft-Console-Client/discussions): Maybe your question is answered there. If not, please open a [New Discussion](https://github.com/ORelio/Minecraft-Console-Client/discussions/new) and ask your question. **Please do not ask questions in the Issues section**, that's for bug reports and feature requests.
+
 ## Building from source
 
 First of all, get a [zip of source code](https://github.com/ORelio/Minecraft-Console-Client/archive/master.zip), extract it and navigate to the `MinecraftClient` folder.
