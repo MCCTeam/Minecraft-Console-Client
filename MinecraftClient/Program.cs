@@ -12,7 +12,7 @@ using MinecraftClient.WinAPI;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2020.
+    /// Minecraft Console Client by the MCC Team (c) 2012-2021.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
@@ -43,7 +43,7 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors", MCLowestVersion, MCHighestVersion, Version);
+            Console.WriteLine("Minecraft Console Client v{0} - for MC {1} to {2} - Github.com/MCCTeam", Version, MCLowestVersion, MCHighestVersion);
 
             //Build information to facilitate processing of bug reports
             if (BuildInfo != null)
