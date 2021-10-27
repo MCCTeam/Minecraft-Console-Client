@@ -3,61 +3,64 @@ Minecraft Console Client
 
 [![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/ORelio/Minecraft-Console-Client?branch=Indev)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
 
-Minecraft Console Client(MCC) is a lightweight app allowing you to connect to any Minecraft server,
-send commands and receive text messages in a fast and easy way without having to open the main Minecraft game. It also provides various automation for administration and other purposes.
+Minecraft Console Client (MCC) is a lightweight app allowing you to connect to any Minecraft server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game. It also provides various automations that you can enable for administration and other purposes.
 
-## Looking for maintainers
+## Download 🔽
 
-Due to no longer having time to implement upgrades for new Minecraft versions and fixing bugs, I'm looking for motivated people to take over the project. If you feel like it could be you, please have a look at the [issues](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) section :)
+Get binary file from our latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts).
+The exe file is a .NET binary which also works on Mac and Linux.
 
-## Download
+## How to use 📚
 
-Get exe file from the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts).
-This exe file is a .NET binary which also works on Mac and Linux.
+Check out the [sample configuration files](MinecraftClient/config/) which includes the how-to-use [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual).
 
-## How to use
+## Getting Help 🙋
 
-Check out the [sample configuration files](MinecraftClient/config/) which includes the how-to-use README.
-Help and more info is also available on the [Minecraft Forum thread](http://www.minecraftforum.net/topic/1314800-/).<br/>
+Check out the [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) and existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Maybe your question is answered there. If not, please open a [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) and ask your question. If you find a bug, please report it in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section.
 
-## Building from source
+## Helping Us ❤️
 
-First of all, get a [zip of source code](https://github.com/ORelio/Minecraft-Console-Client/archive/master.zip), extract it and navigate to the `MinecraftClient` folder.
+We are a small community so we need help to implement upgrades for new Minecraft versions, fixing bugs and expanding the project. We are always looking for motivated people to contribute. If you feel like it could be you, please have a look at the [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) section :)
 
-Edit `MinecraftClient.csproj` to set the Build target to `Release` on [line 4](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4):
+## How to contribute 📝
+
+If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the *Master* branch. MCC is currently distributed as development builds only (which are usually stable) so we no longer use the *Indev* branch.
+
+## Translating Minecraft Console Client 🌍
+
+If you would like to translate Minecraft Console Client to a different language, please download the translation file from [the lang folder](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) or just fork the repository. Once you finished the translation work, submit a pull request or send us the file through an [Issue](https://github.com/MCCTeam/Minecraft-Console-Client/issues) in case you are not familiar with Git.
+
+To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if does not exist.
+
+For the names of the translation file, please see [this comment](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
+
+## Building from source 🏗️
+
+_The recommended development environment is [Visual Studio](https://visualstudio.microsoft.com/). If you want to build the project without installing a development environment, you may also follow these instructions:_
+
+First of all, get a [zip of source code](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip), extract it and navigate to the `MinecraftClient` folder.
+
+Edit `MinecraftClient.csproj` to set the Build target to `Release` on [line 4](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4):
 
 ```xml
 <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
 ```
 
-### On Windows
+### On Windows 🪟
 
 1. Locate `MSBuild.exe` for .NET 4 inside `C:\Windows\Microsoft.NET\Framework\v4.X.XXXXX`
 2. Drag and drop `MinecraftClient.csproj` over `MSBuild.exe` to launch the build
 3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
 
-### On Mac and Linux
+### On Mac and Linux 🐧
 
 1. Install the [Mono Framework](https://www.mono-project.com/download/stable/#download-lin) if not already installed
 2. Run `msbuild MinecraftClient.csproj` in a terminal
 3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
 
-## How to contribute
+## License ⚖️
 
-If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request. The *Indev* branch for contributions to future stable versions is no longer used as MCC is currently distributed as development builds only.
-
-## Translate Minecraft Console Client to your language
-
-If you would like to translate Minecraft Console Client to a different language, please download the translation file from [the repository](https://github.com/ORelio/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) or just fork the repository. Once you finished the translation work, submit a pull request or send us the file in case you did not fork the repository.
-
-To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if does not exist.
-
-For the names of the translation file, please see [this comment](https://github.com/ORelio/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
-
-## License
-
-Unless specifically stated, the code is from the MCC developers, and available under CDDL-1.0.
-Else, the license and original author are mentioned in source file headers.
+Unless specifically stated, the code is from the MCC Team or Contributors, and available under CDDL-1.0. Else, the license and original author are mentioned in source file headers.
 The main terms of the CDDL-1.0 license are basically the following:
 
 - You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial.

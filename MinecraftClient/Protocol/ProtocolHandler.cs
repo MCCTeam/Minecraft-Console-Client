@@ -8,6 +8,7 @@ using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
+using System.Security.Authentication;
 
 namespace MinecraftClient.Protocol
 {
@@ -829,7 +830,7 @@ namespace MinecraftClient.Protocol
 
                     TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
                     SslStream stream = new SslStream(client.GetStream());
-                    stream.AuthenticateAsClient(host);
+                    stream.AuthenticateAsClient(host, null, (SslProtocols)3072, true); // Enable TLS 1.2. Hotfix for #1780
 
                     if (Settings.DebugMessages)
                         foreach (string line in headers)
