@@ -101,6 +101,7 @@ namespace MinecraftClient
         public static bool EntityHandling = false;
         public static bool AutoRespawn = false;
         public static bool MinecraftRealmsEnabled = true;
+        public static bool MoveHeadWhileWalking = true;
 
         // Logging
         public enum FilterModeEnum { Blacklist, Whitelist }
@@ -368,6 +369,7 @@ namespace MinecraftClient
                         // Backward compatible so people can still enable debug with old config format
                         case "debugmessages": DebugMessages = str2bool(argValue); return true;
                         case "minecraftrealms": MinecraftRealmsEnabled = str2bool(argValue); return true;
+                        case "moveheadwhilewalking": MoveHeadWhileWalking = str2bool(argValue); return true;
 
                         case "botowners":
                             Bots_Owners.Clear();
