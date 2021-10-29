@@ -348,7 +348,11 @@ namespace MinecraftClient
                             {
                                 Location next = path.Dequeue();
                                 steps = Movement.Move2Steps(location, next, ref motionY);
-                                UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
+
+                                if (Settings.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
+                                {
+                                    UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
+                                }
                             }
                             else
                             {
