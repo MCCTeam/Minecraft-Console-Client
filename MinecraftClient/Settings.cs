@@ -116,6 +116,7 @@ namespace MinecraftClient
         public static bool LogToFile = false;
         public static string LogFile = "console-log.txt";
         public static bool PrependTimestamp = false;
+        public static bool SaveColorCodes = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -502,6 +503,7 @@ namespace MinecraftClient
                         case "logtofile": LogToFile = str2bool(argValue); return true;
                         case "logfile": LogFile = argValue; return true;
                         case "prependtimestamp": PrependTimestamp = str2bool(argValue); return true;
+                        case "savecolorcodes": SaveColorCodes = str2bool(argValue); return true;
                     }
                     break;
 
