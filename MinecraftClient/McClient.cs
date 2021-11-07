@@ -122,7 +122,7 @@ namespace MinecraftClient
 
         TcpClient client;
         IMinecraftCom handler;
-        Tuple<Thread, CancellationTokenSource>? cmdprompt = null;
+        CancellationTokenSource cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
 
         public ILogger Log;
@@ -253,9 +253,9 @@ namespace MinecraftClient
 
                             Log.Info(Translations.Get("mcc.joined", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
 
-                            cmdprompt = new(new Thread(new ParameterizedThreadStart(CommandPrompt)), new CancellationTokenSource());
-                            cmdprompt.Item1.Name = "MCC Command prompt";
-                            cmdprompt.Item1.Start(cmdprompt.Item2.Token);
+                            cmdprompt = new CancellationTokenSource();
+                            ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt.Token);
+                            ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
                         }
                     }
                     else
@@ -433,7 +433,7 @@ namespace MinecraftClient
             }
 
             if (cmdprompt != null) {
-                cmdprompt.Item2.Cancel();
+                cmdprompt.Cancel();
                 cmdprompt = null;
             }
 
@@ -510,31 +510,14 @@ namespace MinecraftClient
         #endregion
 
         #region Command prompt and internal MCC commands
-
-        /// <summary>
-        /// Allows the user to send chat messages, commands, and leave the server.
-        /// </summary>
-        private void CommandPrompt(object? o) {
-            if (((CancellationToken) o!).IsCancellationRequested)
-                return;
-            
-            try
-            {
-                Thread.Sleep(500);
-                while (client.Client.Connected && !((CancellationToken)o!).IsCancellationRequested)
-                {
-                    string text = ConsoleIO.ReadLine();
-                    
-                    if (((CancellationToken) o!).IsCancellationRequested)
-                        return;
-                    
-                    InvokeOnMainThread(() => HandleCommandPromptText(text));
-                }
+        
+        private void ConsoleReaderOnMessageReceived(object? sender, string e)
+        {
+            if (client.Client.Connected) {
+                InvokeOnMainThread(() => HandleCommandPromptText(e));
             }
-            catch (IOException) { }
-            catch (NullReferenceException) { }
         }
-
+        
         /// <summary>
         /// Allows the user to send chat messages, commands, and leave the server.
         /// Process text from the MCC command prompt on the main thread.
