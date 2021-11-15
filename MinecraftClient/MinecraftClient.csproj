@@ -57,4 +57,7 @@
     <Compile Remove="config\sample-script.cs" />
     <Compile Remove="Mapping\VillagerInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive.csproj" />
+  </ItemGroup>
 </Project>

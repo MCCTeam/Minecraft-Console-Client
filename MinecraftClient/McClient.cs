@@ -254,8 +254,9 @@ namespace MinecraftClient
                             Log.Info(Translations.Get("mcc.joined", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
 
                             cmdprompt = new CancellationTokenSource();
-                            ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt.Token);
+                            ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt);
                             ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
+                            ConsoleInteractive.ConsoleReader.OnKeyInput += ConsoleIO.AutocompleteHandler;
                         }
                     }
                     else
@@ -292,8 +293,10 @@ namespace MinecraftClient
                     ReconnectionAttemptsLeft--;
                     Program.Restart();
                 }
-                else if (!singlecommand && Settings.interactiveMode)
-                {
+                else if (!singlecommand && Settings.interactiveMode) {
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
                     Program.HandleFailure();
                 }
             }
@@ -393,10 +396,17 @@ namespace MinecraftClient
             do
             {
                 Thread.Sleep(TimeSpan.FromSeconds(15));
+                
+                if (((CancellationToken)o!).IsCancellationRequested)
+                    return;
+                
                 lock (lastKeepAliveLock)
                 {
                     if (lastKeepAlive.AddSeconds(30) < DateTime.Now)
                     {
+                        if (((CancellationToken)o!).IsCancellationRequested)
+                            return;
+                        
                         OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.timeout"));
                         return;
                     }
@@ -503,19 +513,29 @@ namespace MinecraftClient
                 }
             }
 
-            if (!will_restart)
+            if (!will_restart) {
+                ConsoleInteractive.ConsoleReader.StopReadThread();
+                ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
                 Program.HandleFailure();
+            }
         }
 
         #endregion
 
         #region Command prompt and internal MCC commands
         
-        private void ConsoleReaderOnMessageReceived(object? sender, string e)
-        {
+        private void ConsoleReaderOnMessageReceived(object? sender, string e) {
+            if (client.Client == null)
+                return;
+            
             if (client.Client.Connected) {
-                InvokeOnMainThread(() => HandleCommandPromptText(e));
+                new Thread(() => {
+                    InvokeOnMainThread(() => HandleCommandPromptText(e));
+                }).Start();
             }
+            else
+                return;
         }
         
         /// <summary>
@@ -532,7 +552,7 @@ namespace MinecraftClient
                 {
                     case "autocomplete":
                         if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
-                        else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
+                        else ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
                         break;
                 }
             }
