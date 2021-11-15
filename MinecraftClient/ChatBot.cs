@@ -1338,6 +1338,15 @@ namespace MinecraftClient
         {
             return Handler.SelectTrade(selectedSlot);
         }
+
+        /// <summary>
+        /// Teleport to player/entity in spectator mode
+        /// </summary>
+        /// <param name="entity">entity to teleport to</param>
+        protected bool SpectatorTeleport(Entity entity)
+        {
+            return Handler.Spectate(entity);
+        }
         
         /// <summary>
         /// Update command block

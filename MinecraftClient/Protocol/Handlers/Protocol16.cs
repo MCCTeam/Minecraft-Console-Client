@@ -860,5 +860,10 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false; //MC 1.13+
         }
+
+        public bool SendSpectate(Guid UUID)
+        {
+            return false; //Currently not implemented
+        }
     }
 }

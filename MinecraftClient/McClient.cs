@@ -1695,6 +1695,22 @@ namespace MinecraftClient
         {
             return InvokeOnMainThread(() => handler.UpdateCommandBlock(location, command, mode, flags));
         }
+
+        /// <summary>
+        /// Teleport to player/entity in spectator mode
+        /// </summary>
+        /// <param name="entity">entity to teleport to</param>
+        public bool Spectate(Entity entity)
+        {
+            if(GetGamemode() == 3)
+            {
+                return InvokeOnMainThread(() => handler.SendSpectate(entity.UUID));
+            }
+            else
+            {
+                return false;
+            }
+        }
         #endregion
 
         #region Event handlers: An event occurs on the Server
