@@ -9,7 +9,6 @@ namespace MinecraftClient.ChatBots
     /// <summary>
     /// Trigger scripts on specific events
     /// </summary>
-
     public class ScriptScheduler : ChatBot
     {
         private class TaskDesc
