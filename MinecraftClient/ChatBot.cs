@@ -1340,12 +1340,21 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Teleport to player/entity in spectator mode
+        /// Teleport to player in spectator mode
         /// </summary>
-        /// <param name="entity">entity to teleport to</param>
+        /// <param name="entity">player to teleport to</param>
         protected bool SpectatorTeleport(Entity entity)
         {
             return Handler.Spectate(entity);
+        }
+
+        /// <summary>
+        /// Teleport to player/entity in spectator mode
+        /// </summary>
+        /// <param name="uuid">uuid of entity to teleport to</param>
+        protected bool SpectatorTeleport(Guid UUID)
+        {
+            return Handler.SpectateByUUID(UUID);
         }
         
         /// <summary>

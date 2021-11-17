@@ -1697,14 +1697,33 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Teleport to player in spectator mode
+        /// </summary>
+        /// <param name="entity">Player to teleport to</param>
+        /// Teleporting to other entityies is NOT implemented yet
+        public bool Spectate(Entity entity)
+        {
+            if(entity.Type == EntityType.Player)
+            {
+                return SpectateByUUID(entity.UUID);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Teleport to player/entity in spectator mode
         /// </summary>
-        /// <param name="entity">entity to teleport to</param>
-        public bool Spectate(Entity entity)
+        /// <param name="UUID">UUID of player/entity to teleport to</param>
+        public bool SpectateByUUID(Guid UUID)
         {
             if(GetGamemode() == 3)
             {
-                return InvokeOnMainThread(() => handler.SendSpectate(entity.UUID));
+                if(InvokeRequired)
+                    return InvokeOnMainThread(() => SpectateByUUID(UUID));
+                return handler.SendSpectate(UUID);
             }
             else
             {
