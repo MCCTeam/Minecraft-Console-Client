@@ -2057,5 +2057,19 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else { return false; }
         }
+
+        public bool SendSpectate(Guid UUID)
+        {
+            try
+            {
+                List<byte> packet = new List<byte>();
+                packet.AddRange(dataTypes.GetUUID(UUID));
+                SendPacket(PacketTypesOut.Spectate, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
     }
 }
