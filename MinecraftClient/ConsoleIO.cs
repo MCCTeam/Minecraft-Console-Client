@@ -92,17 +92,6 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Write a string to the standard output, without newline character
-        /// </summary>
-        public static void Write(string text)
-        {
-            if (!BasicIO) {
-                throw new NotImplementedException();
-            }
-            else Console.Write(text);
-        }
-
-        /// <summary>
         /// Write a string to the standard output with a trailing newline
         /// </summary>
         public static void WriteLine(string line) {
@@ -110,14 +99,6 @@ namespace MinecraftClient
                 Console.WriteLine(line);
             else
                 ConsoleInteractive.ConsoleWriter.WriteLine(line);
-        }
-
-        /// <summary>
-        /// Write a single character to the standard output
-        /// </summary>
-        public static void Write(char c) {
-            throw new NotImplementedException();
-            Write("" + c);
         }
 
         /// <summary>
