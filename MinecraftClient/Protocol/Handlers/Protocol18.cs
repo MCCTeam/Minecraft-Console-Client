@@ -2060,16 +2060,21 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool SendSpectate(Guid UUID)
         {
-            try
+            // MC 1.8 or greater
+            if (protocolversion >= MC18Version)
             {
-                List<byte> packet = new List<byte>();
-                packet.AddRange(dataTypes.GetUUID(UUID));
-                SendPacket(PacketTypesOut.Spectate, packet);
-                return true;
+                try
+                {
+                    List<byte> packet = new List<byte>();
+                    packet.AddRange(dataTypes.GetUUID(UUID));
+                    SendPacket(PacketTypesOut.Spectate, packet);
+                    return true;
+                }
+                catch (SocketException) { return false; }
+                catch (System.IO.IOException) { return false; }
+                catch (ObjectDisposedException) { return false; }
             }
-            catch (SocketException) { return false; }
-            catch (System.IO.IOException) { return false; }
-            catch (ObjectDisposedException) { return false; }
+            else { return false; }
         }
     }
 }
