@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using JWT.Builder;
 
 namespace MinecraftClient.Protocol
 {
@@ -69,7 +68,7 @@ namespace MinecraftClient.Protocol
                 int expiresIn = int.Parse(jsonData.Properties["expires_in"].StringValue);
                 
                 // Extract email from JWT
-                string payload = JwtBuilder.Create().Decode(jsonData.Properties["id_token"].StringValue);
+                string payload = JwtPayloadDecode.GetPayload(jsonData.Properties["id_token"].StringValue);
                 var jsonPayload = Json.ParseJson(payload);
                 string email = jsonPayload.Properties["email"].StringValue;
                 return new LoginResponse()

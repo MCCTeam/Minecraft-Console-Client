@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Costura.Fody.5.7.0\build\Costura.Fody.props" Condition="Exists('..\packages\Costura.Fody.5.7.0\build\Costura.Fody.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -63,12 +62,6 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
-    <Reference Include="JWT, Version=8.0.0.0, Culture=neutral, PublicKeyToken=6f98bca0f40f2ecf, processorArchitecture=MSIL">
-      <HintPath>..\packages\JWT.8.6.0\lib\net40\JWT.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -84,6 +77,7 @@
     <Compile Include="AutoTimeout.cs" />
     <Compile Include="ChatBots\AutoDrop.cs" />
     <Compile Include="ChatBots\Mailer.cs" />
+    <Compile Include="Protocol\JwtPayloadDecode.cs" />
     <Compile Include="Protocol\MojangAPI.cs" />
     <Compile Include="Mapping\CubeFromWorld.cs" />
     <Compile Include="Mapping\Material2Tool.cs" />
@@ -420,20 +414,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Resources\config\MinecraftClient.ini" />
     <None Include="Resources\lang\de.ini" />
     <None Include="Resources\lang\en.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>此專案參考這部電腦上所缺少的 NuGet 套件。請啟用 NuGet 套件還原，以下載該套件。如需詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的檔案是 {0}。</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Costura.Fody.5.7.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.5.7.0\build\Costura.Fody.props'))" />
-    <Error Condition="!Exists('..\packages\Costura.Fody.5.7.0\build\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.5.7.0\build\Costura.Fody.targets'))" />
-  </Target>
-  <Import Project="..\packages\Costura.Fody.5.7.0\build\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.5.7.0\build\Costura.Fody.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
