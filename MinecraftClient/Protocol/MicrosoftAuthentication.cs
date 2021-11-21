@@ -4,9 +4,105 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using JWT.Builder;
 
 namespace MinecraftClient.Protocol
 {
+    static class Microsoft
+    {
+        private static readonly string clientId = "54473e32-df8f-42e9-a649-9419b0dab9d3";
+        /// <summary>
+        /// Client secret has limited lifetime. Current will be expired on 5/6/2022
+        /// </summary>
+        private static readonly string clientSecret = Uri.EscapeDataString("MbH7Q~~UPIybhpAELRKMjSXO6Ar_9A5w-uUw5");
+        private static readonly string signinUrl = string.Format("https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?client_id={0}&response_type=code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&scope=XboxLive.signin%20offline_access%20openid%20email&prompt=select_account&response_mode=fragment", clientId);
+        private static readonly string tokenUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
+
+        public static string SignInUrl { get { return signinUrl; } }
+
+        /// <summary>
+        /// Request access token by auth code
+        /// </summary>
+        /// <param name="code">Auth code obtained after user signing in</param>
+        /// <returns>Access token and refresh token</returns>
+        public static LoginResponse RequestAccessToken(string code)
+        {
+            string postData = "client_id={0}&client_secret={1}&grant_type=authorization_code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&code={2}";
+            postData = string.Format(postData, clientId, clientSecret, code);
+            return RequestToken(postData);
+        }
+
+        /// <summary>
+        /// Request access token by refresh token
+        /// </summary>
+        /// <param name="refreshToken">Refresh token</param>
+        /// <returns>Access token and new refresh token</returns>
+        public static LoginResponse RefreshAccessToken(string refreshToken)
+        {
+            string postData = "client_id={0}&client_secret={1}&grant_type=refresh_token&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&refresh_token={2}";
+            postData = string.Format(postData, clientId, clientSecret, refreshToken);
+            return RequestToken(postData);
+        }
+
+        /// <summary>
+        /// Perform request to obtain access token by code or by refresh token 
+        /// </summary>
+        /// <param name="postData">Complete POST data for the request</param>
+        /// <returns></returns>
+        private static LoginResponse RequestToken(string postData)
+        {
+            var request = new ProxiedWebRequest(tokenUrl);
+            request.UserAgent = "MCC/" + Program.Version;
+            var response = request.Post("application/x-www-form-urlencoded", postData);
+            var jsonData = Json.ParseJson(response.Body);
+
+            // Error handling
+            if (jsonData.Properties.ContainsKey("error"))
+            {
+                throw new Exception(jsonData.Properties["error_description"].StringValue);
+            }
+            else
+            {
+                string accessToken = jsonData.Properties["access_token"].StringValue;
+                string refreshToken = jsonData.Properties["refresh_token"].StringValue;
+                int expiresIn = int.Parse(jsonData.Properties["expires_in"].StringValue);
+                
+                // Extract email from JWT
+                string payload = JwtBuilder.Create().Decode(jsonData.Properties["id_token"].StringValue);
+                var jsonPayload = Json.ParseJson(payload);
+                string email = jsonPayload.Properties["email"].StringValue;
+                return new LoginResponse()
+                {
+                    Email = email,
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    ExpiresIn = expiresIn
+                };
+            }
+        }
+
+        public static void OpenBrowser(string link)
+        {
+            try
+            {
+                Process.Start(link);
+            }
+            catch (Exception e)
+            {
+                ConsoleIO.WriteLine("Cannot open browser\n" + e.Message + "\n" + e.StackTrace);
+            }
+        }
+
+        public struct LoginResponse
+        {
+            public string Email;
+            public string AccessToken;
+            public string RefreshToken;
+            public int ExpiresIn;
+        }
+    }
+
     class XboxLive
     {
         private readonly string authorize = "https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en";
@@ -131,7 +227,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="loginResponse"></param>
         /// <returns></returns>
-        public XblAuthenticateResponse XblAuthenticate(UserLoginResponse loginResponse)
+        public XblAuthenticateResponse XblAuthenticate(Microsoft.LoginResponse loginResponse)
         {
             var request = new ProxiedWebRequest(xbl);
             request.UserAgent = userAgent;
@@ -142,7 +238,7 @@ namespace MinecraftClient.Protocol
                 + "\"Properties\": {"
                 + "\"AuthMethod\": \"RPS\","
                 + "\"SiteName\": \"user.auth.xboxlive.com\","
-                + "\"RpsTicket\": \"" + loginResponse.AccessToken + "\""
+                + "\"RpsTicket\": \"d=" + loginResponse.AccessToken + "\""
                 + "},"
                 + "\"RelyingParty\": \"http://auth.xboxlive.com\","
                 + "\"TokenType\": \"JWT\""

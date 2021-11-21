@@ -351,10 +351,7 @@ namespace MinecraftClient.Protocol
         {
             if (type == AccountType.Microsoft)
             {
-                if (Settings.LoginMethod == "mcc")
-                    return MicrosoftMCCLogin(user, pass, out session);
-                else
-                    return MicrosoftBrowserLogin(out session);
+                return MicrosoftBrowserLogin(out session);
             }
             else if (type == AccountType.Mojang)
             {
@@ -459,22 +456,7 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private static LoginResult MicrosoftMCCLogin(string email, string password, out SessionToken session)
         {
-            var ms = new XboxLive();
-            try
-            {
-                var msaResponse = ms.UserLogin(email, password, ms.PreAuth());
-                return MicrosoftLogin(msaResponse, out session);
-            }
-            catch (Exception e)
-            {
-                session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
-                ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
-                if (Settings.DebugMessages)
-                {
-                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
-                }
-                return LoginResult.WrongPassword; // Might not always be wrong password
-            }
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -489,44 +471,14 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static LoginResult MicrosoftBrowserLogin(out SessionToken session)
         {
-            var ms = new XboxLive();
-            string[] askOpenLink =
-            {
-                "Copy the following link to your browser and login to your Microsoft Account",
-                ">>>>>>>>>>>>>>>>>>>>>>",
-                "",
-                ms.SignInUrl,
-                "",
-                "<<<<<<<<<<<<<<<<<<<<<<",
-                "NOTICE: Once successfully logged in, you will see a blank page in your web browser.",
-                "Copy the contents of your browser's address bar and paste it below to complete the login process.",
-            };
-            ConsoleIO.WriteLine(string.Join("\n", askOpenLink));
-            string[] parts = { };
-            while (true)
-            {
-                string link = ConsoleIO.ReadLine();
-                if (string.IsNullOrEmpty(link))
-                {
-                    session = new SessionToken();
-                    return LoginResult.UserCancel;
-                }
-                parts = link.Split('#');
-                if (parts.Length < 2)
-                {
-                    ConsoleIO.WriteLine("Invalid link. Please try again.");
-                    continue;
-                }
-                else break;
-            }
-            string hash = parts[1];
-            var dict = Request.ParseQueryString(hash);
-            var msaResponse = new XboxLive.UserLoginResponse()
-            {
-                AccessToken = dict["access_token"],
-                RefreshToken = dict["refresh_token"],
-                ExpiresIn = int.Parse(dict["expires_in"])
-            };
+            Microsoft.OpenBrowser(Microsoft.SignInUrl);
+            ConsoleIO.WriteLine("Your browser should open automatically. If not, open the link below in your browser.");
+            ConsoleIO.WriteLine("\n" + Microsoft.SignInUrl + "\n");
+
+            ConsoleIO.WriteLine("Paste your code here");
+            string code = ConsoleIO.ReadLine();
+
+            var msaResponse = Microsoft.RequestAccessToken(code);
             try
             {
                 return MicrosoftLogin(msaResponse, out session);
@@ -543,7 +495,7 @@ namespace MinecraftClient.Protocol
             }
         }
 
-        private static LoginResult MicrosoftLogin(XboxLive.UserLoginResponse msaResponse, out SessionToken session)
+        private static LoginResult MicrosoftLogin(Microsoft.LoginResponse msaResponse, out SessionToken session)
         {
             session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
             var ms = new XboxLive();
@@ -562,6 +514,7 @@ namespace MinecraftClient.Protocol
                     session.PlayerName = profile.UserName;
                     session.PlayerID = profile.UUID;
                     session.ID = accessToken;
+                    Settings.Login = msaResponse.Email;
                     return LoginResult.Success;
                 }
                 else
