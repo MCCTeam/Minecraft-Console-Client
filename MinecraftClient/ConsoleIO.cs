@@ -168,19 +168,6 @@ namespace MinecraftClient
 
         #endregion
 
-        #region Clipboard management
-
-        /// <summary>
-        /// Read a string from the system clipboard
-        /// </summary>
-        /// <returns>String from the system clipboard</returns>
-        private static string ReadClipboard() {
-            return TextCopy.ClipboardService.GetText() ?? "";
-        }
-
-        #endregion
-
-
         public static void AutocompleteHandler(object? sender, ConsoleKey e) {
             if (e != ConsoleKey.Tab) return;
             
