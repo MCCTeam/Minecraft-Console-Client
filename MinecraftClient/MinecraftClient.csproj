@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <PublishUrl>publish\</PublishUrl>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <LangVersion>9</LangVersion>
+    <LangVersion>default</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup>
