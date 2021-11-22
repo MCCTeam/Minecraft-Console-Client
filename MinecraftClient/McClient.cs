@@ -122,7 +122,7 @@ namespace MinecraftClient
 
         TcpClient client;
         IMinecraftCom handler;
-        Tuple<Thread, CancellationTokenSource>? cmdprompt = null;
+        CancellationTokenSource cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
 
         public ILogger Log;
@@ -253,9 +253,10 @@ namespace MinecraftClient
 
                             Log.Info(Translations.Get("mcc.joined", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
 
-                            cmdprompt = new(new Thread(new ParameterizedThreadStart(CommandPrompt)), new CancellationTokenSource());
-                            cmdprompt.Item1.Name = "MCC Command prompt";
-                            cmdprompt.Item1.Start(cmdprompt.Item2.Token);
+                            cmdprompt = new CancellationTokenSource();
+                            ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt);
+                            ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
+                            ConsoleInteractive.ConsoleReader.OnKeyInput += ConsoleIO.AutocompleteHandler;
                         }
                     }
                     else
@@ -292,8 +293,10 @@ namespace MinecraftClient
                     ReconnectionAttemptsLeft--;
                     Program.Restart();
                 }
-                else if (!singlecommand && Settings.interactiveMode)
-                {
+                else if (!singlecommand && Settings.interactiveMode) {
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                    ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
                     Program.HandleFailure();
                 }
             }
@@ -393,10 +396,17 @@ namespace MinecraftClient
             do
             {
                 Thread.Sleep(TimeSpan.FromSeconds(15));
+                
+                if (((CancellationToken)o!).IsCancellationRequested)
+                    return;
+                
                 lock (lastKeepAliveLock)
                 {
                     if (lastKeepAlive.AddSeconds(30) < DateTime.Now)
                     {
+                        if (((CancellationToken)o!).IsCancellationRequested)
+                            return;
+                        
                         OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.timeout"));
                         return;
                     }
@@ -433,7 +443,7 @@ namespace MinecraftClient
             }
 
             if (cmdprompt != null) {
-                cmdprompt.Item2.Cancel();
+                cmdprompt.Cancel();
                 cmdprompt = null;
             }
 
@@ -503,38 +513,31 @@ namespace MinecraftClient
                 }
             }
 
-            if (!will_restart)
+            if (!will_restart) {
+                ConsoleInteractive.ConsoleReader.StopReadThread();
+                ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
                 Program.HandleFailure();
+            }
         }
 
         #endregion
 
         #region Command prompt and internal MCC commands
-
-        /// <summary>
-        /// Allows the user to send chat messages, commands, and leave the server.
-        /// </summary>
-        private void CommandPrompt(object? o) {
-            if (((CancellationToken) o!).IsCancellationRequested)
+        
+        private void ConsoleReaderOnMessageReceived(object? sender, string e) {
+            if (client.Client == null)
                 return;
             
-            try
-            {
-                Thread.Sleep(500);
-                while (client.Client.Connected && !((CancellationToken)o!).IsCancellationRequested)
-                {
-                    string text = ConsoleIO.ReadLine();
-                    
-                    if (((CancellationToken) o!).IsCancellationRequested)
-                        return;
-                    
-                    InvokeOnMainThread(() => HandleCommandPromptText(text));
-                }
+            if (client.Client.Connected) {
+                new Thread(() => {
+                    InvokeOnMainThread(() => HandleCommandPromptText(e));
+                }).Start();
             }
-            catch (IOException) { }
-            catch (NullReferenceException) { }
+            else
+                return;
         }
-
+        
         /// <summary>
         /// Allows the user to send chat messages, commands, and leave the server.
         /// Process text from the MCC command prompt on the main thread.
@@ -549,7 +552,7 @@ namespace MinecraftClient
                 {
                     case "autocomplete":
                         if (command.Length > 1) { ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00 + handler.AutoComplete(command[1])); }
-                        else Console.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
+                        else ConsoleIO.WriteLine((char)0x00 + "autocomplete" + (char)0x00);
                         break;
                 }
             }

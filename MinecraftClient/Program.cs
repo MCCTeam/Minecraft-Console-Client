@@ -44,21 +44,6 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
-            Console.WriteLine("Console Client for MC {0} to {1} - v{2} - By ORelio & Contributors", MCLowestVersion, MCHighestVersion, Version);
-
-            //Build information to facilitate processing of bug reports
-            if (BuildInfo != null)
-            {
-                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
-            }
-
-            //Debug input ?
-            if (args.Length == 1 && args[0] == "--keyboard-debug")
-            {
-                ConsoleIO.WriteLine("Keyboard debug mode: Press any key to display info");
-                ConsoleIO.DebugReadInput();
-            }
-
             //Setup ConsoleIO
             ConsoleIO.LogPrefix = "§8[MCC] ";
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
@@ -69,6 +54,23 @@ namespace MinecraftClient
                 }
                 ConsoleIO.BasicIO = true;
                 args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
+            }
+            
+            if (!ConsoleIO.BasicIO)
+                ConsoleInteractive.ConsoleWriter.Init();
+            
+            ConsoleIO.WriteLine($"Console Client for MC {MCLowestVersion} to {MCHighestVersion} - v{Version} - By ORelio & Contributors");
+
+            //Build information to facilitate processing of bug reports
+            if (BuildInfo != null) {
+                ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
+            }
+
+            //Debug input ?
+            if (args.Length == 1 && args[0] == "--keyboard-debug")
+            {
+                ConsoleIO.WriteLine("Keyboard debug mode: Press any key to display info");
+                ConsoleIO.DebugReadInput();
             }
 
             //Take advantage of Windows 10 / Mac / Linux UTF-8 console
@@ -154,8 +156,16 @@ namespace MinecraftClient
             {
                 if (useBrowser)
                     ConsoleIO.WriteLine("Press Enter to skip session cache checking and continue sign-in with browser");
-                Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
-                Settings.Login = Console.ReadLine();
+
+                if (ConsoleIO.BasicIO) {
+                    ConsoleIO.WriteLine(Translations.Get("mcc.login_basic_io"));
+                }
+                else {
+                    ConsoleIO.WriteLine(Translations.Get("mcc.login"));
+                }
+
+                Settings.Login = ConsoleIO.ReadLine();
+
             }
             if (Settings.Password == "" 
                 && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower()))
@@ -183,15 +193,14 @@ namespace MinecraftClient
         /// </summary>
         private static void RequestPassword()
         {
-            Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Settings.Login) + "\n" : Translations.Get("mcc.password"));
-            Settings.Password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+            if (ConsoleIO.BasicIO)
+                ConsoleIO.WriteLine(Translations.Get("mcc.password_basic_io", Settings.Login));
+            else
+                ConsoleIO.WriteLine(Translations.Get("mcc.password"));
+
+            Settings.Password = ConsoleIO.ReadPassword();
+            
             if (Settings.Password == "") { Settings.Password = "-"; }
-            if (!ConsoleIO.BasicIO)
-            {
-                //Hide password length
-                Console.CursorTop--; Console.Write(Translations.Get("mcc.password_hidden", "<******>"));
-                for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
-            }
         }
 
         /// <summary>
@@ -259,7 +268,7 @@ namespace MinecraftClient
                 if (Settings.ServerIP == "")
                 {
                     Translations.Write("mcc.ip");
-                    string addressInput = Console.ReadLine();
+                    string addressInput = ConsoleIO.ReadLine();
                     if (addressInput.StartsWith("realms:"))
                     {
                         if (Settings.MinecraftRealmsEnabled)
@@ -455,7 +464,7 @@ namespace MinecraftClient
                 if (versionError)
                 {
                     Translations.Write("mcc.server_version");
-                    Settings.ServerVersion = Console.ReadLine();
+                    Settings.ServerVersion = ConsoleInteractive.ConsoleReader.RequestImmediateInput();
                     if (Settings.ServerVersion != "")
                     {
                         useMcVersionOnce = true;
@@ -465,6 +474,8 @@ namespace MinecraftClient
                 }
 
                 if (offlinePrompt == null) {
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+                    
                     var cancellationTokenSource = new CancellationTokenSource();
                     offlinePrompt = new(new Thread(new ThreadStart(delegate {
                         bool exitThread = false;
@@ -477,11 +488,11 @@ namespace MinecraftClient
                                 return;
                             
                             while (command.Length > 0) {
-                                if (!ConsoleIO.BasicIO) {
-                                    ConsoleIO.Write('>');
-                                }
-
-                                command = Console.ReadLine().Trim();
+                                while (!Console.KeyAvailable)
+                                    if (cancellationTokenSource.IsCancellationRequested)
+                                        return;
+                                
+                                command = ConsoleInteractive.ConsoleReader.RequestImmediateInput().Trim();
                                 if (command.Length > 0) {
                                     string message = "";
 
@@ -524,6 +535,9 @@ namespace MinecraftClient
 
                                     if (message != "")
                                         ConsoleIO.WriteLineFormatted("§8MCC: " + message);
+                                }
+                                else {
+                                    _ = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
                                 }
                             }
                             
