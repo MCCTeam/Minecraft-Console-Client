@@ -11,10 +11,6 @@ namespace MinecraftClient.Protocol
     static class Microsoft
     {
         private static readonly string clientId = "54473e32-df8f-42e9-a649-9419b0dab9d3";
-        /// <summary>
-        /// Client secret has limited lifetime. Current will be expired on 5/6/2022
-        /// </summary>
-        private static readonly string clientSecret = Uri.EscapeDataString("MbH7Q~~UPIybhpAELRKMjSXO6Ar_9A5w-uUw5");
         private static readonly string signinUrl = string.Format("https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?client_id={0}&response_type=code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&scope=XboxLive.signin%20offline_access%20openid%20email&prompt=select_account&response_mode=fragment", clientId);
         private static readonly string tokenUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
 
@@ -27,8 +23,8 @@ namespace MinecraftClient.Protocol
         /// <returns>Access token and refresh token</returns>
         public static LoginResponse RequestAccessToken(string code)
         {
-            string postData = "client_id={0}&client_secret={1}&grant_type=authorization_code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&code={2}";
-            postData = string.Format(postData, clientId, clientSecret, code);
+            string postData = "client_id={0}&grant_type=authorization_code&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&code={1}";
+            postData = string.Format(postData, clientId, code);
             return RequestToken(postData);
         }
 
@@ -39,8 +35,8 @@ namespace MinecraftClient.Protocol
         /// <returns>Access token and new refresh token</returns>
         public static LoginResponse RefreshAccessToken(string refreshToken)
         {
-            string postData = "client_id={0}&client_secret={1}&grant_type=refresh_token&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&refresh_token={2}";
-            postData = string.Format(postData, clientId, clientSecret, refreshToken);
+            string postData = "client_id={0}&grant_type=refresh_token&redirect_uri=https%3A%2F%2Fmccteam.github.io%2Fredirect.html&refresh_token={1}";
+            postData = string.Format(postData, clientId, refreshToken);
             return RequestToken(postData);
         }
 
