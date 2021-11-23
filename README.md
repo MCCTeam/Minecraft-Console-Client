@@ -1,7 +1,7 @@
 Minecraft Console Client
 ========================
 
-[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/ORelio/Minecraft-Console-Client?branch=Indev)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
+[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/MCCTeam/Minecraft-Console-Client)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
 
 Minecraft Console Client (MCC) is a lightweight app allowing you to connect to any Minecraft server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game. It also provides various automations that you can enable for administration and other purposes.
 
