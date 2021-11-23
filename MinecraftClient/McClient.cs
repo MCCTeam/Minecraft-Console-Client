@@ -227,7 +227,8 @@ namespace MinecraftClient
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Log.Info(Translations.Get("mcc.version_supported"));
 
-                if (!singlecommand) {
+                if (!singlecommand) 
+                {
                     timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
                     timeoutdetector.Item1.Name = "MCC Connection timeout detector";
                     timeoutdetector.Item1.Start(timeoutdetector.Item2.Token);
@@ -293,7 +294,8 @@ namespace MinecraftClient
                     ReconnectionAttemptsLeft--;
                     Program.Restart();
                 }
-                else if (!singlecommand && Settings.interactiveMode) {
+                else if (!singlecommand && Settings.interactiveMode) 
+                {
                     ConsoleInteractive.ConsoleReader.StopReadThread();
                     ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
                     ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
@@ -442,12 +444,14 @@ namespace MinecraftClient
                 handler.Dispose();
             }
 
-            if (cmdprompt != null) {
+            if (cmdprompt != null) 
+            {
                 cmdprompt.Cancel();
                 cmdprompt = null;
             }
 
-            if (timeoutdetector != null) {
+            if (timeoutdetector != null) 
+            {
                 timeoutdetector.Item2.Cancel();
                 timeoutdetector = null;
             }
@@ -513,7 +517,8 @@ namespace MinecraftClient
                 }
             }
 
-            if (!will_restart) {
+            if (!will_restart) 
+            {
                 ConsoleInteractive.ConsoleReader.StopReadThread();
                 ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
                 ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
@@ -529,7 +534,8 @@ namespace MinecraftClient
             if (client.Client == null)
                 return;
             
-            if (client.Client.Connected) {
+            if (client.Client.Connected) 
+            {
                 new Thread(() => {
                     InvokeOnMainThread(() => HandleCommandPromptText(e));
                 }).Start();

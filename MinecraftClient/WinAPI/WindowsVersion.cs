@@ -22,11 +22,13 @@ namespace MinecraftClient.WinAPI
         {
             get
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+                {
                     dynamic major;
                     // The 'CurrentMajorVersionNumber' string value in the CurrentVersion key is new for Windows 10, 
                     // and will most likely (hopefully) be there for some time before MS decides to change this - again...
-                    if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMajorVersionNumber", out major)) {
+                    if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMajorVersionNumber", out major)) 
+                    {
                         return (uint) major;
                     }
 
@@ -52,11 +54,13 @@ namespace MinecraftClient.WinAPI
         {
             get
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+                {
                     dynamic minor;
                     // The 'CurrentMinorVersionNumber' string value in the CurrentVersion key is new for Windows 10, 
                     // and will most likely (hopefully) be there for some time before MS decides to change this - again...
-                    if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMinorVersionNumber", out minor)) {
+                    if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMinorVersionNumber", out minor)) 
+                    {
                         return (uint) minor;
                     }
 
@@ -84,7 +88,8 @@ namespace MinecraftClient.WinAPI
         /// <returns>TRUE if successfully retrieved</returns>
         private static bool TryGetRegistryKey(string path, string key, out dynamic value)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+            {
                 value = null;
                 try {
                     var rk = Registry.LocalMachine.OpenSubKey(path);

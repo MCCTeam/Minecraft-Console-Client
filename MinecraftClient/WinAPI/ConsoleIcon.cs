@@ -32,7 +32,8 @@ namespace MinecraftClient.WinAPI
         }
 
         private static void SetWindowIcon(System.Drawing.Icon icon) {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+            {
                 IntPtr mwHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
                 IntPtr result01 = SendMessage(mwHandle, (int)WinMessages.SETICON, 0, icon.Handle);
                 IntPtr result02 = SendMessage(mwHandle, (int)WinMessages.SETICON, 1, icon.Handle);

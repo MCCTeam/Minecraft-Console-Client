@@ -62,7 +62,8 @@ namespace MinecraftClient
             ConsoleIO.WriteLine($"Console Client for MC {MCLowestVersion} to {MCHighestVersion} - v{Version} - By ORelio & Contributors");
 
             //Build information to facilitate processing of bug reports
-            if (BuildInfo != null) {
+            if (BuildInfo != null) 
+            {
                 ConsoleIO.WriteLineFormatted("§8" + BuildInfo);
             }
 
@@ -157,7 +158,8 @@ namespace MinecraftClient
                 if (useBrowser)
                     ConsoleIO.WriteLine("Press Enter to skip session cache checking and continue sign-in with browser");
 
-                if (ConsoleIO.BasicIO) {
+                if (ConsoleIO.BasicIO) 
+                {
                     ConsoleIO.WriteLine(Translations.Get("mcc.login_basic_io"));
                 }
                 else {
@@ -473,7 +475,8 @@ namespace MinecraftClient
                     }
                 }
 
-                if (offlinePrompt == null) {
+                if (offlinePrompt == null) 
+                {
                     ConsoleInteractive.ConsoleReader.StopReadThread();
                     
                     var cancellationTokenSource = new CancellationTokenSource();
@@ -493,31 +496,38 @@ namespace MinecraftClient
                                         return;
                                 
                                 command = ConsoleInteractive.ConsoleReader.RequestImmediateInput().Trim();
-                                if (command.Length > 0) {
+                                if (command.Length > 0) 
+                                {
                                     string message = "";
 
                                     if (Settings.internalCmdChar != ' '
                                         && command[0] == Settings.internalCmdChar)
                                         command = command.Substring(1);
 
-                                    if (command.StartsWith("reco")) {
+                                    if (command.StartsWith("reco")) 
+                                    {
                                         message = new Commands.Reco().Run(null, Settings.ExpandVars(command), null);
-                                        if (message == "") {
+                                        if (message == "") 
+                                        {
                                             exitThread = true;
                                             break;
                                         }
                                     }
-                                    else if (command.StartsWith("connect")) {
+                                    else if (command.StartsWith("connect")) 
+                                    {
                                         message = new Commands.Connect().Run(null, Settings.ExpandVars(command), null);
-                                        if (message == "") {
+                                        if (message == "") 
+                                        {
                                             exitThread = true;
                                             break;
                                         }
                                     }
-                                    else if (command.StartsWith("exit") || command.StartsWith("quit")) {
+                                    else if (command.StartsWith("exit") || command.StartsWith("quit")) 
+                                    {
                                         message = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
                                     }
-                                    else if (command.StartsWith("help")) {
+                                    else if (command.StartsWith("help")) 
+                                    {
                                         ConsoleIO.WriteLineFormatted("§8MCC: " +
                                                                      (Settings.internalCmdChar == ' '
                                                                          ? ""
