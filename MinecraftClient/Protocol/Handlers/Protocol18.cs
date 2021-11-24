@@ -149,14 +149,20 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Separate thread. Network reading loop.
         /// </summary>
-        private void Updater(object? o) {
+        private void Updater(object? o) 
+        {
+
             if (((CancellationToken) o!).IsCancellationRequested)
                 return;
 
-            try {
+            try 
+            {
+
                 bool keepUpdating = true;
                 Stopwatch stopWatch = new Stopwatch();
-                while (keepUpdating) {
+                while (keepUpdating) 
+                {
+
                     ((CancellationToken)o!).ThrowIfCancellationRequested();
                     
                     stopWatch.Start();
@@ -1140,7 +1146,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Start the updating thread. Should be called after login success.
         /// </summary>
-        private void StartUpdating() {
+        private void StartUpdating() 
+        {
+
             netRead = new Tuple<Thread, CancellationTokenSource>(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
             netRead.Item1.Name = "ProtocolPacketHandler";
             netRead.Item1.Start(netRead.Item2.Token);

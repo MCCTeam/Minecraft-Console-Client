@@ -200,7 +200,8 @@ namespace MinecraftClient.Protocol.Handlers
             return true; //packet has been successfully skipped
         }
 
-        private void StartUpdating() {
+        private void StartUpdating() 
+        {
             netRead = new(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
             netRead.Item1.Name = "ProtocolPacketHandler";
             netRead.Item1.Start(netRead.Item2.Token);

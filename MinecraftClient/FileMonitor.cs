@@ -28,7 +28,8 @@ namespace MinecraftClient
                 ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.init", callerClass, Path.Combine(folder, filename)));
             }
 
-            try {
+            try
+            {
                 monitor = new Tuple<FileSystemWatcher, CancellationTokenSource>(new FileSystemWatcher(), new CancellationTokenSource());
                 monitor.Item1.Path = folder;
                 monitor.Item1.IncludeSubdirectories = false;

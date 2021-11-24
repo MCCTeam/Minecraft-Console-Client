@@ -31,7 +31,8 @@ namespace MinecraftClient.WinAPI
             SETICON = 0x0080,
         }
 
-        private static void SetWindowIcon(System.Drawing.Icon icon) {
+        private static void SetWindowIcon(System.Drawing.Icon icon) 
+        {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
             {
                 IntPtr mwHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
@@ -46,18 +47,22 @@ namespace MinecraftClient.WinAPI
         public static void setPlayerIconAsync(string playerName) {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                Thread t = new Thread(new ThreadStart(delegate {
+                Thread t = new Thread(new ThreadStart(delegate 
+                {
                         HttpWebRequest httpWebRequest =
                             (HttpWebRequest) HttpWebRequest.Create(
                                 "https://minotar.net/helm/" + playerName + "/100.png");
-                        try {
+                        try 
+                        {
                             using (HttpWebResponse httpWebReponse = (HttpWebResponse) httpWebRequest.GetResponse()) {
-                                try {
+                                try 
+                                {
                                     Bitmap skin = new Bitmap(Image.FromStream(httpWebReponse.GetResponseStream())); //Read skin from network
                                     SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
                                     SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
                                 }
-                                catch (ArgumentException) {
+                                catch (ArgumentException)
+                                {
                                     /* Invalid image in HTTP response */
                                 }
                             }
