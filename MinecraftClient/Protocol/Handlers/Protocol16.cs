@@ -67,8 +67,10 @@ namespace MinecraftClient.Protocol.Handlers
             
             try
             {
-                while (!((CancellationToken) o!).IsCancellationRequested) {
-                    do {
+                while (!((CancellationToken) o!).IsCancellationRequested)
+                {
+                    do
+                    {
                         Thread.Sleep(100);
                     } while (Update());
                 }

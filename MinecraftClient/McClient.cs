@@ -530,7 +530,9 @@ namespace MinecraftClient
 
         #region Command prompt and internal MCC commands
         
-        private void ConsoleReaderOnMessageReceived(object? sender, string e) {
+        private void ConsoleReaderOnMessageReceived(object? sender, string e)
+        {
+
             if (client.Client == null)
                 return;
             

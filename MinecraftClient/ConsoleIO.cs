@@ -19,7 +19,8 @@ namespace MinecraftClient
         /// <summary>
         /// Reset the IO mechanism and clear all buffers
         /// </summary>
-        public static void Reset() {
+        public static void Reset()
+        {
             ClearLineAndBuffer();
         }
 
@@ -57,10 +58,12 @@ namespace MinecraftClient
         /// <summary>
         /// Read a password from the standard input
         /// </summary>
-        public static string ReadPassword() {
+        public static string ReadPassword()
+        {
             if (BasicIO)
                 return Console.ReadLine();
-            else {
+            else
+            {
                 ConsoleInteractive.ConsoleReader.SetInputVisible(false);
                 var input = ConsoleInteractive.ConsoleReader.RequestImmediateInput();
                 ConsoleInteractive.ConsoleReader.SetInputVisible(true);
@@ -71,7 +74,8 @@ namespace MinecraftClient
         /// <summary>
         /// Read a line from the standard input
         /// </summary>
-        public static string ReadLine() {
+        public static string ReadLine()
+        {
             if (BasicIO)
                 return Console.ReadLine();
             else 
@@ -94,7 +98,8 @@ namespace MinecraftClient
         /// <summary>
         /// Write a string to the standard output with a trailing newline
         /// </summary>
-        public static void WriteLine(string line) {
+        public static void WriteLine(string line)
+        {
             if (BasicIO)
                 Console.WriteLine(line);
             else
@@ -112,7 +117,8 @@ namespace MinecraftClient
         /// If true, "hh-mm-ss" timestamp will be prepended.
         /// If unspecified, value is retrieved from EnableTimestamps.
         /// </param>
-        public static void WriteLineFormatted(string str, bool acceptnewlines = false, bool? displayTimestamp = null) {
+        public static void WriteLineFormatted(string str, bool acceptnewlines = false, bool? displayTimestamp = null)
+        {
             StringBuilder output = new StringBuilder();
             
             if (!String.IsNullOrEmpty(str))
@@ -164,7 +170,8 @@ namespace MinecraftClient
         /// <summary>
         /// Clear all text inside the input prompt
         /// </summary>
-        private static void ClearLineAndBuffer() {
+        private static void ClearLineAndBuffer()
+        {
             if (BasicIO) return;
             ConsoleInteractive.ConsoleReader.ClearBuffer();
         }
@@ -172,7 +179,8 @@ namespace MinecraftClient
 
         #endregion
 
-        public static void AutocompleteHandler(object? sender, ConsoleKey e) {
+        public static void AutocompleteHandler(object? sender, ConsoleKey e)
+        {
             if (e != ConsoleKey.Tab) return;
             
             if (autocomplete_engine == null)
