@@ -162,7 +162,9 @@ namespace MinecraftClient
                 {
                     ConsoleIO.WriteLine(Translations.Get("mcc.login_basic_io"));
                 }
-                else {
+                else
+                {
+
                     ConsoleIO.WriteLine(Translations.Get("mcc.login"));
                 }
 
