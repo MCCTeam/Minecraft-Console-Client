@@ -210,7 +210,7 @@ namespace MinecraftClient
                     if (result != ProtocolHandler.LoginResult.Success)
                     {
                         Translations.WriteLineFormatted("mcc.session_invalid");
-                        if (Settings.Password == "")
+                        if (Settings.Password == "" && Settings.AccountType == ProtocolHandler.AccountType.Mojang)
                             RequestPassword();
                     }
                     else ConsoleIO.WriteLineFormatted(Translations.Get("mcc.session_valid", session.PlayerName));
