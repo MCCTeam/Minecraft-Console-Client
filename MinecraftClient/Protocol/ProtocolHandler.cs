@@ -354,7 +354,7 @@ namespace MinecraftClient.Protocol
                 if (Settings.LoginMethod == "mcc")
                     return MicrosoftMCCLogin(user, pass, out session);
                 else
-                    return MicrosoftBrowserLogin(out session);
+                    return MicrosoftBrowserLogin(out session, user);
             }
             else if (type == AccountType.Mojang)
             {
@@ -487,9 +487,12 @@ namespace MinecraftClient.Protocol
         /// </remarks>
         /// <param name="session"></param>
         /// <returns></returns>
-        public static LoginResult MicrosoftBrowserLogin(out SessionToken session)
+        public static LoginResult MicrosoftBrowserLogin(out SessionToken session, string loginHint = "")
         {
-            Microsoft.OpenBrowser(Microsoft.SignInUrl);
+            if (string.IsNullOrEmpty(loginHint))
+                Microsoft.OpenBrowser(Microsoft.SignInUrl);
+            else
+                Microsoft.OpenBrowser(Microsoft.GetSignInUrlWithHint(loginHint));
             ConsoleIO.WriteLine("Your browser should open automatically. If not, open the link below in your browser.");
             ConsoleIO.WriteLine("\n" + Microsoft.SignInUrl + "\n");
 

@@ -17,6 +17,16 @@ namespace MinecraftClient.Protocol
         public static string SignInUrl { get { return signinUrl; } }
 
         /// <summary>
+        /// Get a sign-in URL with email field pre-filled
+        /// </summary>
+        /// <param name="loginHint">Login Email</param>
+        /// <returns>Sign-in URL with email pre-filled</returns>
+        public static string GetSignInUrlWithHint(string loginHint)
+        {
+            return SignInUrl + "&login_hint=" + Uri.EscapeDataString(loginHint);
+        }
+
+        /// <summary>
         /// Request access token by auth code
         /// </summary>
         /// <param name="code">Auth code obtained after user signing in</param>
