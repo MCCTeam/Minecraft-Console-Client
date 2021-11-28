@@ -154,7 +154,7 @@ namespace MinecraftClient.Protocol
         /// <param name="password">Account password</param>
         /// <param name="preAuth"></param>
         /// <returns></returns>
-        public UserLoginResponse UserLogin(string email, string password, PreAuthResponse preAuth)
+        public Microsoft.LoginResponse UserLogin(string email, string password, PreAuthResponse preAuth)
         {
             var request = new ProxiedWebRequest(preAuth.UrlPost, preAuth.Cookie);
             request.UserAgent = userAgent;
@@ -195,8 +195,9 @@ namespace MinecraftClient.Protocol
                 //    Console.WriteLine("{0}: {1}", pair.Key, pair.Value);
                 //}
 
-                return new UserLoginResponse()
+                return new Microsoft.LoginResponse()
                 {
+                    Email = email,
                     AccessToken = dict["access_token"],
                     RefreshToken = dict["refresh_token"],
                     ExpiresIn = int.Parse(dict["expires_in"])
@@ -229,11 +230,19 @@ namespace MinecraftClient.Protocol
             request.Accept = "application/json";
             request.Headers.Add("x-xbl-contract-version", "0");
 
+            var accessToken = loginResponse.AccessToken;
+            if (Settings.LoginMethod == "browser")
+            {
+                // Our own client ID must have d= in front of the token or HTTP status 400
+                // "Stolen" client ID must not have d= in front of the token or HTTP status 400
+                accessToken = "d=" + accessToken;
+            }
+
             string payload = "{"
                 + "\"Properties\": {"
                 + "\"AuthMethod\": \"RPS\","
                 + "\"SiteName\": \"user.auth.xboxlive.com\","
-                + "\"RpsTicket\": \"d=" + loginResponse.AccessToken + "\""
+                + "\"RpsTicket\": \"" + accessToken + "\""
                 + "},"
                 + "\"RelyingParty\": \"http://auth.xboxlive.com\","
                 + "\"TokenType\": \"JWT\""
@@ -330,13 +339,6 @@ namespace MinecraftClient.Protocol
             public string UrlPost;
             public string PPFT;
             public NameValueCollection Cookie;
-        }
-
-        public struct UserLoginResponse
-        {
-            public string AccessToken;
-            public string RefreshToken;
-            public int ExpiresIn;
         }
 
         public struct XblAuthenticateResponse

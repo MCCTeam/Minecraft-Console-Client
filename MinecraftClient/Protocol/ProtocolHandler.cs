@@ -351,7 +351,10 @@ namespace MinecraftClient.Protocol
         {
             if (type == AccountType.Microsoft)
             {
-                return MicrosoftBrowserLogin(out session);
+                if (Settings.LoginMethod == "mcc")
+                    return MicrosoftMCCLogin(user, pass, out session);
+                else
+                    return MicrosoftBrowserLogin(out session);
             }
             else if (type == AccountType.Mojang)
             {
@@ -456,7 +459,22 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private static LoginResult MicrosoftMCCLogin(string email, string password, out SessionToken session)
         {
-            throw new NotSupportedException();
+            var ms = new XboxLive();
+            try
+            {
+                var msaResponse = ms.UserLogin(email, password, ms.PreAuth());
+                return MicrosoftLogin(msaResponse, out session);
+            }
+            catch (Exception e)
+            {
+                session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
+                ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
+                }
+                return LoginResult.WrongPassword; // Might not always be wrong password
+            }
         }
 
         /// <summary>
