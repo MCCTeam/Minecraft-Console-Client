@@ -51,7 +51,7 @@ namespace MinecraftClient.Protocol.Handlers
         public PacketTypePalette GetTypeHandler(int protocol)
         {
             PacketTypePalette p;
-            if (protocol > Protocol18Handler.MC1171Version)
+            if (protocol > Protocol18Handler.MC118Version)
                 throw new NotImplementedException(Translations.Get("exception.palette.packet"));
             if (protocol <= Protocol18Handler.MC18Version)
                 p = new PacketPalette17();
@@ -71,8 +71,10 @@ namespace MinecraftClient.Protocol.Handlers
                 p = new PacketPalette116();
             else if (protocol <= Protocol18Handler.MC1165Version)
                 p = new PacketPalette1162();
-            else
+            else if (protocol <= Protocol18Handler.MC1171Version)
                 p = new PacketPalette117();
+            else
+                p = new PacketPalette118();
 
             p.SetForgeEnabled(this.forgeEnabled);
             return p;
