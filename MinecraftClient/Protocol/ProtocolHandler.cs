@@ -357,7 +357,7 @@ namespace MinecraftClient.Protocol
                 if (Settings.LoginMethod == "mcc")
                     return MicrosoftMCCLogin(user, pass, out session);
                 else
-                    return MicrosoftBrowserLogin(out session);
+                    return MicrosoftBrowserLogin(out session, user);
             }
             else if (type == AccountType.Mojang)
             {
@@ -490,46 +490,19 @@ namespace MinecraftClient.Protocol
         /// </remarks>
         /// <param name="session"></param>
         /// <returns></returns>
-        public static LoginResult MicrosoftBrowserLogin(out SessionToken session)
+        public static LoginResult MicrosoftBrowserLogin(out SessionToken session, string loginHint = "")
         {
-            var ms = new XboxLive();
-            string[] askOpenLink =
-            {
-                "Copy the following link to your browser and login to your Microsoft Account",
-                ">>>>>>>>>>>>>>>>>>>>>>",
-                "",
-                ms.SignInUrl,
-                "",
-                "<<<<<<<<<<<<<<<<<<<<<<",
-                "NOTICE: Once successfully logged in, you will see a blank page in your web browser.",
-                "Copy the contents of your browser's address bar and paste it below to complete the login process.",
-            };
-            ConsoleIO.WriteLine(string.Join("\n", askOpenLink));
-            string[] parts = { };
-            while (true)
-            {
-                string link = ConsoleIO.ReadLine();
-                if (string.IsNullOrEmpty(link))
-                {
-                    session = new SessionToken();
-                    return LoginResult.UserCancel;
-                }
-                parts = link.Split('#');
-                if (parts.Length < 2)
-                {
-                    ConsoleIO.WriteLine("Invalid link. Please try again.");
-                    continue;
-                }
-                else break;
-            }
-            string hash = parts[1];
-            var dict = Request.ParseQueryString(hash);
-            var msaResponse = new XboxLive.UserLoginResponse()
-            {
-                AccessToken = dict["access_token"],
-                RefreshToken = dict["refresh_token"],
-                ExpiresIn = int.Parse(dict["expires_in"])
-            };
+            if (string.IsNullOrEmpty(loginHint))
+                Microsoft.OpenBrowser(Microsoft.SignInUrl);
+            else
+                Microsoft.OpenBrowser(Microsoft.GetSignInUrlWithHint(loginHint));
+            ConsoleIO.WriteLine("Your browser should open automatically. If not, open the link below in your browser.");
+            ConsoleIO.WriteLine("\n" + Microsoft.SignInUrl + "\n");
+
+            ConsoleIO.WriteLine("Paste your code here");
+            string code = ConsoleIO.ReadLine();
+
+            var msaResponse = Microsoft.RequestAccessToken(code);
             try
             {
                 return MicrosoftLogin(msaResponse, out session);
@@ -546,7 +519,7 @@ namespace MinecraftClient.Protocol
             }
         }
 
-        private static LoginResult MicrosoftLogin(XboxLive.UserLoginResponse msaResponse, out SessionToken session)
+        private static LoginResult MicrosoftLogin(Microsoft.LoginResponse msaResponse, out SessionToken session)
         {
             session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
             var ms = new XboxLive();
@@ -565,6 +538,7 @@ namespace MinecraftClient.Protocol
                     session.PlayerName = profile.UserName;
                     session.PlayerID = profile.UUID;
                     session.ID = accessToken;
+                    Settings.Login = msaResponse.Email;
                     return LoginResult.Success;
                 }
                 else
@@ -590,27 +564,24 @@ namespace MinecraftClient.Protocol
         /// <returns>Returns the status of the token (Valid, Invalid, etc.)</returns>
         public static LoginResult GetTokenValidation(SessionToken session)
         {
-            try
+            var payload = JwtPayloadDecode.GetPayload(session.ID);
+            var json = Json.ParseJson(payload);
+            var expTimestamp = long.Parse(json.Properties["exp"].StringValue);
+            var now = DateTime.Now;
+            var tokenExp = UnixTimeStampToDateTime(expTimestamp);
+            if (Settings.DebugMessages)
             {
-                string result = "";
-                string json_request = "{\"accessToken\": \"" + JsonEncode(session.ID) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/validate", json_request, ref result);
-                if (code == 204)
-                {
-                    return LoginResult.Success;
-                }
-                else if (code == 403)
-                {
-                    return LoginResult.LoginRequired;
-                }
-                else
-                {
-                    return LoginResult.OtherError;
-                }
+                ConsoleIO.WriteLine("Access token expiration time is " + tokenExp.ToString());
             }
-            catch
+            if (now < tokenExp)
             {
-                return LoginResult.OtherError;
+                // Still valid
+                return LoginResult.Success;
+            }
+            else
+            {
+                // Token expired
+                return LoginResult.LoginRequired;
             }
         }
 
@@ -896,6 +867,19 @@ namespace MinecraftClient.Protocol
             }
 
             return result.ToString();
+        }
+
+        /// <summary>
+        /// Convert a TimeStamp (in second) to DateTime object
+        /// </summary>
+        /// <param name="unixTimeStamp">TimeStamp in second</param>
+        /// <returns>DateTime object of the TimeStamp</returns>
+        public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+        {
+            // Unix timestamp is seconds past epoch
+            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+            return dateTime;
         }
     }
 }
