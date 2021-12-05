@@ -211,7 +211,14 @@ namespace MinecraftClient
                     if (result != ProtocolHandler.LoginResult.Success)
                     {
                         Translations.WriteLineFormatted("mcc.session_invalid");
-                        if (Settings.Password == "" && Settings.AccountType == ProtocolHandler.AccountType.Mojang)
+                        // Try to refresh access token
+                        if (!string.IsNullOrWhiteSpace(session.RefreshToken))
+                        {
+                            result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
+                        }
+                        if (result != ProtocolHandler.LoginResult.Success 
+                            && Settings.Password == "" 
+                            && Settings.AccountType == ProtocolHandler.AccountType.Mojang)
                             RequestPassword();
                     }
                     else ConsoleIO.WriteLineFormatted(Translations.Get("mcc.session_valid", session.PlayerName));
@@ -221,12 +228,12 @@ namespace MinecraftClient
                 {
                     Translations.WriteLine("mcc.connecting", Settings.AccountType == ProtocolHandler.AccountType.Mojang ? "Minecraft.net" : "Microsoft");
                     result = ProtocolHandler.GetLogin(Settings.Login, Settings.Password, Settings.AccountType, out session);
-
-                    if (result == ProtocolHandler.LoginResult.Success && Settings.SessionCaching != CacheType.None)
-                    {
-                        SessionCache.Store(Settings.Login.ToLower(), session);
-                    }
                 }
+            }
+
+            if (result == ProtocolHandler.LoginResult.Success && Settings.SessionCaching != CacheType.None)
+            {
+                SessionCache.Store(Settings.Login.ToLower(), session);
             }
 
             if (result == ProtocolHandler.LoginResult.Success)
