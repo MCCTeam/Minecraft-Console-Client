@@ -8,7 +8,7 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "setrnd"; } }
         public override string CmdUsage { get { return "setrnd varname -7to10 OR string1,string2,string3"; } }
         public override string CmdDesc { get { return "cmd.set.desc"; } }
-        public static Random rand = new Random();
+        private static Random rand = new Random();
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
