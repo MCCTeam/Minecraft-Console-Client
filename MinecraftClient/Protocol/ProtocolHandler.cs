@@ -251,6 +251,7 @@ namespace MinecraftClient.Protocol
                     case "1.17.1":
                         return 756;
                     case "1.18":
+                    case "1.18.1":
                         return 757;
                     default:
                         return 0;
@@ -315,7 +316,7 @@ namespace MinecraftClient.Protocol
                 case 754: return "1.16.5";
                 case 755: return "1.17";
                 case 756: return "1.17.1";
-                case 757: return "1.18";
+                case 757: return "1.18.1";
                 default: return "0.0";
             }
         }
