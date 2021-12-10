@@ -52,7 +52,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC1165Version = 754;
         internal const int MC117Version = 755;
         internal const int MC1171Version = 756;
-        internal const int MC118Version = 757;
+        internal const int MC1181Version = 757;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -326,7 +326,7 @@ namespace MinecraftClient.Protocol.Handlers
                             dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
                         if (protocolversion >= MC114Version)
                             dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
-                        if (protocolversion >= MC118Version)
+                        if (protocolversion >= MC1181Version)
                             dataTypes.ReadNextVarInt(packetData);         // Simulation Distance - 1.18 and above
                         if (protocolversion >= MC18Version)
                             dataTypes.ReadNextBool(packetData);           // Reduced debug info - 1.8 and above
@@ -1613,7 +1613,7 @@ namespace MinecraftClient.Protocol.Handlers
                     fields.AddRange(dataTypes.GetVarInt(mainHand));
                 if (protocolversion >= MC117Version)
                     fields.Add(0); // Enables text filtering. Always false
-                if (protocolversion >= MC118Version)
+                if (protocolversion >= MC1181Version)
                     fields.Add(1); // 1.18 and above - Allow server listings
                 SendPacket(PacketTypesOut.ClientSettings, fields);
             }
