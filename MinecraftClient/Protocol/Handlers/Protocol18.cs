@@ -355,7 +355,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion >= MC116Version)
                         {
                             // TODO handle dimensions for 1.16+, needed for terrain handling
-                            dataTypes.ReadNextString(packetData);
+                            if (protocolversion >= MC1162Version)
+                                dataTypes.ReadNextNbt(packetData);
+                            else
+                                dataTypes.ReadNextString(packetData);
                             this.currentDimension = 0;
                         }
                         else
