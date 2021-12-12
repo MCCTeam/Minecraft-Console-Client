@@ -18,11 +18,13 @@ namespace MinecraftClient.Commands
                 string[] args = getArg(command).Split(' ');
                 if (args.Length > 1)
                 {
+                    // detect "to" keyword in string
                     if (args.Length == 2 && args[1].Contains("to"))
                     {
                         int num1;
                         int num2;
 
+                        // try to extract the two numbers from the string
                         try
                         {
                             num1 = Convert.ToInt32(args[1].Substring(0, args[1].IndexOf('t')));
@@ -33,6 +35,7 @@ namespace MinecraftClient.Commands
                             return Translations.Get("cmd.setrndnum.format");
                         }
 
+                        // switch the values if they were entered in the wrong way
                         if (num2 < num1)
                         {
                             int temp = num1;
@@ -40,6 +43,7 @@ namespace MinecraftClient.Commands
                             num2 = temp;
                         }
 
+                        // create a variable or set it to num1 <= varlue < num2
                         if (Settings.SetVar(args[0], rand.Next(num1, num2)))
                         {
                             return string.Format("Set %{0}% to {1}.", args[0], Settings.GetVar(args[0])); //Success
@@ -48,9 +52,13 @@ namespace MinecraftClient.Commands
                     }
                     else
                     {
+                        // extract all arguments of the command
                         string argString = command.Substring(command.IndexOf(args[0]) + args[0].Length, command.Length - 8 - args[0].Length);
+
+                        // process all arguments similar to regulaer terminals with quotes and escaping
                         List<string> values = parseCommandLine(argString);
 
+                        // create a variable or set it to one of the values
                         if (values.Count > 0 && Settings.SetVar(args[0], values[rand.Next(0, values.Count)]))
                         {
                             return string.Format("Set %{0}% to {1}.", args[0], Settings.GetVar(args[0])); //Success
@@ -63,6 +71,12 @@ namespace MinecraftClient.Commands
             else return GetCmdDescTranslated();
         }
 
+        /// <summary>
+        /// Extract arguments from a given string. Allows quotines and escaping them. 
+        /// Similar to command line arguments in regular terminals.
+        /// </summary>
+        /// <param name="cmdLine">Provided arguments as a string</param>
+        /// <returns>All extracted arguments in a string list</returns>
         private static List<string> parseCommandLine(string cmdLine)
         {
             var args = new List<string>();
