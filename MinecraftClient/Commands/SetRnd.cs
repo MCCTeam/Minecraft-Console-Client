@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Text;
 
 namespace MinecraftClient.Commands
@@ -50,9 +48,7 @@ namespace MinecraftClient.Commands
                     }
                     else
                     {
-                        var test = command.IndexOf(args[0]) + args[0].Length;
-                        var test1 = command.Length - 8 - args[0].Length;
-                        string argString = command.Substring(test, test1);
+                        string argString = command.Substring(command.IndexOf(args[0]) + args[0].Length, command.Length - 8 - args[0].Length);
                         List<string> values = parseCommandLine(argString);
 
                         if (Settings.SetVar(args[0], values[rand.Next(0, values.Count)]))
