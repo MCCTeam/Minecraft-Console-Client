@@ -30,7 +30,7 @@ namespace MinecraftClient.Commands
                         }
                         catch (Exception)
                         {
-                            return Translations.Get("cmd.setrnd.format");
+                            return Translations.Get("cmd.setrndnum.format");
                         }
 
                         if (num2 < num1)
@@ -44,18 +44,18 @@ namespace MinecraftClient.Commands
                         {
                             return string.Format("Set %{0}% to {1}.", args[0], Settings.GetVar(args[0])); //Success
                         }
-                        else return Translations.Get("cmd.setrnd.format");
+                        else return Translations.Get("cmd.setrndnum.format");
                     }
                     else
                     {
                         string argString = command.Substring(command.IndexOf(args[0]) + args[0].Length, command.Length - 8 - args[0].Length);
                         List<string> values = parseCommandLine(argString);
 
-                        if (Settings.SetVar(args[0], values[rand.Next(0, values.Count)]))
+                        if (values.Count > 0 && Settings.SetVar(args[0], values[rand.Next(0, values.Count)]))
                         {
                             return string.Format("Set %{0}% to {1}.", args[0], Settings.GetVar(args[0])); //Success
                         }
-                        else return Translations.Get("cmd.setrnd.format");
+                        else return Translations.Get("cmd.setrndstr.format");
                     }
                 }
                 else return GetCmdDescTranslated();
