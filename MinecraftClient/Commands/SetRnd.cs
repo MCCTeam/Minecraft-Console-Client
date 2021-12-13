@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 
@@ -16,7 +17,22 @@ namespace MinecraftClient.Commands
             if (hasArg(command))
             {
                 string[] args = getArg(command).Split(' ');
-                if (args.Length > 1)
+
+                if (args[0] == "player")
+                {
+                    if (args.Length > 1)
+                        return Translations.Get("cmd.setrndplayer.format");
+
+                    var test = handler.GetUsername();
+                    string[] playernames = handler.GetOnlinePlayers().Where(name => name != handler.GetUsername()).ToArray();
+                    if (playernames.Length > 0)
+                    {
+                        Settings.SetVar("player", playernames[rand.Next(0, playernames.Length)]);
+                        return string.Format("Set %{0}% to {1}.", "player", Settings.GetVar("player"));
+                    }
+                    else { return Translations.Get("cmd.setrndplayer.lonely"); }
+                }
+                else if (args.Length > 1)
                 {
                     // detect "to" keyword in string
                     if (args.Length == 2 && args[1].Contains("to"))
