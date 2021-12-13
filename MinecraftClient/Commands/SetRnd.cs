@@ -20,16 +20,21 @@ namespace MinecraftClient.Commands
 
                 if (args[0] == "player")
                 {
+                    // remember to use no further arguments
                     if (args.Length > 1)
                         return Translations.Get("cmd.setrndplayer.format");
 
-                    var test = handler.GetUsername();
+                    // get all playernames without the bot itself
                     string[] playernames = handler.GetOnlinePlayers().Where(name => name != handler.GetUsername()).ToArray();
+
+                    // if there are players apart from the bot online
                     if (playernames.Length > 0)
                     {
+                        // get a random one and assign it
                         Settings.SetVar("player", playernames[rand.Next(0, playernames.Length)]);
                         return string.Format("Set %{0}% to {1}.", "player", Settings.GetVar("player"));
                     }
+                    // you are the only one on the server
                     else { return Translations.Get("cmd.setrndplayer.lonely"); }
                 }
                 else if (args.Length > 1)
