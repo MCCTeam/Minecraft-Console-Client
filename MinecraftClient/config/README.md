@@ -122,7 +122,6 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
  - `set varname=value`: set a value which can be used as `%varname%` in further commands
  - `setrnd variable string1 "\"string2\" string3"`: set a `%variable%` to one of the provided values
  - `setrnd variable -7to10`: set a `%variable%` to a number from -7 to 9
- - `setrnd player`: `%player%` is a constant and always assinged a random playername excluding the bot itself
  - `wait <time>`: wait X ticks (10 ticks = ~1 second. Only for scripts)
  - `move`: used for moving when terrain and movements feature is enabled
  - `look`: used for looking at direction when terrain and movements is enabled
