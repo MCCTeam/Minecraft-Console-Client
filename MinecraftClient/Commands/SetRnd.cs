@@ -73,64 +73,6 @@ namespace MinecraftClient.Commands
             else return GetCmdDescTranslated();
         }
 
-        /// <summary>
-        /// Extract arguments from a given string. Allows quotines and escaping them. 
-        /// Similar to command line arguments in regular terminals.
-        /// </summary>
-        /// <param name="cmdLine">Provided arguments as a string</param>
-        /// <returns>All extracted arguments in a string list</returns>
-        private static List<string> parseCommandLine(string cmdLine)
-        {
-            var args = new List<string>();
-            if (string.IsNullOrWhiteSpace(cmdLine)) return args;
-
-            var currentArg = new StringBuilder();
-            bool inQuotedArg = false;
-
-            for (int i = 0; i < cmdLine.Length; i++)
-            {
-                if (cmdLine[i] == '"' && cmdLine[i-1] != '\\')
-                {
-                    if (inQuotedArg)
-                    {
-                        args.Add(currentArg.ToString());
-                        currentArg = new StringBuilder();
-                        inQuotedArg = false;
-                    }
-                    else
-                    {
-                        inQuotedArg = true;
-                    }
-                }
-                else if (cmdLine[i] == ' ')
-                {
-                    if (inQuotedArg)
-                    {
-                        currentArg.Append(cmdLine[i]);
-                    }
-                    else if (currentArg.Length > 0)
-                    {
-                        args.Add(currentArg.ToString());
-                        currentArg = new StringBuilder();
-                    }
-                }
-                else
-                {
-                    if (cmdLine[i] == '\\' && cmdLine[i + 1] == '\"')
-                    {
-                        currentArg.Append("\"");
-                        i += 1;
-                    }
-                    else
-                    {
-                        currentArg.Append(cmdLine[i]);
-                    }
-                }
-            }
-
-            if (currentArg.Length > 0) args.Add(currentArg.ToString());
-
-            return args;
-        }
+        
     }
 }
