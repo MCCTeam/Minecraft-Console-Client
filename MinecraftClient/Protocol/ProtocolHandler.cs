@@ -504,20 +504,13 @@ namespace MinecraftClient.Protocol
             string code = ConsoleIO.ReadLine();
 
             var msaResponse = Microsoft.RequestAccessToken(code);
-            try
-            {
-                return MicrosoftLogin(msaResponse, out session);
-            }
-            catch (Exception e)
-            {
-                session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
-                ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
-                if (Settings.DebugMessages)
-                {
-                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
-                }
-                return LoginResult.WrongPassword; // Might not always be wrong password
-            }
+            return MicrosoftLogin(msaResponse, out session);
+        }
+
+        public static LoginResult MicrosoftLoginRefresh(string refreshToken, out SessionToken session)
+        {
+            var msaResponse = Microsoft.RefreshAccessToken(refreshToken);
+            return MicrosoftLogin(msaResponse, out session);
         }
 
         private static LoginResult MicrosoftLogin(Microsoft.LoginResponse msaResponse, out SessionToken session)
@@ -539,6 +532,7 @@ namespace MinecraftClient.Protocol
                     session.PlayerName = profile.UserName;
                     session.PlayerID = profile.UUID;
                     session.ID = accessToken;
+                    session.RefreshToken = msaResponse.RefreshToken;
                     Settings.Login = msaResponse.Email;
                     return LoginResult.Success;
                 }
