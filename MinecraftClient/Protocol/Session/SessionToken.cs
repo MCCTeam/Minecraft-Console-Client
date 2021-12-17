@@ -41,7 +41,11 @@ namespace MinecraftClient.Protocol.Session
             session.PlayerName = fields[1];
             session.PlayerID = fields[2];
             session.ClientID = fields[3];
-            session.RefreshToken = fields[4];
+            // Backward compatible with old session file without refresh token field
+            if (fields.Length > 4)
+                session.RefreshToken = fields[4];
+            else
+                session.RefreshToken = String.Empty;
 
             Guid temp;
             if (!JwtRegex.IsMatch(session.ID))
