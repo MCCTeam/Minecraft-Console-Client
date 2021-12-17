@@ -16,7 +16,7 @@ On Mac or Linux you need to install the Mono Runtime:
  - On Mac: http://www.mono-project.com/download/#download-mac
  - On Linux: sudo apt-get install mono-runtime libmono-reflection-cil
 Then, open a terminal in this folder and run "mono MinecraftClient.exe".
-If you cannot authenticate on Mono be cause you have TLS/HTTPS/Certificate errors, you'll need to run `mozroots --import --ask-remove` once or install `ca-certificates-mono` (See [#1708](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1708#issuecomment-893768862)).
+If you cannot authenticate on Mono because you have TLS/HTTPS/Certificate errors, you'll need to run `mozroots --import --ask-remove` once or install `ca-certificates-mono` (See [#1708](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1708#issuecomment-893768862)).
 If Mono crashes, retry with `mono-complete` instead of `mono-runtime`. Use at least Mono v4.0.
 
 Using Docker do the following:
@@ -31,7 +31,7 @@ cd Minecraft-Console-Client/Docker
 
 docker build -t minecraft-console-client:latest .
 # You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
-docker run -it -v <PATH_ON_YOUR_MASCHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
+docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
 Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P`, `CTRL + Q`.
@@ -108,8 +108,8 @@ Internal commands
 ------
 
 These commands can be performed from the chat prompt, scripts or remote control.
-From chat prompt, commands must by default be prepended with a slash, eg. `/quit`
-In scripts and remote control, no slash is needed to perform the command, eg. `quit`
+From chat prompt, commands must by default be prepended with a slash, eg. `/quit`.
+In scripts and remote control, no slash is needed to perform the command, eg. `quit`.
 
  - `quit` or `exit`: disconnect from the server and close the application
  - `reco [account]`: disconnect and reconnect to the server
@@ -149,7 +149,7 @@ Interacting with the Minecraft world
 ------
 
 By default, Minecraft Console Client cannot interact with the world around you.
-However for some versions of the game you can enable the `terrainandmovements` setting.
+However, for some versions of the game you can enable the `terrainandmovements` setting.
 
 This feature will allow you to properly fall on ground, pickup items and move around.
 There is a C# API for reading terrain data around the player and moving from C# scripts.
@@ -210,7 +210,7 @@ If you are on a restricted network you might want to use some HTTP or SOCKS prox
 To do so, find a proxy, enable proxying in INI file and fill in the relevant settings.
 Proxies with username/password authentication are supported but have not been tested.
 Not every proxy will work for playing Minecraft, because of port 80/443 web browsing restrictions.
-However you can choose to use a proxy for login only, most proxies should work in this mode.
+However, you can choose to use a proxy for login only, most proxies should work in this mode.
 
 Connecting to servers when ping is disabled
 ------
@@ -234,7 +234,7 @@ Detecting chat messages
 
 Minecraft Console Client can parse messages from the server in order to detect private and public messages.
 This is useful for reacting to messages eg when using the AutoRespond, Hangman game, or RemoteControl bots.
-However, for unusual chat formats, so you may need to tinker with the ChatFormat section `MinecraftClient.ini`. This section defines the chat format by the means of regular expressions. Building regular expressions can be a bit tricky, so you might want to try them out eg on https://regex101.com - See also issue [#1640](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1640) for more explanations on regular expressions. You can test that your MCC instance properly detects chat messages using [`sample-script-with-chatbot.cs`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-script-with-chatbot.cs).
+However, for unusual chat formats, you may need to tinker with the ChatFormat section `MinecraftClient.ini`. This section defines the chat format by the means of regular expressions. Building regular expressions can be a bit tricky, so you might want to try them out eg on https://regex101.com - See also issue [#1640](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1640) for more explanations on regular expressions. You can test that your MCC instance properly detects chat messages using [`sample-script-with-chatbot.cs`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-script-with-chatbot.cs).
 
 About Replay Mod feature
 ------
@@ -406,7 +406,7 @@ After you finished writing your config, you can use `/autocraft start <recipe na
 Disclaimer
 ------
 
-Even if everything should work, We are not responsible for any damage this app could cause to your computer or your server.
+Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server.
 This app does not steal your password. If you don't trust it, don't use it or check & compile from the source code.
 
 Also, remember that when you connect to a server with this program, you will appear where you left the last time.
