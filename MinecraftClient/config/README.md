@@ -47,20 +47,14 @@ To reattach use the `docker attach` command.
 
 **Start the container using docker-compose:**
 
-First, you have to edit the `docker-compose.yml` in `Minecraft-Console-Client/Docker`.
+By default, the volume of the container gets mapped into a new folder named `data` in the same folder the `docker-compose.yml` is stored.
 
-If you want to map the volume of the container to your machine (useful for editing the INI file), you have to change `<PATH_ON_YOUR_MACHINE_TO_MOUNT>` to a path you want to map it to.
-For example:
-```yml
-volumes:
-- './data:/opt/data'
-```
 If you don't want to map a volume, you have to comment out or delete the entire volumes section:
 ```yml
 #volumes:
 #- './data:/opt/data'
 ```
-After that you can start your container:
+Make sure you are in the directory the `docker-compose.yml` is stored before you attempt to start. If you do so, you can start the container:
 ```bash
 docker-compose run MCC
 ```
