@@ -19,7 +19,12 @@ Then, open a terminal in this folder and run "mono MinecraftClient.exe".
 If you cannot authenticate on Mono because you have TLS/HTTPS/Certificate errors, you'll need to run `mozroots --import --ask-remove` once or install `ca-certificates-mono` (See [#1708](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1708#issuecomment-893768862)).
 If Mono crashes, retry with `mono-complete` instead of `mono-runtime`. Use at least Mono v4.0.
 
+Docker
+------
+
 Using Docker do the following:
+
+**Building the Image:**
 ```bash
 # Using HTTPS
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git
@@ -30,13 +35,44 @@ git clone git@github.com:MCCTeam/Minecraft-Console-Client.git
 cd Minecraft-Console-Client/Docker
 
 docker build -t minecraft-console-client:latest .
+```
+
+**Start the container using Docker:**
+```bash
 # You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
 docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
-
 Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P`, `CTRL + Q`.
-
 To reattach use the `docker attach` command.
+
+**Start the container using docker-compose:**
+
+By default, the volume of the container gets mapped into a new folder named `data` in the same folder the `docker-compose.yml` is stored.
+
+If you don't want to map a volume, you have to comment out or delete the entire volumes section:
+```yml
+#volumes:
+#- './data:/opt/data'
+```
+Make sure you are in the directory the `docker-compose.yml` is stored before you attempt to start. If you do so, you can start the container:
+```bash
+docker-compose run MCC
+```
+Remember to remove the container after usage:
+```bash
+docker-compose down
+```
+
+If you use the INI file and entered your data (username, password, server) there, you can start your container using
+```bash
+docker-compose up
+docker-compose up -d #for deamonized running in the background
+```
+Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`.
+As above, you can stop and remove the container using
+```bash
+docker-compose down
+```
 
 Using Configuration files & Enabling bots
 ------
