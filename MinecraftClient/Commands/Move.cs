@@ -43,11 +43,7 @@ namespace MinecraftClient.Commands
                     }
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
                     {
-                        if (args.Contains("-f"))
-                            handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: true);
-                        else
-                            handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction));
-
+                        handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: args.Contains("-f"));
                         return Translations.Get("cmd.move.moving", args[0]);
                     }
                     else return Translations.Get("cmd.move.dir_fail");
