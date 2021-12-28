@@ -8,8 +8,8 @@ namespace MinecraftClient.Commands
     public class Move : Command
     {
         public override string CmdName { get { return "move"; } }
-        public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|x y z>"; } }
-        public override string CmdDesc { get { return "walk or start walking."; } }
+        public override string CmdUsage { get { return "move <on|off|get|up (-f)|down (-f)|east (-f)|west (-f)|north (-f)|south (-f)|x y z>"; } }
+        public override string CmdDesc { get { return "walk or start walking. Included protection can be bypassed with \"-f\"."; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
@@ -43,8 +43,8 @@ namespace MinecraftClient.Commands
                     }
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
                     {
-                        handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: args.Contains("-f"));
-                        return Translations.Get("cmd.move.moving", args[0]);
+                        return handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: args.Contains("-f")) ? 
+                            Translations.Get("cmd.move.moving", args[0]) : Translations.Get("cmd.move.suggestforce");
                     }
                     else return Translations.Get("cmd.move.dir_fail");
                 }
