@@ -67,7 +67,7 @@ namespace MinecraftClient.Commands
 
                         if (handler.MoveTo(goal, allowUnsafe: takeRisk))
                             return Translations.Get("cmd.move.walk", goal);
-                        else return !takeRisk ? Translations.Get("cmd.move.suggestforce") : Translations.Get("cmd.move.fail", goal);
+                        else return takeRisk ? Translations.Get("cmd.move.fail", goal) : Translations.Get("cmd.move.suggestforce", goal);
                     }
                     catch (FormatException) { return GetCmdDescTranslated(); }
                 }
