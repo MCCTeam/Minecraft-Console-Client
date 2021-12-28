@@ -8,12 +8,19 @@ namespace MinecraftClient.Commands
     public class Move : Command
     {
         public override string CmdName { get { return "move"; } }
-        public override string CmdUsage { get { return "move <on|off|get|up (-f)|down (-f)|east (-f)|west (-f)|north (-f)|south (-f)|x y z>"; } }
-        public override string CmdDesc { get { return "walk or start walking. Unsafe path protection can be bypassed with \"-f\"."; } }
+        public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|x y z> [-f]"; } }
+        public override string CmdDesc { get { return "walk or start walking. Included protection can be bypassed with \"-f\"."; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
-            string[] args = getArgs(command.ToLower());
+            List<string> args = getArgs(command.ToLower()).ToList();
+            bool takeRisk = false;
+
+            if (args.Contains("-f"))
+            {
+                takeRisk = true;
+                args.Remove("-f");
+            }
 
             if (args[0] == "on")
             {
@@ -27,7 +34,7 @@ namespace MinecraftClient.Commands
             }
             else if (handler.GetTerrainEnabled())
             {
-                if (args.Length == 1 || (args.Length == 2 && args.Contains("-f")))
+                if (args.Count == 1)
                 {
                     Direction direction;
                     switch (args[0])
@@ -43,12 +50,12 @@ namespace MinecraftClient.Commands
                     }
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
                     {
-                        return handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: args.Contains("-f")) ? 
+                        return handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: takeRisk) ? 
                             Translations.Get("cmd.move.moving", args[0]) : Translations.Get("cmd.move.suggestforce");
                     }
                     else return Translations.Get("cmd.move.dir_fail");
                 }
-                else if (args.Length == 3)
+                else if (args.Count == 3)
                 {
                     try
                     {
@@ -56,9 +63,9 @@ namespace MinecraftClient.Commands
                         int y = int.Parse(args[1]);
                         int z = int.Parse(args[2]);
                         Location goal = new Location(x, y, z);
-                        if (handler.MoveTo(goal))
-                            return Translations.Get("cmd.move.walk", goal);
-                        return Translations.Get("cmd.move.fail", goal);
+
+                        return handler.MoveTo(goal, allowUnsafe: takeRisk) ?
+                           Translations.Get("cmd.move.walk", goal) : Translations.Get("cmd.move.suggestforce");
                     }
                     catch (FormatException) { return GetCmdDescTranslated(); }
                 }
