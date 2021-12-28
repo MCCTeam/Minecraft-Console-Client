@@ -50,8 +50,9 @@ namespace MinecraftClient.Commands
                     }
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
                     {
-                        return handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: takeRisk) ? 
-                            Translations.Get("cmd.move.moving", args[0]) : Translations.Get("cmd.move.suggestforce");
+                        if (handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: takeRisk))
+                            return Translations.Get("cmd.move.moving", args[0]);
+                        else return !takeRisk ? Translations.Get("cmd.move.suggestforce") : Translations.Get("cmd.move.dir_fail");
                     }
                     else return Translations.Get("cmd.move.dir_fail");
                 }
@@ -64,8 +65,9 @@ namespace MinecraftClient.Commands
                         int z = int.Parse(args[2]);
                         Location goal = new Location(x, y, z);
 
-                        return handler.MoveTo(goal, allowUnsafe: takeRisk) ?
-                           Translations.Get("cmd.move.walk", goal) : Translations.Get("cmd.move.suggestforce");
+                        if (handler.MoveTo(goal, allowUnsafe: takeRisk))
+                            return Translations.Get("cmd.move.walk", goal);
+                        else return !takeRisk ? Translations.Get("cmd.move.suggestforce") : Translations.Get("cmd.move.fail", goal);
                     }
                     catch (FormatException) { return GetCmdDescTranslated(); }
                 }
