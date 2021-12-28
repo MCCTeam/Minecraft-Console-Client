@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "move"; } }
         public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|x y z> [-f]"; } }
-        public override string CmdDesc { get { return "walk or start walking. Included protection can be bypassed with \"-f\"."; } }
+        public override string CmdDesc { get { return "walk or start walking. \"-f\": force unsafe movements like falling or touching fire"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
         {
