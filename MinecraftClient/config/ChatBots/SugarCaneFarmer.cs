@@ -19,7 +19,6 @@ class SugarCaneFarmerBase : ChatBot
             //PerformInternalCommand(string.Format("move {0} {1} {2}", pos.X, pos.Y - 1, pos.Z));
             while (GetCurrentLocation().Distance(pos) > tolerance)
             {
-                //LogToConsole("Waiting");
                 Thread.Sleep(200);
             }
             return true;
