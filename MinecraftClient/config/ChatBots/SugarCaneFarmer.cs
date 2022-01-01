@@ -4,9 +4,7 @@ MCC.LoadBot(new SugarCaneFarmer());
 
 //MCCScript Extensions
 
-public enum CoordinateType { X, Y, Z };
-
-class BaseFunctions : ChatBot
+class SugarCaneFarmerBase : ChatBot
 {
     /// <summary>
     /// MoveToLocation() + waiting until the bot is near the location.
@@ -104,8 +102,10 @@ class BaseFunctions : ChatBot
     public static Func<Location, Location> GetHeadLocation = locFeet => new Location(locFeet.X, locFeet.Y + 1, locFeet.Z);
 }
 
-class SugarCaneFarmer : BaseFunctions
+class SugarCaneFarmer : SugarCaneFarmerBase
 {
+    public enum CoordinateType { X, Y, Z };
+
     /// <summary>
     /// Used to stop the farming process on demand.
     /// </summary>
