@@ -16,7 +16,6 @@ class SugarCaneFarmerBase : ChatBot
     {
         if (MoveToLocation(new Location(pos.X, pos.Y, pos.Z)))
         {
-            //PerformInternalCommand(string.Format("move {0} {1} {2}", pos.X, pos.Y - 1, pos.Z));
             while (GetCurrentLocation().Distance(pos) > tolerance)
             {
                 Thread.Sleep(200);
@@ -60,7 +59,7 @@ class SugarCaneFarmerBase : ChatBot
                 Thread.Sleep(100);
                 i++;
             }
-            return true;
+            return i <= digTimeout;
         }
         else
         {
