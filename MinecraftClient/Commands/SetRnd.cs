@@ -127,7 +127,8 @@ namespace MinecraftClient.Commands
                 }
             }
 
-            if (currentArg.Length > 0) args.Add(currentArg.ToString());
+            if (currentArg.Length > 0) 
+                args.Add(currentArg.ToString());
 
             return args;
         }
