@@ -16,6 +16,9 @@ namespace MinecraftClient.Commands
             List<string> args = getArgs(command.ToLower()).ToList();
             bool takeRisk = false;
 
+            if (args.Count < 1)
+                return GetCmdDescTranslated();
+
             if (args.Contains("-f"))
             {
                 takeRisk = true;

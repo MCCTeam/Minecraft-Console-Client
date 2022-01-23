@@ -55,7 +55,7 @@ namespace MinecraftClient.Commands
                     else
                     {
                         // extract all arguments of the command
-                        string argString = command.Substring(command.IndexOf(args[0]) + args[0].Length, command.Length - 8 - args[0].Length);
+                        string argString = command.Substring(8 + command.Split(' ')[1].Length);
 
                         // process all arguments similar to regular terminals with quotes and escaping
                         List<string> values = parseCommandLine(argString);
