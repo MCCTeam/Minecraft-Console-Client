@@ -107,7 +107,7 @@ namespace MinecraftClient
 
             for (int i = 0; i < cmdLine.Length; i++)
             {
-                if (cmdLine[i] == '"' && cmdLine[i - 1] != '\\')
+                if ((cmdLine[i] == '"' && i > 0 && cmdLine[i-1] != '\\') || (cmdLine[i] == '"' && i == 0))
                 {
                     if (inQuotedArg)
                     {
