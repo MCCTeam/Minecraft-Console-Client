@@ -2,11 +2,11 @@
 
 cd /opt/data || exit 1
 
-# Get latest Job ID
-JOB_ID=$(curl -L https://ci.appveyor.com/api/projects/ORelio/minecraft-console-client | jq -r .build.jobs[0].jobId)
+# Get latest release tag
+RELEASE_TAG=$(curl -s -v https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest 2>&1 | grep location: | cut -d/ -f8)
 
 # Download latest version
-curl -L https://ci.appveyor.com/api/buildjobs/"$JOB_ID"/artifacts/MinecraftClient%2Fbin%2FRelease%2FMinecraftClient.exe --output MinecraftClient.exe
+curl -L https://github.com/MCCTeam/Minecraft-Console-Client/releases/download/${RELEASE_TAG}/MinecraftClient.exe --output MinecraftClient.exe
 
 # Start Client
 mono MinecraftClient.exe
