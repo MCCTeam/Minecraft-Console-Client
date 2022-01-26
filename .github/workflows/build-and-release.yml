@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
 
     env:
-      PROJECT: "HelloWorld"
+      PROJECT: "MinecraftClient"
 
     steps:
     - name: SetupMSBuild
