@@ -2,7 +2,7 @@
 # Due to running .NET 4 this workflow needs to run on windows-latest
 # Changes would need to be made for using .NET 5 and later on linux
 
-name: BuildAndRelease
+name: Build
 
 on:
   push:
