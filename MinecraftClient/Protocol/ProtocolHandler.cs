@@ -660,41 +660,53 @@ namespace MinecraftClient.Protocol
         /// <returns>List of ID of available Realms worlds</returns>
         public static List<string> RealmsListWorlds(string username, string uuid, string accesstoken)
         {
-            string result = "";
-            string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-            DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies, ref result);
-            Json.JSONData realmsWorlds = Json.ParseJson(result);
             List<string> realmsWorldsResult = new List<string>(); // Store world ID
-            if (realmsWorlds.Properties.ContainsKey("servers")
-                && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
-                && realmsWorlds.Properties["servers"].DataArray.Count > 0)
+            try
             {
-                List<string> availableWorlds = new List<string>(); // Store string to print
-                int index = 0;
-                foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
+                string result = "";
+                string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
+                DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies, ref result);
+                Json.JSONData realmsWorlds = Json.ParseJson(result);
+                if (realmsWorlds.Properties.ContainsKey("servers")
+                    && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
+                    && realmsWorlds.Properties["servers"].DataArray.Count > 0)
                 {
-                    if (realmsServer.Properties.ContainsKey("name")
-                        && realmsServer.Properties.ContainsKey("owner")
-                        && realmsServer.Properties.ContainsKey("id")
-                        && realmsServer.Properties.ContainsKey("expired"))
+                    List<string> availableWorlds = new List<string>(); // Store string to print
+                    int index = 0;
+                    foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
                     {
-                        if (realmsServer.Properties["expired"].StringValue == "false")
+                        if (realmsServer.Properties.ContainsKey("name")
+                            && realmsServer.Properties.ContainsKey("owner")
+                            && realmsServer.Properties.ContainsKey("id")
+                            && realmsServer.Properties.ContainsKey("expired"))
                         {
-                            availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
-                                index++,
-                                realmsServer.Properties["id"].StringValue,
-                                realmsServer.Properties["name"].StringValue,
-                                realmsServer.Properties["owner"].StringValue));
-                            realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
+                            if (realmsServer.Properties["expired"].StringValue == "false")
+                            {
+                                availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
+                                    index++,
+                                    realmsServer.Properties["id"].StringValue,
+                                    realmsServer.Properties["name"].StringValue,
+                                    realmsServer.Properties["owner"].StringValue));
+                                realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
+                            }
                         }
                     }
+                    if (availableWorlds.Count > 0)
+                    {
+                        Translations.WriteLine("mcc.realms_available");
+                        foreach (var world in availableWorlds)
+                            ConsoleIO.WriteLine(world);
+                        Translations.WriteLine("mcc.realms_join");
+                    }
                 }
-                if (availableWorlds.Count > 0)
+
+            }
+            catch (Exception e)
+            {
+                ConsoleIO.WriteLineFormatted("§8" + e.GetType().ToString() + ": " + e.Message);
+                if (Settings.DebugMessages)
                 {
-                    Translations.WriteLine("mcc.realms_available");
-                    foreach (var world in availableWorlds)
-                        ConsoleIO.WriteLine(world);
-                    Translations.WriteLine("mcc.realms_join");
+                    ConsoleIO.WriteLineFormatted("§8" + e.StackTrace);
                 }
             }
             return realmsWorldsResult;
@@ -710,23 +722,35 @@ namespace MinecraftClient.Protocol
         /// <returns>Server address (host:port) or empty string if failure</returns>
         public static string GetRealmsWorldServerAddress(string worldId, string username, string uuid, string accesstoken)
         {
-            string result = "";
-            string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-            int statusCode = DoHTTPSGet("pc.realms.minecraft.net", "/worlds/v1/" + worldId + "/join/pc", cookies, ref result);
-            if (statusCode == 200)
+            try
             {
-                Json.JSONData serverAddress = Json.ParseJson(result);
-                if (serverAddress.Properties.ContainsKey("address"))
-                    return serverAddress.Properties["address"].StringValue;
+                string result = "";
+                string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
+                int statusCode = DoHTTPSGet("pc.realms.minecraft.net", "/worlds/v1/" + worldId + "/join/pc", cookies, ref result);
+                if (statusCode == 200)
+                {
+                    Json.JSONData serverAddress = Json.ParseJson(result);
+                    if (serverAddress.Properties.ContainsKey("address"))
+                        return serverAddress.Properties["address"].StringValue;
+                    else
+                    {
+                        Translations.WriteLine("error.realms.ip_error");
+                        return "";
+                    }
+                }
                 else
                 {
-                    Translations.WriteLine("error.realms.ip_error");
+                    Translations.WriteLine("error.realms.access_denied");
                     return "";
                 }
             }
-            else
+            catch (Exception e)
             {
-                Translations.WriteLine("error.realms.access_denied");
+                ConsoleIO.WriteLineFormatted("§8" + e.GetType().ToString() + ": " + e.Message);
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + e.StackTrace);
+                }
                 return "";
             }
         }
