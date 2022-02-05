@@ -466,6 +466,8 @@ namespace MinecraftClient.Protocol
             try
             {
                 var msaResponse = XboxLive.UserLogin(email, password, XboxLive.PreAuth());
+                // Remove refresh token for MCC sign method
+                msaResponse.RefreshToken = string.Empty;
                 return MicrosoftLogin(msaResponse, out session);
             }
             catch (Exception e)
