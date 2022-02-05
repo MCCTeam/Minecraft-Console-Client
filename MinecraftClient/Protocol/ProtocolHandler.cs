@@ -463,10 +463,11 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private static LoginResult MicrosoftMCCLogin(string email, string password, out SessionToken session)
         {
-            var ms = new XboxLive();
             try
             {
-                var msaResponse = ms.UserLogin(email, password, ms.PreAuth());
+                var msaResponse = XboxLive.UserLogin(email, password, XboxLive.PreAuth());
+                // Remove refresh token for MCC sign method
+                msaResponse.RefreshToken = string.Empty;
                 return MicrosoftLogin(msaResponse, out session);
             }
             catch (Exception e)
@@ -516,19 +517,17 @@ namespace MinecraftClient.Protocol
         private static LoginResult MicrosoftLogin(Microsoft.LoginResponse msaResponse, out SessionToken session)
         {
             session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
-            var ms = new XboxLive();
-            var mc = new MinecraftWithXbox();
 
             try
             {
-                var xblResponse = ms.XblAuthenticate(msaResponse);
-                var xsts = ms.XSTSAuthenticate(xblResponse); // Might throw even password correct
+                var xblResponse = XboxLive.XblAuthenticate(msaResponse);
+                var xsts = XboxLive.XSTSAuthenticate(xblResponse); // Might throw even password correct
 
-                string accessToken = mc.LoginWithXbox(xsts.UserHash, xsts.Token);
-                bool hasGame = mc.UserHasGame(accessToken);
+                string accessToken = MinecraftWithXbox.LoginWithXbox(xsts.UserHash, xsts.Token);
+                bool hasGame = MinecraftWithXbox.UserHasGame(accessToken);
                 if (hasGame)
                 {
-                    var profile = mc.GetUserProfile(accessToken);
+                    var profile = MinecraftWithXbox.GetUserProfile(accessToken);
                     session.PlayerName = profile.UserName;
                     session.PlayerID = profile.UUID;
                     session.ID = accessToken;

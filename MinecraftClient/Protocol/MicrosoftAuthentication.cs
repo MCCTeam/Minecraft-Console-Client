@@ -108,28 +108,28 @@ namespace MinecraftClient.Protocol
         }
     }
 
-    class XboxLive
+    static class XboxLive
     {
-        private readonly string authorize = "https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en";
-        private readonly string xbl = "https://user.auth.xboxlive.com/user/authenticate";
-        private readonly string xsts = "https://xsts.auth.xboxlive.com/xsts/authorize";
+        private static string authorize = "https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en";
+        private static string xbl = "https://user.auth.xboxlive.com/user/authenticate";
+        private static string xsts = "https://xsts.auth.xboxlive.com/xsts/authorize";
 
-        private readonly string userAgent = "Mozilla/5.0 (XboxReplay; XboxLiveAuth/3.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
+        private static string userAgent = "Mozilla/5.0 (XboxReplay; XboxLiveAuth/3.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
 
-        private Regex ppft = new Regex("sFTTag:'.*value=\"(.*)\"\\/>'");
-        private Regex urlPost = new Regex("urlPost:'(.+?(?=\'))");
-        private Regex confirm = new Regex("identity\\/confirm");
-        private Regex invalidAccount = new Regex("Sign in to", RegexOptions.IgnoreCase);
-        private Regex twoFA = new Regex("Help us protect your account", RegexOptions.IgnoreCase);
+        private static Regex ppft = new Regex("sFTTag:'.*value=\"(.*)\"\\/>'");
+        private static Regex urlPost = new Regex("urlPost:'(.+?(?=\'))");
+        private static Regex confirm = new Regex("identity\\/confirm");
+        private static Regex invalidAccount = new Regex("Sign in to", RegexOptions.IgnoreCase);
+        private static Regex twoFA = new Regex("Help us protect your account", RegexOptions.IgnoreCase);
 
-        public string SignInUrl { get { return authorize; } }
+        public static string SignInUrl { get { return authorize; } }
 
         /// <summary>
         /// Pre-authentication
         /// </summary>
         /// <remarks>This step is to get the login page for later use</remarks>
         /// <returns></returns>
-        public PreAuthResponse PreAuth()
+        public static PreAuthResponse PreAuth()
         {
             var request = new ProxiedWebRequest(authorize);
             request.UserAgent = userAgent;
@@ -138,7 +138,7 @@ namespace MinecraftClient.Protocol
             string html = response.Body;
 
             string PPFT = ppft.Match(html).Groups[1].Value;
-            string urlPost = this.urlPost.Match(html).Groups[1].Value;
+            string urlPost = XboxLive.urlPost.Match(html).Groups[1].Value;
 
             if (string.IsNullOrEmpty(PPFT) || string.IsNullOrEmpty(urlPost))
             {
@@ -164,7 +164,7 @@ namespace MinecraftClient.Protocol
         /// <param name="password">Account password</param>
         /// <param name="preAuth"></param>
         /// <returns></returns>
-        public Microsoft.LoginResponse UserLogin(string email, string password, PreAuthResponse preAuth)
+        public static Microsoft.LoginResponse UserLogin(string email, string password, PreAuthResponse preAuth)
         {
             var request = new ProxiedWebRequest(preAuth.UrlPost, preAuth.Cookie);
             request.UserAgent = userAgent;
@@ -233,7 +233,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="loginResponse"></param>
         /// <returns></returns>
-        public XblAuthenticateResponse XblAuthenticate(Microsoft.LoginResponse loginResponse)
+        public static XblAuthenticateResponse XblAuthenticate(Microsoft.LoginResponse loginResponse)
         {
             var request = new ProxiedWebRequest(xbl);
             request.UserAgent = userAgent;
@@ -288,7 +288,7 @@ namespace MinecraftClient.Protocol
         /// <remarks>(Don't ask me what is XSTS, I DONT KNOW)</remarks>
         /// <param name="xblResponse"></param>
         /// <returns></returns>
-        public XSTSAuthenticateResponse XSTSAuthenticate(XblAuthenticateResponse xblResponse)
+        public static XSTSAuthenticateResponse XSTSAuthenticate(XblAuthenticateResponse xblResponse)
         {
             var request = new ProxiedWebRequest(xsts);
             request.UserAgent = userAgent;
@@ -364,11 +364,11 @@ namespace MinecraftClient.Protocol
         }
     }
 
-    class MinecraftWithXbox
+    static class MinecraftWithXbox
     {
-        private readonly string loginWithXbox = "https://api.minecraftservices.com/authentication/login_with_xbox";
-        private readonly string ownership = "https://api.minecraftservices.com/entitlements/mcstore";
-        private readonly string profile = "https://api.minecraftservices.com/minecraft/profile";
+        private static string loginWithXbox = "https://api.minecraftservices.com/authentication/login_with_xbox";
+        private static string ownership = "https://api.minecraftservices.com/entitlements/mcstore";
+        private static string profile = "https://api.minecraftservices.com/minecraft/profile";
 
         /// <summary>
         /// Login to Minecraft using the XSTS token and user hash obtained before
@@ -376,7 +376,7 @@ namespace MinecraftClient.Protocol
         /// <param name="userHash"></param>
         /// <param name="xstsToken"></param>
         /// <returns></returns>
-        public string LoginWithXbox(string userHash, string xstsToken)
+        public static string LoginWithXbox(string userHash, string xstsToken)
         {
             var request = new ProxiedWebRequest(loginWithXbox);
             request.Accept = "application/json";
@@ -399,7 +399,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="accessToken"></param>
         /// <returns>True if the user own the game</returns>
-        public bool UserHasGame(string accessToken)
+        public static bool UserHasGame(string accessToken)
         {
             var request = new ProxiedWebRequest(ownership);
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
@@ -415,7 +415,7 @@ namespace MinecraftClient.Protocol
             return json.Properties["items"].DataArray.Count > 0;
         }
 
-        public UserProfile GetUserProfile(string accessToken)
+        public static UserProfile GetUserProfile(string accessToken)
         {
             var request = new ProxiedWebRequest(profile);
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
