@@ -833,7 +833,12 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetInventoryEnabled())
                         {
                             byte windowId = dataTypes.ReadNextByte(packetData);
-                            int stateId = dataTypes.ReadNextVarInt(packetData);
+
+                            int stateId = -1;
+
+                            if(protocolversion >= MC1181Version)
+                                stateId = dataTypes.ReadNextVarInt(packetData);
+
                             int elements = dataTypes.ReadNextVarInt(packetData);
                             Dictionary<int, Item> inventorySlots = new Dictionary<int, Item>();
                             for (short slotId = 0; slotId < elements; slotId++)
@@ -849,7 +854,12 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetInventoryEnabled())
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
-                            int stateId = dataTypes.ReadNextVarInt(packetData);
+
+                            int stateId = -1;
+
+                            if(protocolversion >= MC1181Version)
+                                stateId = dataTypes.ReadNextVarInt(packetData);
+
                             short slotID = dataTypes.ReadNextShort(packetData);
                             Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                             handler.OnSetSlot(windowID, slotID, item);
