@@ -100,11 +100,15 @@ namespace MinecraftClient.ChatBots
                                 }
                             }
                         }
-                        // check entity distance and health again
-                        if (shouldAttackEntity(entitiesToAttack[priorityEntity]))
+                        
+                        if (entitiesToAttack.ContainsKey(priorityEntity))
                         {
-                            InteractEntity(priorityEntity, 1); // hit the entity!
-                            SendAnimation(Inventory.Hand.MainHand); // Arm animation
+                            // check entity distance and health again
+                            if (shouldAttackEntity(entitiesToAttack[priorityEntity]))
+                            {
+                                InteractEntity(priorityEntity, 1); // hit the entity!
+                                SendAnimation(Inventory.Hand.MainHand); // Arm animation
+                            }
                         }
                     }
                     else
