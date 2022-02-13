@@ -62,6 +62,7 @@ namespace MinecraftClient.Mapping
         {
             switch (e)
             {
+                case EntityType.GlowItemFrame:
                 case EntityType.Item:
                 case EntityType.ItemFrame:
                 case EntityType.EyeOfEnder:
