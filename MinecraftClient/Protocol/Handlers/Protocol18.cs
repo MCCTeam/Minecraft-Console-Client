@@ -86,7 +86,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.packetPalette = new PacketTypeHandler(protocolVersion, forgeInfo != null).GetTypeHandler();
             this.log = handler.GetLogger();
 
-            if (handler.GetTerrainEnabled() && protocolversion > MC1165Version)
+            if (handler.GetTerrainEnabled() && protocolversion > MC1171Version)
             {
                 log.Error(Translations.Get("extra.terrainandmovement_disabled"));
                 handler.SetTerrainEnabled(false);
@@ -107,9 +107,11 @@ namespace MinecraftClient.Protocol.Handlers
             // Block palette
             if (protocolversion >= MC113Version)
             {
-                if (protocolVersion > MC1165Version && handler.GetTerrainEnabled())
+                if (protocolVersion > MC1171Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.block"));
-                if (protocolVersion >= MC116Version)
+                if (protocolVersion >= MC117Version)
+                    Block.Palette = new Palette117();
+                else if (protocolVersion >= MC116Version)
                     Block.Palette = new Palette116();
                 else if (protocolVersion >= MC115Version)
                     Block.Palette = new Palette115();
@@ -139,9 +141,11 @@ namespace MinecraftClient.Protocol.Handlers
             // Item palette
             if (protocolversion >= MC116Version)
             {
-                if (protocolversion > MC1165Version && handler.GetInventoryEnabled())
+                if (protocolversion > MC1171Version && handler.GetInventoryEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.item"));
-                if (protocolversion >= MC1162Version)
+                if (protocolversion >= MC1165Version)
+                    itemPalette = new ItemPalette1171();
+                else if (protocolversion >= MC1162Version)
                     itemPalette = new ItemPalette1162();
                 else itemPalette = new ItemPalette1161();
             }

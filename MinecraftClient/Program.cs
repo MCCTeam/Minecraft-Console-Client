@@ -38,12 +38,22 @@ namespace MinecraftClient
         private static Thread offlinePrompt = null;
         private static bool useMcVersionOnce = false;
 
+
+
         /// <summary>
         /// The main entry point of Minecraft Console Client
         /// </summary>
         static void Main(string[] args)
         {
             Console.WriteLine("Minecraft Console Client v{0} - for MC {1} to {2} - Github.com/MCCTeam", Version, MCLowestVersion, MCHighestVersion);
+
+            /*MinecraftClient.Mapping.BlockPalettes.BlockPaletteGenerator.JsonToClass(
+                @"D:\SwDev\Minecraft-Console-Client\generated\reports\blocks.json",
+                @"D:\SwDev\Minecraft-Console-Client\MinecraftClient\Mapping\BlockPalettes\Palette117.cs",
+                @"D:\SwDev\Minecraft-Console-Client\MinecraftClient\Mapping\Material117.cs"
+                );*/
+
+            //Inventory.ItemPalettes.ItemPaletteGenerator.GenerateItemType(@"D:\SwDev\Minecraft-Console-Client\generated\reports\registries.json");
 
             //Build information to facilitate processing of bug reports
             if (BuildInfo != null)

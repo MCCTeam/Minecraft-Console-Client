@@ -137,6 +137,7 @@
     <Compile Include="Inventory\ItemPalettes\ItemPalette115.cs" />
     <Compile Include="Inventory\ItemPalettes\ItemPalette1161.cs" />
     <Compile Include="Inventory\ItemPalettes\ItemPalette1162.cs" />
+    <Compile Include="Inventory\ItemPalettes\ItemPalette1171.cs" />
     <Compile Include="Inventory\ItemPalettes\ItemPaletteGenerator.cs" />
     <Compile Include="Inventory\ItemType.cs" />
     <Compile Include="Inventory\ItemTypeExtensions.cs" />
@@ -149,6 +150,7 @@
     <Compile Include="Mapping\BlockPalettes\BlockPaletteGenerator.cs" />
     <Compile Include="Mapping\BlockPalettes\BlockPalette.cs" />
     <Compile Include="Mapping\BlockPalettes\Palette116.cs" />
+    <Compile Include="Mapping\BlockPalettes\Palette117.cs" />
     <Compile Include="Mapping\CommandBlockFlags.cs" />
     <Compile Include="Mapping\CommandBlockMode.cs" />
     <Compile Include="Mapping\Entity.cs" />
