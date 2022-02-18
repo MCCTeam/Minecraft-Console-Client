@@ -55,6 +55,8 @@ namespace MinecraftClient
 
             //Inventory.ItemPalettes.ItemPaletteGenerator.GenerateItemType(@"D:\SwDev\Minecraft-Console-Client\generated\reports\registries.json");
 
+            //MinecraftClient.Mapping.EntityPalettes.EntityPaletteGenerator.GenerateEntityTypes(@"D:\SwDev\Minecraft-Console-Client\generated\reports\registries.json");
+
             //Build information to facilitate processing of bug reports
             if (BuildInfo != null)
             {

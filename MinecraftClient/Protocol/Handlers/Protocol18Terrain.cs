@@ -38,19 +38,24 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="chunksContinuous">Are the chunk continuous</param>
         /// <param name="currentDimension">Current dimension type (0 = overworld)</param>
         /// <param name="cache">Cache for reading chunk data</param>
-        public void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache)
+        public void ProcessChunkColumnData(int chunkX, int chunkZ, long[] chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache)
         {
+            int chunkMaskSize = chunkMask.Length;
+
             if (protocolversion >= Protocol18Handler.MC19Version)
             {
                 // 1.9 and above chunk format
                 // Unloading chunks is handled by a separate packet
                 for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
                 {
-                    if ((chunkMask & (1 << chunkY)) != 0)
+                    if ((chunkMask[0] & (1 << chunkY)) != 0)
                     {
                         // 1.14 and above Non-air block count inside chunk section, for lighting purposes
                         if (protocolversion >= Protocol18Handler.MC114Version)
-                            dataTypes.ReadNextShort(cache);
+                        {
+                            short blockCount = dataTypes.ReadNextShort(cache);
+                            handler.GetLogger().Debug("Reading chunk containing " + blockCount.ToString() + " blocks.");
+                        }
 
                         byte bitsPerBlock = dataTypes.ReadNextByte(cache);
                         bool usePalette = (bitsPerBlock <= 8);
@@ -84,7 +89,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             int longIndex = 0;
                             int startOffset = 0 - bitsPerBlock;
-
+                           
                             for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                             {
                                 for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
@@ -167,6 +172,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (handler.GetWorld()[chunkX, chunkZ] == null)
                                 handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
                             handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
+                            handler.GetLogger().Debug("Chunk {" + chunkX.ToString() + ", " + chunkY.ToString() + ", " + chunkY.ToString() + "} saved into world");
                         });
 
                         //Pre-1.14 Lighting data
@@ -189,7 +195,7 @@ namespace MinecraftClient.Protocol.Handlers
             else if (protocolversion >= Protocol18Handler.MC18Version)
             {
                 // 1.8 chunk format
-                if (chunksContinuous && chunkMask == 0)
+                if (chunksContinuous && chunkMask[0] == 0)
                 {
                     //Unload the entire chunk column
                     handler.InvokeOnMainThread(() =>
@@ -202,7 +208,7 @@ namespace MinecraftClient.Protocol.Handlers
                     //Load chunk data from the server
                     for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
                     {
-                        if ((chunkMask & (1 << chunkY)) != 0)
+                        if ((chunkMask[0] & (1 << chunkY)) != 0)
                         {
                             Chunk chunk = new Chunk();
 
@@ -226,7 +232,7 @@ namespace MinecraftClient.Protocol.Handlers
                     //Skip light information
                     for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
                     {
-                        if ((chunkMask & (1 << chunkY)) != 0)
+                        if ((chunkMask[0] & (1 << chunkY)) != 0)
                         {
                             //Skip block light
                             dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
@@ -245,7 +251,7 @@ namespace MinecraftClient.Protocol.Handlers
             else
             {
                 // 1.7 chunk format
-                if (chunksContinuous && chunkMask == 0)
+                if (chunksContinuous && chunkMask[0] == 0)
                 {
                     //Unload the entire chunk column
                     handler.InvokeOnMainThread(() =>
@@ -260,7 +266,7 @@ namespace MinecraftClient.Protocol.Handlers
                     int addDataSectionCount = 0;
                     for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
                     {
-                        if ((chunkMask & (1 << chunkY)) != 0)
+                        if ((chunkMask[0] & (1 << chunkY)) != 0)
                             sectionCount++;
                         if ((chunkMask2 & (1 << chunkY)) != 0)
                             addDataSectionCount++;
@@ -288,7 +294,7 @@ namespace MinecraftClient.Protocol.Handlers
                     //Load chunk data
                     for (int chunkY = 0; chunkY < ChunkColumn.ColumnSize; chunkY++)
                     {
-                        if ((chunkMask & (1 << chunkY)) != 0)
+                        if ((chunkMask[0] & (1 << chunkY)) != 0)
                         {
                             Chunk chunk = new Chunk();
 

@@ -206,6 +206,19 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Reads a length-prefixed array of long integers and removes it from the cache
+        /// </summary>
+        /// <returns>The long integer values</returns>
+        public long[] ReadNextLongArray(Queue<byte> cache)
+        {
+            int len = ReadNextVarInt(cache);
+            long[] result = new long[len];
+            for (int i = 0; i < len; i++)
+                result[i] = ReadNextLong(cache);
+            return result;
+        }
+
+        /// <summary>
         /// Read a double from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The double value</returns>

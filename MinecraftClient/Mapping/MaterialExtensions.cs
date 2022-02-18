@@ -316,7 +316,7 @@ namespace MinecraftClient.Mapping
                 case Material.DarkOakStairs:
                 case Material.SlimeBlock:
                 case Material.Barrier:
-                case Material.Light:                                  // ??
+                // case Material.Light:
                 case Material.IronTrapdoor:
                 case Material.Prismarine:
                 case Material.PrismarineBricks:

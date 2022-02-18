@@ -30,7 +30,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -161,6 +161,7 @@
     <Compile Include="Mapping\EntityPalettes\EntityPalette115.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette1161.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPalette1162.cs" />
+    <Compile Include="Mapping\EntityPalettes\EntityPalette1171.cs" />
     <Compile Include="Mapping\EntityPose.cs" />
     <Compile Include="Mapping\EntityType.cs" />
     <Compile Include="Mapping\EntityPalettes\EntityPaletteGenerator.cs" />

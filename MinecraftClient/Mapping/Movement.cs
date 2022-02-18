@@ -21,6 +21,7 @@ namespace MinecraftClient.Mapping
         /// <returns>Updated location after applying gravity</returns>
         public static Location HandleGravity(World world, Location location, ref double motionY)
         {
+            //return location;
             Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
             Location belowFoots = Move(location, Direction.Down);
             if (location.Y > Math.Truncate(location.Y) + 0.0001)
