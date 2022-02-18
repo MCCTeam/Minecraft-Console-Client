@@ -14,6 +14,7 @@ namespace MinecraftClient.Protocol.Handlers
         private int protocolversion;
         private DataTypes dataTypes;
         private IMinecraftComHandler handler;
+        private const bool verboseDebug = false;
 
         /// <summary>
         /// Initialize a new Terrain Decoder
@@ -54,7 +55,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion >= Protocol18Handler.MC114Version)
                         {
                             short blockCount = dataTypes.ReadNextShort(cache);
-                            handler.GetLogger().Debug("Reading chunk containing " + blockCount.ToString() + " blocks.");
+                            if (verboseDebug)
+                            {
+                                handler.GetLogger().Debug("Reading chunk containing " + blockCount.ToString() + " blocks.");
+                            }
                         }
 
                         byte bitsPerBlock = dataTypes.ReadNextByte(cache);
@@ -172,7 +176,8 @@ namespace MinecraftClient.Protocol.Handlers
                             if (handler.GetWorld()[chunkX, chunkZ] == null)
                                 handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
                             handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
-                            handler.GetLogger().Debug("Chunk {" + chunkX.ToString() + ", " + chunkY.ToString() + ", " + chunkY.ToString() + "} saved into world");
+                            if (verboseDebug)
+                                handler.GetLogger().Debug("Chunk {" + chunkX.ToString() + ", " + chunkY.ToString() + ", " + chunkY.ToString() + "} saved into world");
                         });
 
                         //Pre-1.14 Lighting data

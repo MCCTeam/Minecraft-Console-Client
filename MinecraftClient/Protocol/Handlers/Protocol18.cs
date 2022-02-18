@@ -465,12 +465,10 @@ namespace MinecraftClient.Protocol.Handlers
                                             // Don't use ReadNextVarInt because it cost too much time
                                             dataTypes.SkipNextVarInt(packetData);
                                         }
-                                        log.Debug("Skpped " + biomesLength.ToString() + " biome entries");
                                     }
                                     else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
                                 }
                                 int dataSize = dataTypes.ReadNextVarInt(packetData);
-                                log.Debug("Data size is " + dataSize.ToString());
                                 new Task(() => {
                                     pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
                                 }).Start();
@@ -869,6 +867,9 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetInventoryEnabled())
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
+                            int stateID = 0;
+                            if (protocolversion >= MC117Version)
+                                stateID = dataTypes.ReadNextVarInt(packetData);
                             short slotID = dataTypes.ReadNextShort(packetData);
                             Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                             handler.OnSetSlot(windowID, slotID, item);
@@ -1065,7 +1066,10 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             int EntityID = dataTypes.ReadNextVarInt(packetData);
                             Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
-                            int healthField = protocolversion >= MC114Version ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
+                            int healthField =7;
+                            if (protocolversion >= MC116Version) healthField = 9;
+                            else if (protocolversion >= MC114Version) healthField = 8;
+
                             if (metadata.ContainsKey(healthField) && metadata[healthField] != null && metadata[healthField].GetType() == typeof(float))
                                 handler.OnEntityHealth(EntityID, (float)metadata[healthField]);
                             handler.OnEntityMetadata(EntityID, metadata);
