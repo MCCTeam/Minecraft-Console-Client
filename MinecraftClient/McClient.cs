@@ -103,12 +103,7 @@ namespace MinecraftClient
         public string GetUsername() { return username; }
         public string GetUserUUID() { return uuid; }
         public string GetSessionID() { return sessionid; }
-        public Location GetCurrentLocation() {
-            Log.Debug("Location requested - returning {" + this.location.ToString() + "}");
-            lock (locationLock)
-            {
-                return location;
-            } }
+        public Location GetCurrentLocation() { return location; }
         public float GetYaw() { return playerYaw; }
         public float GetPitch() { return playerPitch; }
         public World GetWorld() { return world; }
@@ -1368,7 +1363,7 @@ namespace MinecraftClient
                                 }
                                 else
                                 {
-                                    // Take half of the item stack to cursort
+                                    // Take half of the item stack to cursor
                                     if (inventory.Items[slotId].Count % 2 == 0)
                                     {
                                         // Can be evenly divided
@@ -1868,7 +1863,6 @@ namespace MinecraftClient
                 }
                 else this.location = location;
                 locationReceived = true;
-                Log.Debug("Position updated {" + this.location.ToString() + "}");
             }
         }
 
