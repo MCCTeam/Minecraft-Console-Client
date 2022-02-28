@@ -93,6 +93,7 @@ namespace MinecraftClient
         public static bool DisplayChatLinks = true;
         public static bool DisplayInventoryLayout = true;
         public static bool TerrainAndMovements = false;
+        public static bool GravityEnabled = true;
         public static bool InventoryHandling = false;
         public static string PrivateMsgsCmdName = "tell";
         public static CacheType SessionCaching = CacheType.Disk;

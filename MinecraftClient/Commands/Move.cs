@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     public class Move : Command
     {
         public override string CmdName { get { return "move"; } }
-        public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|x y z>"; } }
+        public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|gravity|nogravity|x y z>"; } }
         public override string CmdDesc { get { return "walk or start walking."; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
@@ -41,6 +41,8 @@ namespace MinecraftClient.Commands
                         case "north": direction = Direction.North; break;
                         case "south": direction = Direction.South; break;
                         case "get": return handler.GetCurrentLocation().ToString();
+                        case "gravity": Settings.GravityEnabled = true; return Translations.Get("cmd.move.gravity.enabled");
+                        case "nogravity": Settings.GravityEnabled = false; return Translations.Get("cmd.move.gravity.disabled");
                         default: return Translations.Get("cmd.look.unknown", argStr);
                     }
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
