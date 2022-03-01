@@ -8,7 +8,7 @@ namespace MinecraftClient.Commands
     public class Move : Command
     {
         public override string CmdName { get { return "move"; } }
-        public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|gravity|nogravity|x y z>"; } }
+        public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|gravity|nogravity|x y z> [-f]"; } }
         public override string CmdDesc { get { return "walk or start walking. \"-f\": force unsafe movements like falling or touching fire"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
