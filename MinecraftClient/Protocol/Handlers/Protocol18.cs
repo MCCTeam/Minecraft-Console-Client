@@ -868,7 +868,7 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             byte windowID = dataTypes.ReadNextByte(packetData);
                             int stateID = 0;
-                            if (protocolversion >= MC117Version)
+                            if (protocolversion >= MC1171Version)
                                 stateID = dataTypes.ReadNextVarInt(packetData);
                             short slotID = dataTypes.ReadNextShort(packetData);
                             Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
@@ -1066,9 +1066,12 @@ namespace MinecraftClient.Protocol.Handlers
                         {
                             int EntityID = dataTypes.ReadNextVarInt(packetData);
                             Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
-                            int healthField =7;
-                            if (protocolversion >= MC116Version) healthField = 9;
-                            else if (protocolversion >= MC114Version) healthField = 8;
+                            // Health field changes places between versions
+                            int healthField = 7; // MC 1.10+ (did not check older versions)
+                            if (protocolversion >= MC114Version)
+                                healthField = 8;
+                            if (protocolversion >= MC116Version)
+                                healthField = 9;
 
                             if (metadata.ContainsKey(healthField) && metadata[healthField] != null && metadata[healthField].GetType() == typeof(float))
                                 handler.OnEntityHealth(EntityID, (float)metadata[healthField]);
