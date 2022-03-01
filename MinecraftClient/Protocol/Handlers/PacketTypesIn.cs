@@ -126,5 +126,6 @@ namespace MinecraftClient.Protocol.Handlers
         UpdateSign, // For 1.8 or below
         UpdateEntityNBT, // For 1.8 or below
         Unknown, // For old version packet that have been removed and not used by mcc 
+        UpdateSimulationDistance,
     }
 }

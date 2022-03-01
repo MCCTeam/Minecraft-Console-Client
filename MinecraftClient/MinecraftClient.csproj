@@ -30,7 +30,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -75,6 +75,9 @@
     <Compile Include="AutoTimeout.cs" />
     <Compile Include="ChatBots\AutoDrop.cs" />
     <Compile Include="ChatBots\Mailer.cs" />
+    <Compile Include="Commands\SetRnd.cs" />
+    <Compile Include="Protocol\JwtPayloadDecode.cs" />
+    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette118.cs" />
     <Compile Include="Protocol\MojangAPI.cs" />
     <Compile Include="Mapping\CubeFromWorld.cs" />
     <Compile Include="Mapping\Material2Tool.cs" />

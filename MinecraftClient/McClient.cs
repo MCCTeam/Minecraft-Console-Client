@@ -1960,7 +1960,7 @@ namespace MinecraftClient
 
             if (Settings.DisplayChatLinks)
                 foreach (string link in links)
-                    Log.Chat(Translations.Get("mcc.link", link), false);
+                    Log.Chat(Translations.Get("mcc.link", link));
 
             DispatchBotEvent(bot => bot.GetText(text));
             DispatchBotEvent(bot => bot.GetText(text, json));
