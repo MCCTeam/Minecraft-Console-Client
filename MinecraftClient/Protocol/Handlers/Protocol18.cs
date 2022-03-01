@@ -397,12 +397,12 @@ namespace MinecraftClient.Protocol.Handlers
                         // entity handling require player pos for distance calculating
                         if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
                         {
-                            if (protocolversion >= MC18Version && (locMask & 1) != 0)
+                            if (protocolversion >= MC18Version)
                             {
                                 Location location = handler.GetCurrentLocation();
-                                location.X += x;
-                                location.Y += y;
-                                location.Z += z;
+                                location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
+                                location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
+                                location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
                                 handler.UpdateLocation(location, yaw, pitch);
                             }
                             else handler.UpdateLocation(new Location(x, y, z), yaw, pitch);
