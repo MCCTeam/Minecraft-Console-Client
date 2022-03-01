@@ -199,7 +199,6 @@ namespace MinecraftClient.Mapping
                 case Material.IronBars:
                 case Material.GlassPane:
                 case Material.Melon:
-                // case Material.GlowLichen:
                 case Material.OakFenceGate:
                 case Material.BrickStairs:
                 case Material.StoneBrickStairs:
@@ -316,7 +315,6 @@ namespace MinecraftClient.Mapping
                 case Material.DarkOakStairs:
                 case Material.SlimeBlock:
                 case Material.Barrier:
-                // case Material.Light:
                 case Material.IronTrapdoor:
                 case Material.Prismarine:
                 case Material.PrismarineBricks:
@@ -615,8 +613,6 @@ namespace MinecraftClient.Mapping
                 case Material.LightningRod:
                 case Material.PointedDripstone:
                 case Material.DripstoneBlock:
-                // case Material.CaveVines:
-                // case Material.CaveVinesPlant:
                 case Material.SporeBlossom:
                 case Material.Azalea:
                 case Material.FloweringAzalea:
@@ -625,7 +621,6 @@ namespace MinecraftClient.Mapping
                 case Material.BigDripleaf:
                 case Material.BigDripleafStem:
                 case Material.SmallDripleaf:
-                // case Material.HangingRoots:
                 case Material.RootedDirt:
                 case Material.Deepslate:
                 case Material.CobbledDeepslate:
@@ -652,8 +647,6 @@ namespace MinecraftClient.Mapping
                 case Material.RawIronBlock:
                 case Material.RawCopperBlock:
                 case Material.RawGoldBlock:
-                // case Material.PottedAzaleaBush:
-                // case Material.PottedFloweringAzaleaBush:
                     return true;
                 default:
                     return false;
