@@ -16,10 +16,15 @@ On Mac or Linux you need to install the Mono Runtime:
  - On Mac: http://www.mono-project.com/download/#download-mac
  - On Linux: sudo apt-get install mono-runtime libmono-reflection-cil
 Then, open a terminal in this folder and run "mono MinecraftClient.exe".
-If you cannot authenticate on Mono be cause you have TLS/HTTPS/Certificate errors, you'll need to run `mozroots --import --ask-remove` once or install `ca-certificates-mono` (See [#1708](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1708#issuecomment-893768862)).
+If you cannot authenticate on Mono because you have TLS/HTTPS/Certificate errors, you'll need to run `mozroots --import --ask-remove` once or install `ca-certificates-mono` (See [#1708](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1708#issuecomment-893768862)).
 If Mono crashes, retry with `mono-complete` instead of `mono-runtime`. Use at least Mono v4.0.
 
+Docker
+------
+
 Using Docker do the following:
+
+**Building the Image:**
 ```bash
 # Using HTTPS
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git
@@ -30,13 +35,44 @@ git clone git@github.com:MCCTeam/Minecraft-Console-Client.git
 cd Minecraft-Console-Client/Docker
 
 docker build -t minecraft-console-client:latest .
-# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
-docker run -it -v <PATH_ON_YOUR_MASCHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
+**Start the container using Docker:**
+```bash
+# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
+docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
+```
 Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P`, `CTRL + Q`.
-
 To reattach use the `docker attach` command.
+
+**Start the container using docker-compose:**
+
+By default, the volume of the container gets mapped into a new folder named `data` in the same folder the `docker-compose.yml` is stored.
+
+If you don't want to map a volume, you have to comment out or delete the entire volumes section:
+```yml
+#volumes:
+#- './data:/opt/data'
+```
+Make sure you are in the directory the `docker-compose.yml` is stored before you attempt to start. If you do so, you can start the container:
+```bash
+docker-compose run MCC
+```
+Remember to remove the container after usage:
+```bash
+docker-compose down
+```
+
+If you use the INI file and entered your data (username, password, server) there, you can start your container using
+```bash
+docker-compose up
+docker-compose up -d #for deamonized running in the background
+```
+Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`.
+As above, you can stop and remove the container using
+```bash
+docker-compose down
+```
 
 Using Configuration files & Enabling bots
 ------
@@ -108,8 +144,8 @@ Internal commands
 ------
 
 These commands can be performed from the chat prompt, scripts or remote control.
-From chat prompt, commands must by default be prepended with a slash, eg. `/quit`
-In scripts and remote control, no slash is needed to perform the command, eg. `quit`
+From chat prompt, commands must by default be prepended with a slash, eg. `/quit`.
+In scripts and remote control, no slash is needed to perform the command, eg. `quit`.
 
  - `quit` or `exit`: disconnect from the server and close the application
  - `reco [account]`: disconnect and reconnect to the server
@@ -120,6 +156,8 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
  - `log <text>`: display some text in the console (useful for scripts)
  - `list`: list players logged in to the server (uses tab list info sent by server)
  - `set varname=value`: set a value which can be used as `%varname%` in further commands
+ - `setrnd variable string1 "\"string2\" string3"`: set a `%variable%` to one of the provided values
+ - `setrnd variable -7to10`: set a `%variable%` to a number from -7 to 9
  - `wait <time>`: wait X ticks (10 ticks = ~1 second. Only for scripts)
  - `move`: used for moving when terrain and movements feature is enabled
  - `look`: used for looking at direction when terrain and movements is enabled
@@ -147,7 +185,7 @@ Interacting with the Minecraft world
 ------
 
 By default, Minecraft Console Client cannot interact with the world around you.
-However for some versions of the game you can enable the `terrainandmovements` setting.
+However, for some versions of the game you can enable the `terrainandmovements` setting.
 
 This feature will allow you to properly fall on ground, pickup items and move around.
 There is a C# API for reading terrain data around the player and moving from C# scripts.
@@ -208,7 +246,7 @@ If you are on a restricted network you might want to use some HTTP or SOCKS prox
 To do so, find a proxy, enable proxying in INI file and fill in the relevant settings.
 Proxies with username/password authentication are supported but have not been tested.
 Not every proxy will work for playing Minecraft, because of port 80/443 web browsing restrictions.
-However you can choose to use a proxy for login only, most proxies should work in this mode.
+However, you can choose to use a proxy for login only, most proxies should work in this mode.
 
 Connecting to servers when ping is disabled
 ------
@@ -232,7 +270,7 @@ Detecting chat messages
 
 Minecraft Console Client can parse messages from the server in order to detect private and public messages.
 This is useful for reacting to messages eg when using the AutoRespond, Hangman game, or RemoteControl bots.
-However, for unusual chat formats, so you may need to tinker with the ChatFormat section `MinecraftClient.ini`. This section defines the chat format by the means of regular expressions. Building regular expressions can be a bit tricky, so you might want to try them out eg on https://regex101.com - See also issue [#1640](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1640) for more explanations on regular expressions. You can test that your MCC instance properly detects chat messages using [`sample-script-with-chatbot.cs`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-script-with-chatbot.cs).
+However, for unusual chat formats, you may need to tinker with the ChatFormat section `MinecraftClient.ini`. This section defines the chat format by the means of regular expressions. Building regular expressions can be a bit tricky, so you might want to try them out eg on https://regex101.com - See also issue [#1640](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1640) for more explanations on regular expressions. You can test that your MCC instance properly detects chat messages using [`sample-script-with-chatbot.cs`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-script-with-chatbot.cs).
 
 About Replay Mod feature
 ------
@@ -404,7 +442,7 @@ After you finished writing your config, you can use `/autocraft start <recipe na
 Disclaimer
 ------
 
-Even if everything should work, We are not responsible for any damage this app could cause to your computer or your server.
+Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server.
 This app does not steal your password. If you don't trust it, don't use it or check & compile from the source code.
 
 Also, remember that when you connect to a server with this program, you will appear where you left the last time.
