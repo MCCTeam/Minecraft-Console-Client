@@ -21,21 +21,24 @@ namespace MinecraftClient.Mapping
         /// <returns>Updated location after applying gravity</returns>
         public static Location HandleGravity(World world, Location location, ref double motionY)
         {
-            Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
-            Location belowFoots = Move(location, Direction.Down);
-            if (location.Y > Math.Truncate(location.Y) + 0.0001)
+            if (Settings.GravityEnabled)
             {
-                belowFoots = location;
-                belowFoots.Y = Math.Truncate(location.Y);
+                Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
+                Location belowFoots = Move(location, Direction.Down);
+                if (location.Y > Math.Truncate(location.Y) + 0.0001)
+                {
+                    belowFoots = location;
+                    belowFoots.Y = Math.Truncate(location.Y);
+                }
+                if (!IsOnGround(world, location) && !IsSwimming(world, location))
+                {
+                    while (!IsOnGround(world, belowFoots) && belowFoots.Y >= 1)
+                        belowFoots = Move(belowFoots, Direction.Down);
+                    location = Move2Steps(location, belowFoots, ref motionY, true).Dequeue();
+                }
+                else if (!(world.GetBlock(onFoots).Type.IsSolid()))
+                    location = Move2Steps(location, onFoots, ref motionY, true).Dequeue();
             }
-            if (!IsOnGround(world, location) && !IsSwimming(world, location))
-            {
-                while (!IsOnGround(world, belowFoots) && belowFoots.Y >= 1)
-                    belowFoots = Move(belowFoots, Direction.Down);
-                location = Move2Steps(location, belowFoots, ref motionY, true).Dequeue();
-            }
-            else if (!(world.GetBlock(onFoots).Type.IsSolid()))
-                location = Move2Steps(location, onFoots, ref motionY, true).Dequeue();
             return location;
         }
 
