@@ -8,7 +8,7 @@ namespace MinecraftClient.Commands
     public class Move : Command
     {
         public override string CmdName { get { return "move"; } }
-        public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|gravity|nogravity|x y z> [-f]"; } }
+        public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|x y z|gravity [on|off]> [-f]"; } }
         public override string CmdDesc { get { return "walk or start walking. \"-f\": force unsafe movements like falling or touching fire"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
@@ -35,6 +35,14 @@ namespace MinecraftClient.Commands
                 handler.SetTerrainEnabled(false);
                 return Translations.Get("cmd.move.disable");
             }
+            else if (args[0] == "gravity")
+            {
+                if (args.Count >= 2)
+                    Settings.GravityEnabled = (args[1] == "on");
+                if (Settings.GravityEnabled)
+                    return Translations.Get("cmd.move.gravity.enabled");
+                else return Translations.Get("cmd.move.gravity.disabled");
+            }
             else if (handler.GetTerrainEnabled())
             {
                 if (args.Count == 1)
@@ -49,8 +57,6 @@ namespace MinecraftClient.Commands
                         case "north": direction = Direction.North; break;
                         case "south": direction = Direction.South; break;
                         case "get": return handler.GetCurrentLocation().ToString();
-                        case "gravity": Settings.GravityEnabled = true; return Translations.Get("cmd.move.gravity.enabled");
-                        case "nogravity": Settings.GravityEnabled = false; return Translations.Get("cmd.move.gravity.disabled");
                         default: return Translations.Get("cmd.look.unknown", args[0]);
                     }
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
