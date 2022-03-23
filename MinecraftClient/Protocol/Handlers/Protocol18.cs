@@ -938,9 +938,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetEntityHandlingEnabled())
                         {
                             int entityid = dataTypes.ReadNextVarInt(packetData);
-                            Inventory.Effects effect = Effects.Speed;
-                            if (Enum.TryParse(dataTypes.ReadNextByte(packetData).ToString(), out effect))
+                            int effectid = dataTypes.ReadNextVarInt(packetData);
+                            if (Enum.IsDefined(typeof(Effects), effectid))
                             {
+                                Effects effect = (Effects)effectid;
                                 int amplifier = dataTypes.ReadNextByte(packetData);
                                 int duration = dataTypes.ReadNextVarInt(packetData);
                                 byte flags = dataTypes.ReadNextByte(packetData);
