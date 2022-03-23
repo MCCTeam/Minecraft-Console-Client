@@ -938,14 +938,27 @@ namespace MinecraftClient.Protocol.Handlers
                         if (handler.GetEntityHandlingEnabled())
                         {
                             int entityid = dataTypes.ReadNextVarInt(packetData);
-                            int effectid = dataTypes.ReadNextVarInt(packetData);
-                            if (Enum.IsDefined(typeof(Effects), effectid))
+                            if (protocolversion < MC1182Version)
                             {
-                                Effects effect = (Effects)effectid;
-                                int amplifier = dataTypes.ReadNextByte(packetData);
-                                int duration = dataTypes.ReadNextVarInt(packetData);
-                                byte flags = dataTypes.ReadNextByte(packetData);
-                                handler.OnEntityEffect(entityid, effect, amplifier, duration, flags);
+                                Effects effect = Effects.Speed;
+                                if (Enum.TryParse(dataTypes.ReadNextByte(packetData).ToString(), out effect))
+                                {
+                                    int amplifier = dataTypes.ReadNextByte(packetData);
+                                    int duration = dataTypes.ReadNextVarInt(packetData);
+                                    byte flags = dataTypes.ReadNextByte(packetData);
+                                    handler.OnEntityEffect(entityid, effect, amplifier, duration, flags);
+                                }
+                            } else
+                            {
+                                int effectid = dataTypes.ReadNextVarInt(packetData);
+                                if (Enum.IsDefined(typeof(Effects), effectid))
+                                {
+                                    Effects effect = (Effects)effectid;
+                                    int amplifier = dataTypes.ReadNextByte(packetData);
+                                    int duration = dataTypes.ReadNextVarInt(packetData);
+                                    byte flags = dataTypes.ReadNextByte(packetData);
+                                    handler.OnEntityEffect(entityid, effect, amplifier, duration, flags);
+                                }
                             }
                         }
                         break;
