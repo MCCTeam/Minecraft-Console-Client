@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Net.Sockets;
 using MinecraftClient.Proxy;
 using System.Net.Security;
+using System.Security.Authentication;
 
 namespace MinecraftClient.Protocol
 {
@@ -123,7 +124,7 @@ namespace MinecraftClient.Protocol
                 if (isSecure)
                 {
                     stream = new SslStream(client.GetStream());
-                    ((SslStream)stream).AuthenticateAsClient(host);
+                    ((SslStream)stream).AuthenticateAsClient(host, null, (SslProtocols)3072, true); // Enable TLS 1.2. Hotfix for #1774
                 }
                 else
                 {

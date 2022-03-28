@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  MCC:
+    image: 'minecraft-console-client:latest'
+    container_name: 'MinecraftConsoleClient'
+    # You could also comment out the volumes section if you don't want to mount the volume. That is up to you. If you do so it's harder to edit the .ini file if thats something you want to do.
+    volumes:
+    - './data:/opt/data'

@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Minecraft Console Client")]
 [assembly: AssemblyDescription("Lightweight console for Minecraft chat and automated scripts")]
 //[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("https://github.com/ORelio/Minecraft-Console-Client")]
+[assembly: AssemblyCompany("https://github.com/MCCTeam/Minecraft-Console-Client")]
 [assembly: AssemblyProduct("MinecraftClient")]
-[assembly: AssemblyCopyright("Copyright © 2012-2019 ORelio & Contributors")]
+[assembly: AssemblyCopyright("Copyright © 2012-2021 The MCC Team")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

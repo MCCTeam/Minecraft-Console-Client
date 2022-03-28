@@ -16,27 +16,63 @@ On Mac or Linux you need to install the Mono Runtime:
  - On Mac: http://www.mono-project.com/download/#download-mac
  - On Linux: sudo apt-get install mono-runtime libmono-reflection-cil
 Then, open a terminal in this folder and run "mono MinecraftClient.exe".
-If you cannot authenticate on Mono be cause you have TLS/HTTPS/Certificate errors, you'll need to run `mozroots --import --ask-remove` once or install `ca-certificates-mono` (See [#1708](https://github.com/ORelio/Minecraft-Console-Client/issues/1708#issuecomment-893768862)).
+If you cannot authenticate on Mono because you have TLS/HTTPS/Certificate errors, you'll need to run `mozroots --import --ask-remove` once or install `ca-certificates-mono` (See [#1708](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1708#issuecomment-893768862)).
 If Mono crashes, retry with `mono-complete` instead of `mono-runtime`. Use at least Mono v4.0.
 
+Docker
+------
+
 Using Docker do the following:
+
+**Building the Image:**
 ```bash
 # Using HTTPS
-git clone https://github.com/ORelio/Minecraft-Console-Client.git
+git clone https://github.com/MCCTeam/Minecraft-Console-Client.git
 
 # Using SSH
-git clone git@github.com:ORelio/Minecraft-Console-Client.git
+git clone git@github.com:MCCTeam/Minecraft-Console-Client.git
 
 cd Minecraft-Console-Client/Docker
 
 docker build -t minecraft-console-client:latest .
-# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
-docker run -it -v <PATH_ON_YOUR_MASCHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
+**Start the container using Docker:**
+```bash
+# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
+docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
+```
 Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P`, `CTRL + Q`.
-
 To reattach use the `docker attach` command.
+
+**Start the container using docker-compose:**
+
+By default, the volume of the container gets mapped into a new folder named `data` in the same folder the `docker-compose.yml` is stored.
+
+If you don't want to map a volume, you have to comment out or delete the entire volumes section:
+```yml
+#volumes:
+#- './data:/opt/data'
+```
+Make sure you are in the directory the `docker-compose.yml` is stored before you attempt to start. If you do so, you can start the container:
+```bash
+docker-compose run MCC
+```
+Remember to remove the container after usage:
+```bash
+docker-compose down
+```
+
+If you use the INI file and entered your data (username, password, server) there, you can start your container using
+```bash
+docker-compose up
+docker-compose up -d #for deamonized running in the background
+```
+Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`.
+As above, you can stop and remove the container using
+```bash
+docker-compose down
+```
 
 Using Configuration files & Enabling bots
 ------
@@ -108,8 +144,8 @@ Internal commands
 ------
 
 These commands can be performed from the chat prompt, scripts or remote control.
-From chat prompt, commands must by default be prepended with a slash, eg. `/quit`
-In scripts and remote control, no slash is needed to perform the command, eg. `quit`
+From chat prompt, commands must by default be prepended with a slash, eg. `/quit`.
+In scripts and remote control, no slash is needed to perform the command, eg. `quit`.
 
  - `quit` or `exit`: disconnect from the server and close the application
  - `reco [account]`: disconnect and reconnect to the server
@@ -120,6 +156,8 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
  - `log <text>`: display some text in the console (useful for scripts)
  - `list`: list players logged in to the server (uses tab list info sent by server)
  - `set varname=value`: set a value which can be used as `%varname%` in further commands
+ - `setrnd variable string1 "\"string2\" string3"`: set a `%variable%` to one of the provided values
+ - `setrnd variable -7to10`: set a `%variable%` to a number from -7 to 9
  - `wait <time>`: wait X ticks (10 ticks = ~1 second. Only for scripts)
  - `move`: used for moving when terrain and movements feature is enabled
  - `look`: used for looking at direction when terrain and movements is enabled
@@ -140,14 +178,14 @@ The purpose of this is to give them an easy-to-remember alias and to avoid typin
 As what you are typing can be read by the server admin if using the remote control feature,
 using aliases is really important for privacy and for safely switching between accounts.
 
-To use these files, simply take a look at [`sample-accounts.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-accounts.txt) and [`sample-servers.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-servers.txt).
+To use these files, simply take a look at [`sample-accounts.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-accounts.txt) and [`sample-servers.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-servers.txt).
 Once you have created your files, fill the `accountlist` and `serverlist` fields in INI file.
 
 Interacting with the Minecraft world
 ------
 
 By default, Minecraft Console Client cannot interact with the world around you.
-However for some versions of the game you can enable the `terrainandmovements` setting.
+However, for some versions of the game you can enable the `terrainandmovements` setting.
 
 This feature will allow you to properly fall on ground, pickup items and move around.
 There is a C# API for reading terrain data around the player and moving from C# scripts.
@@ -181,7 +219,7 @@ C# scripts can be used for creating your own ChatBot without recompiling the who
 These bots are embedded in a script file, which is compiled and loaded on the fly.
 ChatBots can access plugin channels for communicating with some server plugins.
 
-For knowing everything the API has to offer, you can look at [`CSharpRunner.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) and [`ChatBot.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs).
+For knowing everything the API has to offer, you can look at [`CSharpRunner.cs`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) and [`ChatBot.cs`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs).
 
 The structure of the C# file must be like this:
 ```csharp
@@ -195,11 +233,11 @@ MCC.LoadBot(<instance of your class which extends the ChatBot class>);
 ```
 The first line always needs to be `//MCCScript 1.0` comment, as the program requires it to determine the version of the script.
 
-Everything between `//MCCScript 1.0` and `//MCCScript Extensions` comments will be treated as code, that part of the code will be inserted into a class method at compile time. The main part of the script has access to the [`CSharpRunner.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) API while the ChatBot defined in the Extensions section will use the [`ChatBot.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs) API.
+Everything between `//MCCScript 1.0` and `//MCCScript Extensions` comments will be treated as code, that part of the code will be inserted into a class method at compile time. The main part of the script has access to the [`CSharpRunner.cs`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/CSharpRunner.cs) API while the ChatBot defined in the Extensions section will use the [`ChatBot.cs`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/ChatBot.cs) API.
 
 You can include standard .NET libraries/namespaces using the following syntax: `//using <name>;`. Example: `//using System.Net;`
 
-Some sample scripts and optional Chatbots are made available in the [`config`](https://github.com/ORelio/Minecraft-Console-Client/tree/master/MinecraftClient/config) folder.
+Some sample scripts and optional Chatbots are made available in the [`config`](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config) folder.
 
 Using HTTP/Socks proxies
 ------
@@ -208,7 +246,7 @@ If you are on a restricted network you might want to use some HTTP or SOCKS prox
 To do so, find a proxy, enable proxying in INI file and fill in the relevant settings.
 Proxies with username/password authentication are supported but have not been tested.
 Not every proxy will work for playing Minecraft, because of port 80/443 web browsing restrictions.
-However you can choose to use a proxy for login only, most proxies should work in this mode.
+However, you can choose to use a proxy for login only, most proxies should work in this mode.
 
 Connecting to servers when ping is disabled
 ------
@@ -232,7 +270,7 @@ Detecting chat messages
 
 Minecraft Console Client can parse messages from the server in order to detect private and public messages.
 This is useful for reacting to messages eg when using the AutoRespond, Hangman game, or RemoteControl bots.
-However, for unusual chat formats, so you may need to tinker with the ChatFormat section `MinecraftClient.ini`. This section defines the chat format by the means of regular expressions. Building regular expressions can be a bit tricky, so you might want to try them out eg on https://regex101.com - See also issue [#1640](https://github.com/ORelio/Minecraft-Console-Client/issues/1640) for more explanations on regular expressions. You can test that your MCC instance properly detects chat messages using [`sample-script-with-chatbot.cs`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-script-with-chatbot.cs).
+However, for unusual chat formats, you may need to tinker with the ChatFormat section `MinecraftClient.ini`. This section defines the chat format by the means of regular expressions. Building regular expressions can be a bit tricky, so you might want to try them out eg on https://regex101.com - See also issue [#1640](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1640) for more explanations on regular expressions. You can test that your MCC instance properly detects chat messages using [`sample-script-with-chatbot.cs`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-script-with-chatbot.cs).
 
 About Replay Mod feature
 ------
@@ -243,14 +281,14 @@ MCC supports recording and saving your game to a file which can be used by Repla
 Using the Alerts bot
 ------
 
-Write in [`alerts.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/alerts.txt) the words you want the console to beep/alert you on.
-Write in [`alerts-exclude.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/alerts-exclude.txt) the words you want NOT to be alerted on.
+Write in [`alerts.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/alerts.txt) the words you want the console to beep/alert you on.
+Write in [`alerts-exclude.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/alerts-exclude.txt) the words you want NOT to be alerted on.
 For example write `Yourname` in `alerts.txt` and `<Yourname>` in `alerts-exclude.txt` to avoid alerts when you are talking.
 
 Using the AutoRelog bot
 ------
 
-Write in [`kickmessages.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/kickmessages.txt) some words, such as `Restarting` for example.
+Write in [`kickmessages.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/kickmessages.txt) some words, such as `Restarting` for example.
 If the kick message contains one of them, you will automatically be re-connected.
 
 - A kick message `Connection has been lost.` is generated by the console itself when connection is lost.
@@ -264,13 +302,13 @@ If you want to always reconnect, set `ignorekickmessage=true` in `MinecraftClien
 Using the Script Scheduler / Task Scheduler
 ------
 
-The script scheduler allows you to perform scripts or internal commands on various events such as log on server, time interval, or fixed date and time. Simply enable the ScriptScheduler bot and specify a tasks file in your INI file. Please read [`sample-tasks.ini`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-tasks.ini) for learning how to make your own task file.
+The script scheduler allows you to perform scripts or internal commands on various events such as log on server, time interval, or fixed date and time. Simply enable the ScriptScheduler bot and specify a tasks file in your INI file. Please read [`sample-tasks.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-tasks.ini) for learning how to make your own task file.
 
 Using the Hangman game
 ------
 
 Hangman game is one of the first bots ever written for MCC, to demonstrate ChatBot capabilities.
-Create a file with words to guess (examples: [`words-en.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt), [`words-fr.txt`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)) and set it in config inside the `[Hangman]` section. Also set `enabled` to `true`. Then, add your username in the `botowners` INI setting, and finally, connect to the server and use `/tell <bot username> start` to start the game. If the bot does not respond to bot owners, see the [Detecting chat messages](#detecting-chat-messages) section.
+Create a file with words to guess (examples: [`words-en.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt), [`words-fr.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)) and set it in config inside the `[Hangman]` section. Also set `enabled` to `true`. Then, add your username in the `botowners` INI setting, and finally, connect to the server and use `/tell <bot username> start` to start the game. If the bot does not respond to bot owners, see the [Detecting chat messages](#detecting-chat-messages) section.
 
 Using the Remote Control
 ------
@@ -278,7 +316,7 @@ Using the Remote Control
 When the remote control bot is enabled, you can send commands to your bot using whispers.
 Don't forget to add your username in the `botowners` INI setting if you want it to obey.
 If it does not respond to bot owners, read the [Detecting chat messages](#detecting-chat-messages) section.
-**Please note that server admins can read what you type and output from the bot. They can also impersonate bot owners with `/nick`, so do not use Remote Control if you do not trust server admins. See [#1142](https://github.com/ORelio/Minecraft-Console-Client/issues/1142) for more info.**
+**Please note that server admins can read what you type and output from the bot. They can also impersonate bot owners with `/nick`, so do not use Remote Control if you do not trust server admins. See [#1142](https://github.com/MCCTeam/Minecraft-Console-Client/issues/1142) for more info.**
 
 To perform a command simply do the following: `/tell <yourbot> <thecommand>`
 Where `<thecommand>` is an internal command as described in [Internal commands](#internal-commands) section.
@@ -292,7 +330,7 @@ Using the AutoRespond feature
 
 The AutoRespond bot allows you to automatically react on specific chat messages or server announcements.
 You can use either a string to detect in chat messages, or an advanced regular expression.
-For more information about how to define match rules, please refer to [`sample-matches.ini`](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini).
+For more information about how to define match rules, please refer to [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini).
 See [Detecting chat messages](#detecting-chat-messages) if your messages are not detected or to learn more about regular expressions.
 
 Using the Auto Attack
@@ -366,7 +404,7 @@ result=StoneButton     # the resulting item
 # define slots with their deserved item
 slot1=stone            # slot start with 1, count from left to right, top to bottom
 # For the naming of the items, please see
-# https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs
+# https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs
 ```
 
 1. You need to give your recipe a **name** so that you could start them later by name.
@@ -397,14 +435,14 @@ Slots are indexed as follow:
 Simply use `slotIndex=MaterialName` to define material.  
  e.g. `slot1=coal` and `slot3=stick` will craft a torch.
 
-For the naming of items, please see [ItemType.cs](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs) for all the material names.
+For the naming of items, please see [ItemType.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs) for all the material names.
 
 After you finished writing your config, you can use `/autocraft start <recipe name>` to start crafting. Make sure to provide materials for your bot by placing them in inventory first.
 
 Disclaimer
 ------
 
-Even if everything should work, We are not responsible for any damage this app could cause to your computer or your server.
+Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server.
 This app does not steal your password. If you don't trust it, don't use it or check & compile from the source code.
 
 Also, remember that when you connect to a server with this program, you will appear where you left the last time.
@@ -417,36 +455,43 @@ License
 ------
 
 Minecraft Console Client is a totally free of charge, open source project.
-Source code is available at https://github.com/ORelio/Minecraft-Console-Client
+Source code is available at https://github.com/MCCTeam/Minecraft-Console-Client
 
-Unless specifically stated, source code is from me or contributors, and available under CDDL-1.0.
+Unless specifically stated, source code is from the MCC Team or Contributors, and available under CDDL-1.0.
 More info about CDDL-1.0: http://qstuff.blogspot.fr/2007/04/why-cddl.html
 Full license at http://opensource.org/licenses/CDDL-1.0
 
 Credits
 ------
 
-Many features would not have been possible without the help of talented contributors:
+_Project initiated by [ORelio](https://github.com/ORelio) in 2012 on the [Minecraft Forum](http://www.minecraftforum.net/topic/1314800-/)._
 
-**Ideas:**
+Many features would not have been possible without the help of our talented community:
+
+**Maintainers**
+
+  ORelio
+  ReinforceZwei
+
+**Ideas**
 
   ambysdotnet, Awpocalypse, azoundria, bearbear12345, bSun0000, Cat7373, dagonzaros, Dids,
   Elvang, fuckofftwice, GeorgH93, initsuj, JamieSinn, joshbean39, LehmusFIN, maski, medxo,
   mobdon, MousePak, TNT-UP, TorchRJ, yayes2, Yoann166, ZizzyDizzyMC
 
-**Bug Hunters:**
+**Bug Hunters**
 
   1092CQ, ambysdotnet, bearbear12345, c0dei, Cat7373, Chtholly, Darkaegis, dbear20,
   DigitalSniperz, doranchak, drXor, FantomHD, gerik43, ibspa, iTzMrpitBull, JamieSinn,
   k3ldon, KenXeiko, link3321, lyze237, mattman00000, Nicconyancat, Pokechu22, ridgewell,
   Ryan6578, Solethia, TNT-UP, TorchRJ, TRTrident, WeedIsGood, xp9kus, Yoann166
 
-**Code contributions:**
+**Contributors**
 
   Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, Daenges, dbear20, dogwatch,
   initsuj, JamieSinn, justcool393, lokulin, maxpowa, medxo, milutinke, Pokechu22,
   ReinforceZwei, repository, TheMeq, TheSnoozer, vkorn, v1RuX, yunusemregul, ZizzyDizzyMC
-  And all the [GitHub contributors](https://github.com/ORelio/Minecraft-Console-Client/graphs/contributors)!
+  _... And all the [GitHub contributors](https://github.com/MCCTeam/Minecraft-Console-Client/graphs/contributors)!_
 
 **Libraries:**
 
@@ -463,9 +508,10 @@ Many features would not have been possible without the help of talented contribu
 
 If you still have any question after reading this file, you can get support here:
 
- - GitHub Issues: https://github.com/ORelio/Minecraft-Console-Client/issues (You can contact the MCC team here)
- - Minecraft Forums: http://www.minecraftforum.net/topic/1314800-/ (Thead not maintained by the MCC team anymore)
+ - GitHub Issues: https://github.com/MCCTeam/Minecraft-Console-Client/issues (You can contact the MCC Team here)
+ - Minecraft Forums: http://www.minecraftforum.net/topic/1314800-/ (Thead not maintained by the MCC Team anymore)
 
 Code contributions, bug reports and any kind of comments are also highly appreciated :)
 
-_© 2012-2021 ORelio & Contributors_
+_© 2012-2020 ORelio_
+_© 2020-2021 The MCC Team_

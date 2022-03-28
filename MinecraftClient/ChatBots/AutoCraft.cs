@@ -293,7 +293,7 @@ namespace MinecraftClient.ChatBots
                 "# define slots with their deserved item",
                 "slot1=Stone            # slot start with 1, count from left to right, top to bottom",
                 "# For the naming of the items, please see",
-                "# https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs"
+                "# https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs"
             };
             File.WriteAllLines(configPath, content);
         }

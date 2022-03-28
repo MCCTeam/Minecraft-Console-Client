@@ -1048,6 +1048,16 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Get a byte array from the given uuid
+        /// </summary>
+        /// <param name="uuid">UUID of Player/Entity</param>
+        /// <returns>UUID representation</returns>
+        public byte[] GetUUID(Guid UUID)
+        {
+            return UUID.ToBigEndianBytes();
+        }
+
+        /// <summary>
         /// Easily append several byte arrays
         /// </summary>
         /// <param name="bytes">Bytes to append</param>

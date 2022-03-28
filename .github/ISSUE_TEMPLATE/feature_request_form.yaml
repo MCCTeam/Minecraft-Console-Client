@@ -10,11 +10,11 @@ body:
     attributes:
       label: Prerequisites
       options:
-        - label: I have read and understood the [user manual](https://github.com/ORelio/Minecraft-Console-Client/tree/master/MinecraftClient/config)
+        - label: I have read and understood the [user manual](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config)
           required: true
-        - label: I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)
+        - label: I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/Minecraft-Console-Client/build/artifacts)
           required: true
-        - label: I tried to [look for similar feature requests](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
+        - label: I tried to [look for similar feature requests](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
           required: true
   - type: input
     id: client-version

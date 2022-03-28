@@ -8,6 +8,7 @@ using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
+using System.Security.Authentication;
 
 namespace MinecraftClient.Protocol
 {
@@ -126,7 +127,7 @@ namespace MinecraftClient.Protocol
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
             if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
                 return new Protocol16Handler(Client, ProtocolVersion, Handler);
-            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756 };
+            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758 };
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
                 return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
             throw new NotSupportedException(Translations.Get("exception.version_unsupport", ProtocolVersion));
@@ -249,6 +250,11 @@ namespace MinecraftClient.Protocol
                         return 755;
                     case "1.17.1":
                         return 756;
+                    case "1.18":
+                    case "1.18.1":
+                        return 757;
+                    case "1.18.2":
+                        return 758;
                     default:
                         return 0;
                 }
@@ -312,6 +318,8 @@ namespace MinecraftClient.Protocol
                 case 754: return "1.16.5";
                 case 755: return "1.17";
                 case 756: return "1.17.1";
+                case 757: return "1.18.1";
+                case 758: return "1.18.2";
                 default: return "0.0";
             }
         }
@@ -353,7 +361,7 @@ namespace MinecraftClient.Protocol
                 if (Settings.LoginMethod == "mcc")
                     return MicrosoftMCCLogin(user, pass, out session);
                 else
-                    return MicrosoftBrowserLogin(out session);
+                    return MicrosoftBrowserLogin(out session, user);
             }
             else if (type == AccountType.Mojang)
             {
@@ -458,10 +466,11 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private static LoginResult MicrosoftMCCLogin(string email, string password, out SessionToken session)
         {
-            var ms = new XboxLive();
             try
             {
-                var msaResponse = ms.UserLogin(email, password, ms.PreAuth());
+                var msaResponse = XboxLive.UserLogin(email, password, XboxLive.PreAuth());
+                // Remove refresh token for MCC sign method
+                msaResponse.RefreshToken = string.Empty;
                 return MicrosoftLogin(msaResponse, out session);
             }
             catch (Exception e)
@@ -486,81 +495,47 @@ namespace MinecraftClient.Protocol
         /// </remarks>
         /// <param name="session"></param>
         /// <returns></returns>
-        public static LoginResult MicrosoftBrowserLogin(out SessionToken session)
+        public static LoginResult MicrosoftBrowserLogin(out SessionToken session, string loginHint = "")
         {
-            var ms = new XboxLive();
-            string[] askOpenLink =
-            {
-                "Copy the following link to your browser and login to your Microsoft Account",
-                ">>>>>>>>>>>>>>>>>>>>>>",
-                "",
-                ms.SignInUrl,
-                "",
-                "<<<<<<<<<<<<<<<<<<<<<<",
-                "NOTICE: Once successfully logged in, you will see a blank page in your web browser.",
-                "Copy the contents of your browser's address bar and paste it below to complete the login process.",
-            };
-            ConsoleIO.WriteLine(string.Join("\n", askOpenLink));
-            string[] parts = { };
-            while (true)
-            {
-                string link = ConsoleIO.ReadLine();
-                if (string.IsNullOrEmpty(link))
-                {
-                    session = new SessionToken();
-                    return LoginResult.UserCancel;
-                }
-                parts = link.Split('#');
-                if (parts.Length < 2)
-                {
-                    ConsoleIO.WriteLine("Invalid link. Please try again.");
-                    continue;
-                }
-                else break;
-            }
-            string hash = parts[1];
-            var dict = Request.ParseQueryString(hash);
-            var msaResponse = new XboxLive.UserLoginResponse()
-            {
-                AccessToken = dict["access_token"],
-                RefreshToken = dict["refresh_token"],
-                ExpiresIn = int.Parse(dict["expires_in"])
-            };
-            try
-            {
-                return MicrosoftLogin(msaResponse, out session);
-            }
-            catch (Exception e)
-            {
-                session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
-                ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
-                if (Settings.DebugMessages)
-                {
-                    ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
-                }
-                return LoginResult.WrongPassword; // Might not always be wrong password
-            }
+            if (string.IsNullOrEmpty(loginHint))
+                Microsoft.OpenBrowser(Microsoft.SignInUrl);
+            else
+                Microsoft.OpenBrowser(Microsoft.GetSignInUrlWithHint(loginHint));
+            ConsoleIO.WriteLine("Your browser should open automatically. If not, open the link below in your browser.");
+            ConsoleIO.WriteLine("\n" + Microsoft.SignInUrl + "\n");
+
+            ConsoleIO.WriteLine("Paste your code here");
+            string code = ConsoleIO.ReadLine();
+
+            var msaResponse = Microsoft.RequestAccessToken(code);
+            return MicrosoftLogin(msaResponse, out session);
         }
 
-        private static LoginResult MicrosoftLogin(XboxLive.UserLoginResponse msaResponse, out SessionToken session)
+        public static LoginResult MicrosoftLoginRefresh(string refreshToken, out SessionToken session)
+        {
+            var msaResponse = Microsoft.RefreshAccessToken(refreshToken);
+            return MicrosoftLogin(msaResponse, out session);
+        }
+
+        private static LoginResult MicrosoftLogin(Microsoft.LoginResponse msaResponse, out SessionToken session)
         {
             session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
-            var ms = new XboxLive();
-            var mc = new MinecraftWithXbox();
 
             try
             {
-                var xblResponse = ms.XblAuthenticate(msaResponse);
-                var xsts = ms.XSTSAuthenticate(xblResponse); // Might throw even password correct
+                var xblResponse = XboxLive.XblAuthenticate(msaResponse);
+                var xsts = XboxLive.XSTSAuthenticate(xblResponse); // Might throw even password correct
 
-                string accessToken = mc.LoginWithXbox(xsts.UserHash, xsts.Token);
-                bool hasGame = mc.UserHasGame(accessToken);
+                string accessToken = MinecraftWithXbox.LoginWithXbox(xsts.UserHash, xsts.Token);
+                bool hasGame = MinecraftWithXbox.UserHasGame(accessToken);
                 if (hasGame)
                 {
-                    var profile = mc.GetUserProfile(accessToken);
+                    var profile = MinecraftWithXbox.GetUserProfile(accessToken);
                     session.PlayerName = profile.UserName;
                     session.PlayerID = profile.UUID;
                     session.ID = accessToken;
+                    session.RefreshToken = msaResponse.RefreshToken;
+                    Settings.Login = msaResponse.Email;
                     return LoginResult.Success;
                 }
                 else
@@ -586,27 +561,24 @@ namespace MinecraftClient.Protocol
         /// <returns>Returns the status of the token (Valid, Invalid, etc.)</returns>
         public static LoginResult GetTokenValidation(SessionToken session)
         {
-            try
+            var payload = JwtPayloadDecode.GetPayload(session.ID);
+            var json = Json.ParseJson(payload);
+            var expTimestamp = long.Parse(json.Properties["exp"].StringValue);
+            var now = DateTime.Now;
+            var tokenExp = UnixTimeStampToDateTime(expTimestamp);
+            if (Settings.DebugMessages)
             {
-                string result = "";
-                string json_request = "{\"accessToken\": \"" + JsonEncode(session.ID) + "\", \"clientToken\": \"" + JsonEncode(session.ClientID) + "\" }";
-                int code = DoHTTPSPost("authserver.mojang.com", "/validate", json_request, ref result);
-                if (code == 204)
-                {
-                    return LoginResult.Success;
-                }
-                else if (code == 403)
-                {
-                    return LoginResult.LoginRequired;
-                }
-                else
-                {
-                    return LoginResult.OtherError;
-                }
+                ConsoleIO.WriteLine("Access token expiration time is " + tokenExp.ToString());
             }
-            catch
+            if (now < tokenExp)
             {
-                return LoginResult.OtherError;
+                // Still valid
+                return LoginResult.Success;
+            }
+            else
+            {
+                // Token expired
+                return LoginResult.LoginRequired;
             }
         }
 
@@ -690,41 +662,53 @@ namespace MinecraftClient.Protocol
         /// <returns>List of ID of available Realms worlds</returns>
         public static List<string> RealmsListWorlds(string username, string uuid, string accesstoken)
         {
-            string result = "";
-            string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-            DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies, ref result);
-            Json.JSONData realmsWorlds = Json.ParseJson(result);
             List<string> realmsWorldsResult = new List<string>(); // Store world ID
-            if (realmsWorlds.Properties.ContainsKey("servers")
-                && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
-                && realmsWorlds.Properties["servers"].DataArray.Count > 0)
+            try
             {
-                List<string> availableWorlds = new List<string>(); // Store string to print
-                int index = 0;
-                foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
+                string result = "";
+                string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
+                DoHTTPSGet("pc.realms.minecraft.net", "/worlds", cookies, ref result);
+                Json.JSONData realmsWorlds = Json.ParseJson(result);
+                if (realmsWorlds.Properties.ContainsKey("servers")
+                    && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
+                    && realmsWorlds.Properties["servers"].DataArray.Count > 0)
                 {
-                    if (realmsServer.Properties.ContainsKey("name")
-                        && realmsServer.Properties.ContainsKey("owner")
-                        && realmsServer.Properties.ContainsKey("id")
-                        && realmsServer.Properties.ContainsKey("expired"))
+                    List<string> availableWorlds = new List<string>(); // Store string to print
+                    int index = 0;
+                    foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
                     {
-                        if (realmsServer.Properties["expired"].StringValue == "false")
+                        if (realmsServer.Properties.ContainsKey("name")
+                            && realmsServer.Properties.ContainsKey("owner")
+                            && realmsServer.Properties.ContainsKey("id")
+                            && realmsServer.Properties.ContainsKey("expired"))
                         {
-                            availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
-                                index++,
-                                realmsServer.Properties["id"].StringValue,
-                                realmsServer.Properties["name"].StringValue,
-                                realmsServer.Properties["owner"].StringValue));
-                            realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
+                            if (realmsServer.Properties["expired"].StringValue == "false")
+                            {
+                                availableWorlds.Add(String.Format("[{0}] {2} ({3}) - {1}",
+                                    index++,
+                                    realmsServer.Properties["id"].StringValue,
+                                    realmsServer.Properties["name"].StringValue,
+                                    realmsServer.Properties["owner"].StringValue));
+                                realmsWorldsResult.Add(realmsServer.Properties["id"].StringValue);
+                            }
                         }
                     }
+                    if (availableWorlds.Count > 0)
+                    {
+                        Translations.WriteLine("mcc.realms_available");
+                        foreach (var world in availableWorlds)
+                            ConsoleIO.WriteLine(world);
+                        Translations.WriteLine("mcc.realms_join");
+                    }
                 }
-                if (availableWorlds.Count > 0)
+
+            }
+            catch (Exception e)
+            {
+                ConsoleIO.WriteLineFormatted("§8" + e.GetType().ToString() + ": " + e.Message);
+                if (Settings.DebugMessages)
                 {
-                    Translations.WriteLine("mcc.realms_available");
-                    foreach (var world in availableWorlds)
-                        ConsoleIO.WriteLine(world);
-                    Translations.WriteLine("mcc.realms_join");
+                    ConsoleIO.WriteLineFormatted("§8" + e.StackTrace);
                 }
             }
             return realmsWorldsResult;
@@ -740,23 +724,35 @@ namespace MinecraftClient.Protocol
         /// <returns>Server address (host:port) or empty string if failure</returns>
         public static string GetRealmsWorldServerAddress(string worldId, string username, string uuid, string accesstoken)
         {
-            string result = "";
-            string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
-            int statusCode = DoHTTPSGet("pc.realms.minecraft.net", "/worlds/v1/" + worldId + "/join/pc", cookies, ref result);
-            if (statusCode == 200)
+            try
             {
-                Json.JSONData serverAddress = Json.ParseJson(result);
-                if (serverAddress.Properties.ContainsKey("address"))
-                    return serverAddress.Properties["address"].StringValue;
+                string result = "";
+                string cookies = String.Format("sid=token:{0}:{1};user={2};version={3}", accesstoken, uuid, username, Program.MCHighestVersion);
+                int statusCode = DoHTTPSGet("pc.realms.minecraft.net", "/worlds/v1/" + worldId + "/join/pc", cookies, ref result);
+                if (statusCode == 200)
+                {
+                    Json.JSONData serverAddress = Json.ParseJson(result);
+                    if (serverAddress.Properties.ContainsKey("address"))
+                        return serverAddress.Properties["address"].StringValue;
+                    else
+                    {
+                        Translations.WriteLine("error.realms.ip_error");
+                        return "";
+                    }
+                }
                 else
                 {
-                    Translations.WriteLine("error.realms.ip_error");
+                    Translations.WriteLine("error.realms.access_denied");
                     return "";
                 }
             }
-            else
+            catch (Exception e)
             {
-                Translations.WriteLine("error.realms.access_denied");
+                ConsoleIO.WriteLineFormatted("§8" + e.GetType().ToString() + ": " + e.Message);
+                if (Settings.DebugMessages)
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + e.StackTrace);
+                }
                 return "";
             }
         }
@@ -829,7 +825,7 @@ namespace MinecraftClient.Protocol
 
                     TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
                     SslStream stream = new SslStream(client.GetStream());
-                    stream.AuthenticateAsClient(host);
+                    stream.AuthenticateAsClient(host, null, (SslProtocols)3072, true); // Enable TLS 1.2. Hotfix for #1780
 
                     if (Settings.DebugMessages)
                         foreach (string line in headers)
@@ -892,6 +888,19 @@ namespace MinecraftClient.Protocol
             }
 
             return result.ToString();
+        }
+
+        /// <summary>
+        /// Convert a TimeStamp (in second) to DateTime object
+        /// </summary>
+        /// <param name="unixTimeStamp">TimeStamp in second</param>
+        /// <returns>DateTime object of the TimeStamp</returns>
+        public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+        {
+            // Unix timestamp is seconds past epoch
+            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+            return dateTime;
         }
     }
 }

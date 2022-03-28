@@ -75,6 +75,9 @@
     <Compile Include="AutoTimeout.cs" />
     <Compile Include="ChatBots\AutoDrop.cs" />
     <Compile Include="ChatBots\Mailer.cs" />
+    <Compile Include="Commands\SetRnd.cs" />
+    <Compile Include="Protocol\JwtPayloadDecode.cs" />
+    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette118.cs" />
     <Compile Include="Protocol\MojangAPI.cs" />
     <Compile Include="Mapping\CubeFromWorld.cs" />
     <Compile Include="Mapping\Material2Tool.cs" />

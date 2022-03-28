@@ -1,0 +1,58 @@
+# This workflow will build the project using .NET 4 then publish to GitHub releases
+# Due to running .NET 4 this workflow needs to run on windows-2019 (support dropped on windows 2022)
+# Changes would need to be made for using .NET 5 and later on linux
+
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-2019
+
+    env:
+      PROJECT: "MinecraftClient"
+
+    steps:
+    - name: SetupMSBuild
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: DateVersion
+      id: date-version
+      uses: nanzm/get-time-action@v1.0
+      with:
+        timeZone: 0
+        format: 'YYYY-MM-DD'
+
+    - name: VersionInfo
+      run: |
+        # PowerShell commands
+        set COMMIT "${{ github.sha }}".substring(0, 7)
+        '' >> ${{ github.workspace }}\${{ env.PROJECT }}\Properties\AssemblyInfo.cs
+        "[assembly: AssemblyConfiguration(`"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT`")]" >> ${{ github.workspace }}\${{ env.PROJECT }}\Properties\AssemblyInfo.cs
+
+    - name: Build
+      run: msbuild ${{ github.workspace }}\${{ env.PROJECT }}.sln /t:clean,build /p:Configuration=Release /p:Platform="x86" /p:TargetFrameworkVersion="v4.0" /verbosity:minimal
+
+    - name: DateRelease
+      id: date-release
+      uses: nanzm/get-time-action@v1.0
+      with:
+        timeZone: 0
+        format: 'YYYYMMDD'
+
+    - name: Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ github.workspace }}\${{env.PROJECT}}\bin\Release\${{ env.PROJECT }}.exe
+        assetName: ${{ env.PROJECT }}.exe
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}

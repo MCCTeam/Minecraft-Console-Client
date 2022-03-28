@@ -52,6 +52,8 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC1165Version = 754;
         internal const int MC117Version = 755;
         internal const int MC1171Version = 756;
+        internal const int MC1181Version = 757;
+        internal const int MC1182Version = 758;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -325,6 +327,8 @@ namespace MinecraftClient.Protocol.Handlers
                             dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
                         if (protocolversion >= MC114Version)
                             dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
+                        if (protocolversion >= MC1181Version)
+                            dataTypes.ReadNextVarInt(packetData);         // Simulation Distance - 1.18 and above
                         if (protocolversion >= MC18Version)
                             dataTypes.ReadNextBool(packetData);           // Reduced debug info - 1.8 and above
                         if (protocolversion >= MC115Version)
@@ -352,7 +356,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion >= MC116Version)
                         {
                             // TODO handle dimensions for 1.16+, needed for terrain handling
-                            dataTypes.ReadNextString(packetData);
+                            if (protocolversion >= MC1162Version)
+                                dataTypes.ReadNextNbt(packetData);
+                            else
+                                dataTypes.ReadNextString(packetData);
                             this.currentDimension = 0;
                         }
                         else
@@ -1609,7 +1616,9 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion >= MC19Version)
                     fields.AddRange(dataTypes.GetVarInt(mainHand));
                 if (protocolversion >= MC117Version)
-                    fields.Add(1);
+                    fields.Add(0); // Enables text filtering. Always false
+                if (protocolversion >= MC1181Version)
+                    fields.Add(1); // 1.18 and above - Allow server listings
                 SendPacket(PacketTypesOut.ClientSettings, fields);
             }
             catch (SocketException) { }
@@ -2049,6 +2058,25 @@ namespace MinecraftClient.Protocol.Handlers
                     List<byte> packet = new List<byte>();
                     packet.AddRange(dataTypes.GetVarInt(selectedSlot));
                     SendPacket(PacketTypesOut.SelectTrade, packet);
+                    return true;
+                }
+                catch (SocketException) { return false; }
+                catch (System.IO.IOException) { return false; }
+                catch (ObjectDisposedException) { return false; }
+            }
+            else { return false; }
+        }
+
+        public bool SendSpectate(Guid UUID)
+        {
+            // MC 1.8 or greater
+            if (protocolversion >= MC18Version)
+            {
+                try
+                {
+                    List<byte> packet = new List<byte>();
+                    packet.AddRange(dataTypes.GetUUID(UUID));
+                    SendPacket(PacketTypesOut.Spectate, packet);
                     return true;
                 }
                 catch (SocketException) { return false; }

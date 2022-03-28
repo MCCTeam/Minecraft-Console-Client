@@ -348,7 +348,11 @@ namespace MinecraftClient
                             {
                                 Location next = path.Dequeue();
                                 steps = Movement.Move2Steps(location, next, ref motionY);
-                                UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
+
+                                if (Settings.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
+                                {
+                                    UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
+                                }
                             }
                             else
                             {
@@ -1691,6 +1695,41 @@ namespace MinecraftClient
         {
             return InvokeOnMainThread(() => handler.UpdateCommandBlock(location, command, mode, flags));
         }
+
+        /// <summary>
+        /// Teleport to player in spectator mode
+        /// </summary>
+        /// <param name="entity">Player to teleport to</param>
+        /// Teleporting to other entityies is NOT implemented yet
+        public bool Spectate(Entity entity)
+        {
+            if(entity.Type == EntityType.Player)
+            {
+                return SpectateByUUID(entity.UUID);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Teleport to player/entity in spectator mode
+        /// </summary>
+        /// <param name="UUID">UUID of player/entity to teleport to</param>
+        public bool SpectateByUUID(Guid UUID)
+        {
+            if(GetGamemode() == 3)
+            {
+                if(InvokeRequired)
+                    return InvokeOnMainThread(() => SpectateByUUID(UUID));
+                return handler.SendSpectate(UUID);
+            }
+            else
+            {
+                return false;
+            }
+        }
         #endregion
 
         #region Event handlers: An event occurs on the Server
@@ -1921,7 +1960,7 @@ namespace MinecraftClient
 
             if (Settings.DisplayChatLinks)
                 foreach (string link in links)
-                    Log.Chat(Translations.Get("mcc.link", link), false);
+                    Log.Chat(Translations.Get("mcc.link", link));
 
             DispatchBotEvent(bot => bot.GetText(text));
             DispatchBotEvent(bot => bot.GetText(text, json));
