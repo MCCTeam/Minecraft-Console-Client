@@ -215,7 +215,7 @@ namespace MinecraftClient
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
-                    //BotLoad(new ChatBots.YourBot());
+                    BotLoad(new ChatBots.TestBot());
                 }
             }
 
@@ -1845,6 +1845,11 @@ namespace MinecraftClient
             entities.Clear();
             ClearInventories();
             DispatchBotEvent(bot => bot.OnRespawn());
+        }
+
+        public bool ClientIsMoving() 
+        {
+            return terrainAndMovementsEnabled && locationReceived && ((steps != null && steps.Count > 0) || (path != null && path.Count > 0));
         }
 
         /// <summary>

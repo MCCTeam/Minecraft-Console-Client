@@ -990,6 +990,11 @@ namespace MinecraftClient
             return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport);
         }
 
+        protected bool ClientIsMoving()
+        {
+            return Handler.ClientIsMoving();
+        }
+
         /// <summary>
         /// Look at the specified location
         /// </summary>
