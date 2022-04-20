@@ -990,6 +990,10 @@ namespace MinecraftClient
             return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport);
         }
 
+        /// <summary>
+        /// Check if the client is currently processing a Movement.
+        /// </summary>
+        /// <returns>true if a movement is currently handeled</returns>
         protected bool ClientIsMoving()
         {
             return Handler.ClientIsMoving();
