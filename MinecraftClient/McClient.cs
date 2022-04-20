@@ -13,6 +13,7 @@ using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
+using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -1085,6 +1086,78 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get as close as possible to a certain block. Requires a lot more ressources than MoveTo().
+        /// </summary>
+        /// <param name="goalToApproach">The block that should be approached and is out of reach</param>
+        /// <param name="radius">Maximum distance of the approach location to the goal</param>
+        /// <param name="maxNumberOfLocationsToEvaluate">Number of pathfinding tasks that will be started</param>
+        /// <param name="minDistance">Minimum distance of the approach location to your goal - must be smaller than radius</param>
+        /// <param name="allowUnsafe">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <returns>True if a location has been found and movement is started</returns>
+        public bool ApproachTo(Location goalToApproach, int radius, int maxNumberOfLocationsToEvaluate=5, double minDistance=-1, bool allowUnsafe=false) 
+        {
+            // Set border of the search area
+            Location minPoint = new Location(goalToApproach.X - radius, goalToApproach.Y - radius, goalToApproach.Z - radius);
+            Location maxPoint = new Location(goalToApproach.X + radius, goalToApproach.Y + radius, goalToApproach.Z + radius);
+
+            // Create a list of all blocks that should be searched
+            List<int> xRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.X)), Convert.ToInt32(Math.Floor(maxPoint.X - minPoint.X)) + 1).ToList();
+            List<int> yRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.Y)), Convert.ToInt32(Math.Floor(maxPoint.Y - minPoint.Y)) + 1).ToList();
+            List<int> zRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.Z)), Convert.ToInt32(Math.Floor(maxPoint.Z - minPoint.Z)) + 1).ToList();
+
+            List<Location> listOfBlocks = xRange.SelectMany(x => yRange.SelectMany(y => zRange.Select(z => new Location(x, y, z)))).ToList();
+
+            // Get all blocks that are air, have an air block above and a solid block below (space for a player to fit in)
+            // and sort them after their distance to goalToApproach. Take 5 by default to avoid too much calculation power.
+            List<Location> listOfCloseLocations = listOfBlocks.Where(block => GetWorld().GetBlock(new Location(block.X, block.Y + 1, block.Z)).Type == Material.Air &&      // AIR
+                                                                            GetWorld().GetBlock(block).Type == Material.Air &&                                              // AIR
+                                                                            GetWorld().GetBlock(new Location(block.X, block.Y - 1, block.Z)).Type.IsSolid())                // SOLID
+                                                                .OrderBy(closeLocation => goalToApproach.Distance(closeLocation)).Take(maxNumberOfLocationsToEvaluate).ToList();
+
+            // If a minimal distance to the goal was given, remove all locations that are too close.
+            if (minDistance>-1) 
+            {
+                listOfCloseLocations = listOfCloseLocations.Where(block => block.Distance(goalToApproach) >= minDistance).ToList();
+            }
+
+            // Check how much work to do. Avoid too much effort.
+            if (listOfCloseLocations.Count < 1)
+            {
+                return false;
+            }
+            else if (listOfCloseLocations.Count == 1)
+            {
+                return MoveTo(listOfCloseLocations[0], allowUnsafe);
+            }
+            else
+            {
+                // Create several instances of CalculatePath() to find ways to the closest locations
+                List<Task<Queue<Location>>> listOfPathfindInstances = new List<Task<Queue<Location>>>();
+                foreach (Location closeLoc in listOfCloseLocations)
+                {
+                    listOfPathfindInstances.Add(Task<Queue<Location>>.Run(() => Movement.CalculatePath(world, this.location, closeLoc, allowUnsafe)));
+                }
+
+                // Wait for all tasks to finish, to find the one that leads to the closest block
+                Task.WaitAll(listOfPathfindInstances.ToArray());
+
+                // Search through pathfinding results, beginning with the closest possible location and return the first one that has a walkable path leading to it
+                for (int i = 0; i < listOfPathfindInstances.Count; i++)
+                {
+                    if (listOfPathfindInstances[i].Result != null)
+                    {
+                        path = listOfPathfindInstances[i].Result;
+                        return true;
+                    }
+                }
+
+                // None of the locations were reachable. Try to enlarge the radius or the maxNumberOfLocationsToEvaluate.
+                // Both will require more calculating power.
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Send a chat message or command to the server
         /// </summary>
         /// <param name="text">Text to send to the server</param>
@@ -1847,10 +1920,6 @@ namespace MinecraftClient
             DispatchBotEvent(bot => bot.OnRespawn());
         }
 
-        /// <summary>
-        /// Check if the client is currently processing a Movement.
-        /// </summary>
-        /// <returns>true if a movement is currently handeled</returns>
         public bool ClientIsMoving() 
         {
             return terrainAndMovementsEnabled && locationReceived && ((steps != null && steps.Count > 0) || (path != null && path.Count > 0));

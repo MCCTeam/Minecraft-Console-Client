@@ -990,6 +990,11 @@ namespace MinecraftClient
             return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport);
         }
 
+        protected bool ApproachTo(Mapping.Location location, int radius, int maxNumberOfLocationsToEvaluate=5, int minDistance=0, bool allowUnsafe = false) 
+        {
+            return Handler.ApproachTo(location, radius, maxNumberOfLocationsToEvaluate, minDistance, allowUnsafe);
+        }
+
         /// <summary>
         /// Check if the client is currently processing a Movement.
         /// </summary>
@@ -998,7 +1003,7 @@ namespace MinecraftClient
         {
             return Handler.ClientIsMoving();
         }
-
+        
         /// <summary>
         /// Look at the specified location
         /// </summary>
