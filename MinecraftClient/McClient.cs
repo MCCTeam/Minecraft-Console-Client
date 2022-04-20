@@ -216,7 +216,7 @@ namespace MinecraftClient
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
-                    BotLoad(new ChatBots.TestBot());
+                    //BotLoad(new ChatBots.YourBot());
                 }
             }
 
