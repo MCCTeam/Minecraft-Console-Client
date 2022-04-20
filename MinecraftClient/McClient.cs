@@ -1920,6 +1920,10 @@ namespace MinecraftClient
             DispatchBotEvent(bot => bot.OnRespawn());
         }
 
+        /// <summary>
+        /// Check if the client is currently processing a Movement.
+        /// </summary>
+        /// <returns>true if a movement is currently handeled</returns>
         public bool ClientIsMoving() 
         {
             return terrainAndMovementsEnabled && locationReceived && ((steps != null && steps.Count > 0) || (path != null && path.Count > 0));
