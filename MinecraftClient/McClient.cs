@@ -1090,11 +1090,11 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="goalToApproach">The block that should be approached and is out of reach</param>
         /// <param name="radius">Maximum distance of the approach location to the goal</param>
-        /// <param name="maxNumberOfLocationsToEvaluate">Number of pathfinding tasks that will be started</param>
+        /// <param name="pathfindingThreads">How many threads should be started to find valid paths</param>
         /// <param name="minDistance">Minimum distance of the approach location to your goal - must be smaller than radius</param>
         /// <param name="allowUnsafe">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <returns>True if a location has been found and movement is started</returns>
-        public bool ApproachTo(Location goalToApproach, int radius, int maxNumberOfLocationsToEvaluate=5, double minDistance=-1, bool allowUnsafe=false) 
+        public bool ApproachTo(Location goalToApproach, int radius, int pathfindingThreads=10, double minDistance=0, bool allowUnsafe=false) 
         {
             // Set border of the search area
             Location minPoint = new Location(goalToApproach.X - radius, goalToApproach.Y - radius, goalToApproach.Z - radius);
@@ -1112,10 +1112,10 @@ namespace MinecraftClient
             List<Location> listOfCloseLocations = listOfBlocks.Where(block => GetWorld().GetBlock(new Location(block.X, block.Y + 1, block.Z)).Type == Material.Air &&      // AIR
                                                                             GetWorld().GetBlock(block).Type == Material.Air &&                                              // AIR
                                                                             GetWorld().GetBlock(new Location(block.X, block.Y - 1, block.Z)).Type.IsSolid())                // SOLID
-                                                                .OrderBy(closeLocation => goalToApproach.Distance(closeLocation)).Take(maxNumberOfLocationsToEvaluate).ToList();
+                                                                .OrderBy(closeLocation => goalToApproach.Distance(closeLocation)).ToList();
 
             // If a minimal distance to the goal was given, remove all locations that are too close.
-            if (minDistance>-1) 
+            if (minDistance>0) 
             {
                 listOfCloseLocations = listOfCloseLocations.Where(block => block.Distance(goalToApproach) >= minDistance).ToList();
             }
@@ -1133,21 +1133,45 @@ namespace MinecraftClient
             {
                 // Create several instances of CalculatePath() to find ways to the closest locations
                 List<Task<Queue<Location>>> listOfPathfindInstances = new List<Task<Queue<Location>>>();
-                foreach (Location closeLoc in listOfCloseLocations)
-                {
-                    listOfPathfindInstances.Add(Task<Queue<Location>>.Run(() => Movement.CalculatePath(world, this.location, closeLoc, allowUnsafe)));
-                }
+                CancellationTokenSource cts = new CancellationTokenSource();
+                CancellationToken ct = cts.Token;
 
-                // Wait for all tasks to finish, to find the one that leads to the closest block
-                Task.WaitAll(listOfPathfindInstances.ToArray());
-
-                // Search through pathfinding results, beginning with the closest possible location and return the first one that has a walkable path leading to it
-                for (int i = 0; i < listOfPathfindInstances.Count; i++)
+                Task pathfindSpawner = Task.Run(() =>
                 {
-                    if (listOfPathfindInstances[i].Result != null)
+                    // Using Semaphore to limit the amount of parallel running tasks
+                    using (SemaphoreSlim concurrencySemaphore = new SemaphoreSlim(pathfindingThreads))
                     {
-                        path = listOfPathfindInstances[i].Result;
-                        return true;
+                        foreach (Location closeLoc in listOfCloseLocations)
+                        {
+                            // Wait if there are too many parallel tasks
+                            concurrencySemaphore.Wait();
+
+                            // Create a Task for one path
+                            listOfPathfindInstances.Add(Task<Queue<Location>>.Run(() => Movement.CalculatePath(world, this.location, closeLoc, allowUnsafe)));
+
+                            // If a valid path was found, stop spawning new tasks and exit
+                            if (ct.IsCancellationRequested) { break; }
+                        }
+                    }
+                }, cts.Token);
+
+                // Search through the list of tasks for valid paths
+                // List is sorted from the closest possbile goal to the farthest
+                int i = 0;
+                while(!pathfindSpawner.IsCompleted || i < listOfPathfindInstances.Count)
+                {
+                    if (listOfPathfindInstances.Count > 0)
+                    {
+                        listOfPathfindInstances[i].Wait();
+                        // If there is a valid path
+                        if (listOfPathfindInstances[i].Result != null)
+                        {
+                            // Stop creating new tasks
+                            cts.Cancel();
+                            path = listOfPathfindInstances[i].Result;
+                            return true;
+                        }
+                        else { i++; }
                     }
                 }
 
