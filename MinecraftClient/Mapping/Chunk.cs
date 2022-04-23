@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace MinecraftClient.Mapping
 {
@@ -20,6 +21,11 @@ namespace MinecraftClient.Mapping
         private readonly Block[,,] blocks = new Block[SizeX, SizeY, SizeZ];
 
         /// <summary>
+        /// Lock for thread safety
+        /// </summary>
+        private readonly ReaderWriterLockSlim blockLock = new ReaderWriterLockSlim();
+
+        /// <summary>
         /// Read, or set the specified block
         /// </summary>
         /// <param name="blockX">Block X</param>
@@ -36,7 +42,16 @@ namespace MinecraftClient.Mapping
                     throw new ArgumentOutOfRangeException("blockY", "Must be between 0 and " + (SizeY - 1) + " (inclusive)");
                 if (blockZ < 0 || blockZ >= SizeZ)
                     throw new ArgumentOutOfRangeException("blockZ", "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
-                return blocks[blockX, blockY, blockZ];
+
+                blockLock.EnterReadLock();
+                try
+                {
+                    return blocks[blockX, blockY, blockZ];
+                }
+                finally
+                {
+                    blockLock.ExitReadLock();
+                }
             }
             set
             {
@@ -46,7 +61,16 @@ namespace MinecraftClient.Mapping
                     throw new ArgumentOutOfRangeException("blockY", "Must be between 0 and " + (SizeY - 1) + " (inclusive)");
                 if (blockZ < 0 || blockZ >= SizeZ)
                     throw new ArgumentOutOfRangeException("blockZ", "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
-                blocks[blockX, blockY, blockZ] = value;
+
+                blockLock.EnterWriteLock();
+                try
+                {
+                    blocks[blockX, blockY, blockZ] = value;
+                }
+                finally
+                {
+                    blockLock.ExitWriteLock();
+                }
             }
         }
 
