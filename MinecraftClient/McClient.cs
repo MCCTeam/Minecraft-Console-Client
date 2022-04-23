@@ -216,7 +216,7 @@ namespace MinecraftClient
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
-                    //BotLoad(new ChatBots.YourBot());
+                    BotLoad(new ChatBots.TestBot());
                 }
             }
 
@@ -1079,7 +1079,13 @@ namespace MinecraftClient
                     // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
                     if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
                         path = new Queue<Location>(new[] { location });
-                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
+                    else
+                    {
+                        CancellationTokenSource cts = new CancellationTokenSource();
+                        Task<Queue<Location>> pathfindingTask = Task<Queue<Location>>.Run(() => Movement.CalculatePath(world, this.location, location, cts.Token, allowUnsafe));
+                        cts.CancelAfter(TimeSpan.FromSeconds(10));
+                        path = pathfindingTask.Result;
+                    }
                     return path != null;
                 }
             }
@@ -1094,30 +1100,39 @@ namespace MinecraftClient
         /// <param name="minDistance">Minimum distance of the approach location to your goal - must be smaller than radius</param>
         /// <param name="allowUnsafe">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <returns>True if a location has been found and movement is started</returns>
-        public bool ApproachTo(Location goalToApproach, int radius, int pathfindingThreads=10, double minDistance=0, bool allowUnsafe=false) 
+        public bool ApproachTo(Location goalToApproach, int radius, double minDistance=0, bool allowUnsafe=false, int pathfindingThreads = 10) 
         {
+            // Get the current world
+            World currentWorld = GetWorld();
+
             // Set border of the search area
             Location minPoint = new Location(goalToApproach.X - radius, goalToApproach.Y - radius, goalToApproach.Z - radius);
             Location maxPoint = new Location(goalToApproach.X + radius, goalToApproach.Y + radius, goalToApproach.Z + radius);
 
             // Create a list of all blocks that should be searched
-            List<int> xRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.X)), Convert.ToInt32(Math.Floor(maxPoint.X - minPoint.X)) + 1).ToList();
-            List<int> yRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.Y)), Convert.ToInt32(Math.Floor(maxPoint.Y - minPoint.Y)) + 1).ToList();
-            List<int> zRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.Z)), Convert.ToInt32(Math.Floor(maxPoint.Z - minPoint.Z)) + 1).ToList();
-
-            List<Location> listOfBlocks = xRange.SelectMany(x => yRange.SelectMany(y => zRange.Select(z => new Location(x, y, z)))).ToList();
+            List<Location> listOfBlocks = new List<Location> { };
+            for (double x = minPoint.X; x <= maxPoint.X; x++)
+            {
+                for (double y = minPoint.Y; y <= maxPoint.Y; y++)
+                {
+                    for (double z = minPoint.Z; z <= maxPoint.Z; z++)
+                    {
+                        listOfBlocks.Add(new Location(x, y, z));
+                    }
+                }
+            }
 
             // Get all blocks that are air, have an air block above and a solid block below (space for a player to fit in)
             // and sort them after their distance to goalToApproach. Take 5 by default to avoid too much calculation power.
-            List<Location> listOfCloseLocations = listOfBlocks.Where(block => GetWorld().GetBlock(new Location(block.X, block.Y + 1, block.Z)).Type == Material.Air &&      // AIR
-                                                                            GetWorld().GetBlock(block).Type == Material.Air &&                                              // AIR
-                                                                            GetWorld().GetBlock(new Location(block.X, block.Y - 1, block.Z)).Type.IsSolid())                // SOLID
-                                                                .OrderBy(closeLocation => goalToApproach.Distance(closeLocation)).ToList();
+            List<Location> listOfCloseLocations = listOfBlocks.Where(block => currentWorld.GetBlock(Movement.Move(block, Direction.Up)).Type == Material.Air &&      // AIR
+                                                                currentWorld.GetBlock(block).Type == Material.Air &&                                                 // AIR
+                                                                Movement.IsSafe(currentWorld, Movement.Move(block, Direction.Down)))                                                                // SOLID
+                                                    .OrderBy(closeLocation => goalToApproach.DistanceSquared(closeLocation)).ToList();
 
             // If a minimal distance to the goal was given, remove all locations that are too close.
             if (minDistance>0) 
             {
-                listOfCloseLocations = listOfCloseLocations.Where(block => block.Distance(goalToApproach) >= minDistance).ToList();
+                listOfCloseLocations = listOfCloseLocations.Where(block => block.DistanceSquared(goalToApproach) >= minDistance).ToList();
             }
 
             // Check how much work to do. Avoid too much effort.
@@ -1141,22 +1156,20 @@ namespace MinecraftClient
                     // Using Semaphore to limit the amount of parallel running tasks
                     using (SemaphoreSlim concurrencySemaphore = new SemaphoreSlim(pathfindingThreads))
                     {
-                        foreach (Location closeLoc in listOfCloseLocations)
+                        int counter = 0;
+                        while (!ct.IsCancellationRequested && counter < listOfCloseLocations.Count)
                         {
-                            // Wait if there are too many parallel tasks
-                            concurrencySemaphore.Wait();
-
-                            // Create a Task for one path
-                            listOfPathfindInstances.Add(Task<Queue<Location>>.Run(() => Movement.CalculatePath(world, this.location, closeLoc, allowUnsafe)));
-
-                            // If a valid path was found, stop spawning new tasks and exit
-                            if (ct.IsCancellationRequested) { break; }
+                            if (concurrencySemaphore.CurrentCount > 0)
+                            {
+                                listOfPathfindInstances.Add(Task<Queue<Location>>.Run(() => Movement.CalculatePath(world, this.location, listOfCloseLocations[counter], ct, allowUnsafe)));
+                                counter++;
+                            }
                         }
                     }
                 }, cts.Token);
 
                 // Search through the list of tasks for valid paths
-                // List is sorted from the closest possbile goal to the farthest
+                // List is sorted from the closest possible goal to the farthest
                 int i = 0;
                 while(!pathfindSpawner.IsCompleted || i < listOfPathfindInstances.Count)
                 {
@@ -1168,11 +1181,13 @@ namespace MinecraftClient
                         {
                             // Stop creating new tasks
                             cts.Cancel();
+                            // Return the sucessful result
                             path = listOfPathfindInstances[i].Result;
                             return true;
                         }
                         else { i++; }
                     }
+                    else { Thread.Sleep(10); }
                 }
 
                 // None of the locations were reachable. Try to enlarge the radius or the maxNumberOfLocationsToEvaluate.

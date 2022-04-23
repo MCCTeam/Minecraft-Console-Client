@@ -990,9 +990,18 @@ namespace MinecraftClient
             return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport);
         }
 
-        protected bool ApproachTo(Mapping.Location location, int radius, int maxNumberOfLocationsToEvaluate=5, int minDistance=0, bool allowUnsafe = false) 
+        /// <summary>
+        /// Get as close as possible to a certain block. Requires a lot more ressources than MoveTo().
+        /// </summary>
+        /// <param name="goalToApproach">The block that should be approached and is out of reach</param>
+        /// <param name="radius">Maximum distance of the approach location to the goal</param>
+        /// <param name="pathfindingThreads">How many threads should be started to find valid paths</param>
+        /// <param name="minDistance">Minimum distance of the approach location to your goal - must be smaller than radius</param>
+        /// <param name="allowUnsafe">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <returns>True if a location has been found and movement is started</returns>
+        public bool ApproachTo(Location goalToApproach, int radius, double minDistance = 0, bool allowUnsafe = false, int pathfindingThreads = 10)
         {
-            return Handler.ApproachTo(location, radius, maxNumberOfLocationsToEvaluate, minDistance, allowUnsafe);
+            return Handler.ApproachTo(goalToApproach, radius, minDistance, allowUnsafe, pathfindingThreads);
         }
 
         /// <summary>
