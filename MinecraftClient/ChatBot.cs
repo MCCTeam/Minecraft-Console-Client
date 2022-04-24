@@ -985,23 +985,9 @@ namespace MinecraftClient
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowDirectTeleport">Allow non-vanilla teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false)
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, bool allowApproachIfGoalNotReached=false, int mindistance=0)
         {
-            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport);
-        }
-
-        /// <summary>
-        /// Get as close as possible to a certain block. Requires a lot more ressources than MoveTo().
-        /// </summary>
-        /// <param name="goalToApproach">The block that should be approached and is out of reach</param>
-        /// <param name="radius">Maximum distance of the approach location to the goal</param>
-        /// <param name="pathfindingThreads">How many threads should be started to find valid paths</param>
-        /// <param name="minDistance">Minimum distance of the approach location to your goal - must be smaller than radius</param>
-        /// <param name="allowUnsafe">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
-        /// <returns>True if a location has been found and movement is started</returns>
-        public bool ApproachTo(Location goalToApproach, int radius, double minDistance = 0, bool allowUnsafe = false, int pathfindingThreads = 10)
-        {
-            return Handler.ApproachTo(goalToApproach, radius, minDistance, allowUnsafe, pathfindingThreads);
+            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, allowApproachIfGoalNotReached, mindistance);
         }
 
         /// <summary>
