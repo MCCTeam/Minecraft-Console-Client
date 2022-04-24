@@ -216,7 +216,7 @@ namespace MinecraftClient
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
-                    BotLoad(new ChatBots.TestBot());
+                    // BotLoad(new ChatBots.YourBot());
                 }
             }
 
@@ -1062,8 +1062,10 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <param name="allowApproachIfGoalNotReached">Return an approaching path instead of null if nothing else was found</param>
+        /// <param name="minDistance">Enter a minimum distance you want to have to the goal</param>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, bool allowApproachIfGoalNotReached=false, int minDistance=0)
         {
             lock (locationLock)
             {
@@ -1082,117 +1084,13 @@ namespace MinecraftClient
                     else
                     {
                         CancellationTokenSource cts = new CancellationTokenSource();
-                        Task<Queue<Location>> pathfindingTask = Task<Queue<Location>>.Run(() => Movement.CalculatePath(world, this.location, location, cts.Token, allowUnsafe));
-                        cts.CancelAfter(TimeSpan.FromSeconds(10));
+                        Task<Queue<Location>> pathfindingTask = Task.Run(() => Movement.CalculatePath(world, this.location, location, cts.Token, allowUnsafe, allowApproachIfGoalNotReached, minDistance));
+                        cts.CancelAfter(TimeSpan.FromSeconds(5));
+                        pathfindingTask.Wait();
                         path = pathfindingTask.Result;
                     }
                     return path != null;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Get as close as possible to a certain block. Requires a lot more ressources than MoveTo().
-        /// </summary>
-        /// <param name="goalToApproach">The block that should be approached and is out of reach</param>
-        /// <param name="radius">Maximum distance of the approach location to the goal</param>
-        /// <param name="pathfindingThreads">How many threads should be started to find valid paths</param>
-        /// <param name="minDistance">Minimum distance of the approach location to your goal - must be smaller than radius</param>
-        /// <param name="allowUnsafe">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
-        /// <returns>True if a location has been found and movement is started</returns>
-        public bool ApproachTo(Location goalToApproach, int radius, double minDistance=0, bool allowUnsafe=false, int pathfindingThreads = 10) 
-        {
-            // Get the current world
-            World currentWorld = GetWorld();
-
-            // Set border of the search area
-            Location minPoint = new Location(goalToApproach.X - radius, goalToApproach.Y - radius, goalToApproach.Z - radius);
-            Location maxPoint = new Location(goalToApproach.X + radius, goalToApproach.Y + radius, goalToApproach.Z + radius);
-
-            // Create a list of all blocks that should be searched
-            List<Location> listOfBlocks = new List<Location> { };
-            for (double x = minPoint.X; x <= maxPoint.X; x++)
-            {
-                for (double y = minPoint.Y; y <= maxPoint.Y; y++)
-                {
-                    for (double z = minPoint.Z; z <= maxPoint.Z; z++)
-                    {
-                        listOfBlocks.Add(new Location(x, y, z));
-                    }
-                }
-            }
-
-            // Get all blocks that are air, have an air block above and a solid block below (space for a player to fit in)
-            // and sort them after their distance to goalToApproach. Take 5 by default to avoid too much calculation power.
-            List<Location> listOfCloseLocations = listOfBlocks.Where(block => currentWorld.GetBlock(Movement.Move(block, Direction.Up)).Type == Material.Air &&      // AIR
-                                                                currentWorld.GetBlock(block).Type == Material.Air &&                                                 // AIR
-                                                                Movement.IsSafe(currentWorld, Movement.Move(block, Direction.Down)))                                                                // SOLID
-                                                    .OrderBy(closeLocation => goalToApproach.DistanceSquared(closeLocation)).ToList();
-
-            // If a minimal distance to the goal was given, remove all locations that are too close.
-            if (minDistance>0) 
-            {
-                listOfCloseLocations = listOfCloseLocations.Where(block => block.DistanceSquared(goalToApproach) >= minDistance).ToList();
-            }
-
-            // Check how much work to do. Avoid too much effort.
-            if (listOfCloseLocations.Count < 1)
-            {
-                return false;
-            }
-            else if (listOfCloseLocations.Count == 1)
-            {
-                return MoveTo(listOfCloseLocations[0], allowUnsafe);
-            }
-            else
-            {
-                // Create several instances of CalculatePath() to find ways to the closest locations
-                List<Task<Queue<Location>>> listOfPathfindInstances = new List<Task<Queue<Location>>>();
-                CancellationTokenSource cts = new CancellationTokenSource();
-                CancellationToken ct = cts.Token;
-
-                Task pathfindSpawner = Task.Run(() =>
-                {
-                    // Using Semaphore to limit the amount of parallel running tasks
-                    using (SemaphoreSlim concurrencySemaphore = new SemaphoreSlim(pathfindingThreads))
-                    {
-                        int counter = 0;
-                        while (!ct.IsCancellationRequested && counter < listOfCloseLocations.Count)
-                        {
-                            if (concurrencySemaphore.CurrentCount > 0)
-                            {
-                                listOfPathfindInstances.Add(Task<Queue<Location>>.Run(() => Movement.CalculatePath(world, this.location, listOfCloseLocations[counter], ct, allowUnsafe)));
-                                counter++;
-                            }
-                        }
-                    }
-                }, cts.Token);
-
-                // Search through the list of tasks for valid paths
-                // List is sorted from the closest possible goal to the farthest
-                int i = 0;
-                while(!pathfindSpawner.IsCompleted || i < listOfPathfindInstances.Count)
-                {
-                    if (listOfPathfindInstances.Count > 0)
-                    {
-                        listOfPathfindInstances[i].Wait();
-                        // If there is a valid path
-                        if (listOfPathfindInstances[i].Result != null)
-                        {
-                            // Stop creating new tasks
-                            cts.Cancel();
-                            // Return the sucessful result
-                            path = listOfPathfindInstances[i].Result;
-                            return true;
-                        }
-                        else { i++; }
-                    }
-                    else { Thread.Sleep(10); }
-                }
-
-                // None of the locations were reachable. Try to enlarge the radius or the maxNumberOfLocationsToEvaluate.
-                // Both will require more calculating power.
-                return false;
             }
         }
 
@@ -1962,7 +1860,7 @@ namespace MinecraftClient
         /// <summary>
         /// Check if the client is currently processing a Movement.
         /// </summary>
-        /// <returns>true if a movement is currently handeled</returns>
+        /// <returns>true if a movement is currently handled</returns>
         public bool ClientIsMoving() 
         {
             return terrainAndMovementsEnabled && locationReceived && ((steps != null && steps.Count > 0) || (path != null && path.Count > 0));

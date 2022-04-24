@@ -129,15 +129,13 @@ namespace MinecraftClient.Mapping
         /// <param name="start">Start location</param>
         /// <param name="goal">Destination location</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
+        /// <param name="allowApproachIfGoalNotReached">Allow the function to return a path to a location that is very close to the goal if it could not be reached</param>
+        /// <param name="minDistanceFromGoal">Enter a minimum distance from the goal you want to keep</param>
         /// <returns>A list of locations, or null if calculation failed</returns>
-        public static Queue<Location> CalculatePath(World world, Location start, Location goal, CancellationToken ct, bool allowUnsafe = false)
+        public static Queue<Location> CalculatePath(World world, Location start, Location goal, CancellationToken ct, bool allowUnsafe = false, bool allowApproachIfGoalNotReached=false, int minDistanceFromGoal=0)
         {
-            // Are we already cancelled?
-            if (ct.IsCancellationRequested)
-                return null;
-
-            Queue<Location> result = null;
-
+            Location current = new Location(); // Location that is currently processed
+            Location closestGoal = new Location(); // Closest Location to the goal. Used for approaching if goal can not be reached or was not found.
             HashSet<Location> ClosedSet = new HashSet<Location>(); // The set of locations already evaluated.
             HashSet<Location> OpenSet = new HashSet<Location>(new[] { start });  // The set of tentative nodes to be evaluated, initially containing the start node
             Dictionary<Location, Location> Came_From = new Dictionary<Location, Location>(); // The map of navigated nodes.
@@ -150,40 +148,33 @@ namespace MinecraftClient.Mapping
 
             while (OpenSet.Count > 0)
             {
-                // Return if Task gets cancelled
-                if (ct.IsCancellationRequested)
-                    return null;
-
-                Location current = //the node in OpenSet having the lowest f_score[] value
+                current = //the node in OpenSet having the lowest f_score[] value
                     OpenSet.Select(location => f_score.ContainsKey(location)
                     ? new KeyValuePair<Location, int>(location, f_score[location])
                     : new KeyValuePair<Location, int>(location, int.MaxValue))
                     .OrderBy(pair => pair.Value).First().Key;
-                if (current == goal)
-                { //reconstruct_path(Came_From, goal)
-                    List<Location> total_path = new List<Location>(new[] { current });
-                    while (Came_From.ContainsKey(current))
-                    {
-                        current = Came_From[current];
-                        total_path.Add(current);
-                    }
-                    total_path.Reverse();
-                    result = new Queue<Location>(total_path);
-                }
+
+                // Only assert a value if it is of actual use later
+                if (allowApproachIfGoalNotReached && ClosedSet.Count > 0)
+                    closestGoal = ClosedSet.OrderBy(checkedLocation => checkedLocation.DistanceSquared(goal)).First();
+
+                // Stop when goal is reached or we are close enough
+                if (current == goal || (current.DistanceSquared(goal) <= minDistanceFromGoal && minDistanceFromGoal > 0))
+                    return reconstructPath(Came_From, current);
+                else if (ct.IsCancellationRequested)
+                    break;
+
                 OpenSet.Remove(current);
                 ClosedSet.Add(current);
                 foreach (Location neighbor in GetAvailableMoves(world, current, allowUnsafe))
                 {
-                    // Stop looping to exit the task ASAP
-                    if (ct.IsCancellationRequested)
-                        break;
                     if (ClosedSet.Contains(neighbor))
-                        continue;		// Ignore the neighbor which is already evaluated.
+                        continue;       // Ignore the neighbor which is already evaluated.
                     int tentative_g_score = g_score[current] + (int)current.DistanceSquared(neighbor); //dist_between(current,neighbor) // length of this path.
-                    if (!OpenSet.Contains(neighbor))	// Discover a new node
+                    if (!OpenSet.Contains(neighbor))    // Discover a new node
                         OpenSet.Add(neighbor);
                     else if (tentative_g_score >= g_score[neighbor])
-                        continue;		// This is not a better path.
+                        continue;       // This is not a better path.
 
                     // This path is the best until now. Record it!
                     Came_From[neighbor] = current;
@@ -191,9 +182,30 @@ namespace MinecraftClient.Mapping
                     f_score[neighbor] = g_score[neighbor] + (int)neighbor.DistanceSquared(goal); //heuristic_cost_estimate(neighbor, goal)
                 }
             }
-            
 
-            return result;
+            // Could not be reached. Set the path to the closest possible location
+            if (allowApproachIfGoalNotReached)            
+                return reconstructPath(Came_From, closestGoal);
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Helper function for CalculatePath()
+        /// </summary>
+        /// <param name="Came_From">The collection of Locations that leads back to the start</param>
+        /// <param name="current">Endpoint of our later walk</param>
+        /// <returns>the path that leads to current from the start position</returns>
+        private static Queue<Location> reconstructPath(Dictionary<Location, Location> Came_From, Location current)
+        {
+            List<Location> total_path = new List<Location>(new[] { current });
+            while (Came_From.ContainsKey(current))
+            {
+                current = Came_From[current];
+                total_path.Add(current);
+            }
+            total_path.Reverse();
+            return new Queue<Location>(total_path);
         }
 
         /* ========= LOCATION PROPERTIES ========= */
