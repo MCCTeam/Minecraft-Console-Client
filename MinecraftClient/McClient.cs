@@ -216,7 +216,7 @@ namespace MinecraftClient
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
-                    // BotLoad(new ChatBots.YourBot());
+                    BotLoad(new ChatBots.TestBot());
                 }
             }
 
@@ -1062,10 +1062,10 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
-        /// <param name="allowApproachIfGoalNotReached">Return an approaching path instead of null if nothing else was found</param>
-        /// <param name="minDistance">Enter a minimum distance you want to have to the goal</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, bool allowApproachIfGoalNotReached=false, int minDistance=0)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0)
         {
             lock (locationLock)
             {
@@ -1084,7 +1084,7 @@ namespace MinecraftClient
                     else
                     {
                         CancellationTokenSource cts = new CancellationTokenSource();
-                        Task<Queue<Location>> pathfindingTask = Task.Run(() => Movement.CalculatePath(world, this.location, location, cts.Token, allowUnsafe, allowApproachIfGoalNotReached, minDistance));
+                        Task<Queue<Location>> pathfindingTask = Task.Run(() => Movement.CalculatePath(world, this.location, location, cts.Token, allowUnsafe, maxOffset, minOffset));
                         cts.CancelAfter(TimeSpan.FromSeconds(5));
                         pathfindingTask.Wait();
                         path = pathfindingTask.Result;

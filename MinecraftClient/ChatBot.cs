@@ -984,12 +984,12 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowDirectTeleport">Allow non-vanilla teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
-        /// <param name="allowApproachIfGoalNotReached">If no valid path can be found return a path that approaches your goal</param>
-        /// <param name="mindistance">A minimal distance you want to keep to your goal</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, bool allowApproachIfGoalNotReached=false, int mindistance=0)
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0)
         {
-            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, allowApproachIfGoalNotReached, mindistance);
+            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, maxOffset, minOffset);
         }
 
         /// <summary>

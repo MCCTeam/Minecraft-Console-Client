@@ -129,11 +129,15 @@ namespace MinecraftClient.Mapping
         /// <param name="start">Start location</param>
         /// <param name="goal">Destination location</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
-        /// <param name="allowApproachIfGoalNotReached">Allow the function to return a path to a location that is very close to the goal if it could not be reached</param>
-        /// <param name="minDistanceFromGoal">Enter a minimum distance from the goal you want to keep</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
         /// <returns>A list of locations, or null if calculation failed</returns>
-        public static Queue<Location> CalculatePath(World world, Location start, Location goal, CancellationToken ct, bool allowUnsafe = false, bool allowApproachIfGoalNotReached=false, int minDistanceFromGoal=0)
+        public static Queue<Location> CalculatePath(World world, Location start, Location goal, CancellationToken ct, bool allowUnsafe=false, int maxOffset=0, int minOffset=0)
         {
+
+            if (minOffset > maxOffset)
+                throw new ArgumentException("maxOffset must be >= minOffset");
+
             Location current = new Location(); // Location that is currently processed
             Location closestGoal = new Location(); // Closest Location to the goal. Used for approaching if goal can not be reached or was not found.
             HashSet<Location> ClosedSet = new HashSet<Location>(); // The set of locations already evaluated.
@@ -155,11 +159,11 @@ namespace MinecraftClient.Mapping
                     .OrderBy(pair => pair.Value).First().Key;
 
                 // Only assert a value if it is of actual use later
-                if (allowApproachIfGoalNotReached && ClosedSet.Count > 0)
+                if (maxOffset > 0 && ClosedSet.Count > 0)
                     closestGoal = ClosedSet.OrderBy(checkedLocation => checkedLocation.DistanceSquared(goal)).First();
 
                 // Stop when goal is reached or we are close enough
-                if (current == goal || (current.DistanceSquared(goal) <= minDistanceFromGoal && minDistanceFromGoal > 0))
+                if (current == goal || (current.DistanceSquared(goal) <= minOffset && minOffset > 0))
                     return reconstructPath(Came_From, current);
                 else if (ct.IsCancellationRequested)
                     break;
@@ -186,7 +190,7 @@ namespace MinecraftClient.Mapping
             }
 
             // Could not be reached. Set the path to the closest possible location
-            if (allowApproachIfGoalNotReached)            
+            if (goal.DistanceSquared(closestGoal) <= maxOffset || maxOffset == int.MaxValue)            
                 return reconstructPath(Came_From, closestGoal);
             else
                 return null;
