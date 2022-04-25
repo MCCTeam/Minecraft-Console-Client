@@ -995,7 +995,7 @@ namespace MinecraftClient
         /// <summary>
         /// Check if the client is currently processing a Movement.
         /// </summary>
-        /// <returns>true if a movement is currently handeled</returns>
+        /// <returns>true if a movement is currently handled</returns>
         protected bool ClientIsMoving()
         {
             return Handler.ClientIsMoving();
