@@ -168,6 +168,8 @@ namespace MinecraftClient.Mapping
                 ClosedSet.Add(current);
                 foreach (Location neighbor in GetAvailableMoves(world, current, allowUnsafe))
                 {
+                    if (ct.IsCancellationRequested)
+                        break;
                     if (ClosedSet.Contains(neighbor))
                         continue;       // Ignore the neighbor which is already evaluated.
                     int tentative_g_score = g_score[current] + (int)current.DistanceSquared(neighbor); //dist_between(current,neighbor) // length of this path.
