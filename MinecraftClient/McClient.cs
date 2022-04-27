@@ -216,7 +216,7 @@ namespace MinecraftClient
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
-                    //BotLoad(new ChatBots.YourBot());
+                    BotLoad(new ChatBots.TestBot());
                 }
             }
 
@@ -347,7 +347,8 @@ namespace MinecraftClient
                             }
                             else if (path != null && path.Count > 0)
                             {
-                                Location next = path.Dequeue();
+                                Location temp = path.Dequeue();
+                                Location next = new Location(temp.X + 0.5, temp.Y, temp.Z + 0.5);
                                 steps = Movement.Move2Steps(location, next, ref motionY);
 
                                 if (Settings.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
@@ -1062,10 +1063,11 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
-        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
         /// <param name="minOffset">Do not get closer of destination than specified distance</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="timeoutInSec">How long to wait until the path is evaluated</param>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int minOffset = 0, int maxOffset = 0, int timeoutInSec = 0)
         {
             lock (locationLock)
             {
@@ -1085,7 +1087,7 @@ namespace MinecraftClient
                     {
                         CancellationTokenSource cts = new CancellationTokenSource();
                         Task<Queue<Location>> pathfindingTask = Task.Run(() => Movement.CalculatePath(world, this.location, location, cts.Token, allowUnsafe, maxOffset, minOffset));
-                        cts.CancelAfter(TimeSpan.FromSeconds(5));
+                        cts.CancelAfter(TimeSpan.FromSeconds(timeoutInSec));
                         pathfindingTask.Wait();
                         path = pathfindingTask.Result;
                     }
