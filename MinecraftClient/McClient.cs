@@ -1066,7 +1066,7 @@ namespace MinecraftClient
         /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
         /// <param name="timeoutInSec">How long to wait until the path is evaluated</param>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int minOffset = 0, int maxOffset = 0, int timeoutInSec = 0)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int minOffset = 0, int maxOffset = 0, int timeoutInSec = 5)
         {
             lock (locationLock)
             {
