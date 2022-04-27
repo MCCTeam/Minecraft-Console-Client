@@ -983,9 +983,10 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
-        /// <param name="allowDirectTeleport">Allow non-vanilla teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
-        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <param name="minOffset">Do not get closer of destination than specified distance</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="timeoutInSec">How long to wait until the path is evaluated</param>
         /// <returns>True if a path has been found</returns>
         protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int minOffset = 0, int maxOffset = 0, int timeoutInSec = 0)
         {
