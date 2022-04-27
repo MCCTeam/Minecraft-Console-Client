@@ -347,8 +347,7 @@ namespace MinecraftClient
                             }
                             else if (path != null && path.Count > 0)
                             {
-                                Location temp = path.Dequeue();
-                                Location next = new Location(temp.X + 0.5, temp.Y, temp.Z + 0.5);
+                                Location next = path.Dequeue();
                                 steps = Movement.Move2Steps(location, next, ref motionY);
 
                                 if (Settings.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
