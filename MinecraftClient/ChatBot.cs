@@ -987,9 +987,9 @@ namespace MinecraftClient
         /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
         /// <param name="minOffset">Do not get closer of destination than specified distance</param>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0)
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int minOffset = 0, int maxOffset = 0, int timeoutInSec = 0)
         {
-            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, maxOffset, minOffset);
+            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, minOffset, maxOffset, timeoutInSec);
         }
 
         /// <summary>
