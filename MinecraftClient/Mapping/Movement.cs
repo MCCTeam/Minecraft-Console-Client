@@ -128,6 +128,7 @@ namespace MinecraftClient.Mapping
         /// <see href="https://en.wikipedia.org/wiki/A*_search_algorithm#Pseudocode"/>
         /// <param name="start">Start location</param>
         /// <param name="goal">Destination location</param>
+        /// <param name="ct">Stop the pathfinding and return on the next possible occasion</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
         /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
         /// <param name="minOffset">Do not get closer of destination than specified distance</param>
@@ -136,7 +137,7 @@ namespace MinecraftClient.Mapping
         {
 
             if (minOffset > maxOffset)
-                throw new ArgumentException("maxOffset must be >= minOffset");
+                throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
 
             Location current = new Location(); // Location that is currently processed
             Location closestGoal = new Location(); // Closest Location to the goal. Used for approaching if goal can not be reached or was not found.
@@ -160,20 +161,22 @@ namespace MinecraftClient.Mapping
 
                 // Only assert a value if it is of actual use later
                 if (maxOffset > 0 && ClosedSet.Count > 0)
+                    // Get the block that currently is closest to the goal
                     closestGoal = ClosedSet.OrderBy(checkedLocation => checkedLocation.DistanceSquared(goal)).First();
 
                 // Stop when goal is reached or we are close enough
-                if (current == goal || (current.DistanceSquared(goal) <= minOffset && minOffset > 0))
-                    return reconstructPath(Came_From, current);
+                if (current == goal || (minOffset > 0 && current.DistanceSquared(goal) <= minOffset))
+                    return ReconstructPath(Came_From, current);
                 else if (ct.IsCancellationRequested)
-                    break;
+                    break;              // Return if we are cancelled
 
                 OpenSet.Remove(current);
                 ClosedSet.Add(current);
+
                 foreach (Location neighbor in GetAvailableMoves(world, current, allowUnsafe))
                 {
                     if (ct.IsCancellationRequested)
-                        break;
+                        break;          // Stop searching for blocks if we are cancelled.
                     if (ClosedSet.Contains(neighbor))
                         continue;       // Ignore the neighbor which is already evaluated.
                     int tentative_g_score = g_score[current] + (int)current.DistanceSquared(neighbor); //dist_between(current,neighbor) // length of this path.
@@ -189,20 +192,20 @@ namespace MinecraftClient.Mapping
                 }
             }
 
-            // Could not be reached. Set the path to the closest possible location
-            if (goal.DistanceSquared(closestGoal) <= maxOffset || maxOffset == int.MaxValue)            
-                return reconstructPath(Came_From, closestGoal);
+            // Goal could not be reached. Set the path to the closest location if close enough
+            if (maxOffset == int.MaxValue || goal.DistanceSquared(closestGoal) <= maxOffset)            
+                return ReconstructPath(Came_From, closestGoal);
             else
                 return null;
         }
 
         /// <summary>
-        /// Helper function for CalculatePath()
+        /// Helper function for CalculatePath(). Backtrack from goal to start to reconstruct a step-by-step path.
         /// </summary>
         /// <param name="Came_From">The collection of Locations that leads back to the start</param>
         /// <param name="current">Endpoint of our later walk</param>
         /// <returns>the path that leads to current from the start position</returns>
-        private static Queue<Location> reconstructPath(Dictionary<Location, Location> Came_From, Location current)
+        private static Queue<Location> ReconstructPath(Dictionary<Location, Location> Came_From, Location current)
         {
             List<Location> total_path = new List<Location>(new[] { current });
             while (Came_From.ContainsKey(current))

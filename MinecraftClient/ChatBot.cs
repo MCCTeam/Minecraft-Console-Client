@@ -988,9 +988,10 @@ namespace MinecraftClient
         /// <param name="minOffset">Do not get closer of destination than specified distance</param>
         /// <param name="timeoutInSec">How long to wait until the path is evaluated</param>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, int timeoutInSec = 5)
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
         {
-            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeoutInSec);
+            TimeSpan nonNullTimeSpan = timeout ?? TimeSpan.FromSeconds(5);
+            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, nonNullTimeSpan);
         }
 
         /// <summary>
