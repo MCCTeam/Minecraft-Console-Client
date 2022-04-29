@@ -13,7 +13,6 @@ using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
-using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -1064,7 +1063,8 @@ namespace MinecraftClient
         /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
         /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
         /// <param name="minOffset">Do not get closer of destination than specified distance</param>
-        /// <param name="timeout">How long to wait until the path is evaluated (default: 5 sec)</param>
+        /// <param name="timeout">How long to wait until the path is evaluated (default: 5 seconds)</param>
+        /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>True if a path has been found</returns>
         public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout=null)
         {
@@ -1082,26 +1082,7 @@ namespace MinecraftClient
                     // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
                     if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
                         path = new Queue<Location>(new[] { location });
-                    else
-                    {
-                        // Create token to stop the pathfindingTask later
-                        CancellationTokenSource cts = new CancellationTokenSource();
-
-                        // Workaround: TimeSpan can not have a default value as parameter
-                        TimeSpan nonNullTimeSpan = timeout ?? TimeSpan.FromSeconds(5);
-
-                        // Create a task, that starts the pathfinding function in a different Thread
-                        Task<Queue<Location>> pathfindingTask = Task.Run(() => Movement.CalculatePath(world, this.location, location, cts.Token, allowUnsafe, maxOffset, minOffset));
-
-                        // Automatically cancel the pathfinding after the given time
-                        cts.CancelAfter(nonNullTimeSpan);
-
-                        // Wait for the function to return
-                        pathfindingTask.Wait();
-
-                        // Save the result in the path variable so it can be executed step by step in OnUpdate()
-                        path = pathfindingTask.Result;
-                    }
+                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
                     return path != null;
                 }
             }

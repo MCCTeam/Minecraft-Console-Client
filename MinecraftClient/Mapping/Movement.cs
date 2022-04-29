@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MinecraftClient.Mapping
 {
@@ -128,12 +129,40 @@ namespace MinecraftClient.Mapping
         /// <see href="https://en.wikipedia.org/wiki/A*_search_algorithm#Pseudocode"/>
         /// <param name="start">Start location</param>
         /// <param name="goal">Destination location</param>
-        /// <param name="ct">Stop the pathfinding and return on the next possible occasion</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
         /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
         /// <param name="minOffset">Do not get closer of destination than specified distance</param>
+        /// <param name="timeout">How long to wait before stopping computation</param>
+        /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>A list of locations, or null if calculation failed</returns>
-        public static Queue<Location> CalculatePath(World world, Location start, Location goal, CancellationToken ct, bool allowUnsafe=false, int maxOffset=0, int minOffset=0)
+        public static Queue<Location> CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, TimeSpan timeout)
+        {
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Task<Queue<Location>> pathfindingTask = Task.Factory.StartNew(() => Movement.CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
+            pathfindingTask.Wait(timeout);
+            if (!pathfindingTask.IsCompleted)
+            {
+                cts.Cancel();
+                pathfindingTask.Wait();
+            }
+            return pathfindingTask.Result;
+        }
+
+        /// <summary>
+        /// Calculate a path from the start location to the destination location
+        /// </summary>
+        /// <remarks>
+        /// Based on the A* pathfinding algorithm described on Wikipedia
+        /// </remarks>
+        /// <see href="https://en.wikipedia.org/wiki/A*_search_algorithm#Pseudocode"/>
+        /// <param name="start">Start location</param>
+        /// <param name="goal">Destination location</param>
+        /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
+        /// <param name="ct">Token for stopping computation after a certain time</param>
+        /// <returns>A list of locations, or null if calculation failed</returns>
+        public static Queue<Location> CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, CancellationToken ct)
         {
 
             if (minOffset > maxOffset)
