@@ -1061,8 +1061,12 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
+        /// <param name="timeout">How long to wait until the path is evaluated (default: 5 seconds)</param>
+        /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout=null)
         {
             lock (locationLock)
             {
@@ -1078,7 +1082,7 @@ namespace MinecraftClient
                     // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
                     if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
                         path = new Queue<Location>(new[] { location });
-                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
+                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
                     return path != null;
                 }
             }
@@ -1845,6 +1849,15 @@ namespace MinecraftClient
             entities.Clear();
             ClearInventories();
             DispatchBotEvent(bot => bot.OnRespawn());
+        }
+
+        /// <summary>
+        /// Check if the client is currently processing a Movement.
+        /// </summary>
+        /// <returns>true if a movement is currently handled</returns>
+        public bool ClientIsMoving() 
+        {
+            return terrainAndMovementsEnabled && locationReceived && ((steps != null && steps.Count > 0) || (path != null && path.Count > 0));
         }
 
         /// <summary>
