@@ -180,6 +180,7 @@ namespace MinecraftClient
         public static string AutoAttack_Priority = "distance";
         public static bool AutoAttack_OverrideAttackSpeed = false;
         public static double AutoAttack_CooldownSeconds = 1;
+        public static string AutoAttack_Attack = "ATTACK";
 
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;

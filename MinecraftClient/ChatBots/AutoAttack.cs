@@ -22,8 +22,9 @@ namespace MinecraftClient.ChatBots
         private float health = 100;
         private bool singleMode = true;
         private bool priorityDistance = true;
+        private int interactMode;
 
-        public AutoAttack(string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1)
+        public AutoAttack(string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, string attack = "ATTACK")
         {
             if (mode == "single")
                 singleMode = true;
@@ -36,6 +37,14 @@ namespace MinecraftClient.ChatBots
             else if (priority == "health")
                 priorityDistance = false;
             else LogToConsoleTranslated("bot.autoAttack.priority", priority);
+
+            if (attack == "ATTACK")
+                interactMode = 0;
+            else if (attack == "INTERACT")
+                interactMode = 1;
+            else if (attack == "INTERACT_AT")
+                interactMode = 2;
+            else LogToConsoleTranslated("bot.autoAttack.attack", attack);
 
             if (overrideAttackSpeed)
             {
@@ -103,7 +112,7 @@ namespace MinecraftClient.ChatBots
                         // check entity distance and health again
                         if (shouldAttackEntity(entitiesToAttack[priorityEntity]))
                         {
-                            InteractEntity(priorityEntity, 1); // hit the entity!
+                            InteractEntity(priorityEntity, interactMode); // hit the entity!
                             SendAnimation(Inventory.Hand.MainHand); // Arm animation
                         }
                     }
@@ -114,7 +123,7 @@ namespace MinecraftClient.ChatBots
                             // check that we are in range once again.
                             if (shouldAttackEntity(entity.Value))
                             {
-                                InteractEntity(entity.Key, 1); // hit the entity!
+                                InteractEntity(entity.Key, interactMode); // hit the entity!
                             }
                         }
                         SendAnimation(Inventory.Hand.MainHand); // Arm animation
