@@ -167,6 +167,10 @@ namespace MinecraftClient.Mapping
 
             if (minOffset > maxOffset)
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
+            
+            // We always use distance squared so our limits must also be squared.
+            minOffset *= minOffset;
+            maxOffset *= maxOffset;
 
             Location current = new Location(); // Location that is currently processed
             Location closestGoal = new Location(); // Closest Location to the goal. Used for approaching if goal can not be reached or was not found.
@@ -222,7 +226,7 @@ namespace MinecraftClient.Mapping
             }
 
             // Goal could not be reached. Set the path to the closest location if close enough
-            if (maxOffset == int.MaxValue || goal.DistanceSquared(closestGoal) <= Math.Pow(maxOffset, 2))            
+            if (maxOffset == int.MaxValue || goal.DistanceSquared(closestGoal) <= maxOffset)            
                 return ReconstructPath(Came_From, closestGoal);
             else
                 return null;
