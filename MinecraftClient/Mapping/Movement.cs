@@ -198,7 +198,7 @@ namespace MinecraftClient.Mapping
                     closestGoal = ClosedSet.OrderBy(checkedLocation => checkedLocation.DistanceSquared(goal)).First();
 
                 // Stop when goal is reached or we are close enough
-                if (current == goal || (minOffset > 0 && current.DistanceSquared(goal) <= Math.Pow(minOffset, 2)))
+                if (current == goal || (minOffset > 0 && current.DistanceSquared(goal) <= minOffset))
                     return ReconstructPath(Came_From, current);
                 else if (ct.IsCancellationRequested)
                     break;              // Return if we are cancelled
