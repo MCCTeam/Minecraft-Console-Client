@@ -190,8 +190,10 @@ namespace MinecraftClient.Mapping
                     OpenSet.Select(location => f_score.ContainsKey(location)
                     ? new KeyValuePair<Location, int>(location, f_score[location])
                     : new KeyValuePair<Location, int>(location, int.MaxValue))
-                    .OrderBy(pair => pair.Value).First().Key;
-
+                    .OrderBy(pair => pair.Value).
+                    // Sort for h-score (f-score - g-score) to get smallest distance to goal if f-scores are equal
+                    ThenBy(pair => f_score[pair.Key]-g_score[pair.Key]).First().Key;
+                
                 // Only assert a value if it is of actual use later
                 if (maxOffset > 0 && ClosedSet.Count > 0)
                     // Get the block that currently is closest to the goal
