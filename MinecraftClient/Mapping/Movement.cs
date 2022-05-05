@@ -167,6 +167,10 @@ namespace MinecraftClient.Mapping
 
             if (minOffset > maxOffset)
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
+            
+            // We always use distance squared so our limits must also be squared.
+            minOffset *= minOffset;
+            maxOffset *= maxOffset;
 
             // Square values to compare them
             minOffset *= minOffset;
@@ -190,10 +194,10 @@ namespace MinecraftClient.Mapping
                     OpenSet.Select(location => f_score.ContainsKey(location)
                     ? new KeyValuePair<Location, int>(location, f_score[location])
                     : new KeyValuePair<Location, int>(location, int.MaxValue))
-                    .OrderBy(pair => pair.Value).ThenBy(pair => f_score[pair.Key] - g_score[pair.Key]).First().Key;
-
-                double distanceCurrentToGoal = current.DistanceSquared(goal);
-
+                    .OrderBy(pair => pair.Value).
+                    // Sort for h-score (f-score - g-score) to get smallest distance to goal if f-scores are equal
+                    ThenBy(pair => f_score[pair.Key]-g_score[pair.Key]).First().Key;
+                
                 // Only assert a value if it is of actual use later
                 if (maxOffset > 0)
                 {
