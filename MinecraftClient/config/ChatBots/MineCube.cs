@@ -11,6 +11,7 @@ class MineCube : ChatBot
 	private CancellationTokenSource cts;
 	private Task currentMiningTask;
 	private TimeSpan breakTimeout;
+	private bool toolHandling;
 	private int cacheSize;
 
 	public override void Initialize()
@@ -25,6 +26,7 @@ class MineCube : ChatBot
 		currentMiningTask = null;
 		breakTimeout = TimeSpan.FromSeconds(15);
 		cacheSize = 10;
+		toolHandling = true;
 
 		RegisterChatBotCommand("mine", "Mine a cube from a to b", "/mine x y z OR /mine x1 y1 z1 x2 y2 z2", EvaluateMineCommand);
 		RegisterChatBotCommand("mineup", "Walk over a flat cubic platform of blocks and mine everything above you", "/mine x1 y1 z1 x2 y2 z2 (y1 = y2)", EvaluateMineCommand);
@@ -53,20 +55,10 @@ class MineCube : ChatBot
 			foreach (int currentZLoc in zLocationRange)
 			{
 				Location standLocation = new Location(currentXLoc, startBlock.Y, currentZLoc);
-				// Unable to detect when walking is over and goal is reached.
-				if (MoveToLocation(standLocation, maxOffset:1))
-				{
-					// Wait till the client stops moving
-					while (ClientIsMoving())
-					{
-						Thread.Sleep(100);
-					}
-				}
-				else
-				{
-					LogDebugToConsole("Unable to walk to: " + standLocation.ToString());
-				}
 
+				// Walk to the new location.
+				waitForMoveToLocation(standLocation, maxOffset: 1);
+			   
 				for (int height = Convert.ToInt32(startBlock.Y) + 2; height < Convert.ToInt32(startBlock.Y) + 7; height++)
 				{
 					if (ct.IsCancellationRequested)
@@ -85,9 +77,8 @@ class MineCube : ChatBot
 					// Skip this block if it can not be mined.
 					if (Material2Tool.IsUnbreakable(mineLocationMaterial)) { continue; }
 					
-					if (Settings.InventoryHandling)
+					if (Settings.InventoryHandling && toolHandling)
 					{
-						//DateTime start = DateTime.Now;
 						// Search this tool in hotbar and select the correct slot
 						SelectCorrectSlotInHotbar(
 							// Returns the correct tool for this type
@@ -178,23 +169,12 @@ class MineCube : ChatBot
 
 							if (GetCurrentLocation().EyesLocation().DistanceSquared(mineLocation) > 25)
 							{
-								// Unable to detect when walking is over and goal is reached.
-								if (MoveToLocation(mineLocation, maxOffset: 4, minOffset: 1, timeout: TimeSpan.FromSeconds(2)))
-								{
-									// Wait till the client stops moving
-									while (ClientIsMoving())
-									{
-										Thread.Sleep(200);
-									}
-								}
-								else
-								{
-									LogDebugToConsole("Unable to walk to: " + mineLocation.ToString());
-								}
+								// Walk to the new location
+								waitForMoveToLocation(mineLocation, maxOffset:4, minOffset:2);
 							}
 
 							// Is inventoryhandling activated?
-							if (Settings.InventoryHandling)
+							if (Settings.InventoryHandling && toolHandling)
 							{
 								// Search this tool in hotbar and select the correct slot
 								SelectCorrectSlotInHotbar(
@@ -223,6 +203,7 @@ class MineCube : ChatBot
 							{
 								LogDebugToConsole("Unable to break this block: " + mineLocation.ToString());
 							}
+						
 						}
 					}
 
@@ -286,6 +267,31 @@ class MineCube : ChatBot
 	}
 
 	/// <summary>
+	/// Starts walk and waits until the client arrives
+	/// </summary>
+	/// <param name="location">Location to reach</param>
+	/// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
+	/// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+	/// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+	/// <param name="minOffset">Do not get closer of destination than specified distance</param>
+	/// <param name="timeout">How long to wait before stopping computation (default: 5 seconds)</param>
+	private void waitForMoveToLocation(Location goal, bool allowUnsafe=false, bool allowDirectTeleport=false, int maxOffset=0, int minOffset=0, TimeSpan? timeout=null)
+	{
+		if (MoveToLocation(goal, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeout))
+		{
+			// Wait till the client stops moving
+			while (ClientIsMoving())
+			{
+				Thread.Sleep(200);
+			}
+		}
+		else
+		{
+			LogDebugToConsole("Unable to walk to: " + goal.ToString());
+		}
+	}
+
+	/// <summary>
 	/// Checks all slots of the hotbar for an Item and selects it if found
 	/// </summary>
 	/// <param name="tools">List of items that may be selected, from worst to best</param>
@@ -320,6 +326,7 @@ class MineCube : ChatBot
 	/// <returns>true if mining the current block would not update others</returns>
 	public bool IsGravitySave(World currentWorld, Location blockToMine)
 	{
+		Location currentLoc = GetCurrentLocation();
 		Location block = new Location(Math.Round(blockToMine.X), Math.Round(blockToMine.Y), Math.Round(blockToMine.Z));
 		List<Material> gravityBlockList = new List<Material>(new Material[] { Material.Gravel, Material.Sand, Material.RedSand, Material.Scaffolding, Material.Anvil, });
 		Func<Location, bool> isGravityBlock = (Location blockToCheck) => gravityBlockList.Contains(currentWorld.GetBlock(blockToCheck).Type);
@@ -327,9 +334,10 @@ class MineCube : ChatBot
 
 		return
 			// Block can not fall down on player e.g. Sand, Gravel etc.
-			!isGravityBlock(Movement.Move(block, Direction.Up)) ||
+			!isGravityBlock(Movement.Move(block, Direction.Up)) && 
+			(Movement.Move(currentLoc, Direction.Down) != blockToMine || currentWorld.GetBlock(Movement.Move(currentLoc, Direction.Down, 2)).Type.IsSolid()) &&
 			// Prevent updating flying sand/gravel under player
-			!isGravityBlock(Movement.Move(block, Direction.Down)) && isBlockSolid(Movement.Move(block, Direction.Down, 2));
+			!isGravityBlock(Movement.Move(block, Direction.Down)) || isBlockSolid(Movement.Move(block, Direction.Down, 2));
 	}
 
 	/// <summary>
@@ -350,6 +358,35 @@ class MineCube : ChatBot
 			isLiquid(Movement.Move(block, Direction.South)) ||
 			isLiquid(Movement.Move(block, Direction.East)) ||
 			isLiquid(Movement.Move(block, Direction.West));
+	}
+
+	/// <summary>
+	/// Look for a block around the specified location
+	/// </summary>
+	/// <param name="from">Start location</param>
+	/// <param name="block">Block type</param>
+	/// <param name="radiusx">Search radius on the X axis</param>
+	/// <param name="radiusy">Search radius on the Y axis</param>
+	/// <param name="radiusz">Search radius on the Z axis</param>
+	/// <returns>Block matching the specified block type</returns>
+	public List<Location> GetCubeAroundBlock(Location from, int radius)
+	{
+		int radiusx = radius, radiusy = radius, radiusz = radius;
+
+		Location minPoint = new Location(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
+		Location maxPoint = new Location(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);
+		List<Location> list = new List<Location> { };
+		for (double x = minPoint.X; x <= maxPoint.X; x++)
+		{
+			for (double y = minPoint.Y; y <= maxPoint.Y; y++)
+			{
+				for (double z = minPoint.Z; z <= maxPoint.Z; z++)
+				{
+					list.Add(new Location(x, y, z));
+				}
+			}
+		}
+		return list;
 	}
 
 	/// <summary>
@@ -378,24 +415,26 @@ class MineCube : ChatBot
 	{
 		for (int i = 0; i < args.Length; i++)
 		{
-			if (args[i] == "breaktimeout")
+			switch (args[i])
 			{
-				int temp;
-				if (int.TryParse(args[i + 1], out temp))
-					breakTimeout = TimeSpan.FromMilliseconds(temp);
-				else return "Please enter a valid number.";
+				case "breaktimeout":
+					int temp;
+					if (int.TryParse(args[i + 1], out temp))
+						breakTimeout = TimeSpan.FromMilliseconds(temp);
+					else return "Please enter a valid number.";
+					return string.Format("Set the break timout to {0} ms.", breakTimeout);
 
-				return string.Format("Set the break timout to {0} ms.", breakTimeout);
-			}
-			if (args[i] == "cachesize")
-			{
-				return int.TryParse(args[i + 1], out cacheSize) ? string.Format("Set cache size to {0} blocks.", cacheSize) : "Please enter a valid number";
-			}
-			if (args[i] == "cancel")
-			{
-				cts.Cancel();
-				currentMiningTask = null;
-				return "Cancelled current mining process.";
+				case "cachesize":
+					return int.TryParse(args[i + 1], out cacheSize) ? string.Format("Set cache size to {0} blocks.", cacheSize) : "Please enter a valid number";
+
+				case "cancel":
+					cts.Cancel();
+					currentMiningTask = null;
+					return "Cancelled current mining process.";
+
+				case "toolHandling":
+					toolHandling = !toolHandling;
+					return string.Format("Tool handling was set to: {0}", toolHandling.ToString());
 			}
 		}
 
