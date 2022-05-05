@@ -167,6 +167,10 @@ namespace MinecraftClient.Mapping
 
             if (minOffset > maxOffset)
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
+            
+            // We always use distance squared so our limits must also be squared.
+            minOffset *= minOffset;
+            maxOffset *= maxOffset;
 
             Location current = new Location(); // Location that is currently processed
             Location closestGoal = new Location(); // Closest Location to the goal. Used for approaching if goal can not be reached or was not found.
@@ -186,8 +190,10 @@ namespace MinecraftClient.Mapping
                     OpenSet.Select(location => f_score.ContainsKey(location)
                     ? new KeyValuePair<Location, int>(location, f_score[location])
                     : new KeyValuePair<Location, int>(location, int.MaxValue))
-                    .OrderBy(pair => pair.Value).First().Key;
-
+                    .OrderBy(pair => pair.Value).
+                    // Sort for h-score (f-score - g-score) to get smallest distance to goal if f-scores are equal
+                    ThenBy(pair => f_score[pair.Key]-g_score[pair.Key]).First().Key;
+                
                 // Only assert a value if it is of actual use later
                 if (maxOffset > 0 && ClosedSet.Count > 0)
                     // Get the block that currently is closest to the goal
