@@ -361,35 +361,6 @@ class MineCube : ChatBot
 	}
 
 	/// <summary>
-	/// Look for a block around the specified location
-	/// </summary>
-	/// <param name="from">Start location</param>
-	/// <param name="block">Block type</param>
-	/// <param name="radiusx">Search radius on the X axis</param>
-	/// <param name="radiusy">Search radius on the Y axis</param>
-	/// <param name="radiusz">Search radius on the Z axis</param>
-	/// <returns>Block matching the specified block type</returns>
-	public List<Location> GetCubeAroundBlock(Location from, int radius)
-	{
-		int radiusx = radius, radiusy = radius, radiusz = radius;
-
-		Location minPoint = new Location(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
-		Location maxPoint = new Location(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);
-		List<Location> list = new List<Location> { };
-		for (double x = minPoint.X; x <= maxPoint.X; x++)
-		{
-			for (double y = minPoint.Y; y <= maxPoint.Y; y++)
-			{
-				for (double z = minPoint.Z; z <= maxPoint.Z; z++)
-				{
-					list.Add(new Location(x, y, z));
-				}
-			}
-		}
-		return list;
-	}
-
-	/// <summary>
 	/// The Help page for this command.
 	/// </summary>
 	/// <returns>a help page</returns>
