@@ -168,8 +168,12 @@ namespace MinecraftClient.Mapping
             if (minOffset > maxOffset)
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
 
+            // Square values to compare them
+            minOffset *= minOffset;
+            maxOffset *= maxOffset;
+
             Location current = new Location(); // Location that is currently processed
-            Location closestGoal = new Location(); // Closest Location to the goal. Used for approaching if goal can not be reached or was not found.
+            KeyValuePair<Location, double> closestGoal = new KeyValuePair<Location, double>(); // Closest Location to the goal. Used for approaching if goal can not be reached or was not found.
             HashSet<Location> ClosedSet = new HashSet<Location>(); // The set of locations already evaluated.
             HashSet<Location> OpenSet = new HashSet<Location>(new[] { start });  // The set of tentative nodes to be evaluated, initially containing the start node
             Dictionary<Location, Location> Came_From = new Dictionary<Location, Location>(); // The map of navigated nodes.
@@ -186,15 +190,20 @@ namespace MinecraftClient.Mapping
                     OpenSet.Select(location => f_score.ContainsKey(location)
                     ? new KeyValuePair<Location, int>(location, f_score[location])
                     : new KeyValuePair<Location, int>(location, int.MaxValue))
-                    .OrderBy(pair => pair.Value).First().Key;
+                    .OrderBy(pair => pair.Value).ThenBy(pair => f_score[pair.Key] - g_score[pair.Key]).First().Key;
+
+                double distanceCurrentToGoal = current.DistanceSquared(goal);
 
                 // Only assert a value if it is of actual use later
-                if (maxOffset > 0 && ClosedSet.Count > 0)
-                    // Get the block that currently is closest to the goal
-                    closestGoal = ClosedSet.OrderBy(checkedLocation => checkedLocation.DistanceSquared(goal)).First();
+                if (maxOffset > 0)
+                {
+                    if (closestGoal.Equals(new KeyValuePair<Location, double>()) || closestGoal.Value > distanceCurrentToGoal)
+                        // Get the block that currently is closest to the goal
+                        closestGoal = new KeyValuePair<Location, double>(current, distanceCurrentToGoal);
+                }
 
-                // Stop when goal is reached or we are close enough
-                if (current == goal || (minOffset > 0 && current.DistanceSquared(goal) <= minOffset))
+                // Stop when goal is reached or we found a spot with the minimum distance
+                if ((current == goal && minOffset < 1) || (minOffset > 0 && maxOffset >= distanceCurrentToGoal && distanceCurrentToGoal >= minOffset))
                     return ReconstructPath(Came_From, current);
                 else if (ct.IsCancellationRequested)
                     break;              // Return if we are cancelled
@@ -222,8 +231,8 @@ namespace MinecraftClient.Mapping
             }
 
             // Goal could not be reached. Set the path to the closest location if close enough
-            if (maxOffset == int.MaxValue || goal.DistanceSquared(closestGoal) <= maxOffset)            
-                return ReconstructPath(Came_From, closestGoal);
+            if (maxOffset == int.MaxValue || closestGoal.Value <= maxOffset)            
+                return ReconstructPath(Came_From, closestGoal.Key);
             else
                 return null;
         }
