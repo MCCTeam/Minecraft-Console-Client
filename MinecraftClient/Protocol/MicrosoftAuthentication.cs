@@ -69,21 +69,33 @@ namespace MinecraftClient.Protocol
             }
             else
             {
-                string accessToken = jsonData.Properties["access_token"].StringValue;
-                string refreshToken = jsonData.Properties["refresh_token"].StringValue;
-                int expiresIn = int.Parse(jsonData.Properties["expires_in"].StringValue);
-                
-                // Extract email from JWT
-                string payload = JwtPayloadDecode.GetPayload(jsonData.Properties["id_token"].StringValue);
-                var jsonPayload = Json.ParseJson(payload);
-                string email = jsonPayload.Properties["email"].StringValue;
-                return new LoginResponse()
+                try
                 {
-                    Email = email,
-                    AccessToken = accessToken,
-                    RefreshToken = refreshToken,
-                    ExpiresIn = expiresIn
-                };
+                    string accessToken = jsonData.Properties["access_token"].StringValue;
+                    string refreshToken = jsonData.Properties["refresh_token"].StringValue;
+                    int expiresIn = int.Parse(jsonData.Properties["expires_in"].StringValue);
+
+                    // Extract email from JWT
+                    string payload = JwtPayloadDecode.GetPayload(jsonData.Properties["id_token"].StringValue);
+                    var jsonPayload = Json.ParseJson(payload);
+                    string email = jsonPayload.Properties["email"].StringValue;
+                    return new LoginResponse()
+                    {
+                        Email = email,
+                        AccessToken = accessToken,
+                        RefreshToken = refreshToken,
+                        ExpiresIn = expiresIn
+                    }; 
+                }
+                catch {Exception e} 
+                {
+                    ConsoleIO.WriteLineFormatted("§8" + e.GetType().ToString() + ": " + e.Message);
+                    if (Settings.DebugMessages)
+                    {
+                        ConsoleIO.WriteLineFormatted("§8" + e.StackTrace);
+                    }
+                }
+                
             }
         }
 
