@@ -203,8 +203,8 @@ namespace MinecraftClient.Mapping
                 // Node with the lowest F-Score or lowest H-Score on tie
                 current = openSet.GetRootLocation();
 
-                // Return if goal found and no minOffset was given OR current node is between minOffset and maxOffset
-                if (current.Location == goal)
+                // Return if goal found and no maxOffset was given OR current node is between minOffset and maxOffset
+                if ((current.Location == goal && maxOffset <= 0) || (maxOffset > 0 && current.H_score >= minOffset && current.H_score <= maxOffset))
                 {
                     return ReconstructPath(CameFrom, current.Location);
                 }
@@ -234,8 +234,8 @@ namespace MinecraftClient.Mapping
             }
 
             //// Goal could not be reached. Set the path to the closest location if close enough
-            if (current != null && (maxOffset == int.MaxValue || current.H_score <= maxOffset))
-                return ReconstructPath(CameFrom, current.Location);
+            if (current != null && (maxOffset == int.MaxValue || openSet.MinH_ScoreNode.H_score <= maxOffset))
+                return ReconstructPath(CameFrom, openSet.MinH_ScoreNode.Location);
             else
                 return null;
         }
@@ -289,11 +289,13 @@ namespace MinecraftClient.Mapping
             private List<Node> heapList;
             // Hashset for quick checks of locations included in the heap
             private HashSet<Location> locationList;
+            public Node MinH_ScoreNode;
 
             public BinaryHeap()
             {
                 heapList = new List<Node>();
                 locationList = new HashSet<Location>();
+                MinH_ScoreNode = null;
             }
 
             /// <summary>
@@ -313,6 +315,10 @@ namespace MinecraftClient.Mapping
                 // Add new note to the end of the list
                 heapList.Add(newNode);
                 locationList.Add(loc);
+
+                // Save node with the smallest H-Score => Distance to goal
+                if (MinH_ScoreNode == null || newNode.H_score < MinH_ScoreNode.H_score)
+                    MinH_ScoreNode = newNode;
 
                 // There is no need of sorting for one node.
                 if (i > 0)
@@ -489,20 +495,39 @@ namespace MinecraftClient.Mapping
         {
             switch (direction)
             {
+                // Move vertical
                 case Direction.Down:
                     return !IsOnGround(world, location);
                 case Direction.Up:
                     return (IsOnGround(world, location) || IsSwimming(world, location))
                         && !world.GetBlock(Move(Move(location, Direction.Up), Direction.Up)).Type.IsSolid();
+
+                // Move horizontal
                 case Direction.East:
                 case Direction.West:
                 case Direction.South:
                 case Direction.North:
-                    return !world.GetBlock(Move(location, direction)).Type.IsSolid()
-                        && !world.GetBlock(Move(Move(location, direction), Direction.Up)).Type.IsSolid();
+                    return PlayerFitsHere(world, Move(location, direction));
+
+                // Move diagonal
+                case Direction.NorthEast:
+                    return (!world.GetBlock(Move(location, Direction.North)).Type.IsSolid() && !world.GetBlock(Move(location, Direction.East)).Type.IsSolid()) && PlayerFitsHere(world, Move(location, direction));
+                case Direction.SouthEast:
+                    return (!world.GetBlock(Move(location, Direction.South)).Type.IsSolid() && !world.GetBlock(Move(location, Direction.East)).Type.IsSolid()) && PlayerFitsHere(world, Move(location, direction));
+                case Direction.SouthWest:
+                    return (!world.GetBlock(Move(location, Direction.South)).Type.IsSolid() && !world.GetBlock(Move(location, Direction.West)).Type.IsSolid()) && PlayerFitsHere(world, Move(location, direction));
+                case Direction.NorthWest:
+                    return (!world.GetBlock(Move(location, Direction.North)).Type.IsSolid() && !world.GetBlock(Move(location, Direction.West)).Type.IsSolid()) && PlayerFitsHere(world, Move(location, direction));
+
                 default:
                     throw new ArgumentException("Unknown direction", "direction");
             }
+        }
+
+        public static bool PlayerFitsHere(World world, Location location)
+        {
+            return !world.GetBlock(location).Type.IsSolid()
+                        && !world.GetBlock(Move(location, Direction.Up)).Type.IsSolid();
         }
 
         /// <summary>
@@ -526,10 +551,13 @@ namespace MinecraftClient.Mapping
         {
             switch (direction)
             {
+                // Move vertical
                 case Direction.Down:
                     return new Location(0, -1, 0);
                 case Direction.Up:
                     return new Location(0, 1, 0);
+
+                // Move horizontal straight
                 case Direction.East:
                     return new Location(1, 0, 0);
                 case Direction.West:
@@ -538,6 +566,17 @@ namespace MinecraftClient.Mapping
                     return new Location(0, 0, 1);
                 case Direction.North:
                     return new Location(0, 0, -1);
+
+                // Move horizontal diagonal
+                case Direction.NorthEast:
+                    return Move(Direction.North) + Move(Direction.East);
+                case Direction.SouthEast:
+                    return Move(Direction.South) + Move(Direction.East);
+                case Direction.SouthWest:
+                    return Move(Direction.South) + Move(Direction.West);
+                case Direction.NorthWest:
+                    return Move(Direction.North) + Move(Direction.West);
+
                 default:
                     throw new ArgumentException("Unknown direction", "direction");
             }
