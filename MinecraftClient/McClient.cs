@@ -215,7 +215,7 @@ namespace MinecraftClient
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
-                    //BotLoad(new ChatBots.YourBot());
+                    // BotLoad(new ChatBots.TestBot());
                 }
             }
 
@@ -1080,9 +1080,12 @@ namespace MinecraftClient
                 else
                 {
                     // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
-                    if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
-                        path = new Queue<Location>(new[] { location });
-                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
+                    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+                    sw.Start();
+                    path = Movement.CalculatePath(world, this.location, location, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
+                    sw.Stop();
+                    Console.WriteLine(string.Format("Calculation took: {0} ms", sw.ElapsedMilliseconds));
+
                     return path != null;
                 }
             }
