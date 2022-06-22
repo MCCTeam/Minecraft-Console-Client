@@ -13,7 +13,7 @@ using MinecraftClient.WinAPI;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by ORelio and Contributors (c) 2012-2020.
+    /// Minecraft Console Client by the MCC Team (c) 2012-2021.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
@@ -33,7 +33,7 @@ namespace MinecraftClient
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.17";
+        public const string MCHighestVersion = "1.18.2";
         public static readonly string BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
@@ -59,7 +59,7 @@ namespace MinecraftClient
             if (!ConsoleIO.BasicIO)
                 ConsoleInteractive.ConsoleWriter.Init();
             
-            ConsoleIO.WriteLine($"Console Client for MC {MCLowestVersion} to {MCHighestVersion} - v{Version} - By ORelio & Contributors");
+            ConsoleIO.WriteLine($"Minecraft Console Client v{0} - for MC {1} to {2} - Github.com/MCCTeam", Version, MCLowestVersion, MCHighestVersion");
 
             //Build information to facilitate processing of bug reports
             if (BuildInfo != null) 
@@ -153,23 +153,10 @@ namespace MinecraftClient
 
             //Asking the user to type in missing data such as Username and Password
             bool useBrowser = Settings.AccountType == ProtocolHandler.AccountType.Microsoft && Settings.LoginMethod == "browser";
-            if (Settings.Login == "")
+            if (Settings.Login == "" && !useBrowser)
             {
-                if (useBrowser)
-                    ConsoleIO.WriteLine("Press Enter to skip session cache checking and continue sign-in with browser");
-
-                if (ConsoleIO.BasicIO) 
-                {
-                    ConsoleIO.WriteLine(Translations.Get("mcc.login_basic_io"));
-                }
-                else
-                {
-
-                    ConsoleIO.WriteLine(Translations.Get("mcc.login"));
-                }
-
-                Settings.Login = ConsoleIO.ReadLine();
-
+                Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
+                Settings.Login = Console.ReadLine();
             }
             if (Settings.Password == "" 
                 && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower()))
@@ -197,13 +184,8 @@ namespace MinecraftClient
         /// </summary>
         private static void RequestPassword()
         {
-            if (ConsoleIO.BasicIO)
-                ConsoleIO.WriteLine(Translations.Get("mcc.password_basic_io", Settings.Login));
-            else
-                ConsoleIO.WriteLine(Translations.Get("mcc.password"));
-
-            Settings.Password = ConsoleIO.ReadPassword();
-            
+            Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Settings.Login) + "\n" : Translations.Get("mcc.password"));
+            Settings.Password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
             if (Settings.Password == "") { Settings.Password = "-"; }
         }
 
@@ -233,7 +215,14 @@ namespace MinecraftClient
                     if (result != ProtocolHandler.LoginResult.Success)
                     {
                         Translations.WriteLineFormatted("mcc.session_invalid");
-                        if (Settings.Password == "")
+                        // Try to refresh access token
+                        if (!string.IsNullOrWhiteSpace(session.RefreshToken))
+                        {
+                            result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
+                        }
+                        if (result != ProtocolHandler.LoginResult.Success 
+                            && Settings.Password == "" 
+                            && Settings.AccountType == ProtocolHandler.AccountType.Mojang)
                             RequestPassword();
                     }
                     else ConsoleIO.WriteLineFormatted(Translations.Get("mcc.session_valid", session.PlayerName));
@@ -243,12 +232,12 @@ namespace MinecraftClient
                 {
                     Translations.WriteLine("mcc.connecting", Settings.AccountType == ProtocolHandler.AccountType.Mojang ? "Minecraft.net" : "Microsoft");
                     result = ProtocolHandler.GetLogin(Settings.Login, Settings.Password, Settings.AccountType, out session);
-
-                    if (result == ProtocolHandler.LoginResult.Success && Settings.SessionCaching != CacheType.None)
-                    {
-                        SessionCache.Store(Settings.Login.ToLower(), session);
-                    }
                 }
+            }
+
+            if (result == ProtocolHandler.LoginResult.Success && Settings.SessionCaching != CacheType.None)
+            {
+                SessionCache.Store(Settings.Login.ToLower(), session);
             }
 
             if (result == ProtocolHandler.LoginResult.Success)

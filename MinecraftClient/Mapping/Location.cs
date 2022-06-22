@@ -200,9 +200,9 @@ namespace MinecraftClient.Mapping
         public static bool operator !=(Location loc1, Location loc2)
         {
             if (loc1 == null && loc2 == null)
-                return true;
-            if (loc1 == null || loc2 == null)
                 return false;
+            if (loc1 == null || loc2 == null)
+                return true;
             return !loc1.Equals(loc2);
         }
 

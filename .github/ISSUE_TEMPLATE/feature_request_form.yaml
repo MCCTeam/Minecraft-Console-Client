@@ -1,0 +1,72 @@
+name: Feature Request
+description: Suggest an idea for this project
+title: "[Idea] "
+labels: 
+  - "a:enhancement"
+  - "a:new-feature"
+body:
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have read and understood the [user manual](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config)
+          required: true
+        - label: I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/Minecraft-Console-Client/build/artifacts)
+          required: true
+        - label: I tried to [look for similar feature requests](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
+          required: true
+  - type: input
+    id: client-version
+    attributes:
+      label: Console Client Version
+      description: Please make sure you are using the latest version
+      placeholder: Latest
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Describe your problem
+      placeholder: What feature is lacking?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Suggest a possible solution
+      placeholder: What do you want to happen?
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Attach screenshot here (If applicable)
+  - type: input
+    id: mc-version
+    attributes:
+      label: Minecraft Version
+      placeholder: 1.x.x
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      description: What device you are using to run the client?
+      options:
+        - Desktop
+        - Laptop
+        - VPS
+        - Raspberry Pi
+        - Other
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system is your device running?
+      options:
+        - Windows
+        - Linux
+        - MacOS
+        - Other
+  - type: markdown
+    id: credit
+    attributes:
+      value: Thank you for filling the request form. Feel free to submit the request to us.

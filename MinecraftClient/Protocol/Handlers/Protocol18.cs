@@ -50,6 +50,9 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC1163Version = 753;
         internal const int MC1165Version = 754;
         internal const int MC117Version = 755;
+        internal const int MC1171Version = 756;
+        internal const int MC1181Version = 757;
+        internal const int MC1182Version = 758;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -335,6 +338,8 @@ namespace MinecraftClient.Protocol.Handlers
                             dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
                         if (protocolversion >= MC114Version)
                             dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
+                        if (protocolversion >= MC1181Version)
+                            dataTypes.ReadNextVarInt(packetData);         // Simulation Distance - 1.18 and above
                         if (protocolversion >= MC18Version)
                             dataTypes.ReadNextBool(packetData);           // Reduced debug info - 1.8 and above
                         if (protocolversion >= MC115Version)
@@ -362,7 +367,10 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion >= MC116Version)
                         {
                             // TODO handle dimensions for 1.16+, needed for terrain handling
-                            dataTypes.ReadNextString(packetData);
+                            if (protocolversion >= MC1162Version)
+                                dataTypes.ReadNextNbt(packetData);
+                            else
+                                dataTypes.ReadNextString(packetData);
                             this.currentDimension = 0;
                         }
                         else
@@ -639,7 +647,10 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte blockMeta = dataTypes.ReadNextByte(packetData);
                                 handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
                             }
-                            else handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                            else
+                            {
+                                handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                            }
                         }
                         break;
                     case PacketTypesIn.MapChunkBulk:
@@ -867,17 +878,14 @@ namespace MinecraftClient.Protocol.Handlers
                             String forcedMessage = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
                         }
                         // Some server plugins may send invalid resource packs to probe the client and we need to ignore them (issue #1056)
-                        if (hash.Length != 40)
+                        if (!url.StartsWith("http") && hash.Length != 40) // Some server may have null hash value
                             break;
                         //Send back "accepted" and "successfully loaded" responses for plugins or server config making use of resource pack mandatory
-                        if (forced)
-                        {
-                            byte[] responseHeader = new byte[0];
-                            if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
-                                responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
-                            SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
-                            SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
-                        }
+                        byte[] responseHeader = new byte[0];
+                        if (protocolversion < MC110Version) //MC 1.10 does not include resource pack hash in responses
+                            responseHeader = dataTypes.ConcatBytes(dataTypes.GetVarInt(hash.Length), Encoding.UTF8.GetBytes(hash));
+                        SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(3))); //Accepted pack
+                        SendPacket(PacketTypesOut.ResourcePackStatus, dataTypes.ConcatBytes(responseHeader, dataTypes.GetVarInt(0))); //Successfully loaded
                         break;
                     case PacketTypesIn.SpawnEntity:
                         if (handler.GetEntityHandlingEnabled())
@@ -1122,6 +1130,23 @@ namespace MinecraftClient.Protocol.Handlers
                         if (action3 != 1)
                             value = dataTypes.ReadNextVarInt(packetData);
                         handler.OnUpdateScore(entityname, action3, objectivename2, value);
+                        break;
+                    case PacketTypesIn.BlockBreakAnimation:
+                        if (handler.GetEntityHandlingEnabled() && handler.GetTerrainEnabled())
+                        {
+                            int playerId = dataTypes.ReadNextVarInt(packetData);
+                            Location blockLocation = dataTypes.ReadNextLocation(packetData);
+                            byte stage = dataTypes.ReadNextByte(packetData);
+                            handler.OnBlockBreakAnimation(playerId, blockLocation, stage);
+                        }
+                        break;
+                    case PacketTypesIn.EntityAnimation:
+                        if (handler.GetEntityHandlingEnabled())
+                        {
+                            int playerId2 = dataTypes.ReadNextVarInt(packetData);
+                            byte animation = dataTypes.ReadNextByte(packetData);
+                            handler.OnEntityAnimation(playerId2, animation);
+                        }
                         break;
                     default:
                         return false; //Ignored packet
@@ -1603,7 +1628,9 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion >= MC19Version)
                     fields.AddRange(dataTypes.GetVarInt(mainHand));
                 if (protocolversion >= MC117Version)
-                    fields.Add(1);
+                    fields.Add(0); // Enables text filtering. Always false
+                if (protocolversion >= MC1181Version)
+                    fields.Add(1); // 1.18 and above - Allow server listings
                 SendPacket(PacketTypesOut.ClientSettings, fields);
             }
             catch (SocketException) { }
@@ -2043,6 +2070,25 @@ namespace MinecraftClient.Protocol.Handlers
                     List<byte> packet = new List<byte>();
                     packet.AddRange(dataTypes.GetVarInt(selectedSlot));
                     SendPacket(PacketTypesOut.SelectTrade, packet);
+                    return true;
+                }
+                catch (SocketException) { return false; }
+                catch (System.IO.IOException) { return false; }
+                catch (ObjectDisposedException) { return false; }
+            }
+            else { return false; }
+        }
+
+        public bool SendSpectate(Guid UUID)
+        {
+            // MC 1.8 or greater
+            if (protocolversion >= MC18Version)
+            {
+                try
+                {
+                    List<byte> packet = new List<byte>();
+                    packet.AddRange(dataTypes.GetUUID(UUID));
+                    SendPacket(PacketTypesOut.Spectate, packet);
                     return true;
                 }
                 catch (SocketException) { return false; }

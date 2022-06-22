@@ -76,8 +76,8 @@ namespace MinecraftClient
         }
 
         //Other Settings
-        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\eb\ebf762c137bd91ab2496397f2504e250f3c5d1ba"; //MC 1.16 en_GB.lang
-        public static string TranslationsFile_Website_Index = "https://launchermeta.mojang.com/v1/packages/bdb68de96a44ec1e9ed6d9cfcd2ee973be618c3a/1.16.json";
+        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\8b\8bf1298bd44b0e5b21d747394a8acd2c218e09ed"; //MC 1.17 en_GB.lang
+        public static string TranslationsFile_Website_Index = "https://launchermeta.mojang.com/v1/packages/e5af543d9b3ce1c063a97842c38e50e29f961f00/1.17.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static TimeSpan messageCooldown = TimeSpan.FromSeconds(2);
         public static List<string> Bots_Owners = new List<string>();
@@ -93,6 +93,7 @@ namespace MinecraftClient
         public static bool DisplayChatLinks = true;
         public static bool DisplayInventoryLayout = true;
         public static bool TerrainAndMovements = false;
+        public static bool GravityEnabled = true;
         public static bool InventoryHandling = false;
         public static string PrivateMsgsCmdName = "tell";
         public static CacheType SessionCaching = CacheType.Disk;
@@ -101,6 +102,7 @@ namespace MinecraftClient
         public static bool EntityHandling = false;
         public static bool AutoRespawn = false;
         public static bool MinecraftRealmsEnabled = true;
+        public static bool MoveHeadWhileWalking = true;
 
         // Logging
         public enum FilterModeEnum { Blacklist, Whitelist }
@@ -115,6 +117,7 @@ namespace MinecraftClient
         public static bool LogToFile = false;
         public static string LogFile = "console-log.txt";
         public static bool PrependTimestamp = false;
+        public static bool SaveColorCodes = false;
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
@@ -368,6 +371,7 @@ namespace MinecraftClient
                         // Backward compatible so people can still enable debug with old config format
                         case "debugmessages": DebugMessages = str2bool(argValue); return true;
                         case "minecraftrealms": MinecraftRealmsEnabled = str2bool(argValue); return true;
+                        case "moveheadwhilewalking": MoveHeadWhileWalking = str2bool(argValue); return true;
 
                         case "botowners":
                             Bots_Owners.Clear();
@@ -500,6 +504,7 @@ namespace MinecraftClient
                         case "logtofile": LogToFile = str2bool(argValue); return true;
                         case "logfile": LogFile = argValue; return true;
                         case "prependtimestamp": PrependTimestamp = str2bool(argValue); return true;
+                        case "savecolorcodes": SaveColorCodes = str2bool(argValue); return true;
                     }
                     break;
 

@@ -69,8 +69,8 @@ namespace MinecraftClient.Commands
                         {
                             List<int> availableIds = handler.GetInventories().Keys.ToList();
                             availableIds.Remove(0); // remove player inventory ID from list
-                            if (availableIds.Count == 1)
-                                inventoryId = availableIds[0]; // one container, use it
+                            if (availableIds.Count > 0)
+                                inventoryId = availableIds.Max(); // use foreground container
                             else return Translations.Get("cmd.inventory.container_not_found");
                         }
                         else if (args[0].ToLower() == "help")

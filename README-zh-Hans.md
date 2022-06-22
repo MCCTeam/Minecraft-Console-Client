@@ -10,7 +10,7 @@
 
 ## 正在寻找维护者
 
-由于不再有足够的时间来为新的我的世界版本提供升级和修复错误，开发者正在寻找有开发动力的人来接手该项目。如果您认为您可以接手该项目，请查看 [issues](https://github.com/ORelio/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) 部分 :)
+由于不再有足够的时间来为新的我的世界版本提供升级和修复错误，开发者正在寻找有开发动力的人来接手该项目。如果您认为您可以接手该项目，请查看 [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) 部分 :)
 
 ## 下载
 
@@ -24,9 +24,9 @@
 
 ## 从原代码编译
 
-首先，下载[原代码zip压缩包](https://github.com/ORelio/Minecraft-Console-Client/archive/master.zip)，将其解压并进入`MinecraftClient`文件夹
+首先，下载[原代码zip压缩包](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip)，将其解压并进入`MinecraftClient`文件夹
 
-编辑 `MinecraftClient.csproj` 的[第四行](https://github.com/ORelio/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4)，将编译目标设置为 `Release`:
+编辑 `MinecraftClient.csproj` 的[第四行](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4)，将编译目标设置为 `Release`:
 
 ```xml
 <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>

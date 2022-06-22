@@ -237,6 +237,12 @@ namespace MinecraftClient.Protocol
         bool SelectTrade(int selectedSlot);
 
         /// <summary>
+        /// Spectate a player/entity
+        /// </summary>
+        /// <param name="uuid">The uuid of the player/entity to spectate/teleport to.</param>
+        bool SendSpectate(Guid uuid);
+
+        /// <summary>
         /// Get net read thread (main thread) ID
         /// </summary>
         /// <returns>Net read thread ID</returns>

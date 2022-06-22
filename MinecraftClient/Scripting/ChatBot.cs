@@ -116,6 +116,21 @@ namespace MinecraftClient
         public virtual void Update() { }
 
         /// <summary>
+        /// Will be called every player break block in gamemode 0
+        /// </summary>
+        /// <param name="entity">Player</param>
+        /// <param name="location">Block location</param>
+        /// <param name="stage">Destroy stage, maximum 255</param>
+        public virtual void OnBlockBreakAnimation(Entity entity, Location location, byte stage) { }
+
+        /// <summary>
+        /// Will be called every animations of the hit and place block
+        /// </summary>
+        /// <param name="entity">Player</param>
+        /// <param name="animation">0 = LMB, 1 = RMB (RMB Corrent not work)</param>
+        public virtual void OnEntityAnimation(Entity entity, byte animation) { }
+
+        /// <summary>
         /// Any text sent by the server will be sent here by MinecraftCom
         /// </summary>
         /// <param name="text">Text from the server</param>
@@ -211,6 +226,7 @@ namespace MinecraftClient
         /// Called when an explosion occurs on the server
         /// </summary>
         /// <param name="explode">Explosion location</param>
+        /// <param name="strength">Explosion strength</param>
         /// <param name="recordcount">Amount of blocks blown up</param>
         public virtual void OnExplosion(Location explode, float strength, int recordcount) { }
 
@@ -284,11 +300,11 @@ namespace MinecraftClient
         /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
         public virtual void OnEntityEquipment(Entity entity, int slot, Item item) { }
-        
+
         /// <summary>
         /// Called when an entity has effect applied
         /// </summary>
-        /// <param name="entityid">entity ID</param>
+        /// <param name="entity">entity</param>
         /// <param name="effect">effect id</param>
         /// <param name="amplifier">effect amplifier</param>
         /// <param name="duration">effect duration</param>
@@ -367,7 +383,6 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="entity">Entity</param>
         /// <param name="metadata">The metadata of the entity</param>
-        /// <param name="protocolversion">Ptotocol version</param>
         public virtual void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata) { }
 
         /// <summary>
@@ -968,13 +983,26 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
-        /// <param name="allowDirectTeleport">Allow non-vanilla teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
+        /// <param name="timeout">How long to wait before stopping computation (default: 5 seconds)</param>
+        /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>True if a path has been found</returns>
-        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false)
+        protected bool MoveToLocation(Mapping.Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
         {
-            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport);
+            return Handler.MoveTo(location, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeout);
         }
 
+        /// <summary>
+        /// Check if the client is currently processing a Movement.
+        /// </summary>
+        /// <returns>true if a movement is currently handled</returns>
+        protected bool ClientIsMoving()
+        {
+            return Handler.ClientIsMoving();
+        }
+        
         /// <summary>
         /// Look at the specified location
         /// </summary>
@@ -1322,6 +1350,24 @@ namespace MinecraftClient
         protected bool SelectTrade(int selectedSlot)
         {
             return Handler.SelectTrade(selectedSlot);
+        }
+
+        /// <summary>
+        /// Teleport to player in spectator mode
+        /// </summary>
+        /// <param name="entity">player to teleport to</param>
+        protected bool SpectatorTeleport(Entity entity)
+        {
+            return Handler.Spectate(entity);
+        }
+
+        /// <summary>
+        /// Teleport to player/entity in spectator mode
+        /// </summary>
+        /// <param name="uuid">uuid of entity to teleport to</param>
+        protected bool SpectatorTeleport(Guid UUID)
+        {
+            return Handler.SpectateByUUID(UUID);
         }
         
         /// <summary>

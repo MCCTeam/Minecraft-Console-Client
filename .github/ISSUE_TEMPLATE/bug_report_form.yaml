@@ -1,0 +1,98 @@
+name: Bug Report
+description: Create a report to help us improve
+title: "[BUG] "
+labels: 
+  - "a:bug"
+body:
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I made sure I am running the latest [development build](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)
+          required: true
+        - label: I tried to [look for similar issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue) before opening a new one
+          required: true
+        - label: I have set `debugmessages=true` in config to diagnose my issue
+          required: true
+        - label: I have redacted session tokens and passwords before attaching screenshots
+          required: true
+  - type: input
+    id: mc-version
+    attributes:
+      label: Minecraft Version
+      placeholder: 1.x.x
+    validations:
+      required: true
+  - type: input
+    id: client-version
+    attributes:
+      label: Console Client Version
+      description: Please make sure you are using the latest version
+      placeholder: Latest
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      placeholder: What do you expect to see?
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      placeholder: What is the happening?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce-step
+    attributes:
+      label: Steps to Reproduce the bug
+      placeholder: "1. Login to ... server"
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Attach screenshot here (If applicable)
+  - type: textarea
+    id: others
+    attributes:
+      label: Anythings that could help diagnosing the bug
+      placeholder: Your configuration file, log output, ...
+      render: txt
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      description: What device you are using to run the client?
+      options:
+        - Desktop
+        - Laptop
+        - VPS
+        - Raspberry Pi
+        - Other
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system is your device running?
+      options:
+        - Windows
+        - Linux
+        - MacOS
+        - Other
+  - type: input
+    id: server-address
+    attributes:
+      label: Server Address (If applicable)
+  - type: markdown
+    id: credit
+    attributes:
+      value: Thank you for filling the bug report. Feel free to submit the report to us.
