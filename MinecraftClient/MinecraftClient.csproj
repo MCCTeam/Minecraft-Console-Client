@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <PublishUrl>publish\</PublishUrl>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -54,9 +54,11 @@
     <Compile Remove="config\sample-script-with-task.cs" />
     <Compile Remove="config\sample-script-with-world-access.cs" />
     <Compile Remove="config\sample-script.cs" />
+    <Compile Remove="config\ChatBots\MineCube.cs" />
+    <Compile Remove="config\ChatBots\SugarCaneFarmer.cs" />
     <Compile Remove="Mapping\VillagerInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive.csproj" />
+    <ProjectReference Include="..\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive.csproj" />
   </ItemGroup>
 </Project>

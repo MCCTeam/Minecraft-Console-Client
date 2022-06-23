@@ -59,7 +59,7 @@ namespace MinecraftClient
             if (!ConsoleIO.BasicIO)
                 ConsoleInteractive.ConsoleWriter.Init();
             
-            ConsoleIO.WriteLine($"Minecraft Console Client v{0} - for MC {1} to {2} - Github.com/MCCTeam", Version, MCLowestVersion, MCHighestVersion");
+            ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
 
             //Build information to facilitate processing of bug reports
             if (BuildInfo != null) 

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftClient", "MinecraftClient\MinecraftClient.csproj", "{1E2FACE4-F5CA-4323-9641-740C6A551770}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleInteractive", "ConsoleInteractive\ConsoleInteractive\ConsoleInteractive.csproj", "{93DA4D71-EFAD-4493-BE21-A105AF663660}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleInteractive", "ConsoleInteractive\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive.csproj", "{93DA4D71-EFAD-4493-BE21-A105AF663660}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
