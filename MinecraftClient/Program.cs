@@ -155,8 +155,8 @@ namespace MinecraftClient
             bool useBrowser = Settings.AccountType == ProtocolHandler.AccountType.Microsoft && Settings.LoginMethod == "browser";
             if (Settings.Login == "" && !useBrowser)
             {
-                Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
-                Settings.Login = Console.ReadLine();
+                ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") : Translations.Get("mcc.login"));
+                Settings.Login = ConsoleIO.ReadLine();
             }
             if (Settings.Password == "" 
                 && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower()))
@@ -184,7 +184,7 @@ namespace MinecraftClient
         /// </summary>
         private static void RequestPassword()
         {
-            Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Settings.Login) + "\n" : Translations.Get("mcc.password"));
+            ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Settings.Login) + "\n" : Translations.Get("mcc.password"));
             Settings.Password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
             if (Settings.Password == "") { Settings.Password = "-"; }
         }
