@@ -127,7 +127,7 @@ namespace MinecraftClient.Protocol
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
             if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
                 return new Protocol16Handler(Client, ProtocolVersion, Handler);
-            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757 };
+            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758 };
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
                 return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
             throw new NotSupportedException(Translations.Get("exception.version_unsupport", ProtocolVersion));
@@ -253,6 +253,8 @@ namespace MinecraftClient.Protocol
                     case "1.18":
                     case "1.18.1":
                         return 757;
+                    case "1.18.2":
+                        return 758;
                     default:
                         return 0;
                 }
@@ -317,6 +319,7 @@ namespace MinecraftClient.Protocol
                 case 755: return "1.17";
                 case 756: return "1.17.1";
                 case 757: return "1.18.1";
+                case 758: return "1.18.2";
                 default: return "0.0";
             }
         }
