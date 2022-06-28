@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace MinecraftClient.Mapping
 {
@@ -18,6 +19,11 @@ namespace MinecraftClient.Mapping
         private readonly Chunk[] chunks = new Chunk[ColumnSize];
 
         /// <summary>
+        /// Lock for thread safety
+        /// </summary>
+        private readonly ReaderWriterLockSlim chunkLock = new ReaderWriterLockSlim();
+
+        /// <summary>
         /// Get or set the specified chunk column
         /// </summary>
         /// <param name="chunkX">ChunkColumn X</param>
@@ -27,11 +33,27 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                return chunks[chunkY];
+                chunkLock.EnterReadLock();
+                try
+                {
+                    return chunks[chunkY];
+                }
+                finally
+                {
+                    chunkLock.ExitReadLock();
+                }
             }
             set
             {
-                chunks[chunkY] = value;
+                chunkLock.EnterWriteLock();
+                try
+                {
+                    chunks[chunkY] = value;
+                }
+                finally
+                {
+                    chunkLock.ExitWriteLock();
+                }
             }
         }
 

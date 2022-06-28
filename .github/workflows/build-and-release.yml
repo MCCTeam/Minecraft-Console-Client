@@ -1,5 +1,5 @@
 # This workflow will build the project using .NET 4 then publish to GitHub releases
-# Due to running .NET 4 this workflow needs to run on windows-latest
+# Due to running .NET 4 this workflow needs to run on windows-2019 (support dropped on windows 2022)
 # Changes would need to be made for using .NET 5 and later on linux
 
 name: Build
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     env:
       PROJECT: "MinecraftClient"
