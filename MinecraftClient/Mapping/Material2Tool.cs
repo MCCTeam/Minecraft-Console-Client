@@ -42,12 +42,9 @@ namespace MinecraftClient.Mapping
             Material.BrownGlazedTerracotta,
             Material.BrownShulkerBox,
             Material.BrownTerracotta,
-            Material.Cauldron,
-            Material.WaterCauldron,
-            Material.LavaCauldron,
-            Material.PowderSnowCauldron,
-            Material.Chain,
             Material.Calcite,
+            Material.Cauldron,
+            Material.Chain,
             Material.ChippedAnvil,
             Material.ChiseledDeepslate,
             Material.ChiseledNetherBricks,
@@ -58,10 +55,10 @@ namespace MinecraftClient.Mapping
             Material.ChiseledStoneBricks,
             Material.CoalBlock,
             Material.CoalOre,
+            Material.CobbledDeepslate,
             Material.CobbledDeepslateSlab,
             Material.CobbledDeepslateStairs,
             Material.CobbledDeepslateWall,
-            Material.CobbledDeepslate,
             Material.Cobblestone,
             Material.CobblestoneSlab,
             Material.CobblestoneStairs,
@@ -88,20 +85,20 @@ namespace MinecraftClient.Mapping
             Material.Deepslate,
             Material.DeepslateBrickSlab,
             Material.DeepslateBrickStairs,
-            Material.DeepslateBricks,
             Material.DeepslateBrickWall,
+            Material.DeepslateBricks,
             Material.DeepslateCoalOre,
             Material.DeepslateTileSlab,
             Material.DeepslateTileStairs,
-            Material.DeepslateTiles,
             Material.DeepslateTileWall,
+            Material.DeepslateTiles,
             Material.DetectorRail,
             Material.Diorite,
             Material.DioriteSlab,
             Material.DioriteStairs,
             Material.DioriteWall,
-            Material.DripstoneBlock,
             Material.Dispenser,
+            Material.DripstoneBlock,
             Material.Dropper,
             Material.EnchantingTable,
             Material.EndRod,
@@ -135,6 +132,7 @@ namespace MinecraftClient.Mapping
             Material.IronDoor,
             Material.IronTrapdoor,
             Material.Lantern,
+            Material.LavaCauldron,
             Material.LightBlueConcrete,
             Material.LightBlueGlazedTerracotta,
             Material.LightBlueShulkerBox,
@@ -203,6 +201,7 @@ namespace MinecraftClient.Mapping
             Material.PolishedGranite,
             Material.PolishedGraniteSlab,
             Material.PolishedGraniteStairs,
+            Material.PowderSnowCauldron,
             Material.PoweredRail,
             Material.Prismarine,
             Material.PrismarineBrickSlab,
@@ -271,6 +270,7 @@ namespace MinecraftClient.Mapping
             Material.Terracotta,
             Material.Tuff,
             Material.WarpedNylium,
+            Material.WaterCauldron,
             Material.WhiteConcrete,
             Material.WhiteGlazedTerracotta,
             Material.WhiteShulkerBox,
@@ -641,7 +641,7 @@ namespace MinecraftClient.Mapping
         // Liquids
         private static readonly List<Material> bucket = new List<Material>()
         {
-            Material.Lava, 
+            Material.Lava,
             Material.Water
         };
 
@@ -673,7 +673,7 @@ namespace MinecraftClient.Mapping
         {
             if (pickaxeTier0.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.NetheritePickaxe,
                     ItemType.DiamondPickaxe,
@@ -685,7 +685,7 @@ namespace MinecraftClient.Mapping
             }
             else if (pickaxeTier1.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.NetheritePickaxe,
                     ItemType.DiamondPickaxe,
@@ -696,7 +696,7 @@ namespace MinecraftClient.Mapping
             }
             else if (pickaxeTier2.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.NetheritePickaxe,
                     ItemType.DiamondPickaxe,
@@ -705,7 +705,7 @@ namespace MinecraftClient.Mapping
             }
             else if (pickaxeTier3.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.NetheritePickaxe,
                     ItemType.DiamondPickaxe,
@@ -713,7 +713,7 @@ namespace MinecraftClient.Mapping
             }
             else if (shovel.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.NetheriteShovel,
                     ItemType.DiamondShovel,
@@ -725,7 +725,7 @@ namespace MinecraftClient.Mapping
             }
             else if (axe.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.NetheriteAxe,
                     ItemType.DiamondAxe,
@@ -737,14 +737,14 @@ namespace MinecraftClient.Mapping
             }
             else if (shears.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.Shears,
                 };
             }
             else if (sword.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.NetheriteSword,
                     ItemType.DiamondSword,
@@ -756,7 +756,7 @@ namespace MinecraftClient.Mapping
             }
             else if (hoe.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.NetheriteHoe,
                     ItemType.DiamondHoe,
@@ -768,7 +768,7 @@ namespace MinecraftClient.Mapping
             }
             else if (bucket.Contains(block))
             {
-                return new ItemType[] 
+                return new ItemType[]
                 {
                     ItemType.Bucket,
                 };

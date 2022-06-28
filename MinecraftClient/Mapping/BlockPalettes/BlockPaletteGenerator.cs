@@ -29,7 +29,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
         /// <param name="blocksJsonFile">path to blocks.json</param>
         /// <remarks>java -cp minecraft_server.jar net.minecraft.data.Main --reports</remarks>
         /// <returns>state => block name mappings</returns>
-        public static void GenerateBlockPallete(string blocksJsonFile)
+        public static void GenerateBlockPalette(string blocksJsonFile)
         {
             BlockPaletteGenerator.JsonToClass(blocksJsonFile, "Palette", "Material");
         }
