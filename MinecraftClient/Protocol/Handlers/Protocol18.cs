@@ -1059,7 +1059,14 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 int EntityID = dataTypes.ReadNextVarInt(packetData);
                                 Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
-                                int healthField = protocolversion >= MC114Version ? 8 : 7; // Health is field no. 7 in 1.10+ and 8 in 1.14+
+
+                                int healthField = 7; // From 1.10 to 1.14 (excluding 1.14)
+
+                                if (protocolversion >= MC114Version && protocolversion <= MC1165Version)
+                                    healthField = 8;
+                                else if (protocolversion >= MC117Version)
+                                    healthField = 9;
+
                                 if (metadata.ContainsKey(healthField) && metadata[healthField] != null && metadata[healthField].GetType() == typeof(float))
                                     handler.OnEntityHealth(EntityID, (float)metadata[healthField]);
                                 handler.OnEntityMetadata(EntityID, metadata);
