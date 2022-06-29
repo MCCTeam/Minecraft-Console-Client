@@ -49,9 +49,7 @@ namespace MinecraftClient.WinAPI
             {
                 Thread t = new Thread(new ThreadStart(delegate 
                 {
-                        HttpWebRequest httpWebRequest =
-                            (HttpWebRequest) HttpWebRequest.Create(
-                                "https://minotar.net/helm/" + playerName + "/100.png");
+                        HttpWebRequest httpWebRequest = (HttpWebRequest) HttpWebRequest.Create("https://minotar.net/helm/" + playerName + "/100.png");
                         try 
                         {
                             using (HttpWebResponse httpWebReponse = (HttpWebResponse) httpWebRequest.GetResponse()) {
@@ -71,7 +69,7 @@ namespace MinecraftClient.WinAPI
                         {
                             revertToMCCIcon();
                         }
-                    }
+                }
                 ));
                 t.Name = "Player skin icon setter";
                 t.Start();

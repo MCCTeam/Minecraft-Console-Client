@@ -482,8 +482,7 @@ namespace MinecraftClient
                                 return;
                             
                             while (command.Length > 0) {
-                                while (!Console.KeyAvailable)
-                                    if (cancellationTokenSource.IsCancellationRequested)
+                                if (cancellationTokenSource.IsCancellationRequested)
                                         return;
                                 
                                 command = ConsoleInteractive.ConsoleReader.RequestImmediateInput().Trim();
