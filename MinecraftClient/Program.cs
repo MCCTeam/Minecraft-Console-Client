@@ -399,8 +399,9 @@ namespace MinecraftClient
         /// Disconnect the current client from the server and restart it
         /// </summary>
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
-        public static void Restart(int delaySeconds = 0)
+        public static void  Restart(int delaySeconds = 0)
         {
+            ConsoleInteractive.ConsoleReader.StopReadThread();
             new Thread(new ThreadStart(delegate
             {
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
