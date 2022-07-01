@@ -1957,8 +1957,9 @@ namespace MinecraftClient.Protocol.Handlers
 
                 packet.Add(button);
                 if (protocolversion < MC117Version) packet.AddRange(dataTypes.GetShort(actionNumber));
-                if (protocolversion >= MC1165Version)
+                if (protocolversion >= MC19Version)
                     packet.AddRange(dataTypes.GetVarInt(mode));
+                else packet.Add(mode);
 
                 // 1.17+
                 if (protocolversion >= MC117Version)
