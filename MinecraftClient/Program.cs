@@ -478,11 +478,13 @@ namespace MinecraftClient
                         ConsoleIO.WriteLineFormatted(Translations.Get("mcc.disconnected", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
                         Translations.WriteLineFormatted("mcc.press_exit");
                         
-                        while (!cancellationTokenSource.IsCancellationRequested) {
+                        while (!cancellationTokenSource.IsCancellationRequested) 
+                        {
                             if (exitThread)
                                 return;
                             
-                            while (command.Length > 0) {
+                            while (command.Length > 0) 
+                            {
                                 if (cancellationTokenSource.IsCancellationRequested)
                                         return;
                                 
@@ -537,7 +539,8 @@ namespace MinecraftClient
                                     if (message != "")
                                         ConsoleIO.WriteLineFormatted("§8MCC: " + message);
                                 }
-                                else {
+                                else 
+                                {
                                     _ = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
                                 }
                             }
