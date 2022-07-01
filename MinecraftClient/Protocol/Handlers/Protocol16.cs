@@ -94,7 +94,8 @@ namespace MinecraftClient.Protocol.Handlers
             int nbr = 0;
             switch (id)
             {
-                case 0x00: byte[] keepalive = new byte[5] { 0, 0, 0, 0, 0 };
+                case 0x00:
+                    byte[] keepalive = new byte[5] { 0, 0, 0, 0, 0 };
                     Receive(keepalive, 1, 4, SocketFlags.None);
                     handler.OnServerKeepAlive();
                     Send(keepalive); break;
@@ -183,11 +184,13 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0xCF: if (protocolversion > 51) { readNextString(); readData(1); readNextString(); } readData(4); break;
                 case 0xD0: if (protocolversion > 51) { readData(1); readNextString(); } break;
                 case 0xD1: if (protocolversion > 51) { readNextTeamData(); } break;
-                case 0xFA: string channel = readNextString();
+                case 0xFA:
+                    string channel = readNextString();
                     byte[] payload = readNextByteArray();
                     handler.OnPluginChannelMessage(channel, payload);
                     break;
-                case 0xFF: string reason = readNextString();
+                case 0xFF:
+                    string reason = readNextString();
                     handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, reason); break;
                 default: return false; //unknown packet!
             }
@@ -666,12 +669,12 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (SocketException) { return false; }
         }
-        
+
         public bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
             return false; //Currently not implemented
         }
-        
+
         public bool SendBrandInfo(string brandInfo)
         {
             return false; //Only supported since MC 1.7
@@ -701,23 +704,23 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false; //Currently not implemented
         }
-        
+
         public bool SendInteractEntity(int EntityID, int type, int hand)
         {
             return false; //Currently not implemented
         }
-        
+
         public bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
         {
             return false;  //Currently not implemented
         }
-        
+
         public bool SendUseItem(int hand)
         {
             return false; //Currently not implemented
         }
 
-        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item)
+        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item, Dictionary<int, Item> Items, int stateId)
         {
             return false; //Currently not implemented
         }
@@ -759,7 +762,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="data">packet Data</param>
         public bool SendPluginChannelPacket(string channel, byte[] data)
         {
-            try {
+            try
+            {
                 byte[] channelLength = BitConverter.GetBytes((short)channel.Length);
                 Array.Reverse(channelLength);
 

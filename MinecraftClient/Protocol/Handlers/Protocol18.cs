@@ -850,7 +850,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     if (item != null)
                                         inventorySlots[slotId] = item;
                                 }
-                                handler.OnWindowItems(windowId, inventorySlots);
+                                handler.OnWindowItems(windowId, inventorySlots, stateId);
                             }
                             break;
                         case PacketTypesIn.SetSlot:
@@ -1895,7 +1895,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item)
+        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item, Dictionary<int, Item> items, int stateId)
         {
             try
             {
@@ -1931,14 +1931,51 @@ namespace MinecraftClient.Protocol.Handlers
                 }
 
                 List<byte> packet = new List<byte>();
+
+                log.Info("Window id: " + windowId + " - State id: " + stateId + " - Slot id: " + slotId + " - Mode: " + mode);
+                log.Info("Bytes > " + (byte)windowId + " - State id: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(stateId)) + " - Slot id: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(slotId)) + " - Mode: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(mode)));
+
                 packet.Add((byte)windowId);
-                packet.AddRange(dataTypes.GetShort((short)slotId));
+
+                // 1.18+
+                if (protocolversion > MC1171Version)
+                {
+                    packet.AddRange(dataTypes.GetVarInt(stateId));
+                    packet.AddRange(dataTypes.GetShort((short)slotId));
+                }
+                // 1.17.1
+                else if (protocolversion == MC1171Version)
+                {
+                    packet.AddRange(dataTypes.GetShort((short)slotId));
+                    packet.AddRange(dataTypes.GetVarInt(stateId));
+                }
+                // Older
+                else
+                {
+                    packet.AddRange(dataTypes.GetShort((short)slotId));
+                }
+
                 packet.Add(button);
                 if (protocolversion < MC117Version) packet.AddRange(dataTypes.GetShort(actionNumber));
-                if (protocolversion >= MC19Version)
+                if (protocolversion >= MC1165Version)
                     packet.AddRange(dataTypes.GetVarInt(mode));
-                else packet.Add(mode);
+
+                // 1.17+
+                if (protocolversion >= MC117Version)
+                {
+                    byte[] arrayOfSlots = dataTypes.GetSlotsArray(items, itemPalette);
+
+                    log.Info("Length: " + sizeof(byte) * arrayOfSlots.Length);
+                    log.Info("Array: " + dataTypes.ByteArrayToString(arrayOfSlots));
+
+                    packet.AddRange(dataTypes.GetVarInt(sizeof(byte) * arrayOfSlots.Length));
+                    packet.AddRange(arrayOfSlots);
+                }
+
                 packet.AddRange(dataTypes.GetItemSlot(item, itemPalette));
+
+                log.Info("Packet data: " + dataTypes.ByteArrayToString(packet.ToArray()));
+
                 SendPacket(PacketTypesOut.ClickWindow, packet);
                 return true;
             }
