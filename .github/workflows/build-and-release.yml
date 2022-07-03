@@ -48,7 +48,7 @@ jobs:
       run: dotnet publish ${{ project-path }}.sln -f ${{ target-version }} -r win-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
 
     - name: Zip Windows Build
-    - uses: montudor/action-zip@v1
+      uses: montudor/action-zip@v1
       with:
         args: zip -qq -r windows.zip *
         working-directory: ${{ win-out-path }}\
@@ -57,7 +57,7 @@ jobs:
       run: dotnet publish ${{ project-path }}.sln -f ${{ target-version }} -r linux-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
 
     - name: Zip Linux Build
-    - uses: montudor/action-zip@v1
+      uses: montudor/action-zip@v1
       with:
         args: zip -qq -r linux.zip *
         working-directory: ${{ linux-out-path }}\
