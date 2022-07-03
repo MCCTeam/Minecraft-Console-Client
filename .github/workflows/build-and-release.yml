@@ -1,28 +1,28 @@
-# This workflow will build the project using .NET 6 then publish to GitHub releases
-# target-version should be updated for future .NET releases
-
 name: Build
 
 on:
   push:
     branches: [ master ]
-
+  workflow_dispatch:
+  
 env:
   PROJECT: "MinecraftClient"
   target-version: "net6.0"
-  project-path: ${{ github.workspace }}\${{ env.PROJECT }}
-  win-out-path: ${{ project-path }}\bin\Release\${{ target-version }}\win-x64\publish\
-  linux-out-path: ${{ project-path }}\bin\Release\${{ target-version }}\linux-x64\publish\
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+    
+    - name: Setup Environment Variables
+      run: |
+        echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
+        echo win-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
+        echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
+
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v2.1.0
-      with:
-        dotnet-version: 6.0.0
 
     - name: Checkout
       uses: actions/checkout@v2
@@ -37,30 +37,29 @@ jobs:
         timeZone: 0
         format: 'YYYY-MM-DD'
 
-    - name: Get Version Info
+    - name: VersionInfo
       run: |
-        # PowerShell commands
-        set COMMIT "${{ github.sha }}".substring(0, 7)
-        '' >> ${{ project-path }}\Properties\AssemblyInfo.cs
-        "[assembly: AssemblyConfiguration(`"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT`")]" >> ${{ project-path }}\Properties\AssemblyInfo.cs
-
+        COMMIT=$(echo ${{ github.sha }} | cut -c 1-7)
+        echo '' >> ${{ env.project-path }}\Properties\AssemblyInfo.cs
+        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}\Properties\AssemblyInfo.cs
+      
     - name: Build for Windows
-      run: dotnet publish ${{ project-path }}.sln -f ${{ target-version }} -r win-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} --no-self-contained -r win-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
 
     - name: Zip Windows Build
       uses: montudor/action-zip@v1
       with:
         args: zip -qq -r windows.zip *
-        working-directory: ${{ win-out-path }}\
+        working-directory: ${{ env.win-out-path }}
 
     - name: Build for Linux
-      run: dotnet publish ${{ project-path }}.sln -f ${{ target-version }} -r linux-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} --no-self-contained -r linux-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
 
     - name: Zip Linux Build
       uses: montudor/action-zip@v1
       with:
         args: zip -qq -r linux.zip *
-        working-directory: ${{ linux-out-path }}\
+        working-directory: ${{ env.linux-out-path }}
 
     - name: Get Release DateTime
       id: date-release
@@ -74,8 +73,8 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ win-out-path }}\windows.zip
-        assetName: ${{ PROJECT }}-windows.zip
+        filePath: ${{ env.win-out-path }}\windows.zip
+        assetName: ${{ env.PROJECT }}-windows.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
     - name: Linux Release
@@ -83,6 +82,6 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ linux-out-path }}\linux.zip
-        assetName: ${{ PROJECT }}-linux.zip
+        filePath: ${{ env.linux-out-path }}\linux.zip
+        assetName: ${{ env.PROJECT }}-linux.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
