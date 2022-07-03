@@ -12,7 +12,6 @@ using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Inventory;
-using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using MinecraftClient.Inventory.ItemPalettes;
@@ -72,7 +71,7 @@ namespace MinecraftClient.Protocol.Handlers
         PacketTypePalette packetPalette;
         SocketWrapper socketWrapper;
         DataTypes dataTypes;
-        Thread netRead; // main thread
+        Tuple<Thread, CancellationTokenSource>? netRead = null; // main thread
         ILogger log;
 
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo forgeInfo)
@@ -153,14 +152,22 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Separate thread. Network reading loop.
         /// </summary>
-        private void Updater()
+        private void Updater(object? o) 
         {
-            try
+
+            if (((CancellationToken) o!).IsCancellationRequested)
+                return;
+
+            try 
             {
+
                 bool keepUpdating = true;
                 Stopwatch stopWatch = new Stopwatch();
-                while (keepUpdating)
+                while (keepUpdating) 
                 {
+
+                    ((CancellationToken)o!).ThrowIfCancellationRequested();
+                    
                     stopWatch.Start();
                     keepUpdating = Update();
                     stopWatch.Stop();
@@ -173,7 +180,11 @@ namespace MinecraftClient.Protocol.Handlers
             catch (System.IO.IOException) { }
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
+            catch (OperationCanceledException) { }
 
+            if (((CancellationToken) o!).IsCancellationRequested)
+                return;
+            
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
         }
 
@@ -1160,11 +1171,12 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Start the updating thread. Should be called after login success.
         /// </summary>
-        private void StartUpdating()
+        private void StartUpdating() 
         {
-            netRead = new Thread(new ThreadStart(Updater));
-            netRead.Name = "ProtocolPacketHandler";
-            netRead.Start();
+
+            netRead = new Tuple<Thread, CancellationTokenSource>(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
+            netRead.Item1.Name = "ProtocolPacketHandler";
+            netRead.Item1.Start(netRead.Item2.Token);
         }
 
         /// <summary>
@@ -1173,7 +1185,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Net read thread ID</returns>
         public int GetNetReadThreadId()
         {
-            return netRead != null ? netRead.ManagedThreadId : -1;
+            return netRead != null ? netRead.Item1.ManagedThreadId : -1;
         }
 
         /// <summary>
@@ -1185,7 +1197,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (netRead != null)
                 {
-                    netRead.Abort();
+                    netRead.Item2.Cancel();
                     socketWrapper.Disconnect();
                 }
             }

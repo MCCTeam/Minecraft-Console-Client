@@ -194,7 +194,7 @@ namespace MinecraftClient
         /// <param name="key">Translation key</param>
         public static void Write(string key)
         {
-            ConsoleIO.Write(Get(key));
+            ConsoleIO.WriteLine(Get(key));
         }
 
         /// <summary>

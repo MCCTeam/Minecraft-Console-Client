@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Net.Security;
+using System.Threading;
+using DnsClient;
 using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
@@ -41,20 +43,20 @@ namespace MinecraftClient.Protocol
                     try
                     {
                         Translations.WriteLine("mcc.resolve", domainVal);
-                        Heijden.DNS.Response response = new Heijden.DNS.Resolver().Query("_minecraft._tcp." + domainVal, Heijden.DNS.QType.SRV);
-                        Heijden.DNS.RecordSRV[] srvRecords = response.RecordsSRV;
-                        if (srvRecords != null && srvRecords.Any())
+                        var lookupClient = new LookupClient();
+                        var response = lookupClient.Query(new DnsQuestion($"_minecraft._tcp.{domainVal}", QueryType.SRV));
+                        if (response.HasError != true && response.Answers.SrvRecords().Any())
                         {
                             //Order SRV records by priority and weight, then randomly
-                            Heijden.DNS.RecordSRV result = srvRecords
-                                .OrderBy(record => record.PRIORITY)
-                                .ThenByDescending(record => record.WEIGHT)
+                            var result = response.Answers.SrvRecords()
+                                .OrderBy(record => record.Priority)
+                                .ThenByDescending(record => record.Weight)
                                 .ThenBy(record => Guid.NewGuid())
                                 .First();
-                            string target = result.TARGET.Trim('.');
-                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.found", target, result.PORT, domainVal));
+                            string target = result.Target.Value.Trim('.');
+                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.found", target, result.Port, domainVal));
                             domainVal = target;
-                            portVal = result.PORT;
+                            portVal = result.Port;
                             foundService = true;
                         }
                     }

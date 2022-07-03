@@ -1,54 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1E2FACE4-F5CA-4323-9641-740C6A551770}</ProjectGuid>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MinecraftClient</RootNamespace>
-    <AssemblyName>MinecraftClient</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
-    <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>default</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup />
   <PropertyGroup>
     <SignManifests>false</SignManifests>
   </PropertyGroup>
@@ -58,347 +16,7 @@
   <PropertyGroup>
     <StartupObject>MinecraftClient.Program</StartupObject>
   </PropertyGroup>
-  <PropertyGroup />
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AutoTimeout.cs" />
-    <Compile Include="ChatBots\AutoDrop.cs" />
-    <Compile Include="ChatBots\Mailer.cs" />
-    <Compile Include="Commands\SetRnd.cs" />
-    <Compile Include="Protocol\JwtPayloadDecode.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette118.cs" />
-    <Compile Include="Protocol\MojangAPI.cs" />
-    <Compile Include="Mapping\CubeFromWorld.cs" />
-    <Compile Include="Mapping\Material2Tool.cs" />
-    <Compile Include="ChatBots\ReplayCapture.cs" />
-    <Compile Include="Commands\DropItem.cs" />
-    <Compile Include="Commands\Entitycmd.cs" />
-    <Compile Include="ChatBots\Alerts.cs" />
-    <Compile Include="ChatBots\AntiAFK.cs" />
-    <Compile Include="ChatBots\AutoAttack.cs" />
-    <Compile Include="ChatBots\AutoCraft.cs" />
-    <Compile Include="ChatBots\AutoEat.cs" />
-    <Compile Include="ChatBots\AutoFishing.cs" />
-    <Compile Include="ChatBots\AutoRespond.cs" />
-    <Compile Include="ChatBots\AutoRelog.cs" />
-    <Compile Include="ChatBots\ChatLog.cs" />
-    <Compile Include="ChatBots\HangmanGame.cs" />
-    <Compile Include="ChatBots\PlayerListLogger.cs" />
-    <Compile Include="ChatBots\RemoteControl.cs" />
-    <Compile Include="ChatBots\Script.cs" />
-    <Compile Include="ChatBots\ScriptScheduler.cs" />
-    <Compile Include="ChatBots\TestBot.cs" />
-    <Compile Include="ChatBot.cs" />
-    <Compile Include="Command.cs" />
-    <Compile Include="Commands\Animation.cs" />
-    <Compile Include="Commands\ChangeSlot.cs" />
-    <Compile Include="Commands\Connect.cs" />
-    <Compile Include="Commands\Debug.cs" />
-    <Compile Include="Commands\Dig.cs" />
-    <Compile Include="Commands\Inventory.cs" />
-    <Compile Include="Commands\Look.cs" />
-    <Compile Include="Commands\Move.cs" />
-    <Compile Include="Commands\Exit.cs" />
-    <Compile Include="Commands\Log.cs" />
-    <Compile Include="Commands\Reco.cs" />
-    <Compile Include="Commands\Respawn.cs" />
-    <Compile Include="Commands\Script.cs" />
-    <Compile Include="Commands\Send.cs" />
-    <Compile Include="Commands\Set.cs" />
-    <Compile Include="Commands\Health.cs" />
-    <Compile Include="Commands\Sneak.cs" />
-    <Compile Include="Commands\Tps.cs" />
-    <Compile Include="Commands\Useblock.cs" />
-    <Compile Include="Commands\UseItem.cs" />
-    <Compile Include="DefaultConfigResource.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>DefaultConfigResource.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Logger\FileLogLogger.cs" />
-    <Compile Include="Logger\ILogger.cs" />
-    <Compile Include="INIFile.cs" />
-    <Compile Include="Inventory\Container.cs" />
-    <Compile Include="Inventory\ContainerType.cs" />
-    <Compile Include="Inventory\ContainerTypeExtensions.cs" />
-    <Compile Include="Inventory\Effects.cs" />
-    <Compile Include="Inventory\Hand.cs" />
-    <Compile Include="Inventory\Item.cs" />
-    <Compile Include="Inventory\ItemMovingHelper.cs" />
-    <Compile Include="Inventory\ItemPalettes\ItemPalette.cs" />
-    <Compile Include="Inventory\ItemPalettes\ItemPalette115.cs" />
-    <Compile Include="Inventory\ItemPalettes\ItemPalette1161.cs" />
-    <Compile Include="Inventory\ItemPalettes\ItemPalette1162.cs" />
-    <Compile Include="Inventory\ItemPalettes\ItemPaletteGenerator.cs" />
-    <Compile Include="Inventory\ItemType.cs" />
-    <Compile Include="Inventory\ItemTypeExtensions.cs" />
-    <Compile Include="Inventory\WindowActionType.cs" />
-    <Compile Include="Logger\LoggerBase.cs" />
-    <Compile Include="Mapping\BlockPalettes\Palette112.cs" />
-    <Compile Include="Mapping\BlockPalettes\Palette113.cs" />
-    <Compile Include="Mapping\BlockPalettes\Palette114.cs" />
-    <Compile Include="Mapping\BlockPalettes\Palette115.cs" />
-    <Compile Include="Mapping\BlockPalettes\BlockPaletteGenerator.cs" />
-    <Compile Include="Mapping\BlockPalettes\BlockPalette.cs" />
-    <Compile Include="Mapping\BlockPalettes\Palette116.cs" />
-    <Compile Include="Mapping\CommandBlockFlags.cs" />
-    <Compile Include="Mapping\CommandBlockMode.cs" />
-    <Compile Include="Mapping\Entity.cs" />
-    <Compile Include="Mapping\EntityPalettes\EntityPalette112.cs" />
-    <Compile Include="Mapping\EntityPalettes\EntityPalette113.cs" />
-    <Compile Include="Mapping\EntityPalettes\EntityPalette.cs" />
-    <Compile Include="Mapping\EntityPalettes\EntityPalette114.cs" />
-    <Compile Include="Mapping\EntityPalettes\EntityPalette115.cs" />
-    <Compile Include="Mapping\EntityPalettes\EntityPalette1161.cs" />
-    <Compile Include="Mapping\EntityPalettes\EntityPalette1162.cs" />
-    <Compile Include="Mapping\EntityPose.cs" />
-    <Compile Include="Mapping\EntityType.cs" />
-    <Compile Include="Mapping\EntityPalettes\EntityPaletteGenerator.cs" />
-    <Compile Include="Mapping\EntityTypeExtensions.cs" />
-    <Compile Include="Mapping\MaterialExtensions.cs" />
-    <Compile Include="Logger\FilteredLogger.cs" />
-    <Compile Include="Protocol\EntityActionType.cs" />
-    <Compile Include="Protocol\GuidExtensions.cs" />
-    <Compile Include="Protocol\Handlers\Compression\DeflateStream.cs" />
-    <Compile Include="Protocol\Handlers\Compression\ParallelDeflateOutputStream.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ComHelper.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\EncryptionAlgorithm.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\Events.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\Exceptions.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ExtractExistingFileAction.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\FileSelector.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\OffsetStream.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\Shared.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\WinZipAes.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipConstants.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipCrypto.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipDirEntry.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntry.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntry.Extract.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntry.Read.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntry.Write.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipEntrySource.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipErrorAction.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.AddUpdate.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Check.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Events.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Extract.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Read.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Save.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.SaveSelfExtractor.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.Selector.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipFile.x-IEnumerable.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipInputStream.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipOutputStream.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zip\ZipSegmentedStream.cs" />
-    <Compile Include="Protocol\Handlers\DataTypes.cs" />
-    <Compile Include="Protocol\Handlers\Forge\FMLVersion.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette110.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette112.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette1122.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette113.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette114.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette115.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette116.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette1162.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette117.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette17.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketPaletteHelper.cs" />
-    <Compile Include="Protocol\Handlers\PacketType18Handler.cs" />
-    <Compile Include="Protocol\Handlers\PacketPalettes\PacketTypePalette.cs" />
-    <Compile Include="Protocol\Handlers\PacketTypesIn.cs" />
-    <Compile Include="Protocol\Handlers\PacketTypesOut.cs" />
-    <Compile Include="Protocol\Handlers\Protocol18Forge.cs" />
-    <Compile Include="Protocol\Handlers\Protocol18Terrain.cs" />
-    <Compile Include="Protocol\Handlers\SocketWrapper.cs" />
-    <Compile Include="Protocol\DataTypeGenerator.cs" />
-    <Compile Include="FileMonitor.cs" />
-    <Compile Include="Inventory\VillagerTrade.cs" />
-    <Compile Include="Protocol\MicrosoftAuthentication.cs" />
-    <Compile Include="Protocol\ProxiedWebRequest.cs" />
-    <Compile Include="Protocol\ReplayHandler.cs" />
-    <Compile Include="TaskWithDelay.cs" />
-    <Compile Include="TaskWithResult.cs" />
-    <Compile Include="Translations.cs" />
-    <Compile Include="Inventory\VillagerInfo.cs" />
-    <Compile Include="WinAPI\ConsoleIcon.cs" />
-    <Compile Include="ConsoleIO.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\AesFastEngine.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\BufferedBlockCipher.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\BufferedCipherBase.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\CfbBlockCipher.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\Check.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\CipherStream.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\CryptoException.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\DataLengthException.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\IBlockCipher.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\IBufferedCipher.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\ICipherParameters.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\KeyParameter.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\OutputLengthException.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\Pack.cs" />
-    <Compile Include="Crypto\Streams\BouncyAes\ParametersWithIV.cs" />
-    <Compile Include="Crypto\Streams\MonoAesStream.cs" />
-    <Compile Include="Crypto\Streams\RegularAesStream.cs" />
-    <Compile Include="Crypto\CryptoHandler.cs" />
-    <Compile Include="CSharpRunner.cs" />
-    <Compile Include="Json.cs" />
-    <Compile Include="Mapping\Block.cs" />
-    <Compile Include="Mapping\Chunk.cs" />
-    <Compile Include="Mapping\ChunkColumn.cs" />
-    <Compile Include="Mapping\Direction.cs" />
-    <Compile Include="Mapping\Material.cs" />
-    <Compile Include="Mapping\Movement.cs" />
-    <Compile Include="Mapping\World.cs" />
-    <Compile Include="Protocol\ChatParser.cs" />
-    <Compile Include="Protocol\Dns\Header.cs" />
-    <Compile Include="Protocol\Dns\Question.cs" />
-    <Compile Include="Protocol\Dns\RecordReader.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordA6.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordAPL.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordATMA.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordCERT.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordDHCID.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordDNSKEY.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordEID.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordGID.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordHIP.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordIPSECKEY.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordNIMLOC.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordNSEC.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordNSEC3.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordNSEC3PARAM.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordOPT.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordRRSIG.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordSINK.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordSPF.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordSSHFP.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordUID.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordUINFO.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordUnknown.cs" />
-    <Compile Include="Protocol\Dns\Records\NotUsed\RecordUNSPEC.cs" />
-    <Compile Include="Protocol\Dns\Records\Obsolete\RecordGPOS.cs" />
-    <Compile Include="Protocol\Dns\Records\Obsolete\RecordMD.cs" />
-    <Compile Include="Protocol\Dns\Records\Obsolete\RecordMF.cs" />
-    <Compile Include="Protocol\Dns\Records\Obsolete\RecordNSAPPTR.cs" />
-    <Compile Include="Protocol\Dns\Records\Obsolete\RecordNXT.cs" />
-    <Compile Include="Protocol\Dns\Records\Record.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordA.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordAAAA.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordAFSDB.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordCNAME.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordDNAME.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordDS.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordHINFO.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordISDN.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordKEY.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordKX.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordLOC.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordMB.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordMG.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordMINFO.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordMR.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordMX.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordNAPTR.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordNS.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordNSAP.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordNULL.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordPTR.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordPX.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordRP.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordRT.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordSIG.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordSOA.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordSRV.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordTKEY.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordTSIG.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordTXT.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordWKS.cs" />
-    <Compile Include="Protocol\Dns\Records\RecordX25.cs" />
-    <Compile Include="Protocol\Dns\Request.cs" />
-    <Compile Include="Protocol\Dns\Resolver.cs" />
-    <Compile Include="Protocol\Dns\Response.cs" />
-    <Compile Include="Protocol\Dns\RR.cs" />
-    <Compile Include="Protocol\Dns\Structs.cs" />
-    <Compile Include="Protocol\Handlers\Forge\FMLHandshakeClientState.cs" />
-    <Compile Include="Protocol\Handlers\Forge\FMLHandshakeDiscriminator.cs" />
-    <Compile Include="Protocol\Handlers\Forge\ForgeInfo.cs" />
-    <Compile Include="Protocol\Handlers\Compression\CRC32.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Deflate.cs" />
-    <Compile Include="Protocol\Handlers\Compression\GZipStream.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Inflate.cs" />
-    <Compile Include="Protocol\Handlers\Compression\InfTree.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Tree.cs" />
-    <Compile Include="Protocol\Handlers\Compression\Zlib.cs" />
-    <Compile Include="Protocol\Handlers\Compression\ZlibBaseStream.cs" />
-    <Compile Include="Protocol\Handlers\Compression\ZlibCodec.cs" />
-    <Compile Include="Protocol\Handlers\Compression\ZlibConstants.cs" />
-    <Compile Include="Protocol\Handlers\ZlibUtils.cs" />
-    <Compile Include="Crypto\IAesStream.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="McClient.cs" />
-    <Compile Include="Protocol\Handlers\Compression\ZlibStream.cs" />
-    <Compile Include="Protocol\Handlers\Protocol18.cs" />
-    <Compile Include="Protocol\Handlers\Protocol16.cs" />
-    <Compile Include="Protocol\IMinecraftCom.cs" />
-    <Compile Include="Protocol\IMinecraftComHandler.cs" />
-    <Compile Include="Protocol\ProtocolHandler.cs" />
-    <Compile Include="Protocol\Session\CacheType.cs" />
-    <Compile Include="Protocol\Session\SessionCache.cs" />
-    <Compile Include="Protocol\Session\SessionToken.cs" />
-    <Compile Include="Proxy\ProxyHandler.cs" />
-    <Compile Include="Proxy\Handlers\EventArgs\CreateConnectionAsyncCompletedEventArgs.cs" />
-    <Compile Include="Proxy\Handlers\Exceptions\ProxyException.cs" />
-    <Compile Include="Proxy\Handlers\HttpProxyClient.cs" />
-    <Compile Include="Proxy\Handlers\IProxyClient.cs" />
-    <Compile Include="Proxy\Handlers\ProxyClientFactory.cs" />
-    <Compile Include="Proxy\Handlers\Socks4aProxyClient.cs" />
-    <Compile Include="Proxy\Handlers\Socks4ProxyClient.cs" />
-    <Compile Include="Proxy\Handlers\Socks5ProxyClient.cs" />
-    <Compile Include="Proxy\Handlers\Utils.cs" />
-    <Compile Include="Settings.cs" />
-    <Compile Include="Commands\List.cs" />
-    <Compile Include="Mapping\Location.cs" />
-    <Compile Include="WinAPI\ExitCleanUp.cs" />
-    <Compile Include="WinAPI\WindowsVersion.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Protocol\Dns\Records\totla.txt" />
     <Content Include="Resources\AppIcon.ico" />
     <Content Include="Resources\containers\ContainerType.BrewingStand.txt" />
     <Content Include="Resources\containers\ContainerType.Crafting.txt" />
@@ -408,22 +26,39 @@
     <Content Include="Resources\containers\ContainerType.PlayerInventory.txt" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DefaultConfigResource.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>DefaultConfigResource.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <PackageReference Include="DnsClient" Version="1.5.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0-1.final" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.2.233001">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\config\MinecraftClient.ini" />
-    <None Include="Resources\lang\de.ini" />
-    <None Include="Resources\lang\en.ini" />
+    <Compile Remove="config\ChatBots\AutoLook.cs" />
+    <Compile Remove="config\ChatBots\AutoTree.cs" />
+    <Compile Remove="config\ChatBots\ClckRuAPI.cs" />
+    <Compile Remove="config\ChatBots\CobblestoneMiner.cs" />
+    <Compile Remove="config\ChatBots\DiscordWebhook.cs" />
+    <Compile Remove="config\ChatBots\OreMiner.cs" />
+    <Compile Remove="config\ChatBots\PayKassa.cs" />
+    <Compile Remove="config\ChatBots\QIWIAPI.cs" />
+    <Compile Remove="config\ChatBots\SugarCaneMiner.cs" />
+    <Compile Remove="config\ChatBots\TreeFarmer.cs" />
+    <Compile Remove="config\ChatBots\VkMessager.cs" />
+    <Compile Remove="config\sample-script-extended.cs" />
+    <Compile Remove="config\sample-script-pm-forwarder.cs" />
+    <Compile Remove="config\sample-script-random-command.cs" />
+    <Compile Remove="config\sample-script-with-chatbot.cs" />
+    <Compile Remove="config\sample-script-with-http-request.cs" />
+    <Compile Remove="config\sample-script-with-task.cs" />
+    <Compile Remove="config\sample-script-with-world-access.cs" />
+    <Compile Remove="config\sample-script.cs" />
+    <Compile Remove="config\ChatBots\MineCube.cs" />
+    <Compile Remove="config\ChatBots\SugarCaneFarmer.cs" />
+    <Compile Remove="Mapping\VillagerInfo.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <ProjectReference Include="..\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive.csproj" />
+  </ItemGroup>
 </Project>
