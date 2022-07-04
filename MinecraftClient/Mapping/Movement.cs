@@ -170,7 +170,7 @@ namespace MinecraftClient.Mapping
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
 
             // Round start coordinates for easier calculation
-            start = new Location(Math.Round(start.X), Math.Round(start.Y), Math.Round(start.Z));
+            start = new Location(Math.Floor(start.X), Math.Floor(start.Y), Math.Floor(start.Z));
 
             // We always use distance squared so our limits must also be squared.
             minOffset *= minOffset;
@@ -511,13 +511,13 @@ namespace MinecraftClient.Mapping
 
                 // Move diagonal
                 case Direction.NorthEast:
-                    return (!world.GetBlock(Move(location, Direction.North)).Type.IsSolid() && !world.GetBlock(Move(location, Direction.East)).Type.IsSolid()) && PlayerFitsHere(world, Move(location, direction));
+                    return PlayerFitsHere(world, Move(location, Direction.North)) && PlayerFitsHere(world, Move(location, Direction.East)) && PlayerFitsHere(world, Move(location, direction));
                 case Direction.SouthEast:
-                    return (!world.GetBlock(Move(location, Direction.South)).Type.IsSolid() && !world.GetBlock(Move(location, Direction.East)).Type.IsSolid()) && PlayerFitsHere(world, Move(location, direction));
+                    return PlayerFitsHere(world, Move(location, Direction.South)) && PlayerFitsHere(world, Move(location, Direction.East)) && PlayerFitsHere(world, Move(location, direction));
                 case Direction.SouthWest:
-                    return (!world.GetBlock(Move(location, Direction.South)).Type.IsSolid() && !world.GetBlock(Move(location, Direction.West)).Type.IsSolid()) && PlayerFitsHere(world, Move(location, direction));
+                    return PlayerFitsHere(world, Move(location, Direction.South)) && PlayerFitsHere(world, Move(location, Direction.West)) && PlayerFitsHere(world, Move(location, direction));
                 case Direction.NorthWest:
-                    return (!world.GetBlock(Move(location, Direction.North)).Type.IsSolid() && !world.GetBlock(Move(location, Direction.West)).Type.IsSolid()) && PlayerFitsHere(world, Move(location, direction));
+                    return PlayerFitsHere(world, Move(location, Direction.North)) && PlayerFitsHere(world, Move(location, Direction.West)) && PlayerFitsHere(world, Move(location, direction));
 
                 default:
                     throw new ArgumentException("Unknown direction", "direction");
