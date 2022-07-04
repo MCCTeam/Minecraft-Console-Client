@@ -59,6 +59,8 @@ namespace MinecraftClient
         private float playerYaw;
         private float playerPitch;
         private double motionY;
+        public enum MovementType { Sneak, Walk, Sprint}
+        public int currentMovementSpeed = 2;
 
         private string host;
         private int port;
@@ -336,7 +338,7 @@ namespace MinecraftClient
             {
                 lock (locationLock)
                 {
-                    for (int i = 0; i < 2; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    for (int i = 0; i < currentMovementSpeed; i++) //Needs to run at 20 tps; MCC runs at 10 tps
                     {
                         if (_yaw == null || _pitch == null)
                         {
@@ -1861,6 +1863,49 @@ namespace MinecraftClient
         public bool ClientIsMoving() 
         {
             return terrainAndMovementsEnabled && locationReceived && ((steps != null && steps.Count > 0) || (path != null && path.Count > 0));
+        }
+
+        /// <summary>
+        /// Get the current goal
+        /// </summary>
+        /// <returns>Current goal of movement. Location.Zero if not set.</returns>
+        public Location GetCurrentMovementGoal()
+        {
+            return ClientIsMoving() ? Location.Zero : path.Last();
+        }
+
+        /// <summary>
+        /// Cancels the current movement
+        /// </summary>
+        /// <returns>True if there was an active path</returns>
+        public bool CancelMovement()
+        {
+            bool success = ClientIsMoving();
+            path = null;
+            return success;
+        }
+
+        /// <summary>
+        /// Change the amount of sent movement packets per time
+        /// </summary>
+        /// <param name="newSpeed">Set a new walking type</param>
+        public void SetMovementSpeed(MovementType newSpeed)
+        {
+            switch (newSpeed)
+            {
+                case MovementType.Sneak:
+                    // https://minecraft.fandom.com/wiki/Sneaking#Effects - Sneaking  1.31m/s
+                    currentMovementSpeed = 2;
+                    break;
+                case MovementType.Walk:
+                    // https://minecraft.fandom.com/wiki/Walking#Usage - Walking 4.317 m/s
+                    currentMovementSpeed = 4;
+                    break;
+                case MovementType.Sprint:
+                    // https://minecraft.fandom.com/wiki/Sprinting#Usage - Sprinting 5.612 m/s
+                    currentMovementSpeed = 5;
+                    break;
+            }
         }
 
         /// <summary>
