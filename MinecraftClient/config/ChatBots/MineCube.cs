@@ -42,7 +42,7 @@ class MineCube : ChatBot
 	/// <param name="ct">CancellationToken to stop the task on cancel</param>
 	public void MineUp(World currentWorld, Location startBlock, Location stopBlock, CancellationToken ct)
 	{
-		if(startBlock.Y != stopBlock.Y)
+		if (startBlock.Y != stopBlock.Y)
 		{
 			LogToConsole("Command FAILED. Both coordinates must be on the same y level.");
 		}
@@ -58,7 +58,7 @@ class MineCube : ChatBot
 
 				// Walk to the new location.
 				waitForMoveToLocation(standLocation, maxOffset: 1);
-			   
+
 				for (int height = Convert.ToInt32(startBlock.Y) + 2; height < Convert.ToInt32(startBlock.Y) + 7; height++)
 				{
 					if (ct.IsCancellationRequested)
@@ -76,7 +76,7 @@ class MineCube : ChatBot
 					if (!IsGravitySave(currentWorld, mineLocation) || IsSorroundedByLiquid(currentWorld, mineLocation)) { break; }
 					// Skip this block if it can not be mined.
 					if (Material2Tool.IsUnbreakable(mineLocationMaterial)) { continue; }
-					
+
 					if (Settings.InventoryHandling && toolHandling)
 					{
 						// Search this tool in hotbar and select the correct slot
@@ -148,8 +148,8 @@ class MineCube : ChatBot
 
 				// If the end of the new row is closer than the start, reverse the line and start here
 				Location currentStandingLoc = GetCurrentLocation();
-				Queue<int> currentZLocationRangeQueue = new Queue<int>(currentStandingLoc.DistanceSquared(new Location(currentXLoc, currentYLoc, zLocationRange.Last())) < currentStandingLoc.DistanceSquared(new Location(currentXLoc, currentYLoc, zLocationRange.First())) ? 
-					zLocationRange.Reverse() : 
+				Queue<int> currentZLocationRangeQueue = new Queue<int>(currentStandingLoc.DistanceSquared(new Location(currentXLoc, currentYLoc, zLocationRange.Last())) < currentStandingLoc.DistanceSquared(new Location(currentXLoc, currentYLoc, zLocationRange.First())) ?
+					zLocationRange.Reverse() :
 					zLocationRange);
 
 				while (!ct.IsCancellationRequested && (currentZLocationRangeQueue.Count > 0 || blocksToMine.Count > 0))
@@ -167,11 +167,19 @@ class MineCube : ChatBot
 							if (ct.IsCancellationRequested)
 								break;
 
-							if (GetCurrentLocation().EyesLocation().DistanceSquared(mineLocation) > 25)
+							Location currentLoc = GetCurrentLocation();
+							Location currentBlockUnderFeet = new Location(Math.Floor(currentLoc.X), Math.Floor(currentLoc.Y) - 1, Math.Floor(currentLoc.Z));
+
+							// If we are too far away from the mining location
+							if (currentLoc.EyesLocation().DistanceSquared(mineLocation) > 25)
 							{
 								// Walk to the new location
-								waitForMoveToLocation(mineLocation, maxOffset:4, minOffset:2);
+								waitForMoveToLocation(mineLocation, maxOffset:3);
 							}
+
+							// Prevent falling into danger
+							if (mineLocation == currentBlockUnderFeet && !Movement.IsSafe(currentWorld, currentBlockUnderFeet))
+									waitForMoveToLocation(mineLocation, maxOffset: 4, minOffset:3);
 
 							// Is inventoryhandling activated?
 							if (Settings.InventoryHandling && toolHandling)
@@ -203,7 +211,7 @@ class MineCube : ChatBot
 							{
 								LogDebugToConsole("Unable to break this block: " + mineLocation.ToString());
 							}
-						
+
 						}
 					}
 
@@ -233,7 +241,7 @@ class MineCube : ChatBot
 	/// <param name="ct">CancellationToken to stop the task on cancel</param>
 	/// <param name="cacheSize">Maximum amount of blocks to return</param>
 	/// <returns></returns>
-	private List<Location> EvaluateBlocks(World currentWorld, int xLoc, int yLoc, Queue<int> zLocationQueue, CancellationToken ct, int cacheSize=10)
+	private List<Location> EvaluateBlocks(World currentWorld, int xLoc, int yLoc, Queue<int> zLocationQueue, CancellationToken ct, int cacheSize = 10)
 	{
 		List<Location> blockMiningCache = new List<Location>();
 		int i = 0;
@@ -275,7 +283,7 @@ class MineCube : ChatBot
 	/// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
 	/// <param name="minOffset">Do not get closer of destination than specified distance</param>
 	/// <param name="timeout">How long to wait before stopping computation (default: 5 seconds)</param>
-	private void waitForMoveToLocation(Location goal, bool allowUnsafe=false, bool allowDirectTeleport=false, int maxOffset=0, int minOffset=0, TimeSpan? timeout=null)
+	private void waitForMoveToLocation(Location goal, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
 	{
 		if (MoveToLocation(goal, allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeout))
 		{
@@ -334,7 +342,7 @@ class MineCube : ChatBot
 
 		return
 			// Block can not fall down on player e.g. Sand, Gravel etc.
-			!isGravityBlock(Movement.Move(block, Direction.Up)) && 
+			!isGravityBlock(Movement.Move(block, Direction.Up)) &&
 			(Movement.Move(currentLoc, Direction.Down) != blockToMine || currentWorld.GetBlock(Movement.Move(currentLoc, Direction.Down, 2)).Type.IsSolid()) &&
 			// Prevent updating flying sand/gravel under player
 			!isGravityBlock(Movement.Move(block, Direction.Down)) || isBlockSolid(Movement.Move(block, Direction.Down, 2));
@@ -373,10 +381,10 @@ class MineCube : ChatBot
 		"/mineup <x1> <y1> <z1> <x2> <y1> <z2> OR /mineup <x> <y> <z>\n" +
 		"to walk over a quadratic field of blocks and simultaniously mine everything above the head. \n" +
 		"(Mines up to 5 Blocks, stops if gravel or lava would fall. There must be a 2 high area of air below the cube you want to mine.)\n" +
-		"/mine OR /mineup cancel\n" + 
+		"/mine OR /mineup cancel\n" +
 		"to cancel the current mining process.\n" +
 		"/mine OR /mineup cachesize\n" +
-		"to set the current cache size\n" + 
+		"to set the current cache size\n" +
 		"/mine OR /mineup breaktimeout\n" +
 		"to set the time to wait until a block is broken."; ;
 
