@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections;
-using System.Linq;
 
 namespace MinecraftClient.Mapping
 {
@@ -524,6 +522,12 @@ namespace MinecraftClient.Mapping
             }
         }
 
+        /// <summary>
+        /// Evaluates if a player fits in this location
+        /// </summary>
+        /// <param name="world">Current world</param>
+        /// <param name="location">Location to check</param>
+        /// <returns>True if a player is able to stand in this location</returns>
         public static bool PlayerFitsHere(World world, Location location)
         {
             return !world.GetBlock(location).Type.IsSolid()
