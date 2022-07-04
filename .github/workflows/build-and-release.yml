@@ -3,7 +3,6 @@ name: Build
 on:
   push:
     branches: [ master ]
-  workflow_dispatch:
   
 env:
   PROJECT: "MinecraftClient"
@@ -14,10 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
-    - name: Setup Environment Variables
+    - name: Setup Project Path
       run: |
         echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
+    
+    - name: Setup Output Paths
+      run: |
         echo win-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
         echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
 
@@ -42,24 +43,20 @@ jobs:
         COMMIT=$(echo ${{ github.sha }} | cut -c 1-7)
         echo '' >> ${{ env.project-path }}\Properties\AssemblyInfo.cs
         echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}\Properties\AssemblyInfo.cs
-      
+            
     - name: Build for Windows
-      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} --no-self-contained -r win-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} --no-self-contained -r win-x64 -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
 
     - name: Zip Windows Build
-      uses: montudor/action-zip@v1
-      with:
-        args: zip -qq -r windows.zip *
-        working-directory: ${{ env.win-out-path }}
+      run: zip -qq -r windows.zip *
+      working-directory: ${{ env.win-out-path }}
 
     - name: Build for Linux
-      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} --no-self-contained -r linux-x64 -c Release -p:PublishSingleFile=true -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} --no-self-contained -r linux-x64 -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
 
     - name: Zip Linux Build
-      uses: montudor/action-zip@v1
-      with:
-        args: zip -qq -r linux.zip *
-        working-directory: ${{ env.linux-out-path }}
+      run: zip -qq -r linux.zip *
+      working-directory: ${{ env.linux-out-path }}
 
     - name: Get Release DateTime
       id: date-release
@@ -73,7 +70,7 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ env.win-out-path }}\windows.zip
+        filePath: ${{ env.win-out-path }}windows.zip
         assetName: ${{ env.PROJECT }}-windows.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
@@ -82,6 +79,6 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ env.linux-out-path }}\linux.zip
+        filePath: ${{ env.linux-out-path }}linux.zip
         assetName: ${{ env.PROJECT }}-linux.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
