@@ -1966,10 +1966,10 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     byte[] arrayOfSlots = dataTypes.GetSlotsArray(items, itemPalette);
 
-                    log.Info("Length: " + sizeof(byte) * arrayOfSlots.Length);
+                    log.Info("Length: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(arrayOfSlots.Length)) + " (" + arrayOfSlots.Length + ")");
                     log.Info("Array: " + dataTypes.ByteArrayToString(arrayOfSlots));
 
-                    packet.AddRange(dataTypes.GetVarInt(sizeof(byte) * arrayOfSlots.Length));
+                    packet.AddRange(dataTypes.GetVarInt(arrayOfSlots.Length));
                     packet.AddRange(arrayOfSlots);
                 }
 
