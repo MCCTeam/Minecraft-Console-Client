@@ -7,6 +7,7 @@ on:
 env:
   PROJECT: "MinecraftClient"
   target-version: "net6.0"
+  compile-flags: "--no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
 
 jobs:
   build:
@@ -21,6 +22,7 @@ jobs:
       run: |
         echo win-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
         echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
+        echo osx-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-x64/publish/ >> $GITHUB_ENV
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v2.1.0
@@ -45,18 +47,25 @@ jobs:
         echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}\Properties\AssemblyInfo.cs
             
     - name: Build for Windows
-      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} --no-self-contained -r win-x64 -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x64 ${{ env.compile-flags }}
 
     - name: Zip Windows Build
       run: zip -qq -r windows.zip *
       working-directory: ${{ env.win-out-path }}
 
     - name: Build for Linux
-      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} --no-self-contained -r linux-x64 -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-x64 ${{ env.compile-flags }}
 
     - name: Zip Linux Build
       run: zip -qq -r linux.zip *
       working-directory: ${{ env.linux-out-path }}
+
+    - name: Build for OSX
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r osx-x64 ${{ env.compile-flags }}
+
+    - name: Zip OSX Build
+      run: zip -qq -r osx.zip *
+      working-directory: ${{ env.osx-out-path }}
 
     - name: Get Release DateTime
       id: date-release
@@ -81,4 +90,13 @@ jobs:
         mode: uploadReleaseAsset
         filePath: ${{ env.linux-out-path }}linux.zip
         assetName: ${{ env.PROJECT }}-linux.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: OSX Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.osx-out-path }}osx.zip
+        assetName: ${{ env.PROJECT }}-osx.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
