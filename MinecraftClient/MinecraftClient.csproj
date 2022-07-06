@@ -33,6 +33,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
+    <PackageReference Include="SingleFileExtractor.Core" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="config\ChatBots\AutoLook.cs" />
