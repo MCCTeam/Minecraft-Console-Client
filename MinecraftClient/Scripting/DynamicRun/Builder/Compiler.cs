@@ -111,11 +111,11 @@ namespace DynamicRun.Builder
                             {
                                 // Safety net for the case where the assembly is referenced multiple times.
                                 // Should not happen normally, but we can make exceptions when it does happen.
-                                throw new InvalidOperationException("Too many references to the same assembly.");
+                                throw new InvalidOperationException("Too many references to the same assembly. Assembly name: " + refs.Name);
                             }
                             if (reference == null)
                             {
-                                throw new NotImplementedException();
+                                throw new InvalidOperationException("The executable does not contain a referenced assembly. Assembly name: " + refs.Name);
                             }
 
                             assemblyStream = GetStreamForFileEntry(viewAccessor, reference); 
