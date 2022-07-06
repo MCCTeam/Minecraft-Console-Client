@@ -95,28 +95,10 @@ namespace DynamicRun.Builder
                     var manifest = e.ReadManifest(viewAccessor);
                     var files = manifest.Files;
                     
-                    // Find MinecraftClient.dll in the executable.
-                    var assembly = files.FirstOrDefault(x => x.RelativePath == "MinecraftClient.dll");
-
-                    // Check if the executable has the assembly.
-                    if (assembly == null)
-                    {
-                        throw new InvalidOperationException("The executable does not contain the assembly.");
-                    }
-
-                    // Get the assembly from the executable.
-                    Stream? assemblyStream = typeof(BundleExtractor).GetMethod("GetStreamForFileEntry", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { viewAccessor, assembly }) as Stream;
-
-                    // Check if the assembly stream is null.
-                    if (assemblyStream == null)
-                    {
-                        throw new InvalidOperationException("assemblyStream is null");
-                    }
-
-                    // Add the assembly reference.
-                    references.Add(MetadataReference.CreateFromStream(assemblyStream));
+                    Stream? assemblyStream;
 
                     var assemblyrefs = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList();
+                    assemblyrefs.Add(new ("MinecraftClient"));
                     
                     foreach (var refs in assemblyrefs) {
                         var loadedAssembly = Assembly.Load(refs);
@@ -133,10 +115,10 @@ namespace DynamicRun.Builder
                             }
                             if (reference == null)
                             {
-                                throw new NotImplementedException("Cannot find the assembly from the executable. Executable name: " + refs.Name);
+                                throw new NotImplementedException();
                             }
 
-                            assemblyStream = typeof(BundleExtractor).GetMethod("GetStreamForFileEntry", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { viewAccessor, reference }) as Stream;
+                            assemblyStream = GetStreamForFileEntry(viewAccessor, reference); 
                             references.Add(MetadataReference.CreateFromStream(assemblyStream));
                             continue;
                         }
@@ -144,7 +126,6 @@ namespace DynamicRun.Builder
                     }
 
                     // Cleanup.
-                    assemblyStream.Dispose();
                     viewAccessor.Flush();
                     viewAccessor.Dispose();
                 }
@@ -161,6 +142,18 @@ namespace DynamicRun.Builder
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, 
                     optimizationLevel: OptimizationLevel.Release,
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
+        }
+        
+        private static Stream? GetStreamForFileEntry(MemoryMappedViewAccessor viewAccessor, FileEntry file)
+        {
+            var stream = typeof(BundleExtractor).GetMethod("GetStreamForFileEntry", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { viewAccessor, file }) as Stream;
+
+            if (stream == null) 
+            {
+                throw new InvalidOperationException("The executable does not contain the assembly. Assembly name: " + file.RelativePath);
+            }
+
+            return stream;
         }
 
         internal struct CompileResult {
