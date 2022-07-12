@@ -259,6 +259,10 @@ namespace MinecraftClient.Mapping
 
         /// <summary>
         /// A datastructure to store Locations as Nodes and provide them in sorted and queued order.
+        /// !!!
+        /// CAN BE REPLACED WITH PriorityQueue IN .NET-6
+        /// https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.priorityqueue-2?view=net-6.0
+        /// !!!
         /// </summary>
         public class BinaryHeap
         {
