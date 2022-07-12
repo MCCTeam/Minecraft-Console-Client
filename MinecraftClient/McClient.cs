@@ -60,7 +60,7 @@ namespace MinecraftClient
         private float playerPitch;
         private double motionY;
         public enum MovementType { Sneak, Walk, Sprint}
-        public int currentMovementSpeed = 2;
+        public int currentMovementSpeed = 4;
 
         private string host;
         private int port;
@@ -217,7 +217,7 @@ namespace MinecraftClient
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
                     //Add your ChatBot here by uncommenting and adapting
-                    // BotLoad(new ChatBots.TestBot());
+                    //BotLoad(new ChatBots.YourBot());
                 }
             }
 
@@ -1082,12 +1082,7 @@ namespace MinecraftClient
                 else
                 {
                     // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
-                    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-                    sw.Start();
                     path = Movement.CalculatePath(world, this.location, location, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
-                    sw.Stop();
-                    Console.WriteLine(string.Format("Calculation took: {0} ms", sw.ElapsedMilliseconds));
-
                     return path != null;
                 }
             }
