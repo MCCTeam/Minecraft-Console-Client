@@ -16,7 +16,7 @@ using MinecraftClient.WinAPI;
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by the MCC Team (c) 2012-2021.
+    /// Minecraft Console Client by the MCC Team (c) 2012-2022.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
@@ -36,7 +36,7 @@ namespace MinecraftClient
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.18.1";
+        public const string MCHighestVersion = "1.18.2";
         public static readonly string BuildInfo = null;
 
         private static Thread offlinePrompt = null;
@@ -124,17 +124,19 @@ namespace MinecraftClient
                         {
                             if (!argument.Contains("="))
                                 throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
-                            
+
                             string[] argParts = argument.Substring(2).Split('=');
                             string argName = argParts[0].Trim();
                             string argValue = argParts[1].Replace("\"", "").Trim();
 
-                            if(argName == "data-path") {
+                            if (argName == "data-path")
+                            {
                                 Console.WriteLine(dataPath);
                                 dataPath = argValue;
                             }
 
-                            if(argName == "data-generator") {
+                            if (argName == "data-generator")
+                            {
                                 dataGenerator = argValue;
                             }
                         }
@@ -143,24 +145,24 @@ namespace MinecraftClient
                     if (string.IsNullOrEmpty(dataGenerator) || !(dataGenerator.ToLower().Equals("entity") || dataGenerator.ToLower().Equals("item") || dataGenerator.ToLower().Equals("block")))
                     {
                         Console.WriteLine(Translations.Get("error.generator.invalid"));
-                        Console.WriteLine(Translations.Get("error.usage") + " MinecraftClient.exe --data-generator=<entity|item|block>");
+                        Console.WriteLine(Translations.Get("error.usage") + " MinecraftClient.exe --data-generator=<entity|item|block> --data-path=\"<path to resources.json>\"");
                         return;
                     }
 
                     if (string.IsNullOrEmpty(dataPath))
                     {
                         Console.WriteLine(Translations.Get("error.missing.argument", "--data-path"));
-                        Console.WriteLine(Translations.Get("error.usage") + " MinecraftClient.exe --generate-entity-pallete --data-path=\"<path to resources.json>\"");
+                        Console.WriteLine(Translations.Get("error.usage") + " MinecraftClient.exe --data-generator=<entity|item|block> --data-path=\"<path to resources.json>\"");
                         return;
                     }
 
-                    if(!File.Exists(dataPath)) 
+                    if (!File.Exists(dataPath))
                     {
                         Console.WriteLine(Translations.Get("error.generator.path", dataPath));
                         return;
                     }
 
-                    if(!dataPath.EndsWith(".json")) 
+                    if (!dataPath.EndsWith(".json"))
                     {
                         Console.WriteLine(Translations.Get("error.generator.json", dataPath));
                         return;
@@ -170,16 +172,16 @@ namespace MinecraftClient
 
                     switch (dataGenerator)
                     {
-                        case "entity": 
+                        case "entity":
                             EntityPaletteGenerator.GenerateEntityTypes(dataPath);
                             break;
 
-                        case "item": 
+                        case "item":
                             ItemPaletteGenerator.GenerateItemType(dataPath);
                             break;
 
-                        case "block": 
-                            BlockPaletteGenerator.GenerateBlockPallete(dataPath);
+                        case "block":
+                            BlockPaletteGenerator.GenerateBlockPalette(dataPath);
                             break;
                     }
 
@@ -226,7 +228,7 @@ namespace MinecraftClient
                 Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
                 Settings.Login = Console.ReadLine();
             }
-            if (Settings.Password == "" 
+            if (Settings.Password == ""
                 && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower()))
                 && !useBrowser)
             {
@@ -234,14 +236,14 @@ namespace MinecraftClient
             }
 
             // Setup exit cleaning code
-            ExitCleanUp.Add(delegate () 
+            ExitCleanUp.Add(delegate ()
             {
                 // Do NOT use Program.Exit() as creating new Thread cause program to freeze
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
                 if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
             });
-            
+
 
             startupargs = args;
             InitializeClient();
@@ -294,8 +296,8 @@ namespace MinecraftClient
                         {
                             result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
                         }
-                        if (result != ProtocolHandler.LoginResult.Success 
-                            && Settings.Password == "" 
+                        if (result != ProtocolHandler.LoginResult.Success
+                            && Settings.Password == ""
                             && Settings.AccountType == ProtocolHandler.AccountType.Mojang)
                             RequestPassword();
                     }

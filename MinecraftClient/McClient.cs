@@ -1061,8 +1061,12 @@ namespace MinecraftClient
         /// <param name="location">Location to reach</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations thay may hurt the player: lava, cactus...</param>
         /// <param name="allowDirectTeleport">Allow non-vanilla direct teleport instead of computing path, but may cause invalid moves and/or trigger anti-cheat plugins</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
+        /// <param name="timeout">How long to wait until the path is evaluated (default: 5 seconds)</param>
+        /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
         {
             lock (locationLock)
             {
@@ -1078,7 +1082,7 @@ namespace MinecraftClient
                     // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
                     if (Movement.GetAvailableMoves(world, this.location, allowUnsafe).Contains(location))
                         path = new Queue<Location>(new[] { location });
-                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe);
+                    else path = Movement.CalculatePath(world, this.location, location, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
                     return path != null;
                 }
             }
@@ -1240,7 +1244,7 @@ namespace MinecraftClient
                 item = inventories[windowId].Items[slotId];
 
             // Inventory update must be after sending packet
-            bool result = handler.SendWindowAction(windowId, slotId, action, item);
+            bool result = handler.SendWindowAction(windowId, slotId, action, item, inventories[windowId].Items, inventories[windowId].StateID);
 
             // Update our inventory base on action type
             var inventory = GetInventory(windowId);
@@ -1703,7 +1707,7 @@ namespace MinecraftClient
         /// Teleporting to other entityies is NOT implemented yet
         public bool Spectate(Entity entity)
         {
-            if(entity.Type == EntityType.Player)
+            if (entity.Type == EntityType.Player)
             {
                 return SpectateByUUID(entity.UUID);
             }
@@ -1719,9 +1723,9 @@ namespace MinecraftClient
         /// <param name="UUID">UUID of player/entity to teleport to</param>
         public bool SpectateByUUID(Guid UUID)
         {
-            if(GetGamemode() == 3)
+            if (GetGamemode() == 3)
             {
-                if(InvokeRequired)
+                if (InvokeRequired)
                     return InvokeOnMainThread(() => SpectateByUUID(UUID));
                 return handler.SendSpectate(UUID);
             }
@@ -1845,6 +1849,15 @@ namespace MinecraftClient
             entities.Clear();
             ClearInventories();
             DispatchBotEvent(bot => bot.OnRespawn());
+        }
+
+        /// <summary>
+        /// Check if the client is currently processing a Movement.
+        /// </summary>
+        /// <returns>true if a movement is currently handled</returns>
+        public bool ClientIsMoving()
+        {
+            return terrainAndMovementsEnabled && locationReceived && ((steps != null && steps.Count > 0) || (path != null && path.Count > 0));
         }
 
         /// <summary>
@@ -2017,11 +2030,12 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
         /// <param name="itemList">Item list, key = slot ID, value = Item information</param>
-        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList)
+        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList, int stateId)
         {
             if (inventories.ContainsKey(inventoryID))
             {
                 inventories[inventoryID].Items = itemList;
+                inventories[inventoryID].StateID = stateId;
                 DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
             }
         }

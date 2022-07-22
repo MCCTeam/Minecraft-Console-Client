@@ -263,7 +263,8 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
         /// <param name="itemList">Item list</param>
-        void OnWindowItems(byte inventoryID, Dictionary<int, Item> itemList);
+        /// <param name="stateId">State ID</param>
+        void OnWindowItems(byte inventoryID, Dictionary<int, Item> itemList, int stateId);
 
         /// <summary>
         /// Called when a single slot has been updated inside an inventory

@@ -100,7 +100,7 @@ namespace MinecraftClient.ChatBots
                                 }
                             }
                         }
-                        
+
                         if (entitiesToAttack.ContainsKey(priorityEntity))
                         {
                             // check entity distance and health again
@@ -141,6 +141,22 @@ namespace MinecraftClient.ChatBots
             if (entitiesToAttack.ContainsKey(entity.ID))
             {
                 entitiesToAttack.Remove(entity.ID);
+            }
+        }
+
+        public override void OnEntityHealth(Entity entity, float health)
+        {
+            if (!entity.Type.IsHostile())
+                return;
+
+            if (entitiesToAttack.ContainsKey(entity.ID))
+            {
+                entitiesToAttack[entity.ID].Health = health;
+
+                if (entitiesToAttack[entity.ID].Health <= 0)
+                {
+                    entitiesToAttack.Remove(entity.ID);
+                }
             }
         }
 

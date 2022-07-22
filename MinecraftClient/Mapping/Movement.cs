@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MinecraftClient.Mapping
 {
@@ -21,21 +22,24 @@ namespace MinecraftClient.Mapping
         /// <returns>Updated location after applying gravity</returns>
         public static Location HandleGravity(World world, Location location, ref double motionY)
         {
-            Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
-            Location belowFoots = Move(location, Direction.Down);
-            if (location.Y > Math.Truncate(location.Y) + 0.0001)
+            if (Settings.GravityEnabled)
             {
-                belowFoots = location;
-                belowFoots.Y = Math.Truncate(location.Y);
+                Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
+                Location belowFoots = Move(location, Direction.Down);
+                if (location.Y > Math.Truncate(location.Y) + 0.0001)
+                {
+                    belowFoots = location;
+                    belowFoots.Y = Math.Truncate(location.Y);
+                }
+                if (!IsOnGround(world, location) && !IsSwimming(world, location))
+                {
+                    while (!IsOnGround(world, belowFoots) && belowFoots.Y >= 1)
+                        belowFoots = Move(belowFoots, Direction.Down);
+                    location = Move2Steps(location, belowFoots, ref motionY, true).Dequeue();
+                }
+                else if (!(world.GetBlock(onFoots).Type.IsSolid()))
+                    location = Move2Steps(location, onFoots, ref motionY, true).Dequeue();
             }
-            if (!IsOnGround(world, location) && !IsSwimming(world, location))
-            {
-                while (!IsOnGround(world, belowFoots) && belowFoots.Y >= 1)
-                    belowFoots = Move(belowFoots, Direction.Down);
-                location = Move2Steps(location, belowFoots, ref motionY, true).Dequeue();
-            }
-            else if (!(world.GetBlock(onFoots).Type.IsSolid()))
-                location = Move2Steps(location, onFoots, ref motionY, true).Dequeue();
             return location;
         }
 
@@ -126,62 +130,126 @@ namespace MinecraftClient.Mapping
         /// <param name="start">Start location</param>
         /// <param name="goal">Destination location</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
+        /// <param name="timeout">How long to wait before stopping computation</param>
+        /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>A list of locations, or null if calculation failed</returns>
-        public static Queue<Location> CalculatePath(World world, Location start, Location goal, bool allowUnsafe = false)
+        public static Queue<Location> CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, TimeSpan timeout)
         {
-            Queue<Location> result = null;
-
-            AutoTimeout.Perform(() =>
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Task<Queue<Location>> pathfindingTask = Task.Factory.StartNew(() => Movement.CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
+            pathfindingTask.Wait(timeout);
+            if (!pathfindingTask.IsCompleted)
             {
-                HashSet<Location> ClosedSet = new HashSet<Location>(); // The set of locations already evaluated.
-                HashSet<Location> OpenSet = new HashSet<Location>(new[] { start });  // The set of tentative nodes to be evaluated, initially containing the start node
-                Dictionary<Location, Location> Came_From = new Dictionary<Location, Location>(); // The map of navigated nodes.
+                cts.Cancel();
+                pathfindingTask.Wait();
+            }
+            return pathfindingTask.Result;
+        }
 
-                Dictionary<Location, int> g_score = new Dictionary<Location, int>(); //:= map with default value of Infinity
-                g_score[start] = 0; // Cost from start along best known path.
-                // Estimated total cost from start to goal through y.
-                Dictionary<Location, int> f_score = new Dictionary<Location, int>(); //:= map with default value of Infinity
-                f_score[start] = (int)start.DistanceSquared(goal); //heuristic_cost_estimate(start, goal)
+        /// <summary>
+        /// Calculate a path from the start location to the destination location
+        /// </summary>
+        /// <remarks>
+        /// Based on the A* pathfinding algorithm described on Wikipedia
+        /// </remarks>
+        /// <see href="https://en.wikipedia.org/wiki/A*_search_algorithm#Pseudocode"/>
+        /// <param name="start">Start location</param>
+        /// <param name="goal">Destination location</param>
+        /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
+        /// <param name="maxOffset">If no valid path can be found, also allow locations within specified distance of destination</param>
+        /// <param name="minOffset">Do not get closer of destination than specified distance</param>
+        /// <param name="ct">Token for stopping computation after a certain time</param>
+        /// <returns>A list of locations, or null if calculation failed</returns>
+        public static Queue<Location> CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, CancellationToken ct)
+        {
 
-                while (OpenSet.Count > 0)
+            if (minOffset > maxOffset)
+                throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
+            
+            // We always use distance squared so our limits must also be squared.
+            minOffset *= minOffset;
+            maxOffset *= maxOffset;
+
+            Location current = new Location(); // Location that is currently processed
+            Location closestGoal = new Location(); // Closest Location to the goal. Used for approaching if goal can not be reached or was not found.
+            HashSet<Location> ClosedSet = new HashSet<Location>(); // The set of locations already evaluated.
+            HashSet<Location> OpenSet = new HashSet<Location>(new[] { start });  // The set of tentative nodes to be evaluated, initially containing the start node
+            Dictionary<Location, Location> Came_From = new Dictionary<Location, Location>(); // The map of navigated nodes.
+
+            Dictionary<Location, int> g_score = new Dictionary<Location, int>(); //:= map with default value of Infinity
+            g_score[start] = 0; // Cost from start along best known path.
+            // Estimated total cost from start to goal through y.
+            Dictionary<Location, int> f_score = new Dictionary<Location, int>(); //:= map with default value of Infinity
+            f_score[start] = (int)start.DistanceSquared(goal); //heuristic_cost_estimate(start, goal)
+
+            while (OpenSet.Count > 0)
+            {
+                current = //the node in OpenSet having the lowest f_score[] value
+                    OpenSet.Select(location => f_score.ContainsKey(location)
+                    ? new KeyValuePair<Location, int>(location, f_score[location])
+                    : new KeyValuePair<Location, int>(location, int.MaxValue))
+                    .OrderBy(pair => pair.Value).
+                    // Sort for h-score (f-score - g-score) to get smallest distance to goal if f-scores are equal
+                    ThenBy(pair => f_score[pair.Key]-g_score[pair.Key]).First().Key;
+                
+                // Only assert a value if it is of actual use later
+                if (maxOffset > 0 && ClosedSet.Count > 0)
+                    // Get the block that currently is closest to the goal
+                    closestGoal = ClosedSet.OrderBy(checkedLocation => checkedLocation.DistanceSquared(goal)).First();
+
+                // Stop when goal is reached or we are close enough
+                if (current == goal || (minOffset > 0 && current.DistanceSquared(goal) <= minOffset))
+                    return ReconstructPath(Came_From, current);
+                else if (ct.IsCancellationRequested)
+                    break;              // Return if we are cancelled
+
+                OpenSet.Remove(current);
+                ClosedSet.Add(current);
+
+                foreach (Location neighbor in GetAvailableMoves(world, current, allowUnsafe))
                 {
-                    Location current = //the node in OpenSet having the lowest f_score[] value
-                        OpenSet.Select(location => f_score.ContainsKey(location)
-                        ? new KeyValuePair<Location, int>(location, f_score[location])
-                        : new KeyValuePair<Location, int>(location, int.MaxValue))
-                        .OrderBy(pair => pair.Value).First().Key;
-                    if (current == goal)
-                    { //reconstruct_path(Came_From, goal)
-                        List<Location> total_path = new List<Location>(new[] { current });
-                        while (Came_From.ContainsKey(current))
-                        {
-                            current = Came_From[current];
-                            total_path.Add(current);
-                        }
-                        total_path.Reverse();
-                        result = new Queue<Location>(total_path);
-                    }
-                    OpenSet.Remove(current);
-                    ClosedSet.Add(current);
-                    foreach (Location neighbor in GetAvailableMoves(world, current, allowUnsafe))
-                    {
-                        if (ClosedSet.Contains(neighbor))
-                            continue;		// Ignore the neighbor which is already evaluated.
-                        int tentative_g_score = g_score[current] + (int)current.DistanceSquared(neighbor); //dist_between(current,neighbor) // length of this path.
-                        if (!OpenSet.Contains(neighbor))	// Discover a new node
-                            OpenSet.Add(neighbor);
-                        else if (tentative_g_score >= g_score[neighbor])
-                            continue;		// This is not a better path.
+                    if (ct.IsCancellationRequested)
+                        break;          // Stop searching for blocks if we are cancelled.
+                    if (ClosedSet.Contains(neighbor))
+                        continue;       // Ignore the neighbor which is already evaluated.
+                    int tentative_g_score = g_score[current] + (int)current.DistanceSquared(neighbor); //dist_between(current,neighbor) // length of this path.
+                    if (!OpenSet.Contains(neighbor))    // Discover a new node
+                        OpenSet.Add(neighbor);
+                    else if (tentative_g_score >= g_score[neighbor])
+                        continue;       // This is not a better path.
 
-                        // This path is the best until now. Record it!
-                        Came_From[neighbor] = current;
-                        g_score[neighbor] = tentative_g_score;
-                        f_score[neighbor] = g_score[neighbor] + (int)neighbor.DistanceSquared(goal); //heuristic_cost_estimate(neighbor, goal)
-                    }
+                    // This path is the best until now. Record it!
+                    Came_From[neighbor] = current;
+                    g_score[neighbor] = tentative_g_score;
+                    f_score[neighbor] = g_score[neighbor] + (int)neighbor.DistanceSquared(goal); //heuristic_cost_estimate(neighbor, goal)
                 }
-            }, TimeSpan.FromSeconds(5));
+            }
 
-            return result;
+            // Goal could not be reached. Set the path to the closest location if close enough
+            if (maxOffset == int.MaxValue || goal.DistanceSquared(closestGoal) <= maxOffset)            
+                return ReconstructPath(Came_From, closestGoal);
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Helper function for CalculatePath(). Backtrack from goal to start to reconstruct a step-by-step path.
+        /// </summary>
+        /// <param name="Came_From">The collection of Locations that leads back to the start</param>
+        /// <param name="current">Endpoint of our later walk</param>
+        /// <returns>the path that leads to current from the start position</returns>
+        private static Queue<Location> ReconstructPath(Dictionary<Location, Location> Came_From, Location current)
+        {
+            List<Location> total_path = new List<Location>(new[] { current });
+            while (Came_From.ContainsKey(current))
+            {
+                current = Came_From[current];
+                total_path.Add(current);
+            }
+            total_path.Reverse();
+            return new Queue<Location>(total_path);
         }
 
         /* ========= LOCATION PROPERTIES ========= */

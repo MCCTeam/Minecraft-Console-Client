@@ -1115,6 +1115,6 @@ namespace MinecraftClient.Inventory
         ZombieHorseSpawnEgg,
         ZombieSpawnEgg,
         ZombieVillagerSpawnEgg,
-        ZombifiedPiglinSpawnEgg
+        ZombifiedPiglinSpawnEgg,
     }
 }
