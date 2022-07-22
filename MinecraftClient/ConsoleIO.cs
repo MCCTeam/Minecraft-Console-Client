@@ -123,11 +123,15 @@ namespace MinecraftClient
             
             if (!String.IsNullOrEmpty(str))
             {
-                if (!acceptnewlines) 
+                if (!acceptnewlines)
                 {
-                    output.Append(str.Replace('\n', ' '));
+                    str = str.Replace('\n', ' ');
                 }
-                else 
+                if (BasicIO_NoColor)
+                {
+                    output.Append(ChatBot.GetVerbatim(str));
+                }
+                else
                 {
                     output.Append(str);
                 }
@@ -142,10 +146,6 @@ namespace MinecraftClient
                 }
                 if (BasicIO)
                 {
-                    if (BasicIO_NoColor)
-                    {
-                        output.Append(ChatBot.GetVerbatim(str));
-                    }
                     Console.WriteLine(output.ToString());
                     return;
                 }
