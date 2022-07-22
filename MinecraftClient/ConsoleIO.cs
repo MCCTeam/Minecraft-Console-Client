@@ -123,6 +123,15 @@ namespace MinecraftClient
             
             if (!String.IsNullOrEmpty(str))
             {
+                if (displayTimestamp == null)
+                {
+                    displayTimestamp = EnableTimestamps;
+                }
+                if (displayTimestamp.Value)
+                {
+                    int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
+                    output.Append(String.Format("{0}:{1}:{2} ", hour.ToString("00"), minute.ToString("00"), second.ToString("00")));
+                }
                 if (!acceptnewlines)
                 {
                     str = str.Replace('\n', ' ');
@@ -134,15 +143,6 @@ namespace MinecraftClient
                 else
                 {
                     output.Append(str);
-                }
-                if (displayTimestamp == null) 
-                {
-                    displayTimestamp = EnableTimestamps;
-                }
-                if (displayTimestamp.Value) 
-                {
-                    int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
-                    output.Append(String.Format("{0}:{1}:{2} ", hour.ToString("00"), minute.ToString("00"), second.ToString("00")));
                 }
                 if (BasicIO)
                 {
