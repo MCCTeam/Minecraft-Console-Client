@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace MinecraftClient.Mapping
 {
@@ -16,6 +17,11 @@ namespace MinecraftClient.Mapping
         private Dictionary<int, Dictionary<int, ChunkColumn>> chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
 
         /// <summary>
+        /// Lock for thread safety
+        /// </summary>
+        private readonly ReaderWriterLockSlim chunksLock = new ReaderWriterLockSlim();
+
+        /// <summary>
         /// Read, set or unload the specified chunk column
         /// </summary>
         /// <param name="chunkX">ChunkColumn X</param>
@@ -25,33 +31,49 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                //Read a chunk
-                if (chunks.ContainsKey(chunkX))
-                    if (chunks[chunkX].ContainsKey(chunkZ))
-                        return chunks[chunkX][chunkZ];
-                return null;
+                chunksLock.EnterReadLock();
+                try
+                {
+                    //Read a chunk
+                    if (chunks.ContainsKey(chunkX))
+                        if (chunks[chunkX].ContainsKey(chunkZ))
+                            return chunks[chunkX][chunkZ];
+                    return null;
+                }
+                finally
+                {
+                    chunksLock.ExitReadLock();
+                }
             }
             set
             {
-                if (value != null)
+                chunksLock.EnterWriteLock();
+                try
                 {
-                    //Update a chunk column
-                    if (!chunks.ContainsKey(chunkX))
-                        chunks[chunkX] = new Dictionary<int, ChunkColumn>();
-                    chunks[chunkX][chunkZ] = value;
-                }
-                else
-                {
-                    //Unload a chunk column
-                    if (chunks.ContainsKey(chunkX))
+                    if (value != null)
                     {
-                        if (chunks[chunkX].ContainsKey(chunkZ))
+                        //Update a chunk column
+                        if (!chunks.ContainsKey(chunkX))
+                            chunks[chunkX] = new Dictionary<int, ChunkColumn>();
+                        chunks[chunkX][chunkZ] = value;
+                    }
+                    else
+                    {
+                        //Unload a chunk column
+                        if (chunks.ContainsKey(chunkX))
                         {
-                            chunks[chunkX].Remove(chunkZ);
-                            if (chunks[chunkX].Count == 0)
-                                chunks.Remove(chunkX);
+                            if (chunks[chunkX].ContainsKey(chunkZ))
+                            {
+                                chunks[chunkX].Remove(chunkZ);
+                                if (chunks[chunkX].Count == 0)
+                                    chunks.Remove(chunkX);
+                            }
                         }
                     }
+                }
+                finally
+                {
+                    chunksLock.ExitWriteLock();
                 }
             }
         }
@@ -117,7 +139,7 @@ namespace MinecraftClient.Mapping
                     {
                         Location doneloc = new Location(x, y, z);
                         Block doneblock = GetBlock(doneloc);
-                        Material blockType = GetBlock(doneloc).Type;
+                        Material blockType = doneblock.Type;
                         if (blockType == block)
                         {
                             list.Add(doneloc);
@@ -150,7 +172,15 @@ namespace MinecraftClient.Mapping
         /// </summary>
         public void Clear()
         {
-            chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
+            chunksLock.EnterWriteLock();
+            try
+            {
+                chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
+            }
+            finally
+            {
+                chunksLock.ExitWriteLock();
+            }
         }
 
         /// <summary>

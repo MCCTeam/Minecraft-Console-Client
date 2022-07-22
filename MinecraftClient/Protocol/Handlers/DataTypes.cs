@@ -401,7 +401,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 entityType = entityPalette.FromId(ReadNextByte(cache), living);
             }
-            
+
             Double entityX = ReadNextDouble(cache);
             Double entityY = ReadNextDouble(cache);
             Double entityZ = ReadNextDouble(cache);
@@ -1026,6 +1026,23 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             return slotData.ToArray();
+        }
+
+        public string ByteArrayToString(byte[] ba)
+        {
+            return BitConverter.ToString(ba).Replace("-", " ");
+        }
+
+        public byte[] GetSlotsArray(Dictionary<int, Item> items, ItemPalette itemPalette)
+        {
+            byte[] slotsArray = new byte[items.Count];
+
+            foreach (KeyValuePair<int, Item> item in items)
+            {
+                slotsArray = ConcatBytes(slotsArray, GetShort((short)item.Key), GetItemSlot(item.Value, itemPalette));
+            }
+
+            return slotsArray;
         }
 
         /// <summary>
