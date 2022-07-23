@@ -136,19 +136,20 @@ namespace MinecraftClient
                 {
                     str = str.Replace('\n', ' ');
                 }
-                if (BasicIO_NoColor)
-                {
-                    output.Append(ChatBot.GetVerbatim(str));
-                }
-                else
-                {
-                    output.Append(str);
-                }
                 if (BasicIO)
                 {
+                    if (BasicIO_NoColor)
+                    {
+                        output.Append(ChatBot.GetVerbatim(str));
+                    }
+                    else
+                    {
+                        output.Append(str);
+                    }
                     Console.WriteLine(output.ToString());
                     return;
                 }
+                output.Append(str);
                 ConsoleInteractive.ConsoleWriter.WriteLineFormatted(output.ToString());
             }
         }
