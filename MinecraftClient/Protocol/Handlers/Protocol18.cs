@@ -111,7 +111,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (protocolVersion > MC1182Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.block"));
-                if (protocolVersion >= MC1181Version)
+                if (protocolVersion >= MC117Version)
                     Block.Palette = new Palette117();
                 else if (protocolVersion >= MC116Version)
                     Block.Palette = new Palette116();
@@ -425,56 +425,77 @@ namespace MinecraftClient.Protocol.Handlers
                                 SendPacket(PacketTypesOut.TeleportConfirm, dataTypes.GetVarInt(teleportID));
                             }
 
-                            if (protocolversion >= MC117Version) dataTypes.ReadNextBool(packetData);
+                            if (protocolversion >= MC117Version)
+                                dataTypes.ReadNextBool(packetData); // Dismount Vehicle	- 1.17 and above
                             break;
-                        case PacketTypesIn.ChunkData: //TODO implement for 1.17, bit mask is not limited to 0-15 anymore
+                        case PacketTypesIn.ChunkData:
                             if (handler.GetTerrainEnabled())
                             {
                                 int chunkX = dataTypes.ReadNextInt(packetData);
                                 int chunkZ = dataTypes.ReadNextInt(packetData);
-                                bool chunksContinuous = dataTypes.ReadNextBool(packetData);
-                                if (protocolversion >= MC116Version && protocolversion <= MC1161Version)
-                                    dataTypes.ReadNextBool(packetData); // Ignore old data - 1.16 to 1.16.1 only
-                                ushort chunkMask = protocolversion >= MC19Version
-                                    ? (ushort)dataTypes.ReadNextVarInt(packetData)
-                                    : dataTypes.ReadNextUShort(packetData);
-                                if (protocolversion < MC18Version)
+                                if (protocolversion >= MC117Version)
                                 {
-                                    ushort addBitmap = dataTypes.ReadNextUShort(packetData);
-                                    int compressedDataSize = dataTypes.ReadNextInt(packetData);
-                                    byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
-                                    byte[] decompressed = ZlibUtils.Decompress(compressed);
+                                    ulong[] verticalStripBitmask = dataTypes.ReadNextULongArray(packetData); // Bit Mask Length  and  Primary Bit Mask
+                                    dataTypes.ReadNextNbt(packetData); // Heightmaps
+
+                                    int biomesLength = dataTypes.ReadNextVarInt(packetData); // Biomes length
+                                    for (int i = 0; i < biomesLength; i++)
+                                    {
+                                        dataTypes.SkipNextVarInt(packetData); // Biomes
+                                    }
+
+                                    int dataSize = dataTypes.ReadNextVarInt(packetData); // Size
                                     new Task(() =>
                                     {
-                                        pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
+                                        pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, currentDimension, packetData);
                                     }).Start();
                                 }
                                 else
                                 {
-                                    if (protocolversion >= MC114Version)
-                                        dataTypes.ReadNextNbt(packetData);  // Heightmaps - 1.14 and above
-                                    int biomesLength = 0;
-                                    if (protocolversion >= MC1162Version)
-                                        if (chunksContinuous)
-                                            biomesLength = dataTypes.ReadNextVarInt(packetData); // Biomes length - 1.16.2 and above
-                                    if (protocolversion >= MC115Version && chunksContinuous)
+                                    bool chunksContinuous = dataTypes.ReadNextBool(packetData);
+                                    if (protocolversion >= MC116Version && protocolversion <= MC1161Version)
+                                        dataTypes.ReadNextBool(packetData); // Ignore old data - 1.16 to 1.16.1 only
+                                    ushort chunkMask = protocolversion >= MC19Version
+                                        ? (ushort)dataTypes.ReadNextVarInt(packetData)
+                                        : dataTypes.ReadNextUShort(packetData);
+                                    if (protocolversion < MC18Version)
                                     {
-                                        if (protocolversion >= MC1162Version)
+                                        ushort addBitmap = dataTypes.ReadNextUShort(packetData);
+                                        int compressedDataSize = dataTypes.ReadNextInt(packetData);
+                                        byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
+                                        byte[] decompressed = ZlibUtils.Decompress(compressed);
+                                        new Task(() =>
                                         {
-                                            for (int i = 0; i < biomesLength; i++)
-                                            {
-                                                // Biomes - 1.16.2 and above
-                                                // Don't use ReadNextVarInt because it cost too much time
-                                                dataTypes.SkipNextVarInt(packetData);
-                                            }
-                                        }
-                                        else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
+                                            pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
+                                        }).Start();
                                     }
-                                    int dataSize = dataTypes.ReadNextVarInt(packetData);
-                                    new Task(() =>
+                                    else
                                     {
-                                        pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
-                                    }).Start();
+                                        if (protocolversion >= MC114Version)
+                                            dataTypes.ReadNextNbt(packetData);  // Heightmaps - 1.14 and above
+                                        int biomesLength = 0;
+                                        if (protocolversion >= MC1162Version)
+                                            if (chunksContinuous)
+                                                biomesLength = dataTypes.ReadNextVarInt(packetData); // Biomes length - 1.16.2 and above
+                                        if (protocolversion >= MC115Version && chunksContinuous)
+                                        {
+                                            if (protocolversion >= MC1162Version)
+                                            {
+                                                for (int i = 0; i < biomesLength; i++)
+                                                {
+                                                    // Biomes - 1.16.2 and above
+                                                    // Don't use ReadNextVarInt because it cost too much time
+                                                    dataTypes.SkipNextVarInt(packetData);
+                                                }
+                                            }
+                                            else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
+                                        }
+                                        int dataSize = dataTypes.ReadNextVarInt(packetData);
+                                        new Task(() =>
+                                        {
+                                            pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
+                                        }).Start();
+                                    }
                                 }
                             }
                             break;
@@ -839,7 +860,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 int stateId = -1;
 
-                                if (protocolversion >= MC1181Version)
+                                if (protocolversion >= MC1171Version) // State ID - 1.17.1 and above
                                     stateId = dataTypes.ReadNextVarInt(packetData);
 
                                 int elements = dataTypes.ReadNextVarInt(packetData);
@@ -851,6 +872,9 @@ namespace MinecraftClient.Protocol.Handlers
                                         inventorySlots[slotId] = item;
                                 }
                                 handler.OnWindowItems(windowId, inventorySlots, stateId);
+
+                                if (protocolversion >= MC1171Version) // Carried Item - 1.17.1 and above
+                                    dataTypes.ReadNextItemSlot(packetData, itemPalette);
                             }
                             break;
                         case PacketTypesIn.SetSlot:
@@ -860,7 +884,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 int stateId = -1;
 
-                                if (protocolversion >= MC1181Version)
+                                if (protocolversion >= MC1171Version) // State ID - 1.17.1 and above
                                     stateId = dataTypes.ReadNextVarInt(packetData);
 
                                 short slotID = dataTypes.ReadNextShort(packetData);
@@ -888,6 +912,8 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 forced = dataTypes.ReadNextBool(packetData);
                                 String forcedMessage = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+                                // skip: Has Prompt Message (Boolean)
+                                // skip: Prompt Message (Optional Chat)
                             }
                             // Some server plugins may send invalid resource packs to probe the client and we need to ignore them (issue #1056)
                             if (!url.StartsWith("http") && hash.Length != 40) // Some server may have null hash value
@@ -986,7 +1012,20 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.DestroyEntity:
                             if (handler.GetEntityHandlingEnabled())
                             {
-                                handler.OnDestroyEntities(new[] { dataTypes.ReadNextVarInt(packetData) });
+                                int[] entityIDs;
+                                if (protocolversion == MC117Version) // single Entity ID per packet - 1.17 only
+                                {
+                                    entityIDs = new int[1];
+                                    entityIDs[0] = dataTypes.ReadNextVarInt(packetData);
+                                }
+                                else
+                                {
+                                    int count = dataTypes.ReadNextVarInt(packetData);
+                                    entityIDs = new int[count];
+                                    for (int i = 0; i < count; ++i)
+                                        entityIDs[i] = dataTypes.ReadNextVarInt(packetData);
+                                }
+                                handler.OnDestroyEntities(entityIDs);
                             }
                             break;
                         case PacketTypesIn.EntityPosition:
@@ -1646,7 +1685,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion >= MC19Version)
                     fields.AddRange(dataTypes.GetVarInt(mainHand));
                 if (protocolversion >= MC117Version)
-                    fields.Add(0); // Enables text filtering. Always false
+                    fields.Add(1); // 1.17 and above - Disable text filtering. (Always true)
                 if (protocolversion >= MC1181Version)
                     fields.Add(1); // 1.18 and above - Allow server listings
                 SendPacket(PacketTypesOut.ClientSettings, fields);
@@ -1938,7 +1977,7 @@ namespace MinecraftClient.Protocol.Handlers
                 packet.Add((byte)windowId);
 
                 // 1.18+
-                if (protocolversion > MC1171Version)
+                if (protocolversion >= MC1181Version)
                 {
                     packet.AddRange(dataTypes.GetVarInt(stateId));
                     packet.AddRange(dataTypes.GetShort((short)slotId));
@@ -1973,7 +2012,7 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(arrayOfSlots);
                 }
 
-                packet.AddRange(dataTypes.GetItemSlot(item, itemPalette));
+                packet.AddRange(dataTypes.GetItemSlot(item, itemPalette)); // Clicked item
 
                 log.Info("Packet data: " + dataTypes.ByteArrayToString(packet.ToArray()));
 
