@@ -37,8 +37,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache for reading chunk data</param>
         public void ProcessChunkColumnData(int chunkX, int chunkZ, ulong[] chunkMasks, int currentDimension, Queue<byte> cache)
         {
-            byte[] mirror = new byte[cache.Count];
-            cache.CopyTo(mirror, 0);
             int chunkColumnSize = chunkMasks.Length * 64;
             if (protocolversion >= Protocol18Handler.MC117Version)
             {
