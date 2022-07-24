@@ -475,7 +475,10 @@ namespace MinecraftClient.Protocol.Handlers
                                     int dataSize = dataTypes.ReadNextVarInt(packetData); // Size
                                     new Task(() =>
                                     {
+                                        handler.GetWorld().chunkCnt++;
+                                        handler.GetWorld().chunkLoadNotCompleted++;
                                         pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData);
+                                        handler.GetWorld().chunkLoadNotCompleted--;
                                     }).Start();
                                 }
                                 else
@@ -628,9 +631,12 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (protocolversion >= MC1162Version)
                                 {
                                     long chunkSection = dataTypes.ReadNextLong(packetData);
-                                    int sectionX = (int)((chunkSection >> 42) & 0x3FFFFF);
-                                    int sectionZ = (int)((chunkSection >> 20) & 0x3FFFFF);
-                                    int sectionY = (int)((chunkSection) & 0xFFFFF);
+                                    int sectionX = (int)(chunkSection >> 42);
+                                    int sectionY = (int)((chunkSection << 44) >> 44);
+                                    int sectionZ = (int)((chunkSection << 22) >> 42);
+                                    //int sectionX = (int)((chunkSection >> 42) & 0x3FFFFF);
+                                    //int sectionZ = (int)((chunkSection >> 20) & 0x3FFFFF);
+                                    //int sectionY = (int)((chunkSection) & 0xFFFFF);
                                     dataTypes.ReadNextBool(packetData); // Useless boolean (Related to light update)
                                     int blocksSize = dataTypes.ReadNextVarInt(packetData);
                                     for (int i = 0; i < blocksSize; i++)
@@ -750,6 +756,10 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 int chunkX = dataTypes.ReadNextInt(packetData);
                                 int chunkZ = dataTypes.ReadNextInt(packetData);
+
+                                if (handler.GetWorld()[chunkX, chunkZ] != null)
+                                    handler.GetWorld().chunkCnt--;
+
                                 handler.GetWorld()[chunkX, chunkZ] = null;
                             }
                             break;
