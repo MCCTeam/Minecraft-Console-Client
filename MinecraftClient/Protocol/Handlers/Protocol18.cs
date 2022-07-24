@@ -302,17 +302,23 @@ namespace MinecraftClient.Protocol.Handlers
                                 for (int i = 0; i < worldCount; i++)
                                     dataTypes.ReadNextString(packetData);                 // World Names - 1.16 and above
                                 dataTypes.ReadNextNbt(packetData);                        // Dimension Codec - 1.16 and above
+
                             }
 
-                            //Current dimension - String identifier in 1.16, varInt below 1.16, byte below 1.9.1
+                            string currentDimensionName = null;
+                            Dictionary<string, object> currentDimensionType = null;
+
+                            // Current dimension
+                            //   NBT Tag Compound: 1.16.2 and above
+                            //   String identifier: 1.16 and 1.16.1
+                            //   varInt: [1.9.1 to 1.15.2]
+                            //   byte: below 1.9.1
                             if (protocolversion >= MC116Version)
                             {
                                 if (protocolversion >= MC1162Version)
-                                    dataTypes.ReadNextNbt(packetData);
+                                    currentDimensionType = dataTypes.ReadNextNbt(packetData);
                                 else
                                     dataTypes.ReadNextString(packetData);
-                                // TODO handle dimensions for 1.16+, needed for terrain handling
-                                // TODO this data give min and max y which will be needed for chunk collumn handling
                                 this.currentDimension = 0;
                             }
                             else if (protocolversion >= MC191Version)
@@ -322,8 +328,16 @@ namespace MinecraftClient.Protocol.Handlers
 
                             if (protocolversion < MC114Version)
                                 dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
+
                             if (protocolversion >= MC116Version)
-                                dataTypes.ReadNextString(packetData);         // World Name - 1.16 and above
+                                currentDimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
+
+                            if (protocolversion >= MC1162Version)
+                                new Task(() =>
+                                {
+                                    handler.GetWorld().SetDimension(currentDimensionName, currentDimensionType);
+                                }).Start();
+
                             if (protocolversion >= MC115Version)
                                 dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
 
@@ -362,13 +376,14 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnTextReceived(message, true);
                             break;
                         case PacketTypesIn.Respawn:
+                            string dimensionNameInRespawn = null;
+                            Dictionary<string, object> dimensionTypeInRespawn = null;
                             if (protocolversion >= MC116Version)
                             {
-                                // TODO handle dimensions for 1.16+, needed for terrain handling
                                 if (protocolversion >= MC1162Version)
-                                    dataTypes.ReadNextNbt(packetData);
+                                    dimensionTypeInRespawn = dataTypes.ReadNextNbt(packetData);
                                 else
-                                    dataTypes.ReadNextString(packetData);
+                                     dataTypes.ReadNextString(packetData);
                                 this.currentDimension = 0;
                             }
                             else
@@ -377,7 +392,14 @@ namespace MinecraftClient.Protocol.Handlers
                                 this.currentDimension = dataTypes.ReadNextInt(packetData);
                             }
                             if (protocolversion >= MC116Version)
-                                dataTypes.ReadNextString(packetData);         // World Name - 1.16 and above
+                                dimensionNameInRespawn = dataTypes.ReadNextString(packetData);         // World Name - 1.16 and above
+
+                            if (protocolversion >= MC1162Version)
+                                new Task(() =>
+                                {
+                                    handler.GetWorld().SetDimension(dimensionNameInRespawn, dimensionTypeInRespawn);
+                                }).Start();
+
                             if (protocolversion < MC114Version)
                                 dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
                             if (protocolversion >= MC115Version)
@@ -435,19 +457,26 @@ namespace MinecraftClient.Protocol.Handlers
                                 int chunkZ = dataTypes.ReadNextInt(packetData);
                                 if (protocolversion >= MC117Version)
                                 {
-                                    ulong[] verticalStripBitmask = dataTypes.ReadNextULongArray(packetData); // Bit Mask Length  and  Primary Bit Mask
+                                    ulong[] verticalStripBitmask = null;
+
+                                    if (protocolversion == MC117Version || protocolversion == MC1171Version)
+                                        verticalStripBitmask = dataTypes.ReadNextULongArray(packetData); // Bit Mask Length  and  Primary Bit Mask
+
                                     dataTypes.ReadNextNbt(packetData); // Heightmaps
 
-                                    int biomesLength = dataTypes.ReadNextVarInt(packetData); // Biomes length
-                                    for (int i = 0; i < biomesLength; i++)
+                                    if (protocolversion == MC117Version || protocolversion == MC1171Version)
                                     {
-                                        dataTypes.SkipNextVarInt(packetData); // Biomes
+                                        int biomesLength = dataTypes.ReadNextVarInt(packetData); // Biomes length
+                                        for (int i = 0; i < biomesLength; i++)
+                                        {
+                                            dataTypes.SkipNextVarInt(packetData); // Biomes
+                                        }
                                     }
 
                                     int dataSize = dataTypes.ReadNextVarInt(packetData); // Size
                                     new Task(() =>
                                     {
-                                        pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, currentDimension, packetData);
+                                        pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData);
                                     }).Start();
                                 }
                                 else
@@ -600,10 +629,10 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (protocolversion >= MC1162Version)
                                 {
                                     long chunkSection = dataTypes.ReadNextLong(packetData);
-                                    int sectionX = (int)(chunkSection >> 42);
-                                    int sectionY = (int)((chunkSection << 44) >> 44);
-                                    int sectionZ = (int)((chunkSection << 22) >> 42);
-                                    dataTypes.ReadNextBool(packetData); // Useless boolean
+                                    int sectionX = (int)((chunkSection >> 42) & 0x3FFFFF);
+                                    int sectionZ = (int)((chunkSection >> 20) & 0x3FFFFF);
+                                    int sectionY = (int)((chunkSection) & 0xFFFFF);
+                                    dataTypes.ReadNextBool(packetData); // Useless boolean (Related to light update)
                                     int blocksSize = dataTypes.ReadNextVarInt(packetData);
                                     for (int i = 0; i < blocksSize; i++)
                                     {

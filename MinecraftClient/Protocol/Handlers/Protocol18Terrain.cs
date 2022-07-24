@@ -28,122 +28,149 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Reading the "Block states" field: consists of 4096 entries, representing all the blocks in the chunk section.
+        /// </summary>
+        /// <param name="chunk">Blocks will store in this chunk</param>
+        /// <param name="cache">Cache for reading data</param>
+        private Chunk ReadBlockStatesField(ref Chunk chunk, Queue<byte> cache)
+        {
+            // read Block states (Type: Paletted Container)
+            byte bitsPerEntry = dataTypes.ReadNextByte(cache);
+
+            // 1.18(1.18.1) add a pattle named "Single valued" to replace the vertical strip bitmask in the old
+            if (bitsPerEntry == 0 && protocolversion >= Protocol18Handler.MC1181Version)
+            {
+                // Palettes: Single valued - 1.18(1.18.1) and above
+                ushort value = (ushort)dataTypes.ReadNextVarInt(cache);
+
+                dataTypes.SkipNextVarInt(cache); // Data Array Length will be zero
+
+                // Empty chunks will not be stored
+                if (new Block(value).Type == Material.Air)
+                    return null;
+
+                for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
+                {
+                    for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
+                    {
+                        for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
+                        {
+                            chunk[blockX, blockY, blockZ] = new Block(value);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Palettes: Indirect or Direct
+                bool usePalette = (bitsPerEntry <= 8);
+
+                // Indirect Mode: For block states with bits per entry <= 4, 4 bits are used to represent a block.
+                if (bitsPerEntry < 4) bitsPerEntry = 4;
+
+                // Direct Mode: Bit mask covering bitsPerEntry bits
+                // EG, if bitsPerEntry = 5, valueMask = 00011111 in binary
+                uint valueMask = (uint)((1 << bitsPerEntry) - 1);
+
+                int paletteLength = 0; // Assume zero when length is absent
+                if (usePalette) paletteLength = dataTypes.ReadNextVarInt(cache);
+
+                int[] palette = new int[paletteLength];
+                for (int i = 0; i < paletteLength; i++)
+                    palette[i] = dataTypes.ReadNextVarInt(cache);
+
+                // Block IDs are packed in the array of 64-bits integers
+                ulong[] dataArray = dataTypes.ReadNextULongArray(cache);
+
+                int longIndex = 0;
+                int startOffset = 0 - bitsPerEntry;
+                for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
+                {
+                    for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
+                    {
+                        for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
+                        {
+                            // NOTICE: In the future a single ushort may not store the entire block id;
+                            // the Block class may need to change if block state IDs go beyond 65535
+                            ushort blockId;
+
+                            // Calculate location of next block ID inside the array of Longs
+                            startOffset += bitsPerEntry;
+
+                            if ((startOffset + bitsPerEntry) > 64)
+                            {
+                                // In MC 1.16+, padding is applied to prevent overlapping between Longs:
+                                // [      LONG INTEGER      ][      LONG INTEGER      ]
+                                // [Block][Block][Block]XXXXX[Block][Block][Block]XXXXX
+
+                                // When overlapping, move forward to the beginning of the next Long
+                                startOffset = 0;
+                                longIndex++;
+                            }
+
+                            // Extract Block ID
+                            blockId = (ushort)((dataArray[longIndex] >> startOffset) & valueMask);
+
+                            // Map small IDs to actual larger block IDs
+                            if (usePalette)
+                            {
+                                if (paletteLength <= blockId)
+                                {
+                                    int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
+                                    throw new IndexOutOfRangeException(String.Format("Block ID {0} is outside Palette range 0-{1}! (bitsPerBlock: {2}, blockNumber: {3})",
+                                        blockId,
+                                        paletteLength - 1,
+                                        bitsPerEntry,
+                                        blockNumber));
+                                }
+
+                                blockId = (ushort)palette[blockId];
+                            }
+
+                            // We have our block, save the block into the chunk
+                            chunk[blockX, blockY, blockZ] = new Block(blockId);
+                        }
+                    }
+                }
+            }
+
+            return chunk;
+        }
+
+        /// <summary>
         /// Process chunk column data from the server and (un)load the chunk from the Minecraft world - 1.17 and above
         /// </summary>
         /// <param name="chunkX">Chunk X location</param>
         /// <param name="chunkZ">Chunk Z location</param>
-        /// <param name="chunkMasks">Chunk mask for reading data, store in bitset</param>
-        /// <param name="currentDimension">Current dimension type (0 = overworld)</param>
+        /// <param name="verticalStripBitmask">Chunk mask for reading data, store in bitset, used in 1.17 and 1.17.1</param>
         /// <param name="cache">Cache for reading chunk data</param>
-        public void ProcessChunkColumnData(int chunkX, int chunkZ, ulong[] chunkMasks, int currentDimension, Queue<byte> cache)
+        public void ProcessChunkColumnData(int chunkX, int chunkZ, ulong[] verticalStripBitmask, Queue<byte> cache)
         {
-            int chunkColumnSize = chunkMasks.Length * 64;
+            var world = handler.GetWorld();
+            while (world.GetDimension() == null)
+                ; // Dimension parsing unfinished
+
+            int chunkColumnSize = (world.GetDimension().height + 15) / 16;
+
             if (protocolversion >= Protocol18Handler.MC117Version)
             {
                 // 1.17 and above chunk format
                 // Unloading chunks is handled by a separate packet
                 for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
                 {
-                    if ((chunkMasks[chunkY / 64] & (1UL << (chunkY % 64))) != 0)
+                    // 1.18 and above always contains all chunk section in data
+                    // 1.17 and 1.17.1 need vertical strip bitmask to know if the chunk section is included
+                    if ((protocolversion >= Protocol18Handler.MC1181Version) ||
+                        (((protocolversion == Protocol18Handler.MC117Version) ||
+                          (protocolversion == Protocol18Handler.MC1171Version)) &&
+                         ((verticalStripBitmask[chunkY / 64] & (1UL << (chunkY % 64))) != 0)))
                     {
                         // Non-air block count inside chunk section, for lighting purposes
                         int blockCnt = dataTypes.ReadNextShort(cache);
 
-                        // read Block states (Type: Paletted Container)
+                        // Read Block states (Type: Paletted Container)
                         Chunk chunk = new Chunk();
-
-                        byte bitsPerEntry = dataTypes.ReadNextByte(cache);
-                        if (bitsPerEntry == 0 && protocolversion >= Protocol18Handler.MC1181Version)
-                        {
-                            // Palettes: Single valued - 1.xx and above
-                            ushort value = (ushort)dataTypes.ReadNextVarInt(cache);
-
-                            dataTypes.SkipNextVarInt(cache); // Data Array Length will be zero
-
-                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
-                            {
-                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
-                                {
-                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                    {
-                                        chunk[blockX, blockY, blockZ] = new Block(value);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // Palettes: Indirect or Direct
-                            bool usePalette = (bitsPerEntry <= 8);
-
-                            // Indirect Mode: For block states with bits per entry <= 4, 4 bits are used to represent a block.
-                            if (bitsPerEntry < 4) bitsPerEntry = 4;
-
-                            // Direct Mode: Bit mask covering bitsPerBlock bits
-                            // EG, if bitsPerBlock = 5, valueMask = 00011111 in binary
-                            uint valueMask = (uint)((1 << bitsPerEntry) - 1);
-
-                            int paletteLength = 0; // Assume zero when length is absent
-                            if (usePalette) paletteLength = dataTypes.ReadNextVarInt(cache);
-
-                            int[] palette = new int[paletteLength];
-                            for (int i = 0; i < paletteLength; i++)
-                                palette[i] = dataTypes.ReadNextVarInt(cache);
-
-                            // Block IDs are packed in the array of 64-bits integers
-                            ulong[] dataArray = dataTypes.ReadNextULongArray(cache);
-
-                            int longIndex = 0;
-                            int startOffset = 0 - bitsPerEntry;
-                            for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
-                            {
-                                for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
-                                {
-                                    for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                    {
-                                        // NOTICE: In the future a single ushort may not store the entire block id;
-                                        // the Block class may need to change if block state IDs go beyond 65535
-                                        ushort blockId;
-
-                                        // Calculate location of next block ID inside the array of Longs
-                                        startOffset += bitsPerEntry;
-
-                                        if ((startOffset + bitsPerEntry) > 64)
-                                        {
-                                            // In MC 1.16+, padding is applied to prevent overlapping between Longs:
-                                            // [      LONG INTEGER      ][      LONG INTEGER      ]
-                                            // [Block][Block][Block]XXXXX[Block][Block][Block]XXXXX
-
-                                            // When overlapping, move forward to the beginning of the next Long
-                                            startOffset = 0;
-                                            longIndex++;
-                                        }
-
-                                        // Extract Block ID
-                                        blockId = (ushort)((dataArray[longIndex] >> startOffset) & valueMask);
-
-                                        // Map small IDs to actual larger block IDs
-                                        if (usePalette)
-                                        {
-                                            if (paletteLength <= blockId)
-                                            {
-                                                int blockNumber = (blockY * Chunk.SizeZ + blockZ) * Chunk.SizeX + blockX;
-                                                throw new IndexOutOfRangeException(String.Format("Block ID {0} is outside Palette range 0-{1}! (bitsPerBlock: {2}, blockNumber: {3})",
-                                                    blockId,
-                                                    paletteLength - 1,
-                                                    bitsPerEntry,
-                                                    blockNumber));
-                                            }
-
-                                            blockId = (ushort)palette[blockId];
-                                        }
-
-                                        // We have our block, save the block into the chunk
-                                        chunk[blockX, blockY, blockZ] = new Block(blockId);
-                                    }
-                                }
-                            }
-                        }
+                        ReadBlockStatesField(ref chunk, cache);
 
                         //We have our chunk, save the chunk into the world
                         handler.InvokeOnMainThread(() =>
@@ -153,11 +180,11 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.GetWorld()[chunkX, chunkZ][chunkY] = chunk;
                         });
 
+                        // Skip Read Biomes (Type: Paletted Container) - 1.18(1.18.1) and above
                         if (protocolversion >= Protocol18Handler.MC1181Version)
                         {
-                            // skip read Biomes (Type: Paletted Container)
                             byte bitsPerEntryBiome = dataTypes.ReadNextByte(cache); // Bits Per Entry
-                            if (bitsPerEntryBiome == 0 && protocolversion >= Protocol18Handler.MC1181Version)
+                            if (bitsPerEntryBiome == 0)
                             {
                                 dataTypes.SkipNextVarInt(cache); // Value
                                 dataTypes.SkipNextVarInt(cache); // Data Array Length
