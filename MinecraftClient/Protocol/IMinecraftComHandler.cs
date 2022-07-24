@@ -272,7 +272,8 @@ namespace MinecraftClient.Protocol
         /// <param name="inventoryID">Window ID</param>
         /// <param name="slotID">Slot ID</param>
         /// <param name="item">Item (may be null for empty slot)</param>
-        void OnSetSlot(byte inventoryID, short slotID, Item item);
+        /// <param name="stateId">State ID</param>
+        void OnSetSlot(byte inventoryID, short slotID, Item item, int stateId);
 
         /// <summary>
         /// Called when player health or hunger changed.
