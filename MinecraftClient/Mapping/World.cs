@@ -32,7 +32,6 @@ namespace MinecraftClient.Mapping
         public uint chunkCnt = 0;
         public uint chunkLoadNotCompleted = 0;
 
-
         /// <summary>
         /// Read, set or unload the specified chunk column
         /// </summary>
