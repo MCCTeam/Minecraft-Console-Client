@@ -302,7 +302,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 for (int i = 0; i < worldCount; i++)
                                     dataTypes.ReadNextString(packetData);                 // World Names - 1.16 and above
                                 dataTypes.ReadNextNbt(packetData);                        // Dimension Codec - 1.16 and above
-
                             }
 
                             string currentDimensionName = null;
@@ -383,7 +382,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (protocolversion >= MC1162Version)
                                     dimensionTypeInRespawn = dataTypes.ReadNextNbt(packetData);
                                 else
-                                     dataTypes.ReadNextString(packetData);
+                                    dataTypes.ReadNextString(packetData);
                                 this.currentDimension = 0;
                             }
                             else

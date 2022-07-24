@@ -85,7 +85,7 @@ namespace MinecraftClient.Mapping
             get
             {
                 if (world.GetDimension() == null)
-                    return (int)Math.Floor(Y / Chunk.SizeY); // old version, always start at zero
+                    return (int)Math.Floor(Y / Chunk.SizeY); // below 1.16.2, Y coordinate always start from zero
                 else
                     return (int)Math.Floor((Y - world.GetDimension().minY) / Chunk.SizeY);
             }

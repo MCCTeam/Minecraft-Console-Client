@@ -153,11 +153,11 @@ namespace MinecraftClient.Mapping
                 this.logicalHeight = (int)nbt["logical_height"];
             if (nbt.ContainsKey("coordinate_scale"))
             {
-                var coordinate_scale_obj = nbt["coordinate_scale"];
-                if (coordinate_scale_obj.GetType() == typeof(float))
-                    this.coordinateScale = (float)coordinate_scale_obj;
+                var coordinateScaleObj = nbt["coordinate_scale"];
+                if (coordinateScaleObj.GetType() == typeof(float))
+                    this.coordinateScale = (float)coordinateScaleObj;
                 else
-                    this.coordinateScale = (double)coordinate_scale_obj;
+                    this.coordinateScale = (double)coordinateScaleObj;
             }
             if (nbt.ContainsKey("ultrawarm"))
                 this.ultrawarm = 1 == (byte)nbt["ultrawarm"];
