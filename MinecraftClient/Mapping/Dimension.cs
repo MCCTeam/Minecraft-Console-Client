@@ -20,7 +20,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Whether piglins shake and transform to zombified piglins.
         /// </summary>
-        public readonly bool piglin_safe;
+        public readonly bool piglinSafe;
 
         /// <summary>
         /// 	When false, compasses spin randomly. When true, nether portals can spawn zombified piglins.
@@ -30,7 +30,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// How much light the dimension has.
         /// </summary>
-        public readonly float ambient_light;
+        public readonly float ambientLight;
 
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace MinecraftClient.Mapping
         /// Value: -1: not set
         /// Value: [0, 24000]: time of the day
         /// </summary>
-        public readonly long fixed_time = -1;
+        public readonly long fixedTime = -1;
 
         /// <summary>
         /// A resource location defining what block tag to use for infiniburn.
@@ -49,17 +49,17 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Whether players can charge and use respawn anchors.
         /// </summary>
-        public readonly bool respawn_anchor_works;
+        public readonly bool respawnAnchorWorks;
 
         /// <summary>
         /// Whether the dimension has skylight access or not.
         /// </summary>
-        public readonly bool has_skylight;
+        public readonly bool hasSkylight;
 
         /// <summary>
         /// Whether players can use a bed to sleep.
         /// </summary>
-        public readonly bool bed_works;
+        public readonly bool bedWorks;
 
         /// <summary>
         /// unknown
@@ -70,17 +70,17 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Whether players with the Bad Omen effect can cause a raid.
         /// </summary>
-        public readonly bool has_raids;
+        public readonly bool hasRaids;
 
         /// <summary>
         /// The minimum Y level.
         /// </summary>
-        public readonly int min_y = 0;
+        public readonly int minY = 0;
 
         /// <summary>
         /// The minimum Y level.
         /// </summary>
-        public readonly int max_y = 256;
+        public readonly int maxY = 256;
 
         /// <summary>
         /// The maximum height.
@@ -90,12 +90,12 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// The maximum height to which chorus fruits and nether portals can bring players within this dimension.
         /// </summary>
-        public readonly int logical_height;
+        public readonly int logicalHeight;
 
         /// <summary>
         /// The multiplier applied to coordinates when traveling to the dimension.
         /// </summary>
-        public readonly double coordinate_scale;
+        public readonly double coordinateScale;
 
         /// <summary>
         /// Whether the dimensions behaves like the nether (water evaporates and sponges dry) or not. Also causes lava to spread thinner.
@@ -105,7 +105,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Whether the dimension has a bedrock ceiling or not. When true, causes lava to spread faster.
         /// </summary>
-        public readonly bool has_ceiling;
+        public readonly bool hasCeiling;
 
 
         /// <summary>
@@ -124,45 +124,45 @@ namespace MinecraftClient.Mapping
             this.Name = name;
 
             if (nbt.ContainsKey("piglin_safe"))
-                this.piglin_safe = 1 == (byte)nbt["piglin_safe"];
+                this.piglinSafe = 1 == (byte)nbt["piglin_safe"];
             if (nbt.ContainsKey("natural"))
                 this.natural = 1 == (byte)nbt["natural"];
             if (nbt.ContainsKey("ambient_light"))
-                this.ambient_light = (float)nbt["ambient_light"];
+                this.ambientLight = (float)nbt["ambient_light"];
             if (nbt.ContainsKey("fixed_time"))
-                this.fixed_time = (long)nbt["fixed_time"];
+                this.fixedTime = (long)nbt["fixed_time"];
             if (nbt.ContainsKey("infiniburn"))
                 this.infiniburn = (string)nbt["infiniburn"];
             if (nbt.ContainsKey("respawn_anchor_works"))
-                this.respawn_anchor_works = 1 == (byte)nbt["respawn_anchor_works"];
+                this.respawnAnchorWorks = 1 == (byte)nbt["respawn_anchor_works"];
             if (nbt.ContainsKey("has_skylight"))
-                this.has_skylight = 1 == (byte)nbt["has_skylight"];
+                this.hasSkylight = 1 == (byte)nbt["has_skylight"];
             if (nbt.ContainsKey("bed_works"))
-                this.bed_works = 1 == (byte)nbt["bed_works"];
+                this.bedWorks = 1 == (byte)nbt["bed_works"];
             if (nbt.ContainsKey("effects"))
                 this.effects = (string)nbt["effects"];
             if (nbt.ContainsKey("has_raids"))
-                this.has_raids = 1 == (byte)nbt["has_raids"];
+                this.hasRaids = 1 == (byte)nbt["has_raids"];
             if (nbt.ContainsKey("min_y"))
-                this.min_y = (int)nbt["min_y"];
+                this.minY = (int)nbt["min_y"];
             if (nbt.ContainsKey("height"))
                 this.height = (int)nbt["height"];
             if (nbt.ContainsKey("min_y") && nbt.ContainsKey("height"))
-                this.max_y = this.min_y + this.height;
+                this.maxY = this.minY + this.height;
             if (nbt.ContainsKey("logical_height"))
-                this.logical_height = (int)nbt["logical_height"];
+                this.logicalHeight = (int)nbt["logical_height"];
             if (nbt.ContainsKey("coordinate_scale"))
             {
                 var coordinate_scale_obj = nbt["coordinate_scale"];
                 if (coordinate_scale_obj.GetType() == typeof(float))
-                    this.coordinate_scale = (float)coordinate_scale_obj;
+                    this.coordinateScale = (float)coordinate_scale_obj;
                 else
-                    this.coordinate_scale = (double)coordinate_scale_obj;
+                    this.coordinateScale = (double)coordinate_scale_obj;
             }
             if (nbt.ContainsKey("ultrawarm"))
                 this.ultrawarm = 1 == (byte)nbt["ultrawarm"];
             if (nbt.ContainsKey("has_ceiling"))
-                this.has_ceiling = 1 == (byte)nbt["has_ceiling"];
+                this.hasCeiling = 1 == (byte)nbt["has_ceiling"];
         }
 
     }

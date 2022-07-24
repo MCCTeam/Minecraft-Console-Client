@@ -392,7 +392,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 this.currentDimension = dataTypes.ReadNextInt(packetData);
                             }
                             if (protocolversion >= MC116Version)
-                                dimensionNameInRespawn = dataTypes.ReadNextString(packetData);         // World Name - 1.16 and above
+                                dimensionNameInRespawn = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
 
                             if (protocolversion >= MC1162Version)
                                 new Task(() =>
