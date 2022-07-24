@@ -917,7 +917,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 short slotID = dataTypes.ReadNextShort(packetData);
                                 Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
-                                handler.OnSetSlot(windowID, slotID, item);
+                                handler.OnSetSlot(windowID, slotID, item, stateId);
                             }
                             break;
                         case PacketTypesIn.WindowConfirmation:
@@ -1967,7 +1967,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item, Dictionary<int, Item> items, int stateId)
+        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item, List<Tuple<short, Item>> changedSlots, int stateId)
         {
             try
             {
@@ -2004,50 +2004,47 @@ namespace MinecraftClient.Protocol.Handlers
 
                 List<byte> packet = new List<byte>();
 
-                log.Info("Window id: " + windowId + " - State id: " + stateId + " - Slot id: " + slotId + " - Mode: " + mode);
-                log.Info("Bytes > " + (byte)windowId + " - State id: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(stateId)) + " - Slot id: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(slotId)) + " - Mode: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(mode)));
-
-                packet.Add((byte)windowId);
+                packet.Add((byte)windowId); // Window ID
 
                 // 1.18+
                 if (protocolversion >= MC1181Version)
                 {
-                    packet.AddRange(dataTypes.GetVarInt(stateId));
-                    packet.AddRange(dataTypes.GetShort((short)slotId));
+                    packet.AddRange(dataTypes.GetVarInt(stateId)); // State ID
+                    packet.AddRange(dataTypes.GetShort((short)slotId)); // Slot ID
                 }
                 // 1.17.1
                 else if (protocolversion == MC1171Version)
                 {
-                    packet.AddRange(dataTypes.GetShort((short)slotId));
-                    packet.AddRange(dataTypes.GetVarInt(stateId));
+                    packet.AddRange(dataTypes.GetShort((short)slotId)); // Slot ID
+                    packet.AddRange(dataTypes.GetVarInt(stateId)); // State ID
                 }
                 // Older
                 else
                 {
-                    packet.AddRange(dataTypes.GetShort((short)slotId));
+                    packet.AddRange(dataTypes.GetShort((short)slotId)); // Slot ID
                 }
 
-                packet.Add(button);
-                if (protocolversion < MC117Version) packet.AddRange(dataTypes.GetShort(actionNumber));
+                packet.Add(button); // Button
+
+                if (protocolversion < MC117Version)
+                    packet.AddRange(dataTypes.GetShort(actionNumber));
+
                 if (protocolversion >= MC19Version)
-                    packet.AddRange(dataTypes.GetVarInt(mode));
+                    packet.AddRange(dataTypes.GetVarInt(mode)); // Mode
                 else packet.Add(mode);
 
                 // 1.17+
                 if (protocolversion >= MC117Version)
                 {
-                    byte[] arrayOfSlots = dataTypes.GetSlotsArray(items, itemPalette);
-
-                    log.Info("Length: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(arrayOfSlots.Length)) + " (" + arrayOfSlots.Length + ")");
-                    log.Info("Array: " + dataTypes.ByteArrayToString(arrayOfSlots));
-
-                    packet.AddRange(dataTypes.GetVarInt(arrayOfSlots.Length));
-                    packet.AddRange(arrayOfSlots);
+                    packet.AddRange(dataTypes.GetVarInt(changedSlots.Count)); // Length of the array
+                    foreach (var slot in changedSlots)
+                    {
+                        packet.AddRange(dataTypes.GetShort(slot.Item1)); // slot ID
+                        packet.AddRange(dataTypes.GetItemSlot(slot.Item2, itemPalette)); // slot Data
+                    }
                 }
 
                 packet.AddRange(dataTypes.GetItemSlot(item, itemPalette)); // Carried item (Clicked item)
-
-                log.Info("Packet data: " + dataTypes.ByteArrayToString(packet.ToArray()));
 
                 SendPacket(PacketTypesOut.ClickWindow, packet);
                 return true;
