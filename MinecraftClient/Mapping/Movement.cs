@@ -31,9 +31,11 @@ namespace MinecraftClient.Mapping
                     belowFoots = location;
                     belowFoots.Y = Math.Truncate(location.Y);
                 }
+                //Console.WriteLine("IsOnGround = " + IsOnGround(world, location));
                 if (!IsOnGround(world, location) && !IsSwimming(world, location))
                 {
-                    while (!IsOnGround(world, belowFoots) && belowFoots.Y >= 1)
+                    while (!IsOnGround(world, belowFoots) &&
+                           belowFoots.Y >= 1 + (world.GetDimension() == null ? 0 : world.GetDimension().minY))
                         belowFoots = Move(belowFoots, Direction.Down);
                     location = Move2Steps(location, belowFoots, ref motionY, true).Dequeue();
                 }
@@ -262,6 +264,9 @@ namespace MinecraftClient.Mapping
         /// <returns>True if the specified location is on the ground</returns>
         public static bool IsOnGround(World world, Location location)
         {
+            if (world.GetChunkColumn(location) == null || world.GetChunkColumn(location).FullyLoaded == false)
+                return true; // avoid moving downward in a not loaded chunk
+
             return world.GetBlock(Move(location, Direction.Down)).Type.IsSolid()
                 && (location.Y <= Math.Truncate(location.Y) + 0.0001);
         }

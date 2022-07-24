@@ -147,8 +147,8 @@ namespace MinecraftClient.Protocol.Handlers
         public void ProcessChunkColumnData(int chunkX, int chunkZ, ulong[] verticalStripBitmask, Queue<byte> cache)
         {
             var world = handler.GetWorld();
-            while (world.GetDimension() == null)
-                ; // Dimension parsing unfinished
+            if (world.GetDimension() == null)
+                return;
 
             int chunkColumnSize = (world.GetDimension().height + 15) / 16;
 
@@ -207,6 +207,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // Don't worry about skipping remaining data since there is no useful data afterwards in 1.9
                 // (plus, it would require parsing the tile entity lists' NBT)
             }
+            handler.GetWorld()[chunkX, chunkZ].FullyLoaded = true;
         }
 
         /// <summary>

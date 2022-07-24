@@ -13,6 +13,8 @@ namespace MinecraftClient.Mapping
     {
         public int ColumnSize;
 
+        public bool FullyLoaded = false;
+
         /// <summary>
         /// Blocks contained into the chunk
         /// </summary>

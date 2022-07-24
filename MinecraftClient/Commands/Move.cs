@@ -76,7 +76,7 @@ namespace MinecraftClient.Commands
                         int z = int.Parse(args[2]);
                         Location goal = new Location(x, y, z);
 
-                        if (handler.GetWorld().GetChunkColumn(goal) == null)
+                        if (handler.GetWorld().GetChunkColumn(goal) == null || handler.GetWorld().GetChunkColumn(goal).FullyLoaded == false)
                             return Translations.Get("cmd.move.chunk_not_loaded");
                         else if (handler.MoveTo(goal, allowUnsafe: takeRisk))
                             return Translations.Get("cmd.move.walk", goal);

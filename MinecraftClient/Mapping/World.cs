@@ -27,6 +27,13 @@ namespace MinecraftClient.Mapping
         private readonly ReaderWriterLockSlim chunksLock = new ReaderWriterLockSlim();
 
         /// <summary>
+        /// Chunk data parsing progress
+        /// </summary>
+        public uint chunkCnt = 0;
+        public uint chunkLoadNotCompleted = 0;
+
+
+        /// <summary>
         /// Read, set or unload the specified chunk column
         /// </summary>
         /// <param name="chunkX">ChunkColumn X</param>
