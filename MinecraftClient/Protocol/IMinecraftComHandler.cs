@@ -374,7 +374,7 @@ namespace MinecraftClient.Protocol
         /// <param name="action">0 to create/update an item. 1 to remove an item.</param>
         /// <param name="objectivename">The name of the objective the score belongs to</param>
         /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
-        void OnUpdateScore(string entityname, byte action, string objectivename, int value);
+        void OnUpdateScore(string entityname, int action, string objectivename, int value);
 
         /// <summary>
         /// Called when tradeList is received from server

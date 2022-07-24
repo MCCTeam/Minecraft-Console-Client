@@ -1208,7 +1208,7 @@ namespace MinecraftClient.Protocol.Handlers
                             break;
                         case PacketTypesIn.UpdateScore:
                             string entityname = dataTypes.ReadNextString(packetData);
-                            byte action3 = dataTypes.ReadNextByte(packetData);
+                            int action3 = protocolversion >= MC1182Version ? dataTypes.ReadNextVarInt(packetData) : dataTypes.ReadNextByte(packetData);
                             string objectivename2 = null;
                             int value = -1;
                             if (action3 != 1 || protocolversion >= MC18Version)
@@ -1713,7 +1713,12 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion >= MC19Version)
                     fields.AddRange(dataTypes.GetVarInt(mainHand));
                 if (protocolversion >= MC117Version)
-                    fields.Add(1); // 1.17 and above - Disable text filtering. (Always true)
+                {
+                    if (protocolversion == MC117Version || protocolversion == MC1171Version)
+                        fields.Add(1); // 1.17 and 1.17.1 - Disable text filtering. (Always true)
+                    else
+                        fields.Add(0); // 1.18 and above - Enable text filtering. (Always false)
+                }
                 if (protocolversion >= MC1181Version)
                     fields.Add(1); // 1.18 and above - Allow server listings
                 SendPacket(PacketTypesOut.ClientSettings, fields);
@@ -2040,7 +2045,7 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(arrayOfSlots);
                 }
 
-                packet.AddRange(dataTypes.GetItemSlot(item, itemPalette)); // Clicked item
+                packet.AddRange(dataTypes.GetItemSlot(item, itemPalette)); // Carried item (Clicked item)
 
                 log.Info("Packet data: " + dataTypes.ByteArrayToString(packet.ToArray()));
 

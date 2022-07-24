@@ -410,7 +410,10 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (living)
             {
-                entityPitch = ReadNextByte(cache);
+                if (protocolversion >= Protocol18Handler.MC1182Version)
+                    entityYaw = ReadNextByte(cache);
+                else
+                    entityPitch = ReadNextByte(cache);
             }
             else
             {
