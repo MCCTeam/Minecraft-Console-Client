@@ -1934,6 +1934,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 log.Info("Window id: " + windowId + " - State id: " + stateId + " - Slot id: " + slotId + " - Mode: " + mode);
                 log.Info("Bytes > " + (byte)windowId + " - State id: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(stateId)) + " - Slot id: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(slotId)) + " - Mode: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(mode)));
+                log.Info("Held item: " + item.ToString());
 
                 packet.Add((byte)windowId);
 
@@ -1964,10 +1965,40 @@ namespace MinecraftClient.Protocol.Handlers
                 // 1.17+
                 if (protocolversion >= MC117Version)
                 {
+                    try
+                    {
+                        foreach (KeyValuePair<int, Item> x in items)
+                        {
+                            log.Info("---------------------------------------------------");
+                            log.Info("ID: " + x.Key);
+                            log.Info("Item: " + x.Value.ToString());
+
+                            log.Info("Item NBT: ");
+
+                            if (x.Value.NBT.Count > 0)
+                            {
+                                foreach (string x2 in dataTypes.GetNbtAsString(x.Value.NBT, true))
+                                {
+                                    ConsoleIO.WriteLine(x2);
+                                }
+                            }
+                            else
+                            {
+                                log.Info("\t- No NBT Data!");
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        ConsoleIO.WriteLine(e.StackTrace);
+                    }
+
                     byte[] arrayOfSlots = dataTypes.GetSlotsArray(items, itemPalette);
 
                     log.Info("Length: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(arrayOfSlots.Length)) + " (" + arrayOfSlots.Length + ")");
                     log.Info("Array: " + dataTypes.ByteArrayToString(arrayOfSlots));
+
+                    //packet.AddRange(dataTypes.GetArray(arrayOfSlots));
 
                     packet.AddRange(dataTypes.GetVarInt(arrayOfSlots.Length));
                     packet.AddRange(arrayOfSlots);
