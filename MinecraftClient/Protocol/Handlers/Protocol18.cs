@@ -634,9 +634,6 @@ namespace MinecraftClient.Protocol.Handlers
                                     int sectionX = (int)(chunkSection >> 42);
                                     int sectionY = (int)((chunkSection << 44) >> 44);
                                     int sectionZ = (int)((chunkSection << 22) >> 42);
-                                    //int sectionX = (int)((chunkSection >> 42) & 0x3FFFFF);
-                                    //int sectionZ = (int)((chunkSection >> 20) & 0x3FFFFF);
-                                    //int sectionY = (int)((chunkSection) & 0xFFFFF);
                                     dataTypes.ReadNextBool(packetData); // Useless boolean (Related to light update)
                                     int blocksSize = dataTypes.ReadNextVarInt(packetData);
                                     for (int i = 0; i < blocksSize; i++)
