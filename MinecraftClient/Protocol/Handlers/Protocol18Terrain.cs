@@ -491,6 +491,7 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
             }
+            handler.GetWorld()[chunkX, chunkZ].FullyLoaded = true;
         }
     }
 }
