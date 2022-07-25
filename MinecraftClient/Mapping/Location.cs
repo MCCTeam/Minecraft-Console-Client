@@ -307,7 +307,7 @@ namespace MinecraftClient.Mapping
         /// <returns>String representation of the location</returns>
         public override string ToString()
         {
-            return String.Format("X:{0} Y:{1} Z:{2}", X, Y, Z);
+            return String.Format("X:{0:0.00} Y:{1:0.00} Z:{2:0.00}", X, Y, Z);
         }
     }
 }
