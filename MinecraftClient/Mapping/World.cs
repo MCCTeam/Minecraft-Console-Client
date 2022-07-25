@@ -17,9 +17,20 @@ namespace MinecraftClient.Mapping
         private Dictionary<int, Dictionary<int, ChunkColumn>> chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
 
         /// <summary>
+        /// The dimension info of the world
+        /// </summary>
+        private Dimension dimension;
+
+        /// <summary>
         /// Lock for thread safety
         /// </summary>
         private readonly ReaderWriterLockSlim chunksLock = new ReaderWriterLockSlim();
+
+        /// <summary>
+        /// Chunk data parsing progress
+        /// </summary>
+        public uint chunkCnt = 0;
+        public uint chunkLoadNotCompleted = 0;
 
         /// <summary>
         /// Read, set or unload the specified chunk column
@@ -76,6 +87,30 @@ namespace MinecraftClient.Mapping
                     chunksLock.ExitWriteLock();
                 }
             }
+        }
+
+        public World()
+        {
+            Location.world = this;
+        }
+
+        /// <summary>
+        /// Set dimension type
+        /// </summary>
+        /// <param name="name">	The name of the dimension type</param>
+        /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
+        public void SetDimension(string name, Dictionary<string, object> nbt)
+        {
+            this.dimension = new Dimension(name, nbt);
+        }
+
+        /// <summary>
+        /// Get dimension type
+        /// </summary>
+        /// <returns>The chunk column</returns>
+        public Dimension GetDimension()
+        {
+            return this.dimension;
         }
 
         /// <summary>
@@ -176,6 +211,7 @@ namespace MinecraftClient.Mapping
             try
             {
                 chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
+                dimension = null;
             }
             finally
             {

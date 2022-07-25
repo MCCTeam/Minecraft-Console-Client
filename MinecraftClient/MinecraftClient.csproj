@@ -76,6 +76,7 @@
     <Compile Include="ChatBots\AutoDrop.cs" />
     <Compile Include="ChatBots\Mailer.cs" />
     <Compile Include="Commands\SetRnd.cs" />
+    <Compile Include="Mapping\Dimension.cs" />
     <Compile Include="Protocol\JwtPayloadDecode.cs" />
     <Compile Include="Protocol\Handlers\PacketPalettes\PacketPalette118.cs" />
     <Compile Include="Protocol\MojangAPI.cs" />
