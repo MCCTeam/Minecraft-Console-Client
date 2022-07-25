@@ -59,8 +59,6 @@ namespace MinecraftClient
         private float playerYaw;
         private float playerPitch;
         private double motionY;
-        private int chunkLoadingStateTicks = 30; // Setting it to zero to disable chunk loading statu log
-        private double lastChunkLoadedRatio = 0;
 
         private string host;
         private int port;
@@ -386,26 +384,6 @@ namespace MinecraftClient
                     Action taskToRun = threadTasks.Dequeue();
                     taskToRun();
                 }
-            }
-
-            if (terrainAndMovementsEnabled)
-            {
-                if (chunkLoadingStateTicks <= 0)
-                {
-                    chunkLoadingStateTicks = 50;
-                    if (world.chunkCnt != 0)
-                    {
-                        double chunkLoadedRatio = (world.chunkCnt - world.chunkLoadNotCompleted) / (double)world.chunkCnt;
-                        if (chunkLoadedRatio != lastChunkLoadedRatio)
-                        {
-                            Log.Info(string.Format("Chunk loading: {0:P}  {1}/{2}",
-                                chunkLoadedRatio, world.chunkCnt - world.chunkLoadNotCompleted, world.chunkCnt));
-                            lastChunkLoadedRatio = chunkLoadedRatio;
-                        }
-                    }
-                }
-                else
-                    chunkLoadingStateTicks--;
             }
         }
 

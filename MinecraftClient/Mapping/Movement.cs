@@ -31,7 +31,6 @@ namespace MinecraftClient.Mapping
                     belowFoots = location;
                     belowFoots.Y = Math.Truncate(location.Y);
                 }
-                //Console.WriteLine("IsOnGround = " + IsOnGround(world, location));
                 if (!IsOnGround(world, location) && !IsSwimming(world, location))
                 {
                     while (!IsOnGround(world, belowFoots) &&
