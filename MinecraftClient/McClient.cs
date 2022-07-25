@@ -1295,7 +1295,10 @@ namespace MinecraftClient
                                 playerInventory.Items.Remove(-1);
                             }
 
-                            changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
+                            if (inventory.Items.ContainsKey(slotId))
+                                changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
+                            else
+                                changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                         }
                         else
                         {
@@ -1388,7 +1391,10 @@ namespace MinecraftClient
                                 }
                             }
                         }
-                        changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
+                        if (inventory.Items.ContainsKey(slotId))
+                            changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
+                        else
+                            changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                         break;
                     case WindowActionType.ShiftClick:
                         if (slotId == 0) break;
@@ -1438,7 +1444,7 @@ namespace MinecraftClient
                                             inventory.Items.Remove(slotId);
 
                                             changedSlots.Add(new Tuple<short, Item>((short)_item.Key, inventory.Items[_item.Key]));
-                                            changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
+                                            changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                                         }
                                         else
                                         {
@@ -1496,7 +1502,7 @@ namespace MinecraftClient
                                             inventory.Items.Remove(slotId);
 
                                             changedSlots.Add(new Tuple<short, Item>((short)_item.Key, inventory.Items[_item.Key]));
-                                            changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
+                                            changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                                         }
                                         else
                                         {
@@ -1551,7 +1557,6 @@ namespace MinecraftClient
                         break;
                     case WindowActionType.DropItemStack:
                         inventory.Items.Remove(slotId);
-
                         changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                         break;
                 }
