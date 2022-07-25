@@ -2037,7 +2037,7 @@ namespace MinecraftClient.Protocol.Handlers
                     packet.AddRange(dataTypes.GetVarInt(mode)); // Mode
                 else packet.Add(mode);
 
-                // 1.17+
+                // 1.17+  Array of changed slots
                 if (protocolversion >= MC117Version)
                 {
                     packet.AddRange(dataTypes.GetVarInt(changedSlots.Count)); // Length of the array
