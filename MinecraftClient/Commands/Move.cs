@@ -17,7 +17,14 @@ namespace MinecraftClient.Commands
             bool takeRisk = false;
 
             if (args.Count < 1)
-                return GetCmdDescTranslated();
+            {
+                string desc =  GetCmdDescTranslated();
+
+                if (handler.GetTerrainEnabled())
+                    handler.Log.Info(getChunkLoadingStatus(handler.GetWorld()));
+
+                return desc;
+            }
 
             if (args.Contains("-f"))
             {
@@ -87,6 +94,20 @@ namespace MinecraftClient.Commands
                 else return GetCmdDescTranslated();
             }
             else return Translations.Get("extra.terrainandmovement_required");
+        }
+
+        private string getChunkLoadingStatus(World world)
+        {
+            double chunkLoadedRatio;
+            if (world.chunkCnt == 0)
+                chunkLoadedRatio = 0;
+            else
+                chunkLoadedRatio = (world.chunkCnt - world.chunkLoadNotCompleted) / (double)world.chunkCnt;
+
+            string status = Translations.Get("cmd.move.chunk_loading_status",
+                    chunkLoadedRatio, world.chunkCnt - world.chunkLoadNotCompleted, world.chunkCnt);
+
+            return status;
         }
     }
 }
