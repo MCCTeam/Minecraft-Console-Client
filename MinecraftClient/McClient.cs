@@ -13,6 +13,7 @@ using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
+using MinecraftClient.Protocol.Keys;
 
 namespace MinecraftClient
 {
@@ -59,6 +60,7 @@ namespace MinecraftClient
         private float playerYaw;
         private float playerPitch;
         private double motionY;
+        private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
 
         private string host;
         private int port;
@@ -66,10 +68,12 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
+        private KeysInfo keysInfo;
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new object();
         private int respawnTicks = 0;
         private int gamemode = 0;
+        private bool isSupportPreviewsChat;
 
         private int playerEntityID;
 
@@ -105,9 +109,11 @@ namespace MinecraftClient
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
         public float GetYaw() { return playerYaw; }
+        public int GetSequenceId() { return sequenceId; }
         public float GetPitch() { return playerPitch; }
         public World GetWorld() { return world; }
         public Double GetServerTPS() { return averageTPS; }
+        public bool GetIsSupportPreviewsChat() { return isSupportPreviewsChat; }
         public float GetHealth() { return playerHealth; }
         public int GetSaturation() { return playerFoodSaturation; }
         public int GetLevel() { return playerLevel; }
@@ -136,9 +142,9 @@ namespace MinecraftClient
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        public McClient(string username, string uuid, string sessionID, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
+        public McClient(string username, string uuid, string sessionID, KeysInfo keysInfo, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
         {
-            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, false, "");
+            StartClient(username, uuid, sessionID, keysInfo, server_ip, port, protocolversion, forgeInfo, false, "");
         }
 
         /// <summary>
@@ -151,9 +157,9 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
-        public McClient(string username, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
+        public McClient(string username, string uuid, string sessionID, KeysInfo keysInfo, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
         {
-            StartClient(username, uuid, sessionID, server_ip, port, protocolversion, forgeInfo, true, command);
+            StartClient(username, uuid, sessionID, keysInfo, server_ip, port, protocolversion, forgeInfo, true, command);
         }
 
         /// <summary>
@@ -167,7 +173,7 @@ namespace MinecraftClient
         /// <param name="uuid">The player's UUID for online-mode authentication</param>
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-        private void StartClient(string user, string uuid, string sessionID, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
+        private void StartClient(string user, string uuid, string sessionID, KeysInfo keysInfo, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;
@@ -180,6 +186,7 @@ namespace MinecraftClient
             this.host = server_ip;
             this.port = port;
             this.protocolversion = protocolversion;
+            this.keysInfo = keysInfo;
 
             this.Log = Settings.LogToFile
                 ? new FileLogLogger(Settings.ExpandVars(Settings.LogFile), Settings.PrependTimestamp)
@@ -227,7 +234,7 @@ namespace MinecraftClient
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Log.Info(Translations.Get("mcc.version_supported"));
 
-                if (!singlecommand) 
+                if (!singlecommand)
                 {
                     timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
                     timeoutdetector.Item1.Name = "MCC Connection timeout detector";
@@ -236,11 +243,11 @@ namespace MinecraftClient
 
                 try
                 {
-                    if (handler.Login())
+                    if (handler.Login(this.keysInfo))
                     {
                         if (singlecommand)
                         {
-                            handler.SendChatMessage(command);
+                            handler.SendChatMessage(command, keysInfo);
                             Log.Info(Translations.Get("mcc.single_cmd", command));
                             Thread.Sleep(5000);
                             handler.Disconnect();
@@ -294,7 +301,7 @@ namespace MinecraftClient
                     ReconnectionAttemptsLeft--;
                     Program.Restart();
                 }
-                else if (!singlecommand && Settings.interactiveMode) 
+                else if (!singlecommand && Settings.interactiveMode)
                 {
                     ConsoleInteractive.ConsoleReader.StopReadThread();
                     ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
@@ -331,7 +338,7 @@ namespace MinecraftClient
                 if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
                 {
                     string text = chatQueue.Dequeue();
-                    handler.SendChatMessage(text);
+                    handler.SendChatMessage(text, keysInfo);
                     nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
                 }
             }
@@ -402,23 +409,23 @@ namespace MinecraftClient
             do
             {
                 Thread.Sleep(TimeSpan.FromSeconds(15));
-                
+
                 if (((CancellationToken)o!).IsCancellationRequested)
                     return;
-                
+
                 lock (lastKeepAliveLock)
                 {
                     if (lastKeepAlive.AddSeconds(30) < DateTime.Now)
                     {
                         if (((CancellationToken)o!).IsCancellationRequested)
                             return;
-                        
+
                         OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.timeout"));
                         return;
                     }
                 }
             }
-            while (! ( (CancellationToken)o! ).IsCancellationRequested);
+            while (!((CancellationToken)o!).IsCancellationRequested);
         }
 
         /// <summary>
@@ -448,13 +455,13 @@ namespace MinecraftClient
                 handler.Dispose();
             }
 
-            if (cmdprompt != null) 
+            if (cmdprompt != null)
             {
                 cmdprompt.Cancel();
                 cmdprompt = null;
             }
 
-            if (timeoutdetector != null) 
+            if (timeoutdetector != null)
             {
                 timeoutdetector.Item2.Cancel();
                 timeoutdetector = null;
@@ -521,7 +528,7 @@ namespace MinecraftClient
                 }
             }
 
-            if (!will_restart) 
+            if (!will_restart)
             {
                 ConsoleInteractive.ConsoleReader.StopReadThread();
                 ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
@@ -533,23 +540,24 @@ namespace MinecraftClient
         #endregion
 
         #region Command prompt and internal MCC commands
-        
+
         private void ConsoleReaderOnMessageReceived(object? sender, string e)
         {
 
             if (client.Client == null)
                 return;
-            
-            if (client.Client.Connected) 
+
+            if (client.Client.Connected)
             {
-                new Thread(() => {
+                new Thread(() =>
+                {
                     InvokeOnMainThread(() => HandleCommandPromptText(e));
                 }).Start();
             }
             else
                 return;
         }
-        
+
         /// <summary>
         /// Allows the user to send chat messages, commands, and leave the server.
         /// Process text from the MCC command prompt on the main thread.
@@ -1083,7 +1091,7 @@ namespace MinecraftClient
         /// <param name="timeout">How long to wait until the path is evaluated (default: 5 seconds)</param>
         /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>True if a path has been found</returns>
-        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout=null)
+        public bool MoveTo(Location location, bool allowUnsafe = false, bool allowDirectTeleport = false, int maxOffset = 0, int minOffset = 0, TimeSpan? timeout = null)
         {
             lock (locationLock)
             {
@@ -1244,7 +1252,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnHand()
         {
-            return InvokeOnMainThread(() => handler.SendUseItem(0));
+            return InvokeOnMainThread(() => handler.SendUseItem(0, this.sequenceId));
         }
 
         /// <summary>
@@ -1634,7 +1642,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully placed</returns>
         public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace));
+            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, this.sequenceId));
         }
 
         /// <summary>
@@ -1660,9 +1668,9 @@ namespace MinecraftClient
 
             // Send dig start and dig end, will need to wait for server response to know dig result
             // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
-            return handler.SendPlayerDigging(0, location, blockFace)
+            return handler.SendPlayerDigging(0, location, blockFace, this.sequenceId)
                 && (!swingArms || DoAnimation((int)Hand.MainHand))
-                && handler.SendPlayerDigging(2, location, blockFace);
+                && handler.SendPlayerDigging(2, location, blockFace, this.sequenceId);
         }
 
         /// <summary>
@@ -1724,7 +1732,7 @@ namespace MinecraftClient
         /// Teleporting to other entityies is NOT implemented yet
         public bool Spectate(Entity entity)
         {
-            if(entity.Type == EntityType.Player)
+            if (entity.Type == EntityType.Player)
             {
                 return SpectateByUUID(entity.UUID);
             }
@@ -1740,9 +1748,9 @@ namespace MinecraftClient
         /// <param name="UUID">UUID of player/entity to teleport to</param>
         public bool SpectateByUUID(Guid UUID)
         {
-            if(GetGamemode() == 3)
+            if (GetGamemode() == 3)
             {
-                if(InvokeRequired)
+                if (InvokeRequired)
                     return InvokeOnMainThread(() => SpectateByUUID(UUID));
                 return handler.SendSpectate(UUID);
             }
@@ -1872,7 +1880,7 @@ namespace MinecraftClient
         /// Check if the client is currently processing a Movement.
         /// </summary>
         /// <returns>true if a movement is currently handled</returns>
-        public bool ClientIsMoving() 
+        public bool ClientIsMoving()
         {
             return terrainAndMovementsEnabled && locationReceived && ((steps != null && steps.Count > 0) || (path != null && path.Count > 0));
         }
@@ -2191,7 +2199,7 @@ namespace MinecraftClient
         /// <summary>
         /// Called when an entity effects
         /// </summary>
-        public void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags)
+        public void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<string, object> factorCodec)
         {
             if (entities.ContainsKey(entityid))
                 DispatchBotEvent(bot => bot.OnEntityEffect(entities[entityid], effect, amplifier, duration, flags));
@@ -2598,6 +2606,28 @@ namespace MinecraftClient
                 Entity entity = entities[entityID];
                 DispatchBotEvent(bot => bot.OnEntityAnimation(entity, animation));
             }
+        }
+
+        /// <summary>
+        /// Will be called when a Synchronization sequence is recevied, this sequence need to be sent when breaking or placing blocks
+        /// </summary>
+        /// <param name="sequenceId">Sequence ID</param>
+        public void OnBlockChangeAck(int sequenceId)
+        {
+            this.sequenceId = sequenceId;
+        }
+
+        /// <summary>
+        /// This method is called when the protocol handler receives server data
+        /// </summary>
+        /// <param name="hasMotd">Indicates if the server has a motd message</param>
+        /// <param name="motd">Server MOTD message</param>
+        /// <param name="hasIcon">Indicates if the server has a an icon</param>
+        /// <param name="iconBase64">Server icon in Base 64 format</param>
+        /// <param name="previewsChat">Indicates if the server previews chat</param>
+        public void OnServerDataRecived(bool hasMotd, string motd, bool hasIcon, string iconBase64, bool previewsChat)
+        {
+            this.isSupportPreviewsChat = previewsChat;
         }
         #endregion
     }

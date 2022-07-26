@@ -28,6 +28,7 @@ namespace MinecraftClient.Protocol
         Dictionary<string, string> GetOnlinePlayersWithUUID();
         Location GetCurrentLocation();
         World GetWorld();
+        bool GetIsSupportPreviewsChat();
         bool GetTerrainEnabled();
         bool SetTerrainEnabled(bool enabled);
         bool GetInventoryEnabled();
@@ -92,6 +93,12 @@ namespace MinecraftClient.Protocol
         void OnEntityAnimation(int entityID, byte animation);
 
         /// <summary>
+        /// Will be called when a Synchronization sequence is recevied, this sequence need to be sent when breaking or placing blocks
+        /// </summary>
+        /// <param name="sequenceId">Sequence ID</param>
+        void OnBlockChangeAck(int sequenceId);
+
+        /// <summary>
         /// Will be called every player break block in gamemode 0
         /// </summary>
         /// <param name="entityId">Player ID</param>
@@ -108,6 +115,16 @@ namespace MinecraftClient.Protocol
         /// Called when receiving a connection keep-alive from the server
         /// </summary>
         void OnServerKeepAlive();
+
+        /// <summary>
+        /// This method is called when the protocol handler receives server data
+        /// </summary>
+        /// <param name="hasMotd">Indicates if the server has a motd message</param>
+        /// <param name="motd">Server MOTD message</param>
+        /// <param name="hasIcon">Indicates if the server has a an icon</param>
+        /// <param name="iconBase64">Server icon in Base 64 format</param>
+        /// <param name="previewsChat">Indicates if the server previews chat</param>
+        void OnServerDataRecived(bool hasMotd, string motd, bool hasIcon, string iconBase64, bool previewsChat);
 
         /// <summary>
         /// Called when an inventory is opened
@@ -346,7 +363,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="EntityID">Player entity ID</param>
         void OnReceivePlayerEntityID(int EntityID);
-        
+
         /// <summary>
         /// Called when the Entity use effects
         /// </summary>
@@ -355,8 +372,10 @@ namespace MinecraftClient.Protocol
         /// <param name="amplifier">effect amplifier</param>
         /// <param name="duration">effect duration</param>
         /// <param name="flags">effect flags</param>
-        void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags);
-        
+        /// <param name="hasFactorData">has factor data</param>
+        /// <param name="factorCodec">factorCodec</param>
+        void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<String, object> factorCodec);
+
         /// <summary>
         /// Called when coreboardObjective
         /// </summary>

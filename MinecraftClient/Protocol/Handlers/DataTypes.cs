@@ -131,7 +131,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             ulong locEncoded = ReadNextULong(cache);
             int x, y, z;
-            if (protocolversion >= Protocol18Handler.MC114Version)
+            if (protocolversion >= Protocol18Handler.MC_1_14_Version)
             {
                 x = (int)(locEncoded >> 38);
                 y = (int)(locEncoded & 0xFFF);
@@ -186,7 +186,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The byte array</returns>
         public byte[] ReadNextByteArray(Queue<byte> cache)
         {
-            int len = protocolversion >= Protocol18Handler.MC18Version
+            int len = protocolversion >= Protocol18Handler.MC_1_8_Version
                 ? ReadNextVarInt(cache)
                 : ReadNextShort(cache);
             return ReadData(len, cache);
@@ -349,7 +349,7 @@ namespace MinecraftClient.Protocol.Handlers
         public Item ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
         {
             List<byte> slotData = new List<byte>();
-            if (protocolversion > Protocol18Handler.MC113Version)
+            if (protocolversion > Protocol18Handler.MC_1_13_Version)
             {
                 // MC 1.13 and greater
                 bool itemPresent = ReadNextBool(cache);
@@ -386,14 +386,14 @@ namespace MinecraftClient.Protocol.Handlers
             int entityID = ReadNextVarInt(cache);
             Guid entityUUID = Guid.Empty;
 
-            if (protocolversion > Protocol18Handler.MC18Version)
+            if (protocolversion > Protocol18Handler.MC_1_8_Version)
             {
                 entityUUID = ReadNextUUID(cache);
             }
 
             EntityType entityType;
             // Entity type data type change from byte to varint after 1.14
-            if (protocolversion > Protocol18Handler.MC113Version)
+            if (protocolversion > Protocol18Handler.MC_1_13_Version)
             {
                 entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
             }
@@ -408,6 +408,12 @@ namespace MinecraftClient.Protocol.Handlers
             byte entityYaw = ReadNextByte(cache);
             byte entityPitch = ReadNextByte(cache);
 
+            byte headYaw = 0;
+            if (protocolversion >= Protocol18Handler.MC_1_19_Version)
+            {
+                headYaw = ReadNextByte(cache);
+            }
+
             if (living)
             {
                 entityPitch = ReadNextByte(cache);
@@ -421,7 +427,10 @@ namespace MinecraftClient.Protocol.Handlers
             short velocityY = ReadNextShort(cache);
             short velocityZ = ReadNextShort(cache);
 
-            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch);
+            if (protocolversion >= Protocol18Handler.MC_1_19_Version)
+                return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), headYaw, entityYaw, entityPitch);
+            else
+                return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch);
         }
 
         /// <summary>
@@ -527,7 +536,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // Increase type ID by 1 if
                 // - below 1.13
                 // - type ID larger than 4
-                if (protocolversion < Protocol18Handler.MC113Version)
+                if (protocolversion < Protocol18Handler.MC_1_13_Version)
                 {
                     if (type > 4)
                     {
@@ -949,7 +958,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Array ready to send</returns>
         public byte[] GetArray(byte[] array)
         {
-            if (protocolversion < Protocol18Handler.MC18Version)
+            if (protocolversion < Protocol18Handler.MC_1_8_Version)
             {
                 byte[] length = BitConverter.GetBytes((short)array.Length);
                 Array.Reverse(length); //Endianness
@@ -982,7 +991,7 @@ namespace MinecraftClient.Protocol.Handlers
         public byte[] GetLocation(Location location)
         {
             byte[] locationBytes;
-            if (protocolversion >= Protocol18Handler.MC114Version)
+            if (protocolversion >= Protocol18Handler.MC_1_14_Version)
             {
                 locationBytes = BitConverter.GetBytes(((((ulong)location.X) & 0x3FFFFFF) << 38) | ((((ulong)location.Z) & 0x3FFFFFF) << 12) | (((ulong)location.Y) & 0xFFF));
             }
@@ -1000,7 +1009,7 @@ namespace MinecraftClient.Protocol.Handlers
         public byte[] GetItemSlot(Item item, ItemPalette itemPalette)
         {
             List<byte> slotData = new List<byte>();
-            if (protocolversion > Protocol18Handler.MC113Version)
+            if (protocolversion > Protocol18Handler.MC_1_13_Version)
             {
                 // MC 1.13 and greater
                 if (item == null || item.IsEmpty)
@@ -1068,6 +1077,11 @@ namespace MinecraftClient.Protocol.Handlers
             foreach (byte[] array in bytes)
                 result.AddRange(array);
             return result.ToArray();
+        }
+
+        public string ByteArrayToString(byte[] bytes)
+        {
+            return BitConverter.ToString(bytes).Replace("-", " ");
         }
     }
 }

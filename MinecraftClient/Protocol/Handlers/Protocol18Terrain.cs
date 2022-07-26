@@ -40,7 +40,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache for reading chunk data</param>
         public void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache)
         {
-            if (protocolversion >= Protocol18Handler.MC19Version)
+            if (protocolversion >= Protocol18Handler.MC_1_9_Version)
             {
                 // 1.9 and above chunk format
                 // Unloading chunks is handled by a separate packet
@@ -49,7 +49,7 @@ namespace MinecraftClient.Protocol.Handlers
                     if ((chunkMask & (1 << chunkY)) != 0)
                     {
                         // 1.14 and above Non-air block count inside chunk section, for lighting purposes
-                        if (protocolversion >= Protocol18Handler.MC114Version)
+                        if (protocolversion >= Protocol18Handler.MC_1_14_Version)
                             dataTypes.ReadNextShort(cache);
 
                         byte bitsPerBlock = dataTypes.ReadNextByte(cache);
@@ -62,7 +62,7 @@ namespace MinecraftClient.Protocol.Handlers
                         // MC 1.9 to 1.12 will set palette length field to 0 when palette
                         // is not used, MC 1.13+ does not send the field at all in this case
                         int paletteLength = 0; // Assume zero when length is absent
-                        if (usePalette || protocolversion < Protocol18Handler.MC113Version)
+                        if (usePalette || protocolversion < Protocol18Handler.MC_1_13_Version)
                             paletteLength = dataTypes.ReadNextVarInt(cache);
 
                         int[] palette = new int[paletteLength];
@@ -101,7 +101,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                         if ((startOffset + bitsPerBlock) > 64)
                                         {
-                                            if (protocolversion >= Protocol18Handler.MC116Version)
+                                            if (protocolversion >= Protocol18Handler.MC_1_16_Version)
                                             {
                                                 // In MC 1.16+, padding is applied to prevent overlapping between Longs:
                                                 // [      LONG INTEGER      ][      LONG INTEGER      ]
@@ -170,7 +170,7 @@ namespace MinecraftClient.Protocol.Handlers
                         });
 
                         //Pre-1.14 Lighting data
-                        if (protocolversion < Protocol18Handler.MC114Version)
+                        if (protocolversion < Protocol18Handler.MC_1_14_Version)
                         {
                             //Skip block light
                             dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
@@ -186,7 +186,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // Don't worry about skipping remaining data since there is no useful data afterwards in 1.9
                 // (plus, it would require parsing the tile entity lists' NBT)
             }
-            else if (protocolversion >= Protocol18Handler.MC18Version)
+            else if (protocolversion >= Protocol18Handler.MC_1_8_Version)
             {
                 // 1.8 chunk format
                 if (chunksContinuous && chunkMask == 0)

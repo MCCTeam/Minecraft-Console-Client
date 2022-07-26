@@ -9,11 +9,14 @@ using System.Threading;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.WinAPI;
+using MinecraftClient.Protocol.Keys;
+using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by the MCC Team (c) 2012-2021.
+    /// Minecraft Console Client by the MCC Team (c) 2012-2022.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
@@ -33,7 +36,7 @@ namespace MinecraftClient
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.18.2";
+        public const string MCHighestVersion = "1.19";
         public static readonly string BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
@@ -195,6 +198,7 @@ namespace MinecraftClient
         private static void InitializeClient()
         {
             SessionToken session = new SessionToken();
+            KeysInfo keysInfo = null;
 
             ProtocolHandler.LoginResult result = ProtocolHandler.LoginResult.LoginRequired;
 
@@ -242,6 +246,11 @@ namespace MinecraftClient
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
+                if (Settings.AccountType != ProtocolHandler.AccountType.Mojang)
+                {
+                    keysInfo = KeysUtils.GetKeys(session.ID);
+                }
+
                 Settings.Username = session.PlayerName;
                 bool isRealms = false;
 
@@ -362,9 +371,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            client = new McClient(session.PlayerName, session.PlayerID, session.ID, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
+                            client = new McClient(session.PlayerName, session.PlayerID, session.ID, keysInfo, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
                         }
-                        else client = new McClient(session.PlayerName, session.PlayerID, session.ID, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
+                        else client = new McClient(session.PlayerName, session.PlayerID, session.ID, keysInfo, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")

@@ -61,6 +61,12 @@ namespace MinecraftClient.Mapping
         public float Yaw = 0;
 
         /// <summary>
+        /// Entity head yaw (Required by 1.19)
+        /// </summary>
+        /// <remarks>Untested</remarks>
+        public float HeadYaw = 0;
+
+        /// <summary>
         /// Entity head pitch
         /// </summary>
         /// <remarks>Untested</remarks>
@@ -121,6 +127,19 @@ namespace MinecraftClient.Mapping
             this.Health = 1.0f;
             this.Equipment = new Dictionary<int, Item>();
             this.Item = new Item(ItemType.Air, 0, null);
+            this.Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
+            this.Pitch = pitch * (1 / 256) * 360;
+        }
+
+        public Entity(int ID, EntityType type, Location location, byte headYaw, byte yaw, byte pitch)
+        {
+            this.ID = ID;
+            this.Type = type;
+            this.Location = location;
+            this.Health = 1.0f;
+            this.Equipment = new Dictionary<int, Item>();
+            this.Item = new Item(ItemType.Air, 0, null);
+            this.HeadYaw = headYaw;
             this.Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
             this.Pitch = pitch * (1 / 256) * 360;
         }

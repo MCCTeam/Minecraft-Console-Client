@@ -5,6 +5,7 @@ using System.Text;
 using MinecraftClient.Crypto;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
+using MinecraftClient.Protocol.Keys;
 
 namespace MinecraftClient.Protocol
 {
@@ -21,7 +22,7 @@ namespace MinecraftClient.Protocol
         /// Start the login procedure once connected to the server
         /// </summary>
         /// <returns>True if login was successful</returns>
-        bool Login();
+        bool Login(KeysInfo keysInfo);
 
         /// <summary>
         /// Disconnect from the server
@@ -48,7 +49,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="message">Text to send</param>
         /// <returns>True if successfully sent</returns>
-        bool SendChatMessage(string message);
+        bool SendChatMessage(string message, KeysInfo keysInfo = null);
 
         /// <summary>
         /// Allow to respawn after death
@@ -154,8 +155,9 @@ namespace MinecraftClient.Protocol
         /// Send a use item packet to the server
         /// </summary>
         /// <param name="hand">0: main hand, 1: off hand</param>
+        /// <param name="sequenceId">Sequence ID used for synchronization</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendUseItem(int hand);
+        bool SendUseItem(int hand, int sequenceId);
 
         /// <summary>
         /// Send a click window slot packet to the server
@@ -198,8 +200,9 @@ namespace MinecraftClient.Protocol
         /// <param name="hand">0: main hand, 1: off hand</param>
         /// <param name="location">Location to place block at</param>
         /// <param name="face">Block face</param>
+        /// <param name="sequenceId">Sequence ID (use for synchronization)</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendPlayerBlockPlacement(int hand, Location location, Direction face);
+        bool SendPlayerBlockPlacement(int hand, Location location, Direction face, int sequenceId);
 
         /// <summary>
         /// Send player blog digging packet to the server. This packet needs to be called at least twice: Once to begin digging, then a second time to finish digging
@@ -207,8 +210,9 @@ namespace MinecraftClient.Protocol
         /// <param name="status">0 to start digging, 1 to cancel, 2 to finish ( https://wiki.vg/Protocol#Player_Digging )</param>
         /// <param name="location">Location</param>
         /// <param name="face">Block face</param>
+        /// <param name="sequenceId">Sequence ID (use for synchronization)</param>
         /// <returns>True if packet was succcessfully sent</returns>
-        bool SendPlayerDigging(int status, Location location, Direction face);
+        bool SendPlayerDigging(int status, Location location, Direction face, int sequenceId);
 
         /// <summary>
         /// Change text on a sign
