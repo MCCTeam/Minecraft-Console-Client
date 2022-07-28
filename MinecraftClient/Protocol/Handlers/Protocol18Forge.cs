@@ -440,7 +440,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="jsonData">JSON data returned by the server</param>
         /// <param name="forgeInfo">ForgeInfo to populate</param>
         /// <returns>True if the server is running Forge</returns>
-        public static bool ServerInfoCheckForge(Json.JSONData jsonData, ref ForgeInfo forgeInfo)
+        public static bool ServerInfoCheckForge(Json.JSONData jsonData, ref ForgeInfo? forgeInfo)
         {
             return ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML)   // MC 1.12 and lower
                 || ServerInfoCheckForgeSub(jsonData, ref forgeInfo, FMLVersion.FML2); // MC 1.13 and greater
@@ -477,7 +477,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="forgeInfo">ForgeInfo to populate</param>
         /// <param name="fmlVersion">Forge protocol version</param>
         /// <returns>True if the server is running Forge</returns>
-        private static bool ServerInfoCheckForgeSub(Json.JSONData jsonData, ref ForgeInfo forgeInfo, FMLVersion fmlVersion)
+        private static bool ServerInfoCheckForgeSub(Json.JSONData jsonData, ref ForgeInfo? forgeInfo, FMLVersion fmlVersion)
         {
             string forgeDataTag;
             string versionField;

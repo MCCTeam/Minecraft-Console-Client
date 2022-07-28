@@ -127,6 +127,12 @@ namespace MinecraftClient.Protocol
         void OnServerDataRecived(bool hasMotd, string motd, bool hasIcon, string iconBase64, bool previewsChat);
 
         /// <summary>
+        /// This method is called when the protocol handler receives "Set Display Chat Preview" packet
+        /// </summary>
+        /// <param name="previewsChat">Indicates if the server previews chat</param>
+        public void OnChatPreviewSettingUpdate(bool previewsChat);
+
+        /// <summary>
         /// Called when an inventory is opened
         /// </summary>
         void OnInventoryOpen(int inventoryID, Container inventory);
@@ -142,11 +148,10 @@ namespace MinecraftClient.Protocol
         void OnRespawn();
 
         /// <summary>
-        /// This method is called when a new player joins the game
+        /// Triggered when a new player joins the game
         /// </summary>
-        /// <param name="uuid">UUID of the player</param>
-        /// <param name="name">Name of the player</param>
-        void OnPlayerJoin(Guid uuid, string name);
+        /// <param name="player">player info</param>
+        public void OnPlayerJoin(PlayerInfo player);
 
         /// <summary>
         /// This method is called when a player has left the game
@@ -374,7 +379,7 @@ namespace MinecraftClient.Protocol
         /// <param name="flags">effect flags</param>
         /// <param name="hasFactorData">has factor data</param>
         /// <param name="factorCodec">factorCodec</param>
-        void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<String, object> factorCodec);
+        void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<String, object>? factorCodec);
 
         /// <summary>
         /// Called when coreboardObjective
@@ -404,5 +409,13 @@ namespace MinecraftClient.Protocol
         /// <param name="isRegularVillager">True if regular villagers and false if the wandering trader.</param>
         /// <param name="canRestock">If the villager can restock his trades at a workstation, True for regular villagers and false for the wandering trader.</param>
         void OnTradeList(int windowID, List<VillagerTrade> trades, VillagerInfo villagerInfo);
+
+        /// <summary>
+        /// This method is called when the protocol handler receives "Login Success" packet
+        /// </summary>
+        /// <param name="uuid">The player's UUID received from the server</param>
+        /// <param name="userName">The player's username received from the server</param>
+        /// <param name="playerProperty">Tuple<Name, Value, Signature(empty if there is no signature)></param>
+        public void OnLoginSuccess(Guid uuid, string userName, Tuple<string, string, string>[]? playerProperty);
     }
 }

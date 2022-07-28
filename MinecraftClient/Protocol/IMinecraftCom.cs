@@ -22,7 +22,7 @@ namespace MinecraftClient.Protocol
         /// Start the login procedure once connected to the server
         /// </summary>
         /// <returns>True if login was successful</returns>
-        bool Login(KeysInfo keysInfo);
+        bool Login(PlayerKeyPair playerKeyPair);
 
         /// <summary>
         /// Disconnect from the server
@@ -49,7 +49,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="message">Text to send</param>
         /// <returns>True if successfully sent</returns>
-        bool SendChatMessage(string message, KeysInfo keysInfo = null);
+        bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair = null);
 
         /// <summary>
         /// Allow to respawn after death
@@ -178,7 +178,7 @@ namespace MinecraftClient.Protocol
         /// <param name="count">Item count</param>
         /// <param name="nbt">Optional item NBT</param>
         /// <returns>TRUE if item given successfully</returns>
-        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> nbt);
+        bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt);
 
         /// <summary>
         /// Plays animation

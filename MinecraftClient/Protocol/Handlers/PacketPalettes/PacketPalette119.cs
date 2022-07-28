@@ -8,7 +8,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         {
             { 0x00, PacketTypesIn.SpawnEntity }, // Changed in 1.19 (Wiki name: Spawn Entity) - DONE
             { 0x01, PacketTypesIn.SpawnExperienceOrb }, //(Wiki name: Spawn Exeprience Orb)
-            { 0x02, PacketTypesIn.SpawnLivingEntity }, //(Wiki name: Spawn Player)
+            { 0x02, PacketTypesIn.SpawnPlayer },
             { 0x03, PacketTypesIn.EntityAnimation }, //(Wiki name: Entity Animation (clientbound))
             { 0x04, PacketTypesIn.Statistics }, //(Wiki name: Award Statistics)
             { 0x05, PacketTypesIn.BlockChangedAck }, //Added 1.19 (Wiki name: Acknowledge Block Change) - DONE 

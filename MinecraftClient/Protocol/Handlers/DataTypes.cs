@@ -385,12 +385,10 @@ namespace MinecraftClient.Protocol.Handlers
         {
             int entityID = ReadNextVarInt(cache);
             Guid entityUUID = Guid.Empty;
-
             if (protocolversion > Protocol18Handler.MC_1_8_Version)
             {
                 entityUUID = ReadNextUUID(cache);
             }
-
             EntityType entityType;
             // Entity type data type change from byte to varint after 1.14
             if (protocolversion > Protocol18Handler.MC_1_13_Version)
@@ -401,36 +399,35 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 entityType = entityPalette.FromId(ReadNextByte(cache), living);
             }
-            
+
             Double entityX = ReadNextDouble(cache);
             Double entityY = ReadNextDouble(cache);
             Double entityZ = ReadNextDouble(cache);
             byte entityYaw = ReadNextByte(cache);
             byte entityPitch = ReadNextByte(cache);
 
-            byte headYaw = 0;
-            if (protocolversion >= Protocol18Handler.MC_1_19_Version)
-            {
-                headYaw = ReadNextByte(cache);
-            }
-
+            int metadata = -1;
             if (living)
             {
-                entityPitch = ReadNextByte(cache);
+                if (protocolversion >= Protocol18Handler.MC_1_18_2_Version)
+                    entityYaw = ReadNextByte(cache);
+                else
+                    entityPitch = ReadNextByte(cache);
             }
             else
             {
-                int metadata = ReadNextInt(cache);
+                if (protocolversion >= Protocol18Handler.MC_1_19_Version)
+                {
+                    metadata = ReadNextVarInt(cache);
+                    entityYaw = ReadNextByte(cache);
+                }
+                else
+                    metadata = ReadNextInt(cache);
             }
-
             short velocityX = ReadNextShort(cache);
             short velocityY = ReadNextShort(cache);
             short velocityZ = ReadNextShort(cache);
-
-            if (protocolversion >= Protocol18Handler.MC_1_19_Version)
-                return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), headYaw, entityYaw, entityPitch);
-            else
-                return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch);
+            return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch, metadata);
         }
 
         /// <summary>

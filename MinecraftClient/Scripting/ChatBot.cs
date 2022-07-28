@@ -359,7 +359,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
         /// <param name="name">Name of the player</param>
-        public virtual void OnPlayerLeave(Guid uuid, string name) { }
+        public virtual void OnPlayerLeave(Guid uuid, string? name) { }
         
         /// <summary>
         /// Called when the player deaths

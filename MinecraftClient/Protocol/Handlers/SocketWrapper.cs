@@ -63,7 +63,11 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (encrypted)
                 {
+                    System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                    int size_tmp = offset - read;
                     read += s.Read(buffer, start + read, offset - read);
+                    stopwatch.Stop();
+                    Console.WriteLine("read " + size_tmp + "byte, time used: " + stopwatch.ElapsedMilliseconds);
                 }
                 else read += c.Client.Receive(buffer, start + read, offset - read, f);
             }

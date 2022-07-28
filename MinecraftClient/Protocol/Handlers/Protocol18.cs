@@ -75,6 +75,7 @@ namespace MinecraftClient.Protocol.Handlers
         DataTypes dataTypes;
         Tuple<Thread, CancellationTokenSource>? netRead = null; // main thread
         ILogger log;
+        RandomNumberGenerator randomGen;
 
         public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo forgeInfo)
         {
@@ -88,6 +89,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
             this.packetPalette = new PacketTypeHandler(protocolVersion, forgeInfo != null).GetTypeHandler();
             this.log = handler.GetLogger();
+            this.randomGen = RandomNumberGenerator.Create();
 
             if (handler.GetTerrainEnabled() && protocolversion > MC_1_16_5_Version)
             {
@@ -196,6 +198,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>FALSE if an error occured, TRUE otherwise.</returns>
         private bool Update()
         {
+            // log.Debug("Update - 1");
             handler.OnUpdate();
             if (!socketWrapper.IsConnected())
                 return false;
@@ -225,7 +228,9 @@ namespace MinecraftClient.Protocol.Handlers
         {
             packetData.Clear();
             int size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
+            // log.Debug("ReadNextPacket - 0");
             byte[] rawpacket = socketWrapper.ReadDataRAW(size); //Packet contents
+            // log.Debug("ReadNextPacket - 1");
             for (int i = 0; i < rawpacket.Length; i++)
                 packetData.Enqueue(rawpacket[i]);
 
@@ -286,46 +291,45 @@ namespace MinecraftClient.Protocol.Handlers
                 else switch (packetPalette.GetIncommingTypeById(packetID))
                     {
                         case PacketTypesIn.KeepAlive:
+                            log.Info("KeepAlive");
                             SendPacket(PacketTypesOut.KeepAlive, packetData);
                             handler.OnServerKeepAlive();
                             break;
                         case PacketTypesIn.JoinGame:
                             handler.OnGameJoined();
-
                             int playerEntityID = dataTypes.ReadNextInt(packetData);
-                            handler.OnReceivePlayerEntityID(playerEntityID);                    // Entity ID
+                            handler.OnReceivePlayerEntityID(playerEntityID);
 
                             if (protocolversion >= MC_1_16_2_Version)
-                                dataTypes.ReadNextBool(packetData);                             // Is hardcore - 1.16.2 and above
+                                dataTypes.ReadNextBool(packetData);                       // Is hardcore - 1.16.2 and above
 
-                            handler.OnGamemodeUpdate(Guid.Empty, dataTypes.ReadNextByte(packetData));   // Gamemode
+                            handler.OnGamemodeUpdate(Guid.Empty, dataTypes.ReadNextByte(packetData));
 
                             if (protocolversion >= MC_1_16_Version)
                             {
-                                dataTypes.ReadNextByte(packetData);                             // Previous Gamemode - 1.16 and above
-                                int dimensionCount = dataTypes.ReadNextVarInt(packetData);      // World Count - 1.16 and above (Renamed to Dimension Count for 1.19)
-                                for (int i = 0; i < dimensionCount; i++)
-                                    dataTypes.ReadNextString(packetData);                       // World Names - 1.16 and above (Renamed to Dimension Names for 1.19)
-                                dataTypes.ReadNextNbt(packetData);                              // Dimension Codec - 1.16 and above (Renamed to Registry Codec  for 1.19)
+                                dataTypes.ReadNextByte(packetData);                       // Previous Gamemode - 1.16 and above
+                                int worldCount = dataTypes.ReadNextVarInt(packetData);    // Dimension Count (World Count) - 1.16 and above
+                                for (int i = 0; i < worldCount; i++)
+                                    dataTypes.ReadNextString(packetData);                 // Dimension Names (World Names) - 1.16 and above
+                                dataTypes.ReadNextNbt(packetData);                        // Registry Codec (Dimension Codec) - 1.16 and above
                             }
 
-                            //Current dimension - String identifier in 1.16, varInt below 1.16, byte below 1.9.1
+                            string? currentDimensionName = null;
+                            Dictionary<string, object>? currentDimensionType = null;
+
+                            // Current dimension
+                            //   NBT Tag Compound: 1.16.2 and above
+                            //   String identifier: 1.16 and 1.16.1
+                            //   varInt: [1.9.1 to 1.15.2]
+                            //   byte: below 1.9.1
                             if (protocolversion >= MC_1_16_Version)
                             {
-                                if (protocolversion < MC_1_19_Version)
-                                {
-                                    if (protocolversion >= MC_1_16_2_Version)
-                                        dataTypes.ReadNextNbt(packetData);
-                                    else
-                                        dataTypes.ReadNextString(packetData);
-                                }
-                                else // 1.19
-                                {
-                                    dataTypes.ReadNextString(packetData);                       // Dimension Type - 1.19
-                                }
-
-                                // TODO: handle dimensions for 1.16+, needed for terrain handling
-                                // TODO: this data give min and max y which will be needed for chunk collumn handling
+                                if (protocolversion >= MC_1_19_Version)
+                                    dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
+                                else if (protocolversion >= MC_1_16_2_Version)
+                                    currentDimensionType = dataTypes.ReadNextNbt(packetData); // Dimension Type: NBT Tag Compound
+                                else
+                                    dataTypes.ReadNextString(packetData);
                                 this.currentDimension = 0;
                             }
                             else if (protocolversion >= MC_1_9_1_Version)
@@ -334,43 +338,45 @@ namespace MinecraftClient.Protocol.Handlers
                                 this.currentDimension = (sbyte)dataTypes.ReadNextByte(packetData);
 
                             if (protocolversion < MC_1_14_Version)
-                                dataTypes.ReadNextByte(packetData);                             // Difficulty - 1.13 and below
+                                dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
+
                             if (protocolversion >= MC_1_16_Version)
-                                dataTypes.ReadNextString(packetData);                           // World Name - 1.16 and above (Renamed to Dimension Name in 1.19)
-                            if (protocolversion >= MC_1_15_Version)
-                                dataTypes.ReadNextLong(packetData);                             // Hashed world seed - 1.15 and above
+                                currentDimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
 
+                            // Implementation in PR#1943
+                            // if (protocolversion >= MC_1_16_2_Version)
+                            //     handler.GetWorld().SetDimension(currentDimensionName, currentDimensionType);
+
+                            if (protocolversion >= MC_1_15_Version)
+                                dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
                             if (protocolversion >= MC_1_16_2_Version)
-                                dataTypes.ReadNextVarInt(packetData);                           // Max Players - 1.16.2 and above
+                                dataTypes.ReadNextVarInt(packetData);         // Max Players - 1.16.2 and above
                             else
-                                dataTypes.ReadNextByte(packetData);                             // Max Players - 1.16.1 and below
-
+                                dataTypes.ReadNextByte(packetData);           // Max Players - 1.16.1 and below
                             if (protocolversion < MC_1_16_Version)
-                                dataTypes.ReadNextString(packetData);                           // Level Type - 1.15 and below
+                                dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
                             if (protocolversion >= MC_1_14_Version)
-                                dataTypes.ReadNextVarInt(packetData);                           // View distance - 1.14 and above
+                                dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
                             if (protocolversion >= MC_1_18_1_Version)
-                                dataTypes.ReadNextVarInt(packetData);                           // Simulation Distance - 1.18 and above
+                                dataTypes.ReadNextVarInt(packetData);         // Simulation Distance - 1.18 and above
                             if (protocolversion >= MC_1_8_Version)
-                                dataTypes.ReadNextBool(packetData);                             // Reduced debug info - 1.8 and above
+                                dataTypes.ReadNextBool(packetData);           // Reduced debug info - 1.8 and above
                             if (protocolversion >= MC_1_15_Version)
-                                dataTypes.ReadNextBool(packetData);                             // Enable respawn screen - 1.15 and above
-
+                                dataTypes.ReadNextBool(packetData);           // Enable respawn screen - 1.15 and above
                             if (protocolversion >= MC_1_16_Version)
                             {
-                                dataTypes.ReadNextBool(packetData);                             // Is Debug - 1.16 and above
-                                dataTypes.ReadNextBool(packetData);                             // Is Flat - 1.16 and above
+                                dataTypes.ReadNextBool(packetData);           // Is Debug - 1.16 and above
+                                dataTypes.ReadNextBool(packetData);           // Is Flat - 1.16 and above
                             }
-
                             if (protocolversion >= MC_1_19_Version)
                             {
-                                if (dataTypes.ReadNextBool(packetData))                         // Has death location - 1.19
+                                bool hasDeathLocation = dataTypes.ReadNextBool(packetData); // Has death location
+                                if (hasDeathLocation)
                                 {
-                                    dataTypes.ReadNextString(packetData);                       // Death dimension name - 1.19
-                                    dataTypes.ReadNextLocation(packetData);                     // Death location - 1.19
+                                    dataTypes.ReadNextString(packetData); // Death dimension name: Identifier
+                                    dataTypes.ReadNextLocation(packetData); // Death location
                                 }
                             }
-
                             break;
                         case PacketTypesIn.ChatMessage:
                             int messageType;
@@ -445,22 +451,16 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             break;
                         case PacketTypesIn.Respawn:
+                            string? dimensionNameInRespawn = null;
+                            Dictionary<string, object>? dimensionTypeInRespawn = null;
                             if (protocolversion >= MC_1_16_Version)
                             {
-
-                                if (protocolversion < MC_1_19_Version)
-                                {
-                                    // TODO handle dimensions for 1.16+, needed for terrain handling
-                                    if (protocolversion >= MC_1_16_2_Version)
-                                        dataTypes.ReadNextNbt(packetData);  // Dimension - 1.16 - 1.19
-                                    else
-                                        dataTypes.ReadNextString(packetData);
-                                }
+                                if (protocolversion >= MC_1_19_Version)
+                                    dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
+                                else if (protocolversion >= MC_1_16_2_Version)
+                                    currentDimensionType = dataTypes.ReadNextNbt(packetData); // Dimension Type: NBT Tag Compound
                                 else
-                                {
-                                    dataTypes.ReadNextString(packetData);   // Dimension Type - 1.19
-                                }
-
+                                    dataTypes.ReadNextString(packetData);
                                 this.currentDimension = 0;
                             }
                             else
@@ -469,7 +469,12 @@ namespace MinecraftClient.Protocol.Handlers
                                 this.currentDimension = dataTypes.ReadNextInt(packetData);
                             }
                             if (protocolversion >= MC_1_16_Version)
-                                dataTypes.ReadNextString(packetData);         // World Name - 1.16 and above (Renamed to Dimension name in 1.19)
+                                dimensionNameInRespawn = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
+
+                            // Implementation in PR#1943
+                            // if (protocolversion >= MC_1_16_2_Version)
+                            //     handler.GetWorld().SetDimension(currentDimensionName, currentDimensionType);
+
                             if (protocolversion < MC_1_14_Version)
                                 dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
                             if (protocolversion >= MC_1_15_Version)
@@ -485,12 +490,13 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.ReadNextBool(packetData);           // Is Flat - 1.16 and above
                                 dataTypes.ReadNextBool(packetData);           // Copy metadata - 1.16 and above
                             }
-                            if (protocolversion >= MC_1_19_Version) // 1.19
+                            if (protocolversion >= MC_1_19_Version)
                             {
-                                if (dataTypes.ReadNextBool(packetData))        // Has death location - 1.19 and above
+                                bool hasDeathLocation = dataTypes.ReadNextBool(packetData); // Has death location
+                                if (hasDeathLocation)
                                 {
-                                    dataTypes.ReadNextString(packetData);     // Death dimension Name
-                                    dataTypes.ReadNextLocation(packetData);   // Death location 
+                                    dataTypes.ReadNextString(packetData); // Death dimension name: Identifier
+                                    dataTypes.ReadNextLocation(packetData); // Death location
                                 }
                             }
                             handler.OnRespawn();
@@ -768,6 +774,10 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                             }
                             break;
+                        case PacketTypesIn.SetDisplayChatPreview:
+                            bool previewsChatSetting = dataTypes.ReadNextBool(packetData);
+                            handler.OnChatPreviewSettingUpdate(previewsChatSetting);
+                            break;
                         case PacketTypesIn.ChatPreview:
                             int queryID = dataTypes.ReadNextInt(packetData);
                             bool componentIsPresent = dataTypes.ReadNextBool(packetData);
@@ -782,7 +792,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 log.Info(">> Component: " + ChatParser.ParseText(message));
 
-                                handler.OnTextReceived(message, true);
+                                //handler.OnTextReceived(message, true);
                             }
 
                             break;
@@ -850,9 +860,10 @@ namespace MinecraftClient.Protocol.Handlers
                                     switch (action)
                                     {
                                         case 0x00: //Player Join (Add player since 1.19)
-                                            string name = dataTypes.ReadNextString(packetData);                         // Action name
+                                            string name = dataTypes.ReadNextString(packetData);                         // Player name
                                             int propNum = dataTypes.ReadNextVarInt(packetData);                         // Number of properties in the following array
 
+                                            Tuple<string, string, string>[]? property = null; // Property: Tuple<Name, Value, Signature(empty if there is no signature)
                                             for (int p = 0; p < propNum; p++)
                                             {
                                                 string key = dataTypes.ReadNextString(packetData);                      // Name
@@ -862,30 +873,35 @@ namespace MinecraftClient.Protocol.Handlers
                                                     dataTypes.ReadNextString(packetData);                               // Signature
                                             }
 
-                                            handler.OnGamemodeUpdate(uuid, dataTypes.ReadNextVarInt(packetData));       // Gamemode
-                                            dataTypes.ReadNextVarInt(packetData);                                       // Ping
+                                            int gameMode = dataTypes.ReadNextVarInt(packetData);                        // Gamemode
+                                            handler.OnGamemodeUpdate(uuid, gameMode);
 
+                                            int ping = dataTypes.ReadNextVarInt(packetData);                            // Ping
+
+                                            string? displayName = null;
                                             if (dataTypes.ReadNextBool(packetData))                                     // Has display name
-                                                dataTypes.ReadNextString(packetData);                                   // Display name
+                                                displayName = dataTypes.ReadNextString(packetData);                     // Display name
 
                                             // 1.19 Additions
+                                            long? keyExpiration = null;
+                                            byte[]? publicKey = null, signature = null;
                                             if (protocolversion >= MC_1_19_Version)
                                             {
                                                 if (dataTypes.ReadNextBool(packetData))                                 // Has Sig Data (if true, red the following fields)
                                                 {
-                                                    long keyExpiration = dataTypes.ReadNextLong(packetData);            // Timestamp
+                                                    keyExpiration = dataTypes.ReadNextLong(packetData);                 // Timestamp
 
                                                     int publicKeyLength = dataTypes.ReadNextVarInt(packetData);         // Public Key Length 
-                                                    byte[] publicKey = dataTypes.ReadData(publicKeyLength, packetData); // Public key
+                                                    if (publicKeyLength > 0)
+                                                        publicKey = dataTypes.ReadData(publicKeyLength, packetData);    // Public key
 
                                                     int signatureLength = dataTypes.ReadNextVarInt(packetData);         // Signature Length 
-                                                    byte[] signature = dataTypes.ReadData(publicKeyLength, packetData); // Public key
-
-                                                    // NOTE: This maybe will be used somewhere else
+                                                    if (signatureLength > 0)
+                                                        signature = dataTypes.ReadData(signatureLength, packetData);    // Public key
                                                 }
                                             }
 
-                                            handler.OnPlayerJoin(uuid, name);
+                                            handler.OnPlayerJoin(new PlayerInfo(uuid, name, property, gameMode, ping, displayName, keyExpiration, publicKey, signature));
                                             break;
                                         case 0x01: //Update gamemode
                                             handler.OnGamemodeUpdate(uuid, dataTypes.ReadNextVarInt(packetData));
@@ -914,7 +930,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 short ping = dataTypes.ReadNextShort(packetData);
                                 Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
                                 if (online)
-                                    handler.OnPlayerJoin(FakeUUID, name);
+                                    handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID));
                                 else handler.OnPlayerLeave(FakeUUID);
                             }
                             break;
@@ -1114,7 +1130,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     byte flags = dataTypes.ReadNextByte(packetData);
 
                                     bool hasFactorData = false;
-                                    Dictionary<string, object> factorCodec = null;
+                                    Dictionary<string, object>? factorCodec = null;
 
                                     if (protocolversion >= MC_1_19_Version)
                                     {
@@ -1278,7 +1294,11 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnSetExperience(experiencebar, level, totalexperience);
                             break;
                         case PacketTypesIn.Explosion:
-                            Location explosionLocation = new Location(dataTypes.ReadNextDouble(packetData), dataTypes.ReadNextDouble(packetData), dataTypes.ReadNextDouble(packetData));
+                            Location explosionLocation;
+                            if (protocolversion >= MC_1_19_Version)
+                                explosionLocation = new(dataTypes.ReadNextDouble(packetData), dataTypes.ReadNextDouble(packetData), dataTypes.ReadNextDouble(packetData));
+                            else
+                                explosionLocation = new(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
                             float explosionStrength = dataTypes.ReadNextFloat(packetData);
                             int explosionBlockCount = protocolversion >= MC_1_17_Version
                                 ? dataTypes.ReadNextVarInt(packetData)
@@ -1305,7 +1325,7 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.UpdateScore:
                             string entityname = dataTypes.ReadNextString(packetData);
                             byte action3 = dataTypes.ReadNextByte(packetData);
-                            string objectivename2 = null;
+                            string objectivename2 = string.Empty;
                             int value = -1;
                             if (action3 != 1 || protocolversion >= MC_1_8_Version)
                                 objectivename2 = dataTypes.ReadNextString(packetData);
@@ -1430,7 +1450,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
 
-            log.Debug("[C -> S] Sending packet " + packetID + " > " + dataTypes.ByteArrayToString(dataTypes.ConcatBytes(dataTypes.GetVarInt(the_packet.Length), the_packet)));
+            //log.Debug("[C -> S] Sending packet " + packetID + " > " + dataTypes.ByteArrayToString(dataTypes.ConcatBytes(dataTypes.GetVarInt(the_packet.Length), the_packet)));
             socketWrapper.SendDataRAW(dataTypes.ConcatBytes(dataTypes.GetVarInt(the_packet.Length), the_packet));
         }
 
@@ -1438,99 +1458,29 @@ namespace MinecraftClient.Protocol.Handlers
         /// Do the Minecraft login.
         /// </summary>
         /// <returns>True if login successful</returns>
-        public bool Login(KeysInfo keysInfo)
+        public bool Login(PlayerKeyPair? playerKeyPair)
         {
             byte[] protocol_version = dataTypes.GetVarInt(protocolversion);
             string server_address = pForge.GetServerAddress(handler.GetServerHost());
             byte[] server_port = dataTypes.GetUShort((ushort)handler.GetServerPort());
             byte[] next_state = dataTypes.GetVarInt(2);
             byte[] handshake_packet = dataTypes.ConcatBytes(protocol_version, dataTypes.GetString(server_address), server_port, next_state);
-
-            log.Info(">> Initiating a handshake with the server: " + dataTypes.ByteArrayToString(handshake_packet));
-
             SendPacket(0x00, handshake_packet);
 
-            log.Info("Logging with account: " + handler.GetUsername());
-
             List<byte> fullLoginPacket = new List<byte>();
-            fullLoginPacket.AddRange(dataTypes.GetString(handler.GetUsername()));
-
-            log.Info(">> Name size : " + Encoding.UTF8.GetBytes(handler.GetUsername()).Length);
-            ConsoleIO.WriteLine(" ");
-
-            log.Info(">> Name in bytes: " + dataTypes.ByteArrayToString(Encoding.UTF8.GetBytes(handler.GetUsername())));
-            ConsoleIO.WriteLine(" ");
-
-            log.Info(">> Name bytes padded with size: " + dataTypes.ByteArrayToString(dataTypes.GetString(handler.GetUsername())));
-            ConsoleIO.WriteLine(" ");
-
+            fullLoginPacket.AddRange(dataTypes.GetString(handler.GetUsername()));                             // Username
             if (protocolversion >= MC_1_19_Version)
             {
-                // fullLoginPacket.AddRange(dataTypes.GetBool(false)); // Has Sig Data
-
-                // Temporarely disabled
-                fullLoginPacket.AddRange(dataTypes.GetBool(true)); // Has Sig Data
-
-                ConsoleIO.WriteLine("ExpiresAt = " + keysInfo.ExpiresAt);
-                ConsoleIO.WriteLine("refreshedAfter = " + keysInfo.RefreshedAfter);
-                long timestamp = ConvertToTimestamp(DateTime.Parse(keysInfo.ExpiresAt).ToUniversalTime());
-
-                //CspParameters cspParams = new CspParameters { ProviderName = "SHA256withRSA" };
-                //RSACryptoServiceProvider rsaProvider = new RSACryptoServiceProvider(cspParams);
-                //rsaProvider.ImportCspBlob(Convert.FromBase64String(keysInfo.KeyPair.PublicKey));
-                //RsaSecurityKey rsaSecurityKey = new RsaSecurityKey(provider);
-
-                //rsaProvider.ExportParameters;
-                //var rsa = RSA.Create();
-                //var keyBytes = Convert.FromBase64String(keysInfo.KeyPair.PublicKey);
-                //rsa.ImportRSAPrivateKey(keyBytes, out _);
-
-                log.Info(">> Public key: " + keysInfo.KeyPair.PublicKey);
-                ConsoleIO.WriteLine(" ");
-                log.Info(">> Public key siganture v1: " + keysInfo.PublicKeySignature);
-                ConsoleIO.WriteLine(" ");
-                log.Info(">> Public key siganture v2: " + keysInfo.PublicKeySignatureV2);
-                ConsoleIO.WriteLine(" ");
-                log.Info(">> Public key data Expires At: " + keysInfo.ExpiresAt);
-                ConsoleIO.WriteLine(" ");
-                log.Info(">> Public key data Expires At (epoch): " + timestamp);
-                ConsoleIO.WriteLine(" ");
-
-                byte[] timestampB = dataTypes.GetLong(timestamp);
-                byte[] publicKeyB = dataTypes.GetArray(Convert.FromBase64String(keysInfo.KeyPair.PublicKey));
-                byte[] publicKeySignatureB = dataTypes.GetArray(Convert.FromBase64String(keysInfo.PublicKeySignature));
-
-                log.Info(">> Timestamp in bytes: " + dataTypes.ByteArrayToString(dataTypes.GetLong(timestamp)));
-                ConsoleIO.WriteLine(" ");
-
-                log.Info(">> Public key size: " + Convert.FromBase64String(keysInfo.KeyPair.PublicKey).Length);
-                log.Info(">> Public key size in bytes: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(Convert.FromBase64String(keysInfo.KeyPair.PublicKey).Length)));
-
-                ConsoleIO.WriteLine(" ");
-                log.Info(">> Public key in bytes: " + dataTypes.ByteArrayToString(Convert.FromBase64String(keysInfo.KeyPair.PublicKey)));
-                ConsoleIO.WriteLine(" ");
-
-                log.Info(">> Public key signature (v1) size: " + Convert.FromBase64String(keysInfo.PublicKeySignature).Length);
-                log.Info(">> Public key signature (v1) size in bytes: " + dataTypes.ByteArrayToString(dataTypes.GetVarInt(Convert.FromBase64String(keysInfo.PublicKeySignature).Length)));
-                ConsoleIO.WriteLine(" ");
-
-                log.Info(">> Public key signature (v1) in bytes: " + dataTypes.ByteArrayToString(Convert.FromBase64String(keysInfo.PublicKeySignature)));
-                ConsoleIO.WriteLine(" ");
-
-                log.Info(">> Does public key converted from a byte array to a base64 string match the original?: " + (Convert.ToBase64String(Convert.FromBase64String(keysInfo.KeyPair.PublicKey)).Equals(keysInfo.KeyPair.PublicKey) ? "Yes" : "No"));
-                ConsoleIO.WriteLine(" ");
-
-                log.Info(">> Does public key signature v1 converted from a byte array to a base64 string match the original?: " + (Convert.ToBase64String(Convert.FromBase64String(keysInfo.PublicKeySignature)).Equals(keysInfo.PublicKeySignature) ? "Yes" : "No"));
-                ConsoleIO.WriteLine(" ");
-
-                fullLoginPacket.AddRange(timestampB);
-                //fullLoginPacket.AddRange(dataTypes.GetVarInt(publicKeyB.Count()));
-                fullLoginPacket.AddRange(publicKeyB); // Public key received from Microsoft API
-                //fullLoginPacket.AddRange(dataTypes.GetVarInt(publicKeySignatureB.Count()));
-                fullLoginPacket.AddRange(publicKeySignatureB); // Public key signature received from Microsoft API
+                if (playerKeyPair == null)
+                    fullLoginPacket.AddRange(dataTypes.GetBool(false));                                       // Has Sig Data
+                else
+                {
+                    fullLoginPacket.AddRange(dataTypes.GetBool(true));                                        // Has Sig Data
+                    fullLoginPacket.AddRange(dataTypes.GetLong(ConvertToTimestamp(playerKeyPair.ExpiresAt))); // Expiration time
+                    fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.Key));                // Public key received from Microsoft API
+                    fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.Signature));          // Public key signature received from Microsoft API
+                }
             }
-
-            // log.Info(">> Handshake established, sending a login packet: " + dataTypes.ByteArrayToString(new byte[] { 0 }) + " " + dataTypes.ByteArrayToString(fullLoginPacket.ToArray()));
             SendPacket(0x00, fullLoginPacket);
 
             int packetID = -1;
@@ -1552,7 +1502,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     log.Info(">> Encryption response from the server: " + serverID + " === " + dataTypes.ByteArrayToString(serverPublicKey) + " === " + dataTypes.ByteArrayToString(token));
 
-                    return StartEncryption(handler.GetUserUUID(), handler.GetSessionID(), token, serverID, serverPublicKey);
+                    return StartEncryption(handler.GetUserUUID(), handler.GetSessionID(), token, serverID, serverPublicKey, playerKeyPair);
                 }
                 else if (packetID == 0x02) //Login successful
                 {
@@ -1576,7 +1526,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Start network encryption. Automatically called by Login() if the server requests encryption.
         /// </summary>
         /// <returns>True if encryption was successful</returns>
-        private bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey)
+        private bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, PlayerKeyPair? playerKeyPair)
         {
             System.Security.Cryptography.RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey);
             byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
@@ -1595,16 +1545,17 @@ namespace MinecraftClient.Protocol.Handlers
 
             //Encrypt the data
             byte[] key_enc = dataTypes.GetArray(RSAService.Encrypt(secretKey, false));
-            byte[] token_enc = dataTypes.GetArray(RSAService.Encrypt(token, false));
 
             //Encryption Response packet
-            if (protocolversion >= Protocol18Handler.MC_1_19_Version)
+            if (protocolversion >= Protocol18Handler.MC_1_19_Version && playerKeyPair != null)
             {
-                // TODO: See about salt
-                SendPacket(0x01, dataTypes.ConcatBytes(key_enc, dataTypes.GetBool(true), token_enc));
+                byte[] salt = GenerateSalt();
+                byte[] token_sign_result = playerKeyPair.PrivateKey.SignData(dataTypes.ConcatBytes(token, salt));
+                SendPacket(0x01, dataTypes.ConcatBytes(key_enc, dataTypes.GetBool(false), salt, dataTypes.GetArray(token_sign_result)));
             }
             else
             {
+                byte[] token_enc = dataTypes.GetArray(RSAService.Encrypt(token, true));
                 SendPacket(0x01, dataTypes.ConcatBytes(key_enc, token_enc));
             }
 
@@ -1630,6 +1581,24 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else if (packetID == 0x02) //Login successful
                 {
+                    Guid uuidReceived = dataTypes.ReadNextUUID(packetData);
+                    string userName = dataTypes.ReadNextString(packetData);
+                    Tuple<string, string, string>[]? playerProperty = null;
+                    if (protocolversion >= Protocol18Handler.MC_1_19_Version)
+                    {
+                        int count = dataTypes.ReadNextVarInt(packetData); // Number Of Properties
+                        playerProperty = new Tuple<string, string, string>[count];
+                        for (int i = 0; i < count; ++i)
+                        {
+                            string name = dataTypes.ReadNextString(packetData);
+                            string value = dataTypes.ReadNextString(packetData);
+                            bool isSigned = dataTypes.ReadNextBool(packetData);
+                            string signature = isSigned ? dataTypes.ReadNextString(packetData) : String.Empty;
+                            playerProperty[i] = new Tuple<string, string, string>(name, value, signature);
+                        }
+                    }
+                    handler.OnLoginSuccess(uuidReceived, userName, playerProperty);
+
                     login_phase = false;
 
                     if (!pForge.CompleteForgeHandshake())
@@ -1714,7 +1683,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Ping a Minecraft server to get information about the server
         /// </summary>
         /// <returns>True if ping was successful</returns>
-        public static bool doPing(string host, int port, ref int protocolversion, ref ForgeInfo forgeInfo)
+        public static bool doPing(string host, int port, ref int protocolversion, ref ForgeInfo? forgeInfo)
         {
             string version = "";
             TcpClient tcp = ProxyHandler.newTcpClient(host, port);
@@ -1809,43 +1778,62 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="message">Message</param>
         /// <returns>True if properly sent</returns>
-        public bool SendChatMessage(string message, KeysInfo keysInfo)
+        public bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair)
         {
             if (String.IsNullOrEmpty(message))
                 return true;
             try
             {
-                string messageJson = "{\"text\":" + EscapeString(message) + "\"}";
-                log.Info("msg = " + messageJson);
-                byte[] messageJsonB = Encoding.UTF8.GetBytes(messageJson);
-
                 List<byte> fields = new List<byte>();
 
-                // 	Message: String (256 chars)
+                // 	Message: String (up to 256 chars)
                 fields.AddRange(dataTypes.GetString(message));
 
-                // Timestamp: Instant(Long)
-                DateTime timeNow = DateTime.Now.ToUniversalTime();
-                long timestamp = ConvertToTimestamp(timeNow);
-                fields.AddRange(dataTypes.GetLong(timestamp));
+                if (protocolversion >= MC_1_19_Version)
+                {
+                    // Todo: process Chat Command
+                    // Timestamp: Instant(Long)
+                    DateTime timeNow = DateTime.Now.ToUniversalTime();
+                    long timestamp = ConvertToTimestamp(timeNow);
+                    fields.AddRange(dataTypes.GetLong(timestamp));
 
-                // Salt: Long
-                long salt = 0;
-                fields.AddRange(dataTypes.GetLong(salt));
+                    // Salt: Long
+                    byte[] salt = GenerateSalt();
+                    fields.AddRange(salt);
 
-                // Signature Length & Signature: (VarInt) and Byte Array
-                fields.AddRange(dataTypes.GetVarInt(0));
+                    // Signature Length & Signature: (VarInt) and Byte Array
+                    if (playerKeyPair == null)
+                        fields.AddRange(dataTypes.GetVarInt(0));
+                    else
+                    {
+                        string UUID = handler.GetUserUUID()!;
+                        byte[] UUIDLeastSignificantBits = dataTypes.GetLong(Convert.ToInt64(UUID[..16], 16));
+                        byte[] UUIDMostSignificantBits = dataTypes.GetLong(Convert.ToInt64(UUID.Substring(16, 16), 16));
 
-                //CspParameters cspParams = new CspParameters { ProviderName = "SHA256withRSA" };
-                //RSACryptoServiceProvider rsaProvider = new RSACryptoServiceProvider(cspParams);
-                //rsaProvider.ImportCspBlob(Convert.FromBase64String(keysInfo.KeyPair.PrivateKey));
-                //var rsaRes = rsaProvider.Encrypt(messageJsonB, true);
-                //log.Info("rsaRes = " + dataTypes.ByteArrayToString(rsaRes));
+                        string messageJson = "{\"text\":\"" + EscapeString(message) + "\"}";
+                        byte[] messageJsonB = Encoding.UTF8.GetBytes(messageJson);
+                        // log.Info("msg json = " + messageJson);
 
+                        byte[] signData = dataTypes.ConcatBytes(
+                            salt,
+                            UUIDLeastSignificantBits,
+                            UUIDMostSignificantBits,
+                            dataTypes.GetLong(timestamp / 1000),
+                            messageJsonB
+                        );
+                        // log.Info("signData len = " + signData.Length);
+                        // log.Info("signData = " + dataTypes.ByteArrayToString(signData));
 
-                // Signed Preview: Boolean
-                fields.AddRange(dataTypes.GetBool(false));
+                        byte[] sign = playerKeyPair.PrivateKey.SignData(signData);
+                        fields.AddRange(dataTypes.GetVarInt(sign.Length));
+                        fields.AddRange(sign);
+                        // log.Info("sign len = " + sign.Length);
+                        // log.Info("sign = " + dataTypes.ByteArrayToString(sign));
+                    }
 
+                    // Signed Preview: Boolean
+                    fields.AddRange(dataTypes.GetBool(false));
+                }
                 SendPacket(PacketTypesOut.ChatMessage, fields);
                 return true;
             }
@@ -2245,7 +2233,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object> nbt)
+        public bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt)
         {
             try
             {
@@ -2418,6 +2406,13 @@ namespace MinecraftClient.Protocol.Handlers
         private static long ConvertToTimestamp(DateTime value)
         {
             return (long)(value - Epoch).TotalMilliseconds;
+        }
+
+        private byte[] GenerateSalt()
+        {
+            byte[] salt = new byte[8];
+            randomGen.GetNonZeroBytes(salt);
+            return salt;
         }
 
         // https://github.com/mono/mono/blob/master/mcs/class/System.Json/System.Json/JsonValue.cs

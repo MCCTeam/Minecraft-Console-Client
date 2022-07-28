@@ -12,12 +12,12 @@ namespace MinecraftClient.Protocol.Keys
     /// </summary>
     public static class KeysCache
     {
-        private const string KeysCacheFilePlaintext = "KeysCache.ini";
+        private const string KeysCacheFilePlaintext = "ProfileKeyCache.ini";
 
         private static FileMonitor cachemonitor;
-        private static Dictionary<string, KeysInfo> keys = new Dictionary<string, KeysInfo>();
+        private static Dictionary<string, PlayerKeyPair> keys = new Dictionary<string, PlayerKeyPair>();
         private static Timer updatetimer = new Timer(100);
-        private static List<KeyValuePair<string, KeysInfo>> pendingadds = new List<KeyValuePair<string, KeysInfo>>();
+        private static List<KeyValuePair<string, PlayerKeyPair>> pendingadds = new List<KeyValuePair<string, PlayerKeyPair>>();
         private static BinaryFormatter formatter = new BinaryFormatter();
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace MinecraftClient.Protocol.Keys
         /// </summary>
         /// <param name="login">User login used with Minecraft.net</param>
         /// <param name="keys">User keys</param>
-        public static void Store(string login, KeysInfo keysInfo)
+        public static void Store(string login, PlayerKeyPair keysInfo)
         {
             if (Contains(login))
             {
@@ -46,11 +46,11 @@ namespace MinecraftClient.Protocol.Keys
                 keys.Add(login, keysInfo);
             }
 
-            if (Settings.SessionCaching == CacheType.Disk && updatetimer.Enabled == true)
+            if (Settings.ProfileKeyCaching == CacheType.Disk && updatetimer.Enabled == true)
             {
-                pendingadds.Add(new KeyValuePair<string, KeysInfo>(login, keysInfo));
+                pendingadds.Add(new KeyValuePair<string, PlayerKeyPair>(login, keysInfo));
             }
-            else if (Settings.SessionCaching == CacheType.Disk)
+            else if (Settings.ProfileKeyCaching == CacheType.Disk)
             {
                 SaveToDisk();
             }
@@ -61,7 +61,7 @@ namespace MinecraftClient.Protocol.Keys
         /// </summary>
         /// <param name="login">User login used with Minecraft.net</param>
         /// <returns>KeysInfo for given login</returns>
-        public static KeysInfo Get(string login)
+        public static PlayerKeyPair Get(string login)
         {
             return keys[login];
         }
@@ -98,7 +98,7 @@ namespace MinecraftClient.Protocol.Keys
             updatetimer.Stop();
             LoadFromDisk();
 
-            foreach (KeyValuePair<string, KeysInfo> pending in pendingadds.ToArray())
+            foreach (KeyValuePair<string, PlayerKeyPair> pending in pendingadds.ToArray())
             {
                 Store(pending.Key, pending.Value);
                 pendingadds.Remove(pending);
@@ -123,31 +123,46 @@ namespace MinecraftClient.Protocol.Keys
                     {
                         if (!line.Trim().StartsWith("#"))
                         {
-                            string[] keyValue = line.Split('=');
-                            if (keyValue.Length == 2)
+
+                            int separatorIdx = line.IndexOf('=');
+                            if (separatorIdx >= 1 && line.Length > separatorIdx + 1)
                             {
+                                string login = line.Substring(0, separatorIdx);
+                                string value = line.Substring(separatorIdx + 1);
                                 try
                                 {
-                                    string login = keyValue[0].ToLower();
-                                    KeysInfo keysInfo = KeysInfo.FromString(keyValue[1]);
+                                    PlayerKeyPair keysInfo = PlayerKeyPair.FromString(value);
                                     keys[login] = keysInfo;
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded_keys", keysInfo.ExpiresAt.ToString()));
                                 }
                                 catch (InvalidDataException e)
                                 {
                                     if (Settings.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string", keyValue[1], e.Message));
+                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string_keys", value, e.Message));
+                                }
+                                catch (FormatException e)
+                                {
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string_keys", value, e.Message));
+                                }
+                                catch (ArgumentNullException e)
+                                {
+                                    if (Settings.DebugMessages)
+                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string_keys", value, e.Message));
+
                                 }
                             }
                             else if (Settings.DebugMessages)
                             {
-                                ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_line", line));
+                                ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_line_keys", line));
                             }
                         }
                     }
                 }
                 catch (IOException e)
                 {
-                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.read_fail_plain", e.Message));
+                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.read_fail_plain_keys", e.Message));
                 }
             }
 
@@ -160,13 +175,12 @@ namespace MinecraftClient.Protocol.Keys
         private static void SaveToDisk()
         {
             if (Settings.DebugMessages)
-                Translations.WriteLineFormatted("cache.saving");
+                Translations.WriteLineFormatted("cache.saving_keys");
 
             List<string> KeysCacheLines = new List<string>();
-            KeysCacheLines.Add("# Generated by MCC v" + Program.Version + " - DO NOT EDIT!");
-            KeysCacheLines.Add("# Login=PrivateKey,PublicKey,PublicKeySignature,PublicKeySignatureV2,ExpiresAt,RefreshAfter");
-
-            foreach (KeyValuePair<string, KeysInfo> entry in keys)
+            KeysCacheLines.Add("# Generated by MCC v" + Program.Version + " - Keep it secret & Edit at own risk!");
+            KeysCacheLines.Add("# ProfileKey=PublicKey(base64),PublicKeySignature(base64),PublicKeySignatureV2(base64),PrivateKey(base64),ExpiresAt,RefreshAfter");
+            foreach (KeyValuePair<string, PlayerKeyPair> entry in keys)
                 KeysCacheLines.Add(entry.Key + '=' + entry.Value.ToString());
 
             try
@@ -175,7 +189,7 @@ namespace MinecraftClient.Protocol.Keys
             }
             catch (IOException e)
             {
-                ConsoleIO.WriteLineFormatted(Translations.Get("cache.save_fail", e.Message));
+                ConsoleIO.WriteLineFormatted(Translations.Get("cache.save_fail_keys", e.Message));
             }
         }
     }

@@ -22,7 +22,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Nickname of the entity if it is a player.
         /// </summary>
-        public string Name;
+        public string? Name;
         
         /// <summary>
         /// CustomName of the entity.
@@ -61,16 +61,17 @@ namespace MinecraftClient.Mapping
         public float Yaw = 0;
 
         /// <summary>
-        /// Entity head yaw (Required by 1.19)
-        /// </summary>
-        /// <remarks>Untested</remarks>
-        public float HeadYaw = 0;
-
-        /// <summary>
         /// Entity head pitch
         /// </summary>
         /// <remarks>Untested</remarks>
         public float Pitch = 0;
+
+        /// <summary>
+        /// Used in Item Frame, Falling Block and Fishing Float.
+        /// See https://wiki.vg/Object_Data for details.
+        /// </summary>
+        /// <remarks>Untested</remarks>
+        public int ObjectData = -1;
 
         /// <summary>
         /// Health of the entity
@@ -119,7 +120,7 @@ namespace MinecraftClient.Mapping
         /// <param name="ID">Entity ID</param>
         /// <param name="type">Entity Type Enum</param>
         /// <param name="location">Entity location</param>
-        public Entity(int ID, EntityType type, Location location, byte yaw, byte pitch)
+        public Entity(int ID, EntityType type, Location location, byte yaw, byte pitch, int objectData)
         {
             this.ID = ID;
             this.Type = type;
@@ -129,19 +130,7 @@ namespace MinecraftClient.Mapping
             this.Item = new Item(ItemType.Air, 0, null);
             this.Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
             this.Pitch = pitch * (1 / 256) * 360;
-        }
-
-        public Entity(int ID, EntityType type, Location location, byte headYaw, byte yaw, byte pitch)
-        {
-            this.ID = ID;
-            this.Type = type;
-            this.Location = location;
-            this.Health = 1.0f;
-            this.Equipment = new Dictionary<int, Item>();
-            this.Item = new Item(ItemType.Air, 0, null);
-            this.HeadYaw = headYaw;
-            this.Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
-            this.Pitch = pitch * (1 / 256) * 360;
+            this.ObjectData = objectData;
         }
 
         /// <summary>
@@ -152,7 +141,7 @@ namespace MinecraftClient.Mapping
         /// <param name="location">Entity location</param>
         /// <param name="uuid">Player uuid</param>
         /// <param name="name">Player name</param>
-        public Entity(int ID, EntityType type, Location location, Guid uuid, string name)
+        public Entity(int ID, EntityType type, Location location, Guid uuid, string? name)
         {
             this.ID = ID;
             this.Type = type;

@@ -24,24 +24,24 @@ namespace MinecraftClient
     {
         public static int ReconnectionAttemptsLeft = 0;
 
-        private static readonly List<string> cmd_names = new List<string>();
-        private static readonly Dictionary<string, Command> cmds = new Dictionary<string, Command>();
-        private readonly Dictionary<Guid, string> onlinePlayers = new Dictionary<Guid, string>();
+        private static readonly List<string> cmd_names = new();
+        private static readonly Dictionary<string, Command> cmds = new();
+        private readonly Dictionary<Guid, PlayerInfo> onlinePlayers = new();
 
         private static bool commandsLoaded = false;
 
-        private Queue<string> chatQueue = new Queue<string>();
+        private Queue<string> chatQueue = new();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
 
-        private Queue<Action> threadTasks = new Queue<Action>();
-        private object threadTasksLock = new object();
+        private Queue<Action> threadTasks = new();
+        private object threadTasksLock = new();
 
-        private readonly List<ChatBot> bots = new List<ChatBot>();
-        private static readonly List<ChatBot> botsOnHold = new List<ChatBot>();
-        private static Dictionary<int, Container> inventories = new Dictionary<int, Container>();
+        private readonly List<ChatBot> bots = new();
+        private static readonly List<ChatBot> botsOnHold = new();
+        private static Dictionary<int, Container> inventories = new();
 
-        private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new Dictionary<string, List<ChatBot>>();
-        private readonly List<string> registeredServerPluginChannels = new List<String>();
+        private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new();
+        private readonly List<string> registeredServerPluginChannels = new();
 
         private bool terrainAndMovementsEnabled;
         private bool terrainAndMovementsRequested = false;
@@ -49,9 +49,9 @@ namespace MinecraftClient
         private bool inventoryHandlingRequested = false;
         private bool entityHandlingEnabled;
 
-        private object locationLock = new object();
+        private object locationLock = new();
         private bool locationReceived = false;
-        private World world = new World();
+        private World world = new();
         private Queue<Location> steps;
         private Queue<Location> path;
         private Location location;
@@ -68,9 +68,9 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
-        private KeysInfo keysInfo;
+        private PlayerKeyPair keysInfo;
         private DateTime lastKeepAlive;
-        private object lastKeepAliveLock = new object();
+        private object lastKeepAliveLock = new();
         private int respawnTicks = 0;
         private int gamemode = 0;
         private bool isSupportPreviewsChat;
@@ -85,7 +85,7 @@ namespace MinecraftClient
         private byte CurrentSlot = 0;
 
         // Entity handling
-        private Dictionary<int, Entity> entities = new Dictionary<int, Entity>();
+        private Dictionary<int, Entity> entities = new();
 
         // server TPS
         private long lastAge = 0;
@@ -93,11 +93,8 @@ namespace MinecraftClient
         private double serverTPS = 0;
         private double averageTPS = 20;
         private const int maxSamples = 5;
-        private List<double> tpsSamples = new List<double>(maxSamples);
+        private List<double> tpsSamples = new(maxSamples);
         private double sampleSum = 0;
-
-        // players latency
-        private Dictionary<string, int> playersLatency = new Dictionary<string, int>();
 
         // ChatBot OnNetworkPacket event
         private bool networkPacketCaptureEnabled = false;
@@ -128,7 +125,7 @@ namespace MinecraftClient
 
         TcpClient client;
         IMinecraftCom handler;
-        CancellationTokenSource cmdprompt = null;
+        CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
 
         public ILogger Log;
@@ -142,7 +139,7 @@ namespace MinecraftClient
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        public McClient(string username, string uuid, string sessionID, KeysInfo keysInfo, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
+        public McClient(string username, string uuid, string sessionID, PlayerKeyPair keysInfo, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
         {
             StartClient(username, uuid, sessionID, keysInfo, server_ip, port, protocolversion, forgeInfo, false, "");
         }
@@ -157,7 +154,7 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
-        public McClient(string username, string uuid, string sessionID, KeysInfo keysInfo, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
+        public McClient(string username, string uuid, string sessionID, PlayerKeyPair keysInfo, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
         {
             StartClient(username, uuid, sessionID, keysInfo, server_ip, port, protocolversion, forgeInfo, true, command);
         }
@@ -173,7 +170,7 @@ namespace MinecraftClient
         /// <param name="uuid">The player's UUID for online-mode authentication</param>
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-        private void StartClient(string user, string uuid, string sessionID, KeysInfo keysInfo, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
+        private void StartClient(string user, string uuid, string sessionID, PlayerKeyPair keysInfo, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;
@@ -648,7 +645,7 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
+        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object>? localVars = null)
         {
             /* Process the provided command */
 
@@ -1020,6 +1017,9 @@ namespace MinecraftClient
         /// <returns>All players latency</returns>
         public Dictionary<string, int> GetPlayersLatency()
         {
+            Dictionary<string, int> playersLatency = new();
+            foreach (var player in onlinePlayers)
+                playersLatency.Add(player.Value.Name, player.Value.Ping);
             return playersLatency;
         }
 
@@ -1055,7 +1055,11 @@ namespace MinecraftClient
         {
             lock (onlinePlayers)
             {
-                return onlinePlayers.Values.Distinct().ToArray();
+                string[] playerNames = new string[onlinePlayers.Count];
+                int idx = 0;
+                foreach (var player in onlinePlayers)
+                    playerNames[idx++] = player.Value.Name;
+                return playerNames;
             }
         }
 
@@ -1070,7 +1074,7 @@ namespace MinecraftClient
             {
                 foreach (Guid key in onlinePlayers.Keys)
                 {
-                    uuid2Player.Add(key.ToString(), onlinePlayers[key]);
+                    uuid2Player.Add(key.ToString(), onlinePlayers[key].Name);
                 }
             }
             return uuid2Player;
@@ -1556,7 +1560,7 @@ namespace MinecraftClient
         /// <param name="count">Item count</param>
         /// <param name="nbt">Item NBT</param>
         /// <returns>TRUE if item given successfully</returns>
-        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> nbt = null)
+        public bool DoCreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt = null)
         {
             return InvokeOnMainThread(() => handler.SendCreativeInventoryAction(slot, itemType, count, nbt));
         }
@@ -1772,7 +1776,7 @@ namespace MinecraftClient
         /// </example>
         /// <param name="action">Action to execute on each bot</param>
         /// <param name="botList">Only fire the event for the specified bot list (default: all bots)</param>
-        private void DispatchBotEvent(Action<ChatBot> action, IEnumerable<ChatBot> botList = null)
+        private void DispatchBotEvent(Action<ChatBot> action, IEnumerable<ChatBot>? botList = null)
         {
             ChatBot[] selectedBots;
 
@@ -2114,20 +2118,25 @@ namespace MinecraftClient
         /// <summary>
         /// Triggered when a new player joins the game
         /// </summary>
-        /// <param name="uuid">UUID of the player</param>
-        /// <param name="name">Name of the player</param>
-        public void OnPlayerJoin(Guid uuid, string name)
+        /// <param name="player">player info</param>
+        public void OnPlayerJoin(PlayerInfo player)
         {
             //Ignore placeholders eg 0000tab# from TabListPlus
-            if (!ChatBot.IsValidName(name))
+            if (!ChatBot.IsValidName(player.Name))
                 return;
+
+            if (player.Name == username)
+            {
+                // 1.19+ offline server is possible to return different uuid
+                this.uuid = player.UUID.ToString().Replace("-", string.Empty);
+            }
 
             lock (onlinePlayers)
             {
-                onlinePlayers[uuid] = name;
+                onlinePlayers[player.UUID] = player;
             }
 
-            DispatchBotEvent(bot => bot.OnPlayerJoin(uuid, name));
+            DispatchBotEvent(bot => bot.OnPlayerJoin(player.UUID, player.Name));
         }
 
         /// <summary>
@@ -2136,13 +2145,13 @@ namespace MinecraftClient
         /// <param name="uuid">UUID of the player</param>
         public void OnPlayerLeave(Guid uuid)
         {
-            string username = null;
+            string? username = null;
 
             lock (onlinePlayers)
             {
                 if (onlinePlayers.ContainsKey(uuid))
                 {
-                    username = onlinePlayers[uuid];
+                    username = onlinePlayers[uuid].Name;
                     onlinePlayers.Remove(uuid);
                 }
             }
@@ -2199,7 +2208,7 @@ namespace MinecraftClient
         /// <summary>
         /// Called when an entity effects
         /// </summary>
-        public void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<string, object> factorCodec)
+        public void OnEntityEffect(int entityid, Effects effect, int amplifier, int duration, byte flags, bool hasFactorData, Dictionary<string, object>? factorCodec)
         {
             if (entities.ContainsKey(entityid))
                 DispatchBotEvent(bot => bot.OnEntityEffect(entities[entityid], effect, amplifier, duration, flags));
@@ -2210,10 +2219,10 @@ namespace MinecraftClient
         /// </summary>
         public void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte Yaw, byte Pitch)
         {
-            string playerName = null;
+            string? playerName = null;
             if (onlinePlayers.ContainsKey(uuid))
-                playerName = onlinePlayers[uuid];
-            Entity playerEntity = new Entity(entityID, EntityType.Player, location, uuid, playerName);
+                playerName = onlinePlayers[uuid].Name;
+            Entity playerEntity = new(entityID, EntityType.Player, location, uuid, playerName);
             OnSpawnEntity(playerEntity);
         }
 
@@ -2251,7 +2260,7 @@ namespace MinecraftClient
             // Further regular gamemode change events
             if (onlinePlayers.ContainsKey(uuid))
             {
-                string playerName = onlinePlayers[uuid];
+                string playerName = onlinePlayers[uuid].Name;
                 if (playerName == this.username)
                     this.gamemode = gamemode;
                 DispatchBotEvent(bot => bot.OnGamemodeUpdate(playerName, uuid, gamemode));
@@ -2437,11 +2446,11 @@ namespace MinecraftClient
         /// <param name="latency">Latency</param>
         public void OnLatencyUpdate(Guid uuid, int latency)
         {
-            string playerName = null;
             if (onlinePlayers.ContainsKey(uuid))
             {
-                playerName = onlinePlayers[uuid];
-                playersLatency[playerName] = latency;
+                PlayerInfo player = onlinePlayers[uuid];
+                player.Ping = latency;
+                string playerName = player.Name;
                 foreach (KeyValuePair<int, Entity> ent in entities)
                 {
                     if (ent.Value.UUID == uuid && ent.Value.Name == playerName)
@@ -2628,6 +2637,30 @@ namespace MinecraftClient
         public void OnServerDataRecived(bool hasMotd, string motd, bool hasIcon, string iconBase64, bool previewsChat)
         {
             this.isSupportPreviewsChat = previewsChat;
+        }
+
+        /// <summary>
+        /// This method is called when the protocol handler receives "Set Display Chat Preview" packet
+        /// </summary>
+        /// <param name="previewsChat">Indicates if the server previews chat</param>
+        public void OnChatPreviewSettingUpdate(bool previewsChat)
+        {
+            this.isSupportPreviewsChat = previewsChat;
+        }
+
+        /// <summary>
+        /// This method is called when the protocol handler receives "Login Success" packet
+        /// </summary>
+        /// <param name="uuid">The player's UUID received from the server</param>
+        /// <param name="userName">The player's username received from the server</param>
+        /// <param name="playerProperty">Tuple<Name, Value, Signature(empty if there is no signature)></param>
+        public void OnLoginSuccess(Guid uuid, string userName, Tuple<string, string, string>[]? playerProperty)
+        {
+            //string UUID = uuid.ToString().Replace("-", String.Empty);
+            //Log.Info("now UUID = " + this.uuid);
+            //Log.Info("new UUID = " + UUID);
+            ////handler.SetUserUUID(UUID);
+
         }
         #endregion
     }

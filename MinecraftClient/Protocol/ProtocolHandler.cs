@@ -79,11 +79,11 @@ namespace MinecraftClient.Protocol
         /// <param name="serverPort">Server Port to ping</param>
         /// <param name="protocolversion">Will contain protocol version, if ping successful</param>
         /// <returns>TRUE if ping was successful</returns>
-        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion, ref ForgeInfo forgeInfo)
+        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion, ref ForgeInfo? forgeInfo)
         {
             bool success = false;
             int protocolversionTmp = 0;
-            ForgeInfo forgeInfoTmp = null;
+            ForgeInfo? forgeInfoTmp = null;
             if (AutoTimeout.Perform(() =>
             {
                 try
@@ -822,9 +822,9 @@ namespace MinecraftClient.Protocol
         /// <returns>HTTP Status code</returns>
         private static int DoHTTPSRequest(List<string> headers, string host, ref string result)
         {
-            string postResult = null;
+            string? postResult = null;
             int statusCode = 520;
-            Exception exception = null;
+            Exception? exception = null;
             AutoTimeout.Perform(() =>
             {
                 try
@@ -866,7 +866,8 @@ namespace MinecraftClient.Protocol
                     }
                 }
             }, TimeSpan.FromSeconds(30));
-            result = postResult;
+            if (postResult != null)
+                result = postResult;
             if (exception != null)
                 throw exception;
             return statusCode;

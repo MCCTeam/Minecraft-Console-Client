@@ -97,6 +97,7 @@ namespace MinecraftClient
         public static bool InventoryHandling = false;
         public static string PrivateMsgsCmdName = "tell";
         public static CacheType SessionCaching = CacheType.Disk;
+        public static CacheType ProfileKeyCaching = CacheType.Disk;
         public static bool ResolveSrvRecords = true;
         public static bool ResolveSrvRecordsShortTimeout = true;
         public static bool EntityHandling = false;
@@ -396,6 +397,12 @@ namespace MinecraftClient
                             if (argValue == "none") { SessionCaching = CacheType.None; }
                             else if (argValue == "memory") { SessionCaching = CacheType.Memory; }
                             else if (argValue == "disk") { SessionCaching = CacheType.Disk; }
+                            return true;
+
+                        case "profilekeycache":
+                            if (argValue == "none") { ProfileKeyCaching = CacheType.None; }
+                            else if (argValue == "memory") { ProfileKeyCaching = CacheType.Memory; }
+                            else if (argValue == "disk") { ProfileKeyCaching = CacheType.Disk; }
                             return true;
 
                         case "accountlist":

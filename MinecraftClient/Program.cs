@@ -198,7 +198,7 @@ namespace MinecraftClient
         private static void InitializeClient()
         {
             SessionToken session = new SessionToken();
-            KeysInfo keysInfo = null;
+            PlayerKeyPair? playerKeyPair = null;
 
             ProtocolHandler.LoginResult result = ProtocolHandler.LoginResult.LoginRequired;
 
@@ -246,9 +246,34 @@ namespace MinecraftClient
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
-                if (Settings.AccountType != ProtocolHandler.AccountType.Mojang)
+                if (Settings.AccountType == ProtocolHandler.AccountType.Microsoft)
                 {
-                    keysInfo = KeysUtils.GetKeys(session.ID);
+                    // Load cached profile key from disk if necessary
+                    if (Settings.ProfileKeyCaching == CacheType.Disk)
+                    {
+                        bool cacheKeyLoaded = KeysCache.InitializeDiskCache();
+                        if (Settings.DebugMessages)
+                            Translations.WriteLineFormatted(cacheKeyLoaded ? "debug.keys_cache_ok" : "debug.keys_cache_fail");
+                    }
+
+                    if (Settings.ProfileKeyCaching != CacheType.None && KeysCache.Contains(Settings.Login.ToLower()))
+                    {
+                        playerKeyPair = KeysCache.Get(Settings.Login.ToLower());
+                        if (playerKeyPair.needRefresh())
+                            Translations.WriteLineFormatted("mcc.profile_key_invalid");
+                        else
+                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.profile_key_valid", session.PlayerName));
+                    }
+
+                    if (playerKeyPair == null || playerKeyPair.needRefresh())
+                    {
+                        Translations.WriteLineFormatted("mcc.fetching_key");
+                        playerKeyPair = KeyUtils.GetKeys(session.ID);
+                        if (Settings.ProfileKeyCaching != CacheType.None && playerKeyPair != null)
+                        {
+                            KeysCache.Store(Settings.Login.ToLower(), playerKeyPair);
+                        }
+                    }
                 }
 
                 Settings.Username = session.PlayerName;
@@ -316,7 +341,7 @@ namespace MinecraftClient
 
                 //Get server version
                 int protocolversion = 0;
-                ForgeInfo forgeInfo = null;
+                ForgeInfo? forgeInfo = null;
 
                 if (Settings.ServerVersion != "" && Settings.ServerVersion.ToLower() != "auto")
                 {
@@ -371,9 +396,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            client = new McClient(session.PlayerName, session.PlayerID, session.ID, keysInfo, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
+                            client = new McClient(session.PlayerName, session.PlayerID, session.ID, playerKeyPair, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
                         }
-                        else client = new McClient(session.PlayerName, session.PlayerID, session.ID, keysInfo, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
+                        else client = new McClient(session.PlayerName, session.PlayerID, session.ID, playerKeyPair, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")
