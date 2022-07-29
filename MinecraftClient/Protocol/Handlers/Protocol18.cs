@@ -19,6 +19,7 @@ using MinecraftClient.Protocol.Handlers.PacketPalettes;
 using MinecraftClient.Logger;
 using System.Threading.Tasks;
 using MinecraftClient.Protocol.Keys;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -291,7 +292,7 @@ namespace MinecraftClient.Protocol.Handlers
                 else switch (packetPalette.GetIncommingTypeById(packetID))
                     {
                         case PacketTypesIn.KeepAlive:
-                            log.Info("KeepAlive");
+                            //log.Info("KeepAlive");
                             SendPacket(PacketTypesOut.KeepAlive, packetData);
                             handler.OnServerKeepAlive();
                             break;
@@ -1431,7 +1432,7 @@ namespace MinecraftClient.Protocol.Handlers
                 List<byte> clone = packetData.ToList();
                 handler.OnNetworkPacket(packetID, clone, login_phase, false);
             }
-            log.Info("[C -> S] Sending packet " + packetID + " > " + dataTypes.ByteArrayToString(packetData.ToArray()));
+            // log.Info("[C -> S] Sending packet " + packetID + " > " + dataTypes.ByteArrayToString(packetData.ToArray()));
 
             //The inner packet
             byte[] the_packet = dataTypes.ConcatBytes(dataTypes.GetVarInt(packetID), packetData.ToArray());
@@ -1784,10 +1785,114 @@ namespace MinecraftClient.Protocol.Handlers
             return protocolversion;
         }
 
+
+        /// <summary>
+        /// The signable argument names and their values from command
+        /// Signature will used in Vanilla's say, me, msg, teammsg, ban, banip, and kick commands.
+        /// https://gist.github.com/kennytv/ed783dd244ca0321bbd882c347892874#signed-command-arguments
+        /// </summary>
+        /// <param name="command">Command</param>
+        /// <returns> List< Argument Name, Argument Value > </returns>
+        private List<Tuple<string, string>> collectCommandArguments(string command)
+        {
+            List<Tuple<string, string>> needSigned = new();
+
+            string[] argStage1 = command.Split(' ', 2, StringSplitOptions.None);
+            if (argStage1.Length == 2)
+            {
+                /* /me      <action>
+                   /say     <message>
+                   /teammsg <message> */
+                if (argStage1[0] == "me")
+                    needSigned.Add(new("action", argStage1[1]));
+                else if (argStage1[0] == "say" || argStage1[0] == "teammsg")
+                    needSigned.Add(new("message", argStage1[1]));
+                else if (argStage1[0] == "msg" || argStage1[0] == "ban" || argStage1[0] == "ban-ip" || argStage1[0] == "kick")
+                {
+                    /* /msg    <targets> <message>
+                       /ban    <target>  [<reason>]
+                       /ban-ip <target>  [<reason>]
+                       /kick   <target>  [<reason>] */
+                    string[] argStage2 = argStage1[1].Split(' ', 2, StringSplitOptions.None);
+                    if (argStage2.Length == 2)
+                    {
+                        if (argStage1[0] == "msg")
+                            needSigned.Add(new("message", argStage2[1]));
+                        else if (argStage1[0] == "ban" || argStage1[0] == "ban-ip" || argStage1[0] == "kick")
+                            needSigned.Add(new("reason", argStage2[1]));
+                    }
+                }
+            }
+
+            return needSigned;
+        }
+
+        /// <summary>
+        /// Send a chat command to the server
+        /// </summary>
+        /// <param name="command">Command</param>
+        /// <param name="playerKeyPair">PlayerKeyPair</param>
+        /// <returns>True if properly sent</returns>
+        public bool SendChatCommand(string command, PlayerKeyPair? playerKeyPair)
+        {
+            if (String.IsNullOrEmpty(command))
+                return true;
+
+            command = Regex.Replace(command, @"\s+", " ");
+            command = Regex.Replace(command, @"\s$", string.Empty);
+
+            log.Info("chat command = " + command);
+
+            try
+            {
+                List<byte> fields = new();
+
+                // 	Command: String
+                fields.AddRange(dataTypes.GetString(command));
+
+                // Timestamp: Instant(Long)
+                DateTimeOffset timeNow = DateTimeOffset.UtcNow;
+                fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
+
+                List<Tuple<string, string>> needSigned = collectCommandArguments(command); // List< Argument Name, Argument Value >
+                // foreach (var msg in needSigned)
+                //     log.Info("<" + msg.Item1 + ">: " + msg.Item2);
+                if (needSigned.Count == 0 || playerKeyPair == null)
+                {
+                    fields.AddRange(dataTypes.GetLong(0));                    // Salt: Long
+                    fields.AddRange(dataTypes.GetVarInt(0));                  // Signature Length: VarInt
+                }
+                else
+                {
+                    string uuid = handler.GetUserUUID()!;
+                    byte[] salt = GenerateSalt();
+                    fields.AddRange(salt);                                    // Salt: Long
+                    fields.AddRange(dataTypes.GetVarInt(needSigned.Count));   // Signature Length: VarInt
+                    foreach (var argument in needSigned)
+                    {
+                        fields.AddRange(dataTypes.GetString(argument.Item1)); // Argument name: String
+                        byte[] sign = playerKeyPair.PrivateKey.SignMessage(argument.Item2, uuid, timeNow, ref salt);
+                        fields.AddRange(dataTypes.GetVarInt(sign.Length));    // Signature length: VarInt
+                        fields.AddRange(sign);                                // Signature: Byte Array
+                    }
+                }
+
+                // Signed Preview: Boolean
+                fields.AddRange(dataTypes.GetBool(false));
+
+                SendPacket(PacketTypesOut.ChatCommand, fields);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
         /// <summary>
         /// Send a chat message to the server
         /// </summary>
         /// <param name="message">Message</param>
+        /// <param name="playerKeyPair">PlayerKeyPair</param>
         /// <returns>True if properly sent</returns>
         public bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair)
         {
@@ -1795,7 +1900,7 @@ namespace MinecraftClient.Protocol.Handlers
                 return true;
             try
             {
-                List<byte> fields = new List<byte>();
+                List<byte> fields = new();
 
                 // 	Message: String (up to 256 chars)
                 fields.AddRange(dataTypes.GetString(message));
@@ -1803,43 +1908,29 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion >= MC_1_19_Version)
                 {
                     // Todo: process Chat Command
+                    if (message.StartsWith('/'))
+                        return SendChatCommand(message[1..], playerKeyPair);
 
                     // Timestamp: Instant(Long)
                     DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                     fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                    // Salt: Long
-                    byte[] salt = GenerateSalt();
-                    fields.AddRange(salt);
-
-                    // Signature Length & Signature: (VarInt) and Byte Array
                     if (playerKeyPair == null)
-                        fields.AddRange(dataTypes.GetVarInt(0));
+                    {
+                        fields.AddRange(dataTypes.GetLong(0));   // Salt: Long
+                        fields.AddRange(dataTypes.GetVarInt(0)); // Signature Length: VarInt
+                    }
                     else
                     {
-                        string UUID = handler.GetUserUUID()!;
-                        byte[] UUIDLeastSignificantBits = dataTypes.GetLong(Convert.ToInt64(UUID[..16], 16));
-                        byte[] UUIDMostSignificantBits = dataTypes.GetLong(Convert.ToInt64(UUID.Substring(16, 16), 16));
+                        // Salt: Long
+                        byte[] salt = GenerateSalt();
+                        fields.AddRange(salt);
 
-                        string messageJson = "{\"text\":\"" + EscapeString(message) + "\"}";
-                        byte[] messageJsonB = Encoding.UTF8.GetBytes(messageJson);
-                        // log.Info("msg json = " + messageJson);
-
-                        byte[] signData = dataTypes.ConcatBytes(
-                            salt,
-                            UUIDLeastSignificantBits,
-                            UUIDMostSignificantBits,
-                            dataTypes.GetLong(timeNow.ToUnixTimeSeconds()),
-                            messageJsonB
-                        );
-                        // log.Info("signData len = " + signData.Length);
-                        // log.Info("signData = " + dataTypes.ByteArrayToString(signData));
-
-                        byte[] sign = playerKeyPair.PrivateKey.SignData(signData);
+                        // Signature Length & Signature: (VarInt) and Byte Array
+                        string uuid = handler.GetUserUUID()!;
+                        byte[] sign = playerKeyPair.PrivateKey.SignMessage(message, uuid, timeNow, ref salt);
                         fields.AddRange(dataTypes.GetVarInt(sign.Length));
                         fields.AddRange(sign);
-                        // log.Info("sign len = " + sign.Length);
-                        // log.Info("sign = " + dataTypes.ByteArrayToString(sign));
                     }
 
                     // Signed Preview: Boolean
@@ -2418,50 +2509,6 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] salt = new byte[8];
             randomGen.GetNonZeroBytes(salt);
             return salt;
-        }
-
-        // https://github.com/mono/mono/blob/master/mcs/class/System.Json/System.Json/JsonValue.cs
-        public static string EscapeString(string src)
-        {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-
-            int start = 0;
-            for (int i = 0; i < src.Length; i++)
-            {
-                char c = src[i];
-                bool needEscape = c < 32 || c == '"' || c == '\\';
-                // Broken lead surrogate
-                needEscape = needEscape || (c >= '\uD800' && c <= '\uDBFF' &&
-                    (i == src.Length - 1 || src[i + 1] < '\uDC00' || src[i + 1] > '\uDFFF'));
-                // Broken tail surrogate
-                needEscape = needEscape || (c >= '\uDC00' && c <= '\uDFFF' &&
-                    (i == 0 || src[i - 1] < '\uD800' || src[i - 1] > '\uDBFF'));
-                // To produce valid JavaScript
-                needEscape = needEscape || c == '\u2028' || c == '\u2029';
-
-                if (needEscape)
-                {
-                    sb.Append(src, start, i - start);
-                    switch (src[i])
-                    {
-                        case '\b': sb.Append("\\b"); break;
-                        case '\f': sb.Append("\\f"); break;
-                        case '\n': sb.Append("\\n"); break;
-                        case '\r': sb.Append("\\r"); break;
-                        case '\t': sb.Append("\\t"); break;
-                        case '\"': sb.Append("\\\""); break;
-                        case '\\': sb.Append("\\\\"); break;
-                        default:
-                            sb.Append("\\u");
-                            sb.Append(((int)src[i]).ToString("x04"));
-                            break;
-                    }
-                    start = i + 1;
-                }
-
-            }
-            sb.Append(src, start, src.Length - start);
-            return sb.ToString();
         }
     }
 }
