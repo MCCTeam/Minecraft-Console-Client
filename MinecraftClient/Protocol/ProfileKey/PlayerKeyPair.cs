@@ -9,8 +9,10 @@ namespace MinecraftClient.Protocol.Keys
         public PublicKey PublicKey;
 
         public PrivateKey PrivateKey;
-        public DateTime ExpiresAt { get; set; }
-        public DateTime RefreshedAfter { get; set; }
+
+        public DateTime ExpiresAt;
+
+        public DateTime RefreshedAfter; // Todo: add a timer
 
         private const string DataTimeFormat = "O";
 
@@ -22,14 +24,26 @@ namespace MinecraftClient.Protocol.Keys
             RefreshedAfter = DateTime.Parse(refreshedAfter).ToUniversalTime();
         }
 
-        public bool needRefresh()
+        public bool NeedRefresh()
         {
             return DateTime.Now.ToUniversalTime() > this.RefreshedAfter;
         }
 
-        public bool isExpired()
+        public bool IsExpired()
         {
             return DateTime.Now.ToUniversalTime() > this.ExpiresAt;
+        }
+
+        public long GetExpirationMilliseconds()
+        {
+            DateTimeOffset timeOffset = new(ExpiresAt);
+            return timeOffset.ToUnixTimeMilliseconds();
+        }
+
+        public long GetExpirationSeconds()
+        {
+            DateTimeOffset timeOffset = new(ExpiresAt);
+            return timeOffset.ToUnixTimeSeconds();
         }
 
         public static PlayerKeyPair FromString(string tokenString)

@@ -1476,7 +1476,7 @@ namespace MinecraftClient.Protocol.Handlers
                 else
                 {
                     fullLoginPacket.AddRange(dataTypes.GetBool(true));                                        // Has Sig Data
-                    fullLoginPacket.AddRange(dataTypes.GetLong(ConvertToTimestamp(playerKeyPair.ExpiresAt))); // Expiration time
+                    fullLoginPacket.AddRange(dataTypes.GetLong(playerKeyPair.GetExpirationMilliseconds())); // Expiration time
                     fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.Key));                // Public key received from Microsoft API
                     fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.Signature));          // Public key signature received from Microsoft API
                 }
@@ -1543,21 +1543,32 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
 
-            //Encrypt the data
-            byte[] key_enc = dataTypes.GetArray(RSAService.Encrypt(secretKey, false));
 
-            //Encryption Response packet
-            if (protocolversion >= Protocol18Handler.MC_1_19_Version && playerKeyPair != null)
+            // Encryption Response packet
+            List<byte> encryptionResponse = new();
+            encryptionResponse.AddRange(dataTypes.GetArray(RSAService.Encrypt(secretKey, false)));     // Shared Secret
+            if (protocolversion >= Protocol18Handler.MC_1_19_Version)
             {
-                byte[] salt = GenerateSalt();
-                byte[] token_sign_result = playerKeyPair.PrivateKey.SignData(dataTypes.ConcatBytes(token, salt));
-                SendPacket(0x01, dataTypes.ConcatBytes(key_enc, dataTypes.GetBool(false), salt, dataTypes.GetArray(token_sign_result)));
+                if (playerKeyPair == null)
+                {
+                    encryptionResponse.AddRange(dataTypes.GetBool(true));                              // Has Verify Token
+                    encryptionResponse.AddRange(dataTypes.GetArray(RSAService.Encrypt(token, false))); // Verify Token
+                }
+                else
+                {
+                    byte[] salt = GenerateSalt();
+                    byte[] messageSignature = playerKeyPair.PrivateKey.SignData(dataTypes.ConcatBytes(token, salt));
+
+                    encryptionResponse.AddRange(dataTypes.GetBool(false));                            // Has Verify Token
+                    encryptionResponse.AddRange(salt);                                                // Salt
+                    encryptionResponse.AddRange(dataTypes.GetArray(messageSignature));                // Message Signature
+                }
             }
             else
             {
-                byte[] token_enc = dataTypes.GetArray(RSAService.Encrypt(token, true));
-                SendPacket(0x01, dataTypes.ConcatBytes(key_enc, token_enc));
+                encryptionResponse.AddRange(dataTypes.GetArray(RSAService.Encrypt(token, false)));    // Verify Token
             }
+            SendPacket(0x01, encryptionResponse);
 
             //Start client-side encryption
             socketWrapper.SwitchToEncrypted(secretKey);
@@ -1792,10 +1803,10 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion >= MC_1_19_Version)
                 {
                     // Todo: process Chat Command
+
                     // Timestamp: Instant(Long)
-                    DateTime timeNow = DateTime.Now.ToUniversalTime();
-                    long timestamp = ConvertToTimestamp(timeNow);
-                    fields.AddRange(dataTypes.GetLong(timestamp));
+                    DateTimeOffset timeNow = DateTimeOffset.UtcNow;
+                    fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
                     // Salt: Long
                     byte[] salt = GenerateSalt();
@@ -1818,7 +1829,7 @@ namespace MinecraftClient.Protocol.Handlers
                             salt,
                             UUIDLeastSignificantBits,
                             UUIDMostSignificantBits,
-                            dataTypes.GetLong(timestamp / 1000),
+                            dataTypes.GetLong(timeNow.ToUnixTimeSeconds()),
                             messageJsonB
                         );
                         // log.Info("signData len = " + signData.Length);
@@ -2400,12 +2411,6 @@ namespace MinecraftClient.Protocol.Handlers
                 catch (ObjectDisposedException) { return false; }
             }
             else { return false; }
-        }
-
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        private static long ConvertToTimestamp(DateTime value)
-        {
-            return (long)(value - Epoch).TotalMilliseconds;
         }
 
         private byte[] GenerateSalt()

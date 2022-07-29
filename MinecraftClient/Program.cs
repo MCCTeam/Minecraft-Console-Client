@@ -259,13 +259,13 @@ namespace MinecraftClient
                     if (Settings.ProfileKeyCaching != CacheType.None && KeysCache.Contains(Settings.Login.ToLower()))
                     {
                         playerKeyPair = KeysCache.Get(Settings.Login.ToLower());
-                        if (playerKeyPair.needRefresh())
+                        if (playerKeyPair.NeedRefresh())
                             Translations.WriteLineFormatted("mcc.profile_key_invalid");
                         else
                             ConsoleIO.WriteLineFormatted(Translations.Get("mcc.profile_key_valid", session.PlayerName));
                     }
 
-                    if (playerKeyPair == null || playerKeyPair.needRefresh())
+                    if (playerKeyPair == null || playerKeyPair.NeedRefresh())
                     {
                         Translations.WriteLineFormatted("mcc.fetching_key");
                         playerKeyPair = KeyUtils.GetKeys(session.ID);
