@@ -26,6 +26,7 @@ namespace MinecraftClient.Protocol
         string GetSessionID();
         string[] GetOnlinePlayers();
         Dictionary<string, string> GetOnlinePlayersWithUUID();
+        PlayerInfo? GetPlayerInfo(Guid uuid);
         Location GetCurrentLocation();
         World GetWorld();
         bool GetIsSupportPreviewsChat();
@@ -79,11 +80,10 @@ namespace MinecraftClient.Protocol
         void OnGameJoined();
 
         /// <summary>
-        /// This method is called when the protocol handler receives a chat message
+        /// Received chat/system message from the server
         /// </summary>
-        /// <param name="text">Text received from the server</param>
-        /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
-        void OnTextReceived(string text, bool isJson);
+        /// <param name="message">Message received</param>
+        public void OnTextReceived(ChatMessage message);
 
         /// <summary>
         /// Will be called every animations of the hit and place block

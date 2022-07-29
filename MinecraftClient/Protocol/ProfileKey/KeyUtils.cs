@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol.Keys
 {
-    public class KeyUtils
+    static class KeyUtils
     {
         private static string certificates = "https://api.minecraftservices.com/player/certificates";
 
@@ -67,10 +67,33 @@ namespace MinecraftClient.Protocol.Keys
             return Convert.FromBase64String(key);
         }
 
+        public static byte[] GetSignatureData(string message, string uuid, DateTimeOffset timestamp, ref byte[] salt)
+        {
+            List<byte> data = new();
+
+            data.AddRange(salt);
+
+            byte[] UUIDLeastSignificantBits = BitConverter.GetBytes(Convert.ToInt64(uuid[..16], 16));
+            Array.Reverse(UUIDLeastSignificantBits);
+            data.AddRange(UUIDLeastSignificantBits);
+
+            byte[] UUIDMostSignificantBits = BitConverter.GetBytes(Convert.ToInt64(uuid.Substring(16, 16), 16));
+            Array.Reverse(UUIDMostSignificantBits);
+            data.AddRange(UUIDMostSignificantBits);
+
+            byte[] timestampByte = BitConverter.GetBytes(timestamp.ToUnixTimeSeconds());
+            Array.Reverse(timestampByte);
+            data.AddRange(timestampByte);
+
+            data.AddRange(Encoding.UTF8.GetBytes(message));
+
+            return data.ToArray();
+        }
+
         // https://github.com/mono/mono/blob/master/mcs/class/System.Json/System.Json/JsonValue.cs
         public static string EscapeString(string src)
         {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            StringBuilder sb = new();
 
             int start = 0;
             for (int i = 0; i < src.Length; i++)

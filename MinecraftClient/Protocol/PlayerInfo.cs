@@ -22,9 +22,9 @@ namespace MinecraftClient.Protocol
 
         public string? DisplayName;
 
-        private PublicKey? PublicKey;
+        private readonly PublicKey? PublicKey;
 
-        private DateTime? KeyExpiresAt;
+        private readonly DateTime? KeyExpiresAt;
 
         public PlayerInfo(Guid uuid, string name, Tuple<string, string, string>[]? property, int gamemode, int ping, string? displayName, long? timeStamp, byte[]? publicKey, byte[]? signature)
         {
@@ -58,9 +58,26 @@ namespace MinecraftClient.Protocol
             Ping = 0;
         }
 
-        public bool isKeyVaild()
+        public bool IsKeyVaild()
         {
             return PublicKey != null && DateTime.Now.ToUniversalTime() > this.KeyExpiresAt;
+        }
+
+        public bool VerifyMessage(string message, Guid uuid, long timestamp, long salt, ref byte[] signature)
+        {
+            if (PublicKey == null)
+                return false;
+            else
+            {
+                string uuidString = uuid.ToString().Replace("-", string.Empty);
+
+                DateTimeOffset timeOffset = DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
+
+                byte[] saltByte = BitConverter.GetBytes(salt);
+                Array.Reverse(saltByte);
+
+                return PublicKey.VerifyMessage(message, uuidString, timeOffset, ref saltByte, ref signature);
+            }
         }
     }
 }

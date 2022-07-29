@@ -38,6 +38,17 @@ namespace MinecraftClient.Protocol.Keys
             this.Signature = signature;
         }
 
+        public bool VerifyData(byte[] data, byte[] signature)
+        {
+            return rsa.VerifyData(data, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        }
+
+        public bool VerifyMessage(string message, string uuid, DateTimeOffset timestamp, ref byte[] salt, ref byte[] signature)
+        {
+            byte[] data = KeyUtils.GetSignatureData(message, uuid, timestamp, ref salt);
+
+            return VerifyData(data, signature);
+        }
 
     }
 }

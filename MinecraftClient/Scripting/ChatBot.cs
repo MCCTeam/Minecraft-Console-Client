@@ -144,7 +144,7 @@ namespace MinecraftClient
         /// </remarks>
         /// <param name="text">Text from the server</param>
         /// <param name="json">Raw JSON from the server. This parameter will be NULL on MC 1.5 or lower!</param>
-        public virtual void GetText(string text, string json) { }
+        public virtual void GetText(string text, string? json) { }
         
         /// <summary>
         /// Is called when the client has been disconnected fom the server

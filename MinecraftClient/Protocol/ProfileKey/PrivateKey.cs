@@ -23,31 +23,16 @@ namespace MinecraftClient.Protocol.Keys
 
         public byte[] SignData(byte[] data)
         {
-            return this.rsa.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            return rsa.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         }
 
         public byte[] SignMessage(string message, string uuid, DateTimeOffset timestamp, ref byte[] salt)
         {
-            List<byte> data = new List<byte>();
-
-            data.AddRange(salt);
-
-            byte[] UUIDLeastSignificantBits = BitConverter.GetBytes(Convert.ToInt64(uuid[..16], 16));
-            Array.Reverse(UUIDLeastSignificantBits);
-            data.AddRange(UUIDLeastSignificantBits);
-
-            byte[] UUIDMostSignificantBits = BitConverter.GetBytes(Convert.ToInt64(uuid.Substring(16, 16), 16));
-            Array.Reverse(UUIDMostSignificantBits);
-            data.AddRange(UUIDMostSignificantBits);
-
-            byte[] timestampByte = BitConverter.GetBytes(timestamp.ToUnixTimeSeconds());
-            Array.Reverse(timestampByte);
-            data.AddRange(timestampByte);
-
             string messageJson = "{\"text\":\"" + KeyUtils.EscapeString(message) + "\"}";
-            data.AddRange(Encoding.UTF8.GetBytes(messageJson));
 
-            return SignData(data.ToArray());
+            byte[] data = KeyUtils.GetSignatureData(messageJson, uuid, timestamp, ref salt);
+
+            return SignData(data);
         }
 
     }

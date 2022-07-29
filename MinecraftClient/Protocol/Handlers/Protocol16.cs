@@ -112,7 +112,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x02: readData(1); readNextString(); readNextString(); readData(4); break;
                 case 0x03:
                     string message = readNextString();
-                    handler.OnTextReceived(message, protocolversion >= 72); break;
+                    handler.OnTextReceived(new ChatMessage(message, protocolversion >= 72, 0, Guid.Empty)); break;
                 case 0x04: readData(16); break;
                 case 0x05: readData(6); readNextItemSlot(); break;
                 case 0x06: readData(12); break;

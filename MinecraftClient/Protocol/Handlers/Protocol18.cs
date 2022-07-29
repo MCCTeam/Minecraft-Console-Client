@@ -380,11 +380,13 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             break;
                         case PacketTypesIn.ChatMessage:
-                            int messageType;
+                            int messageType = 0;
 
                             if (protocolversion <= MC_1_18_2_Version) // 1.18 and bellow
                             {
                                 string message = dataTypes.ReadNextString(packetData);
+
+                                Guid senderUUID;
                                 if (protocolversion >= MC_1_8_Version)
                                 {
                                     //Hide system messages or xp bar messages?
@@ -392,15 +394,18 @@ namespace MinecraftClient.Protocol.Handlers
                                     if ((messageType == 1 && !Settings.DisplaySystemMessages)
                                         || (messageType == 2 && !Settings.DisplayXPBarMessages))
                                         break;
+                                    senderUUID = dataTypes.ReadNextUUID(packetData);
                                 }
-                                handler.OnTextReceived(message, true);
+                                else
+                                    senderUUID = Guid.Empty;
+                                handler.OnTextReceived(new(message, true, messageType, senderUUID));
                             }
                             else // 1.19+
                             {
                                 string signedChat = dataTypes.ReadNextString(packetData);
 
                                 bool hasUnsignedChatContent = dataTypes.ReadNextBool(packetData);
-                                string unsignedChatContent = "";
+                                string? unsignedChatContent = null;
 
                                 if (hasUnsignedChatContent)
                                     unsignedChatContent = dataTypes.ReadNextString(packetData);
@@ -414,7 +419,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 string senderDisplayName = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
 
                                 bool hasSenderTeamName = dataTypes.ReadNextBool(packetData);
-                                string senderTeamName = "";
+                                string? senderTeamName = null;
 
                                 if (hasSenderTeamName)
                                     senderTeamName = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
@@ -443,9 +448,24 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 log.Debug("Message Signature: " + dataTypes.ByteArrayToString(messageSignature));
 
+                                bool verifyResult = false;
+                                PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
+                                if (player == null)
+                                {
+                                    log.Debug("Players don't exist");
+                                }
+                                else
+                                {
+                                    verifyResult = player.VerifyMessage(signedChat, senderUUID, timestamp, salt, ref messageSignature);
+                                    log.Debug("VerifyMessage = " + verifyResult);
+                                }
+                                //VerifyMessage
+
                                 log.Debug("===============================");
 
-                                handler.OnTextReceived(signedChat, true);
+                                ChatMessage msg = new(signedChat, true, messageType, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, verifyResult);
+
+                                handler.OnTextReceived(msg);
 
                                 // URGENT
                                 //TODO: Update to 1.19
@@ -1263,7 +1283,7 @@ namespace MinecraftClient.Protocol.Handlers
                             log.Debug("Message: " + systemMessage);
                             log.Debug("===============================");
 
-                            handler.OnTextReceived(systemMessage, true);
+                            handler.OnTextReceived(new(systemMessage, true, msgType, Guid.Empty, true));
                             break;
                         case PacketTypesIn.EntityTeleport:
                             if (handler.GetEntityHandlingEnabled())
@@ -1841,13 +1861,13 @@ namespace MinecraftClient.Protocol.Handlers
             command = Regex.Replace(command, @"\s+", " ");
             command = Regex.Replace(command, @"\s$", string.Empty);
 
-            log.Info("chat command = " + command);
+            log.Debug("chat command = " + command);
 
             try
             {
                 List<byte> fields = new();
 
-                // 	Command: String
+                // Command: String
                 fields.AddRange(dataTypes.GetString(command));
 
                 // Timestamp: Instant(Long)
@@ -1898,6 +1918,11 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (String.IsNullOrEmpty(message))
                 return true;
+
+            // Process Chat Command - 1.19 and above
+            if (protocolversion >= MC_1_19_Version && message.StartsWith('/'))
+                return SendChatCommand(message[1..], playerKeyPair);
+
             try
             {
                 List<byte> fields = new();
@@ -1907,10 +1932,6 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (protocolversion >= MC_1_19_Version)
                 {
-                    // Todo: process Chat Command
-                    if (message.StartsWith('/'))
-                        return SendChatCommand(message[1..], playerKeyPair);
-
                     // Timestamp: Instant(Long)
                     DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                     fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));

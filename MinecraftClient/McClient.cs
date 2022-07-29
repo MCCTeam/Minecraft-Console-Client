@@ -1080,6 +1080,22 @@ namespace MinecraftClient
             return uuid2Player;
         }
 
+        /// <summary>
+        /// Get player info from uuid
+        /// </summary>
+        /// <param name="uuid">Player's UUID</param>
+        /// <returns>Player info</returns>
+        public PlayerInfo? GetPlayerInfo(Guid uuid)
+        {
+            lock (onlinePlayers)
+            {
+                if (onlinePlayers.ContainsKey(uuid))
+                    return onlinePlayers[uuid];
+                else
+                    return null;
+            }
+        }
+
         #endregion
 
         #region Action methods: Perform an action on the Server
@@ -1981,31 +1997,36 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Received some text from the server
+        /// Received chat/system message from the server
         /// </summary>
-        /// <param name="text">Text received</param>
-        /// <param name="isJson">TRUE if the text is JSON-Encoded</param>
-        public void OnTextReceived(string text, bool isJson)
+        /// <param name="message">Message received</param>
+        public void OnTextReceived(ChatMessage message)
         {
             UpdateKeepAlive();
 
-            List<string> links = new List<string>();
-            string json = null;
+            List<string> links = new();
+            string messageText;
 
-            if (isJson)
+            if (message.isJson)
             {
-                json = text;
-                text = ChatParser.ParseText(json, links);
+                if (message.isSignedChat)
+                    messageText = ChatParser.ParseSignedChat(message, links);
+                else
+                    messageText = ChatParser.ParseText(message.content, links);
+            }
+            else
+            {
+                messageText = message.content;
             }
 
-            Log.Chat(text);
+            Log.Chat(messageText);
 
             if (Settings.DisplayChatLinks)
                 foreach (string link in links)
                     Log.Chat(Translations.Get("mcc.link", link));
 
-            DispatchBotEvent(bot => bot.GetText(text));
-            DispatchBotEvent(bot => bot.GetText(text, json));
+            DispatchBotEvent(bot => bot.GetText(messageText));
+            DispatchBotEvent(bot => bot.GetText(messageText, message.content));
         }
 
         /// <summary>
