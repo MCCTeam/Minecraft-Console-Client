@@ -189,8 +189,9 @@ namespace MinecraftClient
         private static void RequestPassword()
         {
             ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Settings.Login) + "\n" : Translations.Get("mcc.password"));
-            Settings.Password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
-            if (Settings.Password == "") { Settings.Password = "-"; }
+            string? password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+            if (password == null || password == string.Empty) { password = "-"; }
+            Settings.Password = password;
         }
 
         /// <summary>
