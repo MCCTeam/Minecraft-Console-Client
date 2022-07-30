@@ -199,7 +199,6 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>FALSE if an error occured, TRUE otherwise.</returns>
         private bool Update()
         {
-            // log.Debug("Update - 1");
             handler.OnUpdate();
             if (!socketWrapper.IsConnected())
                 return false;
@@ -229,9 +228,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             packetData.Clear();
             int size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
-            // log.Debug("ReadNextPacket - 0");
             byte[] rawpacket = socketWrapper.ReadDataRAW(size); //Packet contents
-            // log.Debug("ReadNextPacket - 1");
             for (int i = 0; i < rawpacket.Length; i++)
                 packetData.Enqueue(rawpacket[i]);
 
@@ -1511,7 +1508,6 @@ namespace MinecraftClient.Protocol.Handlers
                 ReadNextPacket(ref packetID, packetData);
                 if (packetID == 0x00) //Login rejected
                 {
-                    log.Info(">> Login rejected!");
                     handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, ChatParser.ParseText(dataTypes.ReadNextString(packetData)));
                     return false;
                 }
@@ -1520,9 +1516,6 @@ namespace MinecraftClient.Protocol.Handlers
                     string serverID = dataTypes.ReadNextString(packetData);
                     byte[] serverPublicKey = dataTypes.ReadNextByteArray(packetData);
                     byte[] token = dataTypes.ReadNextByteArray(packetData);
-
-                    log.Info(">> Encryption response from the server: " + serverID + " === " + dataTypes.ByteArrayToString(serverPublicKey) + " === " + dataTypes.ByteArrayToString(token));
-
                     return StartEncryption(handler.GetUserUUID(), handler.GetSessionID(), token, serverID, serverPublicKey, playerKeyPair);
                 }
                 else if (packetID == 0x02) //Login successful
@@ -1817,6 +1810,9 @@ namespace MinecraftClient.Protocol.Handlers
         {
             List<Tuple<string, string>> needSigned = new();
 
+            if (!Settings.SignMessageInCommand)
+                return needSigned;
+
             string[] argStage1 = command.Split(' ', 2, StringSplitOptions.None);
             if (argStage1.Length == 2)
             {
@@ -1877,7 +1873,7 @@ namespace MinecraftClient.Protocol.Handlers
                 List<Tuple<string, string>> needSigned = collectCommandArguments(command); // List< Argument Name, Argument Value >
                 // foreach (var msg in needSigned)
                 //     log.Info("<" + msg.Item1 + ">: " + msg.Item2);
-                if (needSigned.Count == 0 || playerKeyPair == null)
+                if (needSigned.Count == 0 || playerKeyPair == null || !Settings.SignMessageInCommand)
                 {
                     fields.AddRange(dataTypes.GetLong(0));                    // Salt: Long
                     fields.AddRange(dataTypes.GetVarInt(0));                  // Signature Length: VarInt
@@ -1936,7 +1932,7 @@ namespace MinecraftClient.Protocol.Handlers
                     DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                     fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                    if (playerKeyPair == null)
+                    if (playerKeyPair == null || !Settings.SignChat)
                     {
                         fields.AddRange(dataTypes.GetLong(0));   // Salt: Long
                         fields.AddRange(dataTypes.GetVarInt(0)); // Signature Length: VarInt

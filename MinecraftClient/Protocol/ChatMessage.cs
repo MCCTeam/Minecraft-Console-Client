@@ -50,12 +50,12 @@ namespace MinecraftClient.Protocol
 
         public ChatMessage(string content, bool isJson, int chatType, Guid senderUUID, bool isSystemChat = false)
         {
-            this.isSignedChat = false;
+            this.isSignedChat = isSystemChat;
+            this.isSystemChat = isSystemChat;
             this.content = content;
             this.isJson = isJson;
             this.chatType = chatType;
             this.senderUUID = senderUUID;
-            this.isSystemChat = isSystemChat;
         }
     }
 }

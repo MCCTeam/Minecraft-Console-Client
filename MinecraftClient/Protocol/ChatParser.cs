@@ -31,7 +31,11 @@ namespace MinecraftClient.Protocol
         /// <returns>Returns the translated text</returns>
         public static string ParseSignedChat(ChatMessage message, List<string>? links = null)
         {
-            string content = ChatParser.ParseText(message.content, links);
+            string content;
+            if (Settings.ShowModifiedChat && message.unsignedContent != null)
+                content = ChatParser.ParseText(message.unsignedContent, links);
+            else
+                content = ChatParser.ParseText(message.content, links);
             string sender = message.displayName!;
             string text;
             List<string> usingData = new();
@@ -76,17 +80,34 @@ namespace MinecraftClient.Protocol
                     text = $"{sender}: {content}";
                     break;
             }
-            string color;
+            string color = String.Empty;
             if (message.isSystemChat)
-                color = "\u001B[100m";    // Bright Black (Gray)
+            {
+                if (Settings.MarkSystemMessage)
+                    color = "§z §r ";     // Custom: Background Gray
+            }
             else
             {
                 if ((bool)message.isSignatureLegal!)
-                    color = "\u001B[42m"; // Green
+                {
+                    if (Settings.ShowModifiedChat && message.unsignedContent != null)
+                    {
+                        if (Settings.MarkModifiedMsg)
+                            color = "§x §r "; // Custom: Background Yellow
+                    }
+                    else
+                    {
+                        if (Settings.MarkLegallySignedMsg)
+                            color = "§y §r "; // Custom: Background Green
+                    }
+                }
                 else
-                    color = "\u001B[41m"; // Red
+                {
+                    if (Settings.MarkIllegallySignedMsg)
+                        color = "§w §r "; // Custom: Background Red
+                }
             }
-            return color + " \u001B[0m" + text;
+            return color + text;
         }
 
         /// <summary>

@@ -201,7 +201,8 @@ namespace MinecraftClient.Crypto
 
         public static IAesStream getAesStream(Stream underlyingStream, byte[] AesKey)
         {
-            return new Streams.RegularAesStream(underlyingStream, AesKey);
+            // return new Streams.RegularAesStream(underlyingStream, AesKey);
+            return new Streams.MonoAesStream(underlyingStream, AesKey);
         }
     }
 }

@@ -2010,7 +2010,11 @@ namespace MinecraftClient
             if (message.isJson)
             {
                 if (message.isSignedChat)
+                {
+                    if (!Settings.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
+                        return;
                     messageText = ChatParser.ParseSignedChat(message, links);
+                }
                 else
                     messageText = ChatParser.ParseText(message.content, links);
             }

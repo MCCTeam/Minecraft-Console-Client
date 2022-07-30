@@ -105,6 +105,17 @@ namespace MinecraftClient
         public static bool MinecraftRealmsEnabled = true;
         public static bool MoveHeadWhileWalking = true;
 
+        // Signature
+        public static bool LoginWithSecureProfile = true;
+        public static bool SignChat = true;
+        public static bool SignMessageInCommand = true;
+        public static bool MarkLegallySignedMsg = false;
+        public static bool MarkModifiedMsg = true;
+        public static bool MarkIllegallySignedMsg = true;
+        public static bool MarkSystemMessage = false;
+        public static bool ShowModifiedChat = true;
+        public static bool ShowIllegalSignedChat = true;
+
         // Logging
         public enum FilterModeEnum { Blacklist, Whitelist }
         public static bool DebugMessages = false;
@@ -221,7 +232,7 @@ namespace MinecraftClient
         private static string ServerAliasTemp = null;
 
         //Mapping for settings sections in the INI file
-        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, Logging };
+        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, Logging, Signature };
 
         /// <summary>
         /// Get settings section from name
@@ -489,6 +500,21 @@ namespace MinecraftClient
                                 ServerForceForge = str2bool(argValue);
                             }
                             return true;
+                    }
+                    break;
+
+                case Section.Signature:
+                    switch (argName.ToLower())
+                    {
+                        case "login_with_secure_profile": LoginWithSecureProfile = str2bool(argValue); return true;
+                        case "sign_chat": SignChat = str2bool(argValue); return true;
+                        case "sign_message_in_command": SignMessageInCommand = str2bool(argValue); return true;
+                        case "mark_legally_signed_msg": MarkLegallySignedMsg = str2bool(argValue); return true;
+                        case "mark_modified_msg": MarkModifiedMsg = str2bool(argValue); return true;
+                        case "mark_illegally_signed_msg": MarkIllegallySignedMsg = str2bool(argValue); return true;
+                        case "mark_system_message": MarkSystemMessage = str2bool(argValue); return true;
+                        case "show_modified_chat": ShowModifiedChat = str2bool(argValue); return true;
+                        case "show_illegal_signed_chat": ShowIllegalSignedChat = str2bool(argValue); return true;
                     }
                     break;
 
