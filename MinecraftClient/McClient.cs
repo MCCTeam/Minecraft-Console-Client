@@ -68,7 +68,7 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
-        private PlayerKeyPair keysInfo;
+        private PlayerKeyPair playerKeyPair;
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new();
         private int respawnTicks = 0;
@@ -139,9 +139,9 @@ namespace MinecraftClient
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        public McClient(string username, string uuid, string sessionID, PlayerKeyPair keysInfo, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
+        public McClient(string username, string uuid, string sessionID, PlayerKeyPair playerKeyPair, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
         {
-            StartClient(username, uuid, sessionID, keysInfo, server_ip, port, protocolversion, forgeInfo, false, "");
+            StartClient(username, uuid, sessionID, playerKeyPair, server_ip, port, protocolversion, forgeInfo, false, "");
         }
 
         /// <summary>
@@ -154,9 +154,9 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
-        public McClient(string username, string uuid, string sessionID, PlayerKeyPair keysInfo, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
+        public McClient(string username, string uuid, string sessionID, PlayerKeyPair playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
         {
-            StartClient(username, uuid, sessionID, keysInfo, server_ip, port, protocolversion, forgeInfo, true, command);
+            StartClient(username, uuid, sessionID, playerKeyPair, server_ip, port, protocolversion, forgeInfo, true, command);
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace MinecraftClient
         /// <param name="uuid">The player's UUID for online-mode authentication</param>
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-        private void StartClient(string user, string uuid, string sessionID, PlayerKeyPair keysInfo, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
+        private void StartClient(string user, string uuid, string sessionID, PlayerKeyPair playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;
@@ -183,7 +183,7 @@ namespace MinecraftClient
             this.host = server_ip;
             this.port = port;
             this.protocolversion = protocolversion;
-            this.keysInfo = keysInfo;
+            this.playerKeyPair = playerKeyPair;
 
             this.Log = Settings.LogToFile
                 ? new FileLogLogger(Settings.ExpandVars(Settings.LogFile), Settings.PrependTimestamp)
@@ -240,11 +240,11 @@ namespace MinecraftClient
 
                 try
                 {
-                    if (handler.Login(this.keysInfo))
+                    if (handler.Login(this.playerKeyPair))
                     {
                         if (singlecommand)
                         {
-                            handler.SendChatMessage(command, keysInfo);
+                            handler.SendChatMessage(command, playerKeyPair);
                             Log.Info(Translations.Get("mcc.single_cmd", command));
                             Thread.Sleep(5000);
                             handler.Disconnect();
@@ -335,7 +335,7 @@ namespace MinecraftClient
                 if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
                 {
                     string text = chatQueue.Dequeue();
-                    handler.SendChatMessage(text, keysInfo);
+                    handler.SendChatMessage(text, playerKeyPair);
                     nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
                 }
             }

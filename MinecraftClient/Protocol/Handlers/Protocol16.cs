@@ -643,7 +643,7 @@ namespace MinecraftClient.Protocol.Handlers
             return protocolversion;
         }
 
-        public bool SendChatMessage(string message, PlayerKeyPair? keysInfo)
+        public bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair)
         {
             if (String.IsNullOrEmpty(message))
                 return true;

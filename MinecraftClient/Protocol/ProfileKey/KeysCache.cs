@@ -34,21 +34,21 @@ namespace MinecraftClient.Protocol.Keys
         /// Store keys and save it to disk if required.
         /// </summary>
         /// <param name="login">User login used with Minecraft.net</param>
-        /// <param name="keys">User keys</param>
-        public static void Store(string login, PlayerKeyPair keysInfo)
+        /// <param name="playerKeyPair">User keys</param>
+        public static void Store(string login, PlayerKeyPair playerKeyPair)
         {
             if (Contains(login))
             {
-                keys[login] = keysInfo;
+                keys[login] = playerKeyPair;
             }
             else
             {
-                keys.Add(login, keysInfo);
+                keys.Add(login, playerKeyPair);
             }
 
             if (Settings.ProfileKeyCaching == CacheType.Disk && updatetimer.Enabled == true)
             {
-                pendingadds.Add(new KeyValuePair<string, PlayerKeyPair>(login, keysInfo));
+                pendingadds.Add(new KeyValuePair<string, PlayerKeyPair>(login, playerKeyPair));
             }
             else if (Settings.ProfileKeyCaching == CacheType.Disk)
             {
@@ -60,7 +60,7 @@ namespace MinecraftClient.Protocol.Keys
         /// Retrieve keys for the given login.
         /// </summary>
         /// <param name="login">User login used with Minecraft.net</param>
-        /// <returns>KeysInfo for given login</returns>
+        /// <returns>PlayerKeyPair for given login</returns>
         public static PlayerKeyPair Get(string login)
         {
             return keys[login];
@@ -131,10 +131,10 @@ namespace MinecraftClient.Protocol.Keys
                                 string value = line.Substring(separatorIdx + 1);
                                 try
                                 {
-                                    PlayerKeyPair keysInfo = PlayerKeyPair.FromString(value);
-                                    keys[login] = keysInfo;
+                                    PlayerKeyPair playerKeyPair = PlayerKeyPair.FromString(value);
+                                    keys[login] = playerKeyPair;
                                     if (Settings.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded_keys", keysInfo.ExpiresAt.ToString()));
+                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded_keys", playerKeyPair.ExpiresAt.ToString()));
                                 }
                                 catch (InvalidDataException e)
                                 {
@@ -170,7 +170,7 @@ namespace MinecraftClient.Protocol.Keys
         }
 
         /// <summary>
-        /// Saves KeysInfo's from KeysCache into cache file.
+        /// Saves player's keypair from KeysCache into cache file.
         /// </summary>
         private static void SaveToDisk()
         {
