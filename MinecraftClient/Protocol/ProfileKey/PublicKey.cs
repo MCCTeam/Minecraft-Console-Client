@@ -24,7 +24,7 @@ namespace MinecraftClient.Protocol.Keys
 
             this.Signature = Convert.FromBase64String(sig);
 
-            if (string.IsNullOrEmpty(sigV2))
+            if (!string.IsNullOrEmpty(sigV2))
                 this.SignatureV2 = Convert.FromBase64String(sigV2!);
         }
 
