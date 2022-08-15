@@ -212,7 +212,7 @@ namespace MinecraftClient
                     if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
                     if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
                     if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
-                    if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Attack)); }
+                    if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction)); }
                     if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
                     if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
                     if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
@@ -1632,23 +1632,23 @@ namespace MinecraftClient
         /// Interact with an entity
         /// </summary>
         /// <param name="EntityID"></param>
-        /// <param name="type">0: interact, 1: attack, 2: interact at</param>
+        /// <param name="type">Type of interaction (interact, attack...)</param>
         /// <param name="hand">Hand.MainHand or Hand.OffHand</param>
         /// <returns>TRUE if interaction succeeded</returns>
-        public bool InteractEntity(int entityID, int type, Hand hand = Hand.MainHand)
+        public bool InteractEntity(int entityID, InteractType type, Hand hand = Hand.MainHand)
         {
             if (InvokeRequired)
                 return InvokeOnMainThread(() => InteractEntity(entityID, type, hand));
 
             if (entities.ContainsKey(entityID))
             {
-                if (type == 0)
+                if (type == InteractType.Interact)
                 {
-                    return handler.SendInteractEntity(entityID, type, (int)hand);
+                    return handler.SendInteractEntity(entityID, (int)type, (int)hand);
                 }
                 else
                 {
-                    return handler.SendInteractEntity(entityID, type);
+                    return handler.SendInteractEntity(entityID, (int)type);
                 }
             }
             else return false;

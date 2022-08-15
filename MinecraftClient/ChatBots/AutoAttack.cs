@@ -22,9 +22,9 @@ namespace MinecraftClient.ChatBots
         private float health = 100;
         private bool singleMode = true;
         private bool priorityDistance = true;
-        private int interactMode;
+        private InteractType interactMode;
 
-        public AutoAttack(string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, string attack = "ATTACK")
+        public AutoAttack(string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, InteractType interaction = InteractType.Attack)
         {
             if (mode == "single")
                 singleMode = true;
@@ -38,13 +38,7 @@ namespace MinecraftClient.ChatBots
                 priorityDistance = false;
             else LogToConsoleTranslated("bot.autoAttack.priority", priority);
 
-            if (attack == "ATTACK")
-                interactMode = 0;
-            else if (attack == "INTERACT")
-                interactMode = 1;
-            else if (attack == "INTERACT_AT")
-                interactMode = 2;
-            else LogToConsoleTranslated("bot.autoAttack.attack", attack);
+            interactMode = interaction;
 
             if (overrideAttackSpeed)
             {

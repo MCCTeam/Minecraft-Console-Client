@@ -6,6 +6,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient
 {
@@ -192,7 +193,7 @@ namespace MinecraftClient
         public static string AutoAttack_Priority = "distance";
         public static bool AutoAttack_OverrideAttackSpeed = false;
         public static double AutoAttack_CooldownSeconds = 1;
-        public static string AutoAttack_Attack = "ATTACK";
+        public static InteractType AutoAttack_Interaction = InteractType.Attack;
 
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;
@@ -694,6 +695,8 @@ namespace MinecraftClient
                                 AutoAttack_CooldownSeconds = str2float(argValue);
                             }
                             return true;
+                        case "interaction":
+                            return Enum.TryParse(argValue, true, out AutoAttack_Interaction);
                     }
                     break;
 

@@ -33,10 +33,10 @@ namespace MinecraftClient.Commands
                                 switch (action)
                                 {
                                     case "attack":
-                                        handler.InteractEntity(entityID, 1);
+                                        handler.InteractEntity(entityID, InteractType.Attack);
                                         return Translations.Get("cmd.entityCmd.attacked");
                                     case "use":
-                                        handler.InteractEntity(entityID, 0);
+                                        handler.InteractEntity(entityID, InteractType.Interact);
                                         return Translations.Get("cmd.entityCmd.used");
                                     default:
                                         Entity entity = handler.GetEntities()[entityID];
@@ -113,13 +113,13 @@ namespace MinecraftClient.Commands
                                     : "list";
                                     if (action == "attack")
                                     {
-                                        handler.InteractEntity(entity2.Key, 1);
+                                        handler.InteractEntity(entity2.Key, InteractType.Attack);
                                         actionst = "cmd.entityCmd.attacked";
                                         actioncount++;
                                     }
                                     else if (action == "use")
                                     {
-                                        handler.InteractEntity(entity2.Key, 0);
+                                        handler.InteractEntity(entity2.Key, InteractType.Interact);
                                         actionst = "cmd.entityCmd.used";
                                         actioncount++;
                                     }
