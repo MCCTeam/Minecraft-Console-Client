@@ -82,7 +82,7 @@ namespace MinecraftClient.Protocol.Handlers
                 Receive(cache, 0, length, SocketFlags.None);
                 return cache;
             }
-            return new byte[] { };
+            return Array.Empty<byte>();
         }
 
         /// <summary>

@@ -18,9 +18,96 @@ namespace MinecraftClient.Protocol
         /// <param name="json">JSON serialized text</param>
         /// <param name="links">Optional container for links from JSON serialized text</param>
         /// <returns>Returns the translated text</returns>
-        public static string ParseText(string json, List<string> links = null)
+        public static string ParseText(string json, List<string>? links = null)
         {
             return JSONData2String(Json.ParseJson(json), "", links);
+        }
+
+        /// <summary>
+        /// The main function to convert text from MC 1.9+ JSON to MC 1.5.2 formatted text
+        /// </summary>
+        /// <param name="message">Message received</param>
+        /// <param name="links">Optional container for links from JSON serialized text</param>
+        /// <returns>Returns the translated text</returns>
+        public static string ParseSignedChat(ChatMessage message, List<string>? links = null)
+        {
+            string content;
+            if (Settings.ShowModifiedChat && message.unsignedContent != null)
+                content = ChatParser.ParseText(message.unsignedContent, links);
+            else
+                content = ChatParser.ParseText(message.content, links);
+            string sender = message.displayName!;
+            string text;
+            List<string> usingData = new();
+            switch (message.chatType)
+            {
+                case 0:  // chat (chat box)
+                    usingData.Add(sender);
+                    usingData.Add(content);
+                    text = TranslateString("chat.type.text", usingData);
+                    break;
+                case 1:  // system message (chat box)
+                    text = content;
+                    break;
+                case 2:  // game info (above hotbar)
+                    text = content;
+                    break;
+                case 3:  // say command
+                    usingData.Add(sender);
+                    usingData.Add(content);
+                    text = TranslateString("chat.type.announcement", usingData);
+                    break;
+                case 4:  // msg command
+                    usingData.Add(sender);
+                    usingData.Add(content);
+                    text = TranslateString("commands.message.display.incoming", usingData);
+                    break;
+                case 5:  // team msg command (/teammsg)
+                    usingData.Add(message.teamName!);
+                    usingData.Add(sender);
+                    usingData.Add(content);
+                    text = TranslateString("chat.type.team.text", usingData);
+                    break;
+                case 6:  // emote command (/me)
+                    usingData.Add(sender);
+                    usingData.Add(content);
+                    text = TranslateString("chat.type.emote", usingData);
+                    break;
+                case 7: // tellraw command
+                    text = content;
+                    break;
+                default:
+                    text = $"{sender}: {content}";
+                    break;
+            }
+            string color = String.Empty;
+            if (message.isSystemChat)
+            {
+                if (Settings.MarkSystemMessage)
+                    color = "§z §r ";     // Custom: Background Gray
+            }
+            else
+            {
+                if ((bool)message.isSignatureLegal!)
+                {
+                    if (Settings.ShowModifiedChat && message.unsignedContent != null)
+                    {
+                        if (Settings.MarkModifiedMsg)
+                            color = "§x §r "; // Custom: Background Yellow
+                    }
+                    else
+                    {
+                        if (Settings.MarkLegallySignedMsg)
+                            color = "§y §r "; // Custom: Background Green
+                    }
+                }
+                else
+                {
+                    if (Settings.MarkIllegallySignedMsg)
+                        color = "§w §r "; // Custom: Background Red
+                }
+            }
+            return color + text;
         }
 
         /// <summary>
@@ -212,7 +299,7 @@ namespace MinecraftClient.Protocol
         /// <param name="colorcode">Allow parent color code to affect child elements (set to "" for function init)</param>
         /// <param name="links">Container for links from JSON serialized text</param>
         /// <returns>returns the Minecraft-formatted string</returns>
-        private static string JSONData2String(Json.JSONData data, string colorcode, List<string> links)
+        private static string JSONData2String(Json.JSONData data, string colorcode, List<string>? links)
         {
             string extra_result = "";
             switch (data.Type)

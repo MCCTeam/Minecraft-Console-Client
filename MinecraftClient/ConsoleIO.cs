@@ -58,7 +58,7 @@ namespace MinecraftClient
         /// <summary>
         /// Read a password from the standard input
         /// </summary>
-        public static string ReadPassword()
+        public static string? ReadPassword()
         {
             if (BasicIO)
                 return Console.ReadLine();

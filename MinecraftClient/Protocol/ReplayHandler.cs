@@ -307,7 +307,7 @@ namespace MinecraftClient.Protocol
             if (isLogin && packetID == 0x02)
             {
                 Guid uuid;
-                if (protocolVersion < Protocol18Handler.MC116Version)
+                if (protocolVersion < Protocol18Handler.MC_1_16_Version)
                 {
                     if (Guid.TryParse(dataTypes.ReadNextString(p), out uuid))
                     {
@@ -350,7 +350,7 @@ namespace MinecraftClient.Protocol
 
                 playerLastPitch = pitch;
                 playerLastYaw = yaw;
-                if (protocolVersion >= Protocol18Handler.MC18Version)
+                if (protocolVersion >= Protocol18Handler.MC_1_8_Version)
                 {
                     playerLastPosition.X = (locMask & 1 << 0) != 0 ? playerLastPosition.X + x : x;
                     playerLastPosition.Y = (locMask & 1 << 1) != 0 ? playerLastPosition.Y + y : y;
