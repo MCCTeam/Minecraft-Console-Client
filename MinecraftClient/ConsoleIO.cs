@@ -123,22 +123,18 @@ namespace MinecraftClient
             
             if (!String.IsNullOrEmpty(str))
             {
-                if (!acceptnewlines) 
-                {
-                    output.Append(str.Replace('\n', ' '));
-                }
-                else 
-                {
-                    output.Append(str);
-                }
-                if (displayTimestamp == null) 
+                if (displayTimestamp == null)
                 {
                     displayTimestamp = EnableTimestamps;
                 }
-                if (displayTimestamp.Value) 
+                if (displayTimestamp.Value)
                 {
                     int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
                     output.Append(String.Format("{0}:{1}:{2} ", hour.ToString("00"), minute.ToString("00"), second.ToString("00")));
+                }
+                if (!acceptnewlines)
+                {
+                    str = str.Replace('\n', ' ');
                 }
                 if (BasicIO)
                 {
@@ -146,9 +142,14 @@ namespace MinecraftClient
                     {
                         output.Append(ChatBot.GetVerbatim(str));
                     }
+                    else
+                    {
+                        output.Append(str);
+                    }
                     Console.WriteLine(output.ToString());
                     return;
                 }
+                output.Append(str);
                 ConsoleInteractive.ConsoleWriter.WriteLineFormatted(output.ToString());
             }
         }
