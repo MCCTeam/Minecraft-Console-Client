@@ -144,7 +144,7 @@ namespace MinecraftClient
         /// </remarks>
         /// <param name="text">Text from the server</param>
         /// <param name="json">Raw JSON from the server. This parameter will be NULL on MC 1.5 or lower!</param>
-        public virtual void GetText(string text, string json) { }
+        public virtual void GetText(string text, string? json) { }
         
         /// <summary>
         /// Is called when the client has been disconnected fom the server
@@ -359,7 +359,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
         /// <param name="name">Name of the player</param>
-        public virtual void OnPlayerLeave(Guid uuid, string name) { }
+        public virtual void OnPlayerLeave(Guid uuid, string? name) { }
         
         /// <summary>
         /// Called when the player deaths

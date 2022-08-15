@@ -79,11 +79,11 @@ namespace MinecraftClient.Protocol
         /// <param name="serverPort">Server Port to ping</param>
         /// <param name="protocolversion">Will contain protocol version, if ping successful</param>
         /// <returns>TRUE if ping was successful</returns>
-        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion, ref ForgeInfo forgeInfo)
+        public static bool GetServerInfo(string serverIP, ushort serverPort, ref int protocolversion, ref ForgeInfo? forgeInfo)
         {
             bool success = false;
             int protocolversionTmp = 0;
-            ForgeInfo forgeInfoTmp = null;
+            ForgeInfo? forgeInfoTmp = null;
             if (AutoTimeout.Perform(() =>
             {
                 try
@@ -127,11 +127,15 @@ namespace MinecraftClient.Protocol
         public static IMinecraftCom GetProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo forgeInfo, IMinecraftComHandler Handler)
         {
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
+
             if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
                 return new Protocol16Handler(Client, ProtocolVersion, Handler);
-            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758 };
+
+            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759 };
+            
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
                 return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
+
             throw new NotSupportedException(Translations.Get("exception.version_unsupport", ProtocolVersion));
         }
 
@@ -257,6 +261,8 @@ namespace MinecraftClient.Protocol
                         return 757;
                     case "1.18.2":
                         return 758;
+                    case "1.19":
+                        return 759;
                     default:
                         return 0;
                 }
@@ -322,6 +328,7 @@ namespace MinecraftClient.Protocol
                 case 756: return "1.17.1";
                 case 757: return "1.18.1";
                 case 758: return "1.18.2";
+                case 759: return "1.19";
                 default: return "0.0";
             }
         }
@@ -815,9 +822,9 @@ namespace MinecraftClient.Protocol
         /// <returns>HTTP Status code</returns>
         private static int DoHTTPSRequest(List<string> headers, string host, ref string result)
         {
-            string postResult = null;
+            string? postResult = null;
             int statusCode = 520;
-            Exception exception = null;
+            Exception? exception = null;
             AutoTimeout.Perform(() =>
             {
                 try
@@ -859,7 +866,8 @@ namespace MinecraftClient.Protocol
                     }
                 }
             }, TimeSpan.FromSeconds(30));
-            result = postResult;
+            if (postResult != null)
+                result = postResult;
             if (exception != null)
                 throw exception;
             return statusCode;
