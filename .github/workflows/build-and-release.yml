@@ -1,30 +1,39 @@
-# This workflow will build the project using .NET 4 then publish to GitHub releases
-# Due to running .NET 4 this workflow needs to run on windows-2019 (support dropped on windows 2022)
-# Changes would need to be made for using .NET 5 and later on linux
-
 name: Build
 
 on:
   push:
     branches: [ master ]
+  
+env:
+  PROJECT: "MinecraftClient"
+  target-version: "net6.0"
+  compile-flags: "--no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
 
 jobs:
   build:
-    runs-on: windows-2019
-
-    env:
-      PROJECT: "MinecraftClient"
+    runs-on: ubuntu-latest
 
     steps:
-    - name: SetupMSBuild
-      uses: microsoft/setup-msbuild@v1
+    - name: Setup Project Path
+      run: |
+        echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
+    
+    - name: Setup Output Paths
+      run: |
+        echo win-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
+        echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
+        echo osx-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-x64/publish/ >> $GITHUB_ENV
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v2.1.0
 
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+        submodules: 'true'
 
-    - name: DateVersion
+    - name: Get Version DateTime
       id: date-version
       uses: nanzm/get-time-action@v1.0
       with:
@@ -33,26 +42,61 @@ jobs:
 
     - name: VersionInfo
       run: |
-        # PowerShell commands
-        set COMMIT "${{ github.sha }}".substring(0, 7)
-        '' >> ${{ github.workspace }}\${{ env.PROJECT }}\Properties\AssemblyInfo.cs
-        "[assembly: AssemblyConfiguration(`"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT`")]" >> ${{ github.workspace }}\${{ env.PROJECT }}\Properties\AssemblyInfo.cs
+        COMMIT=$(echo ${{ github.sha }} | cut -c 1-7)
+        echo '' >> ${{ env.project-path }}\Properties\AssemblyInfo.cs
+        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}\Properties\AssemblyInfo.cs
+            
+    - name: Build for Windows
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x64 ${{ env.compile-flags }}
 
-    - name: Build
-      run: msbuild ${{ github.workspace }}\${{ env.PROJECT }}.sln /t:clean,build /p:Configuration=Release /p:Platform="x86" /p:TargetFrameworkVersion="v4.0" /verbosity:minimal
+    - name: Zip Windows Build
+      run: zip -qq -r windows.zip *
+      working-directory: ${{ env.win-out-path }}
 
-    - name: DateRelease
+    - name: Build for Linux
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-x64 ${{ env.compile-flags }}
+
+    - name: Zip Linux Build
+      run: zip -qq -r linux.zip *
+      working-directory: ${{ env.linux-out-path }}
+
+    - name: Build for OSX
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r osx-x64 ${{ env.compile-flags }}
+
+    - name: Zip OSX Build
+      run: zip -qq -r osx.zip *
+      working-directory: ${{ env.osx-out-path }}
+
+    - name: Get Release DateTime
       id: date-release
       uses: nanzm/get-time-action@v1.0
       with:
         timeZone: 0
         format: 'YYYYMMDD'
 
-    - name: Release
+    - name: Windows Release
       uses: tix-factory/release-manager@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ github.workspace }}\${{env.PROJECT}}\bin\Release\${{ env.PROJECT }}.exe
-        assetName: ${{ env.PROJECT }}.exe
+        filePath: ${{ env.win-out-path }}windows.zip
+        assetName: ${{ env.PROJECT }}-windows.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Linux Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.linux-out-path }}linux.zip
+        assetName: ${{ env.PROJECT }}-linux.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: OSX Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.osx-out-path }}osx.zip
+        assetName: ${{ env.PROJECT }}-osx.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
