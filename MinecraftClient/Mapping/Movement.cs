@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -61,7 +60,7 @@ namespace MinecraftClient.Mapping
             }
             else
             {
-                foreach (Direction dir in new []{ Direction.East, Direction.West, Direction.North, Direction.South })
+                foreach (Direction dir in new[] { Direction.East, Direction.West, Direction.North, Direction.South })
                     if (CanMove(world, location, dir) && IsOnGround(world, Move(location, dir)) && (allowUnsafe || IsSafe(world, Move(location, dir))))
                         availableMoves.Add(Move(location, dir));
                 availableMoves.Add(Move(location, Direction.Down));
@@ -164,72 +163,77 @@ namespace MinecraftClient.Mapping
         /// <returns>A list of locations, or null if calculation failed</returns>
         public static Queue<Location> CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, CancellationToken ct)
         {
-
+            // This is a bad configuration
             if (minOffset > maxOffset)
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
-            
+
+            // Round start coordinates for easier calculation
+            start = new Location(Math.Floor(start.X), Math.Floor(start.Y), Math.Floor(start.Z));
+
             // We always use distance squared so our limits must also be squared.
             minOffset *= minOffset;
             maxOffset *= maxOffset;
 
-            Location current = new Location(); // Location that is currently processed
-            Location closestGoal = new Location(); // Closest Location to the goal. Used for approaching if goal can not be reached or was not found.
-            HashSet<Location> ClosedSet = new HashSet<Location>(); // The set of locations already evaluated.
-            HashSet<Location> OpenSet = new HashSet<Location>(new[] { start });  // The set of tentative nodes to be evaluated, initially containing the start node
-            Dictionary<Location, Location> Came_From = new Dictionary<Location, Location>(); // The map of navigated nodes.
+            ///---///
+            // Prepare variables and datastructures for A*
+            ///---///
+            
+            // Dictionary that contains the relation between all coordinates and resolves the final path
+            Dictionary<Location, Location> CameFrom = new Dictionary<Location, Location>();
+            // Create a Binary Heap for all open positions => Allows fast access to Nodes with lowest scores
+            BinaryHeap openSet = new BinaryHeap();
+            // Dictionary to keep track of the G-Score of every location
+            Dictionary<Location, int> gScoreDict = new Dictionary<Location, int>();
 
-            Dictionary<Location, int> g_score = new Dictionary<Location, int>(); //:= map with default value of Infinity
-            g_score[start] = 0; // Cost from start along best known path.
-            // Estimated total cost from start to goal through y.
-            Dictionary<Location, int> f_score = new Dictionary<Location, int>(); //:= map with default value of Infinity
-            f_score[start] = (int)start.DistanceSquared(goal); //heuristic_cost_estimate(start, goal)
+            // Set start values for variables
+            openSet.Insert(0, (int)start.DistanceSquared(goal), start);
+            gScoreDict[start] = 0;
+            BinaryHeap.Node current = null;
 
-            while (OpenSet.Count > 0)
+            ///---///
+            // Start of A*
+            ///---///
+
+            // Execute while we have nodes to process and we are not cancelled
+            while (openSet.Count() > 0 && !ct.IsCancellationRequested)
             {
-                current = //the node in OpenSet having the lowest f_score[] value
-                    OpenSet.Select(location => f_score.ContainsKey(location)
-                    ? new KeyValuePair<Location, int>(location, f_score[location])
-                    : new KeyValuePair<Location, int>(location, int.MaxValue))
-                    .OrderBy(pair => pair.Value).
-                    // Sort for h-score (f-score - g-score) to get smallest distance to goal if f-scores are equal
-                    ThenBy(pair => f_score[pair.Key]-g_score[pair.Key]).First().Key;
-                
-                // Only assert a value if it is of actual use later
-                if (maxOffset > 0 && ClosedSet.Count > 0)
-                    // Get the block that currently is closest to the goal
-                    closestGoal = ClosedSet.OrderBy(checkedLocation => checkedLocation.DistanceSquared(goal)).First();
+                // Get the root node of the Binary Heap
+                // Node with the lowest F-Score or lowest H-Score on tie
+                current = openSet.GetRootLocation();
 
-                // Stop when goal is reached or we are close enough
-                if (current == goal || (minOffset > 0 && current.DistanceSquared(goal) <= minOffset))
-                    return ReconstructPath(Came_From, current);
-                else if (ct.IsCancellationRequested)
-                    break;              // Return if we are cancelled
-
-                OpenSet.Remove(current);
-                ClosedSet.Add(current);
-
-                foreach (Location neighbor in GetAvailableMoves(world, current, allowUnsafe))
+                // Return if goal found and no maxOffset was given OR current node is between minOffset and maxOffset
+                if ((current.Location == goal && maxOffset <= 0) || (maxOffset > 0 && current.H_score >= minOffset && current.H_score <= maxOffset))
                 {
-                    if (ct.IsCancellationRequested)
-                        break;          // Stop searching for blocks if we are cancelled.
-                    if (ClosedSet.Contains(neighbor))
-                        continue;       // Ignore the neighbor which is already evaluated.
-                    int tentative_g_score = g_score[current] + (int)current.DistanceSquared(neighbor); //dist_between(current,neighbor) // length of this path.
-                    if (!OpenSet.Contains(neighbor))    // Discover a new node
-                        OpenSet.Add(neighbor);
-                    else if (tentative_g_score >= g_score[neighbor])
-                        continue;       // This is not a better path.
+                    return ReconstructPath(CameFrom, current.Location);
+                }
 
-                    // This path is the best until now. Record it!
-                    Came_From[neighbor] = current;
-                    g_score[neighbor] = tentative_g_score;
-                    f_score[neighbor] = g_score[neighbor] + (int)neighbor.DistanceSquared(goal); //heuristic_cost_estimate(neighbor, goal)
+                // Discover neighbored blocks
+                foreach (Location neighbor in GetAvailableMoves(world, current.Location, allowUnsafe))
+                {
+                    // If we are cancelled: break
+                    if (ct.IsCancellationRequested)
+                        break;
+
+                    // tentative_gScore is the distance from start to the neighbor through current
+                    int tentativeGScore = current.G_score + (int)current.Location.DistanceSquared(neighbor);
+
+                    // If the neighbor is not in the gScoreDict OR its current tentativeGScore is lower than the previously saved one: 
+                    if (!gScoreDict.ContainsKey(neighbor) || (gScoreDict.ContainsKey(neighbor) && tentativeGScore < gScoreDict[neighbor]))
+                    {
+                        // Save the new relation between the neighbored block and the current one
+                        CameFrom[neighbor] = current.Location;
+                        gScoreDict[neighbor] = tentativeGScore;
+
+                        // If this location is not already included in the Binary Heap: save it
+                        if (!openSet.ContainsLocation(neighbor))
+                            openSet.Insert(tentativeGScore, (int)neighbor.DistanceSquared(goal), neighbor);
+                    }
                 }
             }
 
-            // Goal could not be reached. Set the path to the closest location if close enough
-            if (maxOffset == int.MaxValue || goal.DistanceSquared(closestGoal) <= maxOffset)            
-                return ReconstructPath(Came_From, closestGoal);
+            //// Goal could not be reached. Set the path to the closest location if close enough
+            if (current != null && (maxOffset == int.MaxValue || openSet.MinH_ScoreNode.H_score <= maxOffset))
+                return ReconstructPath(CameFrom, openSet.MinH_ScoreNode.Location);
             else
                 return null;
         }
@@ -242,14 +246,194 @@ namespace MinecraftClient.Mapping
         /// <returns>the path that leads to current from the start position</returns>
         private static Queue<Location> ReconstructPath(Dictionary<Location, Location> Came_From, Location current)
         {
-            List<Location> total_path = new List<Location>(new[] { current });
+            // Add 0.5 to walk over the middle of a block and avoid collisions
+            List<Location> total_path = new List<Location>(new[] { current + new Location(0.5, 0, 0.5) });
             while (Came_From.ContainsKey(current))
             {
                 current = Came_From[current];
-                total_path.Add(current);
+                total_path.Add(current + new Location(0.5, 0, 0.5));
             }
             total_path.Reverse();
             return new Queue<Location>(total_path);
+        }
+
+        /// <summary>
+        /// A datastructure to store Locations as Nodes and provide them in sorted and queued order.
+        /// !!!
+        /// CAN BE REPLACED WITH PriorityQueue IN .NET-6
+        /// https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.priorityqueue-2?view=net-6.0
+        /// !!!
+        /// </summary>
+        public class BinaryHeap
+        {
+            /// <summary>
+            /// Represents a location and its attributes
+            /// </summary>
+            public class Node
+            {
+                // Distance to start
+                public int G_score;
+                // Distance to Goal
+                public int H_score;
+                public int F_score { get { return H_score + G_score; } }
+
+                public Location Location;
+
+                public Node(int g_score, int h_score, Location loc)
+                {
+                    this.G_score = g_score;
+                    this.H_score = h_score;
+                    Location = loc;
+                }
+            }
+
+            // List which contains all nodes in form of a Binary Heap
+            private List<Node> heapList;
+            // Hashset for quick checks of locations included in the heap
+            private HashSet<Location> locationList;
+            public Node MinH_ScoreNode;
+
+            public BinaryHeap()
+            {
+                heapList = new List<Node>();
+                locationList = new HashSet<Location>();
+                MinH_ScoreNode = null;
+            }
+
+            /// <summary>
+            /// Insert a new location in the heap
+            /// </summary>
+            /// <param name="newG_Score">G-Score of the location</param>
+            /// <param name="newH_Score">H-Score of the location</param>
+            /// <param name="loc">The location</param>
+            public void Insert(int newG_Score, int newH_Score, Location loc)
+            {
+                // Begin at the end of the list
+                int i = heapList.Count;
+
+                // Temporarily save the node created with the parameters to allow comparisons
+                Node newNode = new Node(newG_Score, newH_Score, loc);
+
+                // Add new note to the end of the list
+                heapList.Add(newNode);
+                locationList.Add(loc);
+
+                // Save node with the smallest H-Score => Distance to goal
+                if (MinH_ScoreNode == null || newNode.H_score < MinH_ScoreNode.H_score)
+                    MinH_ScoreNode = newNode;
+
+                // There is no need of sorting for one node.
+                if (i > 0)
+                {
+                    /// Go up the heap from child to parent and move parent down...
+                    // while we are not looking at the root node AND the new node has better attributes than the parent node ((i - 1) / 2)
+                    while (i > 0 && FirstNodeBetter(newNode /* Current Child */, heapList[(i - 1) / 2] /* Coresponding Parent */))
+                    {
+                        // Move parent down and replace current child -> New free space is created
+                        heapList[i] = heapList[(i - 1) / 2];
+                        // Select the next parent to check
+                        i = (i - 1) / 2;
+                    }
+
+                    /// Nodes were moved down at position I there is now a free space at the correct position for our new node:
+                    // Insert new node in position
+                    heapList[i] = newNode;
+                }
+            }
+
+            /// <summary>
+            /// Obtain the root which represents the node the the best attributes currently
+            /// </summary>
+            /// <returns>node with the best attributes currently</returns>
+            /// <exception cref="InvalidOperationException"></exception>
+            public Node GetRootLocation()
+            {
+                // The heap is empty. There is nothing to return.
+                if (heapList.Count == 0)
+                {
+                    throw new InvalidOperationException("The heap is empty.");
+                }
+
+                // Save the root node
+                Node rootNode = heapList[0];
+                locationList.Remove(rootNode.Location);
+
+                // Temporarirly store the last item's value.
+                Node lastNode = heapList[heapList.Count - 1];
+
+                // Remove the last value.
+                heapList.RemoveAt(heapList.Count - 1);
+
+                if (heapList.Count > 0)
+                {
+                    // Start at the first index.
+                    int currentParentPos = 0;
+
+                    /// Go through the heap from root to bottom...
+                    // Continue until the halfway point of the heap.
+                    while (currentParentPos < heapList.Count / 2)
+                    {
+                        // Select the left child of the current parent
+                        int currentChildPos = (2 * currentParentPos) + 1;
+
+                        // If the currently selected child is not the last entry of the list AND right child has better attributes
+                        if ((currentChildPos < heapList.Count - 1) && FirstNodeBetter(heapList[currentChildPos + 1], heapList[currentChildPos]))
+                        {
+                            // Select the right child
+                            currentChildPos++;
+                        }
+
+                        // If the last item is smaller than both siblings at the
+                        // current height, break.
+                        if (FirstNodeBetter(lastNode, heapList[currentChildPos]))
+                        {
+                            break;
+                        }
+
+                        // Move the item at index j up one level.
+                        heapList[currentParentPos] = heapList[currentChildPos];
+                        // Move index i to the appropriate branch.
+                        currentParentPos = currentChildPos;
+                    }
+                    // Insert the last node into the currently free position
+                    heapList[currentParentPos] = lastNode;
+                }
+
+                return rootNode;
+            }
+
+            /// <summary>
+            /// Compares two nodes and evaluates their position to the goal.
+            /// </summary>
+            /// <param name="firstNode">First node to compare</param>
+            /// <param name="secondNode">Second node to compare</param>
+            /// <returns>True if the first node has a more promissing position to the goal than the second</returns>
+            private static bool FirstNodeBetter(Node firstNode, Node secondNode)
+            {
+                // Is the F_score smaller?
+                return (firstNode.F_score < secondNode.F_score) ||
+                    // If F_score is equal, evaluate the h-score
+                    (firstNode.F_score == secondNode.F_score && firstNode.H_score < secondNode.H_score);
+            }
+
+            /// <summary>
+            /// Get the size of the heap
+            /// </summary>
+            /// <returns>size of the heap</returns>
+            public int Count()
+            {
+                return heapList.Count;
+            }
+
+            /// <summary>
+            /// Check if the heap contains a node with a certain location
+            /// </summary>
+            /// <param name="loc">Location to check</param>
+            /// <returns>true if a node with the given location is in the heap</returns>
+            public bool ContainsLocation(Location loc)
+            {
+                return locationList.Contains(loc);
+            }
         }
 
         /* ========= LOCATION PROPERTIES ========= */
@@ -313,20 +497,45 @@ namespace MinecraftClient.Mapping
         {
             switch (direction)
             {
+                // Move vertical
                 case Direction.Down:
                     return !IsOnGround(world, location);
                 case Direction.Up:
                     return (IsOnGround(world, location) || IsSwimming(world, location))
                         && !world.GetBlock(Move(Move(location, Direction.Up), Direction.Up)).Type.IsSolid();
+
+                // Move horizontal
                 case Direction.East:
                 case Direction.West:
                 case Direction.South:
                 case Direction.North:
-                    return !world.GetBlock(Move(location, direction)).Type.IsSolid()
-                        && !world.GetBlock(Move(Move(location, direction), Direction.Up)).Type.IsSolid();
+                    return PlayerFitsHere(world, Move(location, direction));
+
+                // Move diagonal
+                case Direction.NorthEast:
+                    return PlayerFitsHere(world, Move(location, Direction.North)) && PlayerFitsHere(world, Move(location, Direction.East)) && PlayerFitsHere(world, Move(location, direction));
+                case Direction.SouthEast:
+                    return PlayerFitsHere(world, Move(location, Direction.South)) && PlayerFitsHere(world, Move(location, Direction.East)) && PlayerFitsHere(world, Move(location, direction));
+                case Direction.SouthWest:
+                    return PlayerFitsHere(world, Move(location, Direction.South)) && PlayerFitsHere(world, Move(location, Direction.West)) && PlayerFitsHere(world, Move(location, direction));
+                case Direction.NorthWest:
+                    return PlayerFitsHere(world, Move(location, Direction.North)) && PlayerFitsHere(world, Move(location, Direction.West)) && PlayerFitsHere(world, Move(location, direction));
+
                 default:
                     throw new ArgumentException("Unknown direction", "direction");
             }
+        }
+
+        /// <summary>
+        /// Evaluates if a player fits in this location
+        /// </summary>
+        /// <param name="world">Current world</param>
+        /// <param name="location">Location to check</param>
+        /// <returns>True if a player is able to stand in this location</returns>
+        public static bool PlayerFitsHere(World world, Location location)
+        {
+            return !world.GetBlock(location).Type.IsSolid()
+                        && !world.GetBlock(Move(location, Direction.Up)).Type.IsSolid();
         }
 
         /// <summary>
@@ -350,10 +559,13 @@ namespace MinecraftClient.Mapping
         {
             switch (direction)
             {
+                // Move vertical
                 case Direction.Down:
                     return new Location(0, -1, 0);
                 case Direction.Up:
                     return new Location(0, 1, 0);
+
+                // Move horizontal straight
                 case Direction.East:
                     return new Location(1, 0, 0);
                 case Direction.West:
@@ -362,6 +574,17 @@ namespace MinecraftClient.Mapping
                     return new Location(0, 0, 1);
                 case Direction.North:
                     return new Location(0, 0, -1);
+
+                // Move horizontal diagonal
+                case Direction.NorthEast:
+                    return Move(Direction.North) + Move(Direction.East);
+                case Direction.SouthEast:
+                    return Move(Direction.South) + Move(Direction.East);
+                case Direction.SouthWest:
+                    return Move(Direction.South) + Move(Direction.West);
+                case Direction.NorthWest:
+                    return Move(Direction.North) + Move(Direction.West);
+
                 default:
                     throw new ArgumentException("Unknown direction", "direction");
             }
