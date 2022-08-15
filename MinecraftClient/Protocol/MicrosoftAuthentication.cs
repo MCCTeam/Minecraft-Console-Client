@@ -51,7 +51,7 @@ namespace MinecraftClient.Protocol
         }
 
         /// <summary>
-        /// Perform request to obtain access token by code or by refresh token 
+        /// Perform request to obtain access token by code or by refresh token
         /// </summary>
         /// <param name="postData">Complete POST data for the request</param>
         /// <returns></returns>
@@ -72,7 +72,7 @@ namespace MinecraftClient.Protocol
                 string accessToken = jsonData.Properties["access_token"].StringValue;
                 string refreshToken = jsonData.Properties["refresh_token"].StringValue;
                 int expiresIn = int.Parse(jsonData.Properties["expires_in"].StringValue);
-                
+
                 // Extract email from JWT
                 string payload = JwtPayloadDecode.GetPayload(jsonData.Properties["id_token"].StringValue);
                 var jsonPayload = Json.ParseJson(payload);
@@ -391,6 +391,7 @@ namespace MinecraftClient.Protocol
 
             string jsonString = response.Body;
             Json.JSONData json = Json.ParseJson(jsonString);
+
             return json.Properties["access_token"].StringValue;
         }
 

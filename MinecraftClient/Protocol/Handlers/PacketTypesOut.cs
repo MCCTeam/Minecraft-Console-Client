@@ -62,6 +62,10 @@ namespace MinecraftClient.Protocol.Handlers
         GenerateStructure, // Added in 1.16
         SetDisplayedRecipe, // Added in 1.16.2
         SetRecipeBookState, // Added in 1.16.2
-        Unknown //  For old version packet that have been removed and not used by mcc 
+        Unknown, //  For old version packet that have been removed and not used by mcc 
+
+        // Added in 1.19
+        ChatCommand,
+        ChatPreview,
     }
 }

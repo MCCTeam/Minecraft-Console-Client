@@ -38,25 +38,27 @@ For the names of the translation file, please see [this comment](https://github.
 
 _The recommended development environment is [Visual Studio](https://visualstudio.microsoft.com/). If you want to build the project without installing a development environment, you may also follow these instructions:_
 
-First of all, get a [zip of source code](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip), extract it and navigate to the `MinecraftClient` folder.
+First of all, download the .NET 6.0 SDK [here](https://dotnet.microsoft.com/en-us/download) and follow the install instructions.
 
-Edit `MinecraftClient.csproj` to set the Build target to `Release` on [line 4](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4):
-
-```xml
-<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-```
+Get a [zip of source code](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip), extract it and navigate to the `MinecraftClient` folder.
 
 ### On Windows 🪟
 
-1. Locate `MSBuild.exe` for .NET 4 inside `C:\Windows\Microsoft.NET\Framework\v4.X.XXXXX`
-2. Drag and drop `MinecraftClient.csproj` over `MSBuild.exe` to launch the build
-3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
+1. Open a Terminal / Command Prompt.
+2. Type in `dotnet publish --no-self-contained -r win-x64 -c Release`.
+3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release\net6.0\win-x64\publish\`
 
-### On Mac and Linux 🐧
+### On Linux 🐧
 
-1. Install the [Mono Framework](https://www.mono-project.com/download/stable/#download-lin) if not already installed
-2. Run `msbuild MinecraftClient.csproj` in a terminal
-3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
+1. Open a Terminal / Command Prompt.
+2. Type in `dotnet publish --no-self-contained -r linux-x64 -c Release`.
+3. If the build succeeds, you can find `MinecraftClient` under `MinecraftClient\bin\Release\net6.0\linux-x64\publish\`
+
+### On Mac 🍎
+
+1. Open a Terminal / Command Prompt.
+2. Type in `dotnet publish --no-self-contained -r osx-x64 -c Release`.
+3. If the build succeeds, you can find `MinecraftClient` under `MinecraftClient\bin\Release\net6.0\osx-x64\publish\`
 
 ## License ⚖️
 
