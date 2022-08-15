@@ -4,15 +4,19 @@ using System.Linq;
 using System.Text;
 using MinecraftClient.Protocol;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.WinAPI;
+using MinecraftClient.Protocol.Keys;
+using System.Security.Cryptography;
+using System.Xml.Linq;
 
 namespace MinecraftClient
 {
     /// <summary>
-    /// Minecraft Console Client by the MCC Team (c) 2012-2021.
+    /// Minecraft Console Client by the MCC Team (c) 2012-2022.
     /// Allows to connect to any Minecraft server, send and receive text, automated scripts.
     /// This source code is released under the CDDL 1.0 License.
     /// </summary>
@@ -32,10 +36,10 @@ namespace MinecraftClient
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
-        public const string MCHighestVersion = "1.18.2";
+        public const string MCHighestVersion = "1.19";
         public static readonly string BuildInfo = null;
 
-        private static Thread offlinePrompt = null;
+        private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
         private static bool useMcVersionOnce = false;
 
         /// <summary>
@@ -43,7 +47,22 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
-            Console.WriteLine("Minecraft Console Client v{0} - for MC {1} to {2} - Github.com/MCCTeam", Version, MCLowestVersion, MCHighestVersion);
+            //Setup ConsoleIO
+            ConsoleIO.LogPrefix = "§8[MCC] ";
+            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
+            {
+                if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
+                {
+                    ConsoleIO.BasicIO_NoColor = true;
+                }
+                ConsoleIO.BasicIO = true;
+                args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
+            }
+
+            if (!ConsoleIO.BasicIO)
+                ConsoleInteractive.ConsoleWriter.Init();
+
+            ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
 
             //Build information to facilitate processing of bug reports
             if (BuildInfo != null)
@@ -58,21 +77,16 @@ namespace MinecraftClient
                 ConsoleIO.DebugReadInput();
             }
 
-            //Setup ConsoleIO
-            ConsoleIO.LogPrefix = "§8[MCC] ";
-            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
-            {
-                if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
-                {
-                    ConsoleIO.BasicIO_NoColor = true;
-                }
-                ConsoleIO.BasicIO = true;
-                args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
-            }
-
             //Take advantage of Windows 10 / Mac / Linux UTF-8 console
-            if (isUsingMono || WindowsVersion.WinMajorVersion >= 10)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                // If we're on windows, check if our version is Win10 or greater.
+                if (WindowsVersion.WinMajorVersion >= 10)
+                    Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+            }
+            else
+            {
+                // Apply to all other operating systems.
                 Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
             }
 
@@ -145,10 +159,10 @@ namespace MinecraftClient
             bool useBrowser = Settings.AccountType == ProtocolHandler.AccountType.Microsoft && Settings.LoginMethod == "browser";
             if (Settings.Login == "" && !useBrowser)
             {
-                Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") + "\n" : Translations.Get("mcc.login"));
-                Settings.Login = Console.ReadLine();
+                ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") : Translations.Get("mcc.login"));
+                Settings.Login = ConsoleIO.ReadLine();
             }
-            if (Settings.Password == "" 
+            if (Settings.Password == ""
                 && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower()))
                 && !useBrowser)
             {
@@ -156,14 +170,14 @@ namespace MinecraftClient
             }
 
             // Setup exit cleaning code
-            ExitCleanUp.Add(delegate () 
+            ExitCleanUp.Add(delegate ()
             {
                 // Do NOT use Program.Exit() as creating new Thread cause program to freeze
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
             });
-            
+
 
             startupargs = args;
             InitializeClient();
@@ -174,15 +188,10 @@ namespace MinecraftClient
         /// </summary>
         private static void RequestPassword()
         {
-            Console.Write(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Settings.Login) + "\n" : Translations.Get("mcc.password"));
-            Settings.Password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
-            if (Settings.Password == "") { Settings.Password = "-"; }
-            if (!ConsoleIO.BasicIO)
-            {
-                //Hide password length
-                Console.CursorTop--; Console.Write(Translations.Get("mcc.password_hidden", "<******>"));
-                for (int i = 19; i < Console.BufferWidth; i++) { Console.Write(' '); }
-            }
+            ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Settings.Login) + "\n" : Translations.Get("mcc.password"));
+            string? password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
+            if (password == null || password == string.Empty) { password = "-"; }
+            Settings.Password = password;
         }
 
         /// <summary>
@@ -191,6 +200,7 @@ namespace MinecraftClient
         private static void InitializeClient()
         {
             SessionToken session = new SessionToken();
+            PlayerKeyPair? playerKeyPair = null;
 
             ProtocolHandler.LoginResult result = ProtocolHandler.LoginResult.LoginRequired;
 
@@ -216,8 +226,8 @@ namespace MinecraftClient
                         {
                             result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
                         }
-                        if (result != ProtocolHandler.LoginResult.Success 
-                            && Settings.Password == "" 
+                        if (result != ProtocolHandler.LoginResult.Success
+                            && Settings.Password == ""
                             && Settings.AccountType == ProtocolHandler.AccountType.Mojang)
                             RequestPassword();
                     }
@@ -238,6 +248,36 @@ namespace MinecraftClient
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
+                if (Settings.AccountType == ProtocolHandler.AccountType.Microsoft && Settings.Password != "-" && Settings.LoginWithSecureProfile)
+                {
+                    // Load cached profile key from disk if necessary
+                    if (Settings.ProfileKeyCaching == CacheType.Disk)
+                    {
+                        bool cacheKeyLoaded = KeysCache.InitializeDiskCache();
+                        if (Settings.DebugMessages)
+                            Translations.WriteLineFormatted(cacheKeyLoaded ? "debug.keys_cache_ok" : "debug.keys_cache_fail");
+                    }
+
+                    if (Settings.ProfileKeyCaching != CacheType.None && KeysCache.Contains(Settings.Login.ToLower()))
+                    {
+                        playerKeyPair = KeysCache.Get(Settings.Login.ToLower());
+                        if (playerKeyPair.NeedRefresh())
+                            Translations.WriteLineFormatted("mcc.profile_key_invalid");
+                        else
+                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.profile_key_valid", session.PlayerName));
+                    }
+
+                    if (playerKeyPair == null || playerKeyPair.NeedRefresh())
+                    {
+                        Translations.WriteLineFormatted("mcc.fetching_key");
+                        playerKeyPair = KeyUtils.GetKeys(session.ID);
+                        if (Settings.ProfileKeyCaching != CacheType.None && playerKeyPair != null)
+                        {
+                            KeysCache.Store(Settings.Login.ToLower(), playerKeyPair);
+                        }
+                    }
+                }
+
                 Settings.Username = session.PlayerName;
                 bool isRealms = false;
 
@@ -257,7 +297,7 @@ namespace MinecraftClient
                 if (Settings.ServerIP == "")
                 {
                     Translations.Write("mcc.ip");
-                    string addressInput = Console.ReadLine();
+                    string addressInput = ConsoleIO.ReadLine();
                     if (addressInput.StartsWith("realms:"))
                     {
                         if (Settings.MinecraftRealmsEnabled)
@@ -303,7 +343,7 @@ namespace MinecraftClient
 
                 //Get server version
                 int protocolversion = 0;
-                ForgeInfo forgeInfo = null;
+                ForgeInfo? forgeInfo = null;
 
                 if (Settings.ServerVersion != "" && Settings.ServerVersion.ToLower() != "auto")
                 {
@@ -358,9 +398,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            client = new McClient(session.PlayerName, session.PlayerID, session.ID, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
+                            client = new McClient(session.PlayerName, session.PlayerID, session.ID, playerKeyPair, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
                         }
-                        else client = new McClient(session.PlayerName, session.PlayerID, session.ID, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
+                        else client = new McClient(session.PlayerName, session.PlayerID, session.ID, playerKeyPair, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")
@@ -387,12 +427,6 @@ namespace MinecraftClient
                     default: failureReason = "error.login.unknown"; break;
                 }
                 failureMessage += Translations.Get(failureReason);
-
-                if (result == ProtocolHandler.LoginResult.SSLError && isUsingMono)
-                {
-                    Translations.WriteLineFormatted("error.login.ssl_help");
-                    return;
-                }
                 HandleFailure(failureMessage, false, ChatBot.DisconnectReason.LoginRejected);
             }
         }
@@ -403,10 +437,11 @@ namespace MinecraftClient
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
         public static void Restart(int delaySeconds = 0)
         {
+            ConsoleInteractive.ConsoleReader.StopReadThread();
             new Thread(new ThreadStart(delegate
             {
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (delaySeconds > 0)
                 {
                     Translations.WriteLine("mcc.restart_delay", delaySeconds);
@@ -425,7 +460,7 @@ namespace MinecraftClient
             new Thread(new ThreadStart(delegate
             {
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
-                if (offlinePrompt != null) { offlinePrompt.Abort(); offlinePrompt = null; ConsoleIO.Reset(); }
+                if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
                 if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
                 Environment.Exit(exitcode);
             })).Start();
@@ -459,7 +494,7 @@ namespace MinecraftClient
                 if (versionError)
                 {
                     Translations.Write("mcc.server_version");
-                    Settings.ServerVersion = Console.ReadLine();
+                    Settings.ServerVersion = ConsoleInteractive.ConsoleReader.RequestImmediateInput();
                     if (Settings.ServerVersion != "")
                     {
                         useMcVersionOnce = true;
@@ -470,51 +505,88 @@ namespace MinecraftClient
 
                 if (offlinePrompt == null)
                 {
-                    offlinePrompt = new Thread(new ThreadStart(delegate
+                    ConsoleInteractive.ConsoleReader.StopReadThread();
+
+                    var cancellationTokenSource = new CancellationTokenSource();
+                    offlinePrompt = new(new Thread(new ThreadStart(delegate
                     {
+                        bool exitThread = false;
                         string command = " ";
                         ConsoleIO.WriteLineFormatted(Translations.Get("mcc.disconnected", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
                         Translations.WriteLineFormatted("mcc.press_exit");
-                        while (command.Length > 0)
+
+                        while (!cancellationTokenSource.IsCancellationRequested)
                         {
-                            if (!ConsoleIO.BasicIO)
+                            if (exitThread)
+                                return;
+
+                            while (command.Length > 0)
                             {
-                                ConsoleIO.Write('>');
+                                if (cancellationTokenSource.IsCancellationRequested)
+                                    return;
+
+                                command = ConsoleInteractive.ConsoleReader.RequestImmediateInput().Trim();
+                                if (command.Length > 0)
+                                {
+                                    string message = "";
+
+                                    if (Settings.internalCmdChar != ' '
+                                        && command[0] == Settings.internalCmdChar)
+                                        command = command.Substring(1);
+
+                                    if (command.StartsWith("reco"))
+                                    {
+                                        message = new Commands.Reco().Run(null, Settings.ExpandVars(command), null);
+                                        if (message == "")
+                                        {
+                                            exitThread = true;
+                                            break;
+                                        }
+                                    }
+                                    else if (command.StartsWith("connect"))
+                                    {
+                                        message = new Commands.Connect().Run(null, Settings.ExpandVars(command), null);
+                                        if (message == "")
+                                        {
+                                            exitThread = true;
+                                            break;
+                                        }
+                                    }
+                                    else if (command.StartsWith("exit") || command.StartsWith("quit"))
+                                    {
+                                        message = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
+                                    }
+                                    else if (command.StartsWith("help"))
+                                    {
+                                        ConsoleIO.WriteLineFormatted("§8MCC: " +
+                                                                     (Settings.internalCmdChar == ' '
+                                                                         ? ""
+                                                                         : "" + Settings.internalCmdChar) +
+                                                                     new Commands.Reco().GetCmdDescTranslated());
+                                        ConsoleIO.WriteLineFormatted("§8MCC: " +
+                                                                     (Settings.internalCmdChar == ' '
+                                                                         ? ""
+                                                                         : "" + Settings.internalCmdChar) +
+                                                                     new Commands.Connect().GetCmdDescTranslated());
+                                    }
+                                    else
+                                        ConsoleIO.WriteLineFormatted(Translations.Get("icmd.unknown",
+                                            command.Split(' ')[0]));
+
+                                    if (message != "")
+                                        ConsoleIO.WriteLineFormatted("§8MCC: " + message);
+                                }
+                                else
+                                {
+                                    _ = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
+                                }
                             }
-                            command = Console.ReadLine().Trim();
-                            if (command.Length > 0)
-                            {
-                                string message = "";
 
-                                if (Settings.internalCmdChar != ' '
-                                    && command[0] == Settings.internalCmdChar)
-                                    command = command.Substring(1);
-
-                                if (command.StartsWith("reco"))
-                                {
-                                    message = new Commands.Reco().Run(null, Settings.ExpandVars(command), null);
-                                }
-                                else if (command.StartsWith("connect"))
-                                {
-                                    message = new Commands.Connect().Run(null, Settings.ExpandVars(command), null);
-                                }
-                                else if (command.StartsWith("exit") || command.StartsWith("quit"))
-                                {
-                                    message = new Commands.Exit().Run(null, Settings.ExpandVars(command), null);
-                                }
-                                else if (command.StartsWith("help"))
-                                {
-                                    ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Reco().GetCmdDescTranslated());
-                                    ConsoleIO.WriteLineFormatted("§8MCC: " + (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar) + new Commands.Connect().GetCmdDescTranslated());
-                                }
-                                else ConsoleIO.WriteLineFormatted(Translations.Get("icmd.unknown", command.Split(' ')[0]));
-
-                                if (message != "")
-                                    ConsoleIO.WriteLineFormatted("§8MCC: " + message);
-                            }
+                            if (exitThread)
+                                return;
                         }
-                    }));
-                    offlinePrompt.Start();
+                    })), cancellationTokenSource);
+                    offlinePrompt.Item1.Start();
                 }
             }
             else
@@ -531,17 +603,6 @@ namespace MinecraftClient
                 Exit();
             }
 
-        }
-
-        /// <summary>
-        /// Detect if the user is running Minecraft Console Client through Mono
-        /// </summary>
-        public static bool isUsingMono
-        {
-            get
-            {
-                return Type.GetType("Mono.Runtime") != null;
-            }
         }
 
         /// <summary>

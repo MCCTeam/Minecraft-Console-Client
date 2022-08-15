@@ -51,30 +51,32 @@ namespace MinecraftClient.Protocol.Handlers
         public PacketTypePalette GetTypeHandler(int protocol)
         {
             PacketTypePalette p;
-            if (protocol > Protocol18Handler.MC1182Version)
+            if (protocol > Protocol18Handler.MC_1_19_Version)
                 throw new NotImplementedException(Translations.Get("exception.palette.packet"));
-            if (protocol <= Protocol18Handler.MC18Version)
+            if (protocol <= Protocol18Handler.MC_1_8_Version)
                 p = new PacketPalette17();
-            else if (protocol <= Protocol18Handler.MC1112Version)
+            else if (protocol <= Protocol18Handler.MC_1_11_2_Version)
                 p = new PacketPalette110();
-            else if (protocol <= Protocol18Handler.MC112Version)
+            else if (protocol <= Protocol18Handler.MC_1_12_Version)
                 p = new PacketPalette112();
-            else if (protocol <= Protocol18Handler.MC1122Version)
+            else if (protocol <= Protocol18Handler.MC_1_12_2_Version)
                 p = new PacketPalette1122();
-            else if (protocol <= Protocol18Handler.MC114Version)
+            else if (protocol <= Protocol18Handler.MC_1_14_Version)
                 p = new PacketPalette113();
-            else if (protocol <= Protocol18Handler.MC115Version)
+            else if (protocol <= Protocol18Handler.MC_1_15_Version)
                 p = new PacketPalette114();
-            else if (protocol <= Protocol18Handler.MC1152Version)
+            else if (protocol <= Protocol18Handler.MC_1_15_2_Version)
                 p = new PacketPalette115();
-            else if (protocol <= Protocol18Handler.MC1161Version)
+            else if (protocol <= Protocol18Handler.MC_1_16_1_Version)
                 p = new PacketPalette116();
-            else if (protocol <= Protocol18Handler.MC1165Version)
+            else if (protocol <= Protocol18Handler.MC_1_16_5_Version)
                 p = new PacketPalette1162();
-            else if (protocol <= Protocol18Handler.MC1171Version)
+            else if (protocol <= Protocol18Handler.MC_1_17_1_Version)
                 p = new PacketPalette117();
-            else
+            else if (protocol <= Protocol18Handler.MC_1_18_2_Version)
                 p = new PacketPalette118();
+            else
+                p = new PacketPalette119();
 
             p.SetForgeEnabled(this.forgeEnabled);
             return p;

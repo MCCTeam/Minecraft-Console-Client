@@ -9,6 +9,7 @@ using MinecraftClient.Proxy;
 using System.Security.Cryptography;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
+using MinecraftClient.Protocol.Keys;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -23,7 +24,7 @@ namespace MinecraftClient.Protocol.Handlers
         private string autocomplete_result = "";
         private bool encrypted = false;
         private int protocolversion;
-        private Thread netRead;
+        private Tuple<Thread, CancellationTokenSource>? netRead = null;
         Crypto.IAesStream s;
         TcpClient c;
 
@@ -60,19 +61,27 @@ namespace MinecraftClient.Protocol.Handlers
             this.c = Client;
         }
 
-        private void Updater()
+        private void Updater(object? o)
         {
+            if (((CancellationToken)o!).IsCancellationRequested)
+                return;
+
             try
             {
-                do
+                while (!((CancellationToken)o!).IsCancellationRequested)
                 {
-                    Thread.Sleep(100);
+                    do
+                    {
+                        Thread.Sleep(100);
+                    } while (Update());
                 }
-                while (Update());
             }
             catch (System.IO.IOException) { }
             catch (SocketException) { }
             catch (ObjectDisposedException) { }
+
+            if (((CancellationToken)o!).IsCancellationRequested)
+                return;
 
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
         }
@@ -94,7 +103,8 @@ namespace MinecraftClient.Protocol.Handlers
             int nbr = 0;
             switch (id)
             {
-                case 0x00: byte[] keepalive = new byte[5] { 0, 0, 0, 0, 0 };
+                case 0x00:
+                    byte[] keepalive = new byte[5] { 0, 0, 0, 0, 0 };
                     Receive(keepalive, 1, 4, SocketFlags.None);
                     handler.OnServerKeepAlive();
                     Send(keepalive); break;
@@ -102,7 +112,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x02: readData(1); readNextString(); readNextString(); readData(4); break;
                 case 0x03:
                     string message = readNextString();
-                    handler.OnTextReceived(message, protocolversion >= 72); break;
+                    handler.OnTextReceived(new ChatMessage(message, protocolversion >= 72, 0, Guid.Empty)); break;
                 case 0x04: readData(16); break;
                 case 0x05: readData(6); readNextItemSlot(); break;
                 case 0x06: readData(12); break;
@@ -173,7 +183,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0xC9:
                     string name = readNextString(); bool online = readNextByte() != 0x00; readData(2);
                     Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
-                    if (online) { handler.OnPlayerJoin(FakeUUID, name); } else { handler.OnPlayerLeave(FakeUUID); }
+                    if (online) { handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID)); } else { handler.OnPlayerLeave(FakeUUID); }
                     break;
                 case 0xCA: if (protocolversion >= 72) { readData(9); } else readData(3); break;
                 case 0xCB: autocomplete_result = readNextString(); autocomplete_received = true; break;
@@ -183,11 +193,13 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0xCF: if (protocolversion > 51) { readNextString(); readData(1); readNextString(); } readData(4); break;
                 case 0xD0: if (protocolversion > 51) { readData(1); readNextString(); } break;
                 case 0xD1: if (protocolversion > 51) { readNextTeamData(); } break;
-                case 0xFA: string channel = readNextString();
+                case 0xFA:
+                    string channel = readNextString();
                     byte[] payload = readNextByteArray();
                     handler.OnPluginChannelMessage(channel, payload);
                     break;
-                case 0xFF: string reason = readNextString();
+                case 0xFF:
+                    string reason = readNextString();
                     handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, reason); break;
                 default: return false; //unknown packet!
             }
@@ -196,9 +208,9 @@ namespace MinecraftClient.Protocol.Handlers
 
         private void StartUpdating()
         {
-            netRead = new Thread(new ThreadStart(Updater));
-            netRead.Name = "ProtocolPacketHandler";
-            netRead.Start();
+            netRead = new(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
+            netRead.Item1.Name = "ProtocolPacketHandler";
+            netRead.Item1.Start(netRead.Item2.Token);
         }
 
         /// <summary>
@@ -207,7 +219,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Net read thread ID</returns>
         public int GetNetReadThreadId()
         {
-            return netRead != null ? netRead.ManagedThreadId : -1;
+            return netRead != null ? netRead.Item1.ManagedThreadId : -1;
         }
 
         public void Dispose()
@@ -216,7 +228,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (netRead != null)
                 {
-                    netRead.Abort();
+                    netRead.Item2.Cancel();
                     c.Close();
                 }
             }
@@ -545,7 +557,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        public bool Login()
+        public bool Login(PlayerKeyPair playerKeyPair)
         {
             if (Handshake(handler.GetUserUUID(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort()))
             {
@@ -631,7 +643,7 @@ namespace MinecraftClient.Protocol.Handlers
             return protocolversion;
         }
 
-        public bool SendChatMessage(string message)
+        public bool SendChatMessage(string message, PlayerKeyPair? playerKeyPair)
         {
             if (String.IsNullOrEmpty(message))
                 return true;
@@ -666,12 +678,12 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (SocketException) { return false; }
         }
-        
+
         public bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4)
         {
             return false; //Currently not implemented
         }
-        
+
         public bool SendBrandInfo(string brandInfo)
         {
             return false; //Only supported since MC 1.7
@@ -701,18 +713,18 @@ namespace MinecraftClient.Protocol.Handlers
         {
             return false; //Currently not implemented
         }
-        
+
         public bool SendInteractEntity(int EntityID, int type, int hand)
         {
             return false; //Currently not implemented
         }
-        
+
         public bool UpdateCommandBlock(Location location, string command, CommandBlockMode mode, CommandBlockFlags flags)
         {
             return false;  //Currently not implemented
         }
-        
-        public bool SendUseItem(int hand)
+
+        public bool SendUseItem(int hand, int sequenceId)
         {
             return false; //Currently not implemented
         }
@@ -727,7 +739,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendCreativeInventoryAction(int slot, ItemType item, int count, Dictionary<string, object> nbt)
+        public bool SendCreativeInventoryAction(int slot, ItemType item, int count, Dictionary<string, object>? nbt)
         {
             return false; //Currently not implemented
         }
@@ -737,7 +749,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendPlayerBlockPlacement(int hand, Location location, Direction face)
+        public bool SendPlayerBlockPlacement(int hand, Location location, Direction face, int sequenceId)
         {
             return false; //Currently not implemented
         }
@@ -747,7 +759,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendPlayerDigging(int status, Location location, Direction face)
+        public bool SendPlayerDigging(int status, Location location, Direction face, int sequenceId)
         {
             return false; //Currently not implemented
         }
@@ -759,7 +771,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="data">packet Data</param>
         public bool SendPluginChannelPacket(string channel, byte[] data)
         {
-            try {
+            try
+            {
                 byte[] channelLength = BitConverter.GetBytes((short)channel.Length);
                 Array.Reverse(channelLength);
 

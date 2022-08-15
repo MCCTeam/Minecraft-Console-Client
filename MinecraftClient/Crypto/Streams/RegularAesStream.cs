@@ -91,16 +91,16 @@ namespace MinecraftClient.Crypto.Streams
             enc.Write(buffer, offset, count);
         }
 
-        private RijndaelManaged GenerateAES(byte[] key)
+        private static Aes GenerateAES(byte[] key)
         {
-            RijndaelManaged cipher = new RijndaelManaged();
-            cipher.Mode = CipherMode.CFB;
-            cipher.Padding = PaddingMode.None;
-            cipher.KeySize = 128;
-            cipher.FeedbackSize = 8;
-            cipher.Key = key;
-            cipher.IV = key;
-            return cipher;
+            Aes aes = Aes.Create();
+            aes.Mode = CipherMode.CFB;
+            aes.Padding = PaddingMode.None;
+            aes.KeySize = 128;
+            aes.FeedbackSize = 8;
+            aes.Key = key;
+            aes.IV = key;
+            return aes;
         }
     }
 }

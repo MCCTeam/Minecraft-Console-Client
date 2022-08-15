@@ -120,7 +120,9 @@ namespace MinecraftClient
             string systemLanguage = string.IsNullOrEmpty(CultureInfo.CurrentCulture.Parent.Name) // Parent.Name might be empty
                     ? CultureInfo.CurrentCulture.Name
                     : CultureInfo.CurrentCulture.Parent.Name;
-            string langDir = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar;
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string langDir = baseDir + ((baseDir.EndsWith(Path.DirectorySeparatorChar) ? String.Empty : Path.DirectorySeparatorChar) + 
+                translationFilePath + Path.DirectorySeparatorChar);
             string langFileSystemLanguage = langDir + systemLanguage + ".ini";
             string langFileConfigLanguage = langDir + language + ".ini";
 
@@ -194,7 +196,7 @@ namespace MinecraftClient
         /// <param name="key">Translation key</param>
         public static void Write(string key)
         {
-            ConsoleIO.Write(Get(key));
+            ConsoleIO.WriteLine(Get(key));
         }
 
         /// <summary>

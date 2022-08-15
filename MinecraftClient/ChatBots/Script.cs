@@ -7,6 +7,7 @@ using Microsoft.CSharp;
 using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Diagnostics;
+using System.IO;
 
 namespace MinecraftClient.ChatBots
 {
@@ -86,7 +87,7 @@ namespace MinecraftClient.ChatBots
         public static bool LookForScript(ref string filename)
         {
             //Automatically look in subfolders and try to add ".txt" file extension
-            char dir_slash = Program.isUsingMono ? '/' : '\\';
+            char dir_slash = Path.DirectorySeparatorChar;
             string[] files = new string[]
             {
                 filename,
