@@ -51,7 +51,7 @@ namespace MinecraftClient.Protocol
         }
 
         /// <summary>
-        /// Perform request to obtain access token by code or by refresh token 
+        /// Perform request to obtain access token by code or by refresh token
         /// </summary>
         /// <param name="postData">Complete POST data for the request</param>
         /// <returns></returns>
@@ -403,6 +403,7 @@ namespace MinecraftClient.Protocol
 
             string jsonString = response.Body;
             Json.JSONData json = Json.ParseJson(jsonString);
+
             return json.Properties["access_token"].StringValue;
         }
 
