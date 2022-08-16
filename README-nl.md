@@ -7,7 +7,7 @@ Minecraft Console Client (MCC) is een simpele app waarmee je Minecraft servers k
 
 ## Download 🔽
 
-Krijg het binary bestand van onze laatste [development build](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest).
+Verkrijg hier de laatste ontwikkelde binaire versie. [development build](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest).
 De exe file is een .NET binary die ook werkt op Mac en Linux.
 
 ## Hoe Te Gebruiken  📚
@@ -42,19 +42,19 @@ Download allereerst de .NET 6.0 SDK [here](https://dotnet.microsoft.com/en-us/do
 
 Bemachtig een [zip of source code](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip), pak het uit en navigeer naar de `MinecraftClient` map.
 
-### On Windows 🪟
+### Met Windows 🪟
 
 1. Open een Terminal / Opdrachtprompt.
 2. Typ in `dotnet publish --no-self-contained -r win-x64 -c Release`.
 3. Als de build slaagt, kunt u vinden `MinecraftClient.exe` onder `MinecraftClient\bin\Release\net6.0\win-x64\publish\`
 
-### On Linux 🐧
+### Met Linux 🐧
 
 1. Open een Terminal / Opdrachtprompt.
 2. Typ in `dotnet publish --no-self-contained -r linux-x64 -c Release`.
 3. Als de build slaagt, kunt u vinden `MinecraftClient` onder `MinecraftClient\bin\Release\net6.0\linux-x64\publish\`
 
-### On Mac 🍎
+### Met Mac 🍎
 
 1. Open een Terminal / Opdrachtprompt.
 2. Typ in `dotnet publish --no-self-contained -r osx-x64 -c Release`.
