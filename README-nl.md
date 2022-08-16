@@ -18,7 +18,7 @@ Bekijk de [sample configuration files](MinecraftClient/config/) die de how-to-us
 
 Bekijk de [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) en de bestaande [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Misschien is je vraag daar al beantwoord. Als dat niet zo is open dan een [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) en stel je vraag. Als je een bug vind, raporteer dat in de [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) sectie.
 
-## Ons helpen ❤️
+## Steentje bijdragen ❤️
  
 We zijn een kleine community, dus we hebben hulp nodig bij het implementeren van upgrades voor nieuwe Minecraft-versies, het oplossen van bugs en het uitbreiden van het project. We zijn altijd op zoek naar gemotiveerde mensen om bij te dragen. Als je het gevoel hebt dat jij het zou kunnen zijn, kijk dan eens naar de [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) sectie :)
 
