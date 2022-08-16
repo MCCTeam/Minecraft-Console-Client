@@ -7,16 +7,17 @@ Minecraft Console Client (MCC) is a lightweight app allowing you to connect to a
 
 ## Download 🔽
 
-Get binary file from our latest [development build](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest).
-The exe file is a .NET binary which also works on Mac and Linux.
+Get development builds from the [Releases section](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
 
 ## How to use 📚
 
-Check out the [sample configuration files](MinecraftClient/config/) which includes the how-to-use [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual).
+* 🌐 https://mccteam.github.io/
+* 📝 [Sample configuration files](MinecraftClient/config/)
+* 📖 [Configuration Readme](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual)
 
 ## Getting Help 🙋
 
-Check out the [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) and existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Maybe your question is answered there. If not, please open a [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) and ask your question. If you find a bug, please report it in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section.
+Check out the [Website](https://mccteam.github.io/), [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) and existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Maybe your question is answered there. If not, please open a [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) and ask your question. If you find a bug, please report it in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section.
 
 ## Helping Us ❤️
 
@@ -24,13 +25,13 @@ We are a small community so we need help to implement upgrades for new Minecraft
 
 ## How to contribute 📝
 
-If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the *Master* branch. MCC is currently distributed as development builds only (which are usually stable) so we no longer use the *Indev* branch.
+If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the *Master* branch. To contribute to the website / online documentation see also the [Website repository](https://github.com/MCCTeam/MCCTeam.github.io).
 
 ## Translating Minecraft Console Client 🌍
 
 If you would like to translate Minecraft Console Client to a different language, please download the translation file from [the lang folder](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) or just fork the repository. Once you finished the translation work, submit a pull request or send us the file through an [Issue](https://github.com/MCCTeam/Minecraft-Console-Client/issues) in case you are not familiar with Git.
 
-To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if does not exist.
+To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if it does not exist.
 
 For the names of the translation file, please see [this comment](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
 
