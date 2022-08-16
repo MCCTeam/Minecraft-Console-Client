@@ -10,64 +10,64 @@ Minecraft Console Client (MCC) is een simpele app waarmee je Minecraft servers k
 Krijg het binary bestand van onze laatste [development build](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest).
 De exe file is een .NET binary die ook werkt op Mac en Linux.
 
-## How to use 📚
+## Hoe Te Gebruiken  📚
 
 Bekijk de [sample configuration files](MinecraftClient/config/) die de how-to-use bevat [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual).
 
-## Getting Help 🙋
+## Hulp Krijgen 🙋
 
 Bekijk de [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) en de bestaande [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Misschien is je vraag daar al beantwoord. Als dat niet zo is open dan een [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) en stel je vraag. Als je een bug vind, raporteer dat in de [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) sectie.
 
-## Helping Us ❤️
+## Ons helpen ❤️
  
-We are a small community so we need help to implement upgrades for new Minecraft versions, fixing bugs and expanding the project. We are always looking for motivated people to contribute. If you feel like it could be you, please have a look at the [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) section :)
+We zijn een kleine community, dus we hebben hulp nodig bij het implementeren van upgrades voor nieuwe Minecraft-versies, het oplossen van bugs en het uitbreiden van het project. We zijn altijd op zoek naar gemotiveerde mensen om bij te dragen. Als je het gevoel hebt dat jij het zou kunnen zijn, kijk dan eens naar de [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) sectie :)
 
-## How to contribute 📝
+## Hoe draag je bij 📝
 
-If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the *Master* branch. MCC is currently distributed as development builds only (which are usually stable) so we no longer use the *Indev* branch.
+Als je graag mee wilt helpen aan Minecraft Console Client, geweldig! Fork de repository en dien een pull request in op de *Master* branch. MCC is op dit moment alleen uitgegeven in developemnt builds (die normaal gesproken stabiel zijn) dus we gebruiken de *Indev* branch niet meer.
 
-## Translating Minecraft Console Client 🌍
+## Minecraft Console Client Vertalen 🌍
 
-If you would like to translate Minecraft Console Client to a different language, please download the translation file from [the lang folder](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) or just fork the repository. Once you finished the translation work, submit a pull request or send us the file through an [Issue](https://github.com/MCCTeam/Minecraft-Console-Client/issues) in case you are not familiar with Git.
+Als je de Minecraft Console Client wilt vertalen naar een andere taal, download dan het vertalings bestand via [the lang folder](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) of fork de repository. Nadat je klaar bent met de vertaling, dien dan de vertaling in of stuur ons het bestand door [Issue](https://github.com/MCCTeam/Minecraft-Console-Client/issues) in het geval dat je niet bekend bent met Git.
 
-To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if does not exist.
+Als u het vertaalde taalbestand wilt gebruiken, plaatst u het onder `lang/mcc/` map en stel uw taal in `.ini` config. U kunt de map maken als deze niet bestaat.
 
-For the names of the translation file, please see [this comment](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
+Voor de namen van het vertaalbestand, zie [this comment](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
 
 ## Building from source 🏗️
 
-_The recommended development environment is [Visual Studio](https://visualstudio.microsoft.com/). If you want to build the project without installing a development environment, you may also follow these instructions:_
+_De aanbevolen ontwikkelomgeving is [Visual Studio](https://visualstudio.microsoft.com/). Als u het project wilt bouwen zonder een ontwikkelomgeving te installeren, kunt u ook deze instructies volgen:_
 
-First of all, download the .NET 6.0 SDK [here](https://dotnet.microsoft.com/en-us/download) and follow the install instructions.
+Download allereerst de .NET 6.0 SDK [here](https://dotnet.microsoft.com/en-us/download) en volg de installatie-instructies.
 
-Get a [zip of source code](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip), extract it and navigate to the `MinecraftClient` folder.
+Bemachtig een [zip of source code](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip), pak het uit en navigeer naar de `MinecraftClient` map.
 
 ### On Windows 🪟
 
-1. Open a Terminal / Command Prompt.
-2. Type in `dotnet publish --no-self-contained -r win-x64 -c Release`.
-3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release\net6.0\win-x64\publish\`
+1. Open een Terminal / Opdrachtprompt.
+2. Typ in `dotnet publish --no-self-contained -r win-x64 -c Release`.
+3. Als de build slaagt, kunt u vinden `MinecraftClient.exe` onder `MinecraftClient\bin\Release\net6.0\win-x64\publish\`
 
 ### On Linux 🐧
 
-1. Open a Terminal / Command Prompt.
-2. Type in `dotnet publish --no-self-contained -r linux-x64 -c Release`.
-3. If the build succeeds, you can find `MinecraftClient` under `MinecraftClient\bin\Release\net6.0\linux-x64\publish\`
+1. Open een Terminal / Opdrachtprompt.
+2. Typ in `dotnet publish --no-self-contained -r linux-x64 -c Release`.
+3. Als de build slaagt, kunt u vinden `MinecraftClient` onder `MinecraftClient\bin\Release\net6.0\linux-x64\publish\`
 
 ### On Mac 🍎
 
-1. Open a Terminal / Command Prompt.
-2. Type in `dotnet publish --no-self-contained -r osx-x64 -c Release`.
-3. If the build succeeds, you can find `MinecraftClient` under `MinecraftClient\bin\Release\net6.0\osx-x64\publish\`
+1. Open een Terminal / Opdrachtprompt.
+2. Typ in `dotnet publish --no-self-contained -r osx-x64 -c Release`.
+3. Als de build slaagt, kunt u vinden `MinecraftClient` onder `MinecraftClient\bin\Release\net6.0\osx-x64\publish\`
 
 ## License ⚖️
 
 Unless specifically stated, the code is from the MCC Team or Contributors, and available under CDDL-1.0. Else, the license and original author are mentioned in source file headers.
 The main terms of the CDDL-1.0 license are basically the following:
 
-- You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial.
-- However, in all cases, any modifications, improvements, or additions to the CDDL code (any code that is referenced in direct modifications to the CDDL code is considered an addition to the CDDL code, and so is bound by this requirement; e.g. a modification of a math function to use a fast lookup table makes that table itself an addition to the CDDL code, regardless of whether it's in a source code file of its own) must be made publicly and freely available in source, under the CDDL license itself.
-- In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
+- U mag de gelicentieerde code geheel of gedeeltelijk gebruiken in elk programma dat u wenst, ongeacht de licentie van het programma als geheel (of beter gezegd, als exclusief de code die u leent). Het programma zelf kan open of closed source, gratis of commercieel zijn.
+- In alle gevallen echter, eventuele wijzigingen, verbeteringen of toevoegingen aan de CDDL-code (elke code waarnaar wordt verwezen in directe wijzigingen aan de CDDL-code wordt beschouwd als een toevoeging aan de CDDL-code en is dus gebonden aan deze vereiste; bijvoorbeeld een wijziging van een wiskundige functie om een snelle opzoektabel te gebruiken, maakt die tabel zelf een toevoeging aan de CDDL-code,  ongeacht of het in een eigen broncodebestand staat) moet openbaar en vrij beschikbaar worden gesteld in de bron, onder de CDDL-licentie zelf.
+- In elk programma (bron of binair) dat CDDL-code gebruikt, moet herkenning worden gegeven aan de bron (project of auteur) van de CDDL-code. Ook mogen wijzigingen in de CDDL-code (die als bron moet worden verspreid) geen kennisgevingen verwijderen die de afkomst van de code aangeven.
 
-More info at http://qstuff.blogspot.fr/2007/04/why-cddl.html
-Full license at http://opensource.org/licenses/CDDL-1.0
+Meer info op http://qstuff.blogspot.fr/2007/04/why-cddl.html
+Volledige licentie op http://opensource.org/licenses/CDDL-1.0
