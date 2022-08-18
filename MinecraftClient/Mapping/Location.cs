@@ -14,7 +14,7 @@ namespace MinecraftClient.Mapping
         /// The X Coordinate
         /// </summary>
         public double X;
-        
+
         /// <summary>
         /// The Y Coordinate (vertical)
         /// </summary>
@@ -24,11 +24,6 @@ namespace MinecraftClient.Mapping
         /// The Z coordinate
         /// </summary>
         public double Z;
-
-        /// <summary>
-        /// Current world: to get the lowest Y coordinate 
-        /// </summary>
-        public static World world;
 
         /// <summary>
         /// Get location with zeroed coordinates
@@ -84,10 +79,7 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                if (world.GetDimension() == null)
-                    return (int)Math.Floor(Y / Chunk.SizeY); // below 1.16.2, Y coordinate always start from zero
-                else
-                    return (int)Math.Floor((Y - world.GetDimension().minY) / Chunk.SizeY);
+                return (int)Math.Floor((Y - World.GetDimension().minY) / Chunk.SizeY);
             }
         }
 

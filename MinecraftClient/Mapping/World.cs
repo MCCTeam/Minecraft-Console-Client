@@ -19,7 +19,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// The dimension info of the world
         /// </summary>
-        private Dimension dimension;
+        private static Dimension dimension = new Dimension();
 
         /// <summary>
         /// Lock for thread safety
@@ -29,8 +29,8 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Chunk data parsing progress
         /// </summary>
-        public uint chunkCnt = 0;
-        public uint chunkLoadNotCompleted = 0;
+        public int chunkCnt = 0;
+        public int chunkLoadNotCompleted = 0;
 
         /// <summary>
         /// Read, set or unload the specified chunk column
@@ -89,28 +89,24 @@ namespace MinecraftClient.Mapping
             }
         }
 
-        public World()
-        {
-            Location.world = this;
-        }
-
         /// <summary>
         /// Set dimension type
         /// </summary>
         /// <param name="name">	The name of the dimension type</param>
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
-        public void SetDimension(string name, Dictionary<string, object> nbt)
+        public static void SetDimension(string name, Dictionary<string, object> nbt)
         {
-            this.dimension = new Dimension(name, nbt);
+            // will change in 1.19 and above
+            dimension = new Dimension(name, nbt);
         }
 
         /// <summary>
-        /// Get dimension type
+        /// Get current dimension
         /// </summary>
-        /// <returns>The chunk column</returns>
-        public Dimension GetDimension()
+        /// <returns>Current dimension</returns>
+        public static Dimension GetDimension()
         {
-            return this.dimension;
+            return dimension;
         }
 
         /// <summary>
@@ -211,7 +207,6 @@ namespace MinecraftClient.Mapping
             try
             {
                 chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
-                dimension = null;
             }
             finally
             {
