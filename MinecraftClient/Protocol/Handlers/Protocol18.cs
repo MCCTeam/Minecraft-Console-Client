@@ -332,7 +332,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 currentDimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
 
                             if (protocolversion >= MC1162Version)
-                                handler.GetWorld().SetDimension(currentDimensionName, currentDimensionType);
+                                World.SetDimension(currentDimensionName, currentDimensionType);
 
                             if (protocolversion >= MC115Version)
                                 dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
@@ -391,10 +391,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 dimensionNameInRespawn = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
 
                             if (protocolversion >= MC1162Version)
-                                new Task(() =>
-                                {
-                                    handler.GetWorld().SetDimension(dimensionNameInRespawn, dimensionTypeInRespawn);
-                                }).Start();
+                                World.SetDimension(dimensionNameInRespawn, dimensionTypeInRespawn);
 
                             if (protocolversion < MC114Version)
                                 dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
@@ -470,12 +467,13 @@ namespace MinecraftClient.Protocol.Handlers
                                     }
 
                                     int dataSize = dataTypes.ReadNextVarInt(packetData); // Size
+
+                                    Interlocked.Increment(ref handler.GetWorld().chunkCnt);
+                                    Interlocked.Increment(ref handler.GetWorld().chunkLoadNotCompleted);
                                     new Task(() =>
                                     {
-                                        handler.GetWorld().chunkCnt++;
-                                        handler.GetWorld().chunkLoadNotCompleted++;
                                         pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData);
-                                        handler.GetWorld().chunkLoadNotCompleted--;
+                                        Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
                                     }).Start();
                                 }
                                 else
@@ -752,7 +750,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 int chunkZ = dataTypes.ReadNextInt(packetData);
 
                                 if (handler.GetWorld()[chunkX, chunkZ] != null)
-                                    handler.GetWorld().chunkCnt--;
+                                    Interlocked.Decrement(ref handler.GetWorld().chunkCnt);
+                                // Warning: It is legal to include unloaded chunks in the UnloadChunk packet. Since chunks that have not been loaded are not recorded, this may result in loading chunks that should be unloaded and inaccurate statistics.
 
                                 handler.GetWorld()[chunkX, chunkZ] = null;
                             }

@@ -20,17 +20,17 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Whether piglins shake and transform to zombified piglins.
         /// </summary>
-        public readonly bool piglinSafe;
+        public readonly bool piglinSafe = false;
 
         /// <summary>
-        /// 	When false, compasses spin randomly. When true, nether portals can spawn zombified piglins.
+        /// When false, compasses spin randomly. When true, nether portals can spawn zombified piglins.
         /// </summary>
-        public readonly bool natural;
+        public readonly bool natural = true;
 
         /// <summary>
         /// How much light the dimension has.
         /// </summary>
-        public readonly float ambientLight;
+        public readonly float ambientLight = 0.0f;
 
 
         /// <summary>
@@ -42,35 +42,36 @@ namespace MinecraftClient.Mapping
 
         /// <summary>
         /// A resource location defining what block tag to use for infiniburn.
-        /// Value: "" or minecraft resource "minecraft:...".
+        /// Value above 1.18.2: "#" or minecraft resource "#minecraft:...".
+        /// Value below 1.18.1: "" or minecraft resource "minecraft:...".
         /// </summary>
-        public readonly string infiniburn;
+        public readonly string infiniburn = "#minecraft:infiniburn_overworld";
 
         /// <summary>
         /// Whether players can charge and use respawn anchors.
         /// </summary>
-        public readonly bool respawnAnchorWorks;
+        public readonly bool respawnAnchorWorks = false;
 
         /// <summary>
         /// Whether the dimension has skylight access or not.
         /// </summary>
-        public readonly bool hasSkylight;
+        public readonly bool hasSkylight = true;
 
         /// <summary>
         /// Whether players can use a bed to sleep.
         /// </summary>
-        public readonly bool bedWorks;
+        public readonly bool bedWorks = true;
 
         /// <summary>
         /// unknown
         /// Values: "minecraft:overworld", "minecraft:the_nether", "minecraft:the_end" or something else.
         /// </summary>
-        public readonly string effects;
+        public readonly string effects = "minecraft:overworld";
 
         /// <summary>
         /// Whether players with the Bad Omen effect can cause a raid.
         /// </summary>
-        public readonly bool hasRaids;
+        public readonly bool hasRaids = true;
 
         /// <summary>
         /// The minimum Y level.
@@ -78,7 +79,7 @@ namespace MinecraftClient.Mapping
         public readonly int minY = 0;
 
         /// <summary>
-        /// The minimum Y level.
+        /// The maximum Y level.
         /// </summary>
         public readonly int maxY = 256;
 
@@ -90,30 +91,36 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// The maximum height to which chorus fruits and nether portals can bring players within this dimension.
         /// </summary>
-        public readonly int logicalHeight;
+        public readonly int logicalHeight = 256;
 
         /// <summary>
         /// The multiplier applied to coordinates when traveling to the dimension.
         /// </summary>
-        public readonly double coordinateScale;
+        public readonly double coordinateScale = 1.0;
 
         /// <summary>
         /// Whether the dimensions behaves like the nether (water evaporates and sponges dry) or not. Also causes lava to spread thinner.
         /// </summary>
-        public readonly bool ultrawarm;
+        public readonly bool ultrawarm = false;
 
         /// <summary>
         /// Whether the dimension has a bedrock ceiling or not. When true, causes lava to spread faster.
         /// </summary>
-        public readonly bool hasCeiling;
+        public readonly bool hasCeiling = false;
 
+        /// <summary>
+        /// Default value used in version below 1.17
+        /// </summary>
+        public Dimension()
+        {
+            this.Name = "minecraft:overworld";
+        }
 
         /// <summary>
         /// Create from the "Dimension Codec" NBT Tag Compound
         /// </summary>
-        /// <param name="chunkX">ChunkColumn X</param>
-        /// <param name="chunkY">ChunkColumn Y</param>
-        /// <returns>chunk at the given location</returns>
+        /// <param name="name">Dimension name</param>
+        /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
         public Dimension(string name, Dictionary<string, object> nbt)
         {
             if (name == null)

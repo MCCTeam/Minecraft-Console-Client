@@ -18,7 +18,7 @@ namespace MinecraftClient.Commands
 
             if (args.Count < 1)
             {
-                string desc =  GetCmdDescTranslated();
+                string desc = GetCmdDescTranslated();
 
                 if (handler.GetTerrainEnabled())
                     handler.Log.Info(getChunkLoadingStatus(handler.GetWorld()));
@@ -64,12 +64,10 @@ namespace MinecraftClient.Commands
                         case "north": direction = Direction.North; break;
                         case "south": direction = Direction.South; break;
                         case "center":
-                            {
-                                Location current = handler.GetCurrentLocation();
-                                Location currentCenter = new Location(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
-                                handler.MoveTo(currentCenter, allowDirectTeleport: true);
-                                return Translations.Get("cmd.move.walk", currentCenter, current);
-                            }
+                            Location current = handler.GetCurrentLocation();
+                            Location currentCenter = new Location(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
+                            handler.MoveTo(currentCenter, allowDirectTeleport: true);
+                            return Translations.Get("cmd.move.walk", currentCenter, current);
                         case "get": return handler.GetCurrentLocation().ToString();
                         default: return Translations.Get("cmd.look.unknown", args[0]);
                     }

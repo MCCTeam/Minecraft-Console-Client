@@ -147,10 +147,8 @@ namespace MinecraftClient.Protocol.Handlers
         public void ProcessChunkColumnData(int chunkX, int chunkZ, ulong[] verticalStripBitmask, Queue<byte> cache)
         {
             var world = handler.GetWorld();
-            if (world.GetDimension() == null)
-                return;
 
-            int chunkColumnSize = (world.GetDimension().height + 15) / 16;
+            int chunkColumnSize = (World.GetDimension().height + 15) / 16; // Round up
 
             if (protocolversion >= Protocol18Handler.MC117Version)
             {
@@ -223,7 +221,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache for reading chunk data</param>
         public void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache)
         {
-            const int chunkColumnSize = 16; 
+            const int chunkColumnSize = 16;
             if (protocolversion >= Protocol18Handler.MC19Version)
             {
                 // 1.9 and above chunk format

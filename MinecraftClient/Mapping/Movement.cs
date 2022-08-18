@@ -33,8 +33,7 @@ namespace MinecraftClient.Mapping
                 }
                 if (!IsOnGround(world, location) && !IsSwimming(world, location))
                 {
-                    while (!IsOnGround(world, belowFoots) &&
-                           belowFoots.Y >= 1 + (world.GetDimension() == null ? 0 : world.GetDimension().minY))
+                    while (!IsOnGround(world, belowFoots) && belowFoots.Y >= 1 + World.GetDimension().minY)
                         belowFoots = Move(belowFoots, Direction.Down);
                     location = Move2Steps(location, belowFoots, ref motionY, true).Dequeue();
                 }
@@ -62,7 +61,7 @@ namespace MinecraftClient.Mapping
             }
             else
             {
-                foreach (Direction dir in new []{ Direction.East, Direction.West, Direction.North, Direction.South })
+                foreach (Direction dir in new[] { Direction.East, Direction.West, Direction.North, Direction.South })
                     if (CanMove(world, location, dir) && IsOnGround(world, Move(location, dir)) && (allowUnsafe || IsSafe(world, Move(location, dir))))
                         availableMoves.Add(Move(location, dir));
                 availableMoves.Add(Move(location, Direction.Down));
@@ -168,7 +167,7 @@ namespace MinecraftClient.Mapping
 
             if (minOffset > maxOffset)
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
-            
+
             // We always use distance squared so our limits must also be squared.
             minOffset *= minOffset;
             maxOffset *= maxOffset;
@@ -193,8 +192,8 @@ namespace MinecraftClient.Mapping
                     : new KeyValuePair<Location, int>(location, int.MaxValue))
                     .OrderBy(pair => pair.Value).
                     // Sort for h-score (f-score - g-score) to get smallest distance to goal if f-scores are equal
-                    ThenBy(pair => f_score[pair.Key]-g_score[pair.Key]).First().Key;
-                
+                    ThenBy(pair => f_score[pair.Key] - g_score[pair.Key]).First().Key;
+
                 // Only assert a value if it is of actual use later
                 if (maxOffset > 0 && ClosedSet.Count > 0)
                     // Get the block that currently is closest to the goal
@@ -229,7 +228,7 @@ namespace MinecraftClient.Mapping
             }
 
             // Goal could not be reached. Set the path to the closest location if close enough
-            if (maxOffset == int.MaxValue || goal.DistanceSquared(closestGoal) <= maxOffset)            
+            if (maxOffset == int.MaxValue || goal.DistanceSquared(closestGoal) <= maxOffset)
                 return ReconstructPath(Came_From, closestGoal);
             else
                 return null;
@@ -290,7 +289,7 @@ namespace MinecraftClient.Mapping
         public static bool IsSafe(World world, Location location)
         {
             return
-                //No block that can harm the player
+                   //No block that can harm the player
                    !world.GetBlock(location).Type.CanHarmPlayers()
                 && !world.GetBlock(Move(location, Direction.Up)).Type.CanHarmPlayers()
                 && !world.GetBlock(Move(location, Direction.Down)).Type.CanHarmPlayers()
