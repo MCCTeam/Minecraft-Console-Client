@@ -103,11 +103,15 @@ namespace MinecraftClient.ChatBots
                                 }
                             }
                         }
-                        // check entity distance and health again
-                        if (shouldAttackEntity(entitiesToAttack[priorityEntity]))
+
+                        if (entitiesToAttack.ContainsKey(priorityEntity))
                         {
-                            InteractEntity(priorityEntity, interactMode); // hit the entity!
-                            SendAnimation(Inventory.Hand.MainHand); // Arm animation
+                            // check entity distance and health again
+                            if (shouldAttackEntity(entitiesToAttack[priorityEntity]))
+                            {
+                                InteractEntity(priorityEntity, interactMode); // hit the entity!
+                                SendAnimation(Inventory.Hand.MainHand); // Arm animation
+                            }
                         }
                     }
                     else
@@ -140,6 +144,22 @@ namespace MinecraftClient.ChatBots
             if (entitiesToAttack.ContainsKey(entity.ID))
             {
                 entitiesToAttack.Remove(entity.ID);
+            }
+        }
+
+        public override void OnEntityHealth(Entity entity, float health)
+        {
+            if (!entity.Type.IsHostile())
+                return;
+
+            if (entitiesToAttack.ContainsKey(entity.ID))
+            {
+                entitiesToAttack[entity.ID].Health = health;
+
+                if (entitiesToAttack[entity.ID].Health <= 0)
+                {
+                    entitiesToAttack.Remove(entity.ID);
+                }
             }
         }
 

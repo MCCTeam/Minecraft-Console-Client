@@ -450,6 +450,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 // NBT root name
                 string rootName = Encoding.ASCII.GetString(ReadData(ReadNextUShort(cache), cache));
+
                 if (!String.IsNullOrEmpty(rootName))
                     nbtData[""] = rootName;
             }
@@ -706,10 +707,13 @@ namespace MinecraftClient.Protocol.Handlers
 
                 // NBT root name
                 string rootName = null;
+
                 if (nbt.ContainsKey(""))
                     rootName = nbt[""] as string;
+
                 if (rootName == null)
                     rootName = "";
+
                 bytes.AddRange(GetUShort((ushort)rootName.Length));
                 bytes.AddRange(Encoding.ASCII.GetBytes(rootName));
             }
@@ -1010,10 +1014,10 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 // MC 1.13 and greater
                 if (item == null || item.IsEmpty)
-                    slotData.Add(0); // No item
+                    slotData.AddRange(GetBool(false)); // No item
                 else
                 {
-                    slotData.Add(1); // Item is present
+                    slotData.AddRange(GetBool(true)); // Item is present
                     slotData.AddRange(GetVarInt(itemPalette.ToId(item.Type)));
                     slotData.Add((byte)item.Count);
                     slotData.AddRange(GetNbt(item.NBT));
@@ -1032,6 +1036,24 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
             return slotData.ToArray();
+        }
+
+        /// <summary>
+        /// Get a byte array representing an array of item slots
+        /// </summary>
+        /// <param name="items">Items</param>
+        /// <param name="itemPalette">Item Palette</param>
+        /// <returns>Array of Item slot representations</returns>
+        public byte[] GetSlotsArray(Dictionary<int, Item> items, ItemPalette itemPalette)
+        {
+            byte[] slotsArray = new byte[items.Count];
+
+            foreach (KeyValuePair<int, Item> item in items)
+            {
+                slotsArray = ConcatBytes(slotsArray, GetShort((short)item.Key), GetItemSlot(item.Value, itemPalette));
+            }
+
+            return slotsArray;
         }
 
         /// <summary>
@@ -1076,6 +1098,11 @@ namespace MinecraftClient.Protocol.Handlers
             return result.ToArray();
         }
 
+        /// <summary>
+        /// Convert a byte array to an hexadecimal string representation (for debugging purposes)
+        /// </summary>
+        /// <param name="bytes">Byte array</param>
+        /// <returns>String representation</returns>
         public string ByteArrayToString(byte[] bytes)
         {
             return BitConverter.ToString(bytes).Replace("-", " ");

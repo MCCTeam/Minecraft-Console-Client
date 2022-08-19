@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
+using MinecraftClient.Mapping.EntityPalettes;
+using MinecraftClient.Mapping.BlockPalettes;
+using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.WinAPI;
 using MinecraftClient.Protocol.Keys;
 using System.Security.Cryptography;
@@ -120,6 +124,82 @@ namespace MinecraftClient
                     Console.WriteLine("MinecraftClient.exe --setting=value [--other settings]");
                     Console.WriteLine("MinecraftClient.exe --section.setting=value [--other settings]");
                     Console.WriteLine("MinecraftClient.exe <settings-file.ini> [--other settings]");
+                    return;
+                }
+
+                if (args.Contains("--generate"))
+                {
+                    string dataGenerator = "";
+                    string dataPath = "";
+
+                    foreach (string argument in args)
+                    {
+                        if (argument.StartsWith("--") && !argument.Contains("--generate"))
+                        {
+                            if (!argument.Contains("="))
+                                throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
+
+                            string[] argParts = argument.Substring(2).Split('=');
+                            string argName = argParts[0].Trim();
+                            string argValue = argParts[1].Replace("\"", "").Trim();
+
+                            if (argName == "data-path")
+                            {
+                                Console.WriteLine(dataPath);
+                                dataPath = argValue;
+                            }
+
+                            if (argName == "data-generator")
+                            {
+                                dataGenerator = argValue;
+                            }
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(dataGenerator) || !(dataGenerator.ToLower().Equals("entity") || dataGenerator.ToLower().Equals("item") || dataGenerator.ToLower().Equals("block")))
+                    {
+                        Console.WriteLine(Translations.Get("error.generator.invalid"));
+                        Console.WriteLine(Translations.Get("error.usage") + " MinecraftClient.exe --data-generator=<entity|item|block> --data-path=\"<path to resources.json>\"");
+                        return;
+                    }
+
+                    if (string.IsNullOrEmpty(dataPath))
+                    {
+                        Console.WriteLine(Translations.Get("error.missing.argument", "--data-path"));
+                        Console.WriteLine(Translations.Get("error.usage") + " MinecraftClient.exe --data-generator=<entity|item|block> --data-path=\"<path to resources.json>\"");
+                        return;
+                    }
+
+                    if (!File.Exists(dataPath))
+                    {
+                        Console.WriteLine(Translations.Get("error.generator.path", dataPath));
+                        return;
+                    }
+
+                    if (!dataPath.EndsWith(".json"))
+                    {
+                        Console.WriteLine(Translations.Get("error.generator.json", dataPath));
+                        return;
+                    }
+
+                    Console.WriteLine(Translations.Get("mcc.generator.generating", dataGenerator, dataPath));
+
+                    switch (dataGenerator)
+                    {
+                        case "entity":
+                            EntityPaletteGenerator.GenerateEntityTypes(dataPath);
+                            break;
+
+                        case "item":
+                            ItemPaletteGenerator.GenerateItemType(dataPath);
+                            break;
+
+                        case "block":
+                            BlockPaletteGenerator.GenerateBlockPalette(dataPath);
+                            break;
+                    }
+
+                    Console.WriteLine(Translations.Get("mcc.generator.done", dataGenerator, dataPath));
                     return;
                 }
 
