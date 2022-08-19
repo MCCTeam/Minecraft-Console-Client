@@ -95,7 +95,7 @@ namespace MinecraftClient.Protocol
         /// <param name="data">packet Data</param>
         /// <returns>True if message was successfully sent</returns>
         bool SendPluginChannelPacket(string channel, byte[] data);
-        
+
         /// <summary>
         /// Send Entity Action packet to the server.
         /// </summary>
@@ -103,7 +103,7 @@ namespace MinecraftClient.Protocol
         /// <param name="type">Type of packet to send</param>
         /// <returns>True if packet was successfully sent</returns>
         bool SendEntityAction(int EntityID, int type);
-        
+
         /// <summary>
         /// Send a held item change packet to the server.
         /// </summary>
@@ -141,7 +141,7 @@ namespace MinecraftClient.Protocol
         /// <param name="Z">Z coordinate for "interact at"</param>
         /// <returns>True if packet was successfully sent</returns>
         bool SendInteractEntity(int EntityID, int type, float X, float Y, float Z);
-        
+
         /// <summary>
         /// Send an entity interaction packet to the server.
         /// </summary>
@@ -164,10 +164,12 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="windowId">Id of the window being clicked</param>
         /// <param name="slotId">Id of the clicked slot</param>
-        /// <param name="buttom">Action to perform</param>
+        /// <param name="action">Action to perform</param>
         /// <param name="item">Item in the clicked slot</param>
+        /// <param name="changedSlots">Slots that have been changed in this event: List<SlotID, Changed Items> </param>
+        /// <param name="stateId">Inventory's stateId</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item);
+        bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item, List<Tuple<short, Item>> changedSlots, int stateId);
 
         /// <summary>
         /// Request Creative Mode item creation into regular/survival Player Inventory
@@ -224,7 +226,7 @@ namespace MinecraftClient.Protocol
         /// <param name="line4">New line 4</param>
         /// <returns>True if packet was succcessfully sent</returns>
         bool SendUpdateSign(Location location, string line1, string line2, string line3, string line4);
-        
+
         /// <summary>
         /// Update command block
         /// </summary>
