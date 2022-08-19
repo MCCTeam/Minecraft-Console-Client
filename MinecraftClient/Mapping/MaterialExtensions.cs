@@ -74,6 +74,8 @@ namespace MinecraftClient.Mapping
                 case Material.JungleLeaves:
                 case Material.AcaciaLeaves:
                 case Material.DarkOakLeaves:
+                case Material.AzaleaLeaves:
+                case Material.FloweringAzaleaLeaves:
                 case Material.Sponge:
                 case Material.WetSponge:
                 case Material.Glass:
@@ -202,6 +204,9 @@ namespace MinecraftClient.Mapping
                 case Material.EnchantingTable:
                 case Material.BrewingStand:
                 case Material.Cauldron:
+                case Material.WaterCauldron:
+                case Material.LavaCauldron:
+                case Material.PowderSnowCauldron:
                 case Material.EndPortalFrame:
                 case Material.EndStone:
                 case Material.DragonEgg:
@@ -518,6 +523,119 @@ namespace MinecraftClient.Mapping
                 case Material.Beehive:
                 case Material.HoneyBlock:
                 case Material.HoneycombBlock:
+                case Material.Candle:
+                case Material.WhiteCandle:
+                case Material.OrangeCandle:
+                case Material.MagentaCandle:
+                case Material.LightBlueCandle:
+                case Material.YellowCandle:
+                case Material.LimeCandle:
+                case Material.PinkCandle:
+                case Material.GrayCandle:
+                case Material.LightGrayCandle:
+                case Material.CyanCandle:
+                case Material.PurpleCandle:
+                case Material.BlueCandle:
+                case Material.BrownCandle:
+                case Material.GreenCandle:
+                case Material.RedCandle:
+                case Material.BlackCandle:
+                case Material.CandleCake:
+                case Material.WhiteCandleCake:
+                case Material.OrangeCandleCake:
+                case Material.MagentaCandleCake:
+                case Material.LightBlueCandleCake:
+                case Material.YellowCandleCake:
+                case Material.LimeCandleCake:
+                case Material.PinkCandleCake:
+                case Material.GrayCandleCake:
+                case Material.LightGrayCandleCake:
+                case Material.CyanCandleCake:
+                case Material.PurpleCandleCake:
+                case Material.BlueCandleCake:
+                case Material.BrownCandleCake:
+                case Material.GreenCandleCake:
+                case Material.RedCandleCake:
+                case Material.BlackCandleCake:
+                case Material.AmethystBlock:
+                case Material.BuddingAmethyst:
+                case Material.AmethystCluster:
+                case Material.LargeAmethystBud:
+                case Material.MediumAmethystBud:
+                case Material.SmallAmethystBud:
+                case Material.Tuff:
+                case Material.Calcite:
+                case Material.TintedGlass:
+                case Material.SculkSensor:
+                case Material.OxidizedCopper:
+                case Material.WeatheredCopper:
+                case Material.ExposedCopper:
+                case Material.CopperBlock:
+                case Material.CopperOre:
+                case Material.DeepslateCopperOre:
+                case Material.OxidizedCutCopper:
+                case Material.WeatheredCutCopper:
+                case Material.ExposedCutCopper:
+                case Material.CutCopper:
+                case Material.OxidizedCutCopperStairs:
+                case Material.WeatheredCutCopperStairs:
+                case Material.ExposedCutCopperStairs:
+                case Material.CutCopperStairs:
+                case Material.OxidizedCutCopperSlab:
+                case Material.WeatheredCutCopperSlab:
+                case Material.ExposedCutCopperSlab:
+                case Material.CutCopperSlab:
+                case Material.WaxedCopperBlock:
+                case Material.WaxedWeatheredCopper:
+                case Material.WaxedExposedCopper:
+                case Material.WaxedOxidizedCopper:
+                case Material.WaxedOxidizedCutCopper:
+                case Material.WaxedWeatheredCutCopper:
+                case Material.WaxedExposedCutCopper:
+                case Material.WaxedCutCopper:
+                case Material.WaxedOxidizedCutCopperStairs:
+                case Material.WaxedWeatheredCutCopperStairs:
+                case Material.WaxedExposedCutCopperStairs:
+                case Material.WaxedCutCopperStairs:
+                case Material.WaxedOxidizedCutCopperSlab:
+                case Material.WaxedWeatheredCutCopperSlab:
+                case Material.WaxedExposedCutCopperSlab:
+                case Material.WaxedCutCopperSlab:
+                case Material.LightningRod:
+                case Material.PointedDripstone:
+                case Material.DripstoneBlock:
+                case Material.Azalea:
+                case Material.FloweringAzalea:
+                case Material.MossCarpet:
+                case Material.MossBlock:
+                case Material.RootedDirt:
+                case Material.Deepslate:
+                case Material.CobbledDeepslate:
+                case Material.CobbledDeepslateStairs:
+                case Material.CobbledDeepslateSlab:
+                case Material.CobbledDeepslateWall:
+                case Material.PolishedDeepslate:
+                case Material.PolishedDeepslateStairs:
+                case Material.PolishedDeepslateSlab:
+                case Material.PolishedDeepslateWall:
+                case Material.DeepslateTiles:
+                case Material.DeepslateTileStairs:
+                case Material.DeepslateTileSlab:
+                case Material.DeepslateTileWall:
+                case Material.DeepslateBricks:
+                case Material.DeepslateBrickStairs:
+                case Material.DeepslateBrickSlab:
+                case Material.DeepslateBrickWall:
+                case Material.ChiseledDeepslate:
+                case Material.CrackedDeepslateBricks:
+                case Material.CrackedDeepslateTiles:
+                case Material.InfestedDeepslate:
+                case Material.SmoothBasalt:
+                case Material.RawIronBlock:
+                case Material.RawCopperBlock:
+                case Material.RawGoldBlock:
+                case Material.PottedAzaleaBush:
+                case Material.PottedFloweringAzaleaBush:
                     return true;
                 default:
                     return false;
@@ -538,6 +656,7 @@ namespace MinecraftClient.Mapping
                 case Material.Lava:
                 case Material.MagmaBlock:
                 case Material.Campfire:
+                case Material.PowderSnow:
                     return true;
                 default:
                     return false;

@@ -11,17 +11,28 @@ namespace MinecraftClient.Mapping
     /// </summary>
     public class ChunkColumn
     {
-        public const int ColumnSize = 16;
+        public int ColumnSize;
+
+        public bool FullyLoaded = false;
 
         /// <summary>
         /// Blocks contained into the chunk
         /// </summary>
-        private readonly Chunk[] chunks = new Chunk[ColumnSize];
+        private readonly Chunk[] chunks;
 
         /// <summary>
         /// Lock for thread safety
         /// </summary>
         private readonly ReaderWriterLockSlim chunkLock = new ReaderWriterLockSlim();
+
+        /// <summary>
+        /// Create a new ChunkColumn
+        /// </summary>
+        public ChunkColumn(int size = 16)
+        {
+            ColumnSize = size;
+            chunks = new Chunk[size];
+        }
 
         /// <summary>
         /// Get or set the specified chunk column

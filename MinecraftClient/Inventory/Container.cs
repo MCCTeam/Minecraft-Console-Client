@@ -26,6 +26,11 @@ namespace MinecraftClient.Inventory
         public string Title;
 
         /// <summary>
+        /// state of container
+        /// </summary>
+        public int StateID;
+
+        /// <summary>
         /// Container Items
         /// </summary>
         public Dictionary<int, Item> Items;
