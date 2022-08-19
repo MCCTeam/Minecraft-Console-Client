@@ -117,13 +117,13 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolVersion >= MC_1_17_Version)
                     Block.Palette = new Palette117();
                 else if (protocolVersion >= MC_1_16_Version)
-                if (protocolVersion >= MC_1_16_Version)
-                    Block.Palette = new Palette116();
-                else if (protocolVersion >= MC_1_15_Version)
-                    Block.Palette = new Palette115();
-                else if (protocolVersion >= MC_1_14_Version)
-                    Block.Palette = new Palette114();
-                else Block.Palette = new Palette113();
+                    if (protocolVersion >= MC_1_16_Version)
+                        Block.Palette = new Palette116();
+                    else if (protocolVersion >= MC_1_15_Version)
+                        Block.Palette = new Palette115();
+                    else if (protocolVersion >= MC_1_14_Version)
+                        Block.Palette = new Palette114();
+                    else Block.Palette = new Palette113();
             }
             else Block.Palette = new Palette112();
 
@@ -135,15 +135,15 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolversion >= MC_1_17_Version)
                     entityPalette = new EntityPalette117();
                 else if (protocolversion >= MC_1_16_2_Version)
-                if (protocolversion >= MC_1_16_2_Version)
-                    entityPalette = new EntityPalette1162();
-                else if (protocolversion >= MC_1_16_Version)
-                    entityPalette = new EntityPalette1161();
-                else if (protocolversion >= MC_1_15_Version)
-                    entityPalette = new EntityPalette115();
-                else if (protocolVersion >= MC_1_14_Version)
-                    entityPalette = new EntityPalette114();
-                else entityPalette = new EntityPalette113();
+                    if (protocolversion >= MC_1_16_2_Version)
+                        entityPalette = new EntityPalette1162();
+                    else if (protocolversion >= MC_1_16_Version)
+                        entityPalette = new EntityPalette1161();
+                    else if (protocolversion >= MC_1_15_Version)
+                        entityPalette = new EntityPalette115();
+                    else if (protocolVersion >= MC_1_14_Version)
+                        entityPalette = new EntityPalette114();
+                    else entityPalette = new EntityPalette113();
             }
             else entityPalette = new EntityPalette112();
 
@@ -157,9 +157,9 @@ namespace MinecraftClient.Protocol.Handlers
                 else if (protocolversion >= MC_1_17_Version)
                     itemPalette = new ItemPalette117();
                 else if (protocolversion >= MC_1_16_2_Version)
-                if (protocolversion >= MC_1_16_2_Version)
-                    itemPalette = new ItemPalette1162();
-                else itemPalette = new ItemPalette1161();
+                    if (protocolversion >= MC_1_16_2_Version)
+                        itemPalette = new ItemPalette1162();
+                    else itemPalette = new ItemPalette1161();
             }
             else itemPalette = new ItemPalette115();
         }
@@ -401,7 +401,10 @@ namespace MinecraftClient.Protocol.Handlers
                                     if ((messageType == 1 && !Settings.DisplaySystemMessages)
                                         || (messageType == 2 && !Settings.DisplayXPBarMessages))
                                         break;
-                                    senderUUID = dataTypes.ReadNextUUID(packetData);
+
+                                    if (protocolversion >= MC_1_16_5_Version)
+                                        senderUUID = dataTypes.ReadNextUUID(packetData);
+                                    else senderUUID = Guid.Empty;
                                 }
                                 else
                                     senderUUID = Guid.Empty;
