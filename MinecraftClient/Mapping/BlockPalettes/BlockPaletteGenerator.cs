@@ -27,12 +27,26 @@ namespace MinecraftClient.Mapping.BlockPalettes
         /// Generate mapping from Minecraft blocks.json
         /// </summary>
         /// <param name="blocksJsonFile">path to blocks.json</param>
+        /// <remarks>java -cp minecraft_server.jar net.minecraft.data.Main --reports</remarks>
+        /// <returns>state => block name mappings</returns>
+        public static void GenerateBlockPalette(string blocksJsonFile)
+        {
+            BlockPaletteGenerator.JsonToClass(blocksJsonFile, "Palette", "Material");
+        }
+
+        /// <summary>
+        /// Generate mapping from Minecraft blocks.json
+        /// </summary>
+        /// <param name="blocksJsonFile">path to blocks.json</param>
         /// <param name="outputClass">output path for blocks.cs</param>
         /// <param name="outputEnum">output path for material.cs</param>
         /// <remarks>java -cp minecraft_server.jar net.minecraft.data.Main --reports</remarks>
         /// <returns>state => block name mappings</returns>
         public static void JsonToClass(string blocksJsonFile, string outputClass, string outputEnum = null)
         {
+            string outputPalettePath = Path.Combine(Path.GetDirectoryName(blocksJsonFile), outputClass + "XXX.cs");
+            string outputEnumPath = Path.Combine(Path.GetDirectoryName(blocksJsonFile), outputEnum + "XXX.cs");
+
             HashSet<int> knownStates = new HashSet<int>();
             Dictionary<string, HashSet<int>> blocks = new Dictionary<string, HashSet<int>>();
 
@@ -70,7 +84,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
                 "",
                 "namespace MinecraftClient.Mapping.BlockPalettes",
                 "{",
-                "    public class PaletteXXX : PaletteMapping",
+                "    public class PaletteXXX : BlockPalette",
                 "    {",
                 "        private static Dictionary<int, Material> materials = new Dictionary<int, Material>();",
                 "",
@@ -121,7 +135,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
                 "}"
             });
 
-            File.WriteAllLines(outputClass, outFile);
+            File.WriteAllLines(outputPalettePath, outFile);
 
             if (outputEnum != null)
             {
@@ -138,7 +152,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
                     "    }",
                     "}"
                 });
-                File.WriteAllLines(outputEnum, outFile);
+                File.WriteAllLines(outputEnumPath, outFile);
             }
         }
     }

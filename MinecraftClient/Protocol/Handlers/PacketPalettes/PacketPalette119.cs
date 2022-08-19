@@ -62,7 +62,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x35, PacketTypesIn.FacePlayer }, // (Wiki name: Player Look At)
             { 0x36, PacketTypesIn.PlayerPositionAndLook }, // (Wiki name: Player Position)
             { 0x37, PacketTypesIn.UnlockRecipes }, // (Wiki name: Recipe)
-            { 0x38, PacketTypesIn.DestroyEntity }, // (Wiki name: Remove Entites)
+            { 0x38, PacketTypesIn.DestroyEntities }, // (Wiki name: Remove Entites)
             { 0x39, PacketTypesIn.RemoveEntityEffect },
             { 0x3A, PacketTypesIn.ResourcePackSend }, // (Wiki name: Resource Pack)
             { 0x3B, PacketTypesIn.Respawn }, // Changed in 1.19 (Heavy changes) - DONE

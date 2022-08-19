@@ -1288,8 +1288,7 @@ namespace MinecraftClient
             if (inventories.ContainsKey(windowId) && inventories[windowId].Items.ContainsKey(slotId))
                 item = inventories[windowId].Items[slotId];
 
-            // Inventory update must be after sending packet
-            bool result = handler.SendWindowAction(windowId, slotId, action, item);
+            List<Tuple<short, Item>> changedSlots = new List<Tuple<short, Item>>(); // List<Slot ID, Changed Items>
 
             // Update our inventory base on action type
             var inventory = GetInventory(windowId);
@@ -1340,6 +1339,11 @@ namespace MinecraftClient
                                 inventory.Items[slotId] = playerInventory.Items[-1];
                                 playerInventory.Items.Remove(-1);
                             }
+
+                            if (inventory.Items.ContainsKey(slotId))
+                                changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
+                            else
+                                changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                         }
                         else
                         {
@@ -1352,6 +1356,8 @@ namespace MinecraftClient
                                 // Put target slot item to cursor
                                 playerInventory.Items[-1] = inventory.Items[slotId];
                                 inventory.Items.Remove(slotId);
+
+                                changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                             }
                         }
                         break;
@@ -1430,6 +1436,10 @@ namespace MinecraftClient
                                 }
                             }
                         }
+                        if (inventory.Items.ContainsKey(slotId))
+                            changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
+                        else
+                            changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                         break;
                     case WindowActionType.ShiftClick:
                         if (slotId == 0) break;
@@ -1457,6 +1467,7 @@ namespace MinecraftClient
                             // If hotbar already have same item, will put on it first until every stack are full
                             // If no more same item , will put on the first empty slot (smaller slot id)
                             // If inventory full, item will not move
+                            int itemCount = inventory.Items[slotId].Count;
                             if (slotId <= upperEndSlot)
                             {
                                 // Clicked slot is on upper side inventory, put it to hotbar
@@ -1476,11 +1487,16 @@ namespace MinecraftClient
                                             // Can fit into the stack
                                             inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
                                             inventory.Items.Remove(slotId);
+
+                                            changedSlots.Add(new Tuple<short, Item>((short)_item.Key, inventory.Items[_item.Key]));
+                                            changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                                         }
                                         else
                                         {
                                             inventory.Items[slotId].Count -= spaceLeft;
                                             inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
+
+                                            changedSlots.Add(new Tuple<short, Item>((short)_item.Key, inventory.Items[_item.Key]));
                                         }
                                     }
                                 }
@@ -1499,6 +1515,13 @@ namespace MinecraftClient
                                         var itemTmp = inventory.Items[slotId];
                                         inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
                                         inventory.Items.Remove(slotId);
+
+                                        changedSlots.Add(new Tuple<short, Item>((short)emptySlot, inventory.Items[emptySlot]));
+                                        changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
+                                    }
+                                    else if (inventory.Items[slotId].Count != itemCount)
+                                    {
+                                        changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
                                     }
                                 }
                             }
@@ -1522,11 +1545,16 @@ namespace MinecraftClient
                                             // Can fit into the stack
                                             inventory.Items[_item.Key].Count += inventory.Items[slotId].Count;
                                             inventory.Items.Remove(slotId);
+
+                                            changedSlots.Add(new Tuple<short, Item>((short)_item.Key, inventory.Items[_item.Key]));
+                                            changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                                         }
                                         else
                                         {
                                             inventory.Items[slotId].Count -= spaceLeft;
                                             inventory.Items[_item.Key].Count = inventory.Items[_item.Key].Type.StackCount();
+
+                                            changedSlots.Add(new Tuple<short, Item>((short)_item.Key, inventory.Items[_item.Key]));
                                         }
                                     }
                                 }
@@ -1546,6 +1574,13 @@ namespace MinecraftClient
                                         var itemTmp = inventory.Items[slotId];
                                         inventory.Items[emptySlot] = new Item(itemTmp.Type, itemTmp.Count, itemTmp.NBT);
                                         inventory.Items.Remove(slotId);
+
+                                        changedSlots.Add(new Tuple<short, Item>((short)emptySlot, inventory.Items[emptySlot]));
+                                        changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
+                                    }
+                                    else if (inventory.Items[slotId].Count != itemCount)
+                                    {
+                                        changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
                                     }
                                 }
                             }
@@ -1553,18 +1588,26 @@ namespace MinecraftClient
                         break;
                     case WindowActionType.DropItem:
                         if (inventory.Items.ContainsKey(slotId))
+                        {
                             inventory.Items[slotId].Count--;
+                            changedSlots.Add(new Tuple<short, Item>((short)slotId, inventory.Items[slotId]));
+                        }
 
                         if (inventory.Items[slotId].Count <= 0)
+                        {
                             inventory.Items.Remove(slotId);
+                            changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
+                        }
+
                         break;
                     case WindowActionType.DropItemStack:
                         inventory.Items.Remove(slotId);
+                        changedSlots.Add(new Tuple<short, Item>((short)slotId, null));
                         break;
                 }
             }
 
-            return result;
+            return handler.SendWindowAction(windowId, slotId, action, item, changedSlots, inventories[windowId].StateID);
         }
 
         /// <summary>
@@ -2127,11 +2170,12 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
         /// <param name="itemList">Item list, key = slot ID, value = Item information</param>
-        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList)
+        public void OnWindowItems(byte inventoryID, Dictionary<int, Inventory.Item> itemList, int stateId)
         {
             if (inventories.ContainsKey(inventoryID))
             {
                 inventories[inventoryID].Items = itemList;
+                inventories[inventoryID].StateID = stateId;
                 DispatchBotEvent(bot => bot.OnInventoryUpdate(inventoryID));
             }
         }
@@ -2142,8 +2186,11 @@ namespace MinecraftClient
         /// <param name="inventoryID">Window ID</param>
         /// <param name="slotID">Slot ID</param>
         /// <param name="item">Item (may be null for empty slot)</param>
-        public void OnSetSlot(byte inventoryID, short slotID, Item item)
+        public void OnSetSlot(byte inventoryID, short slotID, Item item, int stateId)
         {
+            if (inventories.ContainsKey(inventoryID))
+                inventories[inventoryID].StateID = stateId;
+
             // Handle inventoryID -2 - Add item to player inventory without animation
             if (inventoryID == 254)
                 inventoryID = 0;
@@ -2591,7 +2638,7 @@ namespace MinecraftClient
         /// <param name="action">0 to create/update an item. 1 to remove an item.</param>
         /// <param name="objectivename">The name of the objective the score belongs to</param>
         /// <param name="value">he score to be displayed next to the entry. Only sent when Action does not equal 1.</param>
-        public void OnUpdateScore(string entityname, byte action, string objectivename, int value)
+        public void OnUpdateScore(string entityname, int action, string objectivename, int value)
         {
             DispatchBotEvent(bot => bot.OnUpdateScore(entityname, action, objectivename, value));
         }

@@ -112,7 +112,6 @@ namespace MinecraftClient.Protocol.Handlers
         WorldBorderCenter,
         ActionBar,
         Tags,
-        DestroyEntity, // For 1.17+
         DeathCombatEvent,
         EnterCombatEvent,
         EndCombatEvent,
