@@ -450,7 +450,10 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolversion >= MC_1_16_Version)
                             {
                                 if (protocolversion >= MC_1_19_Version)
+                                {
                                     dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
+                                    dimensionTypeInRespawn = new Dictionary<string, object>();
+                                }
                                 else if (protocolversion >= MC_1_16_2_Version)
                                     dimensionTypeInRespawn = dataTypes.ReadNextNbt(packetData); // Dimension Type: NBT Tag Compound
                                 else
