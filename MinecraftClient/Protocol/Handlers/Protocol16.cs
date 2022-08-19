@@ -729,7 +729,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
-        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item)
+        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item, List<Tuple<short, Item>> changedSlots, int stateId)
         {
             return false; //Currently not implemented
         }

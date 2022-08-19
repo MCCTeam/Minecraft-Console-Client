@@ -64,7 +64,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x37, PacketTypesIn.FacePlayer },
             { 0x38, PacketTypesIn.PlayerPositionAndLook },
             { 0x39, PacketTypesIn.UnlockRecipes },
-            { 0x3A, PacketTypesIn.DestroyEntity },
+            { 0x3A, PacketTypesIn.DestroyEntities },
             { 0x3B, PacketTypesIn.RemoveEntityEffect },
             { 0x3C, PacketTypesIn.ResourcePackSend },
             { 0x3D, PacketTypesIn.Respawn },
