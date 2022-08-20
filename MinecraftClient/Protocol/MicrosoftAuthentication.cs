@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace MinecraftClient.Protocol
 {
@@ -91,7 +92,23 @@ namespace MinecraftClient.Protocol
         {
             try
             {
-                Process.Start(link);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    link = link.Replace("&", "^&");
+                    Process.Start(new ProcessStartInfo(link) { UseShellExecute = true });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start("xdg-open", link);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", link);
+                }
+                else
+                {
+                    ConsoleIO.WriteLine("Platform not supported, open up the link manually: " + link);
+                }
             }
             catch (Exception e)
             {
