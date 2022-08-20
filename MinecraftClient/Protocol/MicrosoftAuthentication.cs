@@ -94,8 +94,13 @@ namespace MinecraftClient.Protocol
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    link = link.Replace("&", "^&");
-                    Process.Start(new ProcessStartInfo(link) { UseShellExecute = true });
+                    var ps = new ProcessStartInfo(link)
+                    {
+                        UseShellExecute = true,
+                        Verb = "open"
+                    };
+
+                    Process.Start(ps);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
