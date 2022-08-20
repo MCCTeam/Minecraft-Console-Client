@@ -6,7 +6,8 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0
 #ENV MCC_VERSION=<version>
 
 # Copy over the script and give it execution permissions
-COPY --chmod=0755 start-latest.sh /opt/start-latest.sh
+COPY start-latest.sh /opt/start-latest.sh
+RUN chmod +x /opt/start-latest.sh
 
 RUN apt-get update && \ 
     apt-get install -y unzip && \
