@@ -73,7 +73,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="location">Location, a modulo will be applied</param>
         /// <returns>The chunk, or null if not loaded</returns>
-        public Chunk GetChunk(Location location)
+        public Chunk? GetChunk(Location location)
         {
             try
             {

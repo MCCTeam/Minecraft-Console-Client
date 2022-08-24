@@ -71,6 +71,11 @@ namespace MinecraftClient.Commands
                         case "get": return handler.GetCurrentLocation().ToString();
                         default: return Translations.Get("cmd.look.unknown", args[0]);
                     }
+
+                    Location goal = Movement.Move(handler.GetCurrentLocation(), direction);
+                    if (handler.GetWorld().GetChunkColumn(goal) == null || handler.GetWorld().GetChunkColumn(goal)!.FullyLoaded == false)
+                        return Translations.Get("cmd.move.chunk_not_loaded");
+
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
                     {
                         if (handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: takeRisk))
@@ -88,7 +93,7 @@ namespace MinecraftClient.Commands
                         int z = int.Parse(args[2]);
                         Location goal = new Location(x, y, z);
 
-                        if (handler.GetWorld().GetChunkColumn(goal) == null || handler.GetWorld().GetChunkColumn(goal).FullyLoaded == false)
+                        if (handler.GetWorld().GetChunkColumn(goal) == null || handler.GetWorld().GetChunkColumn(goal)!.FullyLoaded == false)
                             return Translations.Get("cmd.move.chunk_not_loaded");
 
                         Location current = handler.GetCurrentLocation();
