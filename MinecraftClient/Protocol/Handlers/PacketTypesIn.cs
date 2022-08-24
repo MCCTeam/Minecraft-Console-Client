@@ -132,6 +132,11 @@ namespace MinecraftClient.Protocol.Handlers
         ChatPreview,
         ServerData,
         SetDisplayChatPreview,
-        SystemChat
+        SystemChat,
+
+        // Added in 1.19.1 (1.19.2)
+        ChatSuggestions,
+        HideMessage,
+        MessageHeader
     }
 }
