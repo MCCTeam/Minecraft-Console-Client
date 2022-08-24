@@ -558,12 +558,19 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     int dataSize = dataTypes.ReadNextVarInt(packetData); // Size
 
-                                    new Task(() =>
+                                    Parallel.Invoke(() =>
                                     {
                                         bool loaded = pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData, cancellationToken);
                                         if (loaded)
+                                        {
                                             Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
-                                    }).Start();
+                                            if (handler.GetWorld().chunkCnt == 464)
+                                            {
+                                                log.Info("Loaded 464 chunks, exit");
+                                                System.Environment.Exit(0);
+                                            }
+                                        }
+                                    });
 
                                     // Block Entity data: ignored
                                     // Light data: ignored
@@ -582,12 +589,12 @@ namespace MinecraftClient.Protocol.Handlers
                                         int compressedDataSize = dataTypes.ReadNextInt(packetData);
                                         byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
                                         byte[] decompressed = ZlibUtils.Decompress(compressed);
-                                        new Task(() =>
+                                        Parallel.Invoke(() =>
                                         {
                                             bool loaded = pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed), cancellationToken);
                                             if (loaded)
                                                 Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
-                                        }).Start();
+                                        });
                                     }
                                     else
                                     {
@@ -611,12 +618,12 @@ namespace MinecraftClient.Protocol.Handlers
                                             else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
                                         }
                                         int dataSize = dataTypes.ReadNextVarInt(packetData);
-                                        new Task(() =>
+                                        Parallel.Invoke(() =>
                                         {
                                             bool loaded = pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData, cancellationToken);
                                             if (loaded)
                                                 Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
-                                        }).Start();
+                                        });
                                     }
                                 }
                             }
@@ -872,7 +879,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
 
                                 //Process chunk records
-                                new Task(() =>
+                                Parallel.Invoke(() =>
                                 {
                                     for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
                                     {
@@ -882,7 +889,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         if (loaded)
                                             Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
                                     }
-                                }).Start();
+                                });
 
                             }
                             break;

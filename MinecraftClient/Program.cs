@@ -16,6 +16,7 @@ using MinecraftClient.WinAPI;
 using MinecraftClient.Protocol.Keys;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -84,9 +85,12 @@ namespace MinecraftClient
             //Take advantage of Windows 10 / Mac / Linux UTF-8 console
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // If we're on windows, check if our version is Win10 or greater.
-                if (WindowsVersion.WinMajorVersion >= 10)
-                    Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+                Parallel.Invoke(() =>
+                {
+                    // If we're on windows, check if our version is Win10 or greater.
+                    if (WindowsVersion.WinMajorVersion >= 10)
+                        Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+                });
             }
             else
             {

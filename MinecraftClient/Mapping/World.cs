@@ -14,17 +14,17 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// The chunks contained into the Minecraft world
         /// </summary>
-        private Dictionary<int, Dictionary<int, ChunkColumn>> chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
+        private Dictionary<int, Dictionary<int, ChunkColumn>> chunks = new();
 
         /// <summary>
         /// The dimension info of the world
         /// </summary>
-        private static Dimension dimension = new Dimension();
+        private static Dimension dimension = new();
 
         /// <summary>
         /// Lock for thread safety
         /// </summary>
-        private readonly ReaderWriterLockSlim chunksLock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim chunksLock = new();
 
         /// <summary>
         /// Chunk data parsing progress
@@ -107,6 +107,54 @@ namespace MinecraftClient.Mapping
         public static Dimension GetDimension()
         {
             return dimension;
+        }
+
+        /// <summary>
+        /// Set chunk column at the specified location
+        /// </summary>
+        /// <param name="chunkX">ChunkColumn X</param>
+        /// <param name="chunkY">ChunkColumn Y</param>
+        /// <param name="chunkZ">ChunkColumn Z</param>
+        /// <param name="chunkColumnSize">ChunkColumn size</param>
+        /// <param name="chunk">Chunk data</param>
+        /// <param name="loadCompleted">Whether the ChunkColumn has been fully loaded</param>
+        public void StoreChunk(int chunkX, int chunkY, int chunkZ, int chunkColumnSize, Chunk chunk, bool loadCompleted)
+        {
+            ChunkColumn? chunkColumn = null;
+
+            chunksLock.EnterUpgradeableReadLock();
+            try
+            {
+                //Read a chunk
+                if (chunks.ContainsKey(chunkX))
+                    if (chunks[chunkX].ContainsKey(chunkZ))
+                        chunkColumn = chunks[chunkX][chunkZ];
+
+                if (chunkColumn == null)
+                {
+                    chunkColumn = new ChunkColumn(chunkColumnSize);
+                    chunksLock.EnterWriteLock();
+                    try
+                    {
+                        //Update a chunk column
+                        if (!chunks.ContainsKey(chunkX))
+                            chunks[chunkX] = new Dictionary<int, ChunkColumn>();
+                        chunks[chunkX][chunkZ] = chunkColumn;
+                    }
+                    finally
+                    {
+                        chunksLock.ExitWriteLock();
+                    }
+                }
+            }
+            finally
+            {
+                chunksLock.ExitUpgradeableReadLock();
+            }
+
+            chunkColumn[chunkY] = chunk;
+            if (loadCompleted)
+                chunkColumn.FullyLoaded = true;
         }
 
         /// <summary>

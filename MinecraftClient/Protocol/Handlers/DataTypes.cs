@@ -253,17 +253,15 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The integer</returns>
         public int ReadNextVarInt(Queue<byte> cache)
         {
-            string rawData = BitConverter.ToString(cache.ToArray());
             int i = 0;
             int j = 0;
-            int k = 0;
-            while (true)
+            byte b;
+            do
             {
-                k = ReadNextByte(cache);
-                i |= (k & 0x7F) << j++ * 7;
-                if (j > 5) throw new OverflowException("VarInt too big " + rawData);
-                if ((k & 0x80) != 128) break;
-            }
+                b = cache.Dequeue();
+                i |= (b & 127) << j++ * 7;
+                if (j > 5) throw new OverflowException("VarInt too big");
+            } while ((b & 128) == 128);
             return i;
         }
 
