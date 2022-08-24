@@ -562,14 +562,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     {
                                         bool loaded = pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData, cancellationToken);
                                         if (loaded)
-                                        {
                                             Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
-                                            if (handler.GetWorld().chunkCnt == 464)
-                                            {
-                                                log.Info("Loaded 464 chunks, exit");
-                                                System.Environment.Exit(0);
-                                            }
-                                        }
                                     });
 
                                     // Block Entity data: ignored
