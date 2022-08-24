@@ -55,6 +55,7 @@ namespace MinecraftClient.Protocol.Handlers
         internal const int MC_1_18_1_Version = 757;
         internal const int MC_1_18_2_Version = 758;
         internal const int MC_1_19_Version = 759;
+        internal const int MC_1_19_2_Version = 760;
 
         private int compression_treshold = 0;
         private bool autocomplete_received = false;
@@ -414,7 +415,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 handler.OnTextReceived(new(message, true, messageType, senderUUID));
                             }
-                            else // 1.19+
+                            else if (protocolversion == MC_1_19_Version) // 1.19
                             {
                                 string signedChat = dataTypes.ReadNextString(packetData);
 
@@ -442,6 +443,10 @@ namespace MinecraftClient.Protocol.Handlers
                                 bool verifyResult = player == null ? false : player.VerifyMessage(signedChat, senderUUID, timestamp, salt, ref messageSignature);
 
                                 handler.OnTextReceived(new(signedChat, true, messageType, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, verifyResult));
+                            }
+                            else // 1.19.1 +
+                            {
+                                // Todo
                             }
                             break;
                         case PacketTypesIn.Respawn:
@@ -1533,7 +1538,21 @@ namespace MinecraftClient.Protocol.Handlers
                     fullLoginPacket.AddRange(dataTypes.GetBool(true));                                        // Has Sig Data
                     fullLoginPacket.AddRange(dataTypes.GetLong(playerKeyPair.GetExpirationMilliseconds()));   // Expiration time
                     fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.Key));                // Public key received from Microsoft API
-                    fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.Signature));          // Public key signature received from Microsoft API
+                    if (protocolversion >= MC_1_19_2_Version)
+                        fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.SignatureV2!));   // Public key signature received from Microsoft API
+                    else
+                        fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.Signature!));      // Public key signature received from Microsoft API
+                }
+            }
+            if (protocolversion >= MC_1_19_2_Version)
+            {
+                string uuid = handler.GetUserUUID();
+                if (uuid == "0")
+                    fullLoginPacket.AddRange(dataTypes.GetBool(false));                                       // Has UUID
+                else
+                {
+                    fullLoginPacket.AddRange(dataTypes.GetBool(true));                                        // Has UUID
+                    fullLoginPacket.AddRange(dataTypes.GetUUID(Guid.Parse(uuid)));                            // UUID
                 }
             }
             SendPacket(0x00, fullLoginPacket);
@@ -1952,6 +1971,13 @@ namespace MinecraftClient.Protocol.Handlers
             if (String.IsNullOrEmpty(message))
                 return true;
 
+            if (protocolversion >= MC_1_19_2_Version)
+            {
+                // Todo
+                log.Warn("Not implement");
+                return false;
+            }
+
             // Process Chat Command - 1.19 and above
             if (protocolversion >= MC_1_19_Version && message.StartsWith('/'))
                 return SendChatCommand(message[1..], playerKeyPair);
@@ -1988,6 +2014,9 @@ namespace MinecraftClient.Protocol.Handlers
                     }
 
                     // Signed Preview: Boolean
+                    fields.AddRange(dataTypes.GetBool(false));
+
+                    fields.AddRange(dataTypes.GetVarInt(0));
                     fields.AddRange(dataTypes.GetBool(false));
                 }
                 SendPacket(PacketTypesOut.ChatMessage, fields);

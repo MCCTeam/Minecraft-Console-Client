@@ -70,7 +70,7 @@ namespace MinecraftClient
         private string username;
         private string uuid;
         private string sessionid;
-        private PlayerKeyPair playerKeyPair;
+        private PlayerKeyPair? playerKeyPair;
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new();
         private int respawnTicks = 0;
@@ -141,7 +141,7 @@ namespace MinecraftClient
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        public McClient(string username, string uuid, string sessionID, PlayerKeyPair playerKeyPair, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
+        public McClient(string username, string uuid, string sessionID, PlayerKeyPair? playerKeyPair, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
         {
             StartClient(username, uuid, sessionID, playerKeyPair, server_ip, port, protocolversion, forgeInfo, false, "");
         }
@@ -156,7 +156,7 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
-        public McClient(string username, string uuid, string sessionID, PlayerKeyPair playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
+        public McClient(string username, string uuid, string sessionID, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
         {
             StartClient(username, uuid, sessionID, playerKeyPair, server_ip, port, protocolversion, forgeInfo, true, command);
         }
@@ -172,7 +172,7 @@ namespace MinecraftClient
         /// <param name="uuid">The player's UUID for online-mode authentication</param>
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-        private void StartClient(string user, string uuid, string sessionID, PlayerKeyPair playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
+        private void StartClient(string user, string uuid, string sessionID, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;

@@ -67,5 +67,8 @@ namespace MinecraftClient.Protocol.Handlers
         // Added in 1.19
         ChatCommand,
         ChatPreview,
+
+        // Added in 1.19.1 (1.19.2)
+        MessageAcknowledgment
     }
 }
