@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading;
 //using System.Linq;
 //using System.Text;
@@ -42,24 +43,19 @@ namespace MinecraftClient.Protocol.Handlers
             if (bitsPerEntry == 0 && protocolversion >= Protocol18Handler.MC_1_18_1_Version)
             {
                 // Palettes: Single valued - 1.18(1.18.1) and above
-                ushort value = (ushort)dataTypes.ReadNextVarInt(cache);
+                ushort blockId = (ushort)dataTypes.ReadNextVarInt(cache);
 
                 dataTypes.SkipNextVarInt(cache); // Data Array Length will be zero
 
                 // Empty chunks will not be stored
-                if (new Block(value).Type == Material.Air)
+                if (new Block(blockId).Type == Material.Air)
                     return null;
 
                 for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
-                {
                     for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
-                    {
                         for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                        {
-                            chunk[blockX, blockY, blockZ] = new Block(value);
-                        }
-                    }
-                }
+                            chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(blockId));
+
             }
             else
             {
@@ -129,7 +125,7 @@ namespace MinecraftClient.Protocol.Handlers
                             }
 
                             // We have our block, save the block into the chunk
-                            chunk[blockX, blockY, blockZ] = new Block(blockId);
+                            chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(blockId));
                         }
                     }
                 }
@@ -152,7 +148,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (cancellationToken.IsCancellationRequested)
                 return false;
 
-            var world = handler.GetWorld();
+            World world = handler.GetWorld();
 
             int chunkColumnSize = (World.GetDimension().height + 15) / 16; // Round up
 
@@ -167,10 +163,8 @@ namespace MinecraftClient.Protocol.Handlers
 
                     // 1.18 and above always contains all chunk section in data
                     // 1.17 and 1.17.1 need vertical strip bitmask to know if the chunk section is included
-                    if ((protocolversion >= Protocol18Handler.MC_1_18_1_Version) ||
-                        (((protocolversion == Protocol18Handler.MC_1_17_Version) ||
-                          (protocolversion == Protocol18Handler.MC_1_17_1_Version)) &&
-                         ((verticalStripBitmask![chunkY / 64] & (1UL << (chunkY % 64))) != 0)))
+                    if ((protocolversion >= Protocol18Handler.MC_1_18_1_Version) || 
+                        ((verticalStripBitmask![chunkY / 64] & (1UL << (chunkY % 64))) != 0))
                     {
                         // Non-air block count inside chunk section, for lighting purposes
                         int blockCnt = dataTypes.ReadNextShort(cache);
@@ -186,9 +180,7 @@ namespace MinecraftClient.Protocol.Handlers
                         //We have our chunk, save the chunk into the world
                         handler.InvokeOnMainThread(() =>
                         {
-                            if (handler.GetWorld()[chunkX, chunkZ] == null)
-                                handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn(chunkColumnSize);
-                            handler.GetWorld()[chunkX, chunkZ]![chunkY] = chunk;
+                            world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == (chunkColumnSize - 1));
                         });
 
                         // Skip Read Biomes (Type: Paletted Container) - 1.18(1.18.1) and above
@@ -218,11 +210,6 @@ namespace MinecraftClient.Protocol.Handlers
                 // Don't worry about skipping remaining data since there is no useful data afterwards in 1.9
                 // (plus, it would require parsing the tile entity lists' NBT)
             }
-            handler.InvokeOnMainThread(() =>
-            {
-                if (handler.GetWorld()[chunkX, chunkZ] != null)
-                    handler.GetWorld()[chunkX, chunkZ]!.FullyLoaded = true;
-            });
             return true;
         }
 
@@ -244,12 +231,15 @@ namespace MinecraftClient.Protocol.Handlers
             if (cancellationToken.IsCancellationRequested)
                 return false;
 
+            World world = handler.GetWorld();
+
             const int chunkColumnSize = 16;
             if (protocolversion >= Protocol18Handler.MC_1_9_Version)
             {
                 // 1.9 and above chunk format
                 // Unloading chunks is handled by a separate packet
-                for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
+                int maxChunkY = sizeof(int) * 8 - 1 - BitOperations.LeadingZeroCount(chunkMask);
+                for (int chunkY = 0; chunkY <= maxChunkY; chunkY++)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         return false;
@@ -363,7 +353,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         }
 
                                         // We have our block, save the block into the chunk
-                                        chunk[blockX, blockY, blockZ] = new Block(blockId);
+                                        chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(blockId));
                                     }
                                 }
                             }
@@ -376,9 +366,7 @@ namespace MinecraftClient.Protocol.Handlers
                         //We have our chunk, save the chunk into the world
                         handler.InvokeOnMainThread(() =>
                         {
-                            if (handler.GetWorld()[chunkX, chunkZ] == null)
-                                handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
-                            handler.GetWorld()[chunkX, chunkZ]![chunkY] = chunk;
+                            world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
                         });
 
                         //Pre-1.14 Lighting data
@@ -406,13 +394,14 @@ namespace MinecraftClient.Protocol.Handlers
                     //Unload the entire chunk column
                     handler.InvokeOnMainThread(() =>
                     {
-                        handler.GetWorld()[chunkX, chunkZ] = null;
+                        world[chunkX, chunkZ] = null;
                     });
                 }
                 else
                 {
                     //Load chunk data from the server
-                    for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
+                    int maxChunkY = sizeof(int) * 8 - 1 - BitOperations.LeadingZeroCount(chunkMask);
+                    for (int chunkY = 0; chunkY <= maxChunkY; chunkY++)
                     {
                         if (cancellationToken.IsCancellationRequested)
                             return false;
@@ -426,7 +415,7 @@ namespace MinecraftClient.Protocol.Handlers
                             for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                                 for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                                     for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                        chunk[blockX, blockY, blockZ] = new Block(queue.Dequeue());
+                                        chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(queue.Dequeue()));
 
                             // check before store chunk
                             if (cancellationToken.IsCancellationRequested)
@@ -435,9 +424,7 @@ namespace MinecraftClient.Protocol.Handlers
                             //We have our chunk, save the chunk into the world
                             handler.InvokeOnMainThread(() =>
                             {
-                                if (handler.GetWorld()[chunkX, chunkZ] == null)
-                                    handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
-                                handler.GetWorld()[chunkX, chunkZ]![chunkY] = chunk;
+                                world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
                             });
                         }
                     }
@@ -469,7 +456,7 @@ namespace MinecraftClient.Protocol.Handlers
                     //Unload the entire chunk column
                     handler.InvokeOnMainThread(() =>
                     {
-                        handler.GetWorld()[chunkX, chunkZ] = null;
+                        world[chunkX, chunkZ] = null;
                     });
                 }
                 else
@@ -505,7 +492,8 @@ namespace MinecraftClient.Protocol.Handlers
                         dataTypes.ReadData(Chunk.SizeX * Chunk.SizeZ, cache);                                         //Biomes
 
                     //Load chunk data
-                    for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
+                    int maxChunkY = sizeof(int) * 8 - 1 - BitOperations.LeadingZeroCount(chunkMask);
+                    for (int chunkY = 0; chunkY <= maxChunkY; chunkY++)
                     {
                         if ((chunkMask & (1 << chunkY)) != 0)
                         {
@@ -514,7 +502,7 @@ namespace MinecraftClient.Protocol.Handlers
                             for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                                 for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                                     for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                                        chunk[blockX, blockY, blockZ] = new Block(blockTypes.Dequeue(), blockMeta.Dequeue());
+                                        chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(blockTypes.Dequeue(), blockMeta.Dequeue()));
 
                             // check before store chunk
                             if (cancellationToken.IsCancellationRequested)
@@ -522,19 +510,12 @@ namespace MinecraftClient.Protocol.Handlers
 
                             handler.InvokeOnMainThread(() =>
                             {
-                                if (handler.GetWorld()[chunkX, chunkZ] == null)
-                                    handler.GetWorld()[chunkX, chunkZ] = new ChunkColumn();
-                                handler.GetWorld()[chunkX, chunkZ]![chunkY] = chunk;
+                                world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
                             });
                         }
                     }
                 }
             }
-            handler.InvokeOnMainThread(() =>
-            {
-                if (handler.GetWorld()[chunkX, chunkZ] != null)
-                    handler.GetWorld()[chunkX, chunkZ]!.FullyLoaded = true;
-            });
             return true;
         }
     }

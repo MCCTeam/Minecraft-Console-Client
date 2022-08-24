@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol;
 using MinecraftClient.Mapping;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace MinecraftClient
 {
@@ -261,29 +263,39 @@ namespace MinecraftClient
                 try
                 {
                     string[] Lines = File.ReadAllLines(file);
-                    Section section = Section.Default;
-                    foreach (string lineRAW in Lines)
-                    {
-                        string line = section == Section.Main && lineRAW.ToLower().Trim().StartsWith("password")
-                            ? lineRAW.Trim() //Do not strip # in passwords
-                            : lineRAW.Split('#')[0].Trim();
 
-                        if (line.Length > 0)
+                    ConcurrentDictionary<int, Section> sectionInfo = new();
+                    Parallel.For(0, Lines.Length, idx =>
+                    {
+                        string line = Lines[idx].Split('#')[0].Trim();
+                        if (line.Length > 2 && line[0] == '[' && line[^1] == ']')
+                            sectionInfo[idx] = GetSection(line[1..^1]);
+                    });
+
+                    Section section = Section.Default;
+                    for (int idx = 0; idx < Lines.Length; ++idx)
+                    {
+                        if (sectionInfo.ContainsKey(idx))
                         {
-                            if (line[0] == '[' && line[line.Length - 1] == ']')
-                            {
-                                section = GetSection(line.Substring(1, line.Length - 2).ToLower());
-                            }
-                            else
+                            section = sectionInfo[idx];
+                            continue;
+                        }
+
+                        Parallel.Invoke(() =>
+                        {
+                            string line = Lines[idx].Split('#')[0].Trim();
+                            if (line.Length > 1)
                             {
                                 string argName = line.Split('=')[0];
+                                if (section == Section.Main && argName == "password")
+                                    line = Lines[idx].Trim(); //Do not strip # in passwords
                                 if (line.Length > (argName.Length + 1))
                                 {
-                                    string argValue = line.Substring(argName.Length + 1);
+                                    string argValue = line[(argName.Length + 1)..];
                                     LoadSingleSetting(section, argName, argValue);
                                 }
                             }
-                        }
+                        });
                     }
                 }
                 catch (IOException) { }

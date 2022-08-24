@@ -21,11 +21,6 @@ namespace MinecraftClient.Mapping
         private readonly Chunk[] chunks;
 
         /// <summary>
-        /// Lock for thread safety
-        /// </summary>
-        private readonly ReaderWriterLockSlim chunkLock = new ReaderWriterLockSlim();
-
-        /// <summary>
         /// Create a new ChunkColumn
         /// </summary>
         public ChunkColumn(int size = 16)
@@ -44,27 +39,11 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                chunkLock.EnterReadLock();
-                try
-                {
-                    return chunks[chunkY];
-                }
-                finally
-                {
-                    chunkLock.ExitReadLock();
-                }
+                return chunks[chunkY];
             }
             set
             {
-                chunkLock.EnterWriteLock();
-                try
-                {
-                    chunks[chunkY] = value;
-                }
-                finally
-                {
-                    chunkLock.ExitWriteLock();
-                }
+                chunks[chunkY] = value;
             }
         }
 
