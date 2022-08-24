@@ -158,6 +158,23 @@ namespace MinecraftClient.Protocol.Handlers
                 // Unloading chunks is handled by a separate packet
                 for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
                 {
+                    int lastChunkY = 0;
+                    if (protocolversion == Protocol18Handler.MC_1_17_Version || protocolversion == Protocol18Handler.MC_1_17_1_Version)
+                    {
+                        for (int i = verticalStripBitmask!.Length - 1; i >= 0; --i)
+                        {
+                            if (verticalStripBitmask![i] != 0)
+                            {
+                                lastChunkY = (sizeof(ulong) * 8 * i) + (sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount(verticalStripBitmask![i]));
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lastChunkY = chunkColumnSize - 1;
+                    }
+
                     if (cancellationToken.IsCancellationRequested)
                         return false;
 
@@ -180,7 +197,7 @@ namespace MinecraftClient.Protocol.Handlers
                         //We have our chunk, save the chunk into the world
                         handler.InvokeOnMainThread(() =>
                         {
-                            world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == (chunkColumnSize - 1));
+                            world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == lastChunkY);
                         });
 
                         // Skip Read Biomes (Type: Paletted Container) - 1.18(1.18.1) and above
