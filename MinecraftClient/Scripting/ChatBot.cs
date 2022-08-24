@@ -34,7 +34,7 @@ namespace MinecraftClient
         //Handler will be automatically set on bot loading, don't worry about this
         public void SetHandler(McClient handler) { this._handler = handler; }
         protected void SetMaster(ChatBot master) { this.master = master; }
-        protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
+        protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); bot.OnUnload(); }
         protected List<ChatBot> GetLoadedChatBots() { return Handler.GetLoadedChatBots(); }
         protected void UnLoadBot(ChatBot bot) { Handler.BotUnLoad(bot); }
         private McClient _handler = null;
@@ -100,6 +100,11 @@ namespace MinecraftClient
         /// If you want to send a message when the bot is loaded, use AfterGameJoined.
         /// </summary>
         public virtual void Initialize() { }
+
+        /// <summary>
+        /// Called when the bot is being unloaded, use this to free up the resources
+        /// </summary>
+        public virtual void OnUnload() { }
 
         /// <summary>
         /// Called after the server has been joined successfully and chat messages are able to be sent.

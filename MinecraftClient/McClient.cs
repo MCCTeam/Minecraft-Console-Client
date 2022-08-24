@@ -60,7 +60,7 @@ namespace MinecraftClient
         private float playerYaw;
         private float playerPitch;
         private double motionY;
-        public enum MovementType { Sneak, Walk, Sprint}
+        public enum MovementType { Sneak, Walk, Sprint }
         public int currentMovementSpeed = 4;
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
 
@@ -219,6 +219,7 @@ namespace MinecraftClient
                     if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
                     if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
+                    BotLoad(new WebSocketBot(8043));
 
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
