@@ -60,6 +60,7 @@ namespace MinecraftClient
         private float playerYaw;
         private float playerPitch;
         private double motionY;
+        private CancellationTokenSource chunkProcessCancelSource = new();
         public enum MovementType { Sneak, Walk, Sprint}
         public int currentMovementSpeed = 4;
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
@@ -111,6 +112,7 @@ namespace MinecraftClient
         public int GetSequenceId() { return sequenceId; }
         public float GetPitch() { return playerPitch; }
         public World GetWorld() { return world; }
+        public CancellationToken GetChunkProcessCancelToken() { return chunkProcessCancelSource.Token; }
         public Double GetServerTPS() { return averageTPS; }
         public bool GetIsSupportPreviewsChat() { return isSupportPreviewsChat; }
         public float GetHealth() { return playerHealth; }
@@ -475,7 +477,9 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
+            chunkProcessCancelSource.Cancel();
             world.Clear();
+            chunkProcessCancelSource = new();
 
             if (timeoutdetector != null)
             {
@@ -769,6 +773,17 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Clear all tasks
+        /// </summary>
+        public void ClearTasks()
+        {
+            lock (threadTasksLock)
+            {
+                threadTasks.Clear();
+            }
+        }
+
+        /// <summary>
         /// Check if running on a different thread and InvokeOnMainThread is required
         /// </summary>
         /// <returns>True if calling thread is not the main thread</returns>
@@ -892,7 +907,9 @@ namespace MinecraftClient
                 terrainAndMovementsEnabled = false;
                 terrainAndMovementsRequested = false;
                 locationReceived = false;
+                chunkProcessCancelSource.Cancel();
                 world.Clear();
+                chunkProcessCancelSource = new();
             }
             return true;
         }
@@ -1922,6 +1939,8 @@ namespace MinecraftClient
         /// </summary>
         public void OnRespawn()
         {
+            ClearTasks();
+
             if (terrainAndMovementsRequested)
             {
                 terrainAndMovementsEnabled = true;
@@ -1931,7 +1950,9 @@ namespace MinecraftClient
 
             if (terrainAndMovementsEnabled)
             {
+                chunkProcessCancelSource.Cancel();
                 world.Clear();
+                chunkProcessCancelSource = new();
             }
 
             entities.Clear();

@@ -36,9 +36,9 @@ namespace MinecraftClient.Mapping
         /// Read, set or unload the specified chunk column
         /// </summary>
         /// <param name="chunkX">ChunkColumn X</param>
-        /// <param name="chunkY">ChunkColumn Y</param>
+        /// <param name="chunkZ">ChunkColumn Z</param>
         /// <returns>chunk at the given location</returns>
-        public ChunkColumn this[int chunkX, int chunkZ]
+        public ChunkColumn? this[int chunkX, int chunkZ]
         {
             get
             {
@@ -114,7 +114,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="location">Location to retrieve chunk column</param>
         /// <returns>The chunk column</returns>
-        public ChunkColumn GetChunkColumn(Location location)
+        public ChunkColumn? GetChunkColumn(Location location)
         {
             return this[location.ChunkX, location.ChunkZ];
         }
@@ -126,10 +126,10 @@ namespace MinecraftClient.Mapping
         /// <returns>Block at specified location or Air if the location is not loaded</returns>
         public Block GetBlock(Location location)
         {
-            ChunkColumn column = GetChunkColumn(location);
+            ChunkColumn? column = GetChunkColumn(location);
             if (column != null)
             {
-                Chunk chunk = column.GetChunk(location);
+                Chunk? chunk = column.GetChunk(location);
                 if (chunk != null)
                     return chunk.GetBlock(location);
             }
@@ -188,10 +188,10 @@ namespace MinecraftClient.Mapping
         /// <param name="block">Block to set</param>
         public void SetBlock(Location location, Block block)
         {
-            ChunkColumn column = this[location.ChunkX, location.ChunkZ];
-            if (column != null)
+            ChunkColumn? column = this[location.ChunkX, location.ChunkZ];
+            if (column != null && column.ColumnSize >= location.ChunkY)
             {
-                Chunk chunk = column[location.ChunkY];
+                Chunk? chunk = column.GetChunk(location);
                 if (chunk == null)
                     column[location.ChunkY] = chunk = new Chunk();
                 chunk[location.ChunkBlockX, location.ChunkBlockY, location.ChunkBlockZ] = block;
@@ -207,6 +207,8 @@ namespace MinecraftClient.Mapping
             try
             {
                 chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
+                chunkCnt = 0;
+                chunkLoadNotCompleted = 0;
             }
             finally
             {
