@@ -9,22 +9,69 @@ using WebSocketSharp.Server;
 
 namespace MinecraftClient.ChatBots
 {
+    internal class WsServer
+    {
+        private WebSocketServer _server;
+        private string _password;
+
+        public static event EventHandler<string>? OnNewSession;
+        public static event EventHandler<string>? OnSessionClose;
+        public static event EventHandler<string>? OnMessageRecived;
+
+        public WsServer(int port, string password)
+        {
+            _password = password;
+
+            _server = new WebSocketServer(port);
+            _server.AddWebSocketService<WsBehavior>("/mcc");
+            _server.Start();
+        }
+
+        public void Stop()
+        {
+            _server.Stop();
+        }
+
+        public class WsBehavior : WebSocketBehavior
+        {
+            private string _sessionId { get; set; } = "";
+
+            protected override void OnOpen()
+            {
+                _sessionId = Guid.NewGuid().ToString();
+                OnNewSession!.Invoke(this, _sessionId);
+            }
+
+            protected override void OnClose(CloseEventArgs e)
+            {
+                OnSessionClose!.Invoke(this, _sessionId);
+            }
+
+            protected override void OnMessage(MessageEventArgs websocketEvent)
+            {
+                WsServer.OnMessageRecived!.Invoke(null, websocketEvent.Data);
+            }
+
+            public void SendToClient(string text)
+            {
+                Send(text);
+            }
+        }
+    }
+
     class WebSocketBot : ChatBot
     {
-        private WebSocketServer? _server;
+        // Videti: https://chronoxor.github.io/NetCoreServer/
 
-        public WebSocketBot(int port)
+        private WsServer? _server;
+        private Dictionary<string, WsServer.WsBehavior>? _sessions;
+
+        public WebSocketBot(int port, string password)
         {
-            // Get the instance of this class so we can use it in the WebSocketBotBehavior
-            Bridge.Bot = this;
-
-            // Start a Web Socket server
             try
             {
-                _server = new WebSocketServer(port);
-
-                _server.AddWebSocketService<WebSocketBotBehavior>("/");
-                _server.Start();
+                _server = new WsServer(port, password);
+                _sessions = new Dictionary<string, WsServer.WsBehavior>();
 
                 LogToConsole("§bServer started on port: §a" + port);
             }
@@ -32,7 +79,29 @@ namespace MinecraftClient.ChatBots
             {
                 LogToConsole("§cFailed to start a server!");
                 LogToConsole(e);
+                return;
             }
+
+            WsServer.OnNewSession += (sender, id) =>
+            {
+                LogToConsole("New session connected: " + id);
+                _sessions[id] = (WsServer.WsBehavior)sender!;
+            };
+
+            WsServer.OnSessionClose += (sender, id) =>
+            {
+                LogToConsole("Session witn an id \"" + id + "\" has disconnected!");
+                _sessions.Remove(id);
+            };
+
+            WsServer.OnMessageRecived += (sender, message) =>
+            {
+                LogToConsole("Got a message: " + message);
+
+                //string result = "";
+                //PerformInternalCommand(message, ref result);
+                //SendEvent("OnCommandRespone", "{\"response\": \"" + result + "\"}");
+            };
         }
 
         public override void OnUnload()
@@ -290,7 +359,7 @@ namespace MinecraftClient.ChatBots
             json.Append("\"mode\": " + mode + ",");
             json.Append("\"objectiveValue\": \"" + objectivevalue + "\",");
             json.Append("\"type\": " + type + ",");
-            json.Append("\"rawJson\": " + Json.EscapeString(json_));
+            json.Append("\"rawJson\": " + json_);
             json.Append("}");
 
             SendEvent("OnScoreboardObjective", json.ToString());
@@ -407,13 +476,13 @@ namespace MinecraftClient.ChatBots
         // ==========================================================================================
         private void SendEvent(string type, string data)
         {
-            if (data.IsNullOrEmpty())
+            foreach (KeyValuePair<string, WsServer.WsBehavior> pair in _sessions!)
             {
-                Bridge.SendToClient("{\"event\": \"" + type + "\", \"data\": null");
-                return;
-            }
+                var instance = pair.Value;
 
-            Bridge.SendToClient("{\"event\": \"" + type + "\", \"data\": \"" + Json.EscapeString(data) + "\"}");
+                if (instance != null)
+                    instance.SendToClient("{\"event\": \"" + type + "\", \"data\": " + (data.IsNullOrEmpty() ? "null" : "\"" + Json.EscapeString(data) + "\"") + "}");
+            }
         }
 
         private string EntityToJson(Entity entity)
@@ -446,75 +515,6 @@ namespace MinecraftClient.ChatBots
                 return "spectator";
 
             return "unknown";
-        }
-
-        // ==========================================================================================
-        // Methods that are exposing internal ones so we can call them from the WebSocketBotBehavior
-        // ==========================================================================================
-        public bool PerformMccCommand(string command, ref string response, Dictionary<string, object>? localVars = null)
-        {
-            return base.PerformInternalCommand(command, ref response, localVars!);
-        }
-
-        public void ToConsole(string text)
-        {
-            base.LogToConsole(text);
-        }
-
-        public void ToDebugConsole(string text)
-        {
-            base.LogDebugToConsole(text);
-        }
-    }
-
-    internal class WebSocketBotBehavior : WebSocketBehavior
-    {
-        public WebSocketBotBehavior()
-        {
-            Bridge.Server = this;
-        }
-
-        protected override void OnMessage(MessageEventArgs websocketEvent)
-        {
-            string data = websocketEvent.Data;
-            Bridge.LogToConsole("Recived command: " + data);
-
-            string response = "";
-            Bridge.PerformInternalCommand(data, ref response);
-
-            Send("{\"event\": \"OnCommandResponse\", \"data\": " + (response.IsNullOrEmpty() ? "null" : "\"" + response + "\"") + "}");
-        }
-
-        public void SendToClient(string text)
-        {
-            Send(text);
-        }
-    }
-
-    internal class Bridge
-    {
-        public static WebSocketBot? Bot { get; set; }
-        public static WebSocketBotBehavior? Server { get; set; }
-
-        public static void PerformInternalCommand(string text, ref string response)
-        {
-            Bot!.PerformMccCommand(text, ref response);
-        }
-
-        public static void LogToConsole(string text)
-        {
-            Bot!.ToConsole(text);
-        }
-
-        public static void LogToDebugConole(string text)
-        {
-            Bot!.ToDebugConsole(text);
-        }
-
-        public static void SendToClient(String text)
-        {
-            if (Server != null)
-                Server.SendToClient(text);
         }
     }
 }
