@@ -18,7 +18,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Blocks contained into the chunk
         /// </summary>
-        private readonly Chunk[] chunks;
+        private readonly Chunk?[] chunks;
 
         /// <summary>
         /// Create a new ChunkColumn
@@ -26,7 +26,7 @@ namespace MinecraftClient.Mapping
         public ChunkColumn(int size = 16)
         {
             ColumnSize = size;
-            chunks = new Chunk[size];
+            chunks = new Chunk?[size];
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace MinecraftClient.Mapping
         /// <param name="chunkX">ChunkColumn X</param>
         /// <param name="chunkY">ChunkColumn Y</param>
         /// <returns>chunk at the given location</returns>
-        public Chunk this[int chunkY]
+        public Chunk? this[int chunkY]
         {
             get
             {
