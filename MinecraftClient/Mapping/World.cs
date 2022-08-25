@@ -118,10 +118,9 @@ namespace MinecraftClient.Mapping
         /// <param name="chunkColumnSize">ChunkColumn size</param>
         /// <param name="chunk">Chunk data</param>
         /// <param name="loadCompleted">Whether the ChunkColumn has been fully loaded</param>
-        public void StoreChunk(int chunkX, int chunkY, int chunkZ, int chunkColumnSize, Chunk chunk, bool loadCompleted)
+        public void StoreChunk(int chunkX, int chunkY, int chunkZ, int chunkColumnSize, Chunk? chunk, bool loadCompleted)
         {
             ChunkColumn? chunkColumn = null;
-
             chunksLock.EnterUpgradeableReadLock();
             try
             {
@@ -151,7 +150,6 @@ namespace MinecraftClient.Mapping
             {
                 chunksLock.ExitUpgradeableReadLock();
             }
-
             chunkColumn[chunkY] = chunk;
             if (loadCompleted)
                 chunkColumn.FullyLoaded = true;

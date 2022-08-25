@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
+using System.Threading.Tasks;
 //using System.Linq;
 //using System.Text;
 using MinecraftClient.Mapping;
@@ -32,9 +33,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Reading the "Block states" field: consists of 4096 entries, representing all the blocks in the chunk section.
         /// </summary>
-        /// <param name="chunk">Blocks will store in this chunk</param>
         /// <param name="cache">Cache for reading data</param>
-        private Chunk? ReadBlockStatesField(ref Chunk chunk, Queue<byte> cache)
+        private Chunk? ReadBlockStatesField(Queue<byte> cache)
         {
             // read Block states (Type: Paletted Container)
             byte bitsPerEntry = dataTypes.ReadNextByte(cache);
@@ -44,18 +44,20 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 // Palettes: Single valued - 1.18(1.18.1) and above
                 ushort blockId = (ushort)dataTypes.ReadNextVarInt(cache);
+                Block block = new(blockId);
 
                 dataTypes.SkipNextVarInt(cache); // Data Array Length will be zero
 
                 // Empty chunks will not be stored
-                if (new Block(blockId).Type == Material.Air)
+                if (block.Type == Material.Air)
                     return null;
 
+                Chunk chunk = new();
                 for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                     for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                         for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                            chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(blockId));
-
+                            chunk.SetWithoutCheck(blockX, blockY, blockZ, block);
+                return chunk;
             }
             else
             {
@@ -79,6 +81,7 @@ namespace MinecraftClient.Protocol.Handlers
                 // Block IDs are packed in the array of 64-bits integers
                 ulong[] dataArray = dataTypes.ReadNextULongArray(cache);
 
+                Chunk chunk = new();
                 int longIndex = 0;
                 int startOffset = 0 - bitsPerEntry;
                 for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
@@ -87,10 +90,6 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
                         {
-                            // NOTICE: In the future a single ushort may not store the entire block id;
-                            // the Block class may need to change if block state IDs go beyond 65535
-                            ushort blockId;
-
                             // Calculate location of next block ID inside the array of Longs
                             startOffset += bitsPerEntry;
 
@@ -105,8 +104,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 longIndex++;
                             }
 
-                            // Extract Block ID
-                            blockId = (ushort)((dataArray[longIndex] >> startOffset) & valueMask);
+                            // NOTICE: In the future a single ushort may not store the entire block id;
+                            // the Block class may need to change if block state IDs go beyond 65535
+                            ushort blockId = (ushort)((dataArray[longIndex] >> startOffset) & valueMask);
 
                             // Map small IDs to actual larger block IDs
                             if (usePalette)
@@ -129,9 +129,8 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                     }
                 }
+                return chunk;
             }
-
-            return chunk;
         }
 
         /// <summary>
@@ -156,11 +155,13 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 // 1.17 and above chunk format
                 // Unloading chunks is handled by a separate packet
+
                 for (int chunkY = 0; chunkY < chunkColumnSize; chunkY++)
                 {
-                    int lastChunkY = 0;
+                    int lastChunkY;
                     if (protocolversion == Protocol18Handler.MC_1_17_Version || protocolversion == Protocol18Handler.MC_1_17_1_Version)
                     {
+                        lastChunkY = 0;
                         for (int i = verticalStripBitmask!.Length - 1; i >= 0; --i)
                         {
                             if (verticalStripBitmask![i] != 0)
@@ -187,8 +188,7 @@ namespace MinecraftClient.Protocol.Handlers
                         int blockCnt = dataTypes.ReadNextShort(cache);
 
                         // Read Block states (Type: Paletted Container)
-                        Chunk chunk = new Chunk();
-                        ReadBlockStatesField(ref chunk, cache);
+                        Chunk? chunk = ReadBlockStatesField(cache);
 
                         // check before store chunk
                         if (cancellationToken.IsCancellationRequested)
