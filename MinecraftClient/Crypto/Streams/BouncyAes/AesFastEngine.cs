@@ -30,6 +30,11 @@ namespace Org.BouncyCastle.Crypto.Engines
     * This file contains the fast version with 8Kbytes of static tables for round precomputation
     * </p>
     */
+    /// <remarks>
+    /// Unfortunately this class has a few side channel issues.
+    /// In an environment where encryption/decryption may be closely observed it should not be used.
+    /// </remarks>
+    [Obsolete("Use AesEngine instead")]
     public class AesFastEngine
         : IBlockCipher
     {
@@ -573,10 +578,20 @@ namespace Org.BouncyCastle.Crypto.Engines
         private const uint m1 = 0x80808080;
         private const uint m2 = 0x7f7f7f7f;
         private const uint m3 = 0x0000001b;
+        private const uint m4 = 0xC0C0C0C0;
+        private const uint m5 = 0x3f3f3f3f;
 
         private static uint FFmulX(uint x)
         {
             return ((x & m2) << 1) ^ (((x & m1) >> 7) * m3);
+        }
+
+        private static uint FFmulX2(uint x)
+        {
+            uint t0  = (x & m5) << 2;
+            uint t1  = (x & m4);
+                 t1 ^= (t1 >> 1);
+            return t0 ^ (t1 >> 2) ^ (t1 >> 5);
         }
 
         /*
@@ -591,12 +606,13 @@ namespace Org.BouncyCastle.Crypto.Engines
 
         private static uint Inv_Mcol(uint x)
         {
-            uint f2 = FFmulX(x);
-            uint f4 = FFmulX(f2);
-            uint f8 = FFmulX(f4);
-            uint f9 = x ^ f8;
-
-            return f2 ^ f4 ^ f8 ^ Shift(f2 ^ f9, 8) ^ Shift(f4 ^ f9, 16) ^ Shift(f9, 24);
+            uint t0, t1;
+            t0  = x;
+            t1  = t0 ^ Shift(t0, 8);
+            t0 ^= FFmulX(t1);
+            t1 ^= FFmulX2(t0);
+            t0 ^= t1 ^ Shift(t1, 16);
+            return t0;
         }
 
         private static uint SubWord(uint x)
@@ -613,16 +629,14 @@ namespace Org.BouncyCastle.Crypto.Engines
         * AES specified a fixed block size of 128 bits and key sizes 128/192/256 bits
         * This code is written assuming those are the only possible values
         */
-        private uint[][] GenerateWorkingKey(
-            byte[]	key,
-            bool	forEncryption)
+        private uint[][] GenerateWorkingKey(byte[] key, bool forEncryption)
         {
-            int KC = key.Length / 4;  // key length in words
-
-            if (((KC != 4) && (KC != 6) && (KC != 8)) || ((KC * 4) != key.Length))
+            int keyLen = key.Length;
+            if (keyLen < 16 || keyLen > 32 || (keyLen & 7) != 0)
                 throw new ArgumentException("Key length not 128/192/256 bits.");
 
-            ROUNDS = KC + 6;  // This is not always true for the generalized Rijndael that allows larger block sizes
+            int KC = keyLen >> 2;
+            this.ROUNDS = KC + 6;  // This is not always true for the generalized Rijndael that allows larger block sizes
 
             uint[][] W = new uint[ROUNDS + 1][]; // 4 words in a block
             for (int i = 0; i <= ROUNDS; ++i)
@@ -630,32 +644,109 @@ namespace Org.BouncyCastle.Crypto.Engines
                 W[i] = new uint[4];
             }
 
-            //
-            // copy the key into the round key array
-            //
-
-            int t = 0;
-            for (int i = 0; i < key.Length; t++)
+            switch (KC)
             {
-                W[t >> 2][t & 3] = Pack.LE_To_UInt32(key, i);
-                i+=4;
-            }
-
-            //
-            // while not enough round key material calculated
-            // calculate new values
-            //
-            int k = (ROUNDS + 1) << 2;
-            for (int i = KC; (i < k); i++)
+            case 4:
             {
-                uint temp = W[(i-1)>>2][(i-1)&3];
-                if ((i % KC) == 0) {
-                    temp = SubWord(Shift(temp, 8)) ^ rcon[(i / KC)-1];
-                } else if ((KC > 6) && ((i % KC) == 4)) {
-                    temp = SubWord(temp);
+                uint t0 = Pack.LE_To_UInt32(key,  0); W[0][0] = t0;
+                uint t1 = Pack.LE_To_UInt32(key,  4); W[0][1] = t1;
+                uint t2 = Pack.LE_To_UInt32(key,  8); W[0][2] = t2;
+                uint t3 = Pack.LE_To_UInt32(key, 12); W[0][3] = t3;
+
+                for (int i = 1; i <= 10; ++i)
+                {
+                    uint u = SubWord(Shift(t3, 8)) ^ rcon[i - 1];
+                    t0 ^= u;  W[i][0] = t0;
+                    t1 ^= t0; W[i][1] = t1;
+                    t2 ^= t1; W[i][2] = t2;
+                    t3 ^= t2; W[i][3] = t3;
                 }
 
-                W[i>>2][i&3] = W[(i - KC)>>2][(i-KC)&3] ^ temp;
+                break;
+            }
+            case 6:
+            {
+                uint t0 = Pack.LE_To_UInt32(key,  0); W[0][0] = t0;
+                uint t1 = Pack.LE_To_UInt32(key,  4); W[0][1] = t1;
+                uint t2 = Pack.LE_To_UInt32(key,  8); W[0][2] = t2;
+                uint t3 = Pack.LE_To_UInt32(key, 12); W[0][3] = t3;
+                uint t4 = Pack.LE_To_UInt32(key, 16); W[1][0] = t4;
+                uint t5 = Pack.LE_To_UInt32(key, 20); W[1][1] = t5;
+
+                uint rcon = 1;
+                uint u = SubWord(Shift(t5, 8)) ^ rcon; rcon <<= 1;
+                t0 ^= u;  W[1][2] = t0;
+                t1 ^= t0; W[1][3] = t1;
+                t2 ^= t1; W[2][0] = t2;
+                t3 ^= t2; W[2][1] = t3;
+                t4 ^= t3; W[2][2] = t4;
+                t5 ^= t4; W[2][3] = t5;
+
+                for (int i = 3; i < 12; i += 3)
+                {
+                    u = SubWord(Shift(t5, 8)) ^ rcon; rcon <<= 1;
+                    t0 ^= u;  W[i    ][0] = t0;
+                    t1 ^= t0; W[i    ][1] = t1;
+                    t2 ^= t1; W[i    ][2] = t2;
+                    t3 ^= t2; W[i    ][3] = t3;
+                    t4 ^= t3; W[i + 1][0] = t4;
+                    t5 ^= t4; W[i + 1][1] = t5;
+                    u = SubWord(Shift(t5, 8)) ^ rcon; rcon <<= 1;
+                    t0 ^= u;  W[i + 1][2] = t0;
+                    t1 ^= t0; W[i + 1][3] = t1;
+                    t2 ^= t1; W[i + 2][0] = t2;
+                    t3 ^= t2; W[i + 2][1] = t3;
+                    t4 ^= t3; W[i + 2][2] = t4;
+                    t5 ^= t4; W[i + 2][3] = t5;
+                }
+
+                u = SubWord(Shift(t5, 8)) ^ rcon;
+                t0 ^= u;  W[12][0] = t0;
+                t1 ^= t0; W[12][1] = t1;
+                t2 ^= t1; W[12][2] = t2;
+                t3 ^= t2; W[12][3] = t3;
+
+                break;
+            }
+            case 8:
+            {
+                uint t0 = Pack.LE_To_UInt32(key,  0); W[0][0] = t0;
+                uint t1 = Pack.LE_To_UInt32(key,  4); W[0][1] = t1;
+                uint t2 = Pack.LE_To_UInt32(key,  8); W[0][2] = t2;
+                uint t3 = Pack.LE_To_UInt32(key, 12); W[0][3] = t3;
+                uint t4 = Pack.LE_To_UInt32(key, 16); W[1][0] = t4;
+                uint t5 = Pack.LE_To_UInt32(key, 20); W[1][1] = t5;
+                uint t6 = Pack.LE_To_UInt32(key, 24); W[1][2] = t6;
+                uint t7 = Pack.LE_To_UInt32(key, 28); W[1][3] = t7;
+
+                uint u, rcon = 1;
+
+                for (int i = 2; i < 14; i += 2)
+                {
+                    u = SubWord(Shift(t7, 8)) ^ rcon; rcon <<= 1;
+                    t0 ^= u;  W[i    ][0] = t0;
+                    t1 ^= t0; W[i    ][1] = t1;
+                    t2 ^= t1; W[i    ][2] = t2;
+                    t3 ^= t2; W[i    ][3] = t3;
+                    u = SubWord(t3);
+                    t4 ^= u;  W[i + 1][0] = t4;
+                    t5 ^= t4; W[i + 1][1] = t5;
+                    t6 ^= t5; W[i + 1][2] = t6;
+                    t7 ^= t6; W[i + 1][3] = t7;
+                }
+
+                u = SubWord(Shift(t7, 8)) ^ rcon;
+                t0 ^= u;  W[14][0] = t0;
+                t1 ^= t0; W[14][1] = t1;
+                t2 ^= t1; W[14][2] = t2;
+                t3 ^= t2; W[14][3] = t3;
+
+                break;
+            }
+            default:
+            {
+                throw new InvalidOperationException("Should never get here");
+            }
             }
 
             if (!forEncryption)
@@ -675,7 +766,6 @@ namespace Org.BouncyCastle.Crypto.Engines
 
         private int ROUNDS;
         private uint[][] WorkingKey;
-        private uint C0, C1, C2, C3;
         private bool forEncryption;
 
         private const int BLOCK_SIZE = 16;
@@ -685,6 +775,11 @@ namespace Org.BouncyCastle.Crypto.Engines
         */
         public AesFastEngine()
         {
+        }
+
+        internal static string GetTypeName(object obj)
+        {
+            return obj.GetType().FullName;
         }
 
         /**
@@ -702,7 +797,8 @@ namespace Org.BouncyCastle.Crypto.Engines
             KeyParameter keyParameter = parameters as KeyParameter;
 
             if (keyParameter == null)
-                throw new ArgumentException("invalid parameter passed to AES init - " + parameters.GetType().Name);
+                throw new ArgumentException("invalid parameter passed to AES init - "
+                    + GetTypeName(parameters));
 
             WorkingKey = GenerateWorkingKey(keyParameter.GetKey(), forEncryption);
 
@@ -724,11 +820,7 @@ namespace Org.BouncyCastle.Crypto.Engines
             return BLOCK_SIZE;
         }
 
-        public virtual int ProcessBlock(
-            byte[] input,
-            int inOff,
-            byte[] output,
-            int outOff)
+        public virtual int ProcessBlock(byte[] input, int inOff, byte[] output, int outOff)
         {
             if (WorkingKey == null)
                 throw new InvalidOperationException("AES engine not initialised");
@@ -736,18 +828,14 @@ namespace Org.BouncyCastle.Crypto.Engines
             Check.DataLength(input, inOff, 16, "input buffer too short");
             Check.OutputLength(output, outOff, 16, "output buffer too short");
 
-            UnPackBlock(input, inOff);
-
             if (forEncryption)
             {
-                EncryptBlock(WorkingKey);
+                EncryptBlock(input, inOff, output, outOff, WorkingKey);
             }
             else
             {
-                DecryptBlock(WorkingKey);
+                DecryptBlock(input, inOff, output, outOff, WorkingKey);
             }
-
-            PackBlock(output, outOff);
 
             return BLOCK_SIZE;
         }
@@ -756,34 +844,19 @@ namespace Org.BouncyCastle.Crypto.Engines
         {
         }
 
-        private void UnPackBlock(
-            byte[]	bytes,
-            int		off)
+        private void EncryptBlock(byte[] input, int inOff, byte[] output, int outOff, uint[][] KW)
         {
-            C0 = Pack.LE_To_UInt32(bytes, off);
-            C1 = Pack.LE_To_UInt32(bytes, off + 4);
-            C2 = Pack.LE_To_UInt32(bytes, off + 8);
-            C3 = Pack.LE_To_UInt32(bytes, off + 12);
-        }
+            uint C0 = Pack.LE_To_UInt32(input, inOff + 0);
+            uint C1 = Pack.LE_To_UInt32(input, inOff + 4);
+            uint C2 = Pack.LE_To_UInt32(input, inOff + 8);
+            uint C3 = Pack.LE_To_UInt32(input, inOff + 12);
 
-        private void PackBlock(
-            byte[]	bytes,
-            int		off)
-        {
-            Pack.UInt32_To_LE(C0, bytes, off);
-            Pack.UInt32_To_LE(C1, bytes, off + 4);
-            Pack.UInt32_To_LE(C2, bytes, off + 8);
-            Pack.UInt32_To_LE(C3, bytes, off + 12);
-        }
-
-        private void EncryptBlock(uint[][] KW)
-        {
             uint[] kw = KW[0];
-            uint t0 = this.C0 ^ kw[0];
-            uint t1 = this.C1 ^ kw[1];
-            uint t2 = this.C2 ^ kw[2];
+            uint t0 = C0 ^ kw[0];
+            uint t1 = C1 ^ kw[1];
+            uint t2 = C2 ^ kw[2];
 
-            uint r0, r1, r2, r3 = this.C3 ^ kw[3];
+            uint r0, r1, r2, r3 = C3 ^ kw[3];
             int r = 1;
             while (r < ROUNDS - 1)
             {
@@ -808,20 +881,30 @@ namespace Org.BouncyCastle.Crypto.Engines
             // the final round's table is a simple function of S so we don't use a whole other four tables for it
 
             kw = KW[r];
-            this.C0 = (uint)S[r0 & 255] ^ (((uint)S[(r1 >> 8) & 255]) << 8) ^ (((uint)S[(r2 >> 16) & 255]) << 16) ^ (((uint)S[r3 >> 24]) << 24) ^ kw[0];
-            this.C1 = (uint)S[r1 & 255] ^ (((uint)S[(r2 >> 8) & 255]) << 8) ^ (((uint)S[(r3 >> 16) & 255]) << 16) ^ (((uint)S[r0 >> 24]) << 24) ^ kw[1];
-            this.C2 = (uint)S[r2 & 255] ^ (((uint)S[(r3 >> 8) & 255]) << 8) ^ (((uint)S[(r0 >> 16) & 255]) << 16) ^ (((uint)S[r1 >> 24]) << 24) ^ kw[2];
-            this.C3 = (uint)S[r3 & 255] ^ (((uint)S[(r0 >> 8) & 255]) << 8) ^ (((uint)S[(r1 >> 16) & 255]) << 16) ^ (((uint)S[r2 >> 24]) << 24) ^ kw[3];
+            C0 = (uint)S[r0 & 255] ^ (((uint)S[(r1 >> 8) & 255]) << 8) ^ (((uint)S[(r2 >> 16) & 255]) << 16) ^ (((uint)S[r3 >> 24]) << 24) ^ kw[0];
+            C1 = (uint)S[r1 & 255] ^ (((uint)S[(r2 >> 8) & 255]) << 8) ^ (((uint)S[(r3 >> 16) & 255]) << 16) ^ (((uint)S[r0 >> 24]) << 24) ^ kw[1];
+            C2 = (uint)S[r2 & 255] ^ (((uint)S[(r3 >> 8) & 255]) << 8) ^ (((uint)S[(r0 >> 16) & 255]) << 16) ^ (((uint)S[r1 >> 24]) << 24) ^ kw[2];
+            C3 = (uint)S[r3 & 255] ^ (((uint)S[(r0 >> 8) & 255]) << 8) ^ (((uint)S[(r1 >> 16) & 255]) << 16) ^ (((uint)S[r2 >> 24]) << 24) ^ kw[3];
+
+            Pack.UInt32_To_LE(C0, output, outOff + 0);
+            Pack.UInt32_To_LE(C1, output, outOff + 4);
+            Pack.UInt32_To_LE(C2, output, outOff + 8);
+            Pack.UInt32_To_LE(C3, output, outOff + 12);
         }
 
-        private void DecryptBlock(uint[][] KW)
+        private void DecryptBlock(byte[] input, int inOff, byte[] output, int outOff, uint[][] KW)
         {
-            uint[] kw = KW[ROUNDS];
-            uint t0 = this.C0 ^ kw[0];
-            uint t1 = this.C1 ^ kw[1];
-            uint t2 = this.C2 ^ kw[2];
+            uint C0 = Pack.LE_To_UInt32(input, inOff + 0);
+            uint C1 = Pack.LE_To_UInt32(input, inOff + 4);
+            uint C2 = Pack.LE_To_UInt32(input, inOff + 8);
+            uint C3 = Pack.LE_To_UInt32(input, inOff + 12);
 
-            uint r0, r1, r2, r3 = this.C3 ^ kw[3];
+            uint[] kw = KW[ROUNDS];
+            uint t0 = C0 ^ kw[0];
+            uint t1 = C1 ^ kw[1];
+            uint t2 = C2 ^ kw[2];
+
+            uint r0, r1, r2, r3 = C3 ^ kw[3];
             int r = ROUNDS - 1;
             while (r > 1)
             {
@@ -846,10 +929,15 @@ namespace Org.BouncyCastle.Crypto.Engines
             // the final round's table is a simple function of Si so we don't use a whole other four tables for it
 
             kw = KW[0];
-            this.C0 = (uint)Si[r0 & 255] ^ (((uint)Si[(r3 >> 8) & 255]) << 8) ^ (((uint)Si[(r2 >> 16) & 255]) << 16) ^ (((uint)Si[r1 >> 24]) << 24) ^ kw[0];
-            this.C1 = (uint)Si[r1 & 255] ^ (((uint)Si[(r0 >> 8) & 255]) << 8) ^ (((uint)Si[(r3 >> 16) & 255]) << 16) ^ (((uint)Si[r2 >> 24]) << 24) ^ kw[1];
-            this.C2 = (uint)Si[r2 & 255] ^ (((uint)Si[(r1 >> 8) & 255]) << 8) ^ (((uint)Si[(r0 >> 16) & 255]) << 16) ^ (((uint)Si[r3 >> 24]) << 24) ^ kw[2];
-            this.C3 = (uint)Si[r3 & 255] ^ (((uint)Si[(r2 >> 8) & 255]) << 8) ^ (((uint)Si[(r1 >> 16) & 255]) << 16) ^ (((uint)Si[r0 >> 24]) << 24) ^ kw[3];
+            C0 = (uint)Si[r0 & 255] ^ (((uint)Si[(r3 >> 8) & 255]) << 8) ^ (((uint)Si[(r2 >> 16) & 255]) << 16) ^ (((uint)Si[r1 >> 24]) << 24) ^ kw[0];
+            C1 = (uint)Si[r1 & 255] ^ (((uint)Si[(r0 >> 8) & 255]) << 8) ^ (((uint)Si[(r3 >> 16) & 255]) << 16) ^ (((uint)Si[r2 >> 24]) << 24) ^ kw[1];
+            C2 = (uint)Si[r2 & 255] ^ (((uint)Si[(r1 >> 8) & 255]) << 8) ^ (((uint)Si[(r0 >> 16) & 255]) << 16) ^ (((uint)Si[r3 >> 24]) << 24) ^ kw[2];
+            C3 = (uint)Si[r3 & 255] ^ (((uint)Si[(r2 >> 8) & 255]) << 8) ^ (((uint)Si[(r1 >> 16) & 255]) << 16) ^ (((uint)Si[r0 >> 24]) << 24) ^ kw[3];
+
+            Pack.UInt32_To_LE(C0, output, outOff + 0);
+            Pack.UInt32_To_LE(C1, output, outOff + 4);
+            Pack.UInt32_To_LE(C2, output, outOff + 8);
+            Pack.UInt32_To_LE(C3, output, outOff + 12);
         }
     }
 }

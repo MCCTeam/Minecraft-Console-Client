@@ -27,7 +27,7 @@ namespace Org.BouncyCastle.Crypto.Parameters
 				throw new ArgumentNullException("key");
 			if (keyOff < 0 || keyOff > key.Length)
 				throw new ArgumentOutOfRangeException("keyOff");
-			if (keyLen < 0 || (keyOff + keyLen) > key.Length)
+            if (keyLen < 0 || keyLen > (key.Length - keyOff))
 				throw new ArgumentOutOfRangeException("keyLen");
 
 			this.key = new byte[keyLen];

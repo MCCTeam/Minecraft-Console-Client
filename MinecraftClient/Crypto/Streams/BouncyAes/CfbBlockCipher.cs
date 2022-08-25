@@ -29,6 +29,9 @@ namespace Org.BouncyCastle.Crypto.Modes
             IBlockCipher cipher,
             int          bitBlockSize)
         {
+            if (bitBlockSize < 8 || (bitBlockSize & 7) != 0)
+                throw new ArgumentException("CFB" + bitBlockSize + " not supported", "bitBlockSize");
+
             this.cipher = cipher;
             this.blockSize = bitBlockSize / 8;
             this.IV = new byte[cipher.GetBlockSize()];

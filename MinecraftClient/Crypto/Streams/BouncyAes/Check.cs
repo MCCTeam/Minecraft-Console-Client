@@ -12,13 +12,13 @@ namespace Org.BouncyCastle.Crypto
 
         internal static void DataLength(byte[] buf, int off, int len, string msg)
         {
-            if (off + len > buf.Length)
+            if (off > (buf.Length - len))
                 throw new DataLengthException(msg);
         }
 
         internal static void OutputLength(byte[] buf, int off, int len, string msg)
         {
-            if (off + len > buf.Length)
+            if (off > (buf.Length - len))
                 throw new OutputLengthException(msg);
         }
     }

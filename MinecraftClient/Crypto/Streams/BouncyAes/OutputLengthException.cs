@@ -2,7 +2,7 @@
 
 namespace Org.BouncyCastle.Crypto
 {
-#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT)
+#if !(NETCF_1_0 || NETCF_2_0 || SILVERLIGHT || PORTABLE)
     [Serializable]
 #endif
     public class OutputLengthException
