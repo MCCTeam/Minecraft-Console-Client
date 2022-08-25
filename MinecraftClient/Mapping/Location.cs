@@ -62,6 +62,29 @@ namespace MinecraftClient.Mapping
         }
 
         /// <summary>
+        /// Round coordinates
+        /// </summary>
+        /// <returns>itself</returns>
+        public Location ToFloor()
+        {
+            this.X = Math.Floor(this.X);
+            this.Y = Math.Floor(this.Y);
+            this.Z = Math.Floor(this.Z);
+            return this;
+        }
+
+        /// <summary>
+        /// Get the center coordinates
+        /// </summary>
+        /// <returns>itself</returns>
+        public Location ToCenter()
+        {
+            this.X = Math.Floor(this.X) + 0.5;
+            this.Z = Math.Floor(this.Z) + 0.5;
+            return this;
+        }
+
+        /// <summary>
         /// The X index of the corresponding chunk in the world
         /// </summary>
         public int ChunkX

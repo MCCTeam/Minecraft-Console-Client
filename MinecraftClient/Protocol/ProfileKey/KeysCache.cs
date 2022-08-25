@@ -121,14 +121,14 @@ namespace MinecraftClient.Protocol.Keys
                 {
                     foreach (string line in FileMonitor.ReadAllLinesWithRetries(KeysCacheFilePlaintext))
                     {
-                        if (!line.Trim().StartsWith("#"))
+                        if (!line.TrimStart().StartsWith("#"))
                         {
 
                             int separatorIdx = line.IndexOf('=');
                             if (separatorIdx >= 1 && line.Length > separatorIdx + 1)
                             {
-                                string login = line.Substring(0, separatorIdx);
-                                string value = line.Substring(separatorIdx + 1);
+                                string login = line[..separatorIdx];
+                                string value = line[(separatorIdx + 1)..];
                                 try
                                 {
                                     PlayerKeyPair playerKeyPair = PlayerKeyPair.FromString(value);
