@@ -12,16 +12,13 @@ namespace MinecraftClient.ChatBots
     internal class WsServer
     {
         private WebSocketServer _server;
-        private string _password;
 
         public static event EventHandler<string>? OnNewSession;
         public static event EventHandler<string>? OnSessionClose;
         public static event EventHandler<string>? OnMessageRecived;
 
-        public WsServer(int port, string password)
+        public WsServer(int port)
         {
-            _password = password;
-
             _server = new WebSocketServer(port);
             _server.AddWebSocketService<WsBehavior>("/mcc");
             _server.Start();
@@ -35,6 +32,12 @@ namespace MinecraftClient.ChatBots
         public class WsBehavior : WebSocketBehavior
         {
             private string _sessionId { get; set; } = "";
+            public bool _authenticated { get; set; } = false;
+
+            public WsBehavior()
+            {
+                IgnoreExtensions = true;
+            }
 
             protected override void OnOpen()
             {
@@ -49,20 +52,38 @@ namespace MinecraftClient.ChatBots
 
             protected override void OnMessage(MessageEventArgs websocketEvent)
             {
-                WsServer.OnMessageRecived!.Invoke(null, websocketEvent.Data);
+                WsServer.OnMessageRecived!.Invoke(this, websocketEvent.Data);
             }
 
             public void SendToClient(string text)
             {
                 Send(text);
             }
+
+            public void SetSessionId(string newSessionId)
+            {
+                _sessionId = newSessionId;
+            }
+
+            public string GetSessionId()
+            {
+                return _sessionId;
+            }
+
+            public void SetAuthenticated(bool authenticated)
+            {
+                _authenticated = authenticated;
+            }
+
+            public bool IsAuthenticated()
+            {
+                return _authenticated;
+            }
         }
     }
 
     class WebSocketBot : ChatBot
     {
-        // Videti: https://chronoxor.github.io/NetCoreServer/
-
         private WsServer? _server;
         private Dictionary<string, WsServer.WsBehavior>? _sessions;
 
@@ -70,7 +91,7 @@ namespace MinecraftClient.ChatBots
         {
             try
             {
-                _server = new WsServer(port, password);
+                _server = new WsServer(port);
                 _sessions = new Dictionary<string, WsServer.WsBehavior>();
 
                 LogToConsole("§bServer started on port: §a" + port);
@@ -84,23 +105,80 @@ namespace MinecraftClient.ChatBots
 
             WsServer.OnNewSession += (sender, id) =>
             {
-                LogToConsole("New session connected: " + id);
+                LogToConsole("§bNew session connected: §a" + id);
                 _sessions[id] = (WsServer.WsBehavior)sender!;
             };
 
             WsServer.OnSessionClose += (sender, id) =>
             {
-                LogToConsole("Session witn an id \"" + id + "\" has disconnected!");
+                LogToConsole("§bSession with an id §a\"" + id + "\"§b has disconnected!");
                 _sessions.Remove(id);
             };
 
             WsServer.OnMessageRecived += (sender, message) =>
             {
+                var session = (WsServer.WsBehavior)sender!;
+
+                if (message.Trim().StartsWith("ChangeSessionId"))
+                {
+                    string newId = message.Replace("ChangeSessionId", "").Trim();
+
+                    if (newId.Length == 0)
+                    {
+                        SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"Please provide a valid session ID!\"}", true);
+                        return;
+                    }
+
+                    if (newId.Length > 64)
+                    {
+                        SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"The session ID can't be longer than 64 characters!\"}", true);
+                        return;
+                    }
+
+                    string oldId = session.GetSessionId();
+
+                    _sessions.Remove(oldId);
+                    _sessions[newId] = session;
+                    session.SetSessionId(newId);
+
+                    SendEvent("OnWsCommandResponse", "{\"success\": true, \"message\": \"The session ID was successfully changed to: '" + newId + "'\"}", true);
+                    LogToConsole("§bSession with an id §a\"" + oldId + "\"§b has been renamed to: §a\"" + newId + "\"§b!");
+                    return;
+                }
+
+                if (!session.IsAuthenticated())
+                {
+                    if (message.Trim().StartsWith("Authenticate"))
+                    {
+                        string input = message.Replace("Authenticate", "").Trim();
+
+                        if (input.Length == 0)
+                        {
+                            SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"Please provide a valid password! (Example: 'Authenticate password123')\"}", true);
+                            return;
+                        }
+
+                        if (!input.Equals(password))
+                        {
+                            SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"Incorrect password provided!\"}", true);
+                            return;
+                        }
+
+                        session.SetAuthenticated(true);
+                        SendEvent("OnWsCommandResponse", "{\"success\": true, \"message\": \"Succesfully authenticated!\"}", true);
+                        return;
+                    }
+
+                    SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"You must authenticate in order to send and recieve data!\"}", true);
+                    LogToConsole("§bSession with an id §a\"" + session.GetSessionId() + "\"§b has been succesfully authenticated!\"!");
+                    return;
+                }
+
                 LogToConsole("Got a message: " + message);
 
-                //string result = "";
-                //PerformInternalCommand(message, ref result);
-                //SendEvent("OnCommandRespone", "{\"response\": \"" + result + "\"}");
+                string result = "";
+                PerformInternalCommand(message, ref result);
+                SendEvent("OnMccCommandRespone", "{\"response\": \"" + result + "\"}");
             };
         }
 
@@ -474,13 +552,13 @@ namespace MinecraftClient.ChatBots
         // ==========================================================================================
         // Helper methods
         // ==========================================================================================
-        private void SendEvent(string type, string data)
+        private void SendEvent(string type, string data, bool overrideAuth = false)
         {
             foreach (KeyValuePair<string, WsServer.WsBehavior> pair in _sessions!)
             {
                 var instance = pair.Value;
 
-                if (instance != null)
+                if (instance != null && (overrideAuth || instance.IsAuthenticated()))
                     instance.SendToClient("{\"event\": \"" + type + "\", \"data\": " + (data.IsNullOrEmpty() ? "null" : "\"" + Json.EscapeString(data) + "\"") + "}");
             }
         }

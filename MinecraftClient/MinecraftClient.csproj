@@ -37,7 +37,7 @@
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="SingleFileExtractor.Core" Version="1.0.1" />
-    <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
+    <PackageReference Include="SIPSorcery.WebSocketSharp" Version="0.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="config\ChatBots\AutoLook.cs" />
