@@ -168,7 +168,8 @@ namespace MinecraftClient.Mapping
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
 
             // Round start coordinates for easier calculation
-            start = new Location(Math.Floor(start.X), Math.Floor(start.Y), Math.Floor(start.Z));
+            start.ToFloor();
+            goal.ToFloor();
 
             // We always use distance squared so our limits must also be squared.
             minOffset *= minOffset;
