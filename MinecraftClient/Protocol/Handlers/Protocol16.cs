@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -559,7 +560,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool Login(PlayerKeyPair playerKeyPair)
         {
-            if (Handshake(handler.GetUserUUID(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort()))
+            if (Handshake(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort()))
             {
                 Send(new byte[] { 0xCD, 0 });
                 try
