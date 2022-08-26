@@ -313,6 +313,20 @@ namespace MinecraftClient.ChatBots
         {
             SendEvent("OnEntityMove", EntityToJson(entity));
         }
+
+        public override void OnInternalCommand(string commandName, string commandParams, string Result)
+        {
+            StringBuilder json = new StringBuilder();
+
+            json.Append("{");
+            json.Append("\"command\": \"" + commandName + "\",");
+            json.Append("\"parameters\": \"" + commandParams + "\",");
+            json.Append("\"result\": \"" + Result + "\"");
+            json.Append("}");
+
+            SendEvent("OnInternalCommand", json.ToString());
+        }
+
         public override void OnEntitySpawn(Entity entity)
         {
             SendEvent("OnEntitySpawn", EntityToJson(entity));
