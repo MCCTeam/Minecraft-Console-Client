@@ -89,6 +89,12 @@ namespace MinecraftClient.ChatBots
 
         public WebSocketBot(int port, string password)
         {
+            if (port > 65535)
+            {
+                LogToConsole("§cFailed to start a server! The port number provided is out of the range, it must be 65535 or bellow it!");
+                return;
+            }
+
             try
             {
                 _server = new WsServer(port);
@@ -119,67 +125,90 @@ namespace MinecraftClient.ChatBots
             {
                 var session = (WsServer.WsBehavior)sender!;
 
-                if (message.Trim().StartsWith("ChangeSessionId"))
-                {
-                    string newId = message.Replace("ChangeSessionId", "").Trim();
-
-                    if (newId.Length == 0)
-                    {
-                        SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"Please provide a valid session ID!\"}", true);
-                        return;
-                    }
-
-                    if (newId.Length > 64)
-                    {
-                        SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"The session ID can't be longer than 64 characters!\"}", true);
-                        return;
-                    }
-
-                    string oldId = session.GetSessionId();
-
-                    _sessions.Remove(oldId);
-                    _sessions[newId] = session;
-                    session.SetSessionId(newId);
-
-                    SendEvent("OnWsCommandResponse", "{\"success\": true, \"message\": \"The session ID was successfully changed to: '" + newId + "'\"}", true);
-                    LogToConsole("§bSession with an id §a\"" + oldId + "\"§b has been renamed to: §a\"" + newId + "\"§b!");
+                if (!ProcessWebsocketCommand(session, password, message))
                     return;
-                }
 
-                if (!session.IsAuthenticated())
-                {
-                    if (message.Trim().StartsWith("Authenticate"))
-                    {
-                        string input = message.Replace("Authenticate", "").Trim();
-
-                        if (input.Length == 0)
-                        {
-                            SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"Please provide a valid password! (Example: 'Authenticate password123')\"}", true);
-                            return;
-                        }
-
-                        if (!input.Equals(password))
-                        {
-                            SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"Incorrect password provided!\"}", true);
-                            return;
-                        }
-
-                        session.SetAuthenticated(true);
-                        SendEvent("OnWsCommandResponse", "{\"success\": true, \"message\": \"Succesfully authenticated!\"}", true);
-                        return;
-                    }
-
-                    SendEvent("OnWsCommandResponse", "{\"error\": true, \"message\": \"You must authenticate in order to send and recieve data!\"}", true);
-                    LogToConsole("§bSession with an id §a\"" + session.GetSessionId() + "\"§b has been succesfully authenticated!\"!");
-                    return;
-                }
-
-                LogToConsole("Got a message: " + message);
+                LogDebugToConsole("Got a message: " + message);
 
                 string result = "";
                 PerformInternalCommand(message, ref result);
                 SendEvent("OnMccCommandRespone", "{\"response\": \"" + result + "\"}");
             };
+        }
+
+        public bool ProcessWebsocketCommand(WsServer.WsBehavior session, string password, string message)
+        {
+            message = message.Trim();
+
+            if (password.Length != 0)
+            {
+                if (!session.IsAuthenticated())
+                {
+                    if (message.StartsWith("Authenticate", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string input = message.Replace("Authenticate", "", StringComparison.OrdinalIgnoreCase).Trim();
+
+                        if (input.Length == 0)
+                        {
+                            SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"Please provide a valid password! (Example: 'Authenticate password123')\"}", true);
+                            return false;
+                        }
+
+                        if (!input.Equals(password))
+                        {
+                            SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"Incorrect password provided!\"}", true);
+                            return false;
+                        }
+
+                        session.SetAuthenticated(true);
+                        SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": true, \"message\": \"Succesfully authenticated!\"}", true);
+                        LogToConsole("§bSession with an id §a\"" + session.GetSessionId() + "\"§b has been succesfully authenticated!\"!");
+                        return false;
+                    }
+
+                    SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"You must authenticate in order to send and recieve data!\"}", true);
+                    return false;
+                }
+            }
+            else
+            {
+                if (!session.IsAuthenticated())
+                {
+                    SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": true, \"message\": \"Succesfully authenticated!\"}", true);
+                    LogToConsole("§bSession with an id §a\"" + session.GetSessionId() + "\"§b has been succesfully authenticated!\"!");
+                    session.SetAuthenticated(true);
+                    return true;
+                }
+            }
+
+            if (message.StartsWith("ChangeSessionId", StringComparison.OrdinalIgnoreCase))
+            {
+                string newId = message.Replace("ChangeSessionId", "").Trim();
+
+                if (newId.Length == 0)
+                {
+                    SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"Please provide a valid session ID!\"}", true);
+                    return false;
+                }
+
+                if (newId.Length > 32)
+                {
+                    SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"The session ID can't be longer than 32 characters!\"}", true);
+                    return false;
+                }
+
+                string oldId = session.GetSessionId();
+
+                _sessions!.Remove(oldId);
+                _sessions[newId] = session;
+                session.SetSessionId(newId);
+
+                SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": true, \"message\": \"The session ID was successfully changed to: '" + newId + "'\"}", true);
+                LogToConsole("§bSession with an id §a\"" + oldId + "\"§b has been renamed to: §a\"" + newId + "\"§b!");
+                return false;
+            }
+
+            return true;
         }
 
         public override void OnUnload()
@@ -217,7 +246,7 @@ namespace MinecraftClient.ChatBots
             json.Append("\"animation\": " + animation);
             json.Append("}");
 
-            SendEvent("OnEntity:Animation", json.ToString());
+            SendEvent("OnEntityAnimation", json.ToString());
         }
 
         public override void GetText(string text)
@@ -226,16 +255,16 @@ namespace MinecraftClient.ChatBots
             string username = "";
 
             if (IsPrivateMessage(text, ref message, ref username))
-                SendEvent("OnChat:Private", "{\"sender\": \"" + username + "\", \"message\": \"" + message + "\", \"rawText\": \"" + text + "\"}");
+                SendEvent("OnChatPrivate", "{\"sender\": \"" + username + "\", \"message\": \"" + message + "\", \"rawText\": \"" + text + "\"}");
             else if (IsChatMessage(text, ref message, ref username))
-                SendEvent("OnChat:Public", "{\"sender\": \"" + username + "\", \"message\": \"" + message + "\", \"rawText\": \"" + text + "\"}");
+                SendEvent("OnChatPublic", "{\"sender\": \"" + username + "\", \"message\": \"" + message + "\", \"rawText\": \"" + text + "\"}");
             else if (IsTeleportRequest(text, ref username))
                 SendEvent("OnTeleportRequest", "{\"sender\": \"" + username + "\", \"rawText\": \"" + text + "\"}");
         }
 
         public override void GetText(string text, string? json)
         {
-            SendEvent("OnChat:RawJson", json!);
+            SendEvent("OnChatRaw", json!);
         }
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
@@ -267,7 +296,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnPlayerProperty(Dictionary<string, double> prop)
         {
-            SendEvent("OnPlayer:Property", JsonConvert.SerializeObject(prop));
+            SendEvent("OnPlayerProperty", JsonConvert.SerializeObject(prop));
         }
 
         public override void OnServerTpsUpdate(Double tps)
@@ -282,16 +311,16 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-            SendEvent("OnEntity:Move", EntityToJson(entity));
+            SendEvent("OnEntityMove", EntityToJson(entity));
         }
         public override void OnEntitySpawn(Entity entity)
         {
-            SendEvent("OnEntity:Spawn", EntityToJson(entity));
+            SendEvent("OnEntitySpawn", EntityToJson(entity));
         }
 
         public override void OnEntityDespawn(Entity entity)
         {
-            SendEvent("OnEntity:Despawn", EntityToJson(entity));
+            SendEvent("OnEntityDespawn", EntityToJson(entity));
         }
 
         public override void OnHeldItemChange(byte slot)
@@ -410,7 +439,7 @@ namespace MinecraftClient.ChatBots
             json.Append("\"item\": " + ItemToJson(item));
             json.Append("}");
 
-            SendEvent("OnEntity:Equipment", json.ToString());
+            SendEvent("OnEntityEquipment", json.ToString());
         }
 
         public override void OnEntityEffect(Entity entity, Effects effect, int amplifier, int duration, byte flags)
@@ -425,7 +454,7 @@ namespace MinecraftClient.ChatBots
             json.Append("\"flags\": " + flags);
             json.Append("}");
 
-            SendEvent("OnEntity:Effect", json.ToString());
+            SendEvent("OnEntityEffect", json.ToString());
         }
 
         public override void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type, string json_)
@@ -459,17 +488,17 @@ namespace MinecraftClient.ChatBots
 
         public override void OnInventoryUpdate(int inventoryId)
         {
-            SendEvent("OnInventory:Update", "{\"inventoryId\": " + inventoryId + "}");
+            SendEvent("OnInventoryUpdate", "{\"inventoryId\": " + inventoryId + "}");
         }
 
         public override void OnInventoryOpen(int inventoryId)
         {
-            SendEvent("OnInventory:Open", "{\"inventoryId\": " + inventoryId + "}");
+            SendEvent("OnInventoryOpen", "{\"inventoryId\": " + inventoryId + "}");
         }
 
         public override void OnInventoryClose(int inventoryId)
         {
-            SendEvent("OnInventory:Close", "{\"inventoryId\": " + inventoryId + "}");
+            SendEvent("OnInventoryClose", "{\"inventoryId\": " + inventoryId + "}");
         }
 
         public override void OnPlayerJoin(Guid uuid, string name)
@@ -481,7 +510,7 @@ namespace MinecraftClient.ChatBots
             json.Append("\"name\": \"" + name + "\"");
             json.Append("}");
 
-            SendEvent("OnPlayer:Join", json.ToString());
+            SendEvent("OnPlayerJoin", json.ToString());
         }
 
         public override void OnPlayerLeave(Guid uuid, string? name)
@@ -493,7 +522,7 @@ namespace MinecraftClient.ChatBots
             json.Append("\"name\": \"" + (name == null ? "null" : name) + "\"");
             json.Append("}");
 
-            SendEvent("OnPlayer:Leave", json.ToString());
+            SendEvent("OnPlayerLeave", json.ToString());
         }
 
         public override void OnDeath()
@@ -515,7 +544,7 @@ namespace MinecraftClient.ChatBots
             json.Append("\"health\": " + String.Format("{0:0.00}", health));
             json.Append("}");
 
-            SendEvent("OnEntity:Health", json.ToString());
+            SendEvent("OnEntityHealth", json.ToString());
         }
 
         public override void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata)
@@ -527,12 +556,12 @@ namespace MinecraftClient.ChatBots
             json.Append("\"metadata\": " + JsonConvert.SerializeObject(metadata));
             json.Append("}");
 
-            SendEvent("OnEntity:Metadata", json.ToString());
+            SendEvent("OnEntityMetadata", json.ToString());
         }
 
         public override void OnPlayerStatus(byte statusId)
         {
-            SendEvent("OnPlayer:Status", "{\"statusId\": " + statusId + "}");
+            SendEvent("OnPlayerStatus", "{\"statusId\": " + statusId + "}");
         }
 
         public override void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
@@ -555,12 +584,13 @@ namespace MinecraftClient.ChatBots
         private void SendEvent(string type, string data, bool overrideAuth = false)
         {
             foreach (KeyValuePair<string, WsServer.WsBehavior> pair in _sessions!)
-            {
-                var instance = pair.Value;
+                SendSessionEvent(pair.Value, type, data, overrideAuth);
+        }
 
-                if (instance != null && (overrideAuth || instance.IsAuthenticated()))
-                    instance.SendToClient("{\"event\": \"" + type + "\", \"data\": " + (data.IsNullOrEmpty() ? "null" : "\"" + Json.EscapeString(data) + "\"") + "}");
-            }
+        private void SendSessionEvent(WsServer.WsBehavior session, string type, string data, bool overrideAuth = false)
+        {
+            if (session != null && (overrideAuth || session.IsAuthenticated()))
+                session.SendToClient("{\"event\": \"" + type + "\", \"data\": " + (data.IsNullOrEmpty() ? "null" : "\"" + Json.EscapeString(data) + "\"") + "}");
         }
 
         private string EntityToJson(Entity entity)

@@ -206,7 +206,7 @@ namespace MinecraftClient
         //AutoCraft
         public static bool AutoCraft_Enabled = false;
         public static string AutoCraft_configFile = @"autocraft\config.ini";
-        
+
         //Mailer
         public static bool Mailer_Enabled = false;
         public static string Mailer_DatabaseFile = "MailerDatabase.ini";
@@ -225,6 +225,11 @@ namespace MinecraftClient
         public static bool ReplayMod_Enabled = false;
         public static int ReplayMod_BackupInterval = 3000;
 
+        // Websocket
+        public static bool WebSocket_Enabled = false;
+        public static int WebSocket_Port = 8043;
+        public static string WebSocket_Password = "";
+
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
@@ -234,7 +239,7 @@ namespace MinecraftClient
         private static string ServerAliasTemp = null;
 
         //Mapping for settings sections in the INI file
-        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, Logging, Signature };
+        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, WebSocket, Logging, Signature };
 
         /// <summary>
         /// Get settings section from name
@@ -355,10 +360,12 @@ namespace MinecraftClient
                     {
                         case "login": Login = argValue; return true;
                         case "password": Password = argValue; return true;
-                        case "type": AccountType = argValue == "mojang"
+                        case "type":
+                            AccountType = argValue == "mojang"
                                 ? ProtocolHandler.AccountType.Mojang
                                 : ProtocolHandler.AccountType.Microsoft; return true;
-                        case "method": LoginMethod = argValue.ToLower() == "browser"
+                        case "method":
+                            LoginMethod = argValue.ToLower() == "browser"
                                 ? "browser"
                                 : "mcc"; return true;
                         case "serverip": if (!SetServerIP(argValue)) ServerAliasTemp = argValue; return true;
@@ -810,6 +817,14 @@ namespace MinecraftClient
                         case "backupinterval": ReplayMod_BackupInterval = str2int(argValue); return true;
                     }
                     break;
+                case Section.WebSocket:
+                    switch (argName.ToLower())
+                    {
+                        case "enabled": WebSocket_Enabled = str2bool(argValue); return true;
+                        case "port": WebSocket_Port = str2int(argValue); return true;
+                        case "password": WebSocket_Password = argValue; return true;
+                    }
+                    break;
             }
             return false;
         }
@@ -821,7 +836,7 @@ namespace MinecraftClient
         public static void WriteDefaultSettings(string settingsfile)
         {
             // Load embedded default config and adjust line break for the current operating system
-            string settingsContents = String.Join(Environment.NewLine, 
+            string settingsContents = String.Join(Environment.NewLine,
                 DefaultConfigResource.MinecraftClient.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
 
             // Write configuration file with current version number
@@ -843,7 +858,8 @@ namespace MinecraftClient
             {
                 return Convert.ToInt32(str.Trim());
             }
-            catch {
+            catch
+            {
                 ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
                 return 0;
             }
