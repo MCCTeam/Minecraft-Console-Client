@@ -1103,9 +1103,51 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="bytes">Byte array</param>
         /// <returns>String representation</returns>
-        public string ByteArrayToString(byte[] bytes)
+        public string ByteArrayToString(byte[]? bytes)
         {
-            return BitConverter.ToString(bytes).Replace("-", " ");
+            if (bytes == null)
+                return "null";
+            else
+                return BitConverter.ToString(bytes).Replace("-", " ");
+        }
+
+        /// <summary>
+        /// Write LastSeenMessageList
+        /// </summary>
+        /// <param name="msgList">Message.LastSeenMessageList</param>
+        /// <returns>Message.LastSeenMessageList Packet Data</returns>
+        public byte[] GetLastSeenMessageList(Message.LastSeenMessageList msgList)
+        {
+            List<byte> fields = new List<byte>();
+            fields.AddRange(GetVarInt(msgList.entries.Length));
+            foreach (Message.LastSeenMessageList.Entry entry in msgList.entries)
+            {
+                fields.AddRange(entry.profileId.ToBigEndianBytes());
+                fields.AddRange(GetVarInt(entry.lastSignature.Length));
+                fields.AddRange(entry.lastSignature);
+            }
+            return fields.ToArray();
+        }
+
+        /// <summary>
+        /// Write LastSeenMessageList.Acknowledgment
+        /// </summary>
+        /// <param name="ack">Acknowledgment</param>
+        /// <returns>Acknowledgment Packet Data</returns>
+        public byte[] GetAcknowledgment(Message.LastSeenMessageList.Acknowledgment ack)
+        {
+            List<byte> fields = new List<byte>();
+            fields.AddRange(GetLastSeenMessageList(ack.lastSeen));
+            if (ack.lastReceived == null)
+                fields.AddRange(GetBool(false));
+            else
+            {
+                fields.AddRange(GetBool(true));
+                fields.AddRange(ack.lastReceived.profileId.ToBigEndianBytes());
+                fields.AddRange(GetVarInt(ack.lastReceived.lastSignature.Length));
+                fields.AddRange(ack.lastReceived.lastSignature);
+            }
+            return fields.ToArray();
         }
     }
 }

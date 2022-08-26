@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol
 {
     public class PlayerInfo
     {
-        public readonly Guid UUID;
+        public readonly Guid Uuid;
 
         public readonly string Name;
 
@@ -26,9 +27,13 @@ namespace MinecraftClient.Protocol
 
         private readonly DateTime? KeyExpiresAt;
 
+        private bool lastMessageVerified;
+
+        private byte[]? precedingSignature;
+
         public PlayerInfo(Guid uuid, string name, Tuple<string, string, string>[]? property, int gamemode, int ping, string? displayName, long? timeStamp, byte[]? publicKey, byte[]? signature)
         {
-            UUID = uuid;
+            Uuid = uuid;
             Name = name;
             if (property != null)
                 Property = property;
@@ -48,36 +53,107 @@ namespace MinecraftClient.Protocol
                     PublicKey = null;
                 }
             }
+            lastMessageVerified = true;
+            precedingSignature = null;
         }
 
         public PlayerInfo(string name, Guid uuid)
         {
             Name = name;
-            UUID = uuid;
+            Uuid = uuid;
             Gamemode = -1;
             Ping = 0;
+            lastMessageVerified = true;
+            precedingSignature = null;
         }
 
-        public bool IsKeyVaild()
+        public bool IsMessageChainLegal()
         {
-            return PublicKey != null && DateTime.Now.ToUniversalTime() > this.KeyExpiresAt;
+            return this.lastMessageVerified;
         }
 
-        public bool VerifyMessage(string message, Guid uuid, long timestamp, long salt, ref byte[] signature)
+        public bool IsKeyExpired()
         {
-            if (PublicKey == null)
+            return DateTime.Now.ToUniversalTime() > this.KeyExpiresAt;
+        }
+
+        /// <summary>
+        /// Verify message - 1.19
+        /// </summary>
+        /// <param name="message">Message content</param>
+        /// <param name="timestamp">Timestamp</param>
+        /// <param name="salt">Salt</param>
+        /// <param name="signature">Message signature</param>
+        /// <returns>Is this message vaild</returns>
+        public bool VerifyMessage(string message, long timestamp, long salt, ref byte[] signature)
+        {
+            if (PublicKey == null || IsKeyExpired())
                 return false;
             else
             {
-                string uuidString = uuid.ToString().Replace("-", string.Empty);
-
                 DateTimeOffset timeOffset = DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
 
                 byte[] saltByte = BitConverter.GetBytes(salt);
                 Array.Reverse(saltByte);
 
-                return PublicKey.VerifyMessage(message, uuidString, timeOffset, ref saltByte, ref signature);
+                return PublicKey.VerifyMessage(message, Uuid, timeOffset, ref saltByte, ref signature);
             }
+        }
+
+        /// <summary>
+        /// Verify message - 1.19.1 and above
+        /// </summary>
+        /// <param name="message">Message content</param>
+        /// <param name="timestamp">Timestamp</param>
+        /// <param name="salt">Salt</param>
+        /// <param name="signature">Message signature</param>
+        /// <param name="precedingSignature">Preceding message signature</param>
+        /// <param name="lastSeenMessages">LastSeenMessages</param>
+        /// <returns>Is this message chain vaild</returns>
+        public bool VerifyMessage(string message, long timestamp, long salt, ref byte[] signature, ref byte[]? precedingSignature, LastSeenMessageList lastSeenMessages)
+        {
+            if (this.lastMessageVerified == false)
+                return false;
+            if (PublicKey == null || IsKeyExpired() || (this.precedingSignature != null && precedingSignature == null))
+                return false;
+            if (this.precedingSignature != null && !this.precedingSignature.SequenceEqual(precedingSignature!))
+                return false;
+
+            DateTimeOffset timeOffset = DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
+
+            byte[] saltByte = BitConverter.GetBytes(salt);
+            Array.Reverse(saltByte);
+
+            bool res = PublicKey.VerifyMessage(message, Uuid, timeOffset, ref saltByte, ref signature, ref precedingSignature, lastSeenMessages);
+
+            this.lastMessageVerified = res;
+            this.precedingSignature = signature;
+
+            return res;
+        }
+
+        /// <summary>
+        /// Verify message head - 1.19.1 and above
+        /// </summary>
+        /// <param name="precedingSignature">Preceding message signature</param>
+        /// <param name="headerSignature">Message signature</param>
+        /// <param name="bodyDigest">Message body hash</param>
+        /// <returns>Is this message chain vaild</returns>
+        public bool VerifyMessageHead(ref byte[]? precedingSignature, ref byte[] headerSignature, ref byte[] bodyDigest)
+        {
+            if (this.lastMessageVerified == false)
+                return false;
+            if (PublicKey == null || IsKeyExpired() || (this.precedingSignature != null && precedingSignature == null))
+                return false;
+            if (this.precedingSignature != null && !this.precedingSignature.SequenceEqual(precedingSignature!))
+                return false;
+
+            bool res = PublicKey.VerifyHeader(ref bodyDigest, ref headerSignature);
+
+            this.lastMessageVerified = res;
+            this.precedingSignature = headerSignature;
+
+            return res;
         }
     }
 }

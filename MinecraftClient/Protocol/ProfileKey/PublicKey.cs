@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Keys
 {
@@ -44,11 +45,52 @@ namespace MinecraftClient.Protocol.Keys
             return rsa.VerifyData(data, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         }
 
-        public bool VerifyMessage(string message, string uuid, DateTimeOffset timestamp, ref byte[] salt, ref byte[] signature)
+        /// <summary>
+        /// Verify message - 1.19
+        /// </summary>
+        /// <param name="message">Message content</param>
+        /// <param name="uuid">Sender uuid</param>
+        /// <param name="timestamp">Timestamp</param>
+        /// <param name="salt">Salt</param>
+        /// <param name="signature">Message signature</param>
+        /// <returns>Is this message vaild</returns>
+        public bool VerifyMessage(string message, Guid uuid, DateTimeOffset timestamp, ref byte[] salt, ref byte[] signature)
         {
             byte[] data = KeyUtils.GetSignatureData(message, uuid, timestamp, ref salt);
 
             return VerifyData(data, signature);
+        }
+
+        /// <summary>
+        /// Verify message - 1.19.1 and above
+        /// </summary>
+        /// <param name="message">Message content</param>
+        /// <param name="uuid">Sender uuid</param>
+        /// <param name="timestamp">Timestamp</param>
+        /// <param name="salt">Salt</param>
+        /// <param name="signature">Message signature</param>
+        /// <param name="precedingSignature">Preceding message signature</param>
+        /// <param name="lastSeenMessages">LastSeenMessages</param>
+        /// <returns>Is this message vaild</returns>
+        public bool VerifyMessage(string message, Guid uuid, DateTimeOffset timestamp, ref byte[] salt, ref byte[] signature, ref byte[]? precedingSignature, LastSeenMessageList lastSeenMessages)
+        {
+            byte[] bodySignData = KeyUtils.GetSignatureData(message, timestamp, ref salt, lastSeenMessages);
+            byte[] bodyDigest = KeyUtils.ComputeHash(bodySignData);
+
+            byte[] msgSignData = KeyUtils.GetSignatureData(precedingSignature, uuid, bodyDigest);
+
+            return VerifyData(msgSignData, signature);
+        }
+
+        /// <summary>
+        /// Verify message head - 1.19.1 and above
+        /// </summary>
+        /// <param name="bodyDigest">Message body hash</param>
+        /// <param name="signature">Message signature</param>
+        /// <returns>Is this message header vaild</returns>
+        public bool VerifyHeader(ref byte[] bodyDigest, ref byte[] signature)
+        {
+            return VerifyData(bodyDigest, signature);
         }
 
     }

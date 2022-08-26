@@ -14,6 +14,7 @@ using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient
 {
@@ -68,7 +69,8 @@ namespace MinecraftClient
         private int port;
         private int protocolversion;
         private string username;
-        private string uuid;
+        private Guid uuid;
+        private string uuidStr;
         private string sessionid;
         private PlayerKeyPair? playerKeyPair;
         private DateTime lastKeepAlive;
@@ -104,7 +106,8 @@ namespace MinecraftClient
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
         public string GetUsername() { return username; }
-        public string GetUserUUID() { return uuid; }
+        public Guid GetUserUuid() { return uuid; }
+        public string GetUserUuidStr() { return uuidStr; }
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
         public float GetYaw() { return playerYaw; }
@@ -180,7 +183,8 @@ namespace MinecraftClient
 
             bool retry = false;
             this.sessionid = sessionID;
-            this.uuid = uuid;
+            this.uuid = new Guid(uuid);
+            this.uuidStr = uuid;
             this.username = user;
             this.host = server_ip;
             this.port = port;
@@ -2093,20 +2097,18 @@ namespace MinecraftClient
             List<string> links = new();
             string messageText;
 
-            if (message.isJson)
+            if (message.isSignedChat)
             {
-                if (message.isSignedChat)
-                {
-                    if (!Settings.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
-                        return;
-                    messageText = ChatParser.ParseSignedChat(message, links);
-                }
-                else
-                    messageText = ChatParser.ParseText(message.content, links);
+                if (!Settings.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
+                    return;
+                messageText = ChatParser.ParseSignedChat(message, links);
             }
             else
             {
-                messageText = message.content;
+                if (message.isJson)
+                    messageText = ChatParser.ParseText(message.content, links);
+                else
+                    messageText = message.content;
             }
 
             Log.Chat(messageText);
@@ -2243,15 +2245,16 @@ namespace MinecraftClient
             if (player.Name == username)
             {
                 // 1.19+ offline server is possible to return different uuid
-                this.uuid = player.UUID.ToString().Replace("-", string.Empty);
+                this.uuid = player.Uuid;
+                this.uuidStr = player.Uuid.ToString().Replace("-", string.Empty);
             }
 
             lock (onlinePlayers)
             {
-                onlinePlayers[player.UUID] = player;
+                onlinePlayers[player.Uuid] = player;
             }
 
-            DispatchBotEvent(bot => bot.OnPlayerJoin(player.UUID, player.Name));
+            DispatchBotEvent(bot => bot.OnPlayerJoin(player.Uuid, player.Name));
         }
 
         /// <summary>
