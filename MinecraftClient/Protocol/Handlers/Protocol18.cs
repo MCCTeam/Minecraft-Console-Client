@@ -475,7 +475,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte[] messageSignature = dataTypes.ReadNextByteArray(packetData);
 
                                 bool verifyResult;
-                                if (senderUUID.ToString().Replace("-", String.Empty) == handler.GetUserUuidStr())
+                                if (senderUUID == handler.GetUserUuid())
                                     verifyResult = true;
                                 else
                                 {
@@ -518,19 +518,19 @@ namespace MinecraftClient.Protocol.Handlers
                                 string? targetName = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
 
                                 bool verifyResult;
-                                if (senderUUID.ToString().Replace("-", String.Empty) == handler.GetUserUuidStr())
+                                if (senderUUID == handler.GetUserUuid())
                                     verifyResult = true;
                                 else
                                 {
                                     PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
-                                    if (player == null)
+                                    if (player == null || !player.IsMessageChainLegal())
                                         verifyResult = false;
                                     else
                                     {
                                         bool lastVerifyResult = player.IsMessageChainLegal();
                                         verifyResult = player.VerifyMessage(signedChat, timestamp, salt, ref headerSignature, ref precedingSignature, lastSeenMessages);
                                         if (lastVerifyResult && !verifyResult)
-                                            log.Warn("Player " + player.DisplayName + " message chains broken!");
+                                            log.Warn("Player " + player.DisplayName + "'s message chain is broken!");
                                     }
                                 }
 
@@ -557,19 +557,19 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte[] bodyDigest = dataTypes.ReadNextByteArray(packetData);
 
                                 bool verifyResult;
-                                if (senderUUID.ToString().Replace("-", String.Empty) == handler.GetUserUuidStr())
+                                if (senderUUID == handler.GetUserUuid())
                                     verifyResult = true;
                                 else
                                 {
                                     PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
-                                    if (player == null)
+                                    if (player == null || !player.IsMessageChainLegal())
                                         verifyResult = false;
                                     else
                                     {
                                         bool lastVerifyResult = player.IsMessageChainLegal();
                                         verifyResult = player.VerifyMessageHead(ref precedingSignature, ref headerSignature, ref bodyDigest);
                                         if (lastVerifyResult && !verifyResult)
-                                            log.Warn("Player " + player.DisplayName + " message chains broken!");
+                                            log.Warn("Player " + player.DisplayName + "'s message chain is broken!");
                                     }
                                 }
                             }
