@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol.Session
 {
@@ -15,6 +16,10 @@ namespace MinecraftClient.Protocol.Session
         public string PlayerID { get; set; }
         public string ClientID { get; set; }
         public string RefreshToken { get; set; }
+        public string ServerIDhash { get; set; }
+        public byte[]? ServerPublicKey { get; set; }
+
+        public Task<bool>? SessionPreCheckTask = null;
 
         public SessionToken()
         {
@@ -23,11 +28,26 @@ namespace MinecraftClient.Protocol.Session
             PlayerID = String.Empty;
             ClientID = String.Empty;
             RefreshToken = String.Empty;
+            ServerIDhash = String.Empty;
+            ServerPublicKey = null;
+        }
+
+        public bool SessionPreCheck()
+        {
+            if (this.ID == string.Empty || this.PlayerID == String.Empty || this.ServerPublicKey == null)
+                return false;
+            if (Crypto.CryptoHandler.ClientAESPrivateKey == null)
+                Crypto.CryptoHandler.ClientAESPrivateKey = Crypto.CryptoHandler.GenerateAESPrivateKey();
+            string serverHash = Crypto.CryptoHandler.getServerHash(ServerIDhash, ServerPublicKey, Crypto.CryptoHandler.ClientAESPrivateKey);
+            if (ProtocolHandler.SessionCheck(PlayerID, ID, serverHash))
+                return true;
+            return false;
         }
 
         public override string ToString()
         {
-            return String.Join(",", ID, PlayerName, PlayerID, ClientID, RefreshToken);
+            return String.Join(",", ID, PlayerName, PlayerID, ClientID, RefreshToken, ServerIDhash, 
+                (ServerPublicKey == null) ? String.Empty : Convert.ToBase64String(ServerPublicKey));
         }
 
         public static SessionToken FromString(string tokenString)
@@ -46,6 +66,23 @@ namespace MinecraftClient.Protocol.Session
                 session.RefreshToken = fields[4];
             else
                 session.RefreshToken = String.Empty;
+            if (fields.Length > 5)
+                session.ServerIDhash = fields[5];
+            else
+                session.ServerIDhash = String.Empty;
+            if (fields.Length > 6)
+            {
+                try
+                {
+                    session.ServerPublicKey = Convert.FromBase64String(fields[6]);
+                }
+                catch
+                {
+                    session.ServerPublicKey = null;
+                }
+            }
+            else
+                session.ServerPublicKey = null;
 
             Guid temp;
             if (!JwtRegex.IsMatch(session.ID))
@@ -60,5 +97,7 @@ namespace MinecraftClient.Protocol.Session
 
             return session;
         }
+
+
     }
 }

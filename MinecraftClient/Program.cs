@@ -67,6 +67,22 @@ namespace MinecraftClient
             if (!ConsoleIO.BasicIO)
                 ConsoleInteractive.ConsoleWriter.Init();
 
+            Task.Factory.StartNew(() =>
+            {
+                //Take advantage of Windows 10 / Mac / Linux UTF-8 console
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // If we're on windows, check if our version is Win10 or greater.
+                    if (WindowsVersion.WinMajorVersion >= 10)
+                        Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+                }
+                else
+                {
+                    // Apply to all other operating systems.
+                    Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+                }
+            });
+
             ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
 
             //Build information to facilitate processing of bug reports
@@ -80,22 +96,6 @@ namespace MinecraftClient
             {
                 ConsoleIO.WriteLine("Keyboard debug mode: Press any key to display info");
                 ConsoleIO.DebugReadInput();
-            }
-
-            //Take advantage of Windows 10 / Mac / Linux UTF-8 console
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Parallel.Invoke(() =>
-                {
-                    // If we're on windows, check if our version is Win10 or greater.
-                    if (WindowsVersion.WinMajorVersion >= 10)
-                        Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
-                });
-            }
-            else
-            {
-                // Apply to all other operating systems.
-                Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
             }
 
             //Process ini configuration file
@@ -326,9 +326,10 @@ namespace MinecraftClient
             }
 
             if (result == ProtocolHandler.LoginResult.Success && Settings.SessionCaching != CacheType.None)
-            {
                 SessionCache.Store(Settings.Login.ToLower(), session);
-            }
+
+            if (result == ProtocolHandler.LoginResult.Success)
+                session.SessionPreCheckTask = Task.Factory.StartNew(() => session.SessionPreCheck());
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
@@ -354,7 +355,7 @@ namespace MinecraftClient
                     if (playerKeyPair == null || playerKeyPair.NeedRefresh())
                     {
                         Translations.WriteLineFormatted("mcc.fetching_key");
-                        playerKeyPair = KeyUtils.GetKeys(session.ID);
+                        playerKeyPair = KeyUtils.GetNewProfileKeys(session.ID);
                         if (Settings.ProfileKeyCaching != CacheType.None && playerKeyPair != null)
                         {
                             KeysCache.Store(Settings.Login.ToLower(), playerKeyPair);
@@ -482,9 +483,9 @@ namespace MinecraftClient
                         //Start the main TCP client
                         if (Settings.SingleCommand != "")
                         {
-                            client = new McClient(session.PlayerName, session.PlayerID, session.ID, playerKeyPair, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
+                            client = new McClient(session, playerKeyPair, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
                         }
-                        else client = new McClient(session.PlayerName, session.PlayerID, session.ID, playerKeyPair, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
+                        else client = new McClient(session, playerKeyPair, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")

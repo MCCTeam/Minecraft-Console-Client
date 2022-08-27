@@ -19,6 +19,7 @@ using MinecraftClient.Logger;
 using System.Threading.Tasks;
 using MinecraftClient.Protocol.Keys;
 using System.Text.RegularExpressions;
+using MinecraftClient.Protocol.Session;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -1534,7 +1535,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Do the Minecraft login.
         /// </summary>
         /// <returns>True if login successful</returns>
-        public bool Login(PlayerKeyPair? playerKeyPair)
+        public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session)
         {
             byte[] protocol_version = dataTypes.GetVarInt(protocolversion);
             string server_address = pForge.GetServerAddress(handler.GetServerHost());
@@ -1574,7 +1575,7 @@ namespace MinecraftClient.Protocol.Handlers
                     string serverID = dataTypes.ReadNextString(packetData);
                     byte[] serverPublicKey = dataTypes.ReadNextByteArray(packetData);
                     byte[] token = dataTypes.ReadNextByteArray(packetData);
-                    return StartEncryption(handler.GetUserUUID(), handler.GetSessionID(), token, serverID, serverPublicKey, playerKeyPair);
+                    return StartEncryption(handler.GetUserUUID(), handler.GetSessionID(), token, serverID, serverPublicKey, playerKeyPair, session);
                 }
                 else if (packetID == 0x02) //Login successful
                 {
@@ -1598,23 +1599,42 @@ namespace MinecraftClient.Protocol.Handlers
         /// Start network encryption. Automatically called by Login() if the server requests encryption.
         /// </summary>
         /// <returns>True if encryption was successful</returns>
-        private bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, PlayerKeyPair? playerKeyPair)
+        private bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, PlayerKeyPair? playerKeyPair, SessionToken session)
         {
-            System.Security.Cryptography.RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey);
-            byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
+            RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey);
+            byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
             log.Debug(Translations.Get("debug.crypto"));
 
             if (serverIDhash != "-")
             {
                 log.Info(Translations.Get("mcc.session"));
-                if (!ProtocolHandler.SessionCheck(uuid, sessionID, CryptoHandler.getServerHash(serverIDhash, serverPublicKey, secretKey)))
+                string serverHash = CryptoHandler.getServerHash(serverIDhash, serverPublicKey, secretKey);
+
+                bool needCheckSession = true;
+                if (session.ServerPublicKey != null && session.SessionPreCheckTask != null
+                    && serverIDhash == session.ServerIDhash && Enumerable.SequenceEqual(serverPublicKey, session.ServerPublicKey))
                 {
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
-                    return false;
+                    session.SessionPreCheckTask.Wait();
+                    if (session.SessionPreCheckTask.Result) // PreCheck Successed
+                        needCheckSession = false;
+                }
+
+                if (needCheckSession)
+                {
+                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash))
+                    {
+                        session.ServerIDhash = serverIDhash;
+                        session.ServerPublicKey = serverPublicKey;
+                        SessionCache.Store(Settings.Login.ToLower(), session);
+                    }
+                    else
+                    {
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
+                        return false;
+                    }
                 }
             }
-
 
             // Encryption Response packet
             List<byte> encryptionResponse = new();

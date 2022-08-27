@@ -22,7 +22,7 @@ namespace MinecraftClient.Protocol
         /// Start the login procedure once connected to the server
         /// </summary>
         /// <returns>True if login was successful</returns>
-        bool Login(PlayerKeyPair playerKeyPair);
+        bool Login(PlayerKeyPair? playerKeyPair, Session.SessionToken session);
 
         /// <summary>
         /// Disconnect from the server
