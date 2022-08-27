@@ -235,13 +235,13 @@ namespace MinecraftClient.Protocol.Handlers
         {
             int i = 0;
             int j = 0;
-            int k = 0;
+            byte b;
             while (true)
             {
-                k = socket.ReadDataRAW(1)[0];
-                i |= (k & 0x7F) << j++ * 7;
+                b = socket.ReadDataRAW(1)[0];
+                i |= (b & 0x7F) << j++ * 7;
                 if (j > 5) throw new OverflowException("VarInt too big");
-                if ((k & 0x80) != 128) break;
+                if ((b & 0x80) != 128) break;
             }
             return i;
         }
@@ -259,9 +259,9 @@ namespace MinecraftClient.Protocol.Handlers
             do
             {
                 b = cache.Dequeue();
-                i |= (b & 127) << j++ * 7;
+                i |= (b & 0x7F) << j++ * 7;
                 if (j > 5) throw new OverflowException("VarInt too big");
-            } while ((b & 128) == 128);
+            } while ((b & 0x80) == 128);
             return i;
         }
 
