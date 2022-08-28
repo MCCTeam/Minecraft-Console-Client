@@ -27,6 +27,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Ionic.Zlib
 {
@@ -409,6 +410,7 @@ namespace Ionic.Zlib
         /// <param name="disposing">
         ///   indicates whether the Dispose method was invoked by user code.
         /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         protected override void Dispose(bool disposing)
         {
             try
@@ -543,6 +545,7 @@ namespace Ionic.Zlib
         /// <param name="count">the number of bytes to read.</param>
         ///
         /// <returns>the number of bytes read</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public override int Read(byte[] buffer, int offset, int count)
         {
                 if (_disposed) throw new ObjectDisposedException("ZlibStream");

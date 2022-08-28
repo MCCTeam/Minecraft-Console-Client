@@ -65,6 +65,7 @@
 
 
 using System;
+using System.Runtime.CompilerServices;
 using Interop=System.Runtime.InteropServices;
 
 namespace Ionic.Zlib
@@ -351,6 +352,7 @@ namespace Ionic.Zlib
         /// </example>
         /// <param name="flush">The flush to use when inflating.</param>
         /// <returns>Z_OK if everything goes well.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public int Inflate(FlushType flush)
         {
             if (istate == null)

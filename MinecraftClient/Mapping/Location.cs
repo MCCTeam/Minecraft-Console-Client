@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace MinecraftClient.Mapping
@@ -54,6 +55,7 @@ namespace MinecraftClient.Mapping
         /// <param name="blockX">Location of the block into the chunk</param>
         /// <param name="blockY">Location of the block into the world</param>
         /// <param name="blockZ">Location of the block into the chunk</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public Location(int chunkX, int chunkZ, int blockX, int blockY, int blockZ)
         {
             X = chunkX * Chunk.SizeX + blockX;

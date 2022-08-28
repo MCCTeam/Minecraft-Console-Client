@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Ionic.Zlib;
 
@@ -39,6 +40,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="to_decompress">Data to decompress</param>
         /// <param name="size_uncompressed">Size of the data once decompressed</param>
         /// <returns>Decompressed data as a byte array</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static byte[] Decompress(byte[] to_decompress, int size_uncompressed)
         {
             ZlibStream stream = new ZlibStream(new System.IO.MemoryStream(to_decompress, false), CompressionMode.Decompress);
@@ -53,6 +55,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="to_decompress">Data to decompress</param>
         /// <returns>Decompressed data as byte array</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static byte[] Decompress(byte[] to_decompress)
         {
             ZlibStream stream = new ZlibStream(new System.IO.MemoryStream(to_decompress, false), CompressionMode.Decompress);

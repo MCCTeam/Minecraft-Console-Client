@@ -63,6 +63,8 @@
 
 
 using System;
+using System.Runtime.CompilerServices;
+
 namespace Ionic.Zlib
 {
     sealed class InflateBlocks
@@ -140,6 +142,7 @@ namespace Ionic.Zlib
         }
 
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         internal int Process(int r)
         {
             int t; // temporary storage
@@ -673,6 +676,7 @@ namespace Ionic.Zlib
         }
 
         // copy as much as possible from the sliding window to the output area
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         internal int Flush(int r)
         {
             int nBytes;
@@ -799,6 +803,7 @@ namespace Ionic.Zlib
             tree = null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         internal int Process(InflateBlocks blocks, int r)
         {
             int j;      // temporary storage
@@ -1160,6 +1165,7 @@ namespace Ionic.Zlib
         // (the maximum string length) and number of input bytes available
         // at least ten.  The ten bytes are six bytes for the longest length/
         // distance pair plus four bytes for overloading the bit buffer.
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
 
         internal int InflateFast(int bl, int bd, int[] tl, int tl_index, int[] td, int td_index, InflateBlocks s, ZlibCodec z)
         {
@@ -1509,6 +1515,7 @@ namespace Ionic.Zlib
         }
 
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         internal int Inflate(FlushType flush)
         {
             int b;

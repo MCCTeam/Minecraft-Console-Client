@@ -16,13 +16,13 @@ namespace MinecraftClient.Crypto
 
         private readonly Aes? Aes = null;
         private readonly FastAes? FastAes = null;
-        
-        public Stream BaseStream { get; set; }
 
         private bool inStreamEnded = false;
 
         private byte[] ReadStreamIV = new byte[16];
         private byte[] WriteStreamIV = new byte[16];
+
+        public Stream BaseStream { get; set; }
 
         public AesCfb8Stream(Stream stream, byte[] key)
         {
