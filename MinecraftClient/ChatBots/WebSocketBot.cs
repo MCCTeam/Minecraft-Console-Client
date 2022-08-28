@@ -132,7 +132,7 @@ namespace MinecraftClient.ChatBots
 
                 string result = "";
                 PerformInternalCommand(message, ref result);
-                SendEvent("OnMccCommandRespone", "{\"response\": \"" + result + "\"}");
+                SendEvent("OnMccCommandResponse", "{\"response\": \"" + result + "\"}");
             };
         }
 
