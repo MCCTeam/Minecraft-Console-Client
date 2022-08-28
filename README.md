@@ -1,9 +1,18 @@
-Minecraft Console Client
-========================
+<div align="center">
+
+<img src="https://i.pics.rs/LLDhE.png" alt="Logo"/>
+
+# Minecraft Console Client (MCC)
+
+[Documentation](https://mccteam.github.io/docs/) | [Download](#download-🔽) | [Installation](https://mccteam.github.io/docs/guide/installation.html) | [Configuration](https://mccteam.github.io/docs/guide/configuration.html) | [Usage](https://mccteam.github.io/docs/guide/usage.html)
 
 [![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
 
-Minecraft Console Client (MCC) is a lightweight app allowing you to connect to any Minecraft server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game. It also provides various automations that you can enable for administration and other purposes.
+</div>
+
+## **About ℹ️**
+
+**Minecraft Console Client (MCC)** is a lightweight cross-platform open-source Minecraft TUI client for **Java** edition that allows you to connect to any Minecraft Java server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game.
 
 ## Download 🔽
 
@@ -11,9 +20,12 @@ Get development builds from the [Releases section](https://github.com/MCCTeam/Mi
 
 ## How to use 📚
 
-* 🌐 https://mccteam.github.io/
-* 📝 [Sample configuration files](MinecraftClient/config/)
-* 📖 [Configuration Readme](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual)
+-   🌐 [Full Documentation](https://mccteam.github.io/)
+-   📦 [Installation](https://mccteam.github.io/docs/guide/installation.html)
+-   📖 [Usage](https://mccteam.github.io/docs/guide/usage.html)
+-   ⚙️ [Configuration](https://mccteam.github.io/docs/guide/configuration.html)
+-   🤖 [Chat Bots](https://mccteam.github.io/docs/guide/chat-bots.html)
+-   📝 [Sample configuration files](MinecraftClient/config/)
 
 ## Getting Help 🙋
 
@@ -25,7 +37,7 @@ We are a small community so we need help to implement upgrades for new Minecraft
 
 ## How to contribute 📝
 
-If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the *Master* branch. To contribute to the website / online documentation see also the [Website repository](https://github.com/MCCTeam/MCCTeam.github.io).
+If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the _Master_ branch. To contribute to the website / online documentation see also the [Website repository](https://github.com/MCCTeam/MCCTeam.github.io).
 
 ## Translating Minecraft Console Client 🌍
 
@@ -35,40 +47,18 @@ To use the translated language file, place it under `lang/mcc/` folder and set y
 
 For the names of the translation file, please see [this comment](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
 
-## Building from source 🏗️
+## Building from the source 🏗️
 
-_The recommended development environment is [Visual Studio](https://visualstudio.microsoft.com/). If you want to build the project without installing a development environment, you may also follow these instructions:_
-
-First of all, download the .NET 6.0 SDK [here](https://dotnet.microsoft.com/en-us/download) and follow the install instructions.
-
-Get a [zip of source code](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip), extract it and navigate to the `MinecraftClient` folder.
-
-### On Windows 🪟
-
-1. Open a Terminal / Command Prompt.
-2. Type in `dotnet publish --no-self-contained -r win-x64 -c Release`.
-3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release\net6.0\win-x64\publish\`
-
-### On Linux 🐧
-
-1. Open a Terminal / Command Prompt.
-2. Type in `dotnet publish --no-self-contained -r linux-x64 -c Release`.
-3. If the build succeeds, you can find `MinecraftClient` under `MinecraftClient\bin\Release\net6.0\linux-x64\publish\`
-
-### On Mac 🍎
-
-1. Open a Terminal / Command Prompt.
-2. Type in `dotnet publish --no-self-contained -r osx-x64 -c Release`.
-3. If the build succeeds, you can find `MinecraftClient` under `MinecraftClient\bin\Release\net6.0\osx-x64\publish\`
+This section has been moved to our new [Documentation website](https://mccteam.github.io/docs/guide/installation.html#building-from-the-source-code).
 
 ## License ⚖️
 
 Unless specifically stated, the code is from the MCC Team or Contributors, and available under CDDL-1.0. Else, the license and original author are mentioned in source file headers.
 The main terms of the CDDL-1.0 license are basically the following:
 
-- You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial.
-- However, in all cases, any modifications, improvements, or additions to the CDDL code (any code that is referenced in direct modifications to the CDDL code is considered an addition to the CDDL code, and so is bound by this requirement; e.g. a modification of a math function to use a fast lookup table makes that table itself an addition to the CDDL code, regardless of whether it's in a source code file of its own) must be made publicly and freely available in source, under the CDDL license itself.
-- In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
+-   You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial.
+-   However, in all cases, any modifications, improvements, or additions to the CDDL code (any code that is referenced in direct modifications to the CDDL code is considered an addition to the CDDL code, and so is bound by this requirement; e.g. a modification of a math function to use a fast lookup table makes that table itself an addition to the CDDL code, regardless of whether it's in a source code file of its own) must be made publicly and freely available in source, under the CDDL license itself.
+-   In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
 
 More info at http://qstuff.blogspot.fr/2007/04/why-cddl.html
 Full license at http://opensource.org/licenses/CDDL-1.0
