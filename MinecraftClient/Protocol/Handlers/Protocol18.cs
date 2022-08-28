@@ -806,12 +806,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
                                 else
                                 {
-                                    if (protocolVersion < MC_1_19_Version)
-                                        handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
-                                    else
-                                    {
-                                        // 1.19 disabled due to crashing
-                                    }
+                                    handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
                                 }
                             }
                             break;
