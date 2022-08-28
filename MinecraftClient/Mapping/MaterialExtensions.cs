@@ -372,7 +372,7 @@ namespace MinecraftClient.Mapping
                 case Material.PurpurPillar:
                 case Material.PurpurStairs:
                 case Material.EndStoneBricks:
-                case Material.GrassPath:
+                case Material.DirtPath:
                 case Material.RepeatingCommandBlock:
                 case Material.ChainCommandBlock:
                 case Material.FrostedIce:
