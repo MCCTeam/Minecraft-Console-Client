@@ -8,31 +8,37 @@ using System.IO;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
-namespace MinecraftClient.Crypto.Streams
+namespace MinecraftClient.Crypto
 {
-    internal class AesCfb8Stream : Stream, IAesStream
+    public class AesCfb8Stream : Stream
     {
         public static readonly int blockSize = 16;
 
         private readonly Aes? Aes = null;
-
-        private readonly AesContext? FastAes = null;
-
-        public System.IO.Stream BaseStream { get; set; }
+        private readonly FastAes? FastAes = null;
+        
+        public Stream BaseStream { get; set; }
 
         private bool inStreamEnded = false;
 
         private byte[] ReadStreamIV = new byte[16];
         private byte[] WriteStreamIV = new byte[16];
 
-        public AesCfb8Stream(System.IO.Stream stream, byte[] key)
+        public AesCfb8Stream(Stream stream, byte[] key)
         {
             BaseStream = stream;
 
-            if (System.Runtime.Intrinsics.X86.Sse2.IsSupported && System.Runtime.Intrinsics.X86.Aes.IsSupported)
-                FastAes = new AesContext(key);
+            if (FastAes.IsSupport())
+                FastAes = new FastAes(key);
             else
-                Aes = GenerateAES(key);
+            {
+                Aes = Aes.Create();
+                Aes.BlockSize = 128;
+                Aes.KeySize = 128;
+                Aes.Key = key;
+                Aes.Mode = CipherMode.ECB;
+                Aes.Padding = PaddingMode.None;
+            }
 
             Array.Copy(key, ReadStreamIV, 16);
             Array.Copy(key, WriteStreamIV, 16);
@@ -77,16 +83,36 @@ namespace MinecraftClient.Crypto.Streams
 
         public override int ReadByte()
         {
-            byte[] temp = new byte[1];
-            Read(temp, 0, 1);
-            return temp[0];
+            if (inStreamEnded)
+                return -1;
+
+            int inputBuf = BaseStream.ReadByte();
+            if (inputBuf == -1)
+            {
+                inStreamEnded = true;
+                return -1;
+            }
+
+            Span<byte> blockOutput = stackalloc byte[blockSize];
+            if (FastAes != null)
+                FastAes.EncryptEcb(ReadStreamIV, blockOutput);
+            else
+                Aes!.EncryptEcb(ReadStreamIV, blockOutput, PaddingMode.None);
+
+            // Shift left
+            Array.Copy(ReadStreamIV, 1, ReadStreamIV, 0, blockSize - 1);
+            ReadStreamIV[blockSize - 1] = (byte)inputBuf;
+
+            return (byte)(blockOutput[0] ^ inputBuf);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public override int Read(byte[] buffer, int outOffset, int required)
         {
-            if (this.inStreamEnded)
+            if (inStreamEnded)
                 return 0;
+
+            Span<byte> blockOutput = FastAes != null ? stackalloc byte[blockSize] : null;
 
             byte[] inputBuf = new byte[blockSize + required];
             Array.Copy(ReadStreamIV, inputBuf, blockSize);
@@ -96,25 +122,35 @@ namespace MinecraftClient.Crypto.Streams
                 curRead = BaseStream.Read(inputBuf, blockSize + readed, required - readed);
                 if (curRead == 0)
                 {
-                    this.inStreamEnded = true;
+                    inStreamEnded = true;
                     return readed;
                 }
 
-                OrderablePartitioner<Tuple<int, int>> rangePartitioner = (curRead <= 256) ?
-                    Partitioner.Create(readed, readed + curRead, 32) : Partitioner.Create(readed, readed + curRead);
-                Parallel.ForEach(rangePartitioner, (range, loopState) =>
+                int processEnd = readed + curRead;
+                if (FastAes != null)
                 {
-                    Span<byte> blockOutput = stackalloc byte[blockSize];
-                    for (int idx = range.Item1; idx < range.Item2; idx++)
+                    for (int idx = readed; idx < processEnd; idx++)
                     {
                         ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
-                        if (FastAes != null)
-                            FastAes.EncryptEcb(blockInput, blockOutput);
-                        else
-                            Aes!.EncryptEcb(blockInput, blockOutput, PaddingMode.None);
+                        FastAes.EncryptEcb(blockInput, blockOutput);
                         buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
                     }
-                });
+                }
+                else
+                {
+                    OrderablePartitioner<Tuple<int, int>> rangePartitioner = curRead <= 256 ?
+                        Partitioner.Create(readed, processEnd, 32) : Partitioner.Create(readed, processEnd);
+                    Parallel.ForEach(rangePartitioner, (range, loopState) =>
+                    {
+                        Span<byte> blockOutput = stackalloc byte[blockSize];
+                        for (int idx = range.Item1; idx < range.Item2; idx++)
+                        {
+                            ReadOnlySpan<byte> blockInput = new(inputBuf, idx, blockSize);
+                            Aes!.EncryptEcb(blockInput, blockOutput, PaddingMode.None);
+                            buffer[outOffset + idx] = (byte)(blockOutput[0] ^ inputBuf[idx + blockSize]);
+                        }
+                    });
+                }
             }
 
             Array.Copy(inputBuf, required, ReadStreamIV, 0, blockSize);
@@ -122,7 +158,7 @@ namespace MinecraftClient.Crypto.Streams
             return required;
         }
 
-        public override long Seek(long offset, System.IO.SeekOrigin origin)
+        public override long Seek(long offset, SeekOrigin origin)
         {
             throw new NotSupportedException();
         }
@@ -134,9 +170,23 @@ namespace MinecraftClient.Crypto.Streams
 
         public override void WriteByte(byte b)
         {
-            Write(new byte[] { b }, 0, 1);
+            Span<byte> blockOutput = stackalloc byte[blockSize];
+
+            if (FastAes != null)
+                FastAes.EncryptEcb(WriteStreamIV, blockOutput);
+            else
+                Aes!.EncryptEcb(WriteStreamIV, blockOutput, PaddingMode.None);
+
+            byte outputBuf = (byte)(blockOutput[0] ^ b);
+
+            BaseStream.WriteByte(outputBuf);
+
+            // Shift left
+            Array.Copy(WriteStreamIV, 1, WriteStreamIV, 0, blockSize - 1);
+            WriteStreamIV[blockSize - 1] = outputBuf;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public override void Write(byte[] input, int offset, int required)
         {
             byte[] outputBuf = new byte[blockSize + required];
@@ -155,17 +205,6 @@ namespace MinecraftClient.Crypto.Streams
             BaseStream.WriteAsync(outputBuf, blockSize, required);
 
             Array.Copy(outputBuf, required, WriteStreamIV, 0, blockSize);
-        }
-
-        private static Aes GenerateAES(byte[] key)
-        {
-            Aes aes = Aes.Create();
-            aes.BlockSize = 128;
-            aes.KeySize = 128;
-            aes.Key = key;
-            aes.Mode = CipherMode.ECB;
-            aes.Padding = PaddingMode.None;
-            return aes;
         }
     }
 }
