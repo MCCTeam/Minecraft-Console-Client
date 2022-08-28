@@ -311,8 +311,17 @@ namespace MinecraftClient
                         // Try to refresh access token
                         if (!string.IsNullOrWhiteSpace(session.RefreshToken))
                         {
-                            result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
+                            try
+                            {
+                                result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
+                            }
+                            catch (Exception ex)
+                            {
+                                ConsoleIO.WriteLine("Refresh access token fail: " + ex.Message);
+                                result = ProtocolHandler.LoginResult.InvalidResponse;
+                            }
                         }
+
                         if (result != ProtocolHandler.LoginResult.Success
                             && Settings.Password == ""
                             && Settings.AccountType == ProtocolHandler.AccountType.Mojang)
