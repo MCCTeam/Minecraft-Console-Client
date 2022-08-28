@@ -28,7 +28,7 @@ namespace MinecraftClient.Crypto
         {
             BaseStream = stream;
 
-            if (FastAes.IsSupport())
+            if (FastAes.IsSupported())
                 FastAes = new FastAes(key);
             else
             {

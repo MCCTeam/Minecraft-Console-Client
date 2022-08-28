@@ -21,7 +21,7 @@ namespace MinecraftClient.Crypto
         /// Detects if the required instruction set is supported
         /// </summary>
         /// <returns>Is it supported</returns>
-        public static bool IsSupport()
+        public static bool IsSupported()
         {
             return Sse2.IsSupported && Aes.IsSupported;
         }
