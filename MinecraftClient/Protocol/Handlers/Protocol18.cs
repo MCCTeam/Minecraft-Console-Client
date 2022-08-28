@@ -1018,14 +1018,20 @@ namespace MinecraftClient.Protocol.Handlers
                                             string name = dataTypes.ReadNextString(packetData);                         // Player name
                                             int propNum = dataTypes.ReadNextVarInt(packetData);                         // Number of properties in the following array
 
-                                            Tuple<string, string, string>[]? property = null; // Property: Tuple<Name, Value, Signature(empty if there is no signature)
+                                            // Property: Tuple<Name, Value, Signature(empty if there is no signature)
+                                            // The Property field looks as in the response of https://wiki.vg/Mojang_API#UUID_to_Profile_and_Skin.2FCape
+                                            const bool useProperty = false;
+                                            Tuple<string, string, string?>[]? properties = useProperty ? 
+                                                new Tuple<string, string, string?>[propNum] : null; 
                                             for (int p = 0; p < propNum; p++)
                                             {
-                                                string key = dataTypes.ReadNextString(packetData);                      // Name
-                                                string val = dataTypes.ReadNextString(packetData);                      // Value
-
+                                                string propertyName = dataTypes.ReadNextString(packetData);             // Name: String (32767)
+                                                string val = dataTypes.ReadNextString(packetData);                      // Value: String (32767)
+                                                string? propertySignature = null;
                                                 if (dataTypes.ReadNextBool(packetData))                                 // Is Signed
-                                                    dataTypes.ReadNextString(packetData);                               // Signature
+                                                    propertySignature = dataTypes.ReadNextString(packetData);           // Signature: String (32767)
+                                                if (useProperty)
+                                                    properties![p] = new(propertyName, val, propertySignature);
                                             }
 
                                             int gameMode = dataTypes.ReadNextVarInt(packetData);                        // Gamemode
@@ -1056,7 +1062,7 @@ namespace MinecraftClient.Protocol.Handlers
                                                 }
                                             }
 
-                                            handler.OnPlayerJoin(new PlayerInfo(uuid, name, property, gameMode, ping, displayName, keyExpiration, publicKey, signature));
+                                            handler.OnPlayerJoin(new PlayerInfo(uuid, name, properties, gameMode, ping, displayName, keyExpiration, publicKey, signature));
                                             break;
                                         case 0x01: //Update gamemode
                                             handler.OnGamemodeUpdate(uuid, dataTypes.ReadNextVarInt(packetData));
