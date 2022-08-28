@@ -1120,8 +1120,9 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 forced = dataTypes.ReadNextBool(packetData);
                                 string forcedMessage = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
-                                dataTypes.ReadNextBool(packetData);   // Has Prompt Message (Boolean) - 1.17 and above
-                                dataTypes.ReadNextString(packetData); // Prompt Message (Optional Chat) - 1.17 and above
+                                bool hasPromptMessage = dataTypes.ReadNextBool(packetData);   // Has Prompt Message (Boolean) - 1.17 and above
+                                if (hasPromptMessage)
+                                    dataTypes.ReadNextString(packetData); // Prompt Message (Optional Chat) - 1.17 and above
                             }
                             // Some server plugins may send invalid resource packs to probe the client and we need to ignore them (issue #1056)
                             if (!url.StartsWith("http") && hash.Length != 40) // Some server may have null hash value
