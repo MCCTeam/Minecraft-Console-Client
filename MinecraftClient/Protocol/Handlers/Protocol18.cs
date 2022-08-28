@@ -97,7 +97,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.log = handler.GetLogger();
             this.randomGen = RandomNumberGenerator.Create();
 
-            if (handler.GetTerrainEnabled() && this.protocolVersion > MC_1_19_Version)
+            if (handler.GetTerrainEnabled() && this.protocolVersion > MC_1_19_2_Version)
             {
                 log.Error(Translations.Get("extra.terrainandmovement_disabled"));
                 handler.SetTerrainEnabled(false);
@@ -116,25 +116,23 @@ namespace MinecraftClient.Protocol.Handlers
             }
 
             // Block palette
-            if (this.protocolVersion >= MC_1_13_Version)
-            {
-                if (protocolVersion > MC_1_19_Version && handler.GetTerrainEnabled())
-                    throw new NotImplementedException(Translations.Get("exception.palette.block"));
+            if (protocolVersion > MC_1_19_2_Version && handler.GetTerrainEnabled())
+                throw new NotImplementedException(Translations.Get("exception.palette.block"));
 
-                if (this.protocolVersion == MC_1_19_Version)
-                    Block.Palette = new Palette119();
-                else if (this.protocolVersion >= MC_1_17_Version)
-                    Block.Palette = new Palette117();
-                else if (protocolVersion >= MC_1_16_Version)
-                    Block.Palette = new Palette116();
-                else if (protocolVersion >= MC_1_15_Version)
-                    Block.Palette = new Palette115();
-                else if (protocolVersion >= MC_1_14_Version)
-                    Block.Palette = new Palette114();
-                else
-                    Block.Palette = new Palette113();
-            }
-            else Block.Palette = new Palette112();
+            if (protocolVersion >= MC_1_19_Version)
+                Block.Palette = new Palette119();
+            else if (protocolVersion >= MC_1_17_Version)
+                Block.Palette = new Palette117();
+            else if (protocolVersion >= MC_1_16_Version)
+                Block.Palette = new Palette116();
+            else if (protocolVersion >= MC_1_15_Version)
+                Block.Palette = new Palette115();
+            else if (protocolVersion >= MC_1_14_Version)
+                Block.Palette = new Palette114();
+            else if(protocolVersion >= MC_1_13_Version)
+                Block.Palette = new Palette113();
+            else
+                Block.Palette = new Palette112();
 
             // Entity palette
             if (this.protocolVersion >= MC_1_13_Version)
@@ -362,7 +360,8 @@ namespace MinecraftClient.Protocol.Handlers
                             }
 
                             // Current dimension
-                            //   NBT Tag Compound: 1.16.2 and above
+                            //   String: 1.19 and above
+                            //   NBT Tag Compound: [1.16.2 to 1.18.2]
                             //   String identifier: 1.16 and 1.16.1
                             //   varInt: [1.9.1 to 1.15.2]
                             //   byte: below 1.9.1
@@ -416,8 +415,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 bool hasDeathLocation = dataTypes.ReadNextBool(packetData); // Has death location
                                 if (hasDeathLocation)
                                 {
-                                    dataTypes.ReadNextString(packetData); // Death dimension name: Identifier
-                                    dataTypes.ReadNextLocation(packetData); // Death location
+                                    dataTypes.ReadNextString(packetData);     // Death dimension name: Identifier
+                                    dataTypes.ReadNextLocation(packetData);   // Death location
                                 }
                             }
                             break;
@@ -612,8 +611,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 bool hasDeathLocation = dataTypes.ReadNextBool(packetData); // Has death location
                                 if (hasDeathLocation)
                                 {
-                                    dataTypes.ReadNextString(packetData); // Death dimension name: Identifier
-                                    dataTypes.ReadNextLocation(packetData); // Death location
+                                    dataTypes.ReadNextString(packetData);     // Death dimension name: Identifier
+                                    dataTypes.ReadNextLocation(packetData);   // Death location
                                 }
                             }
                             handler.OnRespawn();
