@@ -193,18 +193,5 @@ namespace MinecraftClient.Crypto
             }
             return p;
         }
-
-        /// <summary>
-        /// Get a new AES-encrypted stream for wrapping a non-encrypted stream.
-        /// </summary>
-        /// <param name="underlyingStream">Stream to encrypt</param>
-        /// <param name="AesKey">Key to use</param>
-        /// <returns>Return an appropriate stream depending on the framework being used</returns>
-
-        public static IAesStream getAesStream(Stream underlyingStream, byte[] AesKey)
-        {
-            // return new Streams.RegularAesStream(underlyingStream, AesKey);
-            return new Streams.AesCfb8Stream(underlyingStream, AesKey);
-        }
     }
 }

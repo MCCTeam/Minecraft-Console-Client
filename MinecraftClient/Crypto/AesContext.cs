@@ -8,15 +8,22 @@ namespace MinecraftClient.Crypto
 {
     // Using the AES-NI instruction set
     // https://gist.github.com/Thealexbarney/9f75883786a9f3100408ff795fb95d85
-    public class AesContext
+    public class FastAes
     {
         private Vector128<byte>[] RoundKeys { get; }
 
-        public byte[] Iv { get; } = new byte[0x10];
-
-        public AesContext(Span<byte> key)
+        public FastAes(Span<byte> key)
         {
             RoundKeys = KeyExpansion(key);
+        }
+
+        /// <summary>
+        /// Detects if the required instruction set is supported
+        /// </summary>
+        /// <returns>Is it supported</returns>
+        public static bool IsSupport()
+        {
+            return Sse2.IsSupported && Aes.IsSupported;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -87,11 +94,6 @@ namespace MinecraftClient.Crypto
             s = Sse2.Xor(s, Sse2.ShiftLeftLogical128BitLane(s, 8));
 
             keys[i] = Sse2.Xor(s, t);
-        }
-
-        public void SetIv(Span<byte> iv)
-        {
-            iv.Slice(0, 0x10).CopyTo(Iv);
         }
     }
 }

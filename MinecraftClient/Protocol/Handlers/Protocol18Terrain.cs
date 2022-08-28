@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 //using System.Linq;
@@ -34,6 +35,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Reading the "Block states" field: consists of 4096 entries, representing all the blocks in the chunk section.
         /// </summary>
         /// <param name="cache">Cache for reading data</param>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private Chunk? ReadBlockStatesField(Queue<byte> cache)
         {
             // read Block states (Type: Paletted Container)
@@ -142,6 +144,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache for reading chunk data</param>
         /// <param name="cancellationToken">token to cancel the task</param>
         /// <returns>true if successfully loaded</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public bool ProcessChunkColumnData(int chunkX, int chunkZ, ulong[]? verticalStripBitmask, Queue<byte> cache, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -243,6 +246,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="cache">Cache for reading chunk data</param>
         /// <param name="cancellationToken">token to cancel the task</param>
         /// <returns>true if successfully loaded</returns>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public bool ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)

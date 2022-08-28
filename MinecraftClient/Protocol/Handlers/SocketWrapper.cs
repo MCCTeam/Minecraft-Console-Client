@@ -10,7 +10,7 @@ namespace MinecraftClient.Protocol.Handlers
     class SocketWrapper
     {
         TcpClient c;
-        IAesStream s;
+        AesCfb8Stream s;
         bool encrypted = false;
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (encrypted)
                 throw new InvalidOperationException("Stream is already encrypted!?");
-            this.s = CryptoHandler.getAesStream(c.GetStream(), secretKey);
+            this.s = new AesCfb8Stream(c.GetStream(), secretKey);
             this.encrypted = true;
         }
 

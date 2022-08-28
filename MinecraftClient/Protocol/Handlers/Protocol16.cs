@@ -26,7 +26,7 @@ namespace MinecraftClient.Protocol.Handlers
         private bool encrypted = false;
         private int protocolversion;
         private Tuple<Thread, CancellationTokenSource>? netRead = null;
-        Crypto.IAesStream s;
+        Crypto.AesCfb8Stream s;
         TcpClient c;
 
         public Protocol16Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
@@ -568,7 +568,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (pid[0] == 0xFC)
             {
                 readData(4);
-                s = CryptoHandler.getAesStream(c.GetStream(), secretKey);
+                s = new AesCfb8Stream(c.GetStream(), secretKey);
                 encrypted = true;
                 return true;
             }
