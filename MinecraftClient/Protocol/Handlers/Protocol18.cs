@@ -97,7 +97,7 @@ namespace MinecraftClient.Protocol.Handlers
             this.log = handler.GetLogger();
             this.randomGen = RandomNumberGenerator.Create();
 
-            if (handler.GetTerrainEnabled() && this.protocolVersion > MC_1_18_2_Version)
+            if (handler.GetTerrainEnabled() && this.protocolVersion > MC_1_19_Version)
             {
                 log.Error(Translations.Get("extra.terrainandmovement_disabled"));
                 handler.SetTerrainEnabled(false);
@@ -357,11 +357,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 int worldCount = dataTypes.ReadNextVarInt(packetData);    // Dimension Count (World Count) - 1.16 and above
                                 for (int i = 0; i < worldCount; i++)
                                     dataTypes.ReadNextString(packetData);                 // Dimension Names (World Names) - 1.16 and above
-                                dataTypes.ReadNextNbt(packetData);                        // Registry Codec (Dimension Codec) - 1.16 and above
+                                var registryCodec = dataTypes.ReadNextNbt(packetData);    // Registry Codec (Dimension Codec) - 1.16 and above
+                                World.StoreDimensionList(registryCodec);
                             }
-
-                            string? currentDimensionName = null;
-                            Dictionary<string, object>? currentDimensionType = null;
 
                             // Current dimension
                             //   NBT Tag Compound: 1.16.2 and above
@@ -371,12 +369,9 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 if (protocolVersion >= MC_1_19_Version)
-                                {
-                                    dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
-                                    currentDimensionType = new Dictionary<string, object>();
-                                }
+                                    dataTypes.ReadNextString(packetData);     // Dimension Type: Identifier
                                 else if (protocolVersion >= MC_1_16_2_Version)
-                                    currentDimensionType = dataTypes.ReadNextNbt(packetData); // Dimension Type: NBT Tag Compound
+                                    dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
                                     dataTypes.ReadNextString(packetData);
                                 this.currentDimension = 0;
@@ -390,10 +385,10 @@ namespace MinecraftClient.Protocol.Handlers
                                 dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
 
                             if (protocolVersion >= MC_1_16_Version)
-                                currentDimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
-
-                            if (protocolVersion >= MC_1_16_2_Version)
-                                World.SetDimension(currentDimensionName, currentDimensionType);
+                            {
+                                string dimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
+                                World.SetDimension(dimensionName);
+                            }
 
                             if (protocolVersion >= MC_1_15_Version)
                                 dataTypes.ReadNextLong(packetData);           // Hashed world seed - 1.15 and above
@@ -576,31 +571,26 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             break;
                         case PacketTypesIn.Respawn:
-                            string? dimensionNameInRespawn = null;
-                            Dictionary<string, object> dimensionTypeInRespawn = null;
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 if (protocolVersion >= MC_1_19_Version)
-                                {
-                                    dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
-                                    dimensionTypeInRespawn = new Dictionary<string, object>();
-                                }
+                                    dataTypes.ReadNextString(packetData);     // Dimension Type: Identifier
                                 else if (protocolVersion >= MC_1_16_2_Version)
-                                    dimensionTypeInRespawn = dataTypes.ReadNextNbt(packetData); // Dimension Type: NBT Tag Compound
+                                    dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
                                     dataTypes.ReadNextString(packetData);
                                 this.currentDimension = 0;
                             }
-                            else
-                            {
-                                // 1.15 and below
+                            else 
+                            {   // 1.15 and below
                                 this.currentDimension = dataTypes.ReadNextInt(packetData);
                             }
-                            if (protocolVersion >= MC_1_16_Version)
-                                dimensionNameInRespawn = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
 
-                            if (protocolVersion >= MC_1_16_2_Version)
-                                World.SetDimension(dimensionNameInRespawn, dimensionTypeInRespawn);
+                            if (protocolVersion >= MC_1_16_Version)
+                            {
+                                string dimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
+                                World.SetDimension(dimensionName);
+                            }
 
                             if (protocolVersion < MC_1_14_Version)
                                 dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
