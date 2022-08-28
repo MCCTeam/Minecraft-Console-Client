@@ -218,9 +218,8 @@ namespace MinecraftClient.Protocol.Handlers
                 while (socketWrapper.HasDataAvailable())
                 {
                     int packetID = 0;
-                    Queue<byte> packetData = new Queue<byte>();
-                    ReadNextPacket(ref packetID, packetData);
-                    HandlePacket(packetID, new Queue<byte>(packetData));
+                    Queue<byte> packetData = ReadNextPacket(ref packetID);
+                    HandlePacket(packetID, packetData);
                 }
             }
             catch (System.IO.IOException) { return false; }
@@ -235,14 +234,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="packetID">will contain packet ID</param>
         /// <param name="packetData">will contain raw packet Data</param>
-        internal void ReadNextPacket(ref int packetID, Queue<byte> packetData)
+        internal Queue<byte> ReadNextPacket(ref int packetID)
         {
-            packetData.Clear();
             int size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
-            byte[] rawpacket = socketWrapper.ReadDataRAW(size); //Packet contents
-
-            for (int i = 0; i < rawpacket.Length; i++)
-                packetData.Enqueue(rawpacket[i]);
+            Queue<byte> packetData = new(socketWrapper.ReadDataRAW(size)); //Packet contents
 
             //Handle packet decompression
             if (protocolversion >= MC_1_8_Version
@@ -253,9 +248,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     byte[] toDecompress = packetData.ToArray();
                     byte[] uncompressed = ZlibUtils.Decompress(toDecompress, sizeUncompressed);
-                    packetData.Clear();
-                    for (int i = 0; i < uncompressed.Length; i++)
-                        packetData.Enqueue(uncompressed[i]);
+                    packetData = new(uncompressed);
                 }
             }
 
@@ -266,6 +259,8 @@ namespace MinecraftClient.Protocol.Handlers
                 List<byte> clone = packetData.ToList();
                 handler.OnNetworkPacket(packetID, clone, login_phase, true);
             }
+
+            return packetData;
         }
 
         /// <summary>
@@ -609,7 +604,7 @@ namespace MinecraftClient.Protocol.Handlers
                                                     dataTypes.SkipNextVarInt(packetData);
                                                 }
                                             }
-                                            else dataTypes.ReadData(1024 * 4, packetData); // Biomes - 1.15 and above
+                                            else dataTypes.DropData(1024 * 4, packetData); // Biomes - 1.15 and above
                                         }
                                         int dataSize = dataTypes.ReadNextVarInt(packetData);
                                         Parallel.Invoke(() =>
@@ -1561,10 +1556,9 @@ namespace MinecraftClient.Protocol.Handlers
             SendPacket(0x00, fullLoginPacket);
 
             int packetID = -1;
-            Queue<byte> packetData = new Queue<byte>();
             while (true)
             {
-                ReadNextPacket(ref packetID, packetData);
+                Queue<byte> packetData = ReadNextPacket(ref packetID);
                 if (packetID == 0x00) //Login rejected
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, ChatParser.ParseText(dataTypes.ReadNextString(packetData)));
@@ -1670,8 +1664,7 @@ namespace MinecraftClient.Protocol.Handlers
             while (true)
             {
                 int packetID = -1;
-                Queue<byte> packetData = new Queue<byte>();
-                ReadNextPacket(ref packetID, packetData);
+                Queue<byte> packetData = ReadNextPacket(ref packetID);
                 if (packetID < 0 || loopPrevention-- < 0) // Failed to read packet or too many iterations (issue #1150)
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.invalid_encrypt"));

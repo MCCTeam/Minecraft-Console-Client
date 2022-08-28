@@ -89,6 +89,7 @@
 
 
 using System;
+using System.Runtime.CompilerServices;
 using Interop=System.Runtime.InteropServices;
 
 namespace Ionic.Zlib
@@ -491,6 +492,7 @@ namespace Ionic.Zlib
         ///    adler = Adler.Adler32(adler, buffer, index, length);
         ///  </code>
         /// </example>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static uint Adler32(uint adler, byte[] buf, int index, int len)
         {
             if (buf == null)

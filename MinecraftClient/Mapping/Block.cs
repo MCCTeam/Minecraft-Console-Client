@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using MinecraftClient.Mapping.BlockPalettes;
 
@@ -106,6 +107,7 @@ namespace MinecraftClient.Mapping
         /// Get a block of the specified type and metadata OR block state
         /// </summary>
         /// <param name="typeAndMeta">Type and metadata packed in the same value OR block state</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public Block(ushort typeAndMeta)
         {
             this.blockIdAndMeta = typeAndMeta;

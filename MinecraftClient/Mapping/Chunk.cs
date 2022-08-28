@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
@@ -60,6 +61,7 @@ namespace MinecraftClient.Mapping
         /// <param name="blockY">Block Y</param>
         /// <param name="blockZ">Block Z</param>
         /// <param name="block">Block</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public void SetWithoutCheck(int blockX, int blockY, int blockZ, Block block)
         {
             blocks[blockX, blockY, blockZ] = block;

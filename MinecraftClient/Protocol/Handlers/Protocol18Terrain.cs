@@ -222,7 +222,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         dataTypes.SkipNextVarInt(cache); // Palette
                                 }
                                 int dataArrayLength = dataTypes.ReadNextVarInt(cache); // Data Array Length
-                                dataTypes.ReadData(dataArrayLength * 8, cache); // Data Array
+                                dataTypes.DropData(dataArrayLength * 8, cache); // Data Array
                             }
                         }
                     }
@@ -394,12 +394,12 @@ namespace MinecraftClient.Protocol.Handlers
                         if (protocolversion < Protocol18Handler.MC_1_14_Version)
                         {
                             //Skip block light
-                            dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                            dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
 
                             //Skip sky light
                             if (currentDimension == 0)
                                 // Sky light is not sent in the nether or the end
-                                dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                                dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
                         }
                     }
                 }
@@ -456,17 +456,17 @@ namespace MinecraftClient.Protocol.Handlers
                         if ((chunkMask & (1 << chunkY)) != 0)
                         {
                             //Skip block light
-                            dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                            dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
 
                             //Skip sky light
                             if (hasSkyLight)
-                                dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
+                                dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ) / 2, cache);
                         }
                     }
 
                     //Skip biome metadata
                     if (chunksContinuous)
-                        dataTypes.ReadData(Chunk.SizeX * Chunk.SizeZ, cache);
+                        dataTypes.DropData(Chunk.SizeX * Chunk.SizeZ, cache);
                 }
             }
             else
@@ -505,12 +505,12 @@ namespace MinecraftClient.Protocol.Handlers
                     }
 
                     //Skip data we don't need
-                    dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache);          //Block light
+                    dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache);          //Block light
                     if (hasSkyLight)
-                        dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache);      //Sky light
-                    dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * addDataSectionCount) / 2, cache);   //BlockAdd
+                        dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache);      //Sky light
+                    dataTypes.DropData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * addDataSectionCount) / 2, cache);   //BlockAdd
                     if (chunksContinuous)
-                        dataTypes.ReadData(Chunk.SizeX * Chunk.SizeZ, cache);                                         //Biomes
+                        dataTypes.DropData(Chunk.SizeX * Chunk.SizeZ, cache);                                         //Biomes
 
                     //Load chunk data
                     int maxChunkY = sizeof(int) * 8 - 1 - BitOperations.LeadingZeroCount(chunkMask);
