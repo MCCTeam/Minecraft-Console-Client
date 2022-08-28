@@ -75,6 +75,16 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Skip a string from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        public void SkipNextString(Queue<byte> cache)
+        {
+            int length = ReadNextVarInt(cache);
+            DropData(length, cache);
+        }
+
+        /// <summary>
         /// Read a boolean from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The boolean value</returns>

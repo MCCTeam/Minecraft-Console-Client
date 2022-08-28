@@ -361,7 +361,7 @@ namespace MinecraftClient.Protocol.Handlers
                             else
                                 dataTypes.ReadNextByte(packetData);           // Max Players - 1.16.1 and below
                             if (protocolversion < MC_1_16_Version)
-                                dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
+                                dataTypes.SkipNextString(packetData);         // Level Type - 1.15 and below
                             if (protocolversion >= MC_1_14_Version)
                                 dataTypes.ReadNextVarInt(packetData);         // View distance - 1.14 and above
                             if (protocolversion >= MC_1_18_1_Version)
@@ -380,7 +380,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 bool hasDeathLocation = dataTypes.ReadNextBool(packetData); // Has death location
                                 if (hasDeathLocation)
                                 {
-                                    dataTypes.ReadNextString(packetData); // Death dimension name: Identifier
+                                    dataTypes.SkipNextString(packetData); // Death dimension name: Identifier
                                     dataTypes.ReadNextLocation(packetData); // Death location
                                 }
                             }
@@ -475,7 +475,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolversion >= MC_1_16_Version)
                                 dataTypes.ReadNextByte(packetData);           // Previous Game mode - 1.16 and above
                             if (protocolversion < MC_1_16_Version)
-                                dataTypes.ReadNextString(packetData);         // Level Type - 1.15 and below
+                                dataTypes.SkipNextString(packetData);         // Level Type - 1.15 and below
                             if (protocolversion >= MC_1_16_Version)
                             {
                                 dataTypes.ReadNextBool(packetData);           // Is Debug - 1.16 and above
@@ -962,7 +962,13 @@ namespace MinecraftClient.Protocol.Handlers
                                             break;
                                         case 0x03: //Update display name
                                             if (dataTypes.ReadNextBool(packetData))
-                                                dataTypes.ReadNextString(packetData);
+                                            {
+                                                PlayerInfo? player = handler.GetPlayerInfo(uuid);
+                                                if (player != null)
+                                                    player.DisplayName = dataTypes.ReadNextString(packetData);
+                                                else
+                                                    dataTypes.SkipNextString(packetData);
+                                            }
                                             break;
                                         case 0x04: //Player Leave
                                             handler.OnPlayerLeave(uuid);
@@ -1002,7 +1008,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 {
                                     // Skip optional tooltip for each tab-complete result
                                     if (dataTypes.ReadNextBool(packetData))
-                                        dataTypes.ReadNextString(packetData);
+                                        dataTypes.SkipNextString(packetData);
                                 }
                             }
 
@@ -1122,7 +1128,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 string forcedMessage = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
                                 bool hasPromptMessage = dataTypes.ReadNextBool(packetData);   // Has Prompt Message (Boolean) - 1.17 and above
                                 if (hasPromptMessage)
-                                    dataTypes.ReadNextString(packetData); // Prompt Message (Optional Chat) - 1.17 and above
+                                    dataTypes.SkipNextString(packetData); // Prompt Message (Optional Chat) - 1.17 and above
                             }
                             // Some server plugins may send invalid resource packs to probe the client and we need to ignore them (issue #1056)
                             if (!url.StartsWith("http") && hash.Length != 40) // Some server may have null hash value

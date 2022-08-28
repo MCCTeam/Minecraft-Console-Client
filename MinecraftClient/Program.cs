@@ -81,6 +81,9 @@ namespace MinecraftClient
                     // Apply to all other operating systems.
                     Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
                 }
+
+                // Fix issue #2119
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             });
 
             ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
