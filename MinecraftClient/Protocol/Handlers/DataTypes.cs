@@ -46,6 +46,12 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
+        public void ReadDataReverse(Queue<byte> cache, Span<byte> dest)
+        {
+            for (int i = (dest.Length - 1); i >= 0; --i)
+                dest[i] = cache.Dequeue();
+        }
+
         /// <summary>
         /// Remove some data from the cache
         /// </summary>
