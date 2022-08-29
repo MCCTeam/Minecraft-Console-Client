@@ -554,12 +554,8 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     int dataSize = dataTypes.ReadNextVarInt(packetData); // Size
 
-                                    Parallel.Invoke(() =>
-                                    {
-                                        bool loaded = pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData, cancellationToken);
-                                        if (loaded)
-                                            Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
-                                    });
+                                    if (pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData, cancellationToken))
+                                        Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
 
                                     // Block Entity data: ignored
                                     // Light data: ignored
@@ -578,12 +574,9 @@ namespace MinecraftClient.Protocol.Handlers
                                         int compressedDataSize = dataTypes.ReadNextInt(packetData);
                                         byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
                                         byte[] decompressed = ZlibUtils.Decompress(compressed);
-                                        Parallel.Invoke(() =>
-                                        {
-                                            bool loaded = pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed), cancellationToken);
-                                            if (loaded)
-                                                Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
-                                        });
+
+                                        if (pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed), cancellationToken))
+                                            Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
                                     }
                                     else
                                     {
@@ -607,12 +600,9 @@ namespace MinecraftClient.Protocol.Handlers
                                             else dataTypes.DropData(1024 * 4, packetData); // Biomes - 1.15 and above
                                         }
                                         int dataSize = dataTypes.ReadNextVarInt(packetData);
-                                        Parallel.Invoke(() =>
-                                        {
-                                            bool loaded = pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData, cancellationToken);
-                                            if (loaded)
-                                                Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
-                                        });
+
+                                        if (pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData, cancellationToken))
+                                            Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
                                     }
                                 }
                             }

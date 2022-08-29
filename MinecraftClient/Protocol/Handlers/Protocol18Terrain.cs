@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 //using System.Linq;
@@ -69,6 +70,8 @@ namespace MinecraftClient.Protocol.Handlers
                 // Indirect Mode: For block states with bits per entry <= 4, 4 bits are used to represent a block.
                 if (bitsPerEntry < 4) bitsPerEntry = 4;
 
+                int entryPerLong = 64 / bitsPerEntry; // entryPerLong = sizeof(long) / bitsPerEntry
+
                 // Direct Mode: Bit mask covering bitsPerEntry bits
                 // EG, if bitsPerEntry = 5, valueMask = 00011111 in binary
                 uint valueMask = (uint)((1 << bitsPerEntry) - 1);
@@ -76,15 +79,16 @@ namespace MinecraftClient.Protocol.Handlers
                 int paletteLength = 0; // Assume zero when length is absent
                 if (usePalette) paletteLength = dataTypes.ReadNextVarInt(cache);
 
-                int[] palette = new int[paletteLength];
+                Span<uint> palette = paletteLength < 256 ? stackalloc uint[paletteLength] : new uint[paletteLength];
                 for (int i = 0; i < paletteLength; i++)
-                    palette[i] = dataTypes.ReadNextVarInt(cache);
+                    palette[i] = (uint)dataTypes.ReadNextVarInt(cache);
 
-                // Block IDs are packed in the array of 64-bits integers
-                ulong[] dataArray = dataTypes.ReadNextULongArray(cache);
+                //// Block IDs are packed in the array of 64-bits integers
+                dataTypes.SkipNextVarInt(cache);
+                Span<byte> entryDataByte = stackalloc byte[8];
+                dataTypes.ReadDataReverse(cache, entryDataByte); // read long
 
                 Chunk chunk = new();
-                int longIndex = 0;
                 int startOffset = 0 - bitsPerEntry;
                 for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                 {
@@ -103,12 +107,12 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 // When overlapping, move forward to the beginning of the next Long
                                 startOffset = 0;
-                                longIndex++;
+                                dataTypes.ReadDataReverse(cache, entryDataByte); // read long
                             }
 
                             // NOTICE: In the future a single ushort may not store the entire block id;
                             // the Block class may need to change if block state IDs go beyond 65535
-                            ushort blockId = (ushort)((dataArray[longIndex] >> startOffset) & valueMask);
+                            ushort blockId = (ushort)((MemoryMarshal.Read<long>(entryDataByte) >> startOffset) & valueMask);
 
                             // Map small IDs to actual larger block IDs
                             if (usePalette)
