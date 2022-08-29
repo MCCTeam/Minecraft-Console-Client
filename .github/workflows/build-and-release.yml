@@ -100,6 +100,15 @@ jobs:
         assetName: ${{ env.PROJECT }}-linux.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
+    - name: Linux ARM64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.linux-arm64-out-path }}linux.zip
+        assetName: ${{ env.PROJECT }}-linux-arm64.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
     - name: OSX Release
       uses: tix-factory/release-manager@v1
       with:
