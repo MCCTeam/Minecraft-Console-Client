@@ -105,7 +105,7 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         mode: uploadReleaseAsset
-        filePath: ${{ env.linux-arm64-out-path }}linux.zip
+        filePath: ${{ env.linux-arm64-out-path }}linux-arm64.zip
         assetName: ${{ env.PROJECT }}-linux-arm64.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
