@@ -23,6 +23,7 @@ jobs:
         echo win-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
         echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
         echo osx-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-x64/publish/ >> $GITHUB_ENV
+        echo linux-arm64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-arm64/publish/ >> $GITHUB_ENV
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v2.1.0
@@ -60,6 +61,13 @@ jobs:
       run: zip -qq -r linux.zip *
       working-directory: ${{ env.linux-out-path }}
 
+    - name: Build for ARM64 Linux
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r linux-arm64 ${{ env.compile-flags }}
+      
+    - name: Zip ARM64 Linux Build
+      run: zip -qq -r linux-arm64.zip *
+      working-directory: ${{ env.linux-arm64-out-path }}
+
     - name: Build for OSX
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r osx-x64 ${{ env.compile-flags }}
 
@@ -90,6 +98,15 @@ jobs:
         mode: uploadReleaseAsset
         filePath: ${{ env.linux-out-path }}linux.zip
         assetName: ${{ env.PROJECT }}-linux.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+
+    - name: Linux ARM64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.linux-arm64-out-path }}linux-arm64.zip
+        assetName: ${{ env.PROJECT }}-linux-arm64.zip
         tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
 
     - name: OSX Release
