@@ -183,7 +183,8 @@ namespace MinecraftClient
 
             bool retry = false;
             this.sessionid = sessionID;
-            this.uuid = new Guid(uuid);
+            if (!Guid.TryParse(uuid, out this.uuid))
+                this.uuid = Guid.Empty;
             this.uuidStr = uuid;
             this.username = user;
             this.host = server_ip;
