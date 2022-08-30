@@ -87,7 +87,7 @@ namespace MinecraftClient.Protocol.Handlers
                 //// Block IDs are packed in the array of 64-bits integers
                 dataTypes.SkipNextVarInt(cache); // Entry length
                 Span<byte> entryDataByte = stackalloc byte[8];
-                Span<long> entryDataLong = MemoryMarshal.Cast<byte, long>(entryDataByte);
+                Span<long> entryDataLong = MemoryMarshal.Cast<byte, long>(entryDataByte); // Faster than MemoryMarshal.Read<long>
 
                 Block[] blocks = new Block[Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ];
                 int startOffset = 64; // Read the first data immediately

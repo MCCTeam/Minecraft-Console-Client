@@ -97,7 +97,5 @@ namespace MinecraftClient.Protocol.Session
 
             return session;
         }
-
-
     }
 }

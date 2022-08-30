@@ -263,39 +263,27 @@ namespace MinecraftClient
                 try
                 {
                     string[] Lines = File.ReadAllLines(file);
-
-                    ConcurrentDictionary<int, Section> sectionInfo = new();
-                    Parallel.For(0, Lines.Length, idx =>
-                    {
-                        string line = Lines[idx].Split('#')[0].Trim();
-                        if (line.Length > 2 && line[0] == '[' && line[^1] == ']')
-                            sectionInfo[idx] = GetSection(line[1..^1]);
-                    });
-
                     Section section = Section.Default;
-                    for (int idx = 0; idx < Lines.Length; ++idx)
+                    foreach (string lineRAW in Lines)
                     {
-                        if (sectionInfo.ContainsKey(idx))
-                        {
-                            section = sectionInfo[idx];
-                            continue;
-                        }
+                        string line = lineRAW.Split('#')[0].Trim();
 
-                        Parallel.Invoke(() =>
+                        if (line.Length > 1)
                         {
-                            string line = Lines[idx].Split('#')[0].Trim();
-                            if (line.Length > 1)
+                            if (line.Length > 2 && line[0] == '[' && line[^1] == ']')
+                                section = GetSection(line[1..^1]);
+                            else
                             {
                                 string argName = line.Split('=')[0];
                                 if (section == Section.Main && argName == "password")
-                                    line = Lines[idx].Trim(); //Do not strip # in passwords
+                                    line = lineRAW.Trim(); //Do not strip # in passwords
                                 if (line.Length > (argName.Length + 1))
                                 {
                                     string argValue = line[(argName.Length + 1)..];
                                     LoadSingleSetting(section, argName, argValue);
                                 }
                             }
-                        });
+                        }
                     }
                 }
                 catch (IOException) { }
