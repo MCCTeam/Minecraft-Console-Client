@@ -148,13 +148,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="verticalStripBitmask">Chunk mask for reading data, store in bitset, used in 1.17 and 1.17.1</param>
         /// <param name="cache">Cache for reading chunk data</param>
         /// <param name="cancellationToken">token to cancel the task</param>
-        /// <returns>true if successfully loaded</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public bool ProcessChunkColumnData(int chunkX, int chunkZ, ulong[]? verticalStripBitmask, Queue<byte> cache, CancellationToken cancellationToken)
+        public void ProcessChunkColumnData(int chunkX, int chunkZ, ulong[]? verticalStripBitmask, Queue<byte> cache)
         {
-            if (cancellationToken.IsCancellationRequested)
-                return false;
-
             World world = handler.GetWorld();
 
             int chunkColumnSize = (World.GetDimension().height + 15) / 16; // Round up
@@ -184,9 +180,6 @@ namespace MinecraftClient.Protocol.Handlers
                         lastChunkY = chunkColumnSize - 1;
                     }
 
-                    if (cancellationToken.IsCancellationRequested)
-                        return false;
-
                     // 1.18 and above always contains all chunk section in data
                     // 1.17 and 1.17.1 need vertical strip bitmask to know if the chunk section is included
                     if ((protocolversion >= Protocol18Handler.MC_1_18_1_Version) || 
@@ -197,10 +190,6 @@ namespace MinecraftClient.Protocol.Handlers
 
                         // Read Block states (Type: Paletted Container)
                         Chunk? chunk = ReadBlockStatesField(cache);
-
-                        // check before store chunk
-                        if (cancellationToken.IsCancellationRequested)
-                            return false;
 
                         //We have our chunk, save the chunk into the world
                         handler.InvokeOnMainThread(() =>
@@ -235,7 +224,6 @@ namespace MinecraftClient.Protocol.Handlers
                 // Don't worry about skipping remaining data since there is no useful data afterwards in 1.9
                 // (plus, it would require parsing the tile entity lists' NBT)
             }
-            return true;
         }
 
         /// <summary>
@@ -250,13 +238,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="currentDimension">Current dimension type (0 = overworld)</param>
         /// <param name="cache">Cache for reading chunk data</param>
         /// <param name="cancellationToken">token to cancel the task</param>
-        /// <returns>true if successfully loaded</returns>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public bool ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache, CancellationToken cancellationToken)
+        public void ProcessChunkColumnData(int chunkX, int chunkZ, ushort chunkMask, ushort chunkMask2, bool hasSkyLight, bool chunksContinuous, int currentDimension, Queue<byte> cache)
         {
-            if (cancellationToken.IsCancellationRequested)
-                return false;
-
             World world = handler.GetWorld();
 
             const int chunkColumnSize = 16;
@@ -267,9 +251,6 @@ namespace MinecraftClient.Protocol.Handlers
                 int maxChunkY = sizeof(int) * 8 - 1 - BitOperations.LeadingZeroCount(chunkMask);
                 for (int chunkY = 0; chunkY <= maxChunkY; chunkY++)
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                        return false;
-
                     if ((chunkMask & (1 << chunkY)) != 0)
                     {
                         // 1.14 and above Non-air block count inside chunk section, for lighting purposes
@@ -385,10 +366,6 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                         }
 
-                        // check before store chunk
-                        if (cancellationToken.IsCancellationRequested)
-                            return false;
-
                         //We have our chunk, save the chunk into the world
                         handler.InvokeOnMainThread(() =>
                         {
@@ -429,9 +406,6 @@ namespace MinecraftClient.Protocol.Handlers
                     int maxChunkY = sizeof(int) * 8 - 1 - BitOperations.LeadingZeroCount(chunkMask);
                     for (int chunkY = 0; chunkY <= maxChunkY; chunkY++)
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                            return false;
-
                         if ((chunkMask & (1 << chunkY)) != 0)
                         {
                             Chunk chunk = new Chunk();
@@ -442,10 +416,6 @@ namespace MinecraftClient.Protocol.Handlers
                                 for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                                     for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
                                         chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(queue.Dequeue()));
-
-                            // check before store chunk
-                            if (cancellationToken.IsCancellationRequested)
-                                return false;
 
                             //We have our chunk, save the chunk into the world
                             handler.InvokeOnMainThread(() =>
@@ -530,10 +500,6 @@ namespace MinecraftClient.Protocol.Handlers
                                     for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
                                         chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(blockTypes.Dequeue(), blockMeta.Dequeue()));
 
-                            // check before store chunk
-                            if (cancellationToken.IsCancellationRequested)
-                                return false;
-
                             handler.InvokeOnMainThread(() =>
                             {
                                 world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
@@ -542,7 +508,6 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
             }
-            return true;
         }
     }
 }

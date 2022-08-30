@@ -29,7 +29,6 @@ namespace MinecraftClient.Protocol
         PlayerInfo? GetPlayerInfo(Guid uuid);
         Location GetCurrentLocation();
         World GetWorld();
-        public System.Threading.CancellationToken GetChunkProcessCancelToken();
         bool GetIsSupportPreviewsChat();
         bool GetTerrainEnabled();
         bool SetTerrainEnabled(bool enabled);
