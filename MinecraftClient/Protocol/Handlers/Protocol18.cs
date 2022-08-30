@@ -188,14 +188,7 @@ namespace MinecraftClient.Protocol.Handlers
                     while (packetQueue.TryTake(out Tuple<int, Queue<byte>>? packetInfo))
                     {
                         (int packetID, Queue<byte> packetData) = packetInfo;
-
                         HandlePacket(packetID, packetData);
-
-                        if (handler.GetNetworkPacketCaptureEnabled())
-                        {
-                            List<byte> clone = packetData.ToList();
-                            handler.OnNetworkPacket(packetID, clone, login_phase, true);
-                        }
 
                         stopWatch.Stop();
                         if (stopWatch.Elapsed.Milliseconds >= 100)
