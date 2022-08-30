@@ -86,9 +86,10 @@ namespace MinecraftClient.Protocol.Handlers
                 //// Block IDs are packed in the array of 64-bits integers
                 dataTypes.SkipNextVarInt(cache);
                 Span<byte> entryDataByte = stackalloc byte[8];
+                Span<long> entryDataLong = MemoryMarshal.Cast<byte, long>(entryDataByte);
                 dataTypes.ReadDataReverse(cache, entryDataByte); // read long
 
-                Chunk chunk = new();
+                Block[] blocks = new Block[Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ];
                 int startOffset = 0 - bitsPerEntry;
                 for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                 {
@@ -112,7 +113,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                             // NOTICE: In the future a single ushort may not store the entire block id;
                             // the Block class may need to change if block state IDs go beyond 65535
-                            ushort blockId = (ushort)((MemoryMarshal.Read<long>(entryDataByte) >> startOffset) & valueMask);
+                            uint blockId = (uint)(entryDataLong[0] >> startOffset) & valueMask;
 
                             // Map small IDs to actual larger block IDs
                             if (usePalette)
@@ -127,15 +128,17 @@ namespace MinecraftClient.Protocol.Handlers
                                         blockNumber));
                                 }
 
-                                blockId = (ushort)palette[blockId];
+                                blockId = palette[(int)blockId];
                             }
 
+                            Block block = new((ushort)blockId);
+
                             // We have our block, save the block into the chunk
-                            chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(blockId));
+                            blocks[(blockY << 8) | (blockZ << 4) | blockX] = block;
                         }
                     }
                 }
-                return chunk;
+                return new Chunk(blocks);
             }
         }
 

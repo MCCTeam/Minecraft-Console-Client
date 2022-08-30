@@ -46,6 +46,12 @@ namespace MinecraftClient.Protocol.Handlers
             return result;
         }
 
+        /// <summary>
+        /// Read some data from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        /// <param name="dest">Storage results</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public void ReadDataReverse(Queue<byte> cache, Span<byte> dest)
         {
             for (int i = (dest.Length - 1); i >= 0; --i)
