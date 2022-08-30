@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using MinecraftClient.Protocol.Keys;
 using System.Text.RegularExpressions;
 using MinecraftClient.Protocol.Session;
+using System.Collections.Concurrent;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -65,6 +66,7 @@ namespace MinecraftClient.Protocol.Handlers
         private bool login_phase = true;
         private int protocolversion;
         private int currentDimension;
+        private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
 
         Protocol18Forge pForge;
         Protocol18Terrain pTerrain;
@@ -211,22 +213,46 @@ namespace MinecraftClient.Protocol.Handlers
         private bool Update()
         {
             handler.OnUpdate();
-            if (!socketWrapper.IsConnected())
+
+            if (packetQueue.IsAddingCompleted)
                 return false;
-            try
+
+            while (packetQueue.TryTake(out Tuple<int, Queue<byte>>? packetInfo))
             {
-                while (socketWrapper.HasDataAvailable())
+                (int packetID, Queue<byte> packetData) = packetInfo;
+
+                HandlePacket(packetID, packetData);
+
+                if (handler.GetNetworkPacketCaptureEnabled())
                 {
-                    int packetID = 0;
-                    Queue<byte> packetData = ReadNextPacket(ref packetID);
-                    HandlePacket(packetID, packetData);
+                    List<byte> clone = packetData.ToList();
+                    handler.OnNetworkPacket(packetID, clone, login_phase, true);
                 }
             }
-            catch (System.IO.IOException) { return false; }
-            catch (SocketException) { return false; }
-            catch (NullReferenceException) { return false; }
-            catch (Ionic.Zlib.ZlibException) { return false; }
+
             return true;
+        }
+
+        /// <summary>
+        /// Read and decompress packets.
+        /// </summary>
+        internal void PacketReader()
+        {
+            while (socketWrapper.IsConnected())
+            {
+                try
+                {
+                    while (socketWrapper.HasDataAvailable())
+                        packetQueue.Add(ReadNextPacket());
+                }
+                catch (System.IO.IOException) { break; }
+                catch (SocketException) { break; }
+                catch (NullReferenceException) { break; }
+                catch (Ionic.Zlib.ZlibException) { break; }
+
+                Thread.Sleep(10);
+            }
+            packetQueue.CompleteAdding();
         }
 
         /// <summary>
@@ -234,7 +260,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="packetID">will contain packet ID</param>
         /// <param name="packetData">will contain raw packet Data</param>
-        internal Queue<byte> ReadNextPacket(ref int packetID)
+        internal Tuple<int, Queue<byte>> ReadNextPacket()
         {
             int size = dataTypes.ReadNextVarIntRAW(socketWrapper); //Packet size
             Queue<byte> packetData = new(socketWrapper.ReadDataRAW(size)); //Packet contents
@@ -252,7 +278,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
             }
 
-            packetID = dataTypes.ReadNextVarInt(packetData); //Packet ID
+            int packetID = dataTypes.ReadNextVarInt(packetData); //Packet ID
 
             if (handler.GetNetworkPacketCaptureEnabled())
             {
@@ -260,7 +286,7 @@ namespace MinecraftClient.Protocol.Handlers
                 handler.OnNetworkPacket(packetID, clone, login_phase, true);
             }
 
-            return packetData;
+            return new(packetID, packetData);
         }
 
         /// <summary>
@@ -1447,6 +1473,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         private void StartUpdating()
         {
+            new Thread(new ThreadStart(PacketReader)).Start();
 
             netRead = new Tuple<Thread, CancellationTokenSource>(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
             netRead.Item1.Name = "ProtocolPacketHandler";
@@ -1552,10 +1579,9 @@ namespace MinecraftClient.Protocol.Handlers
             }
             SendPacket(0x00, fullLoginPacket);
 
-            int packetID = -1;
             while (true)
             {
-                Queue<byte> packetData = ReadNextPacket(ref packetID);
+                (int packetID, Queue<byte> packetData) = ReadNextPacket();
                 if (packetID == 0x00) //Login rejected
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, ChatParser.ParseText(dataTypes.ReadNextString(packetData)));
@@ -1660,8 +1686,7 @@ namespace MinecraftClient.Protocol.Handlers
             int loopPrevention = UInt16.MaxValue;
             while (true)
             {
-                int packetID = -1;
-                Queue<byte> packetData = ReadNextPacket(ref packetID);
+                (int packetID, Queue<byte> packetData) = ReadNextPacket();
                 if (packetID < 0 || loopPrevention-- < 0) // Failed to read packet or too many iterations (issue #1150)
                 {
                     handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.invalid_encrypt"));

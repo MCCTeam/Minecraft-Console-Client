@@ -171,7 +171,6 @@ namespace Ionic.Zlib
 
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         private void finish()
         {
             if (_z == null) return;
@@ -301,7 +300,6 @@ namespace Ionic.Zlib
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public override void Close()
         {
             if (_stream == null) return;
@@ -416,7 +414,6 @@ namespace Ionic.Zlib
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public override System.Int32 Read(System.Byte[] buffer, System.Int32 offset, System.Int32 count)
         {
             // According to MS documentation, any implementation of the IO.Stream.Read function must:
