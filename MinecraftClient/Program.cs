@@ -52,21 +52,6 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
-            //Setup ConsoleIO
-            ConsoleIO.LogPrefix = "§8[MCC] ";
-            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
-            {
-                if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
-                {
-                    ConsoleIO.BasicIO_NoColor = true;
-                }
-                ConsoleIO.BasicIO = true;
-                args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
-            }
-
-            if (!ConsoleIO.BasicIO)
-                ConsoleInteractive.ConsoleWriter.Init();
-
             Task.Factory.StartNew(() =>
             {
                 //Take advantage of Windows 10 / Mac / Linux UTF-8 console
@@ -85,6 +70,21 @@ namespace MinecraftClient
                 // Fix issue #2119
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             });
+
+            //Setup ConsoleIO
+            ConsoleIO.LogPrefix = "§8[MCC] ";
+            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
+            {
+                if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
+                {
+                    ConsoleIO.BasicIO_NoColor = true;
+                }
+                ConsoleIO.BasicIO = true;
+                args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
+            }
+
+            if (!ConsoleIO.BasicIO)
+                ConsoleInteractive.ConsoleWriter.Init();
 
             ConsoleIO.WriteLine($"Minecraft Console Client v{Version} - for MC {MCLowestVersion} to {MCHighestVersion} - Github.com/MCCTeam");
 
