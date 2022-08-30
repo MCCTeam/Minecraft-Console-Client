@@ -39,7 +39,7 @@ namespace MinecraftClient.Mapping
                 if (blockZ < 0 || blockZ >= SizeZ)
                     throw new ArgumentOutOfRangeException("blockZ", "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
 
-                return blocks[blockX, blockY, blockZ];
+                return blocks[blockY, blockZ, blockX];
             }
             set
             {
@@ -50,7 +50,7 @@ namespace MinecraftClient.Mapping
                 if (blockZ < 0 || blockZ >= SizeZ)
                     throw new ArgumentOutOfRangeException("blockZ", "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
 
-                blocks[blockX, blockY, blockZ] = value;
+                blocks[blockY, blockZ, blockX] = value;
             }
         }
 
@@ -64,7 +64,7 @@ namespace MinecraftClient.Mapping
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public void SetWithoutCheck(int blockX, int blockY, int blockZ, Block block)
         {
-            blocks[blockX, blockY, blockZ] = block;
+            blocks[blockY, blockZ, blockX] = block;
         }
 
         /// <summary>
