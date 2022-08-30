@@ -70,7 +70,7 @@ namespace MinecraftClient.ChatBots
 
         public static MessageFilter str2filter(string filtername)
         {
-            switch (filtername.ToLower())
+            switch (Settings.ToLowerIfNeed(filtername))
             {
                 case "all": return MessageFilter.AllText;
                 case "messages": return MessageFilter.AllMessages;

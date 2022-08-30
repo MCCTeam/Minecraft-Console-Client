@@ -20,8 +20,8 @@ namespace MinecraftClient.Protocol.Keys
         {
             PublicKey = keyPublic;
             PrivateKey = keyPrivate;
-            ExpiresAt = DateTime.Parse(expiresAt).ToUniversalTime();
-            RefreshedAfter = DateTime.Parse(refreshedAfter).ToUniversalTime();
+            ExpiresAt = DateTime.ParseExact(expiresAt, "yyyy-MM-ddTHH:mm:ss.fffffffZ", System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
+            RefreshedAfter = DateTime.ParseExact(refreshedAfter, "yyyy-MM-ddTHH:mm:ss.fffffffZ", System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
         }
 
         public bool NeedRefresh()

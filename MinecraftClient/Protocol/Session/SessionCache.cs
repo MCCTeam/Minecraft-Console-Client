@@ -148,7 +148,7 @@ namespace MinecraftClient.Protocol.Session
                                 && sessionItem.ContainsKey("username")
                                 && sessionItem.ContainsKey("uuid"))
                             {
-                                string login = sessionItem["username"].StringValue.ToLower();
+                                string login = Settings.ToLowerIfNeed(sessionItem["username"].StringValue);
                                 try
                                 {
                                     SessionToken session = SessionToken.FromString(String.Join(",",
@@ -214,7 +214,7 @@ namespace MinecraftClient.Protocol.Session
                             {
                                 try
                                 {
-                                    string login = keyValue[0].ToLower();
+                                    string login = Settings.ToLowerIfNeed(keyValue[0]);
                                     SessionToken session = SessionToken.FromString(keyValue[1]);
                                     if (Settings.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", login, session.ID));
