@@ -55,12 +55,13 @@ namespace MinecraftClient.Protocol.Handlers
                 if (block.Type == Material.Air)
                     return null;
 
-                Chunk chunk = new();
+                // Warning: If you need to support modification of block data, you need to create 4096 objects here
+                Block[] blocks = new Block[Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ];
                 for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                     for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                         for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                            chunk.SetWithoutCheck(blockX, blockY, blockZ, block);
-                return chunk;
+                            blocks[(blockY << 8) | (blockZ << 4) | blockX] = block;
+                return new Chunk(blocks);
             }
             else
             {
@@ -84,13 +85,12 @@ namespace MinecraftClient.Protocol.Handlers
                     palette[i] = (uint)dataTypes.ReadNextVarInt(cache);
 
                 //// Block IDs are packed in the array of 64-bits integers
-                dataTypes.SkipNextVarInt(cache);
+                dataTypes.SkipNextVarInt(cache); // Entry length
                 Span<byte> entryDataByte = stackalloc byte[8];
                 Span<long> entryDataLong = MemoryMarshal.Cast<byte, long>(entryDataByte);
-                dataTypes.ReadDataReverse(cache, entryDataByte); // read long
 
                 Block[] blocks = new Block[Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ];
-                int startOffset = 0 - bitsPerEntry;
+                int startOffset = 64; // Read the first data immediately
                 for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                 {
                     for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
@@ -98,21 +98,17 @@ namespace MinecraftClient.Protocol.Handlers
                         for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
                         {
                             // Calculate location of next block ID inside the array of Longs
-                            startOffset += bitsPerEntry;
-
-                            if ((startOffset + bitsPerEntry) > 64)
+                            if ((startOffset += bitsPerEntry) > (64 - bitsPerEntry))
                             {
                                 // In MC 1.16+, padding is applied to prevent overlapping between Longs:
-                                // [      LONG INTEGER      ][      LONG INTEGER      ]
-                                // [Block][Block][Block]XXXXX[Block][Block][Block]XXXXX
+                                // [     LONG INTEGER     ][     LONG INTEGER     ]
+                                // [Block][Block][Block]XXX[Block][Block][Block]XXX
 
                                 // When overlapping, move forward to the beginning of the next Long
                                 startOffset = 0;
                                 dataTypes.ReadDataReverse(cache, entryDataByte); // read long
                             }
 
-                            // NOTICE: In the future a single ushort may not store the entire block id;
-                            // the Block class may need to change if block state IDs go beyond 65535
                             uint blockId = (uint)(entryDataLong[0] >> startOffset) & valueMask;
 
                             // Map small IDs to actual larger block IDs
@@ -131,6 +127,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 blockId = palette[(int)blockId];
                             }
 
+                            // NOTICE: In the future a single ushort may not store the entire block id;
+                            // the Block class may need to change if block state IDs go beyond 65535
                             Block block = new((ushort)blockId);
 
                             // We have our block, save the block into the chunk
