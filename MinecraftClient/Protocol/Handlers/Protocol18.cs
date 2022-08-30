@@ -538,8 +538,6 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.ChunkData:
                             if (handler.GetTerrainEnabled())
                             {
-                                CancellationToken cancellationToken = handler.GetChunkProcessCancelToken();
-
                                 Interlocked.Increment(ref handler.GetWorld().chunkCnt);
                                 Interlocked.Increment(ref handler.GetWorld().chunkLoadNotCompleted);
 
@@ -563,8 +561,8 @@ namespace MinecraftClient.Protocol.Handlers
 
                                     int dataSize = dataTypes.ReadNextVarInt(packetData); // Size
 
-                                    if (pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData, cancellationToken))
-                                        Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
+                                    pTerrain.ProcessChunkColumnData(chunkX, chunkZ, verticalStripBitmask, packetData);
+                                    Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
 
                                     // Block Entity data: ignored
                                     // Light data: ignored
@@ -584,8 +582,8 @@ namespace MinecraftClient.Protocol.Handlers
                                         byte[] compressed = dataTypes.ReadData(compressedDataSize, packetData);
                                         byte[] decompressed = ZlibUtils.Decompress(compressed);
 
-                                        if (pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed), cancellationToken))
-                                            Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
+                                        pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, addBitmap, currentDimension == 0, chunksContinuous, currentDimension, new Queue<byte>(decompressed));
+                                        Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
                                     }
                                     else
                                     {
@@ -610,8 +608,8 @@ namespace MinecraftClient.Protocol.Handlers
                                         }
                                         int dataSize = dataTypes.ReadNextVarInt(packetData);
 
-                                        if (pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData, cancellationToken))
-                                            Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
+                                        pTerrain.ProcessChunkColumnData(chunkX, chunkZ, chunkMask, 0, false, chunksContinuous, currentDimension, packetData);
+                                        Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
                                     }
                                 }
                             }
@@ -829,8 +827,6 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.MapChunkBulk:
                             if (protocolversion < MC_1_9_Version && handler.GetTerrainEnabled())
                             {
-                                CancellationToken cancellationToken = handler.GetChunkProcessCancelToken();
-
                                 int chunkCount;
                                 bool hasSkyLight;
                                 Queue<byte> chunkData = packetData;
@@ -867,17 +863,11 @@ namespace MinecraftClient.Protocol.Handlers
                                 }
 
                                 //Process chunk records
-                                Parallel.Invoke(() =>
+                                for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
                                 {
-                                    for (int chunkColumnNo = 0; chunkColumnNo < chunkCount; chunkColumnNo++)
-                                    {
-                                        if (cancellationToken.IsCancellationRequested)
-                                            break;
-                                        bool loaded = pTerrain.ProcessChunkColumnData(chunkXs[chunkColumnNo], chunkZs[chunkColumnNo], chunkMasks[chunkColumnNo], addBitmaps[chunkColumnNo], hasSkyLight, true, currentDimension, chunkData, cancellationToken);
-                                        if (loaded)
-                                            Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
-                                    }
-                                });
+                                    pTerrain.ProcessChunkColumnData(chunkXs[chunkColumnNo], chunkZs[chunkColumnNo], chunkMasks[chunkColumnNo], addBitmaps[chunkColumnNo], hasSkyLight, true, currentDimension, chunkData);
+                                    Interlocked.Decrement(ref handler.GetWorld().chunkLoadNotCompleted);
+                                }
 
                             }
                             break;
