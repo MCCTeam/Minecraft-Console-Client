@@ -19,7 +19,17 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Blocks contained into the chunk
         /// </summary>
-        private readonly Block[,,] blocks = new Block[SizeX, SizeY, SizeZ];
+        private readonly Block[] blocks;
+
+        public Chunk()
+        {
+            this.blocks = new Block[SizeY * SizeZ * SizeX];
+        }
+
+        public Chunk(Block[] blocks)
+        {
+            this.blocks = blocks;
+        }
 
         /// <summary>
         /// Read, or set the specified block
@@ -39,7 +49,7 @@ namespace MinecraftClient.Mapping
                 if (blockZ < 0 || blockZ >= SizeZ)
                     throw new ArgumentOutOfRangeException("blockZ", "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
 
-                return blocks[blockY, blockZ, blockX];
+                return blocks[(blockY << 8) | (blockZ << 4) | blockX];
             }
             set
             {
@@ -50,7 +60,7 @@ namespace MinecraftClient.Mapping
                 if (blockZ < 0 || blockZ >= SizeZ)
                     throw new ArgumentOutOfRangeException("blockZ", "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
 
-                blocks[blockY, blockZ, blockX] = value;
+                blocks[(blockY << 8) | (blockZ << 4) | blockX] = value;
             }
         }
 
@@ -64,7 +74,7 @@ namespace MinecraftClient.Mapping
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public void SetWithoutCheck(int blockX, int blockY, int blockZ, Block block)
         {
-            blocks[blockY, blockZ, blockX] = block;
+            blocks[(blockY << 8) | (blockZ << 4) | blockX] = block;
         }
 
         /// <summary>
