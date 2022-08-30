@@ -172,27 +172,44 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         private void Updater(object? o)
         {
-
             if (((CancellationToken)o!).IsCancellationRequested)
                 return;
 
             try
             {
-
-                bool keepUpdating = true;
-                Stopwatch stopWatch = new Stopwatch();
-                while (keepUpdating)
+                Stopwatch stopWatch = new();
+                while (!packetQueue.IsAddingCompleted)
                 {
-
                     ((CancellationToken)o!).ThrowIfCancellationRequested();
 
+                    handler.OnUpdate();
+
                     stopWatch.Start();
-                    keepUpdating = Update();
+                    while (packetQueue.TryTake(out Tuple<int, Queue<byte>>? packetInfo))
+                    {
+                        (int packetID, Queue<byte> packetData) = packetInfo;
+
+                        HandlePacket(packetID, packetData);
+
+                        if (handler.GetNetworkPacketCaptureEnabled())
+                        {
+                            List<byte> clone = packetData.ToList();
+                            handler.OnNetworkPacket(packetID, clone, login_phase, true);
+                        }
+
+                        stopWatch.Stop();
+                        if (stopWatch.Elapsed.Milliseconds >= 100)
+                        {
+                            stopWatch.Reset();
+                            handler.OnUpdate();
+                        }
+                        stopWatch.Start();
+                    }
                     stopWatch.Stop();
-                    int elapsed = stopWatch.Elapsed.Milliseconds;
+
+                    if (stopWatch.Elapsed.Milliseconds < 100)
+                        Thread.Sleep(100 - stopWatch.Elapsed.Milliseconds);
                     stopWatch.Reset();
-                    if (elapsed < 100)
-                        Thread.Sleep(100 - elapsed);
                 }
             }
             catch (System.IO.IOException) { }
@@ -204,33 +221,6 @@ namespace MinecraftClient.Protocol.Handlers
                 return;
 
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
-        }
-
-        /// <summary>
-        /// Read data from the network. Should be called on a separate thread.
-        /// </summary>
-        /// <returns>FALSE if an error occured, TRUE otherwise.</returns>
-        private bool Update()
-        {
-            handler.OnUpdate();
-
-            if (packetQueue.IsAddingCompleted)
-                return false;
-
-            while (packetQueue.TryTake(out Tuple<int, Queue<byte>>? packetInfo))
-            {
-                (int packetID, Queue<byte> packetData) = packetInfo;
-
-                HandlePacket(packetID, packetData);
-
-                if (handler.GetNetworkPacketCaptureEnabled())
-                {
-                    List<byte> clone = packetData.ToList();
-                    handler.OnNetworkPacket(packetID, clone, login_phase, true);
-                }
-            }
-
-            return true;
         }
 
         /// <summary>
