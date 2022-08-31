@@ -71,7 +71,7 @@ namespace MinecraftClient
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
                 // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
-                // _ = "a".ToLower();
+                _ = "a".ToLower();
             }).Start();
 
             //Setup ConsoleIO
@@ -497,11 +497,8 @@ namespace MinecraftClient
                     try
                     {
                         //Start the main TCP client
-                        if (Settings.SingleCommand != "")
-                        {
-                            client = new McClient(session, playerKeyPair, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
-                        }
-                        else client = new McClient(session, playerKeyPair, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
+                        string? command = String.IsNullOrEmpty(Settings.SingleCommand) ? null : Settings.SingleCommand;
+                        client = new McClient(session, playerKeyPair, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, command);
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")

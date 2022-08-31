@@ -112,7 +112,7 @@ namespace MinecraftClient
         public int GetSequenceId() { return sequenceId; }
         public float GetPitch() { return playerPitch; }
         public World GetWorld() { return world; }
-        public Double GetServerTPS() { return averageTPS; }
+        public double GetServerTPS() { return averageTPS; }
         public bool GetIsSupportPreviewsChat() { return isSupportPreviewsChat; }
         public float GetHealth() { return playerHealth; }
         public int GetSaturation() { return playerFoodSaturation; }
@@ -134,46 +134,16 @@ namespace MinecraftClient
         public ILogger Log;
 
         /// <summary>
-        /// Starts the main chat client
-        /// </summary>
-        /// <param name="username">The chosen username of a premium Minecraft Account</param>
-        /// <param name="uuid">The player's UUID for online-mode authentication</param>
-        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
-        /// <param name="server_ip">The server IP</param>
-        /// <param name="port">The server port to use</param>
-        /// <param name="protocolversion">Minecraft protocol version to use</param>
-        public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
-        {
-            StartClient(session, playerKeyPair, server_ip, port, protocolversion, forgeInfo, false, "");
-        }
-
-        /// <summary>
-        /// Starts the main chat client in single command sending mode
-        /// </summary>
-        /// <param name="username">The chosen username of a premium Minecraft Account</param>
-        /// <param name="uuid">The player's UUID for online-mode authentication</param>
-        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
-        /// <param name="server_ip">The server IP</param>
-        /// <param name="port">The server port to use</param>
-        /// <param name="protocolversion">Minecraft protocol version to use</param>
-        /// <param name="command">The text or command to send.</param>
-        public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
-        {
-            StartClient(session, playerKeyPair, server_ip, port, protocolversion, forgeInfo, true, command);
-        }
-
-        /// <summary>
         /// Starts the main chat client, wich will login to the server using the MinecraftCom class.
         /// </summary>
-        /// <param name="user">The chosen username of a premium Minecraft Account</param>
-        /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
+        /// <param name="session">A valid session obtained with MinecraftCom.GetLogin()</param>
+        /// <param name="playerKeyPair">Key for message signing</param>
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        /// <param name="uuid">The player's UUID for online-mode authentication</param>
-        /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
+        /// <param name="forgeInfo">ForgeInfo item stating that Forge is enabled</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-        private void StartClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
+        public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo, string? command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;
@@ -197,7 +167,7 @@ namespace MinecraftClient
             Log.WarnEnabled = Settings.WarningMessages;
             Log.ErrorEnabled = Settings.ErrorMessages;
 
-            if (!singlecommand)
+            if (command == null)
             {
                 /* Load commands from Commands namespace */
                 LoadCommands();
@@ -234,7 +204,7 @@ namespace MinecraftClient
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Log.Info(Translations.Get("mcc.version_supported"));
 
-                if (!singlecommand)
+                if (command == null)
                 {
                     timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
                     timeoutdetector.Item1.Name = "MCC Connection timeout detector";
@@ -245,7 +215,7 @@ namespace MinecraftClient
                 {
                     if (handler.Login(this.playerKeyPair, session))
                     {
-                        if (singlecommand)
+                        if (command != null)
                         {
                             handler.SendChatMessage(command, playerKeyPair);
                             Log.Info(Translations.Get("mcc.single_cmd", command));
@@ -301,7 +271,7 @@ namespace MinecraftClient
                     ReconnectionAttemptsLeft--;
                     Program.Restart();
                 }
-                else if (!singlecommand && Settings.interactiveMode)
+                else if (command == null && Settings.interactiveMode)
                 {
                     ConsoleInteractive.ConsoleReader.StopReadThread();
                     ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
