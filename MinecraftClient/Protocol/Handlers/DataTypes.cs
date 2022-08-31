@@ -191,12 +191,12 @@ namespace MinecraftClient.Protocol.Handlers
                 y = (int)((locEncoded >> 26) & 0xFFF);
                 z = (int)(locEncoded << 38 >> 38);
             }
-            if (x >= 33554432)
-                x -= 67108864;
-            if (y >= 2048)
-                y -= 4096;
-            if (z >= 33554432)
-                z -= 67108864;
+            if (x >= 0x02000000) // 33,554,432
+                x -= 0x04000000; // 67,108,864
+            if (y >= 0x00000800) // 2048
+                y -= 0x00001000; // 4096
+            if (z >= 0x02000000) // 33,554,432
+                z -= 0x04000000; // 67,108,864
             return new Location(x, y, z);
         }
 
