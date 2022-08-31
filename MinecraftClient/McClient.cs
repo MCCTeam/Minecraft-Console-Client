@@ -282,6 +282,20 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Retrieve messages from the queue and send.
+        /// Note: requires external locking.
+        /// </summary>
+        private void TrySendMessageToServer()
+        {
+            while (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
+            {
+                string text = chatQueue.Dequeue();
+                handler.SendChatMessage(text, playerKeyPair);
+                nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
+            }
+        }
+
+        /// <summary>
         /// Called ~10 times per second by the protocol handler
         /// </summary>
         public void OnUpdate()
@@ -295,22 +309,16 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (!(e is ThreadAbortException))
-                    {
+                    if (e is not ThreadAbortException)
                         Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
+                    else 
+                        throw; //ThreadAbortException should not be caught
                 }
             }
 
             lock (chatQueue)
             {
-                if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
-                {
-                    string text = chatQueue.Dequeue();
-                    handler.SendChatMessage(text, playerKeyPair);
-                    nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
-                }
+                TrySendMessageToServer();
             }
 
             if (terrainAndMovementsEnabled && locationReceived)
@@ -539,7 +547,7 @@ namespace MinecraftClient
             if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
             {
                 //Process a request from the GUI
-                string[] command = text.Substring(1).Split((char)0x00);
+                string[] command = text[1..].Split((char)0x00);
                 switch (command[0].ToLower())
                 {
                     case "autocomplete":
@@ -1148,6 +1156,7 @@ namespace MinecraftClient
                     }
                 }
                 else chatQueue.Enqueue(text);
+                TrySendMessageToServer();
             }
         }
 

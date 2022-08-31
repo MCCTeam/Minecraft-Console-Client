@@ -229,13 +229,21 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 try
                 {
-                    while (socketWrapper.HasDataAvailable() && !cancelToken.IsCancellationRequested)
+                    while (socketWrapper.HasDataAvailable())
+                    {
                         packetQueue.Add(ReadNextPacket());
+
+                        if (cancelToken.IsCancellationRequested)
+                            break;
+                    }
                 }
                 catch (System.IO.IOException) { break; }
                 catch (SocketException) { break; }
                 catch (NullReferenceException) { break; }
                 catch (Ionic.Zlib.ZlibException) { break; }
+
+                if (cancelToken.IsCancellationRequested)
+                    break;
 
                 Thread.Sleep(10);
             }
