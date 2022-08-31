@@ -14,14 +14,14 @@ namespace MinecraftClient.Protocol.Keys
 
         public DateTime RefreshedAfter; // Todo: add a timer
 
-        private const string DataTimeFormat = "O";
+        private const string DataTimeFormat = "yyyy-MM-ddTHH:mm:ss.ffffffZ";
 
         public PlayerKeyPair(PublicKey keyPublic, PrivateKey keyPrivate, string expiresAt, string refreshedAfter)
         {
             PublicKey = keyPublic;
             PrivateKey = keyPrivate;
-            ExpiresAt = DateTime.ParseExact(expiresAt, "yyyy-MM-ddTHH:mm:ss.fffffffZ", System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
-            RefreshedAfter = DateTime.ParseExact(refreshedAfter, "yyyy-MM-ddTHH:mm:ss.fffffffZ", System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
+            ExpiresAt = DateTime.ParseExact(expiresAt, DataTimeFormat, System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
+            RefreshedAfter = DateTime.ParseExact(refreshedAfter, DataTimeFormat, System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
         }
 
         public bool NeedRefresh()

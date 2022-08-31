@@ -712,10 +712,10 @@ namespace MinecraftClient
                         try
                         {
                             Command cmd = (Command)Activator.CreateInstance(type);
-                            cmds[cmd.CmdName.ToLower()] = cmd;
-                            cmd_names.Add(cmd.CmdName.ToLower());
+                            cmds[Settings.ToLowerIfNeed(cmd.CmdName)] = cmd;
+                            cmd_names.Add(Settings.ToLowerIfNeed(cmd.CmdName));
                             foreach (string alias in cmd.getCMDAliases())
-                                cmds[alias.ToLower()] = cmd;
+                                cmds[Settings.ToLowerIfNeed(alias)] = cmd;
                         }
                         catch (Exception e)
                         {
