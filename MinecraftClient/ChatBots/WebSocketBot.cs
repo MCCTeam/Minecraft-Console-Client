@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
@@ -82,6 +84,59 @@ namespace MinecraftClient.ChatBots
         }
     }
 
+    internal class WsChatBotCommand
+    {
+        [JsonProperty("command")]
+        public string Command { get; set; } = "";
+
+        [JsonProperty("requestId")]
+        public string RequestId { get; set; } = "";
+
+        [JsonProperty("parameters")]
+        public object[] Parameters { get; set; }
+    }
+
+    internal class WsCommandResponder
+    {
+        private WebSocketBot _bot;
+        private WsServer.WsBehavior _session;
+        private string _command;
+        private string _requestId;
+
+        public WsCommandResponder(WebSocketBot bot, WsServer.WsBehavior session, string command, string requestId)
+        {
+            _bot = bot;
+            _session = session;
+            _command = command;
+            _requestId = requestId;
+        }
+
+        private void SendCommandResponse(bool success, string result, bool overrideAuth = false)
+        {
+            _bot.SendCommandResponse(_session, success, _requestId, _command, result, overrideAuth);
+        }
+
+        public void SendErrorResponse(string error, bool overrideAuth = false)
+        {
+            SendCommandResponse(false, error, overrideAuth);
+        }
+
+        public void SendSuccessResponse(string result, bool overrideAuth = false)
+        {
+            SendCommandResponse(true, result, overrideAuth);
+        }
+
+        public void SendSuccessResponse(bool overrideAuth = false)
+        {
+            SendSuccessResponse("", overrideAuth);
+        }
+
+        public string Quote(string text)
+        {
+            return "\"" + text + "\"";
+        }
+    }
+
     class WebSocketBot : ChatBot
     {
         private WsServer? _server;
@@ -132,7 +187,7 @@ namespace MinecraftClient.ChatBots
 
                 string result = "";
                 PerformInternalCommand(message, ref result);
-                SendEvent("OnMccCommandResponse", "{\"response\": \"" + result + "\"}");
+                SendSessionEvent(session, "OnMccCommandResponse", "{\"response\": \"" + result + "\"}");
             };
         }
 
@@ -140,72 +195,301 @@ namespace MinecraftClient.ChatBots
         {
             message = message.Trim();
 
-            if (password.Length != 0)
+            if (string.IsNullOrEmpty(message))
+                return false;
+
+            if (message.StartsWith('{'))
             {
-                if (!session.IsAuthenticated())
+                try
                 {
-                    if (message.StartsWith("Authenticate", StringComparison.OrdinalIgnoreCase))
+                    WsChatBotCommand cmd = JsonConvert.DeserializeObject<WsChatBotCommand>(message)!;
+                    WsCommandResponder responder = new WsCommandResponder(this, session, cmd.Command, cmd.RequestId);
+
+                    // Authentication and session commands
+                    if (password.Length != 0)
                     {
-                        string input = message.Replace("Authenticate", "", StringComparison.OrdinalIgnoreCase).Trim();
-
-                        if (input.Length == 0)
+                        if (!session.IsAuthenticated())
                         {
-                            SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"Please provide a valid password! (Example: 'Authenticate password123')\"}", true);
+                            // Allow session name changing before login for easier identification
+                            if (cmd.Command.Equals("ChangeSessionId", StringComparison.OrdinalIgnoreCase))
+                            {
+                                string newId = (cmd.Parameters[0] as string)!;
+
+                                if (newId.Length == 0)
+                                {
+                                    responder.SendErrorResponse(responder.Quote("Please provide a valid session ID!"), true);
+                                    return false;
+                                }
+
+                                if (newId.Length > 32)
+                                {
+                                    responder.SendErrorResponse(responder.Quote("The session ID can't be longer than 32 characters!"), true);
+                                    return false;
+                                }
+
+                                string oldId = session.GetSessionId();
+
+                                _sessions!.Remove(oldId);
+                                _sessions[newId] = session;
+                                session.SetSessionId(newId);
+
+                                responder.SendSuccessResponse(responder.Quote("The session ID was successfully changed to: '" + newId + "'"));
+                                LogToConsole("§bSession with an id §a\"" + oldId + "\"§b has been renamed to: §a\"" + newId + "\"§b!");
+                                return false;
+                            }
+
+                            // Special case for authentication
+                            if (cmd.Command.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
+                            {
+                                string pass = (cmd.Parameters[0] as string)!;
+
+                                if (pass.Length == 0)
+                                {
+                                    responder.SendErrorResponse(responder.Quote("Please provide a valid password! (Example: 'Authenticate password123')"), true);
+                                    return false;
+                                }
+
+                                if (!pass.Equals(password))
+                                {
+                                    responder.SendErrorResponse(responder.Quote("Incorrect password provided!"), true);
+                                    return false;
+                                }
+
+                                session.SetAuthenticated(true);
+                                responder.SendSuccessResponse(responder.Quote("Succesfully authenticated!"), true);
+                                LogToConsole("§bSession with an id §a\"" + session.GetSessionId() + "\"§b has been succesfully authenticated!\"!");
+                                return false;
+                            }
+
+                            responder.SendErrorResponse(responder.Quote("You must authenticate in order to send and recieve data!"), true);
                             return false;
                         }
-
-                        if (!input.Equals(password))
+                    }
+                    else
+                    {
+                        if (!session.IsAuthenticated())
                         {
-                            SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"Incorrect password provided!\"}", true);
+                            responder.SendSuccessResponse(responder.Quote("Succesfully authenticated!"));
+                            LogToConsole("§bSession with an id §a\"" + session.GetSessionId() + "\"§b has been succesfully authenticated!\"!");
+                            session.SetAuthenticated(true);
                             return false;
                         }
-
-                        session.SetAuthenticated(true);
-                        SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": true, \"message\": \"Succesfully authenticated!\"}", true);
-                        LogToConsole("§bSession with an id §a\"" + session.GetSessionId() + "\"§b has been succesfully authenticated!\"!");
-                        return false;
                     }
 
-                    SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"You must authenticate in order to send and recieve data!\"}", true);
+                    // Process other commands
+                    switch (cmd.Command)
+                    {
+                        case "LogToConsole":
+                            if (cmd.Parameters == null || cmd.Parameters.Length > 1 || cmd.Parameters.Length < 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting a single parameter!"));
+                                return false;
+                            }
+
+                            LogToConsole((cmd.Parameters[0] as string)!);
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "LogDebugToConsole":
+                            if (cmd.Parameters == null || cmd.Parameters.Length > 1 || cmd.Parameters.Length < 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting a single parameter!"));
+                                return false;
+                            }
+
+                            LogDebugToConsole((cmd.Parameters[0] as string)!);
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "LogToConsoleTranslated":
+                            if (cmd.Parameters == null || cmd.Parameters.Length > 1 || cmd.Parameters.Length < 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting a single parameter!"));
+                                return false;
+                            }
+
+                            LogToConsoleTranslated((cmd.Parameters[0] as string)!);
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "LogDebugToConsoleTranslated":
+                            if (cmd.Parameters.Length > 1 || cmd.Parameters.Length < 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting a single parameter!"));
+                                return false;
+                            }
+
+                            LogDebugToConsoleTranslated((cmd.Parameters[0] as string)!);
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "ReconnectToTheServer":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 2)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 2 parameters (extraAttempts, delaySeconds)!"));
+                                return false;
+                            }
+
+                            ReconnectToTheServer(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]));
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "DisconnectAndExit":
+                            responder.SendSuccessResponse();
+                            DisconnectAndExit();
+                            break;
+
+                        case "SendPrivateMessage":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 2)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 2 parameters (player, message)!"));
+                                return false;
+                            }
+
+                            SendPrivateMessage((cmd.Parameters[0] as string)!, (cmd.Parameters[1] as string)!);
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "RunScript":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (filename)!"));
+                                return false;
+                            }
+
+                            RunScript((cmd.Parameters[0] as string)!);
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "GetTerrainEnabled":
+                            responder.SendSuccessResponse(GetTerrainEnabled().ToString().ToLower());
+                            break;
+
+                        case "SetTerrainEnabled":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (enabled)!"));
+                                return false;
+                            }
+
+                            SetTerrainEnabled((bool)cmd.Parameters[0]);
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "GetEntityHandlingEnabled":
+                            responder.SendSuccessResponse(GetEntityHandlingEnabled().ToString().ToLower());
+                            break;
+
+                        case "Sneak":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (on)!"));
+                                return false;
+                            }
+
+                            Sneak((bool)cmd.Parameters[0]);
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "SendEntityAction":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (actionType)!"));
+                                return false;
+                            }
+
+                            SendEntityAction(((Protocol.EntityActionType)(Convert.ToInt32(cmd.Parameters[0]))));
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "DigBlock":
+                            if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length < 3 || cmd.Parameters.Length > 5)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 or 3 parameter(s) (location, swingArms, lookAtBlock)!"));
+                                return false;
+                            }
+
+                            Location location = new Location(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), Convert.ToInt32(cmd.Parameters[2]));
+
+                            if (location.DistanceSquared(GetCurrentLocation().EyesLocation()) > 25)
+                            {
+                                responder.SendErrorResponse(responder.Quote("The block you're trying to dig is too far away!"));
+                                return false;
+                            }
+
+                            if (GetWorld().GetBlock(location).Type == Material.Air)
+                            {
+                                responder.SendErrorResponse(responder.Quote("The block you're trying to dig is is air!"));
+                                return false;
+                            }
+
+                            bool resullt = false;
+
+                            if (cmd.Parameters.Length == 3)
+                                resullt = DigBlock(location);
+                            else if (cmd.Parameters.Length == 4)
+                                resullt = DigBlock(location, (bool)cmd.Parameters[3]);
+                            else if (cmd.Parameters.Length == 5)
+                                resullt = DigBlock(location, (bool)cmd.Parameters[3], (bool)cmd.Parameters[4]);
+
+                            responder.SendSuccessResponse(resullt.ToString().ToLower());
+                            break;
+
+                        case "SetSlot":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (slotNumber)!"));
+                                return false;
+                            }
+
+                            SetSlot(Convert.ToInt32(cmd.Parameters[0]));
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "GetWorld":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetWorld()));
+                            break;
+
+                        case "GetEntities":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetEntities()));
+                            break;
+
+                        case "GetPlayersLatency":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetPlayersLatency()));
+                            break;
+
+                        case "GetCurrentLocation":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetCurrentLocation()));
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    LogToConsole(e.Message);
+                    SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": false, \"message\": \"Invalid command format, probably malformed JSON!\"}", true);
                     return false;
                 }
             }
             else
             {
-                if (!session.IsAuthenticated())
+                if (password.Length != 0)
                 {
-                    SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": true, \"message\": \"Succesfully authenticated!\"}", true);
-                    LogToConsole("§bSession with an id §a\"" + session.GetSessionId() + "\"§b has been succesfully authenticated!\"!");
-                    session.SetAuthenticated(true);
-                    return true;
+                    if (!session.IsAuthenticated())
+                    {
+                        SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"You must authenticate in order to send and recieve data!\"}", true);
+                        return false;
+                    }
                 }
-            }
-
-            if (message.StartsWith("ChangeSessionId", StringComparison.OrdinalIgnoreCase))
-            {
-                string newId = message.Replace("ChangeSessionId", "").Trim();
-
-                if (newId.Length == 0)
+                else
                 {
-                    SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"Please provide a valid session ID!\"}", true);
-                    return false;
+                    if (!session.IsAuthenticated())
+                    {
+                        SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": true, \"message\": \"Succesfully authenticated!\"}", true);
+                        LogToConsole("§bSession with an id §a\"" + session.GetSessionId() + "\"§b has been succesfully authenticated!\"!");
+                        session.SetAuthenticated(true);
+                        return true;
+                    }
                 }
-
-                if (newId.Length > 32)
-                {
-                    SendSessionEvent(session, "OnWsCommandResponse", "{\"error\": true, \"message\": \"The session ID can't be longer than 32 characters!\"}", true);
-                    return false;
-                }
-
-                string oldId = session.GetSessionId();
-
-                _sessions!.Remove(oldId);
-                _sessions[newId] = session;
-                session.SetSessionId(newId);
-
-                SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": true, \"message\": \"The session ID was successfully changed to: '" + newId + "'\"}", true);
-                LogToConsole("§bSession with an id §a\"" + oldId + "\"§b has been renamed to: §a\"" + newId + "\"§b!");
-                return false;
             }
 
             return true;
@@ -321,7 +605,7 @@ namespace MinecraftClient.ChatBots
             json.Append("{");
             json.Append("\"command\": \"" + commandName + "\",");
             json.Append("\"parameters\": \"" + commandParams + "\",");
-            json.Append("\"result\": \"" + Result + "\"");
+            json.Append("\"result\": \"" + Result.Replace("\"", "'") + "\"");
             json.Append("}");
 
             SendEvent("OnInternalCommand", json.ToString());
@@ -555,10 +839,10 @@ namespace MinecraftClient.ChatBots
 
             json.Append("{");
             json.Append("\"entity\": " + EntityToJson(entity) + ",");
-            json.Append("\"health\": " + String.Format("{0:0.00}", health));
+            json.Append("\"health\": " + health.ToString("0.00"));
             json.Append("}");
 
-            SendEvent("OnEntityHealth", json.ToString());
+            //SendEvent("OnEntityHealth", json.ToString());
         }
 
         public override void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata)
@@ -605,6 +889,11 @@ namespace MinecraftClient.ChatBots
         {
             if (session != null && (overrideAuth || session.IsAuthenticated()))
                 session.SendToClient("{\"event\": \"" + type + "\", \"data\": " + (data.IsNullOrEmpty() ? "null" : "\"" + Json.EscapeString(data) + "\"") + "}");
+        }
+
+        public void SendCommandResponse(WsServer.WsBehavior session, bool success, string requestId, string command, string result, bool overrideAuth = false)
+        {
+            SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": " + success.ToString().ToLower() + ", \"requestId\": \"" + requestId + "\", \"command\": \"" + command + "\", \"result\": " + (string.IsNullOrEmpty(result) ? "null" : result) + "}", overrideAuth);
         }
 
         private string EntityToJson(Entity entity)
