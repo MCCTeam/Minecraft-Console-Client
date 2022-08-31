@@ -213,6 +213,12 @@ namespace MinecraftClient.ChatBots
                             // Allow session name changing before login for easier identification
                             if (cmd.Command.Equals("ChangeSessionId", StringComparison.OrdinalIgnoreCase))
                             {
+                                if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                                {
+                                    responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expected 1 (newSessionid)!"), true);
+                                    return false;
+                                }
+
                                 string newId = (cmd.Parameters[0] as string)!;
 
                                 if (newId.Length == 0)
@@ -233,7 +239,7 @@ namespace MinecraftClient.ChatBots
                                 _sessions[newId] = session;
                                 session.SetSessionId(newId);
 
-                                responder.SendSuccessResponse(responder.Quote("The session ID was successfully changed to: '" + newId + "'"));
+                                responder.SendSuccessResponse(responder.Quote("The session ID was successfully changed to: '" + newId + "'"), true);
                                 LogToConsole("§bSession with an id §a\"" + oldId + "\"§b has been renamed to: §a\"" + newId + "\"§b!");
                                 return false;
                             }
@@ -241,6 +247,12 @@ namespace MinecraftClient.ChatBots
                             // Special case for authentication
                             if (cmd.Command.Equals("Authenticate", StringComparison.OrdinalIgnoreCase))
                             {
+                                if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                                {
+                                    responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expected 1 (password)!"), true);
+                                    return false;
+                                }
+
                                 string pass = (cmd.Parameters[0] as string)!;
 
                                 if (pass.Length == 0)
@@ -469,6 +481,8 @@ namespace MinecraftClient.ChatBots
                     SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": false, \"message\": \"Invalid command format, probably malformed JSON!\"}", true);
                     return false;
                 }
+
+                return false;
             }
             else
             {
