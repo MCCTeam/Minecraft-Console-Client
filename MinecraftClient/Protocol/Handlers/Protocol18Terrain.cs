@@ -56,12 +56,12 @@ namespace MinecraftClient.Protocol.Handlers
                     return null;
 
                 // Warning: If you need to support modification of block data, you need to create 4096 objects here
-                Block[] blocks = new Block[Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ];
+                Chunk chunk = new();
                 for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                     for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                         for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
-                            blocks[(blockY << 8) | (blockZ << 4) | blockX] = block;
-                return new Chunk(blocks);
+                            chunk.SetWithoutCheck(blockX, blockY, blockZ, block);
+                return chunk;
             }
             else
             {
@@ -86,7 +86,7 @@ namespace MinecraftClient.Protocol.Handlers
                 Span<byte> entryDataByte = stackalloc byte[8];
                 Span<long> entryDataLong = MemoryMarshal.Cast<byte, long>(entryDataByte); // Faster than MemoryMarshal.Read<long>
 
-                Block[] blocks = new Block[Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ];
+                Chunk chunk = new();
                 int startOffset = 64; // Read the first data immediately
                 for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                 {
@@ -129,11 +129,11 @@ namespace MinecraftClient.Protocol.Handlers
                             Block block = new((ushort)blockId);
 
                             // We have our block, save the block into the chunk
-                            blocks[(blockY << 8) | (blockZ << 4) | blockX] = block;
+                            chunk.SetWithoutCheck(blockX, blockY, blockZ, block);
                         }
                     }
                 }
-                return new Chunk(blocks);
+                return chunk;
             }
         }
 
