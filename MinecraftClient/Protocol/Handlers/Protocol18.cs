@@ -305,9 +305,12 @@ namespace MinecraftClient.Protocol.Handlers
                 else switch (packetPalette.GetIncommingTypeById(packetID))
                     {
                         case PacketTypesIn.KeepAlive:
-                            //log.Info("KeepAlive");
                             SendPacket(PacketTypesOut.KeepAlive, packetData);
                             handler.OnServerKeepAlive();
+                            break;
+                        case PacketTypesIn.Ping:
+                            int ID = dataTypes.ReadNextInt(packetData);
+                            SendPacket(PacketTypesOut.Pong, dataTypes.GetInt(ID));
                             break;
                         case PacketTypesIn.JoinGame:
                             handler.OnGameJoined();
