@@ -252,6 +252,6 @@ namespace MinecraftClient.Protocol
         /// Get net read thread (main thread) ID
         /// </summary>
         /// <returns>Net read thread ID</returns>
-        int GetNetReadThreadId();
+        int GetNetMainThreadId();
     }
 }

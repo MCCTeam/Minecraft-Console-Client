@@ -446,6 +446,8 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
+            handler.Dispose();
+
             world.Clear();
 
             if (timeoutdetector != null)
@@ -761,7 +763,7 @@ namespace MinecraftClient
                 int callingThreadId = Thread.CurrentThread.ManagedThreadId;
                 if (handler != null)
                 {
-                    return handler.GetNetReadThreadId() != callingThreadId;
+                    return handler.GetNetMainThreadId() != callingThreadId;
                 }
                 else
                 {

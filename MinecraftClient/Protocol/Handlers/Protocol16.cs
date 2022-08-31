@@ -218,7 +218,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Get net read thread (main thread) ID
         /// </summary>
         /// <returns>Net read thread ID</returns>
-        public int GetNetReadThreadId()
+        public int GetNetMainThreadId()
         {
             return netRead != null ? netRead.Item1.ManagedThreadId : -1;
         }
