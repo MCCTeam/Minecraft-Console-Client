@@ -189,10 +189,7 @@ namespace MinecraftClient.Protocol.Handlers
                         Chunk? chunk = ReadBlockStatesField(cache);
 
                         //We have our chunk, save the chunk into the world
-                        handler.InvokeOnMainThread(() =>
-                        {
-                            world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == lastChunkY);
-                        });
+                        world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == lastChunkY);
 
                         // Skip Read Biomes (Type: Paletted Container) - 1.18(1.18.1) and above
                         if (protocolversion >= Protocol18Handler.MC_1_18_1_Version)
@@ -364,10 +361,7 @@ namespace MinecraftClient.Protocol.Handlers
                         }
 
                         //We have our chunk, save the chunk into the world
-                        handler.InvokeOnMainThread(() =>
-                        {
-                            world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
-                        });
+                        world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
 
                         //Pre-1.14 Lighting data
                         if (protocolversion < Protocol18Handler.MC_1_14_Version)
@@ -415,10 +409,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(queue.Dequeue()));
 
                             //We have our chunk, save the chunk into the world
-                            handler.InvokeOnMainThread(() =>
-                            {
-                                world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
-                            });
+                            world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
                         }
                     }
 
@@ -497,10 +488,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
                                         chunk.SetWithoutCheck(blockX, blockY, blockZ, new Block(blockTypes.Dequeue(), blockMeta.Dequeue()));
 
-                            handler.InvokeOnMainThread(() =>
-                            {
-                                world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
-                            });
+                            world.StoreChunk(chunkX, chunkY, chunkZ, chunkColumnSize, chunk, chunkY == maxChunkY);
                         }
                     }
                 }
