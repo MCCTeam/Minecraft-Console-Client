@@ -76,7 +76,8 @@ namespace MinecraftClient.Protocol.Handlers
         PacketTypePalette packetPalette;
         SocketWrapper socketWrapper;
         DataTypes dataTypes;
-        Tuple<Thread, CancellationTokenSource>? netRead = null; // main thread
+        Tuple<Thread, CancellationTokenSource>? netMain = null; // main thread
+        Tuple<Thread, CancellationTokenSource>? netReader = null; // reader thread
         ILogger log;
         RandomNumberGenerator randomGen;
 
@@ -172,7 +173,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         private void Updater(object? o)
         {
-            if (((CancellationToken)o!).IsCancellationRequested)
+            CancellationToken cancelToken = (CancellationToken)o!;
+
+            if (cancelToken.IsCancellationRequested)
                 return;
 
             try
@@ -180,7 +183,7 @@ namespace MinecraftClient.Protocol.Handlers
                 Stopwatch stopWatch = new();
                 while (!packetQueue.IsAddingCompleted)
                 {
-                    ((CancellationToken)o!).ThrowIfCancellationRequested();
+                    cancelToken.ThrowIfCancellationRequested();
 
                     handler.OnUpdate();
 
@@ -210,7 +213,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { }
             catch (OperationCanceledException) { }
 
-            if (((CancellationToken)o!).IsCancellationRequested)
+            if (cancelToken.IsCancellationRequested)
                 return;
 
             handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, "");
@@ -219,13 +222,14 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Read and decompress packets.
         /// </summary>
-        internal void PacketReader()
+        internal void PacketReader(object? o)
         {
-            while (socketWrapper.IsConnected())
+            CancellationToken cancelToken = (CancellationToken)o!;
+            while (socketWrapper.IsConnected() && !cancelToken.IsCancellationRequested)
             {
                 try
                 {
-                    while (socketWrapper.HasDataAvailable())
+                    while (socketWrapper.HasDataAvailable() && !cancelToken.IsCancellationRequested)
                         packetQueue.Add(ReadNextPacket());
                 }
                 catch (System.IO.IOException) { break; }
@@ -1449,20 +1453,24 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         private void StartUpdating()
         {
-            new Thread(new ThreadStart(PacketReader)).Start();
+            Thread threadUpdater = new Thread(new ParameterizedThreadStart(Updater));
+            threadUpdater.Name = "ProtocolPacketHandler";
+            netMain = new Tuple<Thread, CancellationTokenSource>(threadUpdater, new CancellationTokenSource());
+            threadUpdater.Start(netMain.Item2.Token);
 
-            netRead = new Tuple<Thread, CancellationTokenSource>(new Thread(new ParameterizedThreadStart(Updater)), new CancellationTokenSource());
-            netRead.Item1.Name = "ProtocolPacketHandler";
-            netRead.Item1.Start(netRead.Item2.Token);
+            Thread threadReader = new Thread(new ParameterizedThreadStart(PacketReader));
+            threadReader.Name = "ProtocolPacketReader";
+            netReader = new Tuple<Thread, CancellationTokenSource>(threadReader, new CancellationTokenSource());
+            threadReader.Start(netReader.Item2.Token);
         }
 
         /// <summary>
         /// Get net read thread (main thread) ID
         /// </summary>
         /// <returns>Net read thread ID</returns>
-        public int GetNetReadThreadId()
+        public int GetNetMainThreadId()
         {
-            return netRead != null ? netRead.Item1.ManagedThreadId : -1;
+            return netMain != null ? netMain.Item1.ManagedThreadId : -1;
         }
 
         /// <summary>
@@ -1472,9 +1480,12 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                if (netRead != null)
+                if (netMain != null)
                 {
-                    netRead.Item2.Cancel();
+                    netMain.Item2.Cancel();
+                }
+                if (netReader != null){
+                    netReader.Item2.Cancel();
                     socketWrapper.Disconnect();
                 }
             }
