@@ -71,14 +71,11 @@ namespace MinecraftClient.Protocol.Handlers
                 // Indirect Mode: For block states with bits per entry <= 4, 4 bits are used to represent a block.
                 if (bitsPerEntry < 4) bitsPerEntry = 4;
 
-                int entryPerLong = 64 / bitsPerEntry; // entryPerLong = sizeof(long) / bitsPerEntry
-
                 // Direct Mode: Bit mask covering bitsPerEntry bits
                 // EG, if bitsPerEntry = 5, valueMask = 00011111 in binary
                 uint valueMask = (uint)((1 << bitsPerEntry) - 1);
 
-                int paletteLength = 0; // Assume zero when length is absent
-                if (usePalette) paletteLength = dataTypes.ReadNextVarInt(cache);
+                int paletteLength = usePalette ? dataTypes.ReadNextVarInt(cache) : 0; // Assume zero when length is absent
 
                 Span<uint> palette = paletteLength < 256 ? stackalloc uint[paletteLength] : new uint[paletteLength];
                 for (int i = 0; i < paletteLength; i++)

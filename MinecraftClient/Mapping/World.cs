@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,18 +14,14 @@ namespace MinecraftClient.Mapping
     {
         /// <summary>
         /// The chunks contained into the Minecraft world
+        /// Tuple<int, int>: Tuple<chunkX, chunkZ>
         /// </summary>
-        private Dictionary<int, Dictionary<int, ChunkColumn>> chunks = new();
+        private ConcurrentDictionary<Tuple<int, int>, ChunkColumn> chunks = new();
 
         /// <summary>
         /// The dimension info of the world
         /// </summary>
         private static Dimension dimension = new();
-
-        /// <summary>
-        /// Lock for thread safety
-        /// </summary>
-        private readonly ReaderWriterLockSlim chunksLock = new();
 
         /// <summary>
         /// Chunk data parsing progress
@@ -42,50 +39,16 @@ namespace MinecraftClient.Mapping
         {
             get
             {
-                chunksLock.EnterReadLock();
-                try
-                {
-                    //Read a chunk
-                    if (chunks.ContainsKey(chunkX))
-                        if (chunks[chunkX].ContainsKey(chunkZ))
-                            return chunks[chunkX][chunkZ];
-                    return null;
-                }
-                finally
-                {
-                    chunksLock.ExitReadLock();
-                }
+                chunks.TryGetValue(new(chunkX, chunkZ), out ChunkColumn? chunkColumn);
+                return chunkColumn;
             }
             set
             {
-                chunksLock.EnterWriteLock();
-                try
-                {
-                    if (value != null)
-                    {
-                        //Update a chunk column
-                        if (!chunks.ContainsKey(chunkX))
-                            chunks[chunkX] = new Dictionary<int, ChunkColumn>();
-                        chunks[chunkX][chunkZ] = value;
-                    }
-                    else
-                    {
-                        //Unload a chunk column
-                        if (chunks.ContainsKey(chunkX))
-                        {
-                            if (chunks[chunkX].ContainsKey(chunkZ))
-                            {
-                                chunks[chunkX].Remove(chunkZ);
-                                if (chunks[chunkX].Count == 0)
-                                    chunks.Remove(chunkX);
-                            }
-                        }
-                    }
-                }
-                finally
-                {
-                    chunksLock.ExitWriteLock();
-                }
+                Tuple<int, int> chunkCoord = new(chunkX, chunkZ);
+                if (value == null)
+                    chunks.Remove(chunkCoord, out _);
+                else
+                    chunks.AddOrUpdate(chunkCoord, value, (_, _) => value);
             }
         }
 
@@ -120,36 +83,7 @@ namespace MinecraftClient.Mapping
         /// <param name="loadCompleted">Whether the ChunkColumn has been fully loaded</param>
         public void StoreChunk(int chunkX, int chunkY, int chunkZ, int chunkColumnSize, Chunk? chunk, bool loadCompleted)
         {
-            ChunkColumn? chunkColumn = null;
-            chunksLock.EnterUpgradeableReadLock();
-            try
-            {
-                //Read a chunk
-                if (chunks.ContainsKey(chunkX))
-                    if (chunks[chunkX].ContainsKey(chunkZ))
-                        chunkColumn = chunks[chunkX][chunkZ];
-
-                if (chunkColumn == null)
-                {
-                    chunkColumn = new ChunkColumn(chunkColumnSize);
-                    chunksLock.EnterWriteLock();
-                    try
-                    {
-                        //Update a chunk column
-                        if (!chunks.ContainsKey(chunkX))
-                            chunks[chunkX] = new Dictionary<int, ChunkColumn>();
-                        chunks[chunkX][chunkZ] = chunkColumn;
-                    }
-                    finally
-                    {
-                        chunksLock.ExitWriteLock();
-                    }
-                }
-            }
-            finally
-            {
-                chunksLock.ExitUpgradeableReadLock();
-            }
+            ChunkColumn chunkColumn = chunks.GetOrAdd(new(chunkX, chunkZ), (_) => new(chunkColumnSize));
             chunkColumn[chunkY] = chunk;
             if (loadCompleted)
                 chunkColumn.FullyLoaded = true;
@@ -249,17 +183,9 @@ namespace MinecraftClient.Mapping
         /// </summary>
         public void Clear()
         {
-            chunksLock.EnterWriteLock();
-            try
-            {
-                chunks = new Dictionary<int, Dictionary<int, ChunkColumn>>();
-                chunkCnt = 0;
-                chunkLoadNotCompleted = 0;
-            }
-            finally
-            {
-                chunksLock.ExitWriteLock();
-            }
+            chunks = new();
+            chunkCnt = 0;
+            chunkLoadNotCompleted = 0;
         }
 
         /// <summary>
