@@ -163,7 +163,7 @@ namespace MinecraftClient
         {
             if (!acceptnewlines)
                 text = text.Replace('\n', ' ');
-            WriteLineFormatted(LogPrefix + text, true);
+            WriteLineFormatted(LogPrefix + text, acceptnewlines);
         }
 
         #region Subfunctions
