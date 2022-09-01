@@ -335,7 +335,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[319] = ItemType.AcaciaStairs;
             mappings[320] = ItemType.DarkOakStairs;
             mappings[321] = ItemType.SlimeBlock;
-            mappings[322] = ItemType.GrassPath;
+            mappings[322] = ItemType.DirtPath;
             mappings[323] = ItemType.Sunflower;
             mappings[324] = ItemType.Lilac;
             mappings[325] = ItemType.RoseBush;
