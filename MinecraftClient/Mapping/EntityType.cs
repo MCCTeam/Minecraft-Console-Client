@@ -4,16 +4,17 @@ namespace MinecraftClient.Mapping
     /// Represents Minecraft Entity Types
     /// </summary>
     /// <remarks>
-    /// Generated from registries.json using EntityPaletteGenerator.cs.
+    /// Generated from registries.json using the --generator flag on the client
     /// Typical steps to handle new entity IDs for newer Minecraft versions:
-    /// 1. Generate registries.json using data reporting on Vanilla Minecraft (https://wiki.vg/Data_Generators)
-    /// 2. Generate temporary EntityTypeXXX.cs and EntityPaletteXXX.cs using EntityPaletteGenerator.cs
+    /// 1. Generate registries.json using data reporting on Vanilla Minecraft (https://wiki.vg/Data_Generators) or download it from: https://github.com/PixiGeko/Minecraft-generated-data
+    /// 2. Generate temporary EntityTypeXXX.cs and EntityPaletteXXX.cs using the --generator flag on the client
     /// 3. Perform a diff with existing versions, add missing entries in EntityType.cs and EntityTypeExtensions.cs
     /// 4. If existing entity IDs were not randomized by Mojang, simply add missing entries to the latest existing EntityPaletteXXX.cs
     /// 5. If existing entity IDs were randomized, add a new palette as EntityPaletteXXX.cs into the codebase (worst case)
     /// </remarks>
     public enum EntityType
     {
+        Allay,
         AreaEffectCloud,
         ArmorStand,
         Arrow,
@@ -24,6 +25,7 @@ namespace MinecraftClient.Mapping
         Boat,
         Cat,
         CaveSpider,
+        ChestBoat,
         ChestMinecart,
         Chicken,
         Cod,
@@ -38,9 +40,9 @@ namespace MinecraftClient.Mapping
         ElderGuardian,
         EndCrystal,
         EnderDragon,
+        EnderPearl,
         Enderman,
         Endermite,
-        EnderPearl,
         Evoker,
         EvokerFangs,
         ExperienceBottle,
@@ -51,6 +53,7 @@ namespace MinecraftClient.Mapping
         FireworkRocket,
         FishingBobber,
         Fox,
+        Frog,
         FurnaceMinecart,
         Ghast,
         Giant,
@@ -99,14 +102,15 @@ namespace MinecraftClient.Mapping
         SkeletonHorse,
         Slime,
         SmallFireball,
-        Snowball,
         SnowGolem,
+        Snowball,
         SpawnerMinecart,
         SpectralArrow,
         Spider,
         Squid,
         Stray,
         Strider,
+        Tadpole,
         Tnt,
         TntMinecart,
         TraderLlama,
@@ -117,6 +121,7 @@ namespace MinecraftClient.Mapping
         Villager,
         Vindicator,
         WanderingTrader,
+        Warden,
         Witch,
         Wither,
         WitherSkeleton,
