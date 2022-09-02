@@ -195,30 +195,25 @@ namespace MinecraftClient.Protocol.Handlers
                     cancelToken.ThrowIfCancellationRequested();
 
                     handler.OnUpdate();
+                    stopWatch.Restart();
 
-                    stopWatch.Start();
                     while (packetQueue.TryTake(out Tuple<int, Queue<byte>>? packetInfo))
                     {
                         (int packetID, Queue<byte> packetData) = packetInfo;
                         HandlePacket(packetID, packetData);
 
-                        stopWatch.Stop();
                         if (stopWatch.Elapsed.Milliseconds >= 100)
                         {
-                            stopWatch.Reset();
                             handler.OnUpdate();
+                            stopWatch.Restart();
                         }
-                        stopWatch.Start();
                     }
-                    stopWatch.Stop();
 
-                    if (stopWatch.Elapsed.Milliseconds < 100)
-                        Thread.Sleep(100 - stopWatch.Elapsed.Milliseconds);
-                    stopWatch.Reset();
+                    int sleepLength = 100 - stopWatch.Elapsed.Milliseconds;
+                    if (sleepLength > 0)
+                        Thread.Sleep(sleepLength);
                 }
             }
-            catch (System.IO.IOException) { }
-            catch (SocketException) { }
             catch (ObjectDisposedException) { }
             catch (OperationCanceledException) { }
 
