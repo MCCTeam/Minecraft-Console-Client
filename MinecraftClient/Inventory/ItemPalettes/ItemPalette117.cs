@@ -402,7 +402,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
             mappings[390] = ItemType.PackedIce;
             mappings[391] = ItemType.AcaciaStairs;
             mappings[392] = ItemType.DarkOakStairs;
-            mappings[393] = ItemType.GrassPath;
+            mappings[393] = ItemType.DirtPath;
             mappings[394] = ItemType.Sunflower;
             mappings[395] = ItemType.Lilac;
             mappings[396] = ItemType.RoseBush;
