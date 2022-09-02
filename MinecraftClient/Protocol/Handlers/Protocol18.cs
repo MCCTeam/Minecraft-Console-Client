@@ -25,7 +25,7 @@ using System.Collections.Concurrent;
 namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
-    /// Implementation for Minecraft 1.7.X+ Protocols
+    /// Implementation for Minecraft 1.8.X+ Protocols
     /// </summary>
     /// <remarks>
     /// Typical update steps for implementing protocol changes for a new Minecraft version:
@@ -116,47 +116,56 @@ namespace MinecraftClient.Protocol.Handlers
             // Block palette
             if (protocolVersion >= MC_1_13_Version)
             {
-                if (protocolVersion > MC_1_18_2_Version && handler.GetTerrainEnabled())
+                if (protocolVersion > MC_1_19_Version && handler.GetTerrainEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.block"));
-                if (protocolVersion >= MC_1_17_Version)
+
+                if (protocolVersion == MC_1_19_Version)
+                    Block.Palette = new Palette119();
+                else if (protocolVersion >= MC_1_17_Version)
                     Block.Palette = new Palette117();
                 else if (protocolVersion >= MC_1_16_Version)
-                    if (protocolVersion >= MC_1_16_Version)
-                        Block.Palette = new Palette116();
-                    else if (protocolVersion >= MC_1_15_Version)
-                        Block.Palette = new Palette115();
-                    else if (protocolVersion >= MC_1_14_Version)
-                        Block.Palette = new Palette114();
-                    else Block.Palette = new Palette113();
+                    Block.Palette = new Palette116();
+                else if (protocolVersion >= MC_1_15_Version)
+                    Block.Palette = new Palette115();
+                else if (protocolVersion >= MC_1_14_Version)
+                    Block.Palette = new Palette114();
+                else Block.Palette = new Palette113();
+
             }
             else Block.Palette = new Palette112();
 
             // Entity palette
             if (protocolVersion >= MC_1_13_Version)
             {
-                if (protocolVersion > MC_1_18_2_Version && handler.GetEntityHandlingEnabled())
+                if (protocolVersion > MC_1_19_Version && handler.GetEntityHandlingEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.entity"));
-                if (protocolVersion >= MC_1_17_Version)
+
+                if (protocolVersion == MC_1_19_Version)
+                    entityPalette = new EntityPalette119();
+                else if (protocolVersion >= MC_1_17_Version)
                     entityPalette = new EntityPalette117();
                 else if (protocolVersion >= MC_1_16_2_Version)
-                    if (protocolVersion >= MC_1_16_2_Version)
-                        entityPalette = new EntityPalette1162();
-                    else if (protocolVersion >= MC_1_16_Version)
-                        entityPalette = new EntityPalette1161();
-                    else if (protocolVersion >= MC_1_15_Version)
-                        entityPalette = new EntityPalette115();
-                    else if (protocolVersion >= MC_1_14_Version)
-                        entityPalette = new EntityPalette114();
-                    else entityPalette = new EntityPalette113();
+                    entityPalette = new EntityPalette1162();
+                else if (protocolVersion >= MC_1_16_Version)
+                    entityPalette = new EntityPalette1161();
+                else if (protocolVersion >= MC_1_15_Version)
+                    entityPalette = new EntityPalette115();
+                else if (protocolVersion >= MC_1_14_Version)
+                    entityPalette = new EntityPalette114();
+                else
+                    entityPalette = new EntityPalette113();
             }
             else entityPalette = new EntityPalette112();
 
             // Item palette
             if (protocolVersion >= MC_1_16_2_Version)
             {
-                if (protocolVersion > MC_1_18_2_Version && handler.GetInventoryEnabled())
+                if (protocolVersion > MC_1_19_Version && handler.GetInventoryEnabled())
                     throw new NotImplementedException(Translations.Get("exception.palette.item"));
-                if (protocolVersion >= MC_1_18_1_Version)
+
+                if (protocolVersion == MC_1_19_Version)
+                    itemPalette = new ItemPalette119();
+                else if (protocolVersion >= MC_1_18_1_Version)
                     itemPalette = new ItemPalette118();
                 else if (protocolVersion >= MC_1_17_Version)
                     itemPalette = new ItemPalette117();
@@ -1317,7 +1326,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     healthField = 8; // 1.14 and above
                                 if (protocolVersion >= MC_1_17_Version)
                                     healthField = 9; // 1.17 and above
-                                if (protocolVersion > MC_1_18_2_Version)
+                                if (protocolVersion > MC_1_19_Version)
                                     throw new NotImplementedException(Translations.Get("exception.palette.healthfield"));
 
                                 if (metadata.ContainsKey(healthField) && metadata[healthField] != null && metadata[healthField].GetType() == typeof(float))
@@ -1796,7 +1805,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Ping a Minecraft server to get information about the server
         /// </summary>
         /// <returns>True if ping was successful</returns>
-        public static bool doPing(string host, int port, ref int protocolversion, ref ForgeInfo? forgeInfo)
+        public static bool doPing(string host, int port, ref int protocolVersion, ref ForgeInfo? forgeInfo)
         {
             string version = "";
             TcpClient tcp = ProxyHandler.newTcpClient(host, port);
@@ -1848,12 +1857,12 @@ namespace MinecraftClient.Protocol.Handlers
 
                             //Retrieve protocol version number for handling this server
                             if (versionData.Properties.ContainsKey("protocol"))
-                                protocolversion = int.Parse(versionData.Properties["protocol"].StringValue);
+                                protocolVersion = int.Parse(versionData.Properties["protocol"].StringValue);
 
                             // Check for forge on the server.
                             Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);
 
-                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.server_protocol", version, protocolversion + (forgeInfo != null ? Translations.Get("mcc.with_forge") : "")));
+                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.server_protocol", version, protocolVersion + (forgeInfo != null ? Translations.Get("mcc.with_forge") : "")));
 
                             return true;
                         }

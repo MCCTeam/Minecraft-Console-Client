@@ -820,7 +820,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
             materials[9468] = Material.EndStoneBricks;
             for (int i = 9469; i <= 9472; i++)
                 materials[i] = Material.Beetroots;
-            materials[9473] = Material.GrassPath;
+            materials[9473] = Material.DirtPath;
             materials[9474] = Material.EndGateway;
             for (int i = 9475; i <= 9486; i++)
                 materials[i] = Material.RepeatingCommandBlock;
