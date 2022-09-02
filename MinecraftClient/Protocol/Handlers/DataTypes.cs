@@ -1115,30 +1115,39 @@ namespace MinecraftClient.Protocol.Handlers
         /// Write LastSeenMessageList
         /// </summary>
         /// <param name="msgList">Message.LastSeenMessageList</param>
+        /// <param name="isOnlineMode">Whether the server is in online mode</param>
         /// <returns>Message.LastSeenMessageList Packet Data</returns>
-        public byte[] GetLastSeenMessageList(Message.LastSeenMessageList msgList)
+        public byte[] GetLastSeenMessageList(Message.LastSeenMessageList msgList, bool isOnlineMode)
         {
-            List<byte> fields = new List<byte>();
-            fields.AddRange(GetVarInt(msgList.entries.Length));
-            foreach (Message.LastSeenMessageList.Entry entry in msgList.entries)
+            if (!isOnlineMode)
             {
-                fields.AddRange(entry.profileId.ToBigEndianBytes());
-                fields.AddRange(GetVarInt(entry.lastSignature.Length));
-                fields.AddRange(entry.lastSignature);
+                return GetVarInt(0);
             }
-            return fields.ToArray();
+            else
+            {
+                List<byte> fields = new List<byte>();
+                fields.AddRange(GetVarInt(msgList.entries.Length));
+                foreach (Message.LastSeenMessageList.Entry entry in msgList.entries)
+                {
+                    fields.AddRange(entry.profileId.ToBigEndianBytes());
+                    fields.AddRange(GetVarInt(entry.lastSignature.Length));
+                    fields.AddRange(entry.lastSignature);
+                }
+                return fields.ToArray();
+            }
         }
 
         /// <summary>
         /// Write LastSeenMessageList.Acknowledgment
         /// </summary>
         /// <param name="ack">Acknowledgment</param>
+        /// <param name="isOnlineMode">Whether the server is in online mode</param>
         /// <returns>Acknowledgment Packet Data</returns>
-        public byte[] GetAcknowledgment(Message.LastSeenMessageList.Acknowledgment ack)
+        public byte[] GetAcknowledgment(Message.LastSeenMessageList.Acknowledgment ack, bool isOnlineMode)
         {
             List<byte> fields = new List<byte>();
-            fields.AddRange(GetLastSeenMessageList(ack.lastSeen));
-            if (ack.lastReceived == null)
+            fields.AddRange(GetLastSeenMessageList(ack.lastSeen, isOnlineMode));
+            if (!isOnlineMode || ack.lastReceived == null)
                 fields.AddRange(GetBool(false));
             else
             {
