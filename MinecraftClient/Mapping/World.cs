@@ -83,16 +83,10 @@ namespace MinecraftClient.Mapping
         /// <param name="loadCompleted">Whether the ChunkColumn has been fully loaded</param>
         public void StoreChunk(int chunkX, int chunkY, int chunkZ, int chunkColumnSize, Chunk? chunk, bool loadCompleted)
         {
-            Tuple<int, int> chunkCoord = new(chunkX, chunkZ);
-            if (chunk == null)
-                chunks.TryRemove(chunkCoord, out _);
-            else
-            {
-                ChunkColumn chunkColumn = chunks.GetOrAdd(chunkCoord, (_) => new(chunkColumnSize));
-                chunkColumn[chunkY] = chunk;
-                if (loadCompleted)
-                    chunkColumn.FullyLoaded = true;
-            }
+            ChunkColumn chunkColumn = chunks.GetOrAdd(new(chunkX, chunkZ), (_) => new(chunkColumnSize));
+            chunkColumn[chunkY] = chunk;
+            if (loadCompleted)
+                chunkColumn.FullyLoaded = true;
         }
 
         /// <summary>
