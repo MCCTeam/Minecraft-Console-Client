@@ -367,7 +367,7 @@ namespace MinecraftClient.Mapping
             Material.Farmland,
             Material.Grass,
             Material.GrassBlock,
-            Material.GrassPath,
+            Material.DirtPath,
             Material.Gravel,
             Material.GrayConcretePowder,
             Material.GreenConcretePowder,

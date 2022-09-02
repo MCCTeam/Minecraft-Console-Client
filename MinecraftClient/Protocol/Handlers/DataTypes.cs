@@ -459,13 +459,13 @@ namespace MinecraftClient.Protocol.Handlers
             Double entityX = ReadNextDouble(cache);
             Double entityY = ReadNextDouble(cache);
             Double entityZ = ReadNextDouble(cache);
-            byte entityYaw = ReadNextByte(cache);
             byte entityPitch = ReadNextByte(cache);
+            byte entityYaw = ReadNextByte(cache);
 
             int metadata = -1;
             if (living)
             {
-                if (protocolversion >= Protocol18Handler.MC_1_18_2_Version)
+                if (protocolversion == Protocol18Handler.MC_1_18_2_Version)
                     entityYaw = ReadNextByte(cache);
                 else
                     entityPitch = ReadNextByte(cache);
@@ -474,15 +474,17 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 if (protocolversion >= Protocol18Handler.MC_1_19_Version)
                 {
-                    metadata = ReadNextVarInt(cache);
                     entityYaw = ReadNextByte(cache);
+                    metadata = ReadNextVarInt(cache);
                 }
                 else
                     metadata = ReadNextInt(cache);
             }
+
             short velocityX = ReadNextShort(cache);
             short velocityY = ReadNextShort(cache);
             short velocityZ = ReadNextShort(cache);
+
             return new Entity(entityID, entityType, new Location(entityX, entityY, entityZ), entityYaw, entityPitch, metadata);
         }
 
