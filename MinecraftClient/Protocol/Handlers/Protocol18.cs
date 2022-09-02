@@ -66,6 +66,7 @@ namespace MinecraftClient.Protocol.Handlers
         private bool login_phase = true;
         private int protocolVersion;
         private int currentDimension;
+        private bool isOnlineMode = false;
 
         private int pendingAcknowledgments = 0;
         private LastSeenMessagesCollector lastSeenMessagesCollector = new(5);
@@ -470,7 +471,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte[] messageSignature = dataTypes.ReadNextByteArray(packetData);
 
                                 bool verifyResult;
-                                if (senderUUID == handler.GetUserUuid())
+                                if (!isOnlineMode)
+                                    verifyResult = false;
+                                else if (senderUUID == handler.GetUserUuid())
                                     verifyResult = true;
                                 else
                                 {
@@ -512,8 +515,18 @@ namespace MinecraftClient.Protocol.Handlers
                                 string chatName = dataTypes.ReadNextString(packetData);
                                 string? targetName = dataTypes.ReadNextBool(packetData) ? dataTypes.ReadNextString(packetData) : null;
 
+                                Dictionary<string, Json.JSONData> chatInfo = Json.ParseJson(chatName).Properties;
+                                string senderDisplayName = (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"]).StringValue;
+                                string? senderTeamName = null;
+                                ChatParser.MessageType messageTypeEnum = ChatParser.ChatId2Type![chatTypeId];
+                                if (targetName != null && 
+                                    (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING || messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
+                                    senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0].Properties["text"].StringValue;
+
                                 bool verifyResult;
-                                if (senderUUID == handler.GetUserUuid())
+                                if (!isOnlineMode)
+                                    verifyResult = false;
+                                else if (senderUUID == handler.GetUserUuid())
                                     verifyResult = true;
                                 else
                                 {
@@ -525,20 +538,12 @@ namespace MinecraftClient.Protocol.Handlers
                                         bool lastVerifyResult = player.IsMessageChainLegal();
                                         verifyResult = player.VerifyMessage(signedChat, timestamp, salt, ref headerSignature, ref precedingSignature, lastSeenMessages);
                                         if (lastVerifyResult && !verifyResult)
-                                            log.Warn("Player " + player.DisplayName + "'s message chain is broken!");
+                                            log.Warn(Translations.Get("chat.message_chain_broken", senderDisplayName));
                                     }
                                 }
 
-                                Dictionary<string, Json.JSONData> chatInfo = Json.ParseJson(chatName).Properties;
-                                string senderDisplayName = (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"]).StringValue;
-                                string? senderTeamName = null;
-                                ChatParser.MessageType messageTypeEnum = ChatParser.ChatId2Type![chatTypeId];
-                                if (targetName != null && 
-                                    (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING || messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
-                                    senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0].Properties["text"].StringValue;
-
                                 ChatMessage chat = new(signedChat, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, headerSignature, verifyResult);
-                                if (!chat.lacksSender())
+                                if (isOnlineMode && !chat.lacksSender())
                                     this.acknowledge(chat);
                                 handler.OnTextReceived(chat);
                             }
@@ -552,7 +557,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte[] bodyDigest = dataTypes.ReadNextByteArray(packetData);
 
                                 bool verifyResult;
-                                if (senderUUID == handler.GetUserUuid())
+                                if (!isOnlineMode)
+                                    verifyResult = false;
+                                else if (senderUUID == handler.GetUserUuid())
                                     verifyResult = true;
                                 else
                                 {
@@ -1692,6 +1699,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else if (packetID == 0x01) //Encryption request
                 {
+                    this.isOnlineMode = true;
                     string serverID = dataTypes.ReadNextString(packetData);
                     byte[] serverPublicKey = dataTypes.ReadNextByteArray(packetData);
                     byte[] token = dataTypes.ReadNextByteArray(packetData);
@@ -1986,7 +1994,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                byte[] fields = dataTypes.GetAcknowledgment(acknowledgment);
+                byte[] fields = dataTypes.GetAcknowledgment(acknowledgment, isOnlineMode);
 
                 SendPacket(PacketTypesOut.MessageAcknowledgment, fields);
 
@@ -2027,11 +2035,11 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="command">Command</param>
         /// <returns> List< Argument Name, Argument Value > </returns>
-        private static List<Tuple<string, string>> CollectCommandArguments(string command)
+        private List<Tuple<string, string>> CollectCommandArguments(string command)
         {
             List<Tuple<string, string>> needSigned = new();
 
-            if (!Settings.SignMessageInCommand)
+            if (!isOnlineMode || !Settings.SignMessageInCommand)
                 return needSigned;
 
             string[] argStage1 = command.Split(' ', 2, StringSplitOptions.None);
@@ -2086,7 +2094,8 @@ namespace MinecraftClient.Protocol.Handlers
 
             try
             {
-                LastSeenMessageList.Acknowledgment? acknowledgment = (protocolVersion >= MC_1_19_2_Version) ? this.consumeAcknowledgment() : null;
+                LastSeenMessageList.Acknowledgment? acknowledgment = 
+                    (protocolVersion >= MC_1_19_2_Version) ? this.consumeAcknowledgment() : null;
 
                 List<byte> fields = new();
 
@@ -2098,7 +2107,7 @@ namespace MinecraftClient.Protocol.Handlers
                 fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
                 List<Tuple<string, string>> needSigned = CollectCommandArguments(command); // List< Argument Name, Argument Value >
-                if (needSigned.Count == 0 || playerKeyPair == null || !Settings.SignMessageInCommand)
+                if (!isOnlineMode || needSigned.Count == 0 || playerKeyPair == null || !Settings.SignMessageInCommand)
                 {
                     fields.AddRange(dataTypes.GetLong(0));                    // Salt: Long
                     fields.AddRange(dataTypes.GetVarInt(0));                  // Signature Length: VarInt
@@ -2126,7 +2135,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolVersion >= MC_1_19_2_Version)
                 {
                     // Message Acknowledgment
-                    fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!));
+                    fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode));
                 }
 
                 SendPacket(PacketTypesOut.ChatCommand, fields);
@@ -2154,7 +2163,8 @@ namespace MinecraftClient.Protocol.Handlers
 
             try
             {
-                LastSeenMessageList.Acknowledgment? acknowledgment = (protocolVersion >= MC_1_19_2_Version) ? this.consumeAcknowledgment() : null;
+                LastSeenMessageList.Acknowledgment? acknowledgment = 
+                    (protocolVersion >= MC_1_19_2_Version) ? this.consumeAcknowledgment() : null;
 
                 List<byte> fields = new();
 
@@ -2167,7 +2177,7 @@ namespace MinecraftClient.Protocol.Handlers
                     DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                     fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                    if (playerKeyPair == null || !Settings.SignChat)
+                    if (!isOnlineMode || playerKeyPair == null || !Settings.SignChat)
                     {
                         fields.AddRange(dataTypes.GetLong(0));   // Salt: Long
                         fields.AddRange(dataTypes.GetVarInt(0)); // Signature Length: VarInt
@@ -2193,7 +2203,7 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolVersion >= MC_1_19_2_Version)
                     {
                         // Message Acknowledgment
-                        fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!));
+                        fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode));
                     }
                 }
                 SendPacket(PacketTypesOut.ChatMessage, fields);
