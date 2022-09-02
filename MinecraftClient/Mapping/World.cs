@@ -116,11 +116,9 @@ namespace MinecraftClient.Mapping
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
         public static void SetDimension(string name)
         {
-            if (dimensionList!.TryGetValue(name, out Dimension? dimension))
-                curDimension = dimension;
-            else
-                Console.WriteLine("Can't find dimension \"" + name + "\"");
+            curDimension = dimensionList![name]; // Should not fail
         }
+
 
         /// <summary>
         /// Get current dimension

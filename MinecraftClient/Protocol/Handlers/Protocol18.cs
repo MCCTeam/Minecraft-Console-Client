@@ -24,7 +24,7 @@ using MinecraftClient.Protocol.Message;
 namespace MinecraftClient.Protocol.Handlers
 {
     /// <summary>
-    /// Implementation for Minecraft 1.7.X+ Protocols
+    /// Implementation for Minecraft 1.8.X+ Protocols
     /// </summary>
     /// <remarks>
     /// Typical update steps for implementing protocol changes for a new Minecraft version:
@@ -1417,13 +1417,16 @@ namespace MinecraftClient.Protocol.Handlers
                                 int EntityID = dataTypes.ReadNextVarInt(packetData);
                                 Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
 
-                                // See https://wiki.vg/Entity_metadata#Living_Entity
-                                int healthField = 7; // From 1.10 to 1.13.2
-                                if (protocolVersion >= MC_1_14_Version)
-                                    healthField = 8; // 1.14 and above
-                                if (protocolVersion >= MC_1_17_Version)
-                                    healthField = 9; // 1.17 and above
+                                int healthField; // See https://wiki.vg/Entity_metadata#Living_Entity
                                 if (protocolVersion > MC_1_19_2_Version)
+                                    throw new NotImplementedException(Translations.Get("exception.palette.healthfield"));
+                                else if (protocolVersion >= MC_1_17_Version) // 1.17 and above
+                                    healthField = 9;
+                                else if (protocolVersion >= MC_1_14_Version) // 1.14 and above
+                                    healthField = 8;
+                                else if (protocolVersion >= MC_1_10_Version) // 1.10 and above
+                                    healthField = 7;
+                                else
                                     throw new NotImplementedException(Translations.Get("exception.palette.healthfield"));
 
                                 if (metadata.ContainsKey(healthField) && metadata[healthField] != null && metadata[healthField].GetType() == typeof(float))
@@ -1675,19 +1678,19 @@ namespace MinecraftClient.Protocol.Handlers
             }
             if (protocolVersion >= MC_1_19_2_Version)
             {
-                string uuid = handler.GetUserUuidStr();
-                if (uuid == "0")
+                Guid uuid = handler.GetUserUuid();
+                if (uuid == Guid.Empty)
                     fullLoginPacket.AddRange(dataTypes.GetBool(false));                                       // Has UUID
                 else
                 {
                     fullLoginPacket.AddRange(dataTypes.GetBool(true));                                        // Has UUID
-                    fullLoginPacket.AddRange(dataTypes.GetUUID(Guid.Parse(uuid)));                            // UUID
+                    fullLoginPacket.AddRange(dataTypes.GetUUID(uuid));                                        // UUID
                 }
             }
             SendPacket(0x00, fullLoginPacket);
 
             int packetID = -1;
-            Queue<byte> packetData = new Queue<byte>();
+            Queue<byte> packetData = new();
             while (true)
             {
                 ReadNextPacket(ref packetID, packetData);
@@ -2034,12 +2037,12 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="command">Command</param>
         /// <returns> List< Argument Name, Argument Value > </returns>
-        private List<Tuple<string, string>> CollectCommandArguments(string command)
+        private List<Tuple<string, string>>? CollectCommandArguments(string command)
         {
-            List<Tuple<string, string>> needSigned = new();
-
             if (!isOnlineMode || !Settings.SignMessageInCommand)
-                return needSigned;
+                return null;
+
+            List<Tuple<string, string>> needSigned = new();
 
             string[] argStage1 = command.Split(' ', 2, StringSplitOptions.None);
             if (argStage1.Length == 2)
@@ -2076,7 +2079,7 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// Send a chat command to the server
+        /// Send a chat command to the server - 1.19 and above
         /// </summary>
         /// <param name="command">Command</param>
         /// <param name="playerKeyPair">PlayerKeyPair</param>
@@ -2105,8 +2108,9 @@ namespace MinecraftClient.Protocol.Handlers
                 DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                 fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                List<Tuple<string, string>> needSigned = CollectCommandArguments(command); // List< Argument Name, Argument Value >
-                if (!isOnlineMode || needSigned.Count == 0 || playerKeyPair == null || !Settings.SignMessageInCommand)
+                List<Tuple<string, string>>? needSigned = 
+                    playerKeyPair != null ? CollectCommandArguments(command) : null; // List< Argument Name, Argument Value >
+                if (needSigned == null || needSigned!.Count == 0)
                 {
                     fields.AddRange(dataTypes.GetLong(0));                    // Salt: Long
                     fields.AddRange(dataTypes.GetVarInt(0));                  // Signature Length: VarInt
@@ -2121,8 +2125,8 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         fields.AddRange(dataTypes.GetString(argument.Item1)); // Argument name: String
                         byte[] sign = (protocolVersion >= MC_1_19_2_Version) ?
-                            playerKeyPair.PrivateKey.SignMessage(argument.Item2, uuid, timeNow, ref salt, acknowledgment!.lastSeen) :
-                            playerKeyPair.PrivateKey.SignMessage(argument.Item2, uuid, timeNow, ref salt);
+                            playerKeyPair!.PrivateKey.SignMessage(argument.Item2, uuid, timeNow, ref salt, acknowledgment!.lastSeen) :
+                            playerKeyPair!.PrivateKey.SignMessage(argument.Item2, uuid, timeNow, ref salt);
                         fields.AddRange(dataTypes.GetVarInt(sign.Length));    // Signature length: VarInt
                         fields.AddRange(sign);                                // Signature: Byte Array
                     }
@@ -2162,9 +2166,6 @@ namespace MinecraftClient.Protocol.Handlers
 
             try
             {
-                LastSeenMessageList.Acknowledgment? acknowledgment =
-                    (protocolVersion >= MC_1_19_2_Version) ? this.consumeAcknowledgment() : null;
-
                 List<byte> fields = new();
 
                 // 	Message: String (up to 256 chars)
@@ -2172,6 +2173,9 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (protocolVersion >= MC_1_19_Version)
                 {
+                    LastSeenMessageList.Acknowledgment? acknowledgment =
+                        (protocolVersion >= MC_1_19_2_Version) ? this.consumeAcknowledgment() : null;
+
                     // Timestamp: Instant(Long)
                     DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                     fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));

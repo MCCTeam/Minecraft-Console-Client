@@ -1122,18 +1122,16 @@ namespace MinecraftClient.Protocol.Handlers
         public byte[] GetLastSeenMessageList(Message.LastSeenMessageList msgList, bool isOnlineMode)
         {
             if (!isOnlineMode)
-            {
-                return GetVarInt(0);
-            }
+                return GetVarInt(0);                                                   // Message list size
             else
             {
-                List<byte> fields = new List<byte>();
-                fields.AddRange(GetVarInt(msgList.entries.Length));
+                List<byte> fields = new();
+                fields.AddRange(GetVarInt(msgList.entries.Length));                    // Message list size
                 foreach (Message.LastSeenMessageList.Entry entry in msgList.entries)
                 {
-                    fields.AddRange(entry.profileId.ToBigEndianBytes());
-                    fields.AddRange(GetVarInt(entry.lastSignature.Length));
-                    fields.AddRange(entry.lastSignature);
+                    fields.AddRange(entry.profileId.ToBigEndianBytes());               // UUID
+                    fields.AddRange(GetVarInt(entry.lastSignature.Length));            // Signature length
+                    fields.AddRange(entry.lastSignature);                              // Signature data
                 }
                 return fields.ToArray();
             }
@@ -1147,16 +1145,16 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Acknowledgment Packet Data</returns>
         public byte[] GetAcknowledgment(Message.LastSeenMessageList.Acknowledgment ack, bool isOnlineMode)
         {
-            List<byte> fields = new List<byte>();
+            List<byte> fields = new();
             fields.AddRange(GetLastSeenMessageList(ack.lastSeen, isOnlineMode));
             if (!isOnlineMode || ack.lastReceived == null)
-                fields.AddRange(GetBool(false));
+                fields.AddRange(GetBool(false));                                        // Has last received message
             else
             {
                 fields.AddRange(GetBool(true));
-                fields.AddRange(ack.lastReceived.profileId.ToBigEndianBytes());
-                fields.AddRange(GetVarInt(ack.lastReceived.lastSignature.Length));
-                fields.AddRange(ack.lastReceived.lastSignature);
+                fields.AddRange(ack.lastReceived.profileId.ToBigEndianBytes());         // Has last received message
+                fields.AddRange(GetVarInt(ack.lastReceived.lastSignature.Length));      // Last received message signature length
+                fields.AddRange(ack.lastReceived.lastSignature);                        // Last received message signature data
             }
             return fields.ToArray();
         }
