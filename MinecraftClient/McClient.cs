@@ -1131,17 +1131,19 @@ namespace MinecraftClient
         /// <param name="text">Text to send to the server</param>
         public void SendText(string text)
         {
+            if (String.IsNullOrEmpty(text))
+                return;
+
+            int maxLength = handler.GetMaxChatMessageLength();
+
             lock (chatQueue)
             {
-                if (String.IsNullOrEmpty(text))
-                    return;
-                int maxLength = handler.GetMaxChatMessageLength();
                 if (text.Length > maxLength) //Message is too long?
                 {
                     if (text[0] == '/')
                     {
                         //Send the first 100/256 chars of the command
-                        text = text.Substring(0, maxLength);
+                        text = text[..maxLength];
                         chatQueue.Enqueue(text);
                     }
                     else
@@ -1149,13 +1151,15 @@ namespace MinecraftClient
                         //Split the message into several messages
                         while (text.Length > maxLength)
                         {
-                            chatQueue.Enqueue(text.Substring(0, maxLength));
-                            text = text.Substring(maxLength, text.Length - maxLength);
+                            chatQueue.Enqueue(text[..maxLength]);
+                            text = text[maxLength..];
                         }
                         chatQueue.Enqueue(text);
                     }
                 }
-                else chatQueue.Enqueue(text);
+                else
+                    chatQueue.Enqueue(text);
+
                 TrySendMessageToServer();
             }
         }
