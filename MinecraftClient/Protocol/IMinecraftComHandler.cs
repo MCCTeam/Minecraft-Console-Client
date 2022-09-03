@@ -5,6 +5,7 @@ using System.Text;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol
 {
@@ -22,7 +23,8 @@ namespace MinecraftClient.Protocol
         int GetServerPort();
         string GetServerHost();
         string GetUsername();
-        string GetUserUUID();
+        Guid GetUserUuid();
+        string GetUserUuidStr();
         string GetSessionID();
         string[] GetOnlinePlayers();
         Dictionary<string, string> GetOnlinePlayersWithUUID();

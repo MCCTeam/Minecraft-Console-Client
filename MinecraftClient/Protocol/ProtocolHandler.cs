@@ -131,7 +131,7 @@ namespace MinecraftClient.Protocol
             if (Array.IndexOf(supportedVersions_Protocol16, ProtocolVersion) > -1)
                 return new Protocol16Handler(Client, ProtocolVersion, Handler);
 
-            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759 };
+            int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760 };
             
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
                 return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
@@ -263,6 +263,9 @@ namespace MinecraftClient.Protocol
                         return 758;
                     case "1.19":
                         return 759;
+                    case "1.19.1":
+                    case "1.19.2":
+                        return 760;
                     default:
                         return 0;
                 }
@@ -329,6 +332,7 @@ namespace MinecraftClient.Protocol
                 case 757: return "1.18.1";
                 case 758: return "1.18.2";
                 case 759: return "1.19";
+                case 760: return "1.19.2";
                 default: return "0.0";
             }
         }

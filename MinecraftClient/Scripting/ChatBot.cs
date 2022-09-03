@@ -1110,7 +1110,7 @@ namespace MinecraftClient
         /// <returns>UserUUID of the current account</returns>
         protected string GetUserUUID()
         {
-            return Handler.GetUserUUID();
+            return Handler.GetUserUuidStr();
         }
 
         /// <summary>

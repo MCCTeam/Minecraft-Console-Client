@@ -14,6 +14,7 @@ using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient
 {
@@ -68,9 +69,10 @@ namespace MinecraftClient
         private int port;
         private int protocolversion;
         private string username;
-        private string uuid;
+        private Guid uuid;
+        private string uuidStr;
         private string sessionid;
-        private PlayerKeyPair playerKeyPair;
+        private PlayerKeyPair? playerKeyPair;
         private DateTime lastKeepAlive;
         private object lastKeepAliveLock = new();
         private int respawnTicks = 0;
@@ -104,7 +106,8 @@ namespace MinecraftClient
         public int GetServerPort() { return port; }
         public string GetServerHost() { return host; }
         public string GetUsername() { return username; }
-        public string GetUserUUID() { return uuid; }
+        public Guid GetUserUuid() { return uuid; }
+        public string GetUserUuidStr() { return uuidStr; }
         public string GetSessionID() { return sessionid; }
         public Location GetCurrentLocation() { return location; }
         public float GetYaw() { return playerYaw; }
@@ -141,7 +144,7 @@ namespace MinecraftClient
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        public McClient(string username, string uuid, string sessionID, PlayerKeyPair playerKeyPair, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
+        public McClient(string username, string uuid, string sessionID, PlayerKeyPair? playerKeyPair, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
         {
             StartClient(username, uuid, sessionID, playerKeyPair, server_ip, port, protocolversion, forgeInfo, false, "");
         }
@@ -156,7 +159,7 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="command">The text or command to send.</param>
-        public McClient(string username, string uuid, string sessionID, PlayerKeyPair playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
+        public McClient(string username, string uuid, string sessionID, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
         {
             StartClient(username, uuid, sessionID, playerKeyPair, server_ip, port, protocolversion, forgeInfo, true, command);
         }
@@ -172,7 +175,7 @@ namespace MinecraftClient
         /// <param name="uuid">The player's UUID for online-mode authentication</param>
         /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-        private void StartClient(string user, string uuid, string sessionID, PlayerKeyPair playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
+        private void StartClient(string user, string uuid, string sessionID, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;
@@ -180,7 +183,9 @@ namespace MinecraftClient
 
             bool retry = false;
             this.sessionid = sessionID;
-            this.uuid = uuid;
+            if (!Guid.TryParse(uuid, out this.uuid))
+                this.uuid = Guid.Empty;
+            this.uuidStr = uuid;
             this.username = user;
             this.host = server_ip;
             this.port = port;
@@ -2093,20 +2098,18 @@ namespace MinecraftClient
             List<string> links = new();
             string messageText;
 
-            if (message.isJson)
+            if (message.isSignedChat)
             {
-                if (message.isSignedChat)
-                {
-                    if (!Settings.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
-                        return;
-                    messageText = ChatParser.ParseSignedChat(message, links);
-                }
-                else
-                    messageText = ChatParser.ParseText(message.content, links);
+                if (!Settings.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
+                    return;
+                messageText = ChatParser.ParseSignedChat(message, links);
             }
             else
             {
-                messageText = message.content;
+                if (message.isJson)
+                    messageText = ChatParser.ParseText(message.content, links);
+                else
+                    messageText = message.content;
             }
 
             Log.Chat(messageText);
@@ -2243,15 +2246,16 @@ namespace MinecraftClient
             if (player.Name == username)
             {
                 // 1.19+ offline server is possible to return different uuid
-                this.uuid = player.UUID.ToString().Replace("-", string.Empty);
+                this.uuid = player.Uuid;
+                this.uuidStr = player.Uuid.ToString().Replace("-", string.Empty);
             }
 
             lock (onlinePlayers)
             {
-                onlinePlayers[player.UUID] = player;
+                onlinePlayers[player.Uuid] = player;
             }
 
-            DispatchBotEvent(bot => bot.OnPlayerJoin(player.UUID, player.Name));
+            DispatchBotEvent(bot => bot.OnPlayerJoin(player.Uuid, player.Name));
         }
 
         /// <summary>
