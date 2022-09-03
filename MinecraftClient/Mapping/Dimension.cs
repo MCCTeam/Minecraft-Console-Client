@@ -23,6 +23,13 @@ namespace MinecraftClient.Mapping
         public readonly bool piglinSafe = false;
 
         /// <summary>
+        /// Possibly the light level(s) at which monsters can spawn.
+        /// </summary>
+        public readonly int monsterSpawnMinLightLevel = 0;
+        public readonly int monsterSpawnMaxLightLevel = 7;
+        public readonly int monsterSpawnBlockLightLimit = 0;
+
+        /// <summary>
         /// When false, compasses spin randomly. When true, nether portals can spawn zombified piglins.
         /// </summary>
         public readonly bool natural = true;
@@ -132,6 +139,25 @@ namespace MinecraftClient.Mapping
 
             if (nbt.ContainsKey("piglin_safe"))
                 this.piglinSafe = 1 == (byte)nbt["piglin_safe"];
+            if (nbt.ContainsKey("monster_spawn_light_level"))
+            {
+                try
+                {
+                    var monsterSpawnLightLevelObj = nbt["monster_spawn_light_level"];
+                    if (monsterSpawnLightLevelObj.GetType() == typeof(int))
+                        this.monsterSpawnMinLightLevel = this.monsterSpawnMaxLightLevel = (int)monsterSpawnLightLevelObj;
+                    else
+                    {
+                        var inclusive = (Dictionary<string, object>)(((Dictionary<string, object>)monsterSpawnLightLevelObj)["value"]);
+                        this.monsterSpawnMinLightLevel = (int)inclusive["min_inclusive"];
+                        this.monsterSpawnMaxLightLevel = (int)inclusive["max_inclusive"];
+                    }
+
+                }
+                catch (KeyNotFoundException) { }
+            }
+            if (nbt.ContainsKey("monster_spawn_block_light_limit"))
+                this.monsterSpawnBlockLightLimit = (int)nbt["monster_spawn_block_light_limit"];
             if (nbt.ContainsKey("natural"))
                 this.natural = 1 == (byte)nbt["natural"];
             if (nbt.ContainsKey("ambient_light"))
