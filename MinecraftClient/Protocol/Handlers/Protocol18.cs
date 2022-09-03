@@ -184,7 +184,6 @@ namespace MinecraftClient.Protocol.Handlers
                     { 4,  ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING },
                     { 5,  ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING },
                     { 6,  ChatParser.MessageType.EMOTE_COMMAND },
-                    { 7,  ChatParser.MessageType.RAW_MSG },
                 };
             else if (this.protocolVersion == MC_1_19_Version)
                 ChatParser.ChatId2Type = new()
@@ -481,7 +480,8 @@ namespace MinecraftClient.Protocol.Handlers
                                     verifyResult = player == null ? false : player.VerifyMessage(signedChat, timestamp, salt, ref messageSignature);
                                 }
 
-                                handler.OnTextReceived(new(signedChat, true, messageType, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, verifyResult));
+                                ChatMessage chat = new(signedChat, true, messageType, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, verifyResult);
+                                handler.OnTextReceived(chat);
                             }
                             else // 1.19.1 +
                             {
@@ -518,7 +518,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 Dictionary<string, Json.JSONData> chatInfo = Json.ParseJson(chatName).Properties;
                                 string senderDisplayName = (chatInfo.ContainsKey("insertion") ? chatInfo["insertion"] : chatInfo["text"]).StringValue;
                                 string? senderTeamName = null;
-                                ChatParser.MessageType messageTypeEnum = ChatParser.ChatId2Type![chatTypeId];
+                                ChatParser.MessageType messageTypeEnum = ChatParser.ChatId2Type!.GetValueOrDefault(chatTypeId, ChatParser.MessageType.CHAT);
                                 if (targetName != null &&
                                     (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING || messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
                                     senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0].Properties["text"].StringValue;
