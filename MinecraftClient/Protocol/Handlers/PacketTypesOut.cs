@@ -10,65 +10,61 @@ namespace MinecraftClient.Protocol.Handlers
     /// </summary>
     public enum PacketTypesOut
     {
-        TeleportConfirm,
-        QueryBlockNBT,
-        SetDifficulty,
-        ChatMessage,
-        ClientStatus,
-        ClientSettings,
-        TabComplete,
-        WindowConfirmation,
-        ClickWindowButton,
-        ClickWindow,
-        CloseWindow,
-        PluginMessage,
-        EditBook,
-        EntityNBTRequest,
-        InteractEntity,
-        KeepAlive,
-        LockDifficulty,
-        PlayerPosition,
-        PlayerPositionAndRotation,
-        PlayerRotation,
-        PlayerMovement,
-        VehicleMove,
-        SteerBoat,
-        PickItem,
-        CraftRecipeRequest,
-        PlayerAbilities,
-        PlayerDigging,
-        EntityAction,
-        SteerVehicle,
-        RecipeBookData,
-        NameItem,
-        ResourcePackStatus,
-        AdvancementTab,
-        SelectTrade,
-        SetBeaconEffect,
-        HeldItemChange,
-        UpdateCommandBlock,
-        UpdateCommandBlockMinecart,
-        CreativeInventoryAction,
-        UpdateJigsawBlock,
-        UpdateStructureBlock,
-        UpdateSign,
-        Animation,
-        Spectate,
-        PlayerBlockPlacement,
-        UseItem,
-        Pong,
-        PrepareCraftingGrid, // For 1.12 - 1.12.1 only
-        EnchantItem, // For 1.13.2 or below
-        GenerateStructure, // Added in 1.16
-        SetDisplayedRecipe, // Added in 1.16.2
-        SetRecipeBookState, // Added in 1.16.2
-        Unknown, //  For old version packet that have been removed and not used by mcc 
-
-        // Added in 1.19
-        ChatCommand,
-        ChatPreview,
-
-        // Added in 1.19.1 (1.19.2)
-        MessageAcknowledgment
+        AdvancementTab,              //
+        Animation,                   //
+        ChatCommand,                 // Added in 1.19
+        ChatMessage,                 //
+        ChatPreview,                 // Added in 1.19
+        ClickWindow,                 //
+        ClickWindowButton,           //
+        ClientSettings,              //
+        ClientStatus,                //
+        CloseWindow,                 //
+        CraftRecipeRequest,          //
+        CreativeInventoryAction,     //
+        EditBook,                    //
+        EnchantItem,                 // For 1.13.2 or below
+        EntityAction,                //
+        EntityNBTRequest,            //
+        GenerateStructure,           // Added in 1.16
+        HeldItemChange,              //
+        InteractEntity,              //
+        KeepAlive,                   //
+        LockDifficulty,              //
+        MessageAcknowledgment,       // Added in 1.19.1 (1.19.2)
+        NameItem,                    //
+        PickItem,                    //
+        PlayerAbilities,             //
+        PlayerBlockPlacement,        //
+        PlayerDigging,               //
+        PlayerMovement,              //
+        PlayerPosition,              //
+        PlayerPositionAndRotation,   //
+        PlayerRotation,              //
+        PluginMessage,               //
+        Pong,                        //
+        PrepareCraftingGrid,         // For 1.12 - 1.12.1 only
+        QueryBlockNBT,               //
+        RecipeBookData,              //
+        ResourcePackStatus,          //
+        SelectTrade,                 //
+        SetBeaconEffect,             //
+        SetDifficulty,               //
+        SetDisplayedRecipe,          // Added in 1.16.2
+        SetRecipeBookState,          // Added in 1.16.2
+        Spectate,                    //
+        SteerBoat,                   //
+        SteerVehicle,                //
+        TabComplete,                 //
+        TeleportConfirm,             //
+        Unknown,                     // For old version packet that have been removed and not used by mcc
+        UpdateCommandBlock,          //
+        UpdateCommandBlockMinecart,  //
+        UpdateJigsawBlock,           //
+        UpdateSign,                  //
+        UpdateStructureBlock,        //
+        UseItem,                     //
+        VehicleMove,                 //
+        WindowConfirmation,          //
     }
 }
