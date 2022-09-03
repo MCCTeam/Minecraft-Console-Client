@@ -4,7 +4,7 @@
 
 # Minecraft Console Client (MCC)
 
-[Documentation](https://mccteam.github.io/docs/) | [Download](#download-🔽) | [Installation](https://mccteam.github.io/docs/guide/installation.html) | [Configuration](https://mccteam.github.io/docs/guide/configuration.html) | [Usage](https://mccteam.github.io/docs/guide/usage.html)
+[Documentation](https://mccteam.github.io/docs/) | [Download](#download) | [Installation](https://mccteam.github.io/docs/guide/installation.html) | [Configuration](https://mccteam.github.io/docs/guide/configuration.html) | [Usage](https://mccteam.github.io/docs/guide/usage.html)
 
 [![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
 
@@ -14,7 +14,7 @@
 
 **Minecraft Console Client (MCC)** is a lightweight cross-platform open-source Minecraft TUI client for **Java** edition that allows you to connect to any Minecraft Java server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game.
 
-## Download 🔽
+## Download
 
 Get development builds from the [Releases section](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
 
