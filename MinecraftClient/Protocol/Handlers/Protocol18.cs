@@ -184,6 +184,7 @@ namespace MinecraftClient.Protocol.Handlers
                     { 4,  ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING },
                     { 5,  ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING },
                     { 6,  ChatParser.MessageType.EMOTE_COMMAND },
+                    { 7,  ChatParser.MessageType.RAW_MSG },
                 };
             else if (this.protocolVersion == MC_1_19_Version)
                 ChatParser.ChatId2Type = new()
