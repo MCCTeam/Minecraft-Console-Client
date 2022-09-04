@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using MinecraftClient.Protocol.Handlers;
+using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Keys
 {
     static class KeyUtils
     {
-        private static string certificates = "https://api.minecraftservices.com/player/certificates";
+        private static readonly SHA256 sha256Hash = SHA256.Create();
+
+        private static readonly string certificates = "https://api.minecraftservices.com/player/certificates";
 
         public static PlayerKeyPair? GetNewProfileKeys(string accessToken)
         {
@@ -67,25 +72,57 @@ namespace MinecraftClient.Protocol.Keys
             return Convert.FromBase64String(key);
         }
 
-        public static byte[] GetSignatureData(string message, string uuid, DateTimeOffset timestamp, ref byte[] salt)
+        public static byte[] ComputeHash(byte[] data)
+        {
+            return sha256Hash.ComputeHash(data);
+        }
+
+        public static byte[] GetSignatureData(string message, Guid uuid, DateTimeOffset timestamp, ref byte[] salt)
         {
             List<byte> data = new();
 
             data.AddRange(salt);
 
-            byte[] UUIDLeastSignificantBits = BitConverter.GetBytes(Convert.ToInt64(uuid[..16], 16));
-            Array.Reverse(UUIDLeastSignificantBits);
-            data.AddRange(UUIDLeastSignificantBits);
-
-            byte[] UUIDMostSignificantBits = BitConverter.GetBytes(Convert.ToInt64(uuid.Substring(16, 16), 16));
-            Array.Reverse(UUIDMostSignificantBits);
-            data.AddRange(UUIDMostSignificantBits);
+            data.AddRange(uuid.ToBigEndianBytes());
 
             byte[] timestampByte = BitConverter.GetBytes(timestamp.ToUnixTimeSeconds());
             Array.Reverse(timestampByte);
             data.AddRange(timestampByte);
 
             data.AddRange(Encoding.UTF8.GetBytes(message));
+
+            return data.ToArray();
+        }
+
+        public static byte[] GetSignatureData(string message, DateTimeOffset timestamp, ref byte[] salt, LastSeenMessageList lastSeenMessages)
+        {
+            List<byte> data = new();
+
+            data.AddRange(salt);
+
+            byte[] timestampByte = BitConverter.GetBytes(timestamp.ToUnixTimeSeconds());
+            Array.Reverse(timestampByte);
+            data.AddRange(timestampByte);
+
+            data.AddRange(Encoding.UTF8.GetBytes(message));
+
+            data.Add(70);
+
+            lastSeenMessages.WriteForSign(data);
+
+            return data.ToArray();
+        }
+
+        public static byte[] GetSignatureData(byte[]? precedingSignature, Guid sender, byte[] bodySign)
+        {
+            List<byte> data = new();
+
+            if (precedingSignature != null)
+                data.AddRange(precedingSignature);
+
+            data.AddRange(sender.ToBigEndianBytes());
+
+            data.AddRange(bodySign);
 
             return data.ToArray();
         }

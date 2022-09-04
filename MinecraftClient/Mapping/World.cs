@@ -21,7 +21,9 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// The dimension info of the world
         /// </summary>
-        private static Dimension dimension = new();
+        private static Dimension curDimension = new Dimension();
+
+        private static Dictionary<string, Dimension>? dimensionList = null;
 
         /// <summary>
         /// Chunk data parsing progress
@@ -52,16 +54,34 @@ namespace MinecraftClient.Mapping
             }
         }
 
+
         /// <summary>
-        /// Set dimension type
+        /// Storage of all dimensional data - 1.19.1 and above
+        /// </summary>
+        /// <param name="registryCodec">Registry Codec nbt data</param>
+        public static void StoreDimensionList(Dictionary<string, object> registryCodec)
+        {
+            dimensionList = new();
+            var dimensionListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:dimension_type"])["value"]);
+            foreach (Dictionary<string, object> dimensionNbt in dimensionListNbt)
+            {
+                string dimensionName = (string)dimensionNbt["name"];
+                Dictionary<string, object> element = (Dictionary<string, object>)dimensionNbt["element"];
+                dimensionList.Add(dimensionName, new Dimension(dimensionName, element));
+            }
+        }
+
+
+        /// <summary>
+        /// Set current dimension - 1.16 and above
         /// </summary>
         /// <param name="name">	The name of the dimension type</param>
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
-        public static void SetDimension(string name, Dictionary<string, object> nbt)
+        public static void SetDimension(string name)
         {
-            // will change in 1.19 and above
-            dimension = new Dimension(name, nbt);
+            curDimension = dimensionList![name]; // Should not fail
         }
+
 
         /// <summary>
         /// Get current dimension
@@ -69,7 +89,7 @@ namespace MinecraftClient.Mapping
         /// <returns>Current dimension</returns>
         public static Dimension GetDimension()
         {
-            return dimension;
+            return curDimension;
         }
 
         /// <summary>

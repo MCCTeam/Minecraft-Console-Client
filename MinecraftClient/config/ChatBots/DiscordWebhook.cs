@@ -279,6 +279,12 @@ class HTTP
 {
     public static byte[] Post(string url, NameValueCollection pairs)
     {
+        ServicePointManager.Expect100Continue = true;
+		ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
+                   | SecurityProtocolType.Tls11
+                   | SecurityProtocolType.Tls12
+                   | SecurityProtocolType.Ssl3;
+        
         using (WebClient webClient = new WebClient())
         {
             return webClient.UploadValues(url, pairs);
