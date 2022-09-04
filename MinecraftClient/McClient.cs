@@ -55,7 +55,7 @@ namespace MinecraftClient
         private bool locationReceived = false;
         private World world = new();
         private Queue<Location> steps;
-        private Queue<Location> path;
+        private Queue<Location>? path;
         private Location location;
         private float? _yaw; // Used for calculation ONLY!!! Doesn't reflect the client yaw
         private float? _pitch; // Used for calculation ONLY!!! Doesn't reflect the client pitch

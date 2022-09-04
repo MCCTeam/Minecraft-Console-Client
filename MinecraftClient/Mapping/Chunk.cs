@@ -19,17 +19,8 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Blocks contained into the chunk
         /// </summary>
-        private readonly Block[] blocks;
+        private readonly Block[] blocks = new Block[SizeY * SizeZ * SizeX];
 
-        public Chunk()
-        {
-            this.blocks = new Block[SizeY * SizeZ * SizeX];
-        }
-
-        public Chunk(Block[] blocks)
-        {
-            this.blocks = blocks;
-        }
 
         /// <summary>
         /// Read, or set the specified block
@@ -43,22 +34,22 @@ namespace MinecraftClient.Mapping
             get
             {
                 if (blockX < 0 || blockX >= SizeX)
-                    throw new ArgumentOutOfRangeException("blockX", "Must be between 0 and " + (SizeX - 1) + " (inclusive)");
+                    throw new ArgumentOutOfRangeException(nameof(blockX), "Must be between 0 and " + (SizeX - 1) + " (inclusive)");
                 if (blockY < 0 || blockY >= SizeY)
-                    throw new ArgumentOutOfRangeException("blockY", "Must be between 0 and " + (SizeY - 1) + " (inclusive)");
+                    throw new ArgumentOutOfRangeException(nameof(blockY), "Must be between 0 and " + (SizeY - 1) + " (inclusive)");
                 if (blockZ < 0 || blockZ >= SizeZ)
-                    throw new ArgumentOutOfRangeException("blockZ", "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
+                    throw new ArgumentOutOfRangeException(nameof(blockZ), "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
 
                 return blocks[(blockY << 8) | (blockZ << 4) | blockX];
             }
             set
             {
                 if (blockX < 0 || blockX >= SizeX)
-                    throw new ArgumentOutOfRangeException("blockX", "Must be between 0 and " + (SizeX - 1) + " (inclusive)");
+                    throw new ArgumentOutOfRangeException(nameof(blockX), "Must be between 0 and " + (SizeX - 1) + " (inclusive)");
                 if (blockY < 0 || blockY >= SizeY)
-                    throw new ArgumentOutOfRangeException("blockY", "Must be between 0 and " + (SizeY - 1) + " (inclusive)");
+                    throw new ArgumentOutOfRangeException(nameof(blockY), "Must be between 0 and " + (SizeY - 1) + " (inclusive)");
                 if (blockZ < 0 || blockZ >= SizeZ)
-                    throw new ArgumentOutOfRangeException("blockZ", "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
+                    throw new ArgumentOutOfRangeException(nameof(blockZ), "Must be between 0 and " + (SizeZ - 1) + " (inclusive)");
 
                 blocks[(blockY << 8) | (blockZ << 4) | blockX] = value;
             }

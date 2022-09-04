@@ -572,6 +572,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte[] bodyDigest = dataTypes.ReadNextByteArray(packetData);
 
                                 bool verifyResult;
+                                
                                 if (!isOnlineMode)
                                     verifyResult = false;
                                 else if (senderUUID == handler.GetUserUuid())
@@ -579,6 +580,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 else
                                 {
                                     PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
+                                    
                                     if (player == null || !player.IsMessageChainLegal())
                                         verifyResult = false;
                                     else
@@ -586,7 +588,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         bool lastVerifyResult = player.IsMessageChainLegal();
                                         verifyResult = player.VerifyMessageHead(ref precedingSignature, ref headerSignature, ref bodyDigest);
                                         if (lastVerifyResult && !verifyResult)
-                                            log.Warn("Player " + player.DisplayName + "'s message chain is broken!");
+                                            log.Warn("Player " + player.Name + "'s message chain is broken!");
                                     }
                                 }
                             }
@@ -1705,7 +1707,7 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolVersion >= MC_1_19_2_Version)
                         fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.SignatureV2!));   // Public key signature received from Microsoft API
                     else
-                        fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.Signature!));      // Public key signature received from Microsoft API
+                        fullLoginPacket.AddRange(dataTypes.GetArray(playerKeyPair.PublicKey.Signature!));     // Public key signature received from Microsoft API
                 }
             }
             if (protocolVersion >= MC_1_19_2_Version)
@@ -1769,7 +1771,6 @@ namespace MinecraftClient.Protocol.Handlers
             if (serverIDhash != "-")
             {
                 log.Info(Translations.Get("mcc.session"));
-                string serverHash = CryptoHandler.getServerHash(serverIDhash, serverPublicKey, secretKey);
 
                 bool needCheckSession = true;
                 if (session.ServerPublicKey != null && session.SessionPreCheckTask != null
@@ -1782,6 +1783,8 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (needCheckSession)
                 {
+                    string serverHash = CryptoHandler.getServerHash(serverIDhash, serverPublicKey, secretKey);
+
                     if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash))
                     {
                         session.ServerIDhash = serverIDhash;
