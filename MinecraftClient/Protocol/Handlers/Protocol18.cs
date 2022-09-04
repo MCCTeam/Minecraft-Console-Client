@@ -1339,7 +1339,9 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 int entityid = dataTypes.ReadNextVarInt(packetData);
                                 Inventory.Effects effect = Effects.Speed;
-                                if (Enum.TryParse(dataTypes.ReadNextByte(packetData).ToString(), out effect))
+                                int effectId = protocolVersion >= MC_1_18_2_Version ? 
+                                    dataTypes.ReadNextVarInt(packetData) : dataTypes.ReadNextByte(packetData);
+                                if (Enum.TryParse(effectId.ToString(), out effect))
                                 {
                                     int amplifier = dataTypes.ReadNextByte(packetData);
                                     int duration = dataTypes.ReadNextVarInt(packetData);
@@ -1351,7 +1353,8 @@ namespace MinecraftClient.Protocol.Handlers
                                     if (protocolVersion >= MC_1_19_Version)
                                     {
                                         hasFactorData = dataTypes.ReadNextBool(packetData);
-                                        factorCodec = dataTypes.ReadNextNbt(packetData);
+                                        if (hasFactorData)
+                                            factorCodec = dataTypes.ReadNextNbt(packetData);
                                     }
 
                                     handler.OnEntityEffect(entityid, effect, amplifier, duration, flags, hasFactorData, factorCodec);
