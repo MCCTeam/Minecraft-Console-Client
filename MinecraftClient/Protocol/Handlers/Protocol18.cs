@@ -1848,7 +1848,11 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else if (packetID == 0x02) //Login successful
                 {
-                    Guid uuidReceived = dataTypes.ReadNextUUID(packetData);
+                    Guid uuidReceived;
+                    if (protocolVersion >= Protocol18Handler.MC_1_16_Version)
+                        uuidReceived = dataTypes.ReadNextUUID(packetData);
+                    else
+                        uuidReceived = Guid.Parse(dataTypes.ReadNextString(packetData));
                     string userName = dataTypes.ReadNextString(packetData);
                     Tuple<string, string, string>[]? playerProperty = null;
                     if (protocolVersion >= Protocol18Handler.MC_1_19_Version)
