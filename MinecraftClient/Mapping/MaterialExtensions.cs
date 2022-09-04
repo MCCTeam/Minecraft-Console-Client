@@ -65,6 +65,9 @@ namespace MinecraftClient.Mapping
                 case Material.BlackShulkerBox:
                 case Material.BlackStainedGlass:
                 case Material.BlackStainedGlassPane:
+                case Material.Blackstone:
+                case Material.BlackstoneSlab:
+                case Material.BlackstoneStairs:
                 case Material.BlackTerracotta:
                 case Material.BlackWool:
                 case Material.BlastFurnace:
