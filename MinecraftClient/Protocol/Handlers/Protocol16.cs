@@ -582,7 +582,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session)
         {
-            if (Handshake(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort()))
+            if (Handshake(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort(), session))
             {
                 Send(new byte[] { 0xCD, 0 });
                 try
