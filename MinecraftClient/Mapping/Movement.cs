@@ -168,8 +168,9 @@ namespace MinecraftClient.Mapping
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
 
             // Round start coordinates for easier calculation
-            start.ToFloor();
-            goal.ToFloor();
+            Location startCenter = new Location(start).ConvertToCenter();
+            Location startLower = new Location(start).ConvertToFloor();
+            Location goalLower = new Location(goal).ConvertToFloor();
 
             // We always use distance squared so our limits must also be squared.
             minOffset *= minOffset;
@@ -187,8 +188,8 @@ namespace MinecraftClient.Mapping
             Dictionary<Location, int> gScoreDict = new Dictionary<Location, int>();
 
             // Set start values for variables
-            openSet.Insert(0, (int)start.DistanceSquared(goal), start);
-            gScoreDict[start] = 0;
+            openSet.Insert(0, (int)startLower.DistanceSquared(goalLower), startLower);
+            gScoreDict[startLower] = 0;
             BinaryHeap.Node current = null;
 
             ///---///
@@ -203,9 +204,9 @@ namespace MinecraftClient.Mapping
                 current = openSet.GetRootLocation();
 
                 // Return if goal found and no maxOffset was given OR current node is between minOffset and maxOffset
-                if ((current.Location == goal && maxOffset <= 0) || (maxOffset > 0 && current.H_score >= minOffset && current.H_score <= maxOffset))
+                if ((current.Location == goalLower && maxOffset <= 0) || (maxOffset > 0 && current.H_score >= minOffset && current.H_score <= maxOffset))
                 {
-                    return ReconstructPath(CameFrom, current.Location);
+                    return ReconstructPath(CameFrom, current.Location, startCenter, goal);
                 }
 
                 // Discover neighbored blocks
@@ -227,14 +228,14 @@ namespace MinecraftClient.Mapping
 
                         // If this location is not already included in the Binary Heap: save it
                         if (!openSet.ContainsLocation(neighbor))
-                            openSet.Insert(tentativeGScore, (int)neighbor.DistanceSquared(goal), neighbor);
+                            openSet.Insert(tentativeGScore, (int)neighbor.DistanceSquared(goalLower), neighbor);
                     }
                 }
             }
 
             //// Goal could not be reached. Set the path to the closest location if close enough
             if (current != null && (maxOffset == int.MaxValue || openSet.MinH_ScoreNode.H_score <= maxOffset))
-                return ReconstructPath(CameFrom, openSet.MinH_ScoreNode.Location);
+                return ReconstructPath(CameFrom, openSet.MinH_ScoreNode.Location, startCenter, goal);
             else
                 return null;
         }
@@ -245,15 +246,29 @@ namespace MinecraftClient.Mapping
         /// <param name="Came_From">The collection of Locations that leads back to the start</param>
         /// <param name="current">Endpoint of our later walk</param>
         /// <returns>the path that leads to current from the start position</returns>
-        private static Queue<Location> ReconstructPath(Dictionary<Location, Location> Came_From, Location current)
+        private static Queue<Location> ReconstructPath(Dictionary<Location, Location> Came_From, Location current, Location startCenter, Location end)
         {
             // Add 0.5 to walk over the middle of a block and avoid collisions
-            List<Location> total_path = new List<Location>(new[] { current + new Location(0.5, 0, 0.5) });
+            Location center = new(0.5, 0, 0.5);
+
+            List<Location> total_path = new();
+
+            // Move from the center of the block to the final position
+            if (current != end && current.DistanceSquared(end) <= 1.5)
+                total_path.Add(end);
+
+            // Generate intermediate paths
+            total_path.Add(current + center);
             while (Came_From.ContainsKey(current))
             {
                 current = Came_From[current];
-                total_path.Add(current + new Location(0.5, 0, 0.5));
+                total_path.Add(current + center);
             }
+
+            // Move to the center of the block first
+            if (current != startCenter && current.DistanceSquared(startCenter) <= 1.5)
+                total_path.Add(startCenter);
+
             total_path.Reverse();
             return new Queue<Location>(total_path);
         }

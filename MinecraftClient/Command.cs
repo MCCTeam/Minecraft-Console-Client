@@ -80,7 +80,7 @@ namespace MinecraftClient
         /// <returns>Argument array or empty array if no arguments</returns>
         public static string[] getArgs(string command)
         {
-            string[] args = getArg(command).Split(' ');
+            string[] args = getArg(command).Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (args.Length == 1 && args[0] == "")
             {
                 return new string[] { };
