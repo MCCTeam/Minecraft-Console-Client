@@ -50,6 +50,16 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Create a new location
         /// </summary>
+        public Location(Location loc)
+        {
+            X = loc.X;
+            Y = loc.Y;
+            Z = loc.Z;
+        }
+
+        /// <summary>
+        /// Create a new location
+        /// </summary>
         /// <param name="chunkX">Location of the chunk into the world</param>
         /// <param name="chunkZ">Location of the chunk into the world</param>
         /// <param name="blockX">Location of the block into the chunk</param>
@@ -67,7 +77,7 @@ namespace MinecraftClient.Mapping
         /// Round coordinates
         /// </summary>
         /// <returns>itself</returns>
-        public Location ToFloor()
+        public Location ConvertToFloor()
         {
             this.X = Math.Floor(this.X);
             this.Y = Math.Floor(this.Y);
@@ -79,7 +89,7 @@ namespace MinecraftClient.Mapping
         /// Get the center coordinates
         /// </summary>
         /// <returns>itself</returns>
-        public Location ToCenter()
+        public Location ConvertToCenter()
         {
             this.X = Math.Floor(this.X) + 0.5;
             this.Z = Math.Floor(this.Z) + 0.5;

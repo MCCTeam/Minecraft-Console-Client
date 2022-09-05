@@ -90,21 +90,27 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        int x = int.Parse(args[0]);
-                        int y = int.Parse(args[1]);
-                        int z = int.Parse(args[2]);
-                        Location goal = new Location(x, y, z);
+                        Location current = handler.GetCurrentLocation(), currentCenter = new Location(current).ConvertToCenter();
+
+                        double x = args[0].StartsWith('~') ? current.X + (args[0].Length > 1 ? double.Parse(args[0][1..]) : 0) : double.Parse(args[0]);
+                        double y = args[1].StartsWith('~') ? current.Y + (args[1].Length > 1 ? double.Parse(args[1][1..]) : 0) : double.Parse(args[1]);
+                        double z = args[2].StartsWith('~') ? current.Z + (args[2].Length > 1 ? double.Parse(args[2][1..]) : 0) : double.Parse(args[2]);
+                        Location goal = new(x, y, z);
 
                         ChunkColumn? chunkColumn = handler.GetWorld().GetChunkColumn(goal);
                         if (chunkColumn == null || chunkColumn.FullyLoaded == false)
                             return Translations.Get("cmd.move.chunk_not_loaded");
 
-                        Location current = handler.GetCurrentLocation();
-                        handler.MoveTo(current.ToCenter(), allowDirectTeleport: true);
-
-                        if (handler.MoveTo(goal, allowUnsafe: takeRisk))
+                        if (takeRisk || Movement.PlayerFitsHere(handler.GetWorld(), goal))
+                        {
+                            if (current.DistanceSquared(goal) <= 1.5)
+                                handler.MoveTo(goal, allowDirectTeleport: true);
+                            else if (!handler.MoveTo(goal, allowUnsafe: takeRisk))
+                                return takeRisk ? Translations.Get("cmd.move.fail", goal) : Translations.Get("cmd.move.suggestforce", goal);
                             return Translations.Get("cmd.move.walk", goal, current);
-                        else return takeRisk ? Translations.Get("cmd.move.fail", goal) : Translations.Get("cmd.move.suggestforce", goal);
+                        }
+                        else
+                            return Translations.Get("cmd.move.suggestforce", goal);
                     }
                     catch (FormatException) { return GetCmdDescTranslated(); }
                 }
