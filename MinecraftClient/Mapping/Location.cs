@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace MinecraftClient.Mapping
@@ -54,11 +55,35 @@ namespace MinecraftClient.Mapping
         /// <param name="blockX">Location of the block into the chunk</param>
         /// <param name="blockY">Location of the block into the world</param>
         /// <param name="blockZ">Location of the block into the chunk</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Location(int chunkX, int chunkZ, int blockX, int blockY, int blockZ)
         {
             X = chunkX * Chunk.SizeX + blockX;
             Y = blockY;
             Z = chunkZ * Chunk.SizeZ + blockZ;
+        }
+
+        /// <summary>
+        /// Round coordinates
+        /// </summary>
+        /// <returns>itself</returns>
+        public Location ToFloor()
+        {
+            this.X = Math.Floor(this.X);
+            this.Y = Math.Floor(this.Y);
+            this.Z = Math.Floor(this.Z);
+            return this;
+        }
+
+        /// <summary>
+        /// Get the center coordinates
+        /// </summary>
+        /// <returns>itself</returns>
+        public Location ToCenter()
+        {
+            this.X = Math.Floor(this.X) + 0.5;
+            this.Z = Math.Floor(this.Z) + 0.5;
+            return this;
         }
 
         /// <summary>

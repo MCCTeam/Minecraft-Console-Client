@@ -56,12 +56,9 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (ForgeEnabled() && forgeInfo.Version == FMLVersion.FML)
             {
-                int packetID = -1;
-                Queue<byte> packetData = new Queue<byte>();
-
                 while (fmlHandshakeState != FMLHandshakeClientState.DONE)
                 {
-                    protocol18.ReadNextPacket(ref packetID, packetData);
+                    (int packetID, Queue<byte> packetData) = protocol18.ReadNextPacket();
 
                     if (packetID == 0x40) // Disconnect
                     {

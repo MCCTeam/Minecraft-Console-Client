@@ -16,6 +16,7 @@ using MinecraftClient.WinAPI;
 using MinecraftClient.Protocol.Keys;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -51,6 +52,28 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
+            new Thread(() =>
+            {
+                //Take advantage of Windows 10 / Mac / Linux UTF-8 console
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // If we're on windows, check if our version is Win10 or greater.
+                    if (WindowsVersion.WinMajorVersion >= 10)
+                        Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+                }
+                else
+                {
+                    // Apply to all other operating systems.
+                    Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
+                }
+
+                // Fix issue #2119
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+                // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
+                _ = "a".ToLower();
+            }).Start();
+
             //Setup ConsoleIO
             ConsoleIO.LogPrefix = "§8[MCC] ";
             if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
@@ -81,21 +104,8 @@ namespace MinecraftClient
                 ConsoleIO.DebugReadInput();
             }
 
-            //Take advantage of Windows 10 / Mac / Linux UTF-8 console
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // If we're on windows, check if our version is Win10 or greater.
-                if (WindowsVersion.WinMajorVersion >= 10)
-                    Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
-            }
-            else
-            {
-                // Apply to all other operating systems.
-                Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
-            }
-
             //Process ini configuration file
-            if (args.Length >= 1 && System.IO.File.Exists(args[0]) && System.IO.Path.GetExtension(args[0]).ToLower() == ".ini")
+            if (args.Length >= 1 && System.IO.File.Exists(args[0]) && Settings.ToLowerIfNeed(Path.GetExtension(args[0])) == ".ini")
             {
                 Settings.LoadFile(args[0]);
 
@@ -156,7 +166,7 @@ namespace MinecraftClient
                         }
                     }
 
-                    if (string.IsNullOrEmpty(dataGenerator) || !(dataGenerator.ToLower().Equals("entity") || dataGenerator.ToLower().Equals("item") || dataGenerator.ToLower().Equals("block")))
+                    if (string.IsNullOrEmpty(dataGenerator) || !(Settings.ToLowerIfNeed(dataGenerator).Equals("entity") || Settings.ToLowerIfNeed(dataGenerator).Equals("item") || Settings.ToLowerIfNeed(dataGenerator).Equals("block")))
                     {
                         Console.WriteLine(Translations.Get("error.generator.invalid"));
                         Console.WriteLine(Translations.Get("error.usage") + " MinecraftClient.exe --data-generator=<entity|item|block> --data-path=\"<path to resources.json>\"");
@@ -243,7 +253,7 @@ namespace MinecraftClient
                 Settings.Login = ConsoleIO.ReadLine();
             }
             if (Settings.Password == ""
-                && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.Login.ToLower()))
+                && (Settings.SessionCaching == CacheType.None || !SessionCache.Contains(Settings.ToLowerIfNeed(Settings.Login)))
                 && !useBrowser)
             {
                 RequestPassword();
@@ -284,6 +294,7 @@ namespace MinecraftClient
 
             ProtocolHandler.LoginResult result = ProtocolHandler.LoginResult.LoginRequired;
 
+            string loginLower = Settings.ToLowerIfNeed(Settings.Login);
             if (Settings.Password == "-")
             {
                 Translations.WriteLineFormatted("mcc.offline");
@@ -294,9 +305,9 @@ namespace MinecraftClient
             else
             {
                 // Validate cached session or login new session.
-                if (Settings.SessionCaching != CacheType.None && SessionCache.Contains(Settings.Login.ToLower()))
+                if (Settings.SessionCaching != CacheType.None && SessionCache.Contains(loginLower))
                 {
-                    session = SessionCache.Get(Settings.Login.ToLower());
+                    session = SessionCache.Get(loginLower);
                     result = ProtocolHandler.GetTokenValidation(session);
                     if (result != ProtocolHandler.LoginResult.Success)
                     {
@@ -304,8 +315,17 @@ namespace MinecraftClient
                         // Try to refresh access token
                         if (!string.IsNullOrWhiteSpace(session.RefreshToken))
                         {
-                            result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
+                            try
+                            {
+                                result = ProtocolHandler.MicrosoftLoginRefresh(session.RefreshToken, out session);
+                            }
+                            catch (Exception ex)
+                            {
+                                ConsoleIO.WriteLine("Refresh access token fail: " + ex.Message);
+                                result = ProtocolHandler.LoginResult.InvalidResponse;
+                            }
                         }
+
                         if (result != ProtocolHandler.LoginResult.Success
                             && Settings.Password == ""
                             && Settings.AccountType == ProtocolHandler.AccountType.Mojang)
@@ -322,9 +342,10 @@ namespace MinecraftClient
             }
 
             if (result == ProtocolHandler.LoginResult.Success && Settings.SessionCaching != CacheType.None)
-            {
-                SessionCache.Store(Settings.Login.ToLower(), session);
-            }
+                SessionCache.Store(loginLower, session);
+
+            if (result == ProtocolHandler.LoginResult.Success)
+                session.SessionPreCheckTask = Task.Factory.StartNew(() => session.SessionPreCheck());
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
@@ -338,9 +359,9 @@ namespace MinecraftClient
                             Translations.WriteLineFormatted(cacheKeyLoaded ? "debug.keys_cache_ok" : "debug.keys_cache_fail");
                     }
 
-                    if (Settings.ProfileKeyCaching != CacheType.None && KeysCache.Contains(Settings.Login.ToLower()))
+                    if (Settings.ProfileKeyCaching != CacheType.None && KeysCache.Contains(loginLower))
                     {
-                        playerKeyPair = KeysCache.Get(Settings.Login.ToLower());
+                        playerKeyPair = KeysCache.Get(loginLower);
                         if (playerKeyPair.NeedRefresh())
                             Translations.WriteLineFormatted("mcc.profile_key_invalid");
                         else
@@ -350,10 +371,10 @@ namespace MinecraftClient
                     if (playerKeyPair == null || playerKeyPair.NeedRefresh())
                     {
                         Translations.WriteLineFormatted("mcc.fetching_key");
-                        playerKeyPair = KeyUtils.GetKeys(session.ID);
+                        playerKeyPair = KeyUtils.GetNewProfileKeys(session.ID);
                         if (Settings.ProfileKeyCaching != CacheType.None && playerKeyPair != null)
                         {
-                            KeysCache.Store(Settings.Login.ToLower(), playerKeyPair);
+                            KeysCache.Store(loginLower, playerKeyPair);
                         }
                     }
                 }
@@ -425,7 +446,7 @@ namespace MinecraftClient
                 int protocolversion = 0;
                 ForgeInfo? forgeInfo = null;
 
-                if (Settings.ServerVersion != "" && Settings.ServerVersion.ToLower() != "auto")
+                if (Settings.ServerVersion != "" && Settings.ToLowerIfNeed(Settings.ServerVersion) != "auto")
                 {
                     protocolversion = Protocol.ProtocolHandler.MCVer2ProtocolVersion(Settings.ServerVersion);
 
@@ -476,11 +497,8 @@ namespace MinecraftClient
                     try
                     {
                         //Start the main TCP client
-                        if (Settings.SingleCommand != "")
-                        {
-                            client = new McClient(session.PlayerName, session.PlayerID, session.ID, playerKeyPair, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, Settings.SingleCommand);
-                        }
-                        else client = new McClient(session.PlayerName, session.PlayerID, session.ID, playerKeyPair, protocolversion, forgeInfo, Settings.ServerIP, Settings.ServerPort);
+                        string? command = String.IsNullOrEmpty(Settings.SingleCommand) ? null : Settings.SingleCommand;
+                        client = new McClient(session, playerKeyPair, Settings.ServerIP, Settings.ServerPort, protocolversion, forgeInfo, command);
 
                         //Update console title
                         if (Settings.ConsoleTitle != "")

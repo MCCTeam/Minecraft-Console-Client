@@ -26,6 +26,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Ionic.Zlib
 {
@@ -411,7 +412,6 @@ namespace Ionic.Zlib
 
             return totalBytesRead;
         }
-
 
 
         public override System.Int32 Read(System.Byte[] buffer, System.Int32 offset, System.Int32 count)

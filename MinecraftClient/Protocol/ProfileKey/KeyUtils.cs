@@ -15,7 +15,7 @@ namespace MinecraftClient.Protocol.Keys
 
         private static readonly string certificates = "https://api.minecraftservices.com/player/certificates";
 
-        public static PlayerKeyPair? GetKeys(string accessToken)
+        public static PlayerKeyPair? GetNewProfileKeys(string accessToken)
         {
             ProxiedWebRequest.Response? response = null;
             try

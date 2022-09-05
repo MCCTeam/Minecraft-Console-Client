@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol;
 using MinecraftClient.Mapping;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 namespace MinecraftClient
 {
@@ -255,31 +258,27 @@ namespace MinecraftClient
         /// <param name="file">File to load</param>
         public static void LoadFile(string file)
         {
-            ConsoleIO.WriteLogLine("[Settings] Loading Settings from " + Path.GetFullPath(file));
+            Task.Factory.StartNew(() => ConsoleIO.WriteLogLine("[Settings] Loading Settings from " + Path.GetFullPath(file)));
             if (File.Exists(file))
             {
                 try
                 {
-                    string[] Lines = File.ReadAllLines(file);
                     Section section = Section.Default;
-                    foreach (string lineRAW in Lines)
+                    foreach (var lineRAW in File.ReadLines(file))
                     {
-                        string line = section == Section.Main && lineRAW.ToLower().Trim().StartsWith("password")
-                            ? lineRAW.Trim() //Do not strip # in passwords
-                            : lineRAW.Split('#')[0].Trim();
-
-                        if (line.Length > 0)
+                        string line = lineRAW.Split('#')[0].Trim();
+                        if (line.Length > 1)
                         {
-                            if (line[0] == '[' && line[line.Length - 1] == ']')
-                            {
-                                section = GetSection(line.Substring(1, line.Length - 2).ToLower());
-                            }
+                            if (line.Length > 2 && line[0] == '[' && line[^1] == ']')
+                                section = GetSection(line[1..^1]);
                             else
                             {
                                 string argName = line.Split('=')[0];
+                                if (section == Section.Main && argName == "password")
+                                    line = lineRAW.Trim(); //Do not strip # in passwords
                                 if (line.Length > (argName.Length + 1))
                                 {
-                                    string argValue = line.Substring(argName.Length + 1);
+                                    string argValue = line[(argName.Length + 1)..];
                                     LoadSingleSetting(section, argName, argValue);
                                 }
                             }
@@ -351,16 +350,16 @@ namespace MinecraftClient
             switch (section)
             {
                 case Section.Main:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "login": Login = argValue; return true;
                         case "password": Password = argValue; return true;
                         case "type": AccountType = argValue == "mojang"
                                 ? ProtocolHandler.AccountType.Mojang
                                 : ProtocolHandler.AccountType.Microsoft; return true;
-                        case "method": LoginMethod = argValue.ToLower() == "browser"
-                                ? "browser"
-                                : "mcc"; return true;
+                        case "method":
+                            argValue = ToLowerIfNeed(argValue);
+                            LoginMethod = argValue == "browser" ? "browser" : "mcc"; return true;
                         case "serverip": if (!SetServerIP(argValue)) ServerAliasTemp = argValue; return true;
                         case "singlecommand": SingleCommand = argValue; return true;
                         case "language": Language = argValue; return true;
@@ -380,7 +379,7 @@ namespace MinecraftClient
                         case "entityhandling": EntityHandling = str2bool(argValue); return true;
                         case "enableentityhandling": EntityHandling = str2bool(argValue); return true;
                         case "inventoryhandling": InventoryHandling = str2bool(argValue); return true;
-                        case "privatemsgscmdname": PrivateMsgsCmdName = argValue.ToLower().Trim(); return true;
+                        case "privatemsgscmdname": PrivateMsgsCmdName = ToLowerIfNeed(argValue).Trim(); return true;
                         case "autorespawn": AutoRespawn = str2bool(argValue); return true;
                         // Backward compatible so people can still enable debug with old config format
                         case "debugmessages": DebugMessages = str2bool(argValue); return true;
@@ -389,8 +388,9 @@ namespace MinecraftClient
 
                         case "botowners":
                             Bots_Owners.Clear();
-                            string[] names = argValue.ToLower().Split(',');
-                            if (!argValue.Contains(",") && argValue.ToLower().EndsWith(".txt") && File.Exists(argValue))
+                            string lowerArgValue = ToLowerIfNeed(argValue);
+                            string[] names = lowerArgValue.Split(',');
+                            if (!argValue.Contains(",") && lowerArgValue.EndsWith(".txt") && File.Exists(argValue))
                                 names = File.ReadAllLines(argValue);
                             foreach (string name in names)
                                 if (!String.IsNullOrWhiteSpace(name))
@@ -398,7 +398,8 @@ namespace MinecraftClient
                             return true;
 
                         case "internalcmdchar":
-                            switch (argValue.ToLower())
+                            argValue = ToLowerIfNeed(argValue);
+                            switch (argValue)
                             {
                                 case "none": internalCmdChar = ' '; break;
                                 case "slash": internalCmdChar = '/'; break;
@@ -426,7 +427,7 @@ namespace MinecraftClient
                                     //Each line contains account data: 'Alias,Login,Password'
                                     string[] account_data = account_line.Split('#')[0].Trim().Split(',');
                                     if (account_data.Length == 3)
-                                        Accounts[account_data[0].ToLower()]
+                                        Accounts[ToLowerIfNeed(account_data[0])]
                                             = new KeyValuePair<string, string>(account_data[1], account_data[2]);
                                 }
 
@@ -446,7 +447,7 @@ namespace MinecraftClient
                                 {
                                     //Each line contains server data: 'Alias,Host:Port'
                                     string[] server_data = server_line.Split('#')[0].Trim().Split(',');
-                                    server_data[0] = server_data[0].ToLower();
+                                    server_data[0] = ToLowerIfNeed(server_data[0]);
                                     if (server_data.Length == 2
                                         && server_data[0] != "localhost"
                                         && !server_data[0].Contains('.')
@@ -469,7 +470,7 @@ namespace MinecraftClient
                             return true;
 
                         case "brandinfo":
-                            switch (argValue.Trim().ToLower())
+                            switch (ToLowerIfNeed(argValue.Trim()))
                             {
                                 case "mcc": BrandInfo = MCCBrandInfo; break;
                                 case "vanilla": BrandInfo = "vanilla"; break;
@@ -478,7 +479,7 @@ namespace MinecraftClient
                             return true;
 
                         case "resolvesrvrecords":
-                            if (argValue.Trim().ToLower() == "fast")
+                            if (ToLowerIfNeed(argValue.Trim()) == "fast")
                             {
                                 ResolveSrvRecords = true;
                                 ResolveSrvRecordsShortTimeout = true;
@@ -491,7 +492,7 @@ namespace MinecraftClient
                             return true;
 
                         case "mcforge":
-                            if (argValue.ToLower() == "auto")
+                            if (ToLowerIfNeed(argValue) == "auto")
                             {
                                 ServerAutodetectForge = true;
                                 ServerForceForge = false;
@@ -506,7 +507,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.Signature:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "login_with_secure_profile": LoginWithSecureProfile = str2bool(argValue); return true;
                         case "sign_chat": SignChat = str2bool(argValue); return true;
@@ -521,7 +522,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.Logging:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "debugmessages": DebugMessages = str2bool(argValue); return true;
                         case "chatmessages": ChatMessages = str2bool(argValue); return true;
@@ -531,7 +532,7 @@ namespace MinecraftClient
                         case "chatfilter": ChatFilter = new Regex(argValue); return true;
                         case "debugfilter": DebugFilter = new Regex(argValue); return true;
                         case "filtermode":
-                            if (argValue.ToLower().StartsWith("white"))
+                            if (ToLowerIfNeed(argValue).StartsWith("white"))
                                 FilterMode = FilterModeEnum.Whitelist;
                             else
                                 FilterMode = FilterModeEnum.Blacklist;
@@ -544,7 +545,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.Alerts:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": Alerts_Enabled = str2bool(argValue); return true;
                         case "alertsfile": Alerts_MatchesFile = argValue; return true;
@@ -554,7 +555,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.AntiAFK:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": AntiAFK_Enabled = str2bool(argValue); return true;
                         case "delay": AntiAFK_Delay = str2int(argValue); return true;
@@ -563,7 +564,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.AutoRelog:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": AutoRelog_Enabled = str2bool(argValue); return true;
                         case "retries": AutoRelog_Retries = str2int(argValue); return true;
@@ -587,7 +588,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.ChatLog:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": ChatLog_Enabled = str2bool(argValue); return true;
                         case "timestamps": ChatLog_DateTime = str2bool(argValue); return true;
@@ -597,7 +598,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.Hangman:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": Hangman_Enabled = str2bool(argValue); return true;
                         case "english": Hangman_English = str2bool(argValue); return true;
@@ -607,7 +608,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.ScriptScheduler:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": ScriptScheduler_Enabled = str2bool(argValue); return true;
                         case "tasksfile": ScriptScheduler_TasksFile = argValue; return true;
@@ -615,7 +616,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.RemoteControl:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": RemoteCtrl_Enabled = str2bool(argValue); return true;
                         case "autotpaccept": RemoteCtrl_AutoTpaccept = str2bool(argValue); return true;
@@ -624,7 +625,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.ChatFormat:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "builtins": ChatFormat_Builtins = str2bool(argValue); return true;
                         case "public": ChatFormat_Public = new Regex(argValue); return true;
@@ -634,15 +635,15 @@ namespace MinecraftClient
                     break;
 
                 case Section.Proxy:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled":
                             ProxyEnabledLogin = ProxyEnabledIngame = str2bool(argValue);
-                            if (argValue.Trim().ToLower() == "login")
+                            if (ToLowerIfNeed(argValue.Trim()) == "login")
                                 ProxyEnabledLogin = true;
                             return true;
                         case "type":
-                            argValue = argValue.ToLower();
+                            argValue = ToLowerIfNeed(argValue);
                             if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
                             else if (argValue == "socks4") { proxyType = Proxy.ProxyHandler.Type.SOCKS4; }
                             else if (argValue == "socks4a") { proxyType = Proxy.ProxyHandler.Type.SOCKS4a; }
@@ -671,7 +672,7 @@ namespace MinecraftClient
                     return true;
 
                 case Section.AutoRespond:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": AutoRespond_Enabled = str2bool(argValue); return true;
                         case "matchesfile": AutoRespond_Matches = argValue; return true;
@@ -679,13 +680,13 @@ namespace MinecraftClient
                     break;
 
                 case Section.AutoAttack:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": AutoAttack_Enabled = str2bool(argValue); return true;
-                        case "mode": AutoAttack_Mode = argValue.ToLower(); return true;
-                        case "priority": AutoAttack_Priority = argValue.ToLower(); return true;
+                        case "mode": AutoAttack_Mode = ToLowerIfNeed(argValue); return true;
+                        case "priority": AutoAttack_Priority = ToLowerIfNeed(argValue); return true;
                         case "cooldownseconds":
-                            if (argValue.ToLower() == "auto")
+                            if (ToLowerIfNeed(argValue) == "auto")
                             {
                                 AutoAttack_OverrideAttackSpeed = false;
                             }
@@ -701,7 +702,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.AutoFishing:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": AutoFishing_Enabled = str2bool(argValue); return true;
                         case "antidespawn": AutoFishing_Antidespawn = str2bool(argValue); return true;
@@ -709,7 +710,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.AutoEat:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": AutoEat_Enabled = str2bool(argValue); return true;
                         case "threshold": AutoEat_hungerThreshold = str2int(argValue); return true;
@@ -717,7 +718,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.AutoCraft:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": AutoCraft_Enabled = str2bool(argValue); return true;
                         case "configfile": AutoCraft_configFile = argValue; return true;
@@ -725,7 +726,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.AutoDrop:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": AutoDrop_Enabled = str2bool(argValue); return true;
                         case "mode": AutoDrop_Mode = argValue; return true;
@@ -734,12 +735,12 @@ namespace MinecraftClient
                     break;
 
                 case Section.MCSettings:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": MCSettings_Enabled = str2bool(argValue); return true;
                         case "locale": MCSettings_Locale = argValue; return true;
                         case "difficulty":
-                            switch (argValue.ToLower())
+                            switch (ToLowerIfNeed(argValue))
                             {
                                 case "peaceful": MCSettings_Difficulty = 0; break;
                                 case "easy": MCSettings_Difficulty = 1; break;
@@ -755,7 +756,7 @@ namespace MinecraftClient
                             }
                             else
                             {
-                                switch (argValue.ToLower())
+                                switch (ToLowerIfNeed(argValue))
                                 {
                                     case "tiny": MCSettings_RenderDistance = 2; break;
                                     case "short": MCSettings_RenderDistance = 4; break;
@@ -765,7 +766,7 @@ namespace MinecraftClient
                             }
                             return true;
                         case "chatmode":
-                            switch (argValue.ToLower())
+                            switch (ToLowerIfNeed(argValue))
                             {
                                 case "enabled": MCSettings_ChatMode = 0; break;
                                 case "commands": MCSettings_ChatMode = 1; break;
@@ -781,7 +782,7 @@ namespace MinecraftClient
                         case "skin_pants_right": MCSettings_Skin_Pants_Right = str2bool(argValue); return true;
                         case "skin_hat": MCSettings_Skin_Hat = str2bool(argValue); return true;
                         case "main_hand":
-                            switch (argValue.ToLower())
+                            switch (ToLowerIfNeed(argValue))
                             {
                                 case "left": MCSettings_MainHand = 0; break;
                                 case "right": MCSettings_MainHand = 1; break;
@@ -791,7 +792,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.Mailer:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": Mailer_Enabled = str2bool(argValue); return true;
                         case "database": Mailer_DatabaseFile = argValue; return true;
@@ -804,7 +805,7 @@ namespace MinecraftClient
                     break;
 
                 case Section.ReplayMod:
-                    switch (argName.ToLower())
+                    switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": ReplayMod_Enabled = str2bool(argValue); return true;
                         case "backupinterval": ReplayMod_BackupInterval = str2int(argValue); return true;
@@ -879,13 +880,43 @@ namespace MinecraftClient
             return str == "true" || str == "1";
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public static string ToLowerIfNeed(string str)
+        {
+            const string lookupStringL =
+"---------------------------------!-#$%&-()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[-]^_`abcdefghijklmnopqrstuvwxyz{|}~-";
+
+            bool needLower = false;
+            foreach (Char c in str)
+            {
+                if (Char.IsUpper(c))
+                {
+                    needLower = true;
+                    break;
+                }
+            }
+
+            if (needLower)
+            {
+                StringBuilder sb = new(str);
+                for (int i = 0; i < str.Length; ++i)
+                    if (char.IsUpper(sb[i]))
+                        sb[i] = lookupStringL[sb[i]];
+                return sb.ToString();
+            }
+            else
+            {
+                return str;
+            }
+        }
+
         /// <summary>
         /// Load login/password using an account alias
         /// </summary>
         /// <returns>True if the account was found and loaded</returns>
         public static bool SetAccount(string accountAlias)
         {
-            accountAlias = accountAlias.ToLower();
+            accountAlias = Settings.ToLowerIfNeed(accountAlias);
             if (Accounts.ContainsKey(accountAlias))
             {
                 Settings.Login = Accounts[accountAlias].Key;
@@ -901,7 +932,7 @@ namespace MinecraftClient
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
         public static bool SetServerIP(string server)
         {
-            server = server.ToLower();
+            server = ToLowerIfNeed(server);
             string[] sip = server.Split(':');
             string host = sip[0];
             ushort port = 25565;
@@ -946,7 +977,7 @@ namespace MinecraftClient
         {
             lock (AppVars)
             {
-                varName = new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()).ToLower();
+                varName = Settings.ToLowerIfNeed(new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()));
                 if (varName.Length > 0)
                 {
                     AppVars[varName] = varData;
@@ -998,7 +1029,7 @@ namespace MinecraftClient
                     if (varname_ok)
                     {
                         string varname = var_name.ToString();
-                        string varname_lower = varname.ToLower();
+                        string varname_lower = Settings.ToLowerIfNeed(varname);
                         i = i + varname.Length + 1;
 
                         switch (varname_lower)

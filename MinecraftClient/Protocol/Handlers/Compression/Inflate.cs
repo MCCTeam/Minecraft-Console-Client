@@ -63,6 +63,8 @@
 
 
 using System;
+using System.Runtime.CompilerServices;
+
 namespace Ionic.Zlib
 {
     sealed class InflateBlocks
@@ -138,7 +140,6 @@ namespace Ionic.Zlib
                 _codec._Adler32 = check = Adler.Adler32(0, null, 0, 0);
             return oldCheck;
         }
-
 
         internal int Process(int r)
         {
@@ -799,6 +800,7 @@ namespace Ionic.Zlib
             tree = null;
         }
 
+
         internal int Process(InflateBlocks blocks, int r)
         {
             int j;      // temporary storage
@@ -1160,7 +1162,7 @@ namespace Ionic.Zlib
         // (the maximum string length) and number of input bytes available
         // at least ten.  The ten bytes are six bytes for the longest length/
         // distance pair plus four bytes for overloading the bit buffer.
-
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         internal int InflateFast(int bl, int bd, int[] tl, int tl_index, int[] td, int td_index, InflateBlocks s, ZlibCodec z)
         {
             int t;        // temporary pointer
