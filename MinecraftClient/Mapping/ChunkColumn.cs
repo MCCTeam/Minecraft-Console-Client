@@ -18,12 +18,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Blocks contained into the chunk
         /// </summary>
-        private readonly Chunk[] chunks;
-
-        /// <summary>
-        /// Lock for thread safety
-        /// </summary>
-        private readonly ReaderWriterLockSlim chunkLock = new ReaderWriterLockSlim();
+        private readonly Chunk?[] chunks;
 
         /// <summary>
         /// Create a new ChunkColumn
@@ -31,7 +26,7 @@ namespace MinecraftClient.Mapping
         public ChunkColumn(int size = 16)
         {
             ColumnSize = size;
-            chunks = new Chunk[size];
+            chunks = new Chunk?[size];
         }
 
         /// <summary>
@@ -40,31 +35,15 @@ namespace MinecraftClient.Mapping
         /// <param name="chunkX">ChunkColumn X</param>
         /// <param name="chunkY">ChunkColumn Y</param>
         /// <returns>chunk at the given location</returns>
-        public Chunk this[int chunkY]
+        public Chunk? this[int chunkY]
         {
             get
             {
-                chunkLock.EnterReadLock();
-                try
-                {
-                    return chunks[chunkY];
-                }
-                finally
-                {
-                    chunkLock.ExitReadLock();
-                }
+                return chunks[chunkY];
             }
             set
             {
-                chunkLock.EnterWriteLock();
-                try
-                {
-                    chunks[chunkY] = value;
-                }
-                finally
-                {
-                    chunkLock.ExitWriteLock();
-                }
+                chunks[chunkY] = value;
             }
         }
 
@@ -73,7 +52,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="location">Location, a modulo will be applied</param>
         /// <returns>The chunk, or null if not loaded</returns>
-        public Chunk GetChunk(Location location)
+        public Chunk? GetChunk(Location location)
         {
             try
             {

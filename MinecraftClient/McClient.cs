@@ -14,6 +14,7 @@ using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient
@@ -54,7 +55,7 @@ namespace MinecraftClient
         private bool locationReceived = false;
         private World world = new();
         private Queue<Location> steps;
-        private Queue<Location> path;
+        private Queue<Location>? path;
         private Location location;
         private float? _yaw; // Used for calculation ONLY!!! Doesn't reflect the client yaw
         private float? _pitch; // Used for calculation ONLY!!! Doesn't reflect the client pitch
@@ -114,7 +115,7 @@ namespace MinecraftClient
         public int GetSequenceId() { return sequenceId; }
         public float GetPitch() { return playerPitch; }
         public World GetWorld() { return world; }
-        public Double GetServerTPS() { return averageTPS; }
+        public double GetServerTPS() { return averageTPS; }
         public bool GetIsSupportPreviewsChat() { return isSupportPreviewsChat; }
         public float GetHealth() { return playerHealth; }
         public int GetSaturation() { return playerFoodSaturation; }
@@ -136,57 +137,27 @@ namespace MinecraftClient
         public ILogger Log;
 
         /// <summary>
-        /// Starts the main chat client
-        /// </summary>
-        /// <param name="username">The chosen username of a premium Minecraft Account</param>
-        /// <param name="uuid">The player's UUID for online-mode authentication</param>
-        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
-        /// <param name="server_ip">The server IP</param>
-        /// <param name="port">The server port to use</param>
-        /// <param name="protocolversion">Minecraft protocol version to use</param>
-        public McClient(string username, string uuid, string sessionID, PlayerKeyPair? playerKeyPair, int protocolversion, ForgeInfo forgeInfo, string server_ip, ushort port)
-        {
-            StartClient(username, uuid, sessionID, playerKeyPair, server_ip, port, protocolversion, forgeInfo, false, "");
-        }
-
-        /// <summary>
-        /// Starts the main chat client in single command sending mode
-        /// </summary>
-        /// <param name="username">The chosen username of a premium Minecraft Account</param>
-        /// <param name="uuid">The player's UUID for online-mode authentication</param>
-        /// <param name="sessionID">A valid sessionID obtained after logging in</param>
-        /// <param name="server_ip">The server IP</param>
-        /// <param name="port">The server port to use</param>
-        /// <param name="protocolversion">Minecraft protocol version to use</param>
-        /// <param name="command">The text or command to send.</param>
-        public McClient(string username, string uuid, string sessionID, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, string command)
-        {
-            StartClient(username, uuid, sessionID, playerKeyPair, server_ip, port, protocolversion, forgeInfo, true, command);
-        }
-
-        /// <summary>
         /// Starts the main chat client, wich will login to the server using the MinecraftCom class.
         /// </summary>
-        /// <param name="user">The chosen username of a premium Minecraft Account</param>
-        /// <param name="sessionID">A valid sessionID obtained with MinecraftCom.GetLogin()</param>
+        /// <param name="session">A valid session obtained with MinecraftCom.GetLogin()</param>
+        /// <param name="playerKeyPair">Key for message signing</param>
         /// <param name="server_ip">The server IP</param>
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
-        /// <param name="uuid">The player's UUID for online-mode authentication</param>
-        /// <param name="singlecommand">If set to true, the client will send a single command and then disconnect from the server</param>
+        /// <param name="forgeInfo">ForgeInfo item stating that Forge is enabled</param>
         /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-        private void StartClient(string user, string uuid, string sessionID, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo forgeInfo, bool singlecommand, string command)
+        public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo, string? command)
         {
             terrainAndMovementsEnabled = Settings.TerrainAndMovements;
             inventoryHandlingEnabled = Settings.InventoryHandling;
             entityHandlingEnabled = Settings.EntityHandling;
 
             bool retry = false;
-            this.sessionid = sessionID;
-            if (!Guid.TryParse(uuid, out this.uuid))
+            this.sessionid = session.ID;
+            if (!Guid.TryParse(session.PlayerID, out this.uuid))
                 this.uuid = Guid.Empty;
-            this.uuidStr = uuid;
-            this.username = user;
+            this.uuidStr = session.PlayerID;
+            this.username = session.PlayerName;
             this.host = server_ip;
             this.port = port;
             this.protocolversion = protocolversion;
@@ -201,7 +172,7 @@ namespace MinecraftClient
             Log.WarnEnabled = Settings.WarningMessages;
             Log.ErrorEnabled = Settings.ErrorMessages;
 
-            if (!singlecommand)
+            if (command == null)
             {
                 /* Load commands from Commands namespace */
                 LoadCommands();
@@ -238,7 +209,7 @@ namespace MinecraftClient
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Log.Info(Translations.Get("mcc.version_supported"));
 
-                if (!singlecommand)
+                if (command == null)
                 {
                     timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
                     timeoutdetector.Item1.Name = "MCC Connection timeout detector";
@@ -247,9 +218,9 @@ namespace MinecraftClient
 
                 try
                 {
-                    if (handler.Login(this.playerKeyPair))
+                    if (handler.Login(this.playerKeyPair, session))
                     {
-                        if (singlecommand)
+                        if (command != null)
                         {
                             handler.SendChatMessage(command, playerKeyPair);
                             Log.Info(Translations.Get("mcc.single_cmd", command));
@@ -305,13 +276,27 @@ namespace MinecraftClient
                     ReconnectionAttemptsLeft--;
                     Program.Restart();
                 }
-                else if (!singlecommand && Settings.interactiveMode)
+                else if (command == null && Settings.interactiveMode)
                 {
                     ConsoleInteractive.ConsoleReader.StopReadThread();
                     ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
                     ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
                     Program.HandleFailure();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Retrieve messages from the queue and send.
+        /// Note: requires external locking.
+        /// </summary>
+        private void TrySendMessageToServer()
+        {
+            while (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
+            {
+                string text = chatQueue.Dequeue();
+                handler.SendChatMessage(text, playerKeyPair);
+                nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
             }
         }
 
@@ -329,22 +314,16 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (!(e is ThreadAbortException))
-                    {
+                    if (e is not ThreadAbortException)
                         Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
-                    }
-                    else throw; //ThreadAbortException should not be caught
+                    else 
+                        throw; //ThreadAbortException should not be caught
                 }
             }
 
             lock (chatQueue)
             {
-                if (chatQueue.Count > 0 && nextMessageSendTime < DateTime.Now)
-                {
-                    string text = chatQueue.Dequeue();
-                    handler.SendChatMessage(text, playerKeyPair);
-                    nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
-                }
+                TrySendMessageToServer();
             }
 
             if (terrainAndMovementsEnabled && locationReceived)
@@ -480,6 +459,8 @@ namespace MinecraftClient
         /// </summary>
         public void OnConnectionLost(ChatBot.DisconnectReason reason, string message)
         {
+            handler.Dispose();
+
             world.Clear();
 
             if (timeoutdetector != null)
@@ -571,7 +552,7 @@ namespace MinecraftClient
             if (ConsoleIO.BasicIO && text.Length > 0 && text[0] == (char)0x00)
             {
                 //Process a request from the GUI
-                string[] command = text.Substring(1).Split((char)0x00);
+                string[] command = text[1..].Split((char)0x00);
                 switch (command[0].ToLower())
                 {
                     case "autocomplete":
@@ -716,10 +697,10 @@ namespace MinecraftClient
                         try
                         {
                             Command cmd = (Command)Activator.CreateInstance(type);
-                            cmds[cmd.CmdName.ToLower()] = cmd;
-                            cmd_names.Add(cmd.CmdName.ToLower());
+                            cmds[Settings.ToLowerIfNeed(cmd.CmdName)] = cmd;
+                            cmd_names.Add(Settings.ToLowerIfNeed(cmd.CmdName));
                             foreach (string alias in cmd.getCMDAliases())
-                                cmds[alias.ToLower()] = cmd;
+                                cmds[Settings.ToLowerIfNeed(alias)] = cmd;
                         }
                         catch (Exception e)
                         {
@@ -774,6 +755,17 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Clear all tasks
+        /// </summary>
+        public void ClearTasks()
+        {
+            lock (threadTasksLock)
+            {
+                threadTasks.Clear();
+            }
+        }
+
+        /// <summary>
         /// Check if running on a different thread and InvokeOnMainThread is required
         /// </summary>
         /// <returns>True if calling thread is not the main thread</returns>
@@ -784,7 +776,7 @@ namespace MinecraftClient
                 int callingThreadId = Thread.CurrentThread.ManagedThreadId;
                 if (handler != null)
                 {
-                    return handler.GetNetReadThreadId() != callingThreadId;
+                    return handler.GetNetMainThreadId() != callingThreadId;
                 }
                 else
                 {
@@ -1144,17 +1136,19 @@ namespace MinecraftClient
         /// <param name="text">Text to send to the server</param>
         public void SendText(string text)
         {
+            if (String.IsNullOrEmpty(text))
+                return;
+
+            int maxLength = handler.GetMaxChatMessageLength();
+
             lock (chatQueue)
             {
-                if (String.IsNullOrEmpty(text))
-                    return;
-                int maxLength = handler.GetMaxChatMessageLength();
                 if (text.Length > maxLength) //Message is too long?
                 {
                     if (text[0] == '/')
                     {
                         //Send the first 100/256 chars of the command
-                        text = text.Substring(0, maxLength);
+                        text = text[..maxLength];
                         chatQueue.Enqueue(text);
                     }
                     else
@@ -1162,13 +1156,16 @@ namespace MinecraftClient
                         //Split the message into several messages
                         while (text.Length > maxLength)
                         {
-                            chatQueue.Enqueue(text.Substring(0, maxLength));
-                            text = text.Substring(maxLength, text.Length - maxLength);
+                            chatQueue.Enqueue(text[..maxLength]);
+                            text = text[maxLength..];
                         }
                         chatQueue.Enqueue(text);
                     }
                 }
-                else chatQueue.Enqueue(text);
+                else
+                    chatQueue.Enqueue(text);
+
+                TrySendMessageToServer();
             }
         }
 
@@ -1927,6 +1924,8 @@ namespace MinecraftClient
         /// </summary>
         public void OnRespawn()
         {
+            ClearTasks();
+
             if (terrainAndMovementsRequested)
             {
                 terrainAndMovementsEnabled = true;

@@ -65,6 +65,7 @@
 
 
 using System;
+using System.Runtime.CompilerServices;
 using Interop=System.Runtime.InteropServices;
 
 namespace Ionic.Zlib

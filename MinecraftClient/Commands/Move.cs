@@ -71,9 +71,16 @@ namespace MinecraftClient.Commands
                         case "get": return handler.GetCurrentLocation().ToString();
                         default: return Translations.Get("cmd.look.unknown", args[0]);
                     }
+
+                    Location goal = Movement.Move(handler.GetCurrentLocation(), direction);
+
+                    ChunkColumn? chunkColumn = handler.GetWorld().GetChunkColumn(goal);
+                    if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+                        return Translations.Get("cmd.move.chunk_not_loaded");
+
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
                     {
-                        if (handler.MoveTo(Movement.Move(handler.GetCurrentLocation(), direction), allowUnsafe: takeRisk))
+                        if (handler.MoveTo(goal, allowUnsafe: takeRisk))
                             return Translations.Get("cmd.move.moving", args[0]);
                         else return takeRisk ? Translations.Get("cmd.move.dir_fail") : Translations.Get("cmd.move.suggestforce");
                     }
@@ -88,12 +95,12 @@ namespace MinecraftClient.Commands
                         int z = int.Parse(args[2]);
                         Location goal = new Location(x, y, z);
 
-                        if (handler.GetWorld().GetChunkColumn(goal) == null || handler.GetWorld().GetChunkColumn(goal).FullyLoaded == false)
+                        ChunkColumn? chunkColumn = handler.GetWorld().GetChunkColumn(goal);
+                        if (chunkColumn == null || chunkColumn.FullyLoaded == false)
                             return Translations.Get("cmd.move.chunk_not_loaded");
 
                         Location current = handler.GetCurrentLocation();
-                        Location currentCenter = new Location(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
-                        handler.MoveTo(currentCenter, allowDirectTeleport: true);
+                        handler.MoveTo(current.ToCenter(), allowDirectTeleport: true);
 
                         if (handler.MoveTo(goal, allowUnsafe: takeRisk))
                             return Translations.Get("cmd.move.walk", goal, current);

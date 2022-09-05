@@ -148,7 +148,7 @@ namespace MinecraftClient.Protocol
             if (this.precedingSignature != null && !this.precedingSignature.SequenceEqual(precedingSignature!))
                 return false;
 
-            bool res = PublicKey.VerifyHeader(ref bodyDigest, ref headerSignature);
+            bool res = PublicKey.VerifyHeader(Uuid, ref bodyDigest, ref headerSignature, ref precedingSignature);
 
             this.lastMessageVerified = res;
             this.precedingSignature = headerSignature;

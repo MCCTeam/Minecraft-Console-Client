@@ -8,6 +8,7 @@ using MinecraftClient.Crypto;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Inventory.ItemPalettes;
+using System.Runtime.CompilerServices;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -36,6 +37,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="offset">Amount of bytes to read</param>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The data read from the cache as an array</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public byte[] ReadData(int offset, Queue<byte> cache)
         {
             byte[] result = new byte[offset];
@@ -45,10 +47,35 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Read some data from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        /// <param name="dest">Storage results</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public void ReadDataReverse(Queue<byte> cache, Span<byte> dest)
+        {
+            for (int i = (dest.Length - 1); i >= 0; --i)
+                dest[i] = cache.Dequeue();
+        }
+
+        /// <summary>
+        /// Remove some data from the cache
+        /// </summary>
+        /// <param name="offset">Amount of bytes to drop</param>
+        /// <param name="cache">Cache of bytes to drop</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public void DropData(int offset, Queue<byte> cache)
+        {
+            while (offset-- > 0)
+                cache.Dequeue();
+        }
+
+        /// <summary>
         /// Read a string from a cache of bytes and remove it from the cache
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The string</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public string ReadNextString(Queue<byte> cache)
         {
             int length = ReadNextVarInt(cache);
@@ -60,9 +87,20 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
+        /// Skip a string from a cache of bytes and remove it from the cache
+        /// </summary>
+        /// <param name="cache">Cache of bytes to read from</param>
+        public void SkipNextString(Queue<byte> cache)
+        {
+            int length = ReadNextVarInt(cache);
+            DropData(length, cache);
+        }
+
+        /// <summary>
         /// Read a boolean from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The boolean value</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public bool ReadNextBool(Queue<byte> cache)
         {
             return ReadNextByte(cache) != 0x00;
@@ -72,55 +110,65 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a short integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The short integer value</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public short ReadNextShort(Queue<byte> cache)
         {
-            byte[] rawValue = ReadData(2, cache);
-            Array.Reverse(rawValue); //Endianness
-            return BitConverter.ToInt16(rawValue, 0);
+            Span<byte> rawValue = stackalloc byte[2];
+            for (int i = (2 - 1); i >= 0; --i) //Endianness
+                rawValue[i] = cache.Dequeue();
+            return BitConverter.ToInt16(rawValue);
         }
 
         /// <summary>
         /// Read an integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The integer value</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public int ReadNextInt(Queue<byte> cache)
         {
-            byte[] rawValue = ReadData(4, cache);
-            Array.Reverse(rawValue); //Endianness
-            return BitConverter.ToInt32(rawValue, 0);
+            Span<byte> rawValue = stackalloc byte[4];
+            for (int i = (4 - 1); i >= 0; --i) //Endianness
+                rawValue[i] = cache.Dequeue();
+            return BitConverter.ToInt32(rawValue);
         }
 
         /// <summary>
         /// Read a long integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned long integer value</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public long ReadNextLong(Queue<byte> cache)
         {
-            byte[] rawValue = ReadData(8, cache);
-            Array.Reverse(rawValue); //Endianness
-            return BitConverter.ToInt64(rawValue, 0);
+            Span<byte> rawValue = stackalloc byte[8];
+            for (int i = (8 - 1); i >= 0; --i) //Endianness
+                rawValue[i] = cache.Dequeue();
+            return BitConverter.ToInt64(rawValue);
         }
 
         /// <summary>
         /// Read an unsigned short integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned short integer value</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public ushort ReadNextUShort(Queue<byte> cache)
         {
-            byte[] rawValue = ReadData(2, cache);
-            Array.Reverse(rawValue); //Endianness
-            return BitConverter.ToUInt16(rawValue, 0);
+            Span<byte> rawValue = stackalloc byte[2];
+            for (int i = (2 - 1); i >= 0; --i) //Endianness
+                rawValue[i] = cache.Dequeue();
+            return BitConverter.ToUInt16(rawValue);
         }
 
         /// <summary>
         /// Read an unsigned long integer from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The unsigned long integer value</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public ulong ReadNextULong(Queue<byte> cache)
         {
-            byte[] rawValue = ReadData(8, cache);
-            Array.Reverse(rawValue); //Endianness
-            return BitConverter.ToUInt64(rawValue, 0);
+            Span<byte> rawValue = stackalloc byte[8];
+            for (int i = (8 - 1); i >= 0; --i) //Endianness
+                rawValue[i] = cache.Dequeue();
+            return BitConverter.ToUInt64(rawValue);
         }
 
         /// <summary>
@@ -143,12 +191,12 @@ namespace MinecraftClient.Protocol.Handlers
                 y = (int)((locEncoded >> 26) & 0xFFF);
                 z = (int)(locEncoded << 38 >> 38);
             }
-            if (x >= 33554432)
-                x -= 67108864;
-            if (y >= 2048)
-                y -= 4096;
-            if (z >= 33554432)
-                z -= 67108864;
+            if (x >= 0x02000000) // 33,554,432
+                x -= 0x04000000; // 67,108,864
+            if (y >= 0x00000800) //      2,048
+                y -= 0x00001000; //      4,096
+            if (z >= 0x02000000) // 33,554,432
+                z -= 0x04000000; // 67,108,864
             return new Location(x, y, z);
         }
 
@@ -172,7 +220,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The uuid</returns>
         public Guid ReadNextUUID(Queue<byte> cache)
         {
-            byte[] javaUUID = ReadData(16, cache);
+            Span<byte> javaUUID = stackalloc byte[16];
+            for (int i = 0; i < 16; ++i)
+                javaUUID[i] = cache.Dequeue();
             Guid guid = new Guid(javaUUID);
             if (BitConverter.IsLittleEndian)
                 guid = guid.ToLittleEndian();
@@ -184,6 +234,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The byte array</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public byte[] ReadNextByteArray(Queue<byte> cache)
         {
             int len = protocolversion >= Protocol18Handler.MC_1_8_Version
@@ -196,6 +247,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Reads a length-prefixed array of unsigned long integers and removes it from the cache
         /// </summary>
         /// <returns>The unsigned long integer values</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public ulong[] ReadNextULongArray(Queue<byte> cache)
         {
             int len = ReadNextVarInt(cache);
@@ -209,39 +261,44 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a double from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The double value</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public double ReadNextDouble(Queue<byte> cache)
         {
-            byte[] rawValue = ReadData(8, cache);
-            Array.Reverse(rawValue); //Endianness
-            return BitConverter.ToDouble(rawValue, 0);
+            Span<byte> rawValue = stackalloc byte[8];
+            for (int i = (8 - 1); i >= 0; --i) //Endianness
+                rawValue[i] = cache.Dequeue();
+            return BitConverter.ToDouble(rawValue);
         }
 
         /// <summary>
         /// Read a float from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The float value</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public float ReadNextFloat(Queue<byte> cache)
         {
-            byte[] rawValue = ReadData(4, cache);
-            Array.Reverse(rawValue); //Endianness
-            return BitConverter.ToSingle(rawValue, 0);
+            Span<byte> rawValue = stackalloc byte[4];
+            for (int i = (4 - 1); i >= 0; --i) //Endianness
+                rawValue[i] = cache.Dequeue();
+            return BitConverter.ToSingle(rawValue);
         }
 
         /// <summary>
         /// Read an integer from the network
         /// </summary>
         /// <returns>The integer</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadNextVarIntRAW(SocketWrapper socket)
         {
             int i = 0;
             int j = 0;
-            int k = 0;
+            byte b;
             while (true)
             {
-                k = socket.ReadDataRAW(1)[0];
-                i |= (k & 0x7F) << j++ * 7;
+                b = socket.ReadDataRAW(1)[0];
+                i |= (b & 0x7F) << j++ * 7;
                 if (j > 5) throw new OverflowException("VarInt too big");
-                if ((k & 0x80) != 128) break;
+                if ((b & 0x80) != 128) break;
             }
             return i;
         }
@@ -251,19 +308,18 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
         /// <returns>The integer</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public int ReadNextVarInt(Queue<byte> cache)
         {
-            string rawData = BitConverter.ToString(cache.ToArray());
             int i = 0;
             int j = 0;
-            int k = 0;
-            while (true)
+            byte b;
+            do
             {
-                k = ReadNextByte(cache);
-                i |= (k & 0x7F) << j++ * 7;
-                if (j > 5) throw new OverflowException("VarInt too big " + rawData);
-                if ((k & 0x80) != 128) break;
-            }
+                b = cache.Dequeue();
+                i |= (b & 0x7F) << j++ * 7;
+                if (j > 5) throw new OverflowException("VarInt too big");
+            } while ((b & 0x80) == 128);
             return i;
         }
 
@@ -271,13 +327,12 @@ namespace MinecraftClient.Protocol.Handlers
         /// Skip a VarInt from a cache of bytes with better performance
         /// </summary>
         /// <param name="cache">Cache of bytes to read from</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public void SkipNextVarInt(Queue<byte> cache)
         {
             while (true)
-            {
                 if ((ReadNextByte(cache) & 0x80) != 128)
                     break;
-            }
         }
 
         /// <summary>
@@ -328,6 +383,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single byte from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The byte that was read</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public byte ReadNextByte(Queue<byte> cache)
         {
             byte result = cache.Dequeue();

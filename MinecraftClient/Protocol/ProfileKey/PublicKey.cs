@@ -88,9 +88,12 @@ namespace MinecraftClient.Protocol.Keys
         /// <param name="bodyDigest">Message body hash</param>
         /// <param name="signature">Message signature</param>
         /// <returns>Is this message header vaild</returns>
-        public bool VerifyHeader(ref byte[] bodyDigest, ref byte[] signature)
+        public bool VerifyHeader(Guid uuid, ref byte[] bodyDigest, ref byte[] signature, ref byte[]? precedingSignature)
         {
-            return VerifyData(bodyDigest, signature);
+
+            byte[] msgSignData = KeyUtils.GetSignatureData(precedingSignature, uuid, bodyDigest);
+
+            return VerifyData(msgSignData, signature);
         }
 
     }

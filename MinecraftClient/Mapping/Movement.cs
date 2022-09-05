@@ -134,10 +134,10 @@ namespace MinecraftClient.Mapping
         /// <param name="timeout">How long to wait before stopping computation</param>
         /// <remarks>When location is unreachable, computation will reach timeout, then optionally fallback to a close location within maxOffset</remarks>
         /// <returns>A list of locations, or null if calculation failed</returns>
-        public static Queue<Location> CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, TimeSpan timeout)
+        public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, TimeSpan timeout)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
-            Task<Queue<Location>> pathfindingTask = Task.Factory.StartNew(() => Movement.CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
+            Task<Queue<Location>?> pathfindingTask = Task.Factory.StartNew(() => Movement.CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
             pathfindingTask.Wait(timeout);
             if (!pathfindingTask.IsCompleted)
             {
@@ -161,14 +161,15 @@ namespace MinecraftClient.Mapping
         /// <param name="minOffset">Do not get closer of destination than specified distance</param>
         /// <param name="ct">Token for stopping computation after a certain time</param>
         /// <returns>A list of locations, or null if calculation failed</returns>
-        public static Queue<Location> CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, CancellationToken ct)
+        public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, CancellationToken ct)
         {
             // This is a bad configuration
             if (minOffset > maxOffset)
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
 
             // Round start coordinates for easier calculation
-            start = new Location(Math.Floor(start.X), Math.Floor(start.Y), Math.Floor(start.Z));
+            start.ToFloor();
+            goal.ToFloor();
 
             // We always use distance squared so our limits must also be squared.
             minOffset *= minOffset;

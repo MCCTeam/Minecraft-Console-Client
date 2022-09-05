@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Handlers
@@ -26,7 +27,7 @@ namespace MinecraftClient.Protocol.Handlers
         private bool encrypted = false;
         private int protocolversion;
         private Tuple<Thread, CancellationTokenSource>? netRead = null;
-        Crypto.IAesStream s;
+        Crypto.AesCfb8Stream s;
         TcpClient c;
 
         public Protocol16Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
@@ -218,7 +219,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Get net read thread (main thread) ID
         /// </summary>
         /// <returns>Net read thread ID</returns>
-        public int GetNetReadThreadId()
+        public int GetNetMainThreadId()
         {
             return netRead != null ? netRead.Item1.ManagedThreadId : -1;
         }
@@ -440,7 +441,7 @@ namespace MinecraftClient.Protocol.Handlers
             else c.Client.Send(buffer);
         }
 
-        private bool Handshake(string uuid, string username, string sessionID, string host, int port)
+        private bool Handshake(string uuid, string username, string sessionID, string host, int port, SessionToken session)
         {
             //array
             byte[] data = new byte[10 + (username.Length + host.Length) * 2];
@@ -494,7 +495,7 @@ namespace MinecraftClient.Protocol.Handlers
                 else if (Settings.DebugMessages)
                     ConsoleIO.WriteLineFormatted(Translations.Get("mcc.handshake", serverID));
 
-                return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey);
+                return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey, session);
             }
             else
             {
@@ -503,10 +504,10 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        private bool StartEncryption(string uuid, string username, string sessionID, byte[] token, string serverIDhash, byte[] serverKey)
+        private bool StartEncryption(string uuid, string username, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session)
         {
-            System.Security.Cryptography.RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverKey);
-            byte[] secretKey = CryptoHandler.GenerateAESPrivateKey();
+            RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey);
+            byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
             if (Settings.DebugMessages)
                 Translations.WriteLineFormatted("debug.crypto");
@@ -514,12 +515,33 @@ namespace MinecraftClient.Protocol.Handlers
             if (serverIDhash != "-")
             {
                 Translations.WriteLine("mcc.session");
-                if (!ProtocolHandler.SessionCheck(uuid, sessionID, CryptoHandler.getServerHash(serverIDhash, serverKey, secretKey)))
+                string serverHash = CryptoHandler.getServerHash(serverIDhash, serverPublicKey, secretKey);
+
+                bool needCheckSession = true;
+                if (session.ServerPublicKey != null && session.SessionPreCheckTask != null
+                    && serverIDhash == session.ServerIDhash && Enumerable.SequenceEqual(serverPublicKey, session.ServerPublicKey))
                 {
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
-                    return false;
+                    session.SessionPreCheckTask.Wait();
+                    if (session.SessionPreCheckTask.Result) // PreCheck Successed
+                        needCheckSession = false;
+                }
+
+                if (needCheckSession)
+                {
+                    if (ProtocolHandler.SessionCheck(uuid, sessionID, serverHash))
+                    {
+                        session.ServerIDhash = serverIDhash;
+                        session.ServerPublicKey = serverPublicKey;
+                        SessionCache.Store(Settings.Login.ToLower(), session);
+                    }
+                    else
+                    {
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
+                        return false;
+                    }
                 }
             }
+
 
             //Encrypt the data
             byte[] key_enc = RSAService.Encrypt(secretKey, false);
@@ -547,7 +569,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (pid[0] == 0xFC)
             {
                 readData(4);
-                s = CryptoHandler.getAesStream(c.GetStream(), secretKey);
+                s = new AesCfb8Stream(c.GetStream(), secretKey);
                 encrypted = true;
                 return true;
             }
@@ -558,9 +580,9 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        public bool Login(PlayerKeyPair playerKeyPair)
+        public bool Login(PlayerKeyPair? playerKeyPair, SessionToken session)
         {
-            if (Handshake(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort()))
+            if (Handshake(handler.GetUserUuidStr(), handler.GetUsername(), handler.GetSessionID(), handler.GetServerHost(), handler.GetServerPort(), session))
             {
                 Send(new byte[] { 0xCD, 0 });
                 try

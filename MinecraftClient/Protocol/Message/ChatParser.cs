@@ -240,8 +240,7 @@ namespace MinecraftClient.Protocol
             //Load the external dictionnary of translation rules or display an error message
             if (File.Exists(Language_File))
             {
-                string[] translations = File.ReadAllLines(Language_File);
-                foreach (string line in translations)
+                foreach (var line in File.ReadLines(Language_File))
                 {
                     if (line.Length > 0)
                     {
