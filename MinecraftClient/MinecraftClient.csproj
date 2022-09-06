@@ -36,6 +36,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
     <PackageReference Include="SingleFileExtractor.Core" Version="1.0.1" />
+    <PackageReference Include="starksoft.aspen" Version="1.1.8" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
