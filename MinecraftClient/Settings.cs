@@ -108,6 +108,7 @@ namespace MinecraftClient
         public static bool AutoRespawn = false;
         public static bool MinecraftRealmsEnabled = true;
         public static bool MoveHeadWhileWalking = true;
+        public static int Timeout = 30;
 
         // Signature
         public static bool LoginWithSecureProfile = true;
@@ -209,7 +210,7 @@ namespace MinecraftClient
         //AutoCraft
         public static bool AutoCraft_Enabled = false;
         public static string AutoCraft_configFile = @"autocraft\config.ini";
-        
+
         //Mailer
         public static bool Mailer_Enabled = false;
         public static string Mailer_DatabaseFile = "MailerDatabase.ini";
@@ -354,7 +355,8 @@ namespace MinecraftClient
                     {
                         case "login": Login = argValue; return true;
                         case "password": Password = argValue; return true;
-                        case "type": AccountType = argValue == "mojang"
+                        case "type":
+                            AccountType = argValue == "mojang"
                                 ? ProtocolHandler.AccountType.Mojang
                                 : ProtocolHandler.AccountType.Microsoft; return true;
                         case "method":
@@ -385,6 +387,7 @@ namespace MinecraftClient
                         case "debugmessages": DebugMessages = str2bool(argValue); return true;
                         case "minecraftrealms": MinecraftRealmsEnabled = str2bool(argValue); return true;
                         case "moveheadwhilewalking": MoveHeadWhileWalking = str2bool(argValue); return true;
+                        case "timeout": Timeout = str2int(argValue); return true;
 
                         case "botowners":
                             Bots_Owners.Clear();
@@ -822,7 +825,7 @@ namespace MinecraftClient
         public static void WriteDefaultSettings(string settingsfile)
         {
             // Load embedded default config and adjust line break for the current operating system
-            string settingsContents = String.Join(Environment.NewLine, 
+            string settingsContents = String.Join(Environment.NewLine,
                 DefaultConfigResource.MinecraftClient.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
 
             // Write configuration file with current version number
@@ -844,7 +847,8 @@ namespace MinecraftClient
             {
                 return Convert.ToInt32(str.Trim());
             }
-            catch {
+            catch
+            {
                 ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
                 return 0;
             }
