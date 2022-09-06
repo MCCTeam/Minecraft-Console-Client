@@ -45,19 +45,23 @@ namespace MinecraftClient.Commands
                             (markChunkX < current.ChunkX - 16 || markChunkX >= current.ChunkX + 16 || markChunkZ < current.ChunkZ - 16 || markChunkZ >= current.ChunkZ + 16))
                             sb.Append("§x§0Since the marked chunk is outside the graph, it will not be displayed!§r\n");
 
+                        int consoleHei = Math.Max(Console.BufferHeight - 2, 21);
+                        if (consoleHei % 2 == 0)
+                            --consoleHei;
 
                         int consoleWid = Math.Max(Console.BufferWidth / 2, 21);
                         if (consoleWid % 2 == 0)
                             --consoleWid;
 
-                        int startZ = current.ChunkZ - consoleWid / 2, endZ = current.ChunkZ + 1 + consoleWid / 2;
+                        int startZ = current.ChunkZ - consoleHei / 2, endZ = current.ChunkZ + 1 + consoleHei / 2;
                         int startX = current.ChunkX - consoleWid / 2, endX = current.ChunkX + 1 + consoleWid / 2;
+
                         int leftMost = endX, rightMost = startX, topMost = endZ, bottomMost = startZ;
 
                         Dictionary<Tuple<int, int>, byte> chunkStatus = new();
-                        for (int z = startZ; z <= endZ; z++)
+                        for (int z = startZ - 1; z <= endZ + 1; z++)
                         {
-                            for (int x = startX; x <= endX; ++x)
+                            for (int x = startX - 1; x <= endX + 1; ++x)
                             {
                                 ChunkColumn? chunkColumn = world[x, z];
                                 if (chunkColumn == null)
@@ -73,19 +77,29 @@ namespace MinecraftClient.Commands
                                     else
                                         chunkStatus[new(x, z)] = 2; // "🟨" yellow
                                 }
-
                             }
                         }
 
                         // Add a blank line
-                        --topMost;
-                        ++bottomMost;
+                        if (topMost != startZ)
+                            --topMost;
+                        if (bottomMost != endZ)
+                            ++bottomMost;
                         if (Console.BufferWidth / 2 >= ((rightMost - leftMost + 1) + 2))
                         {
-                            --leftMost;
-                            ++rightMost;
+                            if (leftMost != startX)
+                                --leftMost;
+                            if (rightMost != endX)
+                                ++rightMost;
                         }
-                        string[] chunkStatusToEmoji = new string[] { "\ud83d\udd33", "\ud83d\udfe9", "\ud83d\udfe8" };
+                        else
+                        {
+                            leftMost = Math.Max(leftMost, startX);
+                            rightMost = Math.Min(rightMost, endX);
+                        }
+
+                        // Output
+                        string[] chunkStatuToEmoji = new string[] { "\ud83d\udd33", "\ud83d\udfe9", "\ud83d\udfe8" };
                         for (int z = topMost; z <= bottomMost; ++z)
                         {
                             for (int x = leftMost; x <= rightMost; ++x)
@@ -94,7 +108,7 @@ namespace MinecraftClient.Commands
                                     sb.Append("§z"); // Player Location: background gray
                                 else if (z == markChunkZ && x == markChunkX)
                                     sb.Append("§w"); // Marked chunk: background red
-                                sb.Append(chunkStatusToEmoji[chunkStatus.GetValueOrDefault<Tuple<int, int>, byte>(new(x, z), 0)]);
+                                sb.Append(chunkStatuToEmoji[chunkStatus.GetValueOrDefault<Tuple<int, int>, byte>(new(x, z), 0)]);
                                 if ((z == current.ChunkZ && x == current.ChunkX) || (z == markChunkZ && x == markChunkX))
                                     sb.Append("§r");
                             }
