@@ -62,7 +62,7 @@ namespace MinecraftClient
         private float playerYaw;
         private float playerPitch;
         private double motionY;
-        public enum MovementType { Sneak, Walk, Sprint}
+        public enum MovementType { Sneak, Walk, Sprint }
         public int currentMovementSpeed = 4;
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
 
@@ -205,7 +205,7 @@ namespace MinecraftClient
             {
                 client = ProxyHandler.newTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
-                client.ReceiveTimeout = 30000; // 30 seconds
+                client.ReceiveTimeout = Settings.Timeout * 1000; // Default: 30 seconds
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Log.Info(Translations.Get("mcc.version_supported"));
 
@@ -398,7 +398,7 @@ namespace MinecraftClient
 
                 lock (lastKeepAliveLock)
                 {
-                    if (lastKeepAlive.AddSeconds(30) < DateTime.Now)
+                    if (lastKeepAlive.AddSeconds(Settings.Timeout) < DateTime.Now)
                     {
                         if (((CancellationToken)o!).IsCancellationRequested)
                             return;
