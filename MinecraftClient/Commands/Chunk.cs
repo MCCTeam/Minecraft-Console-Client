@@ -41,76 +41,118 @@ namespace MinecraftClient.Commands
                             sb.Append(String.Format("chunk: ({0}, {1}).\n", markChunkX, markChunkZ));
                         }
 
-                        if (markedChunkPos != null &&
-                            (markChunkX < current.ChunkX - 16 || markChunkX >= current.ChunkX + 16 || markChunkZ < current.ChunkZ - 16 || markChunkZ >= current.ChunkZ + 16))
-                            sb.Append("§x§0Since the marked chunk is outside the graph, it will not be displayed!§r\n");
+                        int consoleHeight = Math.Max(Console.BufferHeight - 2, 25);
+                        if (consoleHeight % 2 == 0)
+                            --consoleHeight;
 
-                        int consoleHei = Math.Max(Console.BufferHeight - 2, 21);
-                        if (consoleHei % 2 == 0)
-                            --consoleHei;
+                        int consoleWidth = Math.Max(Console.BufferWidth / 2, 17);
+                        if (consoleWidth % 2 == 0)
+                            --consoleWidth;
 
-                        int consoleWid = Math.Max(Console.BufferWidth / 2, 21);
-                        if (consoleWid % 2 == 0)
-                            --consoleWid;
-
-                        int startZ = current.ChunkZ - consoleHei / 2, endZ = current.ChunkZ + 1 + consoleHei / 2;
-                        int startX = current.ChunkX - consoleWid / 2, endX = current.ChunkX + 1 + consoleWid / 2;
+                        int startZ = current.ChunkZ - consoleHeight, endZ = current.ChunkZ + consoleHeight;
+                        int startX = current.ChunkX - consoleWidth, endX = current.ChunkX + consoleWidth;
 
                         int leftMost = endX, rightMost = startX, topMost = endZ, bottomMost = startZ;
-
-                        Dictionary<Tuple<int, int>, byte> chunkStatus = new();
-                        for (int z = startZ - 1; z <= endZ + 1; z++)
+                        for (int z = startZ; z <= endZ; z++)
                         {
-                            for (int x = startX - 1; x <= endX + 1; ++x)
+                            for (int x = startX; x <= endX; ++x)
                             {
-                                ChunkColumn? chunkColumn = world[x, z];
-                                if (chunkColumn == null)
-                                    chunkStatus[new(x, z)] = 0; // "🔳" white hollow square
-                                else
+                                if (world[x, z] != null)
                                 {
                                     leftMost = Math.Min(leftMost, x);
                                     rightMost = Math.Max(rightMost, x);
                                     topMost = Math.Min(topMost, z);
                                     bottomMost = Math.Max(bottomMost, z);
-                                    if (chunkColumn.FullyLoaded)
-                                        chunkStatus[new(x, z)] = 1; // "🟩" green
-                                    else
-                                        chunkStatus[new(x, z)] = 2; // "🟨" yellow
                                 }
                             }
                         }
 
-                        // Add a blank line
-                        if (topMost != startZ)
-                            --topMost;
-                        if (bottomMost != endZ)
-                            ++bottomMost;
-                        if (Console.BufferWidth / 2 >= ((rightMost - leftMost + 1) + 2))
+                        // Include the player's location
+                        topMost = Math.Min(topMost, current.ChunkZ);
+                        bottomMost = Math.Max(bottomMost, current.ChunkZ);
+                        leftMost = Math.Min(leftMost, current.ChunkX);
+                        rightMost = Math.Max(rightMost, current.ChunkX);
+
+                        // Empty one row and one column each
+                        --leftMost; ++rightMost; --topMost; ++bottomMost;
+
+                        // Resize according to limitations
+                        if ((bottomMost - topMost + 1) > consoleHeight)
                         {
-                            if (leftMost != startX)
-                                --leftMost;
-                            if (rightMost != endX)
-                                ++rightMost;
+                            int delta = (bottomMost - topMost + 1) - consoleHeight;
+                            if (bottomMost - (delta + 1) / 2 < current.ChunkZ + 1)
+                            {
+                                int bottomReduce = bottomMost - (current.ChunkZ + 1);
+                                bottomMost -= bottomReduce;
+                                topMost += delta - bottomReduce;
+                            }
+                            else if (topMost + delta / 2 > current.ChunkZ - 1)
+                            {
+                                int topAdd = topMost - (current.ChunkZ - 1);
+                                topMost += topAdd;
+                                bottomMost -= delta - topAdd;
+                            }
+                            else
+                            {
+                                topMost += delta / 2;
+                                bottomMost -= (delta + 1) / 2;
+                            }
                         }
+                        if ((rightMost - leftMost + 1) > consoleWidth)
+                        {
+                            int delta = (rightMost - leftMost + 1) - consoleWidth;
+                            if (rightMost - (delta + 1) / 2 < current.ChunkX + 1)
+                            {
+                                int rightReduce = rightMost - (current.ChunkX + 1);
+                                rightMost -= rightReduce;
+                                leftMost += delta - rightReduce;
+                            }
+                            else if (leftMost + delta / 2 > current.ChunkX - 1)
+                            {
+                                int leftAdd = leftMost - (current.ChunkX - 1);
+                                leftMost += leftAdd;
+                                rightMost -= delta - leftAdd;
+                            }
+                            else
+                            {
+                                leftMost += delta / 2;
+                                rightMost -= (delta + 1) / 2;
+                            }
+                        }
+
+                        // Try to include the marker chunk
+                        if (markedChunkPos != null &&
+                            (((Math.Max(bottomMost, markChunkZ) - Math.Min(topMost, markChunkZ) + 1) > consoleHeight) ||
+                            ((Math.Max(rightMost, markChunkX) - Math.Min(leftMost, markChunkX) + 1) > consoleWidth)))
+                            sb.Append("§x§0Since the marked chunk is outside the graph, it will not be displayed!§r\n");
                         else
                         {
-                            leftMost = Math.Max(leftMost, startX);
-                            rightMost = Math.Min(rightMost, endX);
+                            topMost = Math.Min(topMost, markChunkZ);
+                            bottomMost = Math.Max(bottomMost, markChunkZ);
+                            leftMost = Math.Min(leftMost, markChunkX);
+                            rightMost = Math.Max(rightMost, markChunkX);
                         }
 
                         // Output
-                        string[] chunkStatuToEmoji = new string[] { "\ud83d\udd33", "\ud83d\udfe9", "\ud83d\udfe8" };
                         for (int z = topMost; z <= bottomMost; ++z)
                         {
                             for (int x = leftMost; x <= rightMost; ++x)
                             {
                                 if (z == current.ChunkZ && x == current.ChunkX)
-                                    sb.Append("§z"); // Player Location: background gray
+                                    sb.Append("§z");           // Player Location: background gray
                                 else if (z == markChunkZ && x == markChunkX)
-                                    sb.Append("§w"); // Marked chunk: background red
-                                sb.Append(chunkStatuToEmoji[chunkStatus.GetValueOrDefault<Tuple<int, int>, byte>(new(x, z), 0)]);
+                                    sb.Append("§w");           // Marked chunk: background red
+
+                                ChunkColumn? chunkColumn = world[x, z];
+                                if (chunkColumn == null)
+                                    sb.Append("\ud83d\udd33");  // "🔳" white hollow square
+                                else if (chunkColumn.FullyLoaded)
+                                    sb.Append("\ud83d\udfe9");  // "🟩" green
+                                else
+                                    sb.Append("\ud83d\udfe8");  // "🟨" yellow
+
                                 if ((z == current.ChunkZ && x == current.ChunkX) || (z == markChunkZ && x == markChunkX))
-                                    sb.Append("§r");
+                                    sb.Append("§r");           // Reset background color
                             }
                             sb.Append('\n');
                         }
