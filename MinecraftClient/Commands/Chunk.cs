@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     public class Chunk : Command
     {
         public override string CmdName { get { return "chunk"; } }
-        public override string CmdUsage { get { return "chunk status"; } }
+        public override string CmdUsage { get { return "chunk status [chunkX chunkZ|locationX locationY locationZ]"; } }
         public override string CmdDesc { get { return "cmd.chunk.desc"; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
@@ -23,6 +23,10 @@ namespace MinecraftClient.Commands
                     {
                         World world = handler.GetWorld();
                         Location current = handler.GetCurrentLocation();
+
+                        Tuple<int, int>? markedChunkPos = ParseChunkPos(args);
+                        (int markChunkX, int markChunkZ) = (markedChunkPos == null) ? new(current.ChunkX, current.ChunkZ) : markedChunkPos;
+
                         StringBuilder sb = new();
                         sb.Append("Current position：");
                         sb.Append(current.ToString());
@@ -40,7 +44,7 @@ namespace MinecraftClient.Commands
                             for (int dx = 0; dx < 32; ++dx)
                             {
                                 ChunkColumn? chunkColumn = world[startX + dx, startZ + dz];
-                                if (dz == 16 && dx == 16)
+                                if ((dz == 16 && dx == 16) || (startZ + dz == markChunkZ && startX + dx == markChunkX))
                                     sb.Append("§w"); // Player Location: background red
 
                                 if (chunkColumn == null)
@@ -50,13 +54,13 @@ namespace MinecraftClient.Commands
                                 else
                                     sb.Append("🟨"); // yellow
 
-                                if (dz == 16 && dx == 16)
+                                if ((dz == 16 && dx == 16) || (startZ + dz == markChunkZ && startX + dx == markChunkX))
                                     sb.Append("§r");
                             }
                             sb.Append('\n');
                         }
 
-                        sb.Append("PlayerLocation:§w  §r, NotReceived:🔳, Loading:🟨, Loaded:🟩.");
+                        sb.Append("Player or marked chunk:§w  §r, NotReceived:🔳, Loading:🟨, Loaded:🟩");
                         return sb.ToString();
                     }
                     else if (args[0] == "setloading") // Debug only!
@@ -121,7 +125,7 @@ namespace MinecraftClient.Commands
                 int chunkX, chunkZ;
                 if (args.Length == 1 + 3)
                 {
-                    Location pos = new(int.Parse(args[1]), int.Parse(args[2]), int.Parse(args[3]));
+                    Location pos = new(double.Parse(args[1]), double.Parse(args[2]), double.Parse(args[3]));
                     chunkX = pos.ChunkX;
                     chunkZ = pos.ChunkZ;
                 }
