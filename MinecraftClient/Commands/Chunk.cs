@@ -45,26 +45,57 @@ namespace MinecraftClient.Commands
                             (markChunkX < current.ChunkX - 16 || markChunkX >= current.ChunkX + 16 || markChunkZ < current.ChunkZ - 16 || markChunkZ >= current.ChunkZ + 16))
                             sb.Append("§x§0Since the marked chunk is outside the graph, it will not be displayed!§r\n");
 
-                        int startX = current.ChunkX - 16;
-                        int startZ = current.ChunkZ - 16;
-                        for (int dz = 0; dz < 32; dz++)
+
+                        int consoleWid = Math.Max(Console.BufferWidth / 2, 21);
+                        if (consoleWid % 2 == 0)
+                            --consoleWid;
+
+                        int startZ = current.ChunkZ - consoleWid / 2, endZ = current.ChunkZ + 1 + consoleWid / 2;
+                        int startX = current.ChunkX - consoleWid / 2, endX = current.ChunkX + 1 + consoleWid / 2;
+                        int leftMost = endX, rightMost = startX, topMost = endZ, bottomMost = startZ;
+
+                        Dictionary<Tuple<int, int>, byte> chunkStatus = new();
+                        for (int z = startZ; z <= endZ; z++)
                         {
-                            for (int dx = 0; dx < 32; ++dx)
+                            for (int x = startX; x <= endX; ++x)
                             {
-                                ChunkColumn? chunkColumn = world[startX + dx, startZ + dz];
-                                if (dz == 16 && dx == 16)
-                                    sb.Append("§z"); // Player Location: background gray
-                                else if (startZ + dz == markChunkZ && startX + dx == markChunkX)
-                                    sb.Append("§w"); // Marked chunk: background red
-
+                                ChunkColumn? chunkColumn = world[x, z];
                                 if (chunkColumn == null)
-                                    sb.Append("\ud83d\udd33"); // "🔳" white hollow square
-                                else if (chunkColumn.FullyLoaded)
-                                    sb.Append("\ud83d\udfe9"); // "🟩" green
+                                    chunkStatus[new(x, z)] = 0; // "🔳" white hollow square
                                 else
-                                    sb.Append("\ud83d\udfe8"); // "🟨" yellow
+                                {
+                                    leftMost = Math.Min(leftMost, x);
+                                    rightMost = Math.Max(rightMost, x);
+                                    topMost = Math.Min(topMost, z);
+                                    bottomMost = Math.Max(bottomMost, z);
+                                    if (chunkColumn.FullyLoaded)
+                                        chunkStatus[new(x, z)] = 1; // "🟩" green
+                                    else
+                                        chunkStatus[new(x, z)] = 2; // "🟨" yellow
+                                }
 
-                                if ((dz == 16 && dx == 16) || (startZ + dz == markChunkZ && startX + dx == markChunkX))
+                            }
+                        }
+
+                        // Add a blank line
+                        --topMost;
+                        ++bottomMost;
+                        if (Console.BufferWidth / 2 >= ((rightMost - leftMost + 1) + 2))
+                        {
+                            --leftMost;
+                            ++rightMost;
+                        }
+                        string[] chunkStatusToEmoji = new string[] { "\ud83d\udd33", "\ud83d\udfe9", "\ud83d\udfe8" };
+                        for (int z = topMost; z <= bottomMost; ++z)
+                        {
+                            for (int x = leftMost; x <= rightMost; ++x)
+                            {
+                                if (z == current.ChunkZ && x == current.ChunkX)
+                                    sb.Append("§z"); // Player Location: background gray
+                                else if (z == markChunkZ && x == markChunkX)
+                                    sb.Append("§w"); // Marked chunk: background red
+                                sb.Append(chunkStatusToEmoji[chunkStatus.GetValueOrDefault<Tuple<int, int>, byte>(new(x, z), 0)]);
+                                if ((z == current.ChunkZ && x == current.ChunkX) || (z == markChunkZ && x == markChunkX))
                                     sb.Append("§r");
                             }
                             sb.Append('\n');
