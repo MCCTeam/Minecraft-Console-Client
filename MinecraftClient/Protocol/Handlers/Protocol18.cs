@@ -406,7 +406,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (handler.GetTerrainEnabled())
                                 {
                                     if (protocolVersion >= MC_1_16_2_Version && protocolVersion < MC_1_19_Version)
-                                        World.StoreDimension(dimensionName, dimensionType!);
+                                        World.StoreOneDimension(dimensionName, dimensionType!);
                                     World.SetDimension(dimensionName);
                                 }
                             }
@@ -623,7 +623,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (handler.GetTerrainEnabled())
                                 {
                                     if (protocolVersion >= MC_1_16_2_Version && protocolVersion < MC_1_19_Version)
-                                        World.StoreDimension(dimensionName, dimensionTypeRespawn!);
+                                        World.StoreOneDimension(dimensionName, dimensionTypeRespawn!);
                                     World.SetDimension(dimensionName);
                                 }
                             }
