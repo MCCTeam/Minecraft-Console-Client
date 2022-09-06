@@ -25,17 +25,25 @@ namespace MinecraftClient.Commands
                         Location current = handler.GetCurrentLocation();
 
                         Tuple<int, int>? markedChunkPos = ParseChunkPos(args);
-                        (int markChunkX, int markChunkZ) = (markedChunkPos == null) ? new(current.ChunkX, current.ChunkZ) : markedChunkPos;
+                        (int markChunkX, int markChunkZ) = markedChunkPos ?? (new(current.ChunkX, current.ChunkZ));
 
                         StringBuilder sb = new();
-                        sb.Append("Current position：");
-                        sb.Append(current.ToString());
-                        sb.Append(", chunk: ");
-                        sb.Append(String.Format("({0}, {1})", current.ChunkX, current.ChunkZ));
-                        sb.Append(".\n");
 
                         sb.Append(getChunkLoadingStatus(handler.GetWorld()));
                         sb.Append('\n');
+
+                        sb.Append(String.Format("Current location：{0}, chunk: ({1}, {2}).\n", current, current.ChunkX, current.ChunkZ));
+                        if (markedChunkPos != null)
+                        {
+                            sb.Append("Marked location: ");
+                            if (args.Length == 1 + 3)
+                                sb.Append(String.Format("X:{0:0.00} Y:{1:0.00} Z:{2:0.00}, ", double.Parse(args[1]), double.Parse(args[2]), double.Parse(args[3])));
+                            sb.Append(String.Format("chunk: ({0}, {1}).\n", markChunkX, markChunkZ));
+                        }
+
+                        if (markedChunkPos != null &&
+                            (markChunkX < current.ChunkX - 16 || markChunkX > current.ChunkX + 16 || markChunkZ < current.ChunkZ - 16 || markChunkZ > current.ChunkZ + 16))
+                            sb.Append("§x§0Since the marked block is outside the graph, it will not be displayed!§r\n");
 
                         int startX = current.ChunkX - 16;
                         int startZ = current.ChunkZ - 16;
@@ -44,8 +52,10 @@ namespace MinecraftClient.Commands
                             for (int dx = 0; dx < 32; ++dx)
                             {
                                 ChunkColumn? chunkColumn = world[startX + dx, startZ + dz];
-                                if ((dz == 16 && dx == 16) || (startZ + dz == markChunkZ && startX + dx == markChunkX))
-                                    sb.Append("§w"); // Player Location: background red
+                                if (dz == 16 && dx == 16)
+                                    sb.Append("§z"); // Player Location: background gray
+                                else if (startZ + dz == markChunkZ && startX + dx == markChunkX)
+                                    sb.Append("§w"); // Marked chunk: background red
 
                                 if (chunkColumn == null)
                                     sb.Append("🔳"); // empty
@@ -60,7 +70,7 @@ namespace MinecraftClient.Commands
                             sb.Append('\n');
                         }
 
-                        sb.Append("Player or marked chunk:§w  §r, NotReceived:🔳, Loading:🟨, Loaded:🟩");
+                        sb.Append("Player:§z  §r, MarkedChunk:§w  §r, NotReceived:🔳, Loading:🟨, Loaded:🟩");
                         return sb.ToString();
                     }
                     else if (args[0] == "setloading") // Debug only!
