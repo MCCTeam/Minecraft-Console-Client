@@ -417,7 +417,7 @@ namespace MinecraftClient.ChatBots
                         case "DigBlock":
                             if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length < 3 || cmd.Parameters.Length > 5)
                             {
-                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 or 3 parameter(s) (location, swingArms, lookAtBlock)!"));
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 or 3 parameter(s) (location, swingArms?, lookAtBlock?)!"));
                                 return false;
                             }
 
@@ -473,12 +473,120 @@ namespace MinecraftClient.ChatBots
                         case "GetCurrentLocation":
                             responder.SendSuccessResponse(JsonConvert.SerializeObject(GetCurrentLocation()));
                             break;
+
+                        case "MoveToLocation":
+                            if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length < 3 || cmd.Parameters.Length > 8)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 or 7 parameter(s) (x, y, z, allowUnsafe?, allowDirectTeleport?, maxOffset?, minoffset?, timeout?)!"));
+                                return false;
+                            }
+
+                            bool allowUnsafe = false;
+                            bool allowDirectTeleport = false;
+                            int maxOffset = 0;
+                            int minOffset = 0;
+                            TimeSpan? timeout = null;
+
+                            if (cmd.Parameters.Length >= 4)
+                                allowUnsafe = (bool)cmd.Parameters[3];
+
+                            if (cmd.Parameters.Length >= 5)
+                                allowDirectTeleport = (bool)cmd.Parameters[4];
+
+                            if (cmd.Parameters.Length >= 6)
+                                maxOffset = Convert.ToInt32(cmd.Parameters[5]);
+
+                            if (cmd.Parameters.Length >= 7)
+                                minOffset = Convert.ToInt32(cmd.Parameters[6]);
+
+                            if (cmd.Parameters.Length == 8)
+                                timeout = TimeSpan.FromSeconds(Convert.ToInt32(cmd.Parameters[7]));
+
+                            bool canMove = MoveToLocation(new Location(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), Convert.ToInt32(cmd.Parameters[2])), allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeout);
+                            responder.SendSuccessResponse(canMove.ToString().ToLower());
+                            break;
+
+                        case "ClientIsMoving":
+                            responder.SendSuccessResponse(ClientIsMoving().ToString().ToLower());
+                            break;
+
+                        case "LookAtLocation":
+                            if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length < 3 || cmd.Parameters.Length > 3)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 3 parameter(s) (x, y, z)!"));
+                                return false;
+                            }
+
+                            LookAtLocation(new Location(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), Convert.ToInt32(cmd.Parameters[2])));
+                            responder.SendSuccessResponse();
+                            break;
+
+                        case "GetTimestamp":
+                            responder.SendSuccessResponse(GetTimestamp());
+                            break;
+
+                        case "GetServerPort":
+                            responder.SendSuccessResponse(GetServerPort().ToString());
+                            break;
+
+                        case "GetServerHost":
+                            responder.SendSuccessResponse(GetServerHost().ToString());
+                            break;
+
+                        case "GetUsername":
+                            responder.SendSuccessResponse(GetUsername().ToString());
+                            break;
+
+                        case "GetGamemode":
+                            responder.SendSuccessResponse(GameModeString(GetGamemode()));
+                            break;
+
+                        case "GetYaw":
+                            responder.SendSuccessResponse(GetYaw().ToString());
+                            break;
+
+                        case "GetPitch":
+                            responder.SendSuccessResponse(GetPitch().ToString());
+                            break;
+
+                        case "GetUserUUID":
+                            responder.SendSuccessResponse(GetUserUUID());
+                            break;
+
+                        case "GetOnlinePlayers":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetOnlinePlayers()));
+                            break;
+
+                        case "GetOnlinePlayersWithUUID":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetOnlinePlayersWithUUID()));
+                            break;
+
+                        case "GetServerTPS":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetServerTPS()));
+                            break;
+
+                        case "InteractEntity":
+                            if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length < 2 || cmd.Parameters.Length > 3)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting at least 2 and at most 3 parameter(s) (entityId, interactionType, hand?)!"));
+                                return false;
+                            }
+
+                            InteractType interactionType = (InteractType)cmd.Parameters[1];
+
+                            Hand interactionHand = Hand.MainHand;
+
+                            if (cmd.Parameters.Length == 3)
+                                interactionHand = (Hand)Convert.ToInt32(cmd.Parameters[2]);
+
+                            responder.SendSuccessResponse(InteractEntity(Convert.ToInt32(cmd.Parameters[0]), interactionType, interactionHand).ToString().ToLower());
+                            break;
                     }
                 }
                 catch (Exception e)
                 {
                     LogToConsole(e.Message);
-                    SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": false, \"message\": \"Invalid command format, probably malformed JSON!\"}", true);
+                    SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": false, \"message\": \"An error occured, possible reasons: mailformed json, type conversion, internal error\", \"stackTrace\": \"" + Json.EscapeString(e.ToString()) + "\"}", true);
                     return false;
                 }
 
