@@ -65,19 +65,17 @@ namespace MinecraftClient.Mapping
             foreach (Dictionary<string, object> dimensionNbt in dimensionListNbt)
             {
                 string dimensionName = (string)dimensionNbt["name"];
-                Dictionary<string, object> element = (Dictionary<string, object>)dimensionNbt["element"];
-                if (dimensionList.ContainsKey(dimensionName))
-                    dimensionList.Remove(dimensionName);
-                dimensionList.Add(dimensionName, new Dimension(dimensionName, element));
+                Dictionary<string, object> dimensionType = (Dictionary<string, object>)dimensionNbt["element"];
+                StoreOneDimension(dimensionName, dimensionType);
             }
         }
 
         /// <summary>
-        /// Store one dimension - 1.16.2 to 1.18.2
+        /// Store one dimension - Directly used in 1.16.2 to 1.18.2
         /// </summary>
         /// <param name="dimensionName">Dimension name</param>
         /// <param name="dimensionType">Dimension Type nbt data</param>
-        public static void StoreDimension(string dimensionName, Dictionary<string, object> dimensionType)
+        public static void StoreOneDimension(string dimensionName, Dictionary<string, object> dimensionType)
         {
             if (dimensionList.ContainsKey(dimensionName))
                     dimensionList.Remove(dimensionName);
