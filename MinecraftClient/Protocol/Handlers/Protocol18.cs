@@ -371,7 +371,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 for (int i = 0; i < worldCount; i++)
                                     dataTypes.ReadNextString(packetData);                 // Dimension Names (World Names) - 1.16 and above
                                 var registryCodec = dataTypes.ReadNextNbt(packetData);    // Registry Codec (Dimension Codec) - 1.16 and above
-                                World.StoreDimensionList(registryCodec);
+                                if (handler.GetTerrainEnabled())
+                                    World.StoreDimensionList(registryCodec);
                             }
 
                             // Current dimension
@@ -380,12 +381,13 @@ namespace MinecraftClient.Protocol.Handlers
                             //   String identifier: 1.16 and 1.16.1
                             //   varInt: [1.9.1 to 1.15.2]
                             //   byte: below 1.9.1
+                            Dictionary<string, object>? dimensionType = null;
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 if (protocolVersion >= MC_1_19_Version)
                                     dataTypes.ReadNextString(packetData);     // Dimension Type: Identifier
                                 else if (protocolVersion >= MC_1_16_2_Version)
-                                    dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
+                                    dimensionType = dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
                                     dataTypes.ReadNextString(packetData);
                                 this.currentDimension = 0;
@@ -401,7 +403,12 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 string dimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
-                                World.SetDimension(dimensionName);
+                                if (handler.GetTerrainEnabled())
+                                {
+                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion < MC_1_19_Version)
+                                        World.StoreDimension(dimensionName, dimensionType!);
+                                    World.SetDimension(dimensionName);
+                                }
                             }
 
                             if (protocolVersion >= MC_1_15_Version)
@@ -594,12 +601,13 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             break;
                         case PacketTypesIn.Respawn:
+                            Dictionary<string, object>? dimensionTypeRespawn = null;
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 if (protocolVersion >= MC_1_19_Version)
                                     dataTypes.ReadNextString(packetData);     // Dimension Type: Identifier
                                 else if (protocolVersion >= MC_1_16_2_Version)
-                                    dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
+                                    dimensionTypeRespawn = dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
                                     dataTypes.ReadNextString(packetData);
                                 this.currentDimension = 0;
@@ -612,7 +620,12 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 string dimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
-                                World.SetDimension(dimensionName);
+                                if (handler.GetTerrainEnabled())
+                                {
+                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion < MC_1_19_Version)
+                                        World.StoreDimension(dimensionName, dimensionTypeRespawn!);
+                                    World.SetDimension(dimensionName);
+                                }
                             }
 
                             if (protocolVersion < MC_1_14_Version)
