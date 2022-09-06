@@ -42,8 +42,8 @@ namespace MinecraftClient.Commands
                         }
 
                         if (markedChunkPos != null &&
-                            (markChunkX < current.ChunkX - 16 || markChunkX > current.ChunkX + 16 || markChunkZ < current.ChunkZ - 16 || markChunkZ > current.ChunkZ + 16))
-                            sb.Append("§x§0Since the marked block is outside the graph, it will not be displayed!§r\n");
+                            (markChunkX < current.ChunkX - 16 || markChunkX >= current.ChunkX + 16 || markChunkZ < current.ChunkZ - 16 || markChunkZ >= current.ChunkZ + 16))
+                            sb.Append("§x§0Since the marked chunk is outside the graph, it will not be displayed!§r\n");
 
                         int startX = current.ChunkX - 16;
                         int startZ = current.ChunkZ - 16;
@@ -58,11 +58,11 @@ namespace MinecraftClient.Commands
                                     sb.Append("§w"); // Marked chunk: background red
 
                                 if (chunkColumn == null)
-                                    sb.Append("🔳"); // empty
+                                    sb.Append("\ud83d\udd33"); // "🔳" white hollow square
                                 else if (chunkColumn.FullyLoaded)
-                                    sb.Append("🟩"); // green
+                                    sb.Append("\ud83d\udfe9"); // "🟩" green
                                 else
-                                    sb.Append("🟨"); // yellow
+                                    sb.Append("\ud83d\udfe8"); // "🟨" yellow
 
                                 if ((dz == 16 && dx == 16) || (startZ + dz == markChunkZ && startX + dx == markChunkX))
                                     sb.Append("§r");
@@ -70,14 +70,15 @@ namespace MinecraftClient.Commands
                             sb.Append('\n');
                         }
 
-                        sb.Append("Player:§z  §r, MarkedChunk:§w  §r, NotReceived:🔳, Loading:🟨, Loaded:🟩");
+                        sb.Append("Player:§z  §r, MarkedChunk:§w  §r, NotReceived:\ud83d\udd33, Loading:\ud83d\udfe8, Loaded:\ud83d\udfe9");
                         return sb.ToString();
                     }
-                    else if (args[0] == "setloading") // Debug only!
+                    else if (args[0] == "setloading") // For debugging
                     {
                         Tuple<int, int>? chunkPos = ParseChunkPos(args);
                         if (chunkPos != null)
                         {
+                            handler.Log.Info("§x§0This command is used for debugging, make sure you know what you are doing.§r");
                             World world = handler.GetWorld();
                             (int chunkX, int chunkZ) = chunkPos;
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
@@ -89,11 +90,12 @@ namespace MinecraftClient.Commands
                         else
                             return GetCmdDescTranslated();
                     }
-                    else if (args[0] == "setloaded") // Debug only!
+                    else if (args[0] == "setloaded") // For debugging
                     {
                         Tuple<int, int>? chunkPos = ParseChunkPos(args);
                         if (chunkPos != null)
                         {
+                            handler.Log.Info("§x§0This command is used for debugging, make sure you know what you are doing.§r");
                             World world = handler.GetWorld();
                             (int chunkX, int chunkZ) = chunkPos;
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
@@ -105,11 +107,12 @@ namespace MinecraftClient.Commands
                         else
                             return GetCmdDescTranslated();
                     }
-                    else if (args[0] == "delete") // Debug only!
+                    else if (args[0] == "delete") // For debugging
                     {
                         Tuple<int, int>? chunkPos = ParseChunkPos(args);
                         if (chunkPos != null)
                         {
+                            handler.Log.Info("§x§0This command is used for debugging, make sure you know what you are doing.§r");
                             World world = handler.GetWorld();
                             (int chunkX, int chunkZ) = chunkPos;
                             world[chunkX, chunkZ] = null;
