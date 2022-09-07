@@ -273,19 +273,19 @@ namespace MinecraftClient
         /// </summary>
         private void RegisterBots()
         {
-            if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
-            if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
-            if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
-            if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-            if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
-            if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries)); }
-            if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
-            if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
-            if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
-            if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction)); }
-            if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
-            if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
-            if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
+            if (Settings.AntiAFK_Enabled) { BotLoad(new AntiAFK(Settings.AntiAFK_Delay)); }
+            if (Settings.Hangman_Enabled) { BotLoad(new HangmanGame(Settings.Hangman_English)); }
+            if (Settings.Alerts_Enabled) { BotLoad(new Alerts()); }
+            if (Settings.ChatLog_Enabled) { BotLoad(new ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+            if (Settings.PlayerLog_Enabled) { BotLoad(new PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
+            if (Settings.AutoRelog_Enabled) { BotLoad(new AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries)); }
+            if (Settings.ScriptScheduler_Enabled) { BotLoad(new ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
+            if (Settings.RemoteCtrl_Enabled) { BotLoad(new RemoteControl()); }
+            if (Settings.AutoRespond_Enabled) { BotLoad(new AutoRespond(Settings.AutoRespond_Matches)); }
+            if (Settings.AutoAttack_Enabled) { BotLoad(new AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction)); }
+            if (Settings.AutoFishing_Enabled) { BotLoad(new AutoFishing()); }
+            if (Settings.AutoEat_Enabled) { BotLoad(new AutoEat(Settings.AutoEat_hungerThreshold)); }
+            if (Settings.Mailer_Enabled) { BotLoad(new Mailer()); }
             if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
             if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
             if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
@@ -720,22 +720,38 @@ namespace MinecraftClient
             }
         }
 
+        /// <summary>
+        /// Reload settings and bots
+        /// </summary>
+        /// <param name="hard">Marks if bots need to be hard reloaded</param>
         public void ReloadSettings(bool hard = false)
         {
             Program.ReloadSettings();
 
             if (hard)
-            {
-                foreach (ChatBot bot in GetLoadedChatBots())
-                    BotUnLoad(bot);
-
-                RegisterBots();
-
-                if (client.Client.Connected)
-                    bots.ForEach(bot => bot.AfterGameJoined());
-            }
-
+                ReloadBots();
             else bots.ForEach(bot => bot.OnSettingsReload());
+        }
+
+        /// <summary>
+        /// Reload loaded bots (Only builtin bots)
+        /// </summary>
+        public void ReloadBots()
+        {
+            UnloadAllBots();
+            RegisterBots();
+
+            if (client.Client.Connected)
+                bots.ForEach(bot => bot.AfterGameJoined());
+        }
+
+        /// <summary>
+        /// Unload All Bots
+        /// </summary>
+        public void UnloadAllBots()
+        {
+            foreach (ChatBot bot in GetLoadedChatBots())
+                BotUnLoad(bot);
         }
 
         #endregion
