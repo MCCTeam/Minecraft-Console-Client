@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
-using Starksoft.Net.Proxy;
+﻿using System.Net.Sockets;
+using Starksoft.Aspen.Proxy;
 
 namespace MinecraftClient.Proxy
 {
