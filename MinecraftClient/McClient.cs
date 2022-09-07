@@ -179,25 +179,7 @@ namespace MinecraftClient
 
                 if (botsOnHold.Count == 0)
                 {
-                    if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
-                    if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
-                    if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
-                    if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-                    if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
-                    if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries)); }
-                    if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
-                    if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
-                    if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
-                    if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction)); }
-                    if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
-                    if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
-                    if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
-                    if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
-                    if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
-                    if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
-
-                    //Add your ChatBot here by uncommenting and adapting
-                    //BotLoad(new ChatBots.YourBot());
+                    RegisterBots();
                 }
             }
 
@@ -284,6 +266,32 @@ namespace MinecraftClient
                     Program.HandleFailure();
                 }
             }
+        }
+
+        /// <summary>
+        /// Register bots
+        /// </summary>
+        private void RegisterBots()
+        {
+            if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
+            if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
+            if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
+            if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+            if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
+            if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries)); }
+            if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
+            if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
+            if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches)); }
+            if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction)); }
+            if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
+            if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
+            if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
+            if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
+            if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
+            if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
+
+            //Add your ChatBot here by uncommenting and adapting
+            //BotLoad(new ChatBots.YourBot());
         }
 
         /// <summary>
@@ -712,10 +720,22 @@ namespace MinecraftClient
             }
         }
 
-        public void ReloadSettings()
+        public void ReloadSettings(bool hard = false)
         {
             Program.ReloadSettings();
-            bots.ForEach(bot => bot.OnSettingsReload());
+
+            if (hard)
+            {
+                foreach (ChatBot bot in GetLoadedChatBots())
+                    BotUnLoad(bot);
+
+                RegisterBots();
+
+                if (client.Client.Connected)
+                    bots.ForEach(bot => bot.AfterGameJoined());
+            }
+
+            else bots.ForEach(bot => bot.OnSettingsReload());
         }
 
         #endregion
