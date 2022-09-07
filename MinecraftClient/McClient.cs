@@ -801,6 +801,8 @@ namespace MinecraftClient
         /// </summary>
         public void BotLoad(ChatBot b, bool init = true)
         {
+            b.OnUnload();
+
             if (InvokeRequired)
             {
                 InvokeOnMainThread(() => BotLoad(b, init));
@@ -821,6 +823,8 @@ namespace MinecraftClient
         /// </summary>
         public void BotUnLoad(ChatBot b)
         {
+            b.OnUnload();
+
             if (InvokeRequired)
             {
                 InvokeOnMainThread(() => BotUnLoad(b));

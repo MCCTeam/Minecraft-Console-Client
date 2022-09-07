@@ -102,6 +102,11 @@ namespace MinecraftClient
         public virtual void Initialize() { }
 
         /// <summary>
+        /// This method is called when the bot is being unloaded, you can use it to free up resources like DB connections
+        /// </summary>
+        public virtual void OnUnload() { }
+
+        /// <summary>
         /// This method is called when settings are reloaded using the /reload command
         /// Should be used to change the state/settings inside a chat bot.
         /// </summary>
