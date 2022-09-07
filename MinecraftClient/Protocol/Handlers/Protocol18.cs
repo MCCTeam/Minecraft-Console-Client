@@ -1274,7 +1274,6 @@ namespace MinecraftClient.Protocol.Handlers
                             if (protocolVersion >= MC_1_17_Version)
                             {
                                 forced = dataTypes.ReadNextBool(packetData);
-                                string forcedMessage = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
                                 bool hasPromptMessage = dataTypes.ReadNextBool(packetData);   // Has Prompt Message (Boolean) - 1.17 and above
                                 if (hasPromptMessage)
                                     dataTypes.SkipNextString(packetData); // Prompt Message (Optional Chat) - 1.17 and above
