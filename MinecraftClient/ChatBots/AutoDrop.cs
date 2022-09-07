@@ -25,12 +25,39 @@ namespace MinecraftClient.ChatBots
 
         public AutoDrop(string mode, string itemList)
         {
+            Setup(mode, itemList);
+        }
+
+        private void Setup(string mode, string itemList)
+        {
             if (!Enum.TryParse(mode, true, out dropMode))
             {
                 LogToConsoleTranslated("bot.autoDrop.no_mode");
             }
             if (dropMode != Mode.Everything)
                 this.itemList = ItemListParser(itemList).ToList();
+        }
+
+        /// <summary>
+        /// Update settings when reloaded
+        /// </summary>
+        public override void OnSettingsReloaded()
+        {
+            if (!Settings.AutoDrop_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            if (!GetInventoryEnabled())
+            {
+                LogToConsoleTranslated("extra.inventory_required");
+                LogToConsoleTranslated("general.bot_unload");
+                UnloadBot();
+                return;
+            }
+
+            Setup(Settings.AutoDrop_Mode, Settings.AutoDrop_items);
         }
 
         /// <summary>
@@ -109,7 +136,7 @@ namespace MinecraftClient.ChatBots
                         }
                         else
                         {
-                            return Translations.Get("cmd.inventory.help.usage") +  ": remove <item name>";
+                            return Translations.Get("cmd.inventory.help.usage") + ": remove <item name>";
                         }
                     case "list":
                         if (itemList.Count > 0)

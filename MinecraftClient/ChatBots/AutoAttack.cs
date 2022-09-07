@@ -26,17 +26,30 @@ namespace MinecraftClient.ChatBots
 
         public AutoAttack(string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, InteractType interaction = InteractType.Attack)
         {
+            Setup(mode, priority, overrideAttackSpeed, cooldownSeconds, interaction);
+        }
+
+        private void Setup(string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, InteractType interaction = InteractType.Attack)
+        {
             if (mode == "single")
                 singleMode = true;
             else if (mode == "multi")
                 singleMode = false;
-            else LogToConsoleTranslated("bot.autoAttack.mode", mode);
+            else
+            {
+                singleMode = true;
+                LogToConsoleTranslated("bot.autoAttack.mode", mode);
+            }
 
             if (priority == "distance")
                 priorityDistance = true;
             else if (priority == "health")
                 priorityDistance = false;
-            else LogToConsoleTranslated("bot.autoAttack.priority", priority);
+            else
+            {
+                priorityDistance = true;
+                LogToConsoleTranslated("bot.autoAttack.priority", priority);
+            }
 
             interactMode = interaction;
 
@@ -45,6 +58,7 @@ namespace MinecraftClient.ChatBots
                 if (cooldownSeconds <= 0)
                 {
                     LogToConsoleTranslated("bot.autoAttack.invalidcooldown");
+                    overrideAttackSpeed = false;
                 }
                 else
                 {
@@ -53,6 +67,29 @@ namespace MinecraftClient.ChatBots
                     attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
                 }
             }
+            else overrideAttackSpeed = false;
+        }
+
+        /// <summary>
+        /// Update settings when reloaded
+        /// </summary>
+        public override void OnSettingsReloaded()
+        {
+            if (!Settings.AutoAttack_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            if (!GetEntityHandlingEnabled())
+            {
+                LogToConsoleTranslated("extra.entity_required");
+                LogToConsoleTranslated("general.bot_unload");
+                UnloadBot();
+                return;
+            }
+
+            Setup(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction);
         }
 
         public override void Initialize()

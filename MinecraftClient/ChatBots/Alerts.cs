@@ -24,6 +24,22 @@ namespace MinecraftClient.ChatBots
         }
 
         /// <summary>
+        /// Update settings when reloaded
+        /// </summary>
+        public override void OnSettingsReloaded()
+        {
+            if (!Settings.Alerts_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            dictionary = LoadDistinctEntriesFromFile(Settings.Alerts_MatchesFile);
+            excludelist = LoadDistinctEntriesFromFile(Settings.Alerts_ExcludesFile);
+        }
+
+
+        /// <summary>
         /// Process text received from the server to display alerts
         /// </summary>
         /// <param name="text">Received text</param>

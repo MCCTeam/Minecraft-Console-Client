@@ -46,6 +46,7 @@ namespace MinecraftClient
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
         private static bool useMcVersionOnce = false;
+        private static string? settingsIniPath = null;
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -108,6 +109,7 @@ namespace MinecraftClient
             if (args.Length >= 1 && System.IO.File.Exists(args[0]) && Settings.ToLowerIfNeed(Path.GetExtension(args[0])) == ".ini")
             {
                 Settings.LoadFile(args[0]);
+                settingsIniPath = args[0];
 
                 //remove ini configuration file from arguments array
                 List<string> args_tmp = args.ToList<string>();
@@ -119,6 +121,8 @@ namespace MinecraftClient
                 Settings.LoadFile("MinecraftClient.ini");
             }
             else Settings.WriteDefaultSettings("MinecraftClient.ini");
+
+            settingsIniPath = "MinecraftClient.ini";
 
             //Load external translation file. Should be called AFTER settings loaded
             Translations.LoadExternalTranslationFile(Settings.Language);
@@ -527,6 +531,15 @@ namespace MinecraftClient
                 failureMessage += Translations.Get(failureReason);
                 HandleFailure(failureMessage, false, ChatBot.DisconnectReason.LoginRejected);
             }
+        }
+
+        /// <summary>
+        /// Reloads settings
+        /// </summary>
+        public static void ReloadSettings()
+        {
+            if (settingsIniPath != null)
+                Settings.LoadFile(settingsIniPath);
         }
 
         /// <summary>

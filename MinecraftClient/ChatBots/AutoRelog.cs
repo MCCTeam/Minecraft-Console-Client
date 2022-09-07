@@ -24,6 +24,11 @@ namespace MinecraftClient.ChatBots
         /// <param name="retries">Number of retries if connection fails (-1 = infinite)</param>
         public AutoRelog(int DelayBeforeRelogMin, int DelayBeforeRelogMax, int retries)
         {
+            Setup(DelayBeforeRelogMin, DelayBeforeRelogMax, retries);
+        }
+
+        private void Setup(int DelayBeforeRelogMin, int DelayBeforeRelogMax, int retries)
+        {
             attempts = retries;
             if (attempts == -1) { attempts = int.MaxValue; }
             McClient.ReconnectionAttemptsLeft = attempts;
@@ -36,9 +41,31 @@ namespace MinecraftClient.ChatBots
             LogDebugToConsoleTranslated("bot.autoRelog.launch", attempts);
         }
 
+        /// <summary>
+        /// Update settings when reloaded
+        /// </summary>
+        public override void OnSettingsReloaded()
+        {
+            if (!Settings.AutoRelog_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            Setup(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries);
+            Init();
+        }
+
         public override void Initialize()
         {
+            Init();
+        }
+
+        private void Init()
+        {
+            dictionary = new string[0];
             McClient.ReconnectionAttemptsLeft = attempts;
+
             if (Settings.AutoRelog_IgnoreKickMessage)
             {
                 LogDebugToConsoleTranslated("bot.autoRelog.no_kick_msg");

@@ -18,6 +18,14 @@ namespace MinecraftClient.ChatBots
             HungerThreshold = Threshold;
         }
 
+        /// <summary>
+        /// Update settings when reloaded
+        /// </summary>
+        public override void OnSettingsReloaded()
+        {
+            HungerThreshold = Settings.AutoEat_hungerThreshold;
+        }
+
         public override void Update()
         {
             if (DelayCounter > 0)

@@ -30,8 +30,14 @@ namespace MinecraftClient.ChatBots
 
         public ChatLog(string file, MessageFilter filter, bool AddDateAndTime)
         {
+            Setup(file, filter, AddDateAndTime);
+        }
+
+        private void Setup(string file, MessageFilter filter, bool AddDateAndTime)
+        {
             dateandtime = AddDateAndTime;
             logfile = file;
+
             switch (filter)
             {
                 case MessageFilter.AllText:
@@ -61,11 +67,26 @@ namespace MinecraftClient.ChatBots
                     saveInternal = true;
                     break;
             }
+
             if (String.IsNullOrEmpty(file) || file.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
             {
                 LogToConsoleTranslated("bot.chatLog.invalid_file", file);
                 UnloadBot();
             }
+        }
+
+        /// <summary>
+        /// Update settings when reloaded
+        /// </summary>
+        public override void OnSettingsReloaded()
+        {
+            if (!Settings.ChatLog_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            Setup(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime);
         }
 
         public static MessageFilter str2filter(string filtername)
@@ -101,7 +122,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public override void OnInternalCommand(string commandName,string commandParams, string result)
+        public override void OnInternalCommand(string commandName, string commandParams, string result)
         {
             if (saveInternal)
             {

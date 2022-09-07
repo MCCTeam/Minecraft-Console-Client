@@ -156,6 +156,18 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void Initialize()
         {
+            Setup();
+
+            RegisterChatBotCommand("mailer", Translations.Get("bot.mailer.cmd"), "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
+        }
+
+        public override void OnSettingsReloaded()
+        {
+            Setup();
+        }
+
+        private void Setup()
+        {
             LogDebugToConsoleTranslated("bot.mailer.init");
             LogDebugToConsoleTranslated("bot.mailer.init.db" + Settings.Mailer_DatabaseFile);
             LogDebugToConsoleTranslated("bot.mailer.init.ignore" + Settings.Mailer_IgnoreListFile);
@@ -209,8 +221,6 @@ namespace MinecraftClient.ChatBots
             //Initialize file monitors. In case the bot needs to unload for some reason in the future, do not forget to .Dispose() them
             mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_DatabaseFile), Path.GetFileName(Settings.Mailer_DatabaseFile), FileMonitorCallback);
             ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_IgnoreListFile), Path.GetFileName(Settings.Mailer_IgnoreListFile), FileMonitorCallback);
-
-            RegisterChatBotCommand("mailer", Translations.Get("bot.mailer.cmd"), "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
         }
 
         /// <summary>
@@ -336,7 +346,7 @@ namespace MinecraftClient.ChatBots
                 switch (commandName)
                 {
                     case "getmails": // Sorry, I (ReinforceZwei) replaced "=" to "-" because it would affect the parsing of translation file (key=value)
-                        return Translations.Get("bot.mailer.cmd.getmails", string.Join("\n", mailDatabase)); 
+                        return Translations.Get("bot.mailer.cmd.getmails", string.Join("\n", mailDatabase));
 
                     case "getignored":
                         return Translations.Get("bot.mailer.cmd.getignored", string.Join("\n", ignoreList));

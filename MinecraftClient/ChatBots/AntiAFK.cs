@@ -26,6 +26,14 @@ namespace MinecraftClient.ChatBots
             if (timeping < 10) { timeping = 10; } //To avoid flooding
         }
 
+        /// <summary>
+        /// Update settings when reloaded
+        /// </summary>
+        public override void OnSettingsReloaded()
+        {
+            timeping = Settings.AntiAFK_Delay;
+        }
+
         public override void Update()
         {
             count++;

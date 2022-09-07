@@ -24,6 +24,18 @@ namespace MinecraftClient.ChatBots
             this.matchesFile = matchesFile;
         }
 
+        public override void OnSettingsReloaded()
+        {
+            if (!Settings.AutoRespond_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            this.matchesFile = Settings.AutoRespond_Matches;
+            Setup();
+        }
+
         /// <summary>
         /// Describe a respond rule based on a simple match or a regex
         /// </summary>
@@ -162,6 +174,13 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void Initialize()
         {
+            Setup();
+        }
+
+        private void Setup()
+        {
+            respondRules.Clear();
+
             if (File.Exists(matchesFile))
             {
                 Regex matchRegex = null;

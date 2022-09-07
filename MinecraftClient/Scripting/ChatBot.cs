@@ -102,6 +102,12 @@ namespace MinecraftClient
         public virtual void Initialize() { }
 
         /// <summary>
+        /// This method is called when settings are reloaded using the /reload command
+        /// Should be used to change the state/settings inside a chat bot.
+        /// </summary>
+        public virtual void OnSettingsReloaded() { }
+
+        /// <summary>
         /// Called after the server has been joined successfully and chat messages are able to be sent.
         /// This method is called again after reconnecting to the server, whereas Initialize() is called only once.
         ///
@@ -145,7 +151,7 @@ namespace MinecraftClient
         /// <param name="text">Text from the server</param>
         /// <param name="json">Raw JSON from the server. This parameter will be NULL on MC 1.5 or lower!</param>
         public virtual void GetText(string text, string? json) { }
-        
+
         /// <summary>
         /// Is called when the client has been disconnected fom the server
         /// </summary>
@@ -245,7 +251,7 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
-        
+
         /// <summary>
         /// Called when the Latency has been updated for a player
         /// </summary>
@@ -253,7 +259,7 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="latency">Latency.</param>
         public virtual void OnLatencyUpdate(string playername, Guid uuid, int latency) { }
-        
+
         /// <summary>
         /// Called when the Latency has been updated for a player
         /// </summary>
@@ -262,7 +268,7 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="latency">Latency.</param>
         public virtual void OnLatencyUpdate(Entity entity, string playername, Guid uuid, int latency) { }
-        
+
         /// <summary>
         /// Called when a map was updated
         /// </summary>
@@ -319,7 +325,7 @@ namespace MinecraftClient
         /// <param name="objectivevalue">Only if mode is 0 or 2. The text to be displayed for the score</param>
         /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
         public virtual void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type, string json) { }
-        
+
         /// <summary>
         /// Called when a scoreboard updated
         /// </summary>
@@ -360,12 +366,12 @@ namespace MinecraftClient
         /// <param name="uuid">UUID of the player</param>
         /// <param name="name">Name of the player</param>
         public virtual void OnPlayerLeave(Guid uuid, string? name) { }
-        
+
         /// <summary>
         /// Called when the player deaths
         /// </summary>
         public virtual void OnDeath() { }
-        
+
         /// <summary>
         /// Called when the player respawns
         /// </summary>
@@ -451,14 +457,14 @@ namespace MinecraftClient
         /// </summary>
         public static string GetVerbatim(string text)
         {
-            if ( String.IsNullOrEmpty(text) )
+            if (String.IsNullOrEmpty(text))
                 return String.Empty;
 
             int idx = 0;
             var data = new char[text.Length];
 
-            for ( int i = 0; i < text.Length; i++ )
-                if ( text[i] != '§' )
+            for (int i = 0; i < text.Length; i++)
+                if (text[i] != '§')
                     data[idx++] = text[i];
                 else
                     i++;
@@ -478,7 +484,7 @@ namespace MinecraftClient
                 if (!((c >= 'a' && c <= 'z')
                         || (c >= 'A' && c <= 'Z')
                         || (c >= '0' && c <= '9')
-                        || c == '_') )
+                        || c == '_'))
                     return false;
 
             return true;
@@ -950,7 +956,7 @@ namespace MinecraftClient
                 return Handler.GetWorld();
             return null;
         }
-        
+
         /// <summary>
         /// Get all Entities
         /// </summary>
@@ -968,7 +974,7 @@ namespace MinecraftClient
         {
             return Handler.GetPlayersLatency();
         }
-        
+
         /// <summary>
         /// Get the current location of the player (Feet location)
         /// </summary>
@@ -1002,7 +1008,7 @@ namespace MinecraftClient
         {
             return Handler.ClientIsMoving();
         }
-        
+
         /// <summary>
         /// Look at the specified location
         /// </summary>
@@ -1076,7 +1082,7 @@ namespace MinecraftClient
         {
             return Handler.GetUsername();
         }
-        
+
         /// <summary>
         /// Return the Gamemode of the current account
         /// </summary>
@@ -1333,7 +1339,7 @@ namespace MinecraftClient
         {
             return Handler.GetCurrentSlot();
         }
-        
+
         /// <summary>
         /// Clean all inventory
         /// </summary>
@@ -1342,7 +1348,7 @@ namespace MinecraftClient
         {
             return Handler.ClearInventories();
         }
-        
+
         /// <summary>
         /// Update sign text
         /// </summary>
@@ -1382,7 +1388,7 @@ namespace MinecraftClient
         {
             return Handler.SpectateByUUID(UUID);
         }
-        
+
         /// <summary>
         /// Update command block
         /// </summary>
@@ -1428,7 +1434,7 @@ namespace MinecraftClient
         {
             return Handler.GetMaxChatMessageLength();
         }
-        
+
         /// <summary>
         /// Respawn player
         /// </summary>

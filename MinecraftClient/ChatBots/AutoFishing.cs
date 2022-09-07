@@ -28,7 +28,31 @@ namespace MinecraftClient.ChatBots
                 LogToConsoleTranslated("extra.entity_required");
                 LogToConsoleTranslated("general.bot_unload");
                 UnloadBot();
+                return;
             }
+
+            inventoryEnabled = GetInventoryEnabled();
+        }
+
+        /// <summary>
+        /// Update settings when reloaded
+        /// </summary>
+        public override void OnSettingsReloaded()
+        {
+            if (!Settings.AutoFishing_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            if (!GetEntityHandlingEnabled())
+            {
+                LogToConsoleTranslated("extra.entity_required");
+                LogToConsoleTranslated("general.bot_unload");
+                UnloadBot();
+                return;
+            }
+
             inventoryEnabled = GetInventoryEnabled();
         }
 
@@ -62,7 +86,7 @@ namespace MinecraftClient.ChatBots
         {
             if (entity.Type == EntityType.FishingBobber)
             {
-                if(entity.ID == fishingRod.ID)
+                if (entity.ID == fishingRod.ID)
                 {
                     isFishing = false;
                     if (Settings.AutoFishing_Antidespawn)

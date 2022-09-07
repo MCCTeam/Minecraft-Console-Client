@@ -62,7 +62,7 @@ namespace MinecraftClient
         private float playerYaw;
         private float playerPitch;
         private double motionY;
-        public enum MovementType { Sneak, Walk, Sprint}
+        public enum MovementType { Sneak, Walk, Sprint }
         public int currentMovementSpeed = 4;
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
 
@@ -316,7 +316,7 @@ namespace MinecraftClient
                 {
                     if (e is not ThreadAbortException)
                         Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
-                    else 
+                    else
                         throw; //ThreadAbortException should not be caught
                 }
             }
@@ -710,6 +710,11 @@ namespace MinecraftClient
                 }
                 commandsLoaded = true;
             }
+        }
+
+        public void ReloadSettings()
+        {
+            Program.ReloadSettings();
         }
 
         #endregion

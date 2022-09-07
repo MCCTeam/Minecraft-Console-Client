@@ -26,7 +26,14 @@ namespace MinecraftClient.ChatBots
             file = filetosavein;
             timeping = pingparam;
             if (timeping < 10) { timeping = 10; } //To avoid flooding
+        }
 
+        public override void OnSettingsReloaded()
+        {
+            count = 0;
+            file = Settings.ExpandVars(Settings.PlayerLog_File);
+            timeping = Settings.PlayerLog_Delay;
+            if (timeping < 10) { timeping = 10; } //To avoid flooding
         }
 
         public override void Update()
