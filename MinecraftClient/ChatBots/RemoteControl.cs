@@ -13,7 +13,7 @@ namespace MinecraftClient.ChatBots
     {
         public override void GetText(string text)
         {
-            text = GetVerbatim(text);
+            text = GetVerbatim(text).Trim();
             string command = "", sender = "";
             if (IsPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower().Trim()))
             {
