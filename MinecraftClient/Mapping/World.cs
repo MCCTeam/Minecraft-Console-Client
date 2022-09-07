@@ -21,9 +21,9 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// The dimension info of the world
         /// </summary>
-        private static Dimension curDimension = new Dimension();
+        private static Dimension curDimension = new();
 
-        private static Dictionary<string, Dimension>? dimensionList = null;
+        private static Dictionary<string, Dimension> dimensionList = new();
 
         /// <summary>
         /// Chunk data parsing progress
@@ -61,14 +61,25 @@ namespace MinecraftClient.Mapping
         /// <param name="registryCodec">Registry Codec nbt data</param>
         public static void StoreDimensionList(Dictionary<string, object> registryCodec)
         {
-            dimensionList = new();
             var dimensionListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:dimension_type"])["value"]);
             foreach (Dictionary<string, object> dimensionNbt in dimensionListNbt)
             {
                 string dimensionName = (string)dimensionNbt["name"];
-                Dictionary<string, object> element = (Dictionary<string, object>)dimensionNbt["element"];
-                dimensionList.Add(dimensionName, new Dimension(dimensionName, element));
+                Dictionary<string, object> dimensionType = (Dictionary<string, object>)dimensionNbt["element"];
+                StoreOneDimension(dimensionName, dimensionType);
             }
+        }
+
+        /// <summary>
+        /// Store one dimension - Directly used in 1.16.2 to 1.18.2
+        /// </summary>
+        /// <param name="dimensionName">Dimension name</param>
+        /// <param name="dimensionType">Dimension Type nbt data</param>
+        public static void StoreOneDimension(string dimensionName, Dictionary<string, object> dimensionType)
+        {
+            if (dimensionList.ContainsKey(dimensionName))
+                    dimensionList.Remove(dimensionName);
+            dimensionList.Add(dimensionName, new Dimension(dimensionName, dimensionType));
         }
 
 
@@ -79,7 +90,7 @@ namespace MinecraftClient.Mapping
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
         public static void SetDimension(string name)
         {
-            curDimension = dimensionList![name]; // Should not fail
+            curDimension = dimensionList[name]; // Should not fail
         }
 
 
