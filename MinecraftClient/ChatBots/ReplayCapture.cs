@@ -24,12 +24,34 @@ namespace MinecraftClient.ChatBots
 
         public override void Initialize()
         {
+            Setup();
+
+            RegisterChatBotCommand("replay", Translations.Get("bot.replayCapture.cmd"), "replay <save|stop>", Command);
+        }
+
+        public override void OnSettingsReload()
+        {
+            if (!Settings.ReplayMod_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            int backupInterval = Settings.ReplayMod_BackupInterval;
+
+            if (backupInterval != -1)
+                this.backupInterval = backupInterval * 10;
+            else this.backupInterval = -1;
+
+            Setup();
+        }
+
+        private void Setup()
+        {
             SetNetworkPacketEventEnabled(true);
             replay = new ReplayHandler(GetProtocolVersion());
             replay.MetaData.serverName = GetServerHost() + GetServerPort();
             backupCounter = backupInterval;
-
-            RegisterChatBotCommand("replay", Translations.Get("bot.replayCapture.cmd"), "replay <save|stop>", Command);
         }
 
         public override void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)

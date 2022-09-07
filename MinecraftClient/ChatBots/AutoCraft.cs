@@ -163,6 +163,17 @@ namespace MinecraftClient.ChatBots
             this.configPath = configPath;
         }
 
+        public override void OnSettingsReload()
+        {
+            if (!Settings.AutoCraft_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            PerformInternalCommand("autocraft reload");
+        }
+
         public override void Initialize()
         {
             if (!GetInventoryEnabled())
@@ -358,7 +369,7 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            
+
         }
 
         #region Method for parsing different section of config
@@ -688,7 +699,7 @@ namespace MinecraftClient.ChatBots
                 }
                 HandleError();
             }
-            
+
         }
 
         /// <summary>

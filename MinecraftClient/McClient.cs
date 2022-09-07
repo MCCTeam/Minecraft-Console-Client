@@ -715,7 +715,7 @@ namespace MinecraftClient
         public void ReloadSettings()
         {
             Program.ReloadSettings();
-            bots.ForEach(bot => bot.OnSettingsReloaded());
+            bots.ForEach(bot => bot.OnSettingsReload());
         }
 
         #endregion

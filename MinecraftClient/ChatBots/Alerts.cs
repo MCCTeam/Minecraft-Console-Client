@@ -19,14 +19,13 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void Initialize()
         {
-            dictionary = LoadDistinctEntriesFromFile(Settings.Alerts_MatchesFile);
-            excludelist = LoadDistinctEntriesFromFile(Settings.Alerts_ExcludesFile);
+            Setup();
         }
 
         /// <summary>
         /// Update settings when reloaded
         /// </summary>
-        public override void OnSettingsReloaded()
+        public override void OnSettingsReload()
         {
             if (!Settings.Alerts_Enabled)
             {
@@ -34,10 +33,14 @@ namespace MinecraftClient.ChatBots
                 return;
             }
 
+            Setup();
+        }
+
+        public void Setup()
+        {
             dictionary = LoadDistinctEntriesFromFile(Settings.Alerts_MatchesFile);
             excludelist = LoadDistinctEntriesFromFile(Settings.Alerts_ExcludesFile);
         }
-
 
         /// <summary>
         /// Process text received from the server to display alerts

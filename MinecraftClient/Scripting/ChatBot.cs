@@ -105,7 +105,7 @@ namespace MinecraftClient
         /// This method is called when settings are reloaded using the /reload command
         /// Should be used to change the state/settings inside a chat bot.
         /// </summary>
-        public virtual void OnSettingsReloaded() { }
+        public virtual void OnSettingsReload() { }
 
         /// <summary>
         /// Called after the server has been joined successfully and chat messages are able to be sent.

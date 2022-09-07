@@ -21,17 +21,28 @@ namespace MinecraftClient.ChatBots
 
         public AntiAFK(int pingparam)
         {
-            count = 0;
-            timeping = pingparam;
-            if (timeping < 10) { timeping = 10; } //To avoid flooding
+            Setup(pingparam);
         }
 
         /// <summary>
         /// Update settings when reloaded
         /// </summary>
-        public override void OnSettingsReloaded()
+        public override void OnSettingsReload()
         {
-            timeping = Settings.AntiAFK_Delay;
+            if (!Settings.AntiAFK_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            Setup(Settings.AntiAFK_Delay);
+        }
+
+        public void Setup(int pingparam)
+        {
+            count = 0;
+            timeping = pingparam;
+            if (timeping < 10) { timeping = 10; } //To avoid flooding
         }
 
         public override void Update()

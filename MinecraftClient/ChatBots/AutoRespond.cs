@@ -24,7 +24,7 @@ namespace MinecraftClient.ChatBots
             this.matchesFile = matchesFile;
         }
 
-        public override void OnSettingsReloaded()
+        public override void OnSettingsReload()
         {
             if (!Settings.AutoRespond_Enabled)
             {

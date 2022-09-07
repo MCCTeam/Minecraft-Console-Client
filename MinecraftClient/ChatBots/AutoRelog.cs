@@ -44,7 +44,7 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Update settings when reloaded
         /// </summary>
-        public override void OnSettingsReloaded()
+        public override void OnSettingsReload()
         {
             if (!Settings.AutoRelog_Enabled)
             {

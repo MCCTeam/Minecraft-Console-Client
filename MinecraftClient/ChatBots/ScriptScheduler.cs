@@ -41,6 +41,26 @@ namespace MinecraftClient.ChatBots
 
         public override void Initialize()
         {
+            Setup();
+        }
+
+        public override void OnSettingsReload()
+        {
+            if (!Settings.ScriptScheduler_Enabled)
+            {
+                UnloadBot();
+                return;
+            }
+
+            this.tasksfile = Settings.ScriptScheduler_TasksFile;
+
+            Setup();
+        }
+
+        private void Setup()
+        {
+            tasks.Clear();
+
             //Load the given file from the startup parameters
             if (System.IO.File.Exists(tasksfile))
             {
@@ -106,7 +126,7 @@ namespace MinecraftClient.ChatBots
                         || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0)
                         || (current_task.triggerOnInterval && current_task.triggerOnInterval_Interval > 0))
                     {
-                        
+
                         LogDebugToConsoleTranslated("bot.scriptScheduler.loaded_task", Task2String(current_task));
                         current_task.triggerOnInterval_Interval_Countdown = current_task.triggerOnInterval_Interval; //Init countdown for interval
                         tasks.Add(current_task);
@@ -135,7 +155,7 @@ namespace MinecraftClient.ChatBots
                         if (task.triggerOnTime)
                         {
                             bool matching_time_found = false;
-                            
+
                             foreach (DateTime time in task.triggerOnTime_Times)
                             {
                                 if (time.Hour == DateTime.Now.Hour && time.Minute == DateTime.Now.Minute)

@@ -31,7 +31,7 @@ namespace MinecraftClient.ChatBots
             English = english;
         }
 
-        public override void OnSettingsReloaded()
+        public override void OnSettingsReload()
         {
             if (!Settings.Hangman_Enabled)
             {
