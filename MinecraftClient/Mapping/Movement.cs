@@ -462,11 +462,37 @@ namespace MinecraftClient.Mapping
         /// <returns>True if the specified location is on the ground</returns>
         public static bool IsOnGround(World world, Location location)
         {
-            if (world.GetChunkColumn(location) == null || world.GetChunkColumn(location).FullyLoaded == false)
+            ChunkColumn? chunkColumn = world.GetChunkColumn(location);
+            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
                 return true; // avoid moving downward in a not loaded chunk
 
-            return world.GetBlock(Move(location, Direction.Down)).Type.IsSolid()
-                && (location.Y <= Math.Truncate(location.Y) + 0.0001);
+            Location down = Move(location, Direction.Down);
+
+            bool result = world.GetBlock(down).Type.IsSolid();
+
+            bool northCheck = 1 + Math.Floor(down.Z) - down.Z > 0.7;
+            bool eastCheck = down.X - Math.Floor(down.X) > 0.7;
+            bool southCheck = down.Z - Math.Floor(down.Z) > 0.7;
+            bool westCheck = 1 + Math.Floor(down.X) - down.X > 0.7;
+
+            if (!result && northCheck)
+                result |= world.GetBlock(Move(down, Direction.North)).Type.IsSolid();
+            if (!result && northCheck && eastCheck)
+                result |= world.GetBlock(Move(down, Direction.NorthEast)).Type.IsSolid();
+            if (!result && eastCheck)
+                result |= world.GetBlock(Move(down, Direction.East)).Type.IsSolid();
+            if (!result && eastCheck && southCheck)
+                result |= world.GetBlock(Move(down, Direction.SouthEast)).Type.IsSolid();
+            if (!result && southCheck)
+                result |= world.GetBlock(Move(down, Direction.South)).Type.IsSolid();
+            if (!result && southCheck && westCheck)
+                result |= world.GetBlock(Move(down, Direction.SouthWest)).Type.IsSolid();
+            if (!result && westCheck)
+                result |= world.GetBlock(Move(down, Direction.West)).Type.IsSolid();
+            if (!result && westCheck && northCheck)
+                result |= world.GetBlock(Move(down, Direction.NorthWest)).Type.IsSolid();
+
+            return result && (location.Y <= Math.Truncate(location.Y) + 0.0001);
         }
 
         /// <summary>

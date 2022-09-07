@@ -182,7 +182,7 @@ namespace MinecraftClient.Mapping
                 this.height = (int)nbt["height"];
             if (nbt.ContainsKey("min_y") && nbt.ContainsKey("height"))
                 this.maxY = this.minY + this.height;
-            if (nbt.ContainsKey("logical_height"))
+            if (nbt.ContainsKey("logical_height") && nbt["logical_height"].GetType() != typeof(byte))
                 this.logicalHeight = (int)nbt["logical_height"];
             if (nbt.ContainsKey("coordinate_scale"))
             {
