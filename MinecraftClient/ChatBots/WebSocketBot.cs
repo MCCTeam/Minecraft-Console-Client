@@ -137,6 +137,28 @@ namespace MinecraftClient.ChatBots
         }
     }
 
+    internal class NbtData
+    {
+        public NBT? nbt { get; set; }
+    }
+
+    internal class NBT
+    {
+        public Dictionary<string, object>? nbt { get; set; }
+    }
+
+    internal class NbtDictionaryConverter : JsonConverter<Dictionary<string, object>>
+    {
+        public override void WriteJson(JsonWriter writer, Dictionary<string, object>? value, JsonSerializer serializer)
+            => throw new NotImplementedException();
+
+        public override Dictionary<string, object>? ReadJson(JsonReader reader, Type objectType, Dictionary<string, object>? existingValue, bool hasExistingValue, JsonSerializer serializer)
+        {
+            var keyValuePairs = serializer.Deserialize<IEnumerable<KeyValuePair<string, object>>>(reader);
+            return new Dictionary<string, object>(keyValuePairs!);
+        }
+    }
+
     class WebSocketBot : ChatBot
     {
         private WsServer? _server;
@@ -580,6 +602,102 @@ namespace MinecraftClient.ChatBots
                                 interactionHand = (Hand)Convert.ToInt32(cmd.Parameters[2]);
 
                             responder.SendSuccessResponse(InteractEntity(Convert.ToInt32(cmd.Parameters[0]), interactionType, interactionHand).ToString().ToLower());
+                            break;
+
+                        case "CreativeGive":
+                            if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length < 3 || cmd.Parameters.Length > 4)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting at least 3 and at most 4 parameter(s) (slotId, itemType, count, nbt?)!"));
+                                return false;
+                            }
+
+                            NBT? nbt = null;
+
+                            if (cmd.Parameters.Length == 4)
+                                nbt = JsonConvert.DeserializeObject<NBT>(cmd.Parameters[3].ToString()!, new NbtDictionaryConverter())!;
+
+                            responder.SendSuccessResponse(CreativeGive(Convert.ToInt32(cmd.Parameters[0]), (ItemType)cmd.Parameters[1], Convert.ToInt32(cmd.Parameters[2]), nbt!.nbt!).ToString().ToLower());
+                            break;
+
+                        case "CreativeDelete":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting at 1 parameter (slotId)!"));
+                                return false;
+                            }
+
+                            responder.SendSuccessResponse(CreativeDelete(Convert.ToInt32(cmd.Parameters[0])).ToString().ToLower());
+                            break;
+
+                        case "SendAnimation":
+                            Hand hand = Hand.MainHand;
+
+                            if (cmd.Parameters.Length == 1)
+                                hand = (Hand)Convert.ToInt32(cmd.Parameters[0]);
+
+                            responder.SendSuccessResponse(SendAnimation(hand).ToString().ToLower());
+                            break;
+
+                        case "SendPlaceBlock":
+                            if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length < 4 || cmd.Parameters.Length > 5)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting at least 4 and at most 5 parameters (x, y, z, blockFace, hand?)!"));
+                                return false;
+                            }
+
+                            Location blockLocation = new Location(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), Convert.ToInt32(cmd.Parameters[2]));
+
+                            Direction blockFacingDirection = (Direction)Convert.ToInt32(cmd.Parameters[3]);
+                            Hand handToUse = Hand.MainHand;
+
+                            if (cmd.Parameters.Length == 5)
+                                handToUse = (Hand)Convert.ToInt32(cmd.Parameters[2]);
+
+                            responder.SendSuccessResponse(SendPlaceBlock(blockLocation, blockFacingDirection, handToUse).ToString().ToLower());
+                            break;
+
+                        case "UseItemInHand":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(UseItemInHand()));
+                            break;
+
+                        case "GetInventoryEnabled":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetInventoryEnabled()));
+                            break;
+
+                        case "GetPlayerInventory":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetPlayerInventory()));
+                            break;
+
+                        case "GetInventories":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetInventories()));
+                            break;
+
+                        case "WindowAction":
+                            if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length != 3)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 3 parameters (inventoryId, slotId, windowActionType)!"));
+                                return false;
+                            }
+
+                            responder.SendSuccessResponse(WindowAction(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), (WindowActionType)Convert.ToInt32(cmd.Parameters[2])).ToString().ToLower());
+                            break;
+
+                        case "ChangeSlot":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting at 1 parameter (slotId)!"));
+                                return false;
+                            }
+
+                            responder.SendSuccessResponse(ChangeSlot((short)Convert.ToInt32(cmd.Parameters[0])).ToString().ToLower());
+                            break;
+
+                        case "GetCurrentSlot":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetCurrentSlot()));
+                            break;
+
+                        case "ClearInventories":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(ClearInventories()));
                             break;
                     }
                 }
