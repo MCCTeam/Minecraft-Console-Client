@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 namespace MinecraftClient.Mapping
 {
     /// <summary>
@@ -25,12 +24,9 @@ namespace MinecraftClient.Mapping
                 case Material.AcaciaLeaves:
                 case Material.AcaciaLog:
                 case Material.AcaciaPlanks:
-                case Material.AcaciaPressurePlate:
-                case Material.AcaciaSign:
                 case Material.AcaciaSlab:
                 case Material.AcaciaStairs:
                 case Material.AcaciaTrapdoor:
-                case Material.AcaciaWallSign:
                 case Material.AcaciaWood:
                 case Material.AmethystBlock:
                 case Material.AmethystCluster:
@@ -40,12 +36,9 @@ namespace MinecraftClient.Mapping
                 case Material.AndesiteStairs:
                 case Material.AndesiteWall:
                 case Material.Anvil:
-                case Material.AttachedMelonStem:
-                case Material.AttachedPumpkinStem:
                 case Material.Azalea:
                 case Material.AzaleaLeaves:
                 case Material.Bamboo:
-                case Material.BambooSapling:
                 case Material.Barrel:
                 case Material.Barrier:
                 case Material.Basalt:
@@ -60,14 +53,10 @@ namespace MinecraftClient.Mapping
                 case Material.BirchLeaves:
                 case Material.BirchLog:
                 case Material.BirchPlanks:
-                case Material.BirchPressurePlate:
-                case Material.BirchSign:
                 case Material.BirchSlab:
                 case Material.BirchStairs:
                 case Material.BirchTrapdoor:
-                case Material.BirchWallSign:
                 case Material.BirchWood:
-                case Material.BlackBanner:
                 case Material.BlackBed:
                 case Material.BlackCandle:
                 case Material.BlackCandleCake:
@@ -82,10 +71,8 @@ namespace MinecraftClient.Mapping
                 case Material.BlackstoneStairs:
                 case Material.BlackstoneWall:
                 case Material.BlackTerracotta:
-                case Material.BlackWallBanner:
                 case Material.BlackWool:
                 case Material.BlastFurnace:
-                case Material.BlueBanner:
                 case Material.BlueBed:
                 case Material.BlueCandle:
                 case Material.BlueCandleCake:
@@ -97,7 +84,6 @@ namespace MinecraftClient.Mapping
                 case Material.BlueStainedGlass:
                 case Material.BlueStainedGlassPane:
                 case Material.BlueTerracotta:
-                case Material.BlueWallBanner:
                 case Material.BlueWool:
                 case Material.BoneBlock:
                 case Material.Bookshelf:
@@ -107,7 +93,6 @@ namespace MinecraftClient.Mapping
                 case Material.BrickSlab:
                 case Material.BrickStairs:
                 case Material.BrickWall:
-                case Material.BrownBanner:
                 case Material.BrownBed:
                 case Material.BrownCandle:
                 case Material.BrownCandleCake:
@@ -119,7 +104,6 @@ namespace MinecraftClient.Mapping
                 case Material.BrownStainedGlass:
                 case Material.BrownStainedGlassPane:
                 case Material.BrownTerracotta:
-                case Material.BrownWallBanner:
                 case Material.BrownWool:
                 case Material.BubbleColumn:
                 case Material.BubbleCoralBlock:
@@ -158,7 +142,6 @@ namespace MinecraftClient.Mapping
                 case Material.CobblestoneSlab:
                 case Material.CobblestoneStairs:
                 case Material.CobblestoneWall:
-                case Material.Cobweb:
                 case Material.CommandBlock:
                 case Material.Composter:
                 case Material.Conduit:
@@ -178,13 +161,10 @@ namespace MinecraftClient.Mapping
                 case Material.CrimsonHyphae:
                 case Material.CrimsonNylium:
                 case Material.CrimsonPlanks:
-                case Material.CrimsonPressurePlate:
-                case Material.CrimsonSign:
                 case Material.CrimsonSlab:
                 case Material.CrimsonStairs:
                 case Material.CrimsonStem:
                 case Material.CrimsonTrapdoor:
-                case Material.CrimsonWallSign:
                 case Material.CryingObsidian:
                 case Material.CutCopper:
                 case Material.CutCopperSlab:
@@ -193,7 +173,6 @@ namespace MinecraftClient.Mapping
                 case Material.CutRedSandstoneSlab:
                 case Material.CutSandstone:
                 case Material.CutSandstoneSlab:
-                case Material.CyanBanner:
                 case Material.CyanBed:
                 case Material.CyanCandle:
                 case Material.CyanCandleCake:
@@ -204,7 +183,6 @@ namespace MinecraftClient.Mapping
                 case Material.CyanStainedGlass:
                 case Material.CyanStainedGlassPane:
                 case Material.CyanTerracotta:
-                case Material.CyanWallBanner:
                 case Material.CyanWool:
                 case Material.DamagedAnvil:
                 case Material.DarkOakDoor:
@@ -213,37 +191,19 @@ namespace MinecraftClient.Mapping
                 case Material.DarkOakLeaves:
                 case Material.DarkOakLog:
                 case Material.DarkOakPlanks:
-                case Material.DarkOakPressurePlate:
-                case Material.DarkOakSign:
                 case Material.DarkOakSlab:
                 case Material.DarkOakStairs:
                 case Material.DarkOakTrapdoor:
-                case Material.DarkOakWallSign:
                 case Material.DarkOakWood:
                 case Material.DarkPrismarine:
                 case Material.DarkPrismarineSlab:
                 case Material.DarkPrismarineStairs:
                 case Material.DaylightDetector:
-                case Material.DeadBrainCoral:
                 case Material.DeadBrainCoralBlock:
-                case Material.DeadBrainCoralFan:
-                case Material.DeadBrainCoralWallFan:
-                case Material.DeadBubbleCoral:
                 case Material.DeadBubbleCoralBlock:
-                case Material.DeadBubbleCoralFan:
-                case Material.DeadBubbleCoralWallFan:
-                case Material.DeadFireCoral:
                 case Material.DeadFireCoralBlock:
-                case Material.DeadFireCoralFan:
-                case Material.DeadFireCoralWallFan:
-                case Material.DeadHornCoral:
                 case Material.DeadHornCoralBlock:
-                case Material.DeadHornCoralFan:
-                case Material.DeadHornCoralWallFan:
-                case Material.DeadTubeCoral:
                 case Material.DeadTubeCoralBlock:
-                case Material.DeadTubeCoralFan:
-                case Material.DeadTubeCoralWallFan:
                 case Material.Deepslate:
                 case Material.DeepslateBricks:
                 case Material.DeepslateBrickSlab:
@@ -311,7 +271,6 @@ namespace MinecraftClient.Mapping
                 case Material.GraniteWall:
                 case Material.GrassBlock:
                 case Material.Gravel:
-                case Material.GrayBanner:
                 case Material.GrayBed:
                 case Material.GrayCandle:
                 case Material.GrayCandleCake:
@@ -322,9 +281,7 @@ namespace MinecraftClient.Mapping
                 case Material.GrayStainedGlass:
                 case Material.GrayStainedGlassPane:
                 case Material.GrayTerracotta:
-                case Material.GrayWallBanner:
                 case Material.GrayWool:
-                case Material.GreenBanner:
                 case Material.GreenBed:
                 case Material.GreenCandle:
                 case Material.GreenCandleCake:
@@ -335,11 +292,9 @@ namespace MinecraftClient.Mapping
                 case Material.GreenStainedGlass:
                 case Material.GreenStainedGlassPane:
                 case Material.GreenTerracotta:
-                case Material.GreenWallBanner:
                 case Material.GreenWool:
                 case Material.Grindstone:
                 case Material.HayBlock:
-                case Material.HeavyWeightedPressurePlate:
                 case Material.HoneyBlock:
                 case Material.HoneycombBlock:
                 case Material.Hopper:
@@ -366,12 +321,9 @@ namespace MinecraftClient.Mapping
                 case Material.JungleLeaves:
                 case Material.JungleLog:
                 case Material.JunglePlanks:
-                case Material.JunglePressurePlate:
-                case Material.JungleSign:
                 case Material.JungleSlab:
                 case Material.JungleStairs:
                 case Material.JungleTrapdoor:
-                case Material.JungleWallSign:
                 case Material.JungleWood:
                 case Material.Ladder:
                 case Material.Lantern:
@@ -380,7 +332,6 @@ namespace MinecraftClient.Mapping
                 case Material.LargeAmethystBud:
                 case Material.LavaCauldron:
                 case Material.Lectern:
-                case Material.LightBlueBanner:
                 case Material.LightBlueBed:
                 case Material.LightBlueCandle:
                 case Material.LightBlueCandleCake:
@@ -391,9 +342,7 @@ namespace MinecraftClient.Mapping
                 case Material.LightBlueStainedGlass:
                 case Material.LightBlueStainedGlassPane:
                 case Material.LightBlueTerracotta:
-                case Material.LightBlueWallBanner:
                 case Material.LightBlueWool:
-                case Material.LightGrayBanner:
                 case Material.LightGrayBed:
                 case Material.LightGrayCandle:
                 case Material.LightGrayCandleCake:
@@ -404,12 +353,9 @@ namespace MinecraftClient.Mapping
                 case Material.LightGrayStainedGlass:
                 case Material.LightGrayStainedGlassPane:
                 case Material.LightGrayTerracotta:
-                case Material.LightGrayWallBanner:
                 case Material.LightGrayWool:
                 case Material.LightningRod:
-                case Material.LightWeightedPressurePlate:
                 case Material.LilyPad:
-                case Material.LimeBanner:
                 case Material.LimeBed:
                 case Material.LimeCandle:
                 case Material.LimeCandleCake:
@@ -420,11 +366,9 @@ namespace MinecraftClient.Mapping
                 case Material.LimeStainedGlass:
                 case Material.LimeStainedGlassPane:
                 case Material.LimeTerracotta:
-                case Material.LimeWallBanner:
                 case Material.LimeWool:
                 case Material.Lodestone:
                 case Material.Loom:
-                case Material.MagentaBanner:
                 case Material.MagentaBed:
                 case Material.MagentaCandle:
                 case Material.MagentaCandleCake:
@@ -435,7 +379,6 @@ namespace MinecraftClient.Mapping
                 case Material.MagentaStainedGlass:
                 case Material.MagentaStainedGlassPane:
                 case Material.MagentaTerracotta:
-                case Material.MagentaWallBanner:
                 case Material.MagentaWool:
                 case Material.MagmaBlock:
                 case Material.MangroveDoor:
@@ -444,17 +387,13 @@ namespace MinecraftClient.Mapping
                 case Material.MangroveLeaves:
                 case Material.MangroveLog:
                 case Material.MangrovePlanks:
-                case Material.MangrovePressurePlate:
                 case Material.MangroveRoots:
-                case Material.MangroveSign:
                 case Material.MangroveSlab:
                 case Material.MangroveStairs:
                 case Material.MangroveTrapdoor:
-                case Material.MangroveWallSign:
                 case Material.MangroveWood:
                 case Material.MediumAmethystBud:
                 case Material.Melon:
-                case Material.MelonStem:
                 case Material.MossBlock:
                 case Material.MossCarpet:
                 case Material.MossyCobblestone:
@@ -491,17 +430,13 @@ namespace MinecraftClient.Mapping
                 case Material.OakLeaves:
                 case Material.OakLog:
                 case Material.OakPlanks:
-                case Material.OakPressurePlate:
-                case Material.OakSign:
                 case Material.OakSlab:
                 case Material.OakStairs:
                 case Material.OakTrapdoor:
-                case Material.OakWallSign:
                 case Material.OakWood:
                 case Material.Observer:
                 case Material.Obsidian:
                 case Material.OchreFroglight:
-                case Material.OrangeBanner:
                 case Material.OrangeBed:
                 case Material.OrangeCandle:
                 case Material.OrangeCandleCake:
@@ -512,7 +447,6 @@ namespace MinecraftClient.Mapping
                 case Material.OrangeStainedGlass:
                 case Material.OrangeStainedGlassPane:
                 case Material.OrangeTerracotta:
-                case Material.OrangeWallBanner:
                 case Material.OrangeWool:
                 case Material.OxidizedCopper:
                 case Material.OxidizedCutCopper:
@@ -522,7 +456,6 @@ namespace MinecraftClient.Mapping
                 case Material.PackedMud:
                 case Material.PearlescentFroglight:
                 case Material.PetrifiedOakSlab:
-                case Material.PinkBanner:
                 case Material.PinkBed:
                 case Material.PinkCandle:
                 case Material.PinkCandleCake:
@@ -533,7 +466,6 @@ namespace MinecraftClient.Mapping
                 case Material.PinkStainedGlass:
                 case Material.PinkStainedGlassPane:
                 case Material.PinkTerracotta:
-                case Material.PinkWallBanner:
                 case Material.PinkWool:
                 case Material.Piston:
                 case Material.PistonHead:
@@ -550,7 +482,6 @@ namespace MinecraftClient.Mapping
                 case Material.PolishedBlackstoneBrickSlab:
                 case Material.PolishedBlackstoneBrickStairs:
                 case Material.PolishedBlackstoneBrickWall:
-                case Material.PolishedBlackstonePressurePlate:
                 case Material.PolishedBlackstoneSlab:
                 case Material.PolishedBlackstoneStairs:
                 case Material.PolishedBlackstoneWall:
@@ -600,8 +531,6 @@ namespace MinecraftClient.Mapping
                 case Material.PrismarineStairs:
                 case Material.PrismarineWall:
                 case Material.Pumpkin:
-                case Material.PumpkinStem:
-                case Material.PurpleBanner:
                 case Material.PurpleBed:
                 case Material.PurpleCandle:
                 case Material.PurpleCandleCake:
@@ -612,7 +541,6 @@ namespace MinecraftClient.Mapping
                 case Material.PurpleStainedGlass:
                 case Material.PurpleStainedGlassPane:
                 case Material.PurpleTerracotta:
-                case Material.PurpleWallBanner:
                 case Material.PurpleWool:
                 case Material.PurpurBlock:
                 case Material.PurpurPillar:
@@ -626,7 +554,6 @@ namespace MinecraftClient.Mapping
                 case Material.RawCopperBlock:
                 case Material.RawGoldBlock:
                 case Material.RawIronBlock:
-                case Material.RedBanner:
                 case Material.RedBed:
                 case Material.RedCandle:
                 case Material.RedCandleCake:
@@ -650,7 +577,6 @@ namespace MinecraftClient.Mapping
                 case Material.RedstoneLamp:
                 case Material.RedstoneOre:
                 case Material.RedTerracotta:
-                case Material.RedWallBanner:
                 case Material.RedWool:
                 case Material.ReinforcedDeepslate:
                 case Material.RepeatingCommandBlock:
@@ -701,12 +627,9 @@ namespace MinecraftClient.Mapping
                 case Material.SpruceLeaves:
                 case Material.SpruceLog:
                 case Material.SprucePlanks:
-                case Material.SprucePressurePlate:
-                case Material.SpruceSign:
                 case Material.SpruceSlab:
                 case Material.SpruceStairs:
                 case Material.SpruceTrapdoor:
-                case Material.SpruceWallSign:
                 case Material.SpruceWood:
                 case Material.StickyPiston:
                 case Material.Stone:
@@ -715,7 +638,6 @@ namespace MinecraftClient.Mapping
                 case Material.StoneBrickStairs:
                 case Material.StoneBrickWall:
                 case Material.Stonecutter:
-                case Material.StonePressurePlate:
                 case Material.StoneSlab:
                 case Material.StoneStairs:
                 case Material.StrippedAcaciaLog:
@@ -752,13 +674,10 @@ namespace MinecraftClient.Mapping
                 case Material.WarpedHyphae:
                 case Material.WarpedNylium:
                 case Material.WarpedPlanks:
-                case Material.WarpedPressurePlate:
-                case Material.WarpedSign:
                 case Material.WarpedSlab:
                 case Material.WarpedStairs:
                 case Material.WarpedStem:
                 case Material.WarpedTrapdoor:
-                case Material.WarpedWallSign:
                 case Material.WarpedWartBlock:
                 case Material.WaterCauldron:
                 case Material.WaxedCopperBlock:
@@ -782,7 +701,6 @@ namespace MinecraftClient.Mapping
                 case Material.WeatheredCutCopperSlab:
                 case Material.WeatheredCutCopperStairs:
                 case Material.WetSponge:
-                case Material.WhiteBanner:
                 case Material.WhiteBed:
                 case Material.WhiteCandle:
                 case Material.WhiteCandleCake:
@@ -793,11 +711,9 @@ namespace MinecraftClient.Mapping
                 case Material.WhiteStainedGlass:
                 case Material.WhiteStainedGlassPane:
                 case Material.WhiteTerracotta:
-                case Material.WhiteWallBanner:
                 case Material.WhiteWool:
                 case Material.WitherSkeletonSkull:
                 case Material.WitherSkeletonWallSkull:
-                case Material.YellowBanner:
                 case Material.YellowBed:
                 case Material.YellowCandle:
                 case Material.YellowCandleCake:
@@ -808,7 +724,6 @@ namespace MinecraftClient.Mapping
                 case Material.YellowStainedGlass:
                 case Material.YellowStainedGlassPane:
                 case Material.YellowTerracotta:
-                case Material.YellowWallBanner:
                 case Material.YellowWool:
                 case Material.ZombieHead:
                 case Material.ZombieWallHead:
@@ -817,7 +732,6 @@ namespace MinecraftClient.Mapping
                     return false;
             }
         }
-
         /// <summary>
         /// Check if contact with the provided material can harm players
         /// </summary>
@@ -838,7 +752,6 @@ namespace MinecraftClient.Mapping
                     return false;
             }
         }
-
         /// <summary>
         /// Check if the provided material is a liquid a player can swim into
         /// </summary>
