@@ -2633,7 +2633,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch (ObjectDisposedException) { return false; }
         }
 
-        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item, List<Tuple<short, Item>> changedSlots, int stateId)
+        public bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item? item, List<Tuple<short, Item?>> changedSlots, int stateId)
         {
             try
             {
@@ -2668,7 +2668,7 @@ namespace MinecraftClient.Protocol.Handlers
                     case WindowActionType.AddDragMiddle: button = 9; mode = 5; item = new Item(ItemType.Null, 0, null); break;
                 }
 
-                List<byte> packet = new List<byte>();
+                List<byte> packet = new();
                 packet.Add((byte)windowId); // Window ID
 
                 // 1.18+

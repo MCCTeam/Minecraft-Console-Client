@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Commands
@@ -11,224 +12,225 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return GetBasicUsage(); } }
         public override string CmdDesc { get { return "cmd.inventory.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (handler.GetInventoryEnabled())
             {
                 string[] args = getArgs(command);
                 if (args.Length >= 1)
                 {
-                    try
+                    int inventoryId;
+                    if (args[0].ToLower() == "creativegive")
                     {
-                        int inventoryId;
-                        if (args[0].ToLower() == "creativegive")
+                        if (args.Length >= 4)
                         {
-                            if (args.Length >= 4)
+                            if (!int.TryParse(args[1], out int slot))
+                                return GetCmdDescTranslated();
+
+                            if (Enum.TryParse(args[2], true, out ItemType itemType))
                             {
-                                int slot = int.Parse(args[1]);
-                                ItemType itemType = ItemType.Stone;
-                                if (Enum.TryParse(args[2], true, out itemType))
-                                {
-                                    if (handler.GetGamemode() == 1)
-                                    {
-                                        int count = int.Parse(args[3]);
-                                        if (handler.DoCreativeGive(slot, itemType, count, null))
-                                            return Translations.Get("cmd.inventory.creative_done", itemType, count, slot);
-                                        else return Translations.Get("cmd.inventory.creative_fail");
-                                    }
-                                    else return Translations.Get("cmd.inventory.need_creative");
-                                }
-                                else
-                                {
-                                    return GetCmdDescTranslated();
-                                }
-                            }
-                            else return GetCmdDescTranslated();
-                        }
-                        else if (args[0].ToLower() == "creativedelete")
-                        {
-                            if (args.Length >= 2)
-                            {
-                                int slot = int.Parse(args[1]);
                                 if (handler.GetGamemode() == 1)
                                 {
-                                    if (handler.DoCreativeGive(slot, ItemType.Null, 0, null))
-                                        return Translations.Get("cmd.inventory.creative_delete", slot);
-                                    else return Translations.Get("cmd.inventory.creative_fail");
-                                }
-                                else return Translations.Get("cmd.inventory.need_creative");
-                            }
-                            else return GetCmdDescTranslated();
-                        }
-                        else if (args[0].ToLower().StartsWith("p"))
-                        {
-                            // player inventory is always ID 0
-                            inventoryId = 0;
-                        }
-                        else if (args[0].ToLower().StartsWith("c"))
-                        {
-                            List<int> availableIds = handler.GetInventories().Keys.ToList();
-                            availableIds.Remove(0); // remove player inventory ID from list
-                            if (availableIds.Count > 0)
-                                inventoryId = availableIds.Max(); // use foreground container
-                            else return Translations.Get("cmd.inventory.container_not_found");
-                        }
-                        else if (args[0].ToLower() == "help")
-                        {
-                            if (args.Length >= 2)
-                            {
-                                return GetSubCommandHelp(args[1]);
-                            }
-                            else return GetHelp();
-                        }
-                        else inventoryId = int.Parse(args[0]);
-                        string action = args.Length > 1
-                            ? args[1].ToLower()
-                            : "list";
-                        switch (action)
-                        {
-                            case "close":
-                                if (handler.CloseInventory(inventoryId))
-                                    return Translations.Get("cmd.inventory.close", inventoryId);
-                                else return Translations.Get("cmd.inventory.close_fail", inventoryId);
-                            case "list":
-                                Container inventory = handler.GetInventory(inventoryId);
-                                if (inventory == null)
-                                    return Translations.Get("cmd.inventory.not_exist", inventoryId);
-                                SortedDictionary<int, Item> itemsSorted = new SortedDictionary<int, Item>(inventory.Items);
-                                List<string> response = new List<string>();
-                                response.Add(Translations.Get("cmd.inventory.inventory") + " #" + inventoryId + " - " + inventory.Title + "§8");
-                                string asciiArt = inventory.Type.GetAsciiArt();
-                                if (asciiArt != null && Settings.DisplayInventoryLayout)
-                                    response.Add(asciiArt);
-                                int selectedHotbar = handler.GetCurrentSlot() + 1;
-                                foreach (KeyValuePair<int, Item> item in itemsSorted)
-                                {
-                                    int hotbar;
-                                    bool isHotbar = inventory.IsHotbar(item.Key, out hotbar);
-                                    string hotbarString = isHotbar ? (hotbar + 1).ToString() : " ";
-                                    if ((hotbar + 1) == selectedHotbar)
-                                        hotbarString = ">" + hotbarString;
-                                    response.Add(String.Format("{0,2} | #{1,-2}: {2}", hotbarString, item.Key, item.Value.ToString()));
-                                }
-                                if (inventoryId == 0) 
-                                    response.Add(Translations.Get("cmd.inventory.hotbar", (handler.GetCurrentSlot() + 1)));
-                                return String.Join("\n", response.ToArray());
-                            case "click":
-                                if (args.Length >= 3)
-                                {
-                                    int slot = int.Parse(args[2]);
-                                    WindowActionType actionType = WindowActionType.LeftClick;
-                                    string keyName = "cmd.inventory.left";
-                                    if (args.Length >= 4)
-                                    {
-                                        string b = args[3];
-                                        if (b.ToLower()[0] == 'r')
-                                        {
-                                            actionType = WindowActionType.RightClick;
-                                            keyName = "cmd.inventory.right";
-                                        }
-                                        if (b.ToLower()[0] == 'm')
-                                        {
-                                            actionType = WindowActionType.MiddleClick;
-                                            keyName = "cmd.inventory.middle";
-                                        }
-                                    }
-                                    handler.DoWindowAction(inventoryId, slot, actionType);
-                                    return Translations.Get("cmd.inventory.clicking", Translations.Get(keyName), slot, inventoryId);
-                                }
-                                else return CmdUsage;
-                            case "drop":
-                                if (args.Length >= 3)
-                                {
-                                    int slot = int.Parse(args[2]);
-                                    // check item exist
-                                    if (!handler.GetInventory(inventoryId).Items.ContainsKey(slot))
-                                        return Translations.Get("cmd.inventory.no_item", slot);
-                                    WindowActionType actionType = WindowActionType.DropItem;
-                                    if (args.Length >= 4)
-                                    {
-                                        if (args[3].ToLower() == "all")
-                                        {
-                                            actionType = WindowActionType.DropItemStack;
-                                        }
-                                    }
-                                    if (handler.DoWindowAction(inventoryId, slot, actionType))
-                                    {
-                                        if (actionType == WindowActionType.DropItemStack)
-                                            return Translations.Get("cmd.inventory.drop_stack", slot);
-                                        else return Translations.Get("cmd.inventory.drop", slot);
-                                    }
+                                    if (!int.TryParse(args[3], out int count))
+                                        return GetCmdDescTranslated();
+
+                                    if (handler.DoCreativeGive(slot, itemType, count, null))
+                                        return Translations.Get("cmd.inventory.creative_done", itemType, count, slot);
                                     else
-                                    {
-                                        return "Failed";
-                                    }
+                                        return Translations.Get("cmd.inventory.creative_fail");
                                 }
-                                else return GetCmdDescTranslated();
-                            default:
+                                else
+                                    return Translations.Get("cmd.inventory.need_creative");
+                            }
+                            else
                                 return GetCmdDescTranslated();
                         }
+                        else
+                            return GetCmdDescTranslated();
                     }
-                    catch (FormatException) { return GetCmdDescTranslated(); }
+                    else if (args[0].ToLower() == "creativedelete")
+                    {
+                        if (args.Length >= 2)
+                        {
+                            if (!int.TryParse(args[1], out int slot))
+                                return GetCmdDescTranslated();
+
+                            if (handler.GetGamemode() == 1)
+                            {
+                                if (handler.DoCreativeGive(slot, ItemType.Null, 0, null))
+                                    return Translations.Get("cmd.inventory.creative_delete", slot);
+                                else
+                                    return Translations.Get("cmd.inventory.creative_fail");
+                            }
+                            else
+                                return Translations.Get("cmd.inventory.need_creative");
+                        }
+                        else 
+                            return GetCmdDescTranslated();
+                    }
+                    else if (args[0].ToLower().StartsWith("p"))
+                    {
+                        // player inventory is always ID 0
+                        inventoryId = 0;
+                    }
+                    else if (args[0].ToLower().StartsWith("c"))
+                    {
+                        List<int> availableIds = handler.GetInventories().Keys.ToList();
+                        availableIds.Remove(0); // remove player inventory ID from list
+                        if (availableIds.Count > 0)
+                            inventoryId = availableIds.Max(); // use foreground container
+                        else
+                            return Translations.Get("cmd.inventory.container_not_found");
+                    }
+                    else if (args[0].ToLower() == "help")
+                    {
+                        if (args.Length >= 2)
+                            return GetSubCommandHelp(args[1]);
+                        else
+                            return GetHelp();
+                    }
+                    else if (!int.TryParse(args[0], out inventoryId))
+                        return GetCmdDescTranslated();
+
+                    Container? inventory = handler.GetInventory(inventoryId);
+                    if (inventory == null)
+                        return Translations.Get("cmd.inventory.not_exist", inventoryId);
+
+                    string action = args.Length > 1 ? args[1].ToLower() : "list";
+                    if (action == "close")
+                    {
+                        if (handler.CloseInventory(inventoryId))
+                            return Translations.Get("cmd.inventory.close", inventoryId);
+                        else
+                            return Translations.Get("cmd.inventory.close_fail", inventoryId);
+                    }
+                    else if (action == "list")
+                    {
+                        StringBuilder response = new();
+                        response.Append(Translations.Get("cmd.inventory.inventory"));
+                        response.AppendLine(String.Format(" #{0} - {1}§8", inventoryId, inventory.Title));
+
+                        string asciiArt = inventory.Type.GetAsciiArt();
+                        if (asciiArt != null && Settings.DisplayInventoryLayout)
+                            response.AppendLine(asciiArt);
+
+                        int selectedHotbar = handler.GetCurrentSlot() + 1;
+                        foreach ((int itemId, Item item) in new SortedDictionary<int, Item>(inventory.Items))
+                        {
+                            bool isHotbar = inventory.IsHotbar(itemId, out int hotbar);
+                            string hotbarString = isHotbar ? (hotbar + 1).ToString() : " ";
+                            if ((hotbar + 1) == selectedHotbar)
+                                hotbarString = ">" + hotbarString;
+                            response.AppendLine(String.Format("{0,2} | #{1,-2}: {2}", hotbarString, itemId, item.ToString()));
+                        }
+
+                        if (inventoryId == 0)
+                            response.AppendLine(Translations.Get("cmd.inventory.hotbar", (handler.GetCurrentSlot() + 1)));
+
+                        response.Remove(response.Length - 1, 1); // Remove last '\n'
+                        return response.ToString();
+                    }
+                    else if (action == "click" && args.Length >= 3)
+                    {
+                        if (!int.TryParse(args[2], out int slot))
+                            return GetCmdDescTranslated();
+
+                        WindowActionType actionType = WindowActionType.LeftClick;
+                        string keyName = "cmd.inventory.left";
+                        if (args.Length >= 4)
+                        {
+                            string b = args[3];
+                            if (b.ToLower()[0] == 'r')
+                                (actionType, keyName) = (WindowActionType.RightClick, "cmd.inventory.right");
+                            else if (b.ToLower()[0] == 'm')
+                                (actionType, keyName) = (WindowActionType.MiddleClick, "cmd.inventory.middle");
+                        }
+
+                        handler.DoWindowAction(inventoryId, slot, actionType);
+                        return Translations.Get("cmd.inventory.clicking", Translations.Get(keyName), slot, inventoryId);
+                    }
+                    else if (action == "shiftclick" && args.Length >= 3)
+                    {
+                        if (!int.TryParse(args[2], out int slot))
+                            return GetCmdDescTranslated();
+
+                        if (!handler.DoWindowAction(inventoryId, slot, WindowActionType.ShiftClick))
+                            return Translations.Get("cmd.inventory.shiftclick_fail");
+
+                        return Translations.Get("cmd.inventory.shiftclick", slot, inventoryId);
+                    }
+                    else if (action == "drop" && args.Length >= 3)
+                    {
+                        if (!int.TryParse(args[2], out int slot))
+                            return GetCmdDescTranslated();
+
+                        // check item exist
+                        if (!inventory.Items.ContainsKey(slot))
+                            return Translations.Get("cmd.inventory.no_item", slot);
+
+                        WindowActionType actionType = WindowActionType.DropItem;
+                        if (args.Length >= 4 && args[3].ToLower() == "all")
+                            actionType = WindowActionType.DropItemStack;
+
+                        if (handler.DoWindowAction(inventoryId, slot, actionType))
+                        {
+                            if (actionType == WindowActionType.DropItemStack)
+                                return Translations.Get("cmd.inventory.drop_stack", slot);
+                            else
+                                return Translations.Get("cmd.inventory.drop", slot);
+                        }
+                        else
+                            return "Failed";
+                    }
+                    else
+                        return GetCmdDescTranslated();
                 }
                 else
                 {
-                    Dictionary<int, Container> inventories = handler.GetInventories();
-                    List<string> response = new List<string>();
-                    response.Add(Translations.Get("cmd.inventory.inventories") + ":");
-                    foreach (KeyValuePair<int, Container> inventory in inventories)
-                    {
-                        response.Add(String.Format(" #{0}: {1}", inventory.Key, inventory.Value.Title + "§8"));
-                    }
-                    response.Add(CmdUsage);
-                    return String.Join("\n", response);
+                    StringBuilder response = new();
+                    response.AppendLine(Translations.Get("cmd.inventory.inventories")).Append(':');
+                    foreach ((int invId, Container inv) in handler.GetInventories())
+                        response.AppendLine(String.Format(" #{0}: {1}§8", invId, inv.Title));
+                    response.Append(CmdUsage);
+                    return response.ToString();
                 }
             }
-            else return Translations.Get("extra.inventory_required");
+            else 
+                return Translations.Get("extra.inventory_required");
         }
 
         #region Methods for commands help
-        private string GetCommandDesc()
-        {
-            return GetBasicUsage() + " Type \"/inventory help\" for more help";
-        }
 
-        private string GetAvailableActions()
+        private static string GetAvailableActions()
         {
             return Translations.Get("cmd.inventory.help.available") + ": list, close, click, drop, creativegive, creativedelete.";
         }
 
-        private string GetBasicUsage()
+        private static string GetBasicUsage()
         {
             return Translations.Get("cmd.inventory.help.basic") + ": /inventory <player|container|<id>> <action>.";
         }
 
-        private string GetHelp()
+        private static string GetHelp()
         {
             return Translations.Get("cmd.inventory.help.help", GetAvailableActions());
         }
 
-        private string GetSubCommandHelp(string cmd)
+        private static string GetSubCommandHelp(string cmd)
         {
-            switch (cmd)
+            string usageStr = ' ' + Translations.Get("cmd.inventory.help.usage") + ": ";
+            return cmd switch
             {
-                case "list":
-                    return Translations.Get("cmd.inventory.help.list") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> list";
-                case "close":
-                    return Translations.Get("cmd.inventory.help.close") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> close";
-                case "click":
-                    return Translations.Get("cmd.inventory.help.click") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> click <slot> [left|right|middle]. \nDefault is left click";
-                case "drop":
-                    return Translations.Get("cmd.inventory.help.drop") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory <player|container|<id>> drop <slot> [all]. \nAll means drop full stack";
-                case "creativegive":
-                    return Translations.Get("cmd.inventory.help.creativegive") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory creativegive <slot> <itemtype> <amount>";
-                case "creativedelete":
-                    return Translations.Get("cmd.inventory.help.creativedelete") + ' ' + Translations.Get("cmd.inventory.help.usage") + ": /inventory creativedelete <slot>";
-                case "help":
-                    return GetHelp();
-                default:
-                    return Translations.Get("cmd.inventory.help.unknown") + GetAvailableActions();
-            }
+                "list" => Translations.Get("cmd.inventory.help.list") + usageStr + "/inventory <player|container|<id>> list",
+                "close" => Translations.Get("cmd.inventory.help.close") + usageStr + "/inventory <player|container|<id>> close",
+                "click" => Translations.Get("cmd.inventory.help.click") + usageStr + "/inventory <player|container|<id>> click <slot> [left|right|middle]\nDefault is left click",
+                "shiftclick" => Translations.Get("cmd.inventory.help.shiftclick") + usageStr + "/inventory <player|container|<id>> shiftclick <slot>",
+                "drop" => Translations.Get("cmd.inventory.help.drop") + usageStr + "/inventory <player|container|<id>> drop <slot> [all]\nAll means drop full stack",
+                "creativegive" => Translations.Get("cmd.inventory.help.creativegive") + usageStr + "/inventory creativegive <slot> <itemtype> <amount>",
+                "creativedelete" => Translations.Get("cmd.inventory.help.creativedelete") + usageStr + "/inventory creativedelete <slot>",
+                "help" => GetHelp(),
+                _ => Translations.Get("cmd.inventory.help.unknown") + GetAvailableActions(),
+            };
         }
         #endregion
     }
