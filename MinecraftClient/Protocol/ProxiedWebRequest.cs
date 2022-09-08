@@ -124,7 +124,7 @@ namespace MinecraftClient.Protocol
                 if (isSecure)
                 {
                     stream = new SslStream(client.GetStream());
-                    ((SslStream)stream).AuthenticateAsClient(host, null, (SslProtocols)3072, true); // Enable TLS 1.2. Hotfix for #1774
+                    ((SslStream)stream).AuthenticateAsClient(host, null, SslProtocols.Tls12, true); // Enable TLS 1.2. Hotfix for #1774
                 }
                 else
                 {
