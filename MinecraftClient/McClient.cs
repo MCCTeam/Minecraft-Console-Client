@@ -1820,6 +1820,7 @@ namespace MinecraftClient
                                     }
                                     break;
                                 case ContainerType.Lectern:
+                                    return false;
                                     break;
                                 case ContainerType.Loom:
                                     if (slotId >= 0 && slotId <= 3)
@@ -1941,9 +1942,9 @@ namespace MinecraftClient
                                         }
                                     }
                                     break;
+                                // TODO: Define more container type here
                                 default:
-                                    // TODO: Define more container type here
-                                    goto case ContainerType.Generic_9x3;
+                                    return false;
                             }
 
                             // Cursor have item or not doesn't matter
