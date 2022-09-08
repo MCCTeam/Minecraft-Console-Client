@@ -117,52 +117,72 @@ namespace MinecraftClient.Commands
                             case "click":
                                 if (args.Length >= 3)
                                 {
-                                    int slot = int.Parse(args[2]);
-                                    WindowActionType actionType = WindowActionType.LeftClick;
-                                    string keyName = "cmd.inventory.left";
-                                    if (args.Length >= 4)
+                                    try
                                     {
-                                        string b = args[3];
-                                        if (b.ToLower()[0] == 'r')
+                                        int slot = int.Parse(args[2]);
+                                        WindowActionType actionType = WindowActionType.LeftClick;
+                                        string keyName = "cmd.inventory.left";
+                                        if (args.Length >= 4)
                                         {
-                                            actionType = WindowActionType.RightClick;
-                                            keyName = "cmd.inventory.right";
+                                            string b = args[3];
+                                            if (b.ToLower()[0] == 'r')
+                                            {
+                                                actionType = WindowActionType.RightClick;
+                                                keyName = "cmd.inventory.right";
+                                            }
+                                            if (b.ToLower()[0] == 'm')
+                                            {
+                                                actionType = WindowActionType.MiddleClick;
+                                                keyName = "cmd.inventory.middle";
+                                            }
                                         }
-                                        if (b.ToLower()[0] == 'm')
-                                        {
-                                            actionType = WindowActionType.MiddleClick;
-                                            keyName = "cmd.inventory.middle";
-                                        }
+                                        handler.DoWindowAction(inventoryId, slot, actionType);
+                                        return Translations.Get("cmd.inventory.clicking", Translations.Get(keyName), slot, inventoryId);
                                     }
-                                    handler.DoWindowAction(inventoryId, slot, actionType);
-                                    return Translations.Get("cmd.inventory.clicking", Translations.Get(keyName), slot, inventoryId);
+                                    catch (FormatException) { return GetCmdDescTranslated(); }
+                                }
+                                else return CmdUsage;
+                            case "shiftclick":
+                                if (args.Length >= 3)
+                                {
+                                    try
+                                    {
+                                        int slot = int.Parse(args[2]);
+                                        handler.DoWindowAction(inventoryId, slot, WindowActionType.ShiftClick);
+                                        return Translations.Get("cmd.inventory.shiftclick", slot, inventoryId);
+                                    }
+                                    catch (FormatException) { return GetCmdDescTranslated(); }
                                 }
                                 else return CmdUsage;
                             case "drop":
                                 if (args.Length >= 3)
                                 {
-                                    int slot = int.Parse(args[2]);
-                                    // check item exist
-                                    if (!handler.GetInventory(inventoryId).Items.ContainsKey(slot))
-                                        return Translations.Get("cmd.inventory.no_item", slot);
-                                    WindowActionType actionType = WindowActionType.DropItem;
-                                    if (args.Length >= 4)
+                                    try
                                     {
-                                        if (args[3].ToLower() == "all")
+                                        int slot = int.Parse(args[2]);
+                                        // check item exist
+                                        if (!handler.GetInventory(inventoryId).Items.ContainsKey(slot))
+                                            return Translations.Get("cmd.inventory.no_item", slot);
+                                        WindowActionType actionType = WindowActionType.DropItem;
+                                        if (args.Length >= 4)
                                         {
-                                            actionType = WindowActionType.DropItemStack;
+                                            if (args[3].ToLower() == "all")
+                                            {
+                                                actionType = WindowActionType.DropItemStack;
+                                            }
+                                        }
+                                        if (handler.DoWindowAction(inventoryId, slot, actionType))
+                                        {
+                                            if (actionType == WindowActionType.DropItemStack)
+                                                return Translations.Get("cmd.inventory.drop_stack", slot);
+                                            else return Translations.Get("cmd.inventory.drop", slot);
+                                        }
+                                        else
+                                        {
+                                            return "Failed";
                                         }
                                     }
-                                    if (handler.DoWindowAction(inventoryId, slot, actionType))
-                                    {
-                                        if (actionType == WindowActionType.DropItemStack)
-                                            return Translations.Get("cmd.inventory.drop_stack", slot);
-                                        else return Translations.Get("cmd.inventory.drop", slot);
-                                    }
-                                    else
-                                    {
-                                        return "Failed";
-                                    }
+                                    catch (FormatException) { return GetCmdDescTranslated(); }
                                 }
                                 else return GetCmdDescTranslated();
                             default:

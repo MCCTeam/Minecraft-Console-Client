@@ -41,7 +41,7 @@ namespace MinecraftClient.Protocol
         bool GetNetworkPacketCaptureEnabled();
         void SetNetworkPacketCaptureEnabled(bool enabled);
         int GetProtocolVersion();
-        Container GetInventory(int inventoryID);
+        Container? GetInventory(int inventoryID);
         ILogger GetLogger();
 
         /// <summary>
