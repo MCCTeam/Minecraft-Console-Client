@@ -188,7 +188,7 @@ namespace MinecraftClient.Commands
                 else
                 {
                     StringBuilder response = new();
-                    response.AppendLine(Translations.Get("cmd.inventory.inventories")).Append(':');
+                    response.Append(Translations.Get("cmd.inventory.inventories")).Append(":\n");
                     foreach ((int invId, Container inv) in handler.GetInventories())
                         response.AppendLine(String.Format(" #{0}: {1}§8", invId, inv.Title));
                     response.Append(CmdUsage);
