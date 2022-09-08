@@ -133,6 +133,11 @@ namespace MinecraftClient.Commands
                             rightMost = Math.Max(rightMost, markChunkX);
                         }
 
+
+                        // \ud83d\udd33: 🔳, \ud83d\udfe8: 🟨, \ud83d\udfe9: 🟩, \u25A1: □, \u25A3: ▣, \u25A0: ■
+                        string[] chunkStatusStr = Settings.EnableEmoji ? 
+                            new string[] { "\ud83d\udd33", "\ud83d\udfe8", "\ud83d\udfe9" } : new string[] { "\u25A1", "\u25A3", "\u25A0" };
+
                         // Output
                         for (int z = topMost; z <= bottomMost; ++z)
                         {
@@ -145,11 +150,11 @@ namespace MinecraftClient.Commands
 
                                 ChunkColumn? chunkColumn = world[x, z];
                                 if (chunkColumn == null)
-                                    sb.Append("\ud83d\udd33");  // "🔳" white hollow square
+                                    sb.Append(chunkStatusStr[0]);
                                 else if (chunkColumn.FullyLoaded)
-                                    sb.Append("\ud83d\udfe9");  // "🟩" green
+                                    sb.Append(chunkStatusStr[2]);
                                 else
-                                    sb.Append("\ud83d\udfe8");  // "🟨" yellow
+                                    sb.Append(chunkStatusStr[1]);
 
                                 if ((z == current.ChunkZ && x == current.ChunkX) || (z == markChunkZ && x == markChunkX))
                                     sb.Append("§r");           // Reset background color
@@ -157,7 +162,8 @@ namespace MinecraftClient.Commands
                             sb.Append('\n');
                         }
 
-                        sb.Append("Player:§z  §r, MarkedChunk:§w  §r, NotReceived:\ud83d\udd33, Loading:\ud83d\udfe8, Loaded:\ud83d\udfe9");
+                        sb.Append("Player:§z  §r, MarkedChunk:§w  §r, ");
+                        sb.Append(string.Format("NotReceived:{0}, Loading:{1}, Loaded:{2}", chunkStatusStr[0], chunkStatusStr[1], chunkStatusStr[2]));
                         return sb.ToString();
                     }
                     else if (args[0] == "setloading") // For debugging
