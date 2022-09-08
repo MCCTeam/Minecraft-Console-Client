@@ -169,7 +169,7 @@ namespace MinecraftClient.Protocol
         /// <param name="changedSlots">Slots that have been changed in this event: List<SlotID, Changed Items> </param>
         /// <param name="stateId">Inventory's stateId</param>
         /// <returns>True if packet was successfully sent</returns>
-        bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item item, List<Tuple<short, Item>> changedSlots, int stateId);
+        bool SendWindowAction(int windowId, int slotId, WindowActionType action, Item? item, List<Tuple<short, Item?>> changedSlots, int stateId);
 
         /// <summary>
         /// Request Creative Mode item creation into regular/survival Player Inventory
