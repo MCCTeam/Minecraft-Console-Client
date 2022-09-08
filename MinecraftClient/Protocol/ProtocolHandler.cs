@@ -132,7 +132,7 @@ namespace MinecraftClient.Protocol
                 return new Protocol16Handler(Client, ProtocolVersion, Handler);
 
             int[] supportedVersions_Protocol18 = { 4, 5, 47, 107, 108, 109, 110, 210, 315, 316, 335, 338, 340, 393, 401, 404, 477, 480, 485, 490, 498, 573, 575, 578, 735, 736, 751, 753, 754, 755, 756, 757, 758, 759, 760 };
-            
+
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
                 return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
 
@@ -150,9 +150,42 @@ namespace MinecraftClient.Protocol
             {
                 switch (MCVersion.Split(' ')[0].Trim())
                 {
+                    case "1.0":
+                    case "1.0.0":
+                    case "1.0.1":
+                        return 22;
+                    case "1.1":
+                    case "1.1.0":
+                        return 23;
+                    case "1.2":
+                    case "1.2.0":
+                    case "1.2.1":
+                    case "1.2.2":
+                    case "1.2.3":
+                        return 28;
+                    case "1.2.4":
+                    case "1.2.5":
+                        return 29;
+                    case "1.3":
+                    case "1.3.0":
+                    case "1.3.1":
+                    case "1.3.2":
+                        return 39;
+                    case "1.4":
+                    case "1.4.0":
+                    case "1.4.1":
+                    case "1.4.2":
+                        return 48; // 47 conflicts with 1.8
+                    case "1.4.3":
+                        return 48;
+                    case "1.4.4":
+                    case "1.4.5":
+                        return 49;
                     case "1.4.6":
                     case "1.4.7":
                         return 51;
+                    case "1.5":
+                    case "1.5.0":
                     case "1.5.1":
                         return 60;
                     case "1.5.2":
@@ -161,10 +194,17 @@ namespace MinecraftClient.Protocol
                     case "1.6.0":
                         return 72;
                     case "1.6.1":
-                    case "1.6.2":
-                    case "1.6.3":
-                    case "1.6.4":
                         return 73;
+                    case "1.6.2":
+                        return 74;
+                    case "1.6.3":
+                        return 77;
+                    case "1.6.4":
+                        return 78;
+                    case "1.7":
+                    case "1.7.0":
+                    case "1.7.1":
+                        return 3;
                     case "1.7.2":
                     case "1.7.3":
                     case "1.7.4":
@@ -217,6 +257,7 @@ namespace MinecraftClient.Protocol
                     case "1.12.2":
                         return 340;
                     case "1.13":
+                    case "1.13.0":
                         return 393;
                     case "1.13.1":
                         return 401;
@@ -253,15 +294,18 @@ namespace MinecraftClient.Protocol
                     case "1.16.5":
                         return 754;
                     case "1.17":
+                    case "1.17.0":
                         return 755;
                     case "1.17.1":
                         return 756;
                     case "1.18":
+                    case "1.18.0":
                     case "1.18.1":
                         return 757;
                     case "1.18.2":
                         return 758;
                     case "1.19":
+                    case "1.19.0":
                         return 759;
                     case "1.19.1":
                     case "1.19.2":
@@ -293,11 +337,20 @@ namespace MinecraftClient.Protocol
         {
             switch (protocol)
             {
+                case 22: return "1.0";
+                case 23: return "1.1";
+                case 28: return "1.2.3";
+                case 29: return "1.2.5";
+                case 39: return "1.3.2";
+                // case 47: return "1.4.2";
+                case 48: return "1.4.3";
+                case 49: return "1.4.5";
                 case 51: return "1.4.6";
                 case 60: return "1.5.1";
                 case 62: return "1.5.2";
                 case 72: return "1.6";
                 case 73: return "1.6.1";
+                case 3: return "1.7.1";
                 case 4: return "1.7.2";
                 case 5: return "1.7.6";
                 case 47: return "1.8";
@@ -838,7 +891,7 @@ namespace MinecraftClient.Protocol
 
                     TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
                     SslStream stream = new SslStream(client.GetStream());
-                    stream.AuthenticateAsClient(host, null, (SslProtocols)3072, true); // Enable TLS 1.2. Hotfix for #1780
+                    stream.AuthenticateAsClient(host, null, SslProtocols.Tls12, true); // Enable TLS 1.2. Hotfix for #1780
 
                     if (Settings.DebugMessages)
                         foreach (string line in headers)
