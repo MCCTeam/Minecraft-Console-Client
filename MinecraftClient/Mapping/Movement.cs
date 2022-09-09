@@ -49,14 +49,18 @@ namespace MinecraftClient.Mapping
         /// <param name="location">Location the player is currently at</param>
         /// <param name="allowUnsafe">Allow possible but unsafe locations</param>
         /// <returns>A list of new locations the player can move to</returns>
-        public static IEnumerable<Location> GetAvailableMoves(World world, Location location, bool allowUnsafe = false)
+        public static IEnumerable<Location> GetAvailableMoves(World world, Location originLocation, bool allowUnsafe = false)
         {
-            List<Location> availableMoves = new List<Location>();
+            Location location = originLocation.ToCenter();
+            List<Location> availableMoves = new();
             if (IsOnGround(world, location) || IsSwimming(world, location))
             {
                 foreach (Direction dir in Enum.GetValues(typeof(Direction)))
-                    if (CanMove(world, location, dir) && (allowUnsafe || IsSafe(world, Move(location, dir))))
-                        availableMoves.Add(Move(location, dir));
+                {
+                    Location dest = Move(location, dir);
+                    if (CanMove(world, location, dir) && (allowUnsafe || IsSafe(world, dest)))
+                        availableMoves.Add(dest);
+                }
             }
             else
             {
@@ -98,7 +102,8 @@ namespace MinecraftClient.Mapping
                 Y += motionY;
                 if (Y < goal.Y)
                     return new Queue<Location>(new[] { goal });
-                else return new Queue<Location>(new[] { new Location(start.X, Y, start.Z) });
+                else 
+                    return new Queue<Location>(new[] { new Location(start.X, Y, start.Z) });
             }
             else
             {
@@ -110,12 +115,13 @@ namespace MinecraftClient.Mapping
 
                 if (totalStepsDouble >= 1)
                 {
-                    Queue<Location> movementSteps = new Queue<Location>();
+                    Queue<Location> movementSteps = new();
                     for (int i = 1; i <= totalSteps; i++)
                         movementSteps.Enqueue(start + step * i);
                     return movementSteps;
                 }
-                else return new Queue<Location>(new[] { goal });
+                else 
+                    return new Queue<Location>(new[] { goal });
             }
         }
 
@@ -168,9 +174,8 @@ namespace MinecraftClient.Mapping
                 throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
 
             // Round start coordinates for easier calculation
-            Location startCenter = new Location(start).ConvertToCenter();
-            Location startLower = new Location(start).ConvertToFloor();
-            Location goalLower = new Location(goal).ConvertToFloor();
+            Location startLower = start.ToFloor();
+            Location goalLower = goal.ToFloor();
 
             // We always use distance squared so our limits must also be squared.
             minOffset *= minOffset;
@@ -206,7 +211,7 @@ namespace MinecraftClient.Mapping
                 // Return if goal found and no maxOffset was given OR current node is between minOffset and maxOffset
                 if ((current.Location == goalLower && maxOffset <= 0) || (maxOffset > 0 && current.H_score >= minOffset && current.H_score <= maxOffset))
                 {
-                    return ReconstructPath(CameFrom, current.Location, startCenter, goal);
+                    return ReconstructPath(CameFrom, current.Location, start, goal);
                 }
 
                 // Discover neighbored blocks
@@ -235,7 +240,7 @@ namespace MinecraftClient.Mapping
 
             //// Goal could not be reached. Set the path to the closest location if close enough
             if (current != null && (maxOffset == int.MaxValue || openSet.MinH_ScoreNode.H_score <= maxOffset))
-                return ReconstructPath(CameFrom, openSet.MinH_ScoreNode.Location, startCenter, goal);
+                return ReconstructPath(CameFrom, openSet.MinH_ScoreNode.Location, start, goal);
             else
                 return null;
         }
@@ -246,31 +251,35 @@ namespace MinecraftClient.Mapping
         /// <param name="Came_From">The collection of Locations that leads back to the start</param>
         /// <param name="current">Endpoint of our later walk</param>
         /// <returns>the path that leads to current from the start position</returns>
-        private static Queue<Location> ReconstructPath(Dictionary<Location, Location> Came_From, Location current, Location startCenter, Location end)
+        private static Queue<Location> ReconstructPath(Dictionary<Location, Location> Came_From, Location current, Location start, Location end)
         {
-            // Add 0.5 to walk over the middle of a block and avoid collisions
-            Location center = new(0.5, 0, 0.5);
-
+            int midPathCnt = 0;
             List<Location> total_path = new();
 
             // Move from the center of the block to the final position
-            if (current != end && current.DistanceSquared(end) <= 1.5)
+            if (current != end && current == end.ToFloor())
                 total_path.Add(end);
 
             // Generate intermediate paths
-            total_path.Add(current + center);
+            total_path.Add(current.ToCenter());
             while (Came_From.ContainsKey(current))
             {
+                ++midPathCnt;
                 current = Came_From[current];
-                total_path.Add(current + center);
+                total_path.Add(current.ToCenter());
             }
 
-            // Move to the center of the block first
-            if (current != startCenter && current.DistanceSquared(startCenter) <= 1.5)
-                total_path.Add(startCenter);
+            if (midPathCnt <= 2 && start.DistanceSquared(end) < 2.0)
+                return new Queue<Location>(new Location[] { end });
+            else
+            {
+                // Move to the center of the block first
+                if (current != start && current == start.ToFloor())
+                    total_path.Add(start.ToCenter());
 
-            total_path.Reverse();
-            return new Queue<Location>(total_path);
+                total_path.Reverse();
+                return new Queue<Location>(total_path);
+            }
         }
 
         /// <summary>
@@ -567,7 +576,7 @@ namespace MinecraftClient.Mapping
                     return PlayerFitsHere(world, Move(location, Direction.North)) && PlayerFitsHere(world, Move(location, Direction.West)) && PlayerFitsHere(world, Move(location, direction));
 
                 default:
-                    throw new ArgumentException("Unknown direction", "direction");
+                    throw new ArgumentException("Unknown direction", nameof(direction));
             }
         }
 

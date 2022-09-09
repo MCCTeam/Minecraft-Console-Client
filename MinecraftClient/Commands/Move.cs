@@ -82,7 +82,8 @@ namespace MinecraftClient.Commands
                     {
                         if (handler.MoveTo(goal, allowUnsafe: takeRisk))
                             return Translations.Get("cmd.move.moving", args[0]);
-                        else return takeRisk ? Translations.Get("cmd.move.dir_fail") : Translations.Get("cmd.move.suggestforce");
+                        else 
+                            return takeRisk ? Translations.Get("cmd.move.dir_fail") : Translations.Get("cmd.move.suggestforce");
                     }
                     else return Translations.Get("cmd.move.dir_fail");
                 }
@@ -90,7 +91,7 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        Location current = handler.GetCurrentLocation(), currentCenter = new Location(current).ConvertToCenter();
+                        Location current = handler.GetCurrentLocation(), currentCenter = current.ToCenter();
                         
                         double x = args[0].StartsWith('~') ? current.X + (args[0].Length > 1 ? double.Parse(args[0][1..]) : 0) : double.Parse(args[0]);
                         double y = args[1].StartsWith('~') ? current.Y + (args[1].Length > 1 ? double.Parse(args[1][1..]) : 0) : double.Parse(args[1]);
@@ -103,7 +104,7 @@ namespace MinecraftClient.Commands
 
                         if (takeRisk || Movement.PlayerFitsHere(handler.GetWorld(), goal))
                         {
-                            if (current.DistanceSquared(goal) <= 1.5)
+                            if (current.ToFloor() == goal.ToFloor())
                                 handler.MoveTo(goal, allowDirectTeleport: true);
                             else if (!handler.MoveTo(goal, allowUnsafe: takeRisk))
                                 return takeRisk ? Translations.Get("cmd.move.fail", goal) : Translations.Get("cmd.move.suggestforce", goal);

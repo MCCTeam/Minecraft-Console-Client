@@ -141,7 +141,7 @@ namespace MinecraftClient.Mapping
         /// <param name="location">Entity location</param>
         /// <param name="uuid">Player uuid</param>
         /// <param name="name">Player name</param>
-        public Entity(int ID, EntityType type, Location location, Guid uuid, string? name)
+        public Entity(int ID, EntityType type, Location location, Guid uuid, string? name, byte yaw, byte pitch)
         {
             this.ID = ID;
             this.Type = type;
@@ -151,6 +151,8 @@ namespace MinecraftClient.Mapping
             this.Health = 1.0f;
             this.Equipment = new Dictionary<int, Item>();
             this.Item = new Item(ItemType.Air, 0, null);
+            this.Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
+            this.Pitch = pitch * (1 / 256) * 360;
         }
     }
 }
