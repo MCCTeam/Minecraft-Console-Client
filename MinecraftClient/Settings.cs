@@ -230,6 +230,11 @@ namespace MinecraftClient
         public static bool ReplayMod_Enabled = false;
         public static int ReplayMod_BackupInterval = 3000;
 
+        // Follow Player
+        public static bool FollowPlayer_Enabled = false;
+        public static int FollowPlayer_UpdateLimit = 10;
+        public static int FollowPlayer_StopAtDistance = 3;
+
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
@@ -239,7 +244,7 @@ namespace MinecraftClient
         private static string ServerAliasTemp = null;
 
         //Mapping for settings sections in the INI file
-        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, Logging, Signature };
+        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, Logging, Signature };
 
         /// <summary>
         /// Get settings section from name
@@ -814,6 +819,15 @@ namespace MinecraftClient
                     {
                         case "enabled": ReplayMod_Enabled = str2bool(argValue); return true;
                         case "backupinterval": ReplayMod_BackupInterval = str2int(argValue); return true;
+                    }
+                    break;
+
+                case Section.FollowPlayer:
+                    switch (ToLowerIfNeed(argName))
+                    {
+                        case "enabled": FollowPlayer_Enabled = str2bool(argValue); return true;
+                        case "update_limit": FollowPlayer_UpdateLimit = str2int(argValue); return true;
+                        case "stop_at_distance": FollowPlayer_StopAtDistance = str2int(argValue); return true;
                     }
                     break;
             }
