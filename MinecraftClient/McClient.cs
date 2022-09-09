@@ -2791,12 +2791,16 @@ namespace MinecraftClient
         /// <summary>
         /// Called when a player spawns or enters the client's render distance
         /// </summary>
-        public void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte Yaw, byte Pitch)
+        public void OnSpawnPlayer(int entityID, Guid uuid, Location location, byte yaw, byte pitch)
         {
-            string? playerName = null;
-            if (onlinePlayers.ContainsKey(uuid))
-                playerName = onlinePlayers[uuid].Name;
-            Entity playerEntity = new(entityID, EntityType.Player, location, uuid, playerName);
+            Entity playerEntity;
+            if (onlinePlayers.TryGetValue(uuid, out PlayerInfo? player))
+            {
+                playerEntity = new(entityID, EntityType.Player, location, uuid, player.Name, yaw, pitch);
+                player.entity = playerEntity;
+            }
+            else
+                playerEntity = new(entityID, EntityType.Player, location, uuid, null, yaw, pitch);
             OnSpawnEntity(playerEntity);
         }
 

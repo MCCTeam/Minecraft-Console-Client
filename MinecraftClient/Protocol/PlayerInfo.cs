@@ -23,6 +23,12 @@ namespace MinecraftClient.Protocol
 
         public string? DisplayName;
 
+        // Entity info
+
+        public Mapping.Entity? entity;
+
+        // For message signature
+
         private readonly PublicKey? PublicKey;
 
         private readonly DateTime? KeyExpiresAt;

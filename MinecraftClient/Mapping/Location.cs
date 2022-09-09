@@ -76,24 +76,19 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Round coordinates
         /// </summary>
-        /// <returns>itself</returns>
-        public Location ConvertToFloor()
+        /// <returns>New location</returns>
+        public Location ToFloor()
         {
-            this.X = Math.Floor(this.X);
-            this.Y = Math.Floor(this.Y);
-            this.Z = Math.Floor(this.Z);
-            return this;
+            return new Location(Math.Floor(this.X), Math.Floor(this.Y), Math.Floor(this.Z));
         }
 
         /// <summary>
         /// Get the center coordinates
         /// </summary>
-        /// <returns>itself</returns>
-        public Location ConvertToCenter()
+        /// <returns>New location</returns>
+        public Location ToCenter()
         {
-            this.X = Math.Floor(this.X) + 0.5;
-            this.Z = Math.Floor(this.Z) + 0.5;
-            return this;
+            return new Location(Math.Floor(this.X) + 0.5, this.Y, Math.Floor(this.Z) + 0.5);
         }
 
         /// <summary>
