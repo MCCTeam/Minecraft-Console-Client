@@ -524,7 +524,16 @@ namespace MinecraftClient.ChatBots
                             if (cmd.Parameters.Length == 8)
                                 timeout = TimeSpan.FromSeconds(Convert.ToInt32(cmd.Parameters[7]));
 
-                            bool canMove = MoveToLocation(new Location(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), Convert.ToInt32(cmd.Parameters[2])), allowUnsafe, allowDirectTeleport, maxOffset, minOffset, timeout);
+                            bool canMove = MoveToLocation(
+                                new Location(Convert.ToInt32(cmd.Parameters[0]),
+                                Convert.ToInt32(cmd.Parameters[1]),
+                                Convert.ToInt32(cmd.Parameters[2])),
+                                allowUnsafe,
+                                allowDirectTeleport,
+                                maxOffset,
+                                minOffset,
+                                timeout);
+
                             responder.SendSuccessResponse(canMove.ToString().ToLower());
                             break;
 
@@ -616,7 +625,14 @@ namespace MinecraftClient.ChatBots
                             if (cmd.Parameters.Length == 4)
                                 nbt = JsonConvert.DeserializeObject<NBT>(cmd.Parameters[3].ToString()!, new NbtDictionaryConverter())!;
 
-                            responder.SendSuccessResponse(CreativeGive(Convert.ToInt32(cmd.Parameters[0]), (ItemType)cmd.Parameters[1], Convert.ToInt32(cmd.Parameters[2]), nbt!.nbt!).ToString().ToLower());
+                            responder.SendSuccessResponse(
+                                CreativeGive(
+                                    Convert.ToInt32(cmd.Parameters[0]),
+                                    (ItemType)cmd.Parameters[1],
+                                    Convert.ToInt32(cmd.Parameters[2]),
+                                    nbt!.nbt!)
+                               .ToString().ToLower());
+
                             break;
 
                         case "CreativeDelete":
@@ -679,13 +695,18 @@ namespace MinecraftClient.ChatBots
                                 return false;
                             }
 
-                            responder.SendSuccessResponse(WindowAction(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), (WindowActionType)Convert.ToInt32(cmd.Parameters[2])).ToString().ToLower());
+                            responder.SendSuccessResponse(
+                                WindowAction(
+                                    Convert.ToInt32(cmd.Parameters[0]),
+                                    Convert.ToInt32(cmd.Parameters[1]),
+                                    (WindowActionType)Convert.ToInt32(cmd.Parameters[2])
+                                ).ToString().ToLower());
                             break;
 
                         case "ChangeSlot":
                             if (cmd.Parameters == null || cmd.Parameters.Length != 1)
                             {
-                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting at 1 parameter (slotId)!"));
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (slotId)!"));
                                 return false;
                             }
 
@@ -698,6 +719,73 @@ namespace MinecraftClient.ChatBots
 
                         case "ClearInventories":
                             responder.SendSuccessResponse(JsonConvert.SerializeObject(ClearInventories()));
+                            break;
+
+                        case "UpdateSign":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 7)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (x, y, z, line1, line2, line3, line4)!"));
+                                return false;
+                            }
+
+                            Location signLocation = new Location(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), Convert.ToInt32(cmd.Parameters[2]));
+
+                            responder.SendSuccessResponse(
+                                UpdateSign(signLocation,
+                                    (string)cmd.Parameters[3],
+                                    (string)cmd.Parameters[4],
+                                    (string)cmd.Parameters[5],
+                                    (string)cmd.Parameters[6]
+                                ).ToString().ToLower());
+                            break;
+
+                        case "SelectTrade":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (selectedSlot)!"));
+                                return false;
+                            }
+
+                            responder.SendSuccessResponse(SelectTrade(Convert.ToInt32(cmd.Parameters[0])).ToString().ToLower());
+                            break;
+
+                        case "UpdateCommandBlock":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 6)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (x, y, z, command, commandBlockMode, commandBlockFlags)!"));
+                                return false;
+                            }
+
+                            Location commandBlockLocation = new Location(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), Convert.ToInt32(cmd.Parameters[2]));
+
+                            responder.SendSuccessResponse(
+                                UpdateCommandBlock(commandBlockLocation,
+                                    (string)cmd.Parameters[3],
+                                    (CommandBlockMode)Convert.ToInt32(cmd.Parameters[4]),
+                                    (CommandBlockFlags)Convert.ToInt32(cmd.Parameters[5])
+                                ).ToString().ToLower());
+                            break;
+
+                        case "CloseInventory":
+                            if (cmd.Parameters == null || cmd.Parameters.Length != 1)
+                            {
+                                responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting 1 parameter (inventoryId)!"));
+                                return false;
+                            }
+
+                            responder.SendSuccessResponse(CloseInventory(Convert.ToInt32(cmd.Parameters[0])).ToString().ToLower());
+                            break;
+
+                        case "GetMaxChatMessageLength":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetMaxChatMessageLength()));
+                            break;
+
+                        case "Respawn":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(Respawn()));
+                            break;
+
+                        case "GetProtocolVersion":
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetProtocolVersion()));
                             break;
                     }
                 }
