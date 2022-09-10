@@ -219,7 +219,7 @@ namespace MinecraftClient
                     if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
                     if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
-                    if (Settings.WebSocket_Enabled) { BotLoad(new WebSocketBot(Settings.WebSocket_Port, Settings.WebSocket_Password)); }
+                    if (Settings.WebSocket_Enabled) { BotLoad(new WebSocketBot(Settings.WebSocket_IP, Settings.WebSocket_Port, Settings.WebSocket_Password)); }
 
 
                     //Add your ChatBot here by uncommenting and adapting

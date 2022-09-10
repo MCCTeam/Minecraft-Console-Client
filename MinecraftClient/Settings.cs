@@ -227,6 +227,7 @@ namespace MinecraftClient
 
         // Websocket
         public static bool WebSocket_Enabled = false;
+        public static string WebSocket_IP = "127.0.0.1";
         public static int WebSocket_Port = 8043;
         public static string WebSocket_Password = "";
 
@@ -821,6 +822,7 @@ namespace MinecraftClient
                     switch (argName.ToLower())
                     {
                         case "enabled": WebSocket_Enabled = str2bool(argValue); return true;
+                        case "bind_ip": WebSocket_IP = argValue; return true;
                         case "port": WebSocket_Port = str2int(argValue); return true;
                         case "password": WebSocket_Password = argValue; return true;
                     }

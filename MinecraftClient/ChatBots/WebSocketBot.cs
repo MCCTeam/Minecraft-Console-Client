@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using Newtonsoft.Json;
@@ -19,9 +21,9 @@ namespace MinecraftClient.ChatBots
         public static event EventHandler<string>? OnSessionClose;
         public static event EventHandler<string>? OnMessageRecived;
 
-        public WsServer(int port)
+        public WsServer(string ip, int port)
         {
-            _server = new WebSocketServer(port);
+            _server = new WebSocketServer(IPAddress.Parse(ip), port);
             _server.AddWebSocketService<WsBehavior>("/mcc");
             _server.Start();
         }
@@ -128,7 +130,7 @@ namespace MinecraftClient.ChatBots
 
         public void SendSuccessResponse(bool overrideAuth = false)
         {
-            SendSuccessResponse("", overrideAuth);
+            SendSuccessResponse(JsonConvert.SerializeObject(true), overrideAuth);
         }
 
         public string Quote(string text)
@@ -161,19 +163,29 @@ namespace MinecraftClient.ChatBots
 
     class WebSocketBot : ChatBot
     {
+        private string _ip;
         private int _port;
         private string _password;
         private WsServer? _server;
         private Dictionary<string, WsServer.WsBehavior>? _sessions;
 
-        public WebSocketBot(int port, string password)
+        public WebSocketBot(string ip, int port, string password)
         {
+            Match match = Regex.Match(ip, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
+
+            if (!match.Success)
+            {
+                LogToConsole("§cFailed to start a server! The provided IP address is not a valid one!");
+                return;
+            }
+
             if (port > 65535)
             {
                 LogToConsole("§cFailed to start a server! The port number provided is out of the range, it must be 65535 or bellow it!");
                 return;
             }
 
+            _ip = ip;
             _port = port;
             _password = password;
         }
@@ -189,10 +201,10 @@ namespace MinecraftClient.ChatBots
             try
             {
                 LogToConsole("Starting WS server...");
-                _server = new WsServer(_port);
+                _server = new WsServer(_ip, _port);
                 _sessions = new Dictionary<string, WsServer.WsBehavior>();
 
-                LogToConsole("§bServer started on port: §a" + _port);
+                LogToConsole("§bServer started on ip §a" + _ip + "§b port: §a" + _port);
             }
             catch (Exception e)
             {
