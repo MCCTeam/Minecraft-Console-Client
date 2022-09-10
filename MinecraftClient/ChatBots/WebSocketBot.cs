@@ -161,6 +161,8 @@ namespace MinecraftClient.ChatBots
 
     class WebSocketBot : ChatBot
     {
+        private int _port;
+        private string _password;
         private WsServer? _server;
         private Dictionary<string, WsServer.WsBehavior>? _sessions;
 
@@ -172,12 +174,25 @@ namespace MinecraftClient.ChatBots
                 return;
             }
 
+            _port = port;
+            _password = password;
+        }
+
+        public override void Initialize()
+        {
+            if (_server != null)
+            {
+                SendEvent("OnWsRestarting", "");
+                _server.Stop();
+            }
+
             try
             {
-                _server = new WsServer(port);
+                LogToConsole("Starting WS server...");
+                _server = new WsServer(_port);
                 _sessions = new Dictionary<string, WsServer.WsBehavior>();
 
-                LogToConsole("§bServer started on port: §a" + port);
+                LogToConsole("§bServer started on port: §a" + _port);
             }
             catch (Exception e)
             {
@@ -202,7 +217,7 @@ namespace MinecraftClient.ChatBots
             {
                 var session = (WsServer.WsBehavior)sender!;
 
-                if (!ProcessWebsocketCommand(session, password, message))
+                if (!ProcessWebsocketCommand(session, _password, message))
                     return;
 
                 LogDebugToConsole("Got a message: " + message);
@@ -224,6 +239,7 @@ namespace MinecraftClient.ChatBots
             {
                 try
                 {
+                    LogToConsole("Got command: " + message);
                     WsChatBotCommand cmd = JsonConvert.DeserializeObject<WsChatBotCommand>(message)!;
                     WsCommandResponder responder = new WsCommandResponder(this, session, cmd.Command, cmd.RequestId);
 
@@ -271,6 +287,7 @@ namespace MinecraftClient.ChatBots
                             {
                                 if (cmd.Parameters == null || cmd.Parameters.Length != 1)
                                 {
+                                    LogToConsole("Is Parameters null: " + (cmd.Parameters == null ? "Yes" : "No"));
                                     responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expected 1 (password)!"), true);
                                     return false;
                                 }
@@ -466,7 +483,7 @@ namespace MinecraftClient.ChatBots
                             else if (cmd.Parameters.Length == 5)
                                 resullt = DigBlock(location, (bool)cmd.Parameters[3], (bool)cmd.Parameters[4]);
 
-                            responder.SendSuccessResponse(resullt.ToString().ToLower());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(resullt));
                             break;
 
                         case "SetSlot":
@@ -534,11 +551,11 @@ namespace MinecraftClient.ChatBots
                                 minOffset,
                                 timeout);
 
-                            responder.SendSuccessResponse(canMove.ToString().ToLower());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(canMove));
                             break;
 
                         case "ClientIsMoving":
-                            responder.SendSuccessResponse(ClientIsMoving().ToString().ToLower());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(ClientIsMoving()));
                             break;
 
                         case "LookAtLocation":
@@ -553,35 +570,35 @@ namespace MinecraftClient.ChatBots
                             break;
 
                         case "GetTimestamp":
-                            responder.SendSuccessResponse(GetTimestamp());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetTimestamp()));
                             break;
 
                         case "GetServerPort":
-                            responder.SendSuccessResponse(GetServerPort().ToString());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetServerPort()));
                             break;
 
                         case "GetServerHost":
-                            responder.SendSuccessResponse(GetServerHost().ToString());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetServerHost()));
                             break;
 
                         case "GetUsername":
-                            responder.SendSuccessResponse(GetUsername().ToString());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetUsername()));
                             break;
 
                         case "GetGamemode":
-                            responder.SendSuccessResponse(GameModeString(GetGamemode()));
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GameModeString(GetGamemode())));
                             break;
 
                         case "GetYaw":
-                            responder.SendSuccessResponse(GetYaw().ToString());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetYaw()));
                             break;
 
                         case "GetPitch":
-                            responder.SendSuccessResponse(GetPitch().ToString());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetPitch()));
                             break;
 
                         case "GetUserUUID":
-                            responder.SendSuccessResponse(GetUserUUID());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(GetUserUUID()));
                             break;
 
                         case "GetOnlinePlayers":
@@ -603,14 +620,14 @@ namespace MinecraftClient.ChatBots
                                 return false;
                             }
 
-                            InteractType interactionType = (InteractType)cmd.Parameters[1];
+                            InteractType interactionType = (InteractType)Convert.ToInt32(cmd.Parameters[1]);
 
                             Hand interactionHand = Hand.MainHand;
 
                             if (cmd.Parameters.Length == 3)
                                 interactionHand = (Hand)Convert.ToInt32(cmd.Parameters[2]);
 
-                            responder.SendSuccessResponse(InteractEntity(Convert.ToInt32(cmd.Parameters[0]), interactionType, interactionHand).ToString().ToLower());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(InteractEntity(Convert.ToInt32(cmd.Parameters[0]), interactionType, interactionHand)));
                             break;
 
                         case "CreativeGive":
@@ -626,12 +643,12 @@ namespace MinecraftClient.ChatBots
                                 nbt = JsonConvert.DeserializeObject<NBT>(cmd.Parameters[3].ToString()!, new NbtDictionaryConverter())!;
 
                             responder.SendSuccessResponse(
-                                CreativeGive(
+                                JsonConvert.SerializeObject(CreativeGive(
                                     Convert.ToInt32(cmd.Parameters[0]),
-                                    (ItemType)cmd.Parameters[1],
+                                    (ItemType)Convert.ToInt32(cmd.Parameters[1]),
                                     Convert.ToInt32(cmd.Parameters[2]),
-                                    nbt!.nbt!)
-                               .ToString().ToLower());
+                                    nbt == null ? new Dictionary<string, object>() : nbt!.nbt!)
+                                    ));
 
                             break;
 
@@ -642,16 +659,16 @@ namespace MinecraftClient.ChatBots
                                 return false;
                             }
 
-                            responder.SendSuccessResponse(CreativeDelete(Convert.ToInt32(cmd.Parameters[0])).ToString().ToLower());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(CreativeDelete(Convert.ToInt32(cmd.Parameters[0]))));
                             break;
 
                         case "SendAnimation":
                             Hand hand = Hand.MainHand;
 
-                            if (cmd.Parameters.Length == 1)
+                            if (cmd.Parameters != null && cmd.Parameters.Length == 1)
                                 hand = (Hand)Convert.ToInt32(cmd.Parameters[0]);
 
-                            responder.SendSuccessResponse(SendAnimation(hand).ToString().ToLower());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(SendAnimation(hand)));
                             break;
 
                         case "SendPlaceBlock":
@@ -669,7 +686,7 @@ namespace MinecraftClient.ChatBots
                             if (cmd.Parameters.Length == 5)
                                 handToUse = (Hand)Convert.ToInt32(cmd.Parameters[2]);
 
-                            responder.SendSuccessResponse(SendPlaceBlock(blockLocation, blockFacingDirection, handToUse).ToString().ToLower());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(SendPlaceBlock(blockLocation, blockFacingDirection, handToUse)));
                             break;
 
                         case "UseItemInHand":
@@ -696,11 +713,11 @@ namespace MinecraftClient.ChatBots
                             }
 
                             responder.SendSuccessResponse(
-                                WindowAction(
+                               JsonConvert.SerializeObject(WindowAction(
                                     Convert.ToInt32(cmd.Parameters[0]),
                                     Convert.ToInt32(cmd.Parameters[1]),
                                     (WindowActionType)Convert.ToInt32(cmd.Parameters[2])
-                                ).ToString().ToLower());
+                                )));
                             break;
 
                         case "ChangeSlot":
@@ -710,7 +727,7 @@ namespace MinecraftClient.ChatBots
                                 return false;
                             }
 
-                            responder.SendSuccessResponse(ChangeSlot((short)Convert.ToInt32(cmd.Parameters[0])).ToString().ToLower());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(ChangeSlot((short)Convert.ToInt32(cmd.Parameters[0]))));
                             break;
 
                         case "GetCurrentSlot":
@@ -731,12 +748,12 @@ namespace MinecraftClient.ChatBots
                             Location signLocation = new Location(Convert.ToInt32(cmd.Parameters[0]), Convert.ToInt32(cmd.Parameters[1]), Convert.ToInt32(cmd.Parameters[2]));
 
                             responder.SendSuccessResponse(
-                                UpdateSign(signLocation,
+                                JsonConvert.SerializeObject(UpdateSign(signLocation,
                                     (string)cmd.Parameters[3],
                                     (string)cmd.Parameters[4],
                                     (string)cmd.Parameters[5],
                                     (string)cmd.Parameters[6]
-                                ).ToString().ToLower());
+                                )));
                             break;
 
                         case "SelectTrade":
@@ -746,7 +763,7 @@ namespace MinecraftClient.ChatBots
                                 return false;
                             }
 
-                            responder.SendSuccessResponse(SelectTrade(Convert.ToInt32(cmd.Parameters[0])).ToString().ToLower());
+                            responder.SendSuccessResponse(JsonConvert.SerializeObject(SelectTrade(Convert.ToInt32(cmd.Parameters[0]))));
                             break;
 
                         case "UpdateCommandBlock":
@@ -825,7 +842,11 @@ namespace MinecraftClient.ChatBots
 
         public override void OnUnload()
         {
-            _server!.Stop();
+            if (_server != null)
+            {
+                SendEvent("OnWsConnectionClose", "");
+                _server.Stop();
+            }
         }
 
         // ==========================================================================================
