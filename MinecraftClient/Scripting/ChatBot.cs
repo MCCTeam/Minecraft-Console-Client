@@ -1263,6 +1263,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Use item currently in the player's hand (active inventory bar slot)
+        /// </summary>
+        /// <returns>TRUE if successful</returns>
+        protected bool UseItemInLeftHand()
+        {
+            return Handler.UseItemOnLeftHand();
+        }
+
+        /// <summary>
         /// Check inventory handling enable status
         /// </summary>
         /// <returns>TRUE if inventory handling is enabled</returns>

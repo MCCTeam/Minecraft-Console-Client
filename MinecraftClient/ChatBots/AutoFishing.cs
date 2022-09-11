@@ -188,7 +188,10 @@ namespace MinecraftClient.ChatBots
 
         private void UseFishRod()
         {
-            UseItemInHand();
+            if (Settings.AutoFishing_Mainhand)
+                UseItemInHand();
+            else
+                UseItemInLeftHand();
         }
 
         /// <summary>
