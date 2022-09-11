@@ -316,7 +316,7 @@ namespace MinecraftClient
                 {
                     if (e is not ThreadAbortException)
                         Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
-                    else 
+                    else
                         throw; //ThreadAbortException should not be caught
                 }
             }
@@ -570,7 +570,7 @@ namespace MinecraftClient
                     {
                         string response_msg = "";
                         string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
-                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
+                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg, Settings.GetVariables()) && Settings.internalCmdChar == '/')
                         {
                             SendText(text);
                         }
@@ -658,6 +658,7 @@ namespace MinecraftClient
             else if (cmds.ContainsKey(command_name))
             {
                 response_msg = cmds[command_name].Run(this, command, localVars);
+
                 foreach (ChatBot bot in bots.ToArray())
                 {
                     try
@@ -1658,8 +1659,8 @@ namespace MinecraftClient
                                         upper2backpack = true;
                                         lowerStartSlot = 1;
                                     }
-                                    else if (item != null && item.Count == 1 && (item.Type == ItemType.NetheriteIngot || 
-                                        item.Type == ItemType.Emerald || item.Type == ItemType.Diamond || item.Type == ItemType.GoldIngot || 
+                                    else if (item != null && item.Count == 1 && (item.Type == ItemType.NetheriteIngot ||
+                                        item.Type == ItemType.Emerald || item.Type == ItemType.Diamond || item.Type == ItemType.GoldIngot ||
                                         item.Type == ItemType.IronIngot) && !inventory.Items.ContainsKey(0))
                                     {
                                         lower2upper = true;

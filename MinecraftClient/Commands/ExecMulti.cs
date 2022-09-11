@@ -15,10 +15,13 @@ namespace MinecraftClient.Commands
             if (hasArg(command))
             {
                 string commandsString = getArg(command);
-                IEnumerable<string> commands = commandsString.Split("->")
+
+                if (commandsString.Contains("execmulti", StringComparison.OrdinalIgnoreCase) || commandsString.Contains("execif", StringComparison.OrdinalIgnoreCase))
+                    return Translations.TryGet("cmd.execmulti.prevent");
+
+                IEnumerable<string> commands = commandsString.Split("->", StringSplitOptions.TrimEntries)
                     .ToList()
-                    .ConvertAll(command => command.Trim())
-                    .FindAll(command => !string.IsNullOrEmpty(command) || command.StartsWith("execmulti", StringComparison.OrdinalIgnoreCase));
+                    .FindAll(command => !string.IsNullOrEmpty(command));
 
                 foreach (string cmd in commands)
                 {

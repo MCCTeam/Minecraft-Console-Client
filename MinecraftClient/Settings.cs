@@ -1006,6 +1006,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Get a dictionary containing variables (names and value)
+        /// </summary>
+        /// <returns>A IDictionary<string, object> containing a name and a vlaue key pairs of variables</returns>
+        public static Dictionary<string, object> GetVariables()
+        {
+            return AppVars;
+        }
+
+        /// <summary>
         /// Replace %variables% with their value from global AppVars
         /// </summary>
         /// <param name="str">String to parse</param>
