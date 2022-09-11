@@ -13,13 +13,30 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     class AutoFishing : ChatBot
     {
-        private Entity fishingRod;
-        private Double fishingHookThreshold = 0.2;
-        private Location LastPos = new Location();
-        private DateTime CaughtTime = DateTime.Now;
+        private int fishCount = 0;
         private bool inventoryEnabled;
+
         private bool isFishing = false;
-        private int useItemCounter = 0;
+        private Entity? fishingBobber;
+        private Location LastPos = Location.Zero;
+        private DateTime CaughtTime = DateTime.Now;
+
+        private int counter = 0;
+        private readonly object stateLock = new();
+        private FishingState state = FishingState.WaitJoinGame;
+
+        private int castTimeout = 12;
+
+        private enum FishingState
+        {
+            WaitJoinGame,
+            WaitingToCast,
+            CastingRod,
+            WaitingFishingBobber,
+            WaitingFishBite,
+            Preparing,
+            Stopping,
+        }
 
         public override void Initialize()
         {
@@ -32,42 +49,94 @@ namespace MinecraftClient.ChatBots
             inventoryEnabled = GetInventoryEnabled();
         }
 
+        public override void AfterGameJoined()
+        {
+            double delay = Settings.AutoFishing_FishingDelay;
+            LogToConsole(Translations.Get("bot.autoFish.start", delay));
+            lock (stateLock)
+            {
+                counter = (int)(delay * 10);
+                state = FishingState.WaitingToCast;
+            }
+        }
+
         public override void Update()
         {
-            if (useItemCounter > 0)
+            lock (stateLock)
             {
-                useItemCounter--;
-                if (useItemCounter <= 0)
+                switch (state)
                 {
-                    UseItemInHand();
+                    case FishingState.WaitJoinGame:
+                        break;
+                    case FishingState.WaitingToCast:
+                        if (--counter < 0)
+                            state = FishingState.CastingRod;
+                        break;
+                    case FishingState.CastingRod:
+                        UseFishRod();
+                        counter = 0;
+                        state = FishingState.WaitingFishingBobber;
+                        break;
+                    case FishingState.WaitingFishingBobber:
+                        if (++counter > castTimeout)
+                        {
+                            if (castTimeout < 6000)
+                                castTimeout *= 2;
+                            LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.cast_timeout", castTimeout / 10.0));
+
+                            counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                            state = FishingState.WaitingToCast;
+                        }
+                        break;
+                    case FishingState.WaitingFishBite:
+                        if (++counter > (int)(Settings.AutoFishing_FishingTimeout * 10))
+                        {
+                            LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.fishing_timeout"));
+
+                            counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                            state = FishingState.WaitingToCast;
+                        }
+                        break;
+                    case FishingState.Preparing:
+                        break;
+                    case FishingState.Stopping:
+                        break;
                 }
             }
         }
 
         public override void OnEntitySpawn(Entity entity)
         {
-            if (entity.Type == EntityType.FishingBobber)
+            if (entity.Type == EntityType.FishingBobber && entity.ObjectData == GetPlayerEntityID())
             {
-                if (GetCurrentLocation().Distance(entity.Location) < 2 && !isFishing)
+                LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.throw"));
+                lock (stateLock)
                 {
-                    LogToConsoleTranslated("bot.autoFish.throw");
-                    fishingRod = entity;
+                    fishingBobber = entity;
                     LastPos = entity.Location;
                     isFishing = true;
+
+                    castTimeout = 24;
+                    counter = 0;
+                    state = FishingState.WaitingFishBite;
                 }
             }
         }
 
         public override void OnEntityDespawn(Entity entity)
         {
-            if (entity.Type == EntityType.FishingBobber)
+            if (isFishing && entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
             {
-                if(entity.ID == fishingRod.ID)
+                isFishing = false;
+
+                if (Settings.AutoFishing_Antidespawn)
                 {
-                    isFishing = false;
-                    if (Settings.AutoFishing_Antidespawn)
+                    LogToConsoleTranslated("bot.autoFish.despawn");
+
+                    lock (stateLock)
                     {
-                        useItemCounter = 5; // 500ms
+                        counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                        state = FishingState.WaitingToCast;
                     }
                 }
             }
@@ -75,42 +144,51 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-            if (isFishing)
+            if (isFishing && fishingBobber!.ID == entity.ID)
             {
-                if (fishingRod.ID == entity.ID)
+                Location Pos = entity.Location;
+                double Dx = LastPos.X - Pos.X;
+                double Dy = LastPos.Y - Pos.Y;
+                double Dz = LastPos.Z - Pos.Z;
+                LastPos = Pos;
+
+                // check if fishing hook is stationary
+                if (Dx == 0 && Dz == 0)
                 {
-                    Location Pos = entity.Location;
-                    Double Dx = LastPos.X - Pos.X;
-                    Double Dy = LastPos.Y - Pos.Y;
-                    Double Dz = LastPos.Z - Pos.Z;
-                    LastPos = Pos;
-                    // check if fishing hook is stationary
-                    if (Dx == 0 && Dz == 0)
+                    if (Math.Abs(Dy) > Settings.AutoFishing_FishingHookThreshold)
                     {
-                        if (Math.Abs(Dy) > fishingHookThreshold)
+                        // caught
+                        // prevent triggering multiple time
+                        if ((DateTime.Now - CaughtTime).TotalSeconds > 1)
                         {
-                            // caught
-                            // prevent triggering multiple time
-                            if ((DateTime.Now - CaughtTime).TotalSeconds > 1)
-                            {
-                                OnCaughtFish();
-                                CaughtTime = DateTime.Now;
-                            }
+                            CaughtTime = DateTime.Now;
+                            OnCaughtFish();
                         }
                     }
-                    fishingRod = entity;
                 }
             }
         }
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
         {
-            fishingRod = null;
-            LastPos = new Location();
+            lock (stateLock)
+            {
+                isFishing = false;
+
+                counter = 0;
+                state = FishingState.Stopping;
+            }
+
+            fishingBobber = null;
+            LastPos = Location.Zero;
             CaughtTime = DateTime.Now;
-            isFishing = false;
-            useItemCounter = 0;
+
             return base.OnDisconnect(reason, message);
+        }
+
+        private void UseFishRod()
+        {
+            UseItemInHand();
         }
 
         /// <summary>
@@ -118,32 +196,43 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public void OnCaughtFish()
         {
-            LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.caught"));
-            // retract fishing rod
-            UseItemInHand();
+            lock (stateLock)
+            {
+                state = FishingState.Preparing;
+            }
+
+            UseFishRod();
+
+            ++fishCount;
+            LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.caught", fishCount));
+
             if (inventoryEnabled)
             {
-                if (!hasFishingRod())
+                if (!HasFishingRod())
                 {
                     LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.no_rod"));
                     return;
                 }
             }
-            // thread-safe
-            useItemCounter = 8; // 800ms
+
+            lock (stateLock)
+            {
+                counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                state = FishingState.WaitingToCast;
+            }
         }
 
         /// <summary>
         /// Check whether the player has a fishing rod in inventory
         /// </summary>
         /// <returns>TRUE if the player has a fishing rod</returns>
-        public bool hasFishingRod()
+        public bool HasFishingRod()
         {
             if (!inventoryEnabled)
                 return false;
             int start = 36;
             int end = 44;
-            Inventory.Container container = GetPlayerInventory();
+            Container container = GetPlayerInventory();
 
             foreach (KeyValuePair<int, Item> a in container.Items)
             {

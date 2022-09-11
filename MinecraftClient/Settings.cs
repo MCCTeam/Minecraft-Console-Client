@@ -203,6 +203,10 @@ namespace MinecraftClient
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;
         public static bool AutoFishing_Antidespawn = false;
+        public static double AutoFishing_FishingDelay = 3.0;
+        public static double AutoFishing_FishingTimeout = 600.0;
+        public static double AutoFishing_FishingHookThreshold = 0.2;
+        public static double AutoFishing_FishingCastDelay = 0.4;
 
         //Auto Eating
         public static bool AutoEat_Enabled = false;
@@ -711,6 +715,10 @@ namespace MinecraftClient
                     {
                         case "enabled": AutoFishing_Enabled = str2bool(argValue); return true;
                         case "antidespawn": AutoFishing_Antidespawn = str2bool(argValue); return true;
+                        case "fishing_delay": AutoFishing_FishingDelay = str2double(argValue); return true;
+                        case "fishing_timeout": AutoFishing_FishingTimeout = str2double(argValue); return true;
+                        case "fishing_hook_threshold": AutoFishing_FishingHookThreshold = str2double(argValue); return true;
+                        case "fishing_cast_delay": AutoFishing_FishingCastDelay = str2double(argValue); return true;
                     }
                     break;
 
@@ -863,8 +871,23 @@ namespace MinecraftClient
         /// <returns>Float number</returns>
         public static float str2float(string str)
         {
-            float f;
-            if (float.TryParse(str.Trim(), out f))
+            if (float.TryParse(str.Trim(), out float f))
+                return f;
+            else
+            {
+                ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Convert the specified string to a double number, defaulting to zero if invalid argument
+        /// </summary>
+        /// <param name="str">String to parse as a float number</param>
+        /// <returns>Double number</returns>
+        public static double str2double(string str)
+        {
+            if (double.TryParse(str.Trim(), out double f))
                 return f;
             else
             {

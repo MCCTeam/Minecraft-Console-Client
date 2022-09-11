@@ -1114,6 +1114,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Return the EntityID of the current player
+        /// </summary>
+        /// <returns>EntityID of the current player</returns>
+        protected int GetPlayerEntityID()
+        {
+            return Handler.GetPlayerEntityID();
+        }
+
+        /// <summary>
         /// Return the list of currently online players
         /// </summary>
         /// <returns>List of online players</returns>
