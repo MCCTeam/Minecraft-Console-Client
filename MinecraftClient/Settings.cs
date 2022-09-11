@@ -203,6 +203,7 @@ namespace MinecraftClient
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;
         public static bool AutoFishing_Antidespawn = false;
+        public static bool AutoFishing_Mainhand = true;
         public static double AutoFishing_FishingDelay = 3.0;
         public static double AutoFishing_FishingTimeout = 600.0;
         public static double AutoFishing_FishingHookThreshold = 0.2;
