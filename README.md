@@ -6,7 +6,7 @@
 
 [Documentation](https://mccteam.github.io/docs/) | [Download](#download) | [Installation](https://mccteam.github.io/docs/guide/installation.html) | [Configuration](https://mccteam.github.io/docs/guide/configuration.html) | [Usage](https://mccteam.github.io/docs/guide/usage.html)
 
-[![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
+[![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 
 </div>
 
@@ -30,6 +30,10 @@ Get development builds from the [Releases section](https://github.com/MCCTeam/Mi
 ## Getting Help 🙋
 
 Check out the [Website](https://mccteam.github.io/), [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) and existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Maybe your question is answered there. If not, please open a [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) and ask your question. If you find a bug, please report it in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section.
+
+## Discord
+
+We now have a Discord server, click [here](https://discord.gg/sfBv4TtpC9) to join.
 
 ## Helping Us ❤️
 
