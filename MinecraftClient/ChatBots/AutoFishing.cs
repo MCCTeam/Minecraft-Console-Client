@@ -58,12 +58,22 @@ namespace MinecraftClient.ChatBots
         private void StartFishing()
         {
             isFishing = false;
-            double delay = Settings.AutoFishing_FishingDelay;
-            LogToConsole(Translations.Get("bot.autoFish.start", delay));
-            lock (stateLock)
+            if (Settings.AutoFishing_AutoStart)
             {
-                counter = (int)(delay * 10);
-                state = FishingState.StartMove;
+                double delay = Settings.AutoFishing_FishingDelay;
+                LogToConsole(Translations.Get("bot.autoFish.start", delay));
+                lock (stateLock)
+                {
+                    counter = (int)(delay * 10);
+                    state = FishingState.StartMove;
+                }
+            }
+            else
+            {
+                lock (stateLock)
+                {
+                    state = FishingState.WaitJoinGame;
+                }
             }
         }
 
@@ -129,8 +139,16 @@ namespace MinecraftClient.ChatBots
                             double[,]? locationList = Settings.AutoFishing_Location;
                             if (locationList != null)
                             {
-                                UpdateLocation(locationList);
-                                state = FishingState.WaitingMovement;
+                                if (GetTerrainEnabled())
+                                {
+                                    UpdateLocation(locationList);
+                                    state = FishingState.WaitingMovement;
+                                }
+                                else
+                                {
+                                    LogToConsole(Translations.Get("extra.terrainandmovement_required"));
+                                    state = FishingState.WaitJoinGame;
+                                }
                             }
                             else
                             {
@@ -274,6 +292,7 @@ namespace MinecraftClient.ChatBots
                 state = FishingState.StartMove;
             }
         }
+
         private void UpdateLocation(double[,] locationList)
         {
             if (curLocationIdx >= locationList.GetLength(0))
@@ -335,7 +354,6 @@ namespace MinecraftClient.ChatBots
 
             curLocationIdx += moveDir;
         }
-
 
         private bool DurabilityCheck()
         {

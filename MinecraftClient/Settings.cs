@@ -204,6 +204,7 @@ namespace MinecraftClient
         public static bool AutoFishing_Enabled = false;
         public static bool AutoFishing_Antidespawn = false;
         public static bool AutoFishing_Mainhand = true;
+        public static bool AutoFishing_AutoStart = true;
         public static double AutoFishing_FishingDelay = 3.0;
         public static double AutoFishing_FishingTimeout = 600.0;
         public static double AutoFishing_FishingHookThreshold = 0.2;
@@ -719,6 +720,8 @@ namespace MinecraftClient
                     {
                         case "enabled": AutoFishing_Enabled = str2bool(argValue); return true;
                         case "antidespawn": AutoFishing_Antidespawn = str2bool(argValue); return true;
+                        case "main_hand": AutoFishing_Mainhand = str2bool(argValue); return true;
+                        case "auto_start": AutoFishing_AutoStart = str2bool(argValue); return true;
                         case "fishing_delay": AutoFishing_FishingDelay = str2double(argValue); return true;
                         case "fishing_timeout": AutoFishing_FishingTimeout = str2double(argValue); return true;
                         case "fishing_hook_threshold": AutoFishing_FishingHookThreshold = str2double(argValue); return true;
