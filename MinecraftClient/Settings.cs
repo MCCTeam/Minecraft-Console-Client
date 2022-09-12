@@ -208,6 +208,7 @@ namespace MinecraftClient
         public static double AutoFishing_FishingTimeout = 600.0;
         public static double AutoFishing_FishingHookThreshold = 0.2;
         public static double AutoFishing_FishingCastDelay = 0.4;
+        public static double[,]? AutoFishing_Location = null;
 
         //Auto Eating
         public static bool AutoEat_Enabled = false;
@@ -720,6 +721,7 @@ namespace MinecraftClient
                         case "fishing_timeout": AutoFishing_FishingTimeout = str2double(argValue); return true;
                         case "fishing_hook_threshold": AutoFishing_FishingHookThreshold = str2double(argValue); return true;
                         case "fishing_cast_delay": AutoFishing_FishingCastDelay = str2double(argValue); return true;
+                        case "location": AutoFishing_Location = str2locationList(argValue); return true;
                     }
                     break;
 
@@ -872,8 +874,8 @@ namespace MinecraftClient
         /// <returns>Float number</returns>
         public static float str2float(string str)
         {
-            if (float.TryParse(str.Trim(), out float f))
-                return f;
+            if (float.TryParse(str.Trim(), out float num))
+                return num;
             else
             {
                 ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
@@ -888,8 +890,8 @@ namespace MinecraftClient
         /// <returns>Double number</returns>
         public static double str2double(string str)
         {
-            if (double.TryParse(str.Trim(), out double f))
-                return f;
+            if (double.TryParse(str.Trim(), out double num))
+                return num;
             else
             {
                 ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
@@ -908,6 +910,46 @@ namespace MinecraftClient
                 return false;
             str = str.Trim().ToLowerInvariant();
             return str == "true" || str == "1";
+        }
+
+        /// <summary>
+        /// Convert the specified string to a list of location, returning null if invalid argument
+        /// </summary>
+        /// <param name="str">String to parse as a location list</param>
+        /// <returns>Location list (null or double[*,5] or double[*,3] or double[*,2])</returns>
+        public static double[,]? str2locationList(string str)
+        {
+            string[] locationStrList = str.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            double[,]? res = null;
+            int codLen = 0;
+            for (int i = 0; i < locationStrList.Length; ++i)
+            {
+                string[] coordinates_str_list = locationStrList[i].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                int curCodLen = coordinates_str_list.Length;
+                if ((curCodLen == 2 || curCodLen == 3 || curCodLen == 5) && (i == 0 || curCodLen == codLen))
+                {
+                    if (i == 0)
+                    {
+                        res = new double[locationStrList.Length, curCodLen];
+                        codLen = curCodLen;
+                    }
+
+                    for (int j = 0; j < curCodLen; ++j)
+                    {
+                        if (!double.TryParse(coordinates_str_list[j], out res![i, j]))
+                        {
+                            ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2locationList.convert_fail", coordinates_str_list[j]));
+                            return null;
+                        }
+                    }
+                }
+                else
+                {
+                    ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2locationList.format_err", locationStrList[i]));
+                    return null;
+                }
+            }
+            return res;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]

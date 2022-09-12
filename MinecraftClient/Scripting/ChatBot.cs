@@ -1013,6 +1013,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Look at the specified location
+        /// </summary>
+        /// <param name="yaw">Yaw to look at</param>
+        /// <param name="pitch">Pitch to look at</param>
+        protected void LookAtLocation(float yaw, float pitch)
+        {
+            Handler.UpdateLocation(Handler.GetCurrentLocation(), yaw, pitch);
+        }
+
+        /// <summary>
         /// Get a Y-M-D h:m:s timestamp representing the current system date and time
         /// </summary>
         protected static string GetTimestamp()

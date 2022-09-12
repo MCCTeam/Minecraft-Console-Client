@@ -643,5 +643,25 @@ namespace MinecraftClient.Mapping
                     throw new ArgumentException("Unknown direction", "direction");
             }
         }
+
+        /// <summary>
+        /// Check that the chunks at both the start and destination locations have been loaded
+        /// </summary>
+        /// <param name="world">Current world</param>
+        /// <param name="start">Start location</param>
+        /// <param name="dest">Destination location</param>
+        /// <returns>Is loading complete</returns>
+        public static bool CheckChunkLoading(World world, Location start, Location dest)
+        {
+            ChunkColumn? chunkColumn = world.GetChunkColumn(dest);
+            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+                return false;
+
+            chunkColumn = world.GetChunkColumn(start);
+            if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+                return false;
+
+            return true;
+        }
     }
 }
