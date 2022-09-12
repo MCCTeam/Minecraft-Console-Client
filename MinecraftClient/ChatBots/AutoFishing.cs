@@ -15,6 +15,7 @@ namespace MinecraftClient.ChatBots
     {
         private int fishCount = 0;
         private bool inventoryEnabled;
+        private int castTimeout = 12;
 
         private bool isFishing = false;
         private Entity? fishingBobber;
@@ -25,7 +26,8 @@ namespace MinecraftClient.ChatBots
         private readonly object stateLock = new();
         private FishingState state = FishingState.WaitJoinGame;
 
-        private int castTimeout = 12;
+        private int curLocationIdx = 0, moveDir = 1;
+        float nextYaw = 0, nextPitch = 0;
 
         private enum FishingState
         {
@@ -33,8 +35,9 @@ namespace MinecraftClient.ChatBots
             WaitingToCast,
             CastingRod,
             WaitingFishingBobber,
-            WaitingFishBite,
-            Preparing,
+            WaitingFishToBite,
+            DurabilityCheck,
+            ChangeLocation,
             Stopping,
         }
 
@@ -47,17 +50,39 @@ namespace MinecraftClient.ChatBots
                 UnloadBot();
             }
             inventoryEnabled = GetInventoryEnabled();
+            if (!inventoryEnabled)
+                LogToConsoleTranslated("bot.autoFish.no_inv_handle");
         }
 
-        public override void AfterGameJoined()
+        private void StartFishing()
         {
+            isFishing = false;
             double delay = Settings.AutoFishing_FishingDelay;
             LogToConsole(Translations.Get("bot.autoFish.start", delay));
             lock (stateLock)
             {
                 counter = (int)(delay * 10);
-                state = FishingState.WaitingToCast;
+                state = FishingState.DurabilityCheck;
             }
+        }
+
+        private void StopFishing()
+        {
+            isFishing = false;
+            lock (stateLock)
+            {
+                state = FishingState.Stopping;
+            }
+        }
+
+        public override void AfterGameJoined()
+        {
+            StartFishing();
+        }
+
+        public override void OnRespawn()
+        {
+            StartFishing();
         }
 
         public override void Update()
@@ -69,7 +94,9 @@ namespace MinecraftClient.ChatBots
                     case FishingState.WaitJoinGame:
                         break;
                     case FishingState.WaitingToCast:
-                        if (--counter < 0)
+                        if (AutoEat.Eating)
+                            counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                        else if (--counter < 0)
                             state = FishingState.CastingRod;
                         break;
                     case FishingState.CastingRod:
@@ -81,14 +108,14 @@ namespace MinecraftClient.ChatBots
                         if (++counter > castTimeout)
                         {
                             if (castTimeout < 6000)
-                                castTimeout *= 2;
+                                castTimeout *= 2; // Exponential backoff
                             LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.cast_timeout", castTimeout / 10.0));
 
                             counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
                             state = FishingState.WaitingToCast;
                         }
                         break;
-                    case FishingState.WaitingFishBite:
+                    case FishingState.WaitingFishToBite:
                         if (++counter > (int)(Settings.AutoFishing_FishingTimeout * 10))
                         {
                             LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.fishing_timeout"));
@@ -97,7 +124,21 @@ namespace MinecraftClient.ChatBots
                             state = FishingState.WaitingToCast;
                         }
                         break;
-                    case FishingState.Preparing:
+                    case FishingState.DurabilityCheck:
+                        if (--counter < 0)
+                        {
+                            DurabilityCheckAndMove();
+                        }
+                        break;
+                    case FishingState.ChangeLocation:
+                        if (!ClientIsMoving())
+                        {
+                            LookAtLocation(nextYaw, nextPitch);
+                            LogToConsole(Translations.Get("bot.autoFish.update_lookat", nextYaw, nextPitch));
+
+                            counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                            state = FishingState.WaitingToCast;
+                        }
                         break;
                     case FishingState.Stopping:
                         break;
@@ -118,7 +159,7 @@ namespace MinecraftClient.ChatBots
 
                     castTimeout = 24;
                     counter = 0;
-                    state = FishingState.WaitingFishBite;
+                    state = FishingState.WaitingFishToBite;
                 }
             }
         }
@@ -161,6 +202,7 @@ namespace MinecraftClient.ChatBots
                         // prevent triggering multiple time
                         if ((DateTime.Now - CaughtTime).TotalSeconds > 1)
                         {
+                            isFishing = false;
                             CaughtTime = DateTime.Now;
                             OnCaughtFish();
                         }
@@ -169,15 +211,14 @@ namespace MinecraftClient.ChatBots
             }
         }
 
+        public override void OnDeath()
+        {
+            StopFishing();
+        }
+
         public override bool OnDisconnect(DisconnectReason reason, string message)
         {
-            lock (stateLock)
-            {
-                isFishing = false;
-
-                counter = 0;
-                state = FishingState.Stopping;
-            }
+            StopFishing();
 
             fishingBobber = null;
             LastPos = Location.Zero;
@@ -194,34 +235,123 @@ namespace MinecraftClient.ChatBots
                 UseItemInLeftHand();
         }
 
-        /// <summary>
-        /// Called when detected a fish is caught
-        /// </summary>
-        public void OnCaughtFish()
+        private void UpdateLocation(double[,] locationList)
         {
-            lock (stateLock)
+            if (curLocationIdx >= locationList.GetLength(0))
             {
-                state = FishingState.Preparing;
+                curLocationIdx = Math.Max(0, locationList.GetLength(0) - 2);
+                moveDir = -1;
+            }
+            else if (curLocationIdx < 0)
+            {
+                curLocationIdx = Math.Min(locationList.GetLength(0) - 1, 1);
+                moveDir = 1;
             }
 
-            UseFishRod();
+            int locationType = locationList.GetLength(1);
 
-            ++fishCount;
-            LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.caught", fishCount));
+            if (locationType == 2)
+            {
+                nextYaw = (float)locationList[curLocationIdx, 0];
+                nextPitch = (float)locationList[curLocationIdx, 1];
+            }
+            else if (locationType == 3)
+            {
+                nextYaw = GetYaw();
+                nextPitch = GetPitch();
+            }
+            else if (locationType == 5)
+            {
+                nextYaw = (float)locationList[curLocationIdx, 3];
+                nextPitch = (float)locationList[curLocationIdx, 4];
+            }
 
+            if (locationType == 3 || locationType == 5)
+            {
+                Location current = GetCurrentLocation();
+                Location goal = new(locationList[curLocationIdx, 0], locationList[curLocationIdx, 1], locationList[curLocationIdx, 2]);
+
+                bool isMoveSuccessed;
+                if (!Movement.CheckChunkLoading(GetWorld(), current, goal))
+                {
+                    LogToConsole(Translations.Get("cmd.move.chunk_not_loaded", goal.X, goal.Y, goal.Z));
+                    isMoveSuccessed = false;
+                }
+                else
+                {
+                    isMoveSuccessed = MoveToLocation(goal, allowUnsafe: false, allowDirectTeleport: false);
+                }
+
+                if (!isMoveSuccessed)
+                {
+                    nextYaw = GetYaw();
+                    nextPitch = GetPitch();
+                    LogToConsole(Translations.Get("cmd.move.fail", goal));
+                }
+                else
+                {
+                    LogToConsole(Translations.Get("cmd.move.walk", goal, current));
+                }
+            }
+
+            curLocationIdx += moveDir;
+        }
+
+
+        private void DurabilityCheckAndMove()
+        {
             if (inventoryEnabled)
             {
                 if (!HasFishingRod())
                 {
                     LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.no_rod"));
+
+                    lock (stateLock)
+                    {
+                        state = FishingState.Stopping;
+                    }
+
                     return;
                 }
             }
 
+            double[,]? locationList = Settings.AutoFishing_Location;
+            if (locationList != null)
+            {
+                UpdateLocation(locationList);
+                lock (stateLock)
+                {
+                    state = FishingState.ChangeLocation;
+                }
+            }
+            else
+            {
+                lock (stateLock)
+                {
+                    counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                    state = FishingState.WaitingToCast;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when detected a fish is caught
+        /// </summary>
+        public void OnCaughtFish()
+        {
+            ++fishCount;
+            if (Settings.AutoFishing_Location != null)
+                LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.caught_at",
+                    fishingBobber!.Location.X, fishingBobber!.Location.Y, fishingBobber!.Location.Z, fishCount));
+            else
+                LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.caught", fishCount));
+
             lock (stateLock)
             {
-                counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
-                state = FishingState.WaitingToCast;
+                UseFishRod();
+
+                counter = 0;
+                state = FishingState.DurabilityCheck;
             }
         }
 
@@ -233,6 +363,7 @@ namespace MinecraftClient.ChatBots
         {
             if (!inventoryEnabled)
                 return false;
+
             int start = 36;
             int end = 44;
             Container container = GetPlayerInventory();
