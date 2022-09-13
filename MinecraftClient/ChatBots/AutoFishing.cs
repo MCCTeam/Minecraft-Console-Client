@@ -104,7 +104,7 @@ namespace MinecraftClient.ChatBots
                         break;
                     case FishingState.WaitingToCast:
                         if (AutoEat.Eating)
-                            counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
                         else if (--counter < 0)
                             state = FishingState.CastingRod;
                         break;
@@ -120,7 +120,7 @@ namespace MinecraftClient.ChatBots
                                 castTimeout *= 2; // Exponential backoff
                             LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.cast_timeout", castTimeout / 10.0));
 
-                            counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
                             state = FishingState.WaitingToCast;
                         }
                         break;
@@ -129,7 +129,7 @@ namespace MinecraftClient.ChatBots
                         {
                             LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.fishing_timeout"));
 
-                            counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
                             state = FishingState.WaitingToCast;
                         }
                         break;
@@ -152,7 +152,7 @@ namespace MinecraftClient.ChatBots
                             }
                             else
                             {
-                                counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                                counter = (int)(Settings.AutoFishing_CastDelay * 10);
                                 state = FishingState.DurabilityCheck;
                                 goto case FishingState.DurabilityCheck;
                             }
@@ -171,7 +171,7 @@ namespace MinecraftClient.ChatBots
                     case FishingState.DurabilityCheck:
                         if (DurabilityCheck())
                         {
-                            counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
+                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
                             state = FishingState.WaitingToCast;
                         }
                         break;
@@ -185,6 +185,9 @@ namespace MinecraftClient.ChatBots
         {
             if (entity.Type == EntityType.FishingBobber && entity.ObjectData == GetPlayerEntityID())
             {
+                if (Settings.AutoFishing_LogFishingBobber)
+                    LogToConsole(string.Format("FishingBobber spawn at {0}, distance = {1:0.00}", entity.Location, GetCurrentLocation().Distance(entity.Location)));
+
                 LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.throw"));
                 lock (stateLock)
                 {
@@ -201,18 +204,24 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityDespawn(Entity entity)
         {
-            if (isFishing && entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
+            if (entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
             {
-                isFishing = false;
+                if (Settings.AutoFishing_LogFishingBobber)
+                    LogToConsole(string.Format("FishingBobber despawn at {0}", entity.Location));
 
-                if (Settings.AutoFishing_Antidespawn)
+                if (isFishing)
                 {
-                    LogToConsoleTranslated("bot.autoFish.despawn");
+                    isFishing = false;
 
-                    lock (stateLock)
+                    if (Settings.AutoFishing_Antidespawn)
                     {
-                        counter = (int)(Settings.AutoFishing_FishingCastDelay * 10);
-                        state = FishingState.WaitingToCast;
+                        LogToConsoleTranslated("bot.autoFish.despawn");
+
+                        lock (stateLock)
+                        {
+                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
+                            state = FishingState.WaitingToCast;
+                        }
                     }
                 }
             }
@@ -228,19 +237,19 @@ namespace MinecraftClient.ChatBots
                 double Dz = LastPos.Z - Pos.Z;
                 LastPos = Pos;
 
-                // check if fishing hook is stationary
-                if (Dx == 0 && Dz == 0)
+                if (Settings.AutoFishing_LogFishingBobber)
+                    LogToConsole(string.Format("FishingBobber {0}  Dx={1:0.000000} Dy={2:0.000000} Dz={3:0.000000}", Pos, Dx, Math.Abs(Dy), Dz));
+
+                if (Math.Abs(Dx) < Math.Abs(Settings.AutoFishing_StationaryThreshold) && 
+                    Math.Abs(Dz) < Math.Abs(Settings.AutoFishing_StationaryThreshold) &&
+                    Math.Abs(Dy) > Math.Abs(Settings.AutoFishing_HookThreshold))
                 {
-                    if (Math.Abs(Dy) > Settings.AutoFishing_FishingHookThreshold)
+                    // prevent triggering multiple time
+                    if ((DateTime.Now - CaughtTime).TotalSeconds > 1)
                     {
-                        // caught
-                        // prevent triggering multiple time
-                        if ((DateTime.Now - CaughtTime).TotalSeconds > 1)
-                        {
-                            isFishing = false;
-                            CaughtTime = DateTime.Now;
-                            OnCaughtFish();
-                        }
+                        isFishing = false;
+                        CaughtTime = DateTime.Now;
+                        OnCaughtFish();
                     }
                 }
             }
