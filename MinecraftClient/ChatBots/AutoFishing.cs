@@ -47,12 +47,34 @@ namespace MinecraftClient.ChatBots
             if (!GetEntityHandlingEnabled())
             {
                 LogToConsoleTranslated("extra.entity_required");
-                LogToConsoleTranslated("general.bot_unload");
-                UnloadBot();
+                state = FishingState.WaitJoinGame;
             }
             inventoryEnabled = GetInventoryEnabled();
             if (!inventoryEnabled)
                 LogToConsoleTranslated("bot.autoFish.no_inv_handle");
+        }
+
+        /// <summary>
+        /// Update settings when reloaded
+        /// </summary>
+        public /* override */ void OnSettingsReload()
+        {
+            if (Settings.AutoFishing_Enabled)
+            {
+                if (!GetEntityHandlingEnabled())
+                {
+                    LogToConsoleTranslated("extra.entity_required");
+                    state = FishingState.WaitJoinGame;
+                }
+                inventoryEnabled = GetInventoryEnabled();
+                if (!inventoryEnabled)
+                    LogToConsoleTranslated("bot.autoFish.no_inv_handle");
+            }
+            else
+            {
+                UnloadBot();
+                return;
+            }
         }
 
         private void StartFishing()
