@@ -205,12 +205,14 @@ namespace MinecraftClient
         public static bool AutoFishing_Antidespawn = false;
         public static bool AutoFishing_Mainhand = true;
         public static bool AutoFishing_AutoStart = true;
-        public static double AutoFishing_FishingDelay = 3.0;
-        public static double AutoFishing_FishingTimeout = 600.0;
-        public static double AutoFishing_FishingHookThreshold = 0.2;
-        public static double AutoFishing_FishingCastDelay = 0.4;
+        public static double AutoFishing_CastDelay = 0.4;
+        public static double AutoFishing_FishingDelay = 3.0; 
+        public static double AutoFishing_FishingTimeout = 300.0;
         public static double AutoFishing_DurabilityLimit = 2;
         public static bool AutoFishing_AutoRodSwitch = true;
+        public static double AutoFishing_StationaryThreshold = 0.001;
+        public static double AutoFishing_HookThreshold = 0.2;
+        public static bool AutoFishing_LogFishingBobber = false;
         public static double[,]? AutoFishing_Location = null;
 
         //Auto Eating
@@ -722,14 +724,16 @@ namespace MinecraftClient
                         case "antidespawn": AutoFishing_Antidespawn = str2bool(argValue); return true;
                         case "main_hand": AutoFishing_Mainhand = str2bool(argValue); return true;
                         case "auto_start": AutoFishing_AutoStart = str2bool(argValue); return true;
+                        case "cast_delay": AutoFishing_CastDelay = str2double(argValue); return true;
                         case "fishing_delay": AutoFishing_FishingDelay = str2double(argValue); return true;
                         case "fishing_timeout": AutoFishing_FishingTimeout = str2double(argValue); return true;
-                        case "fishing_hook_threshold": AutoFishing_FishingHookThreshold = str2double(argValue); return true;
-                        case "fishing_cast_delay": AutoFishing_FishingCastDelay = str2double(argValue); return true;
                         case "durability_limit": AutoFishing_DurabilityLimit = str2int(argValue); return true;
-                        case "auto_rod_switch": AutoFishing_AutoRodSwitch = str2bool(argValue); return true;
+                        case "auto_rod_switch": AutoFishing_AutoRodSwitch = str2bool(argValue); return true; 
+                        case "stationary_threshold": AutoFishing_StationaryThreshold = str2double(argValue); return true;
+                        case "hook_threshold": AutoFishing_HookThreshold = str2double(argValue); return true;
+                        case "log_fishing_bobber": AutoFishing_LogFishingBobber = str2bool(argValue); return true;
                         case "location": AutoFishing_Location = str2locationList(argValue); return true;
-    }
+                    }
                     break;
 
                 case Section.AutoEat:
