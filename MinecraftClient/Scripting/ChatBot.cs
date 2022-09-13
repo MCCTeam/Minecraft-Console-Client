@@ -1013,6 +1013,16 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Look at the specified location
+        /// </summary>
+        /// <param name="yaw">Yaw to look at</param>
+        /// <param name="pitch">Pitch to look at</param>
+        protected void LookAtLocation(float yaw, float pitch)
+        {
+            Handler.UpdateLocation(Handler.GetCurrentLocation(), yaw, pitch);
+        }
+
+        /// <summary>
         /// Get a Y-M-D h:m:s timestamp representing the current system date and time
         /// </summary>
         protected static string GetTimestamp()
@@ -1111,6 +1121,15 @@ namespace MinecraftClient
         protected string GetUserUUID()
         {
             return Handler.GetUserUuidStr();
+        }
+
+        /// <summary>
+        /// Return the EntityID of the current player
+        /// </summary>
+        /// <returns>EntityID of the current player</returns>
+        protected int GetPlayerEntityID()
+        {
+            return Handler.GetPlayerEntityID();
         }
 
         /// <summary>
@@ -1251,6 +1270,15 @@ namespace MinecraftClient
         protected bool UseItemInHand()
         {
             return Handler.UseItemOnHand();
+        }
+
+        /// <summary>
+        /// Use item currently in the player's hand (active inventory bar slot)
+        /// </summary>
+        /// <returns>TRUE if successful</returns>
+        protected bool UseItemInLeftHand()
+        {
+            return Handler.UseItemOnLeftHand();
         }
 
         /// <summary>
