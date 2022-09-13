@@ -39,14 +39,13 @@ namespace MinecraftClient.Commands
                     foreach (KeyValuePair<string, object> entry in Settings.GetVariables())
                         interpreter.SetVariable(entry.Key, entry.Value);
 
-                    Lambda parsedExpression = interpreter.Parse(expressionText);
-                    var result = parsedExpression.Invoke();
+                    var result = interpreter.Eval<bool>(expressionText);
 
                     if (result != null)
                     {
-                        bool shouldExec = false;
+                        bool shouldExec = result;
 
-                        if (result is bool)
+                        /*if (result is bool)
                             shouldExec = (bool)result;
                         else if (result is string)
                             shouldExec = !string.IsNullOrEmpty((string)result) && ((string)result).Trim().Contains("true", StringComparison.OrdinalIgnoreCase);
@@ -62,6 +61,7 @@ namespace MinecraftClient.Commands
                             shouldExec = (Int32)result > 0;
                         else if (result is Int64)
                             shouldExec = (Int64)result > 0;
+                        */
 
                         handler.Log.Debug("[Execif] Result Type: " + result.GetType().Name);
 
