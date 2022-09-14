@@ -1200,10 +1200,10 @@ namespace MinecraftClient.ChatBots
 
             json.Append("{");
             json.Append("\"entity\": " + EntityToJson(entity) + ",");
-            json.Append("\"health\": " + health.ToString("0.00"));
+            json.Append("\"health\": " + JsonConvert.SerializeObject(health));
             json.Append("}");
 
-            //SendEvent("OnEntityHealth", json.ToString());
+            SendEvent("OnEntityHealth", json.ToString());
         }
 
         public override void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata)
