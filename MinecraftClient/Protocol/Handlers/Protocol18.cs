@@ -381,11 +381,12 @@ namespace MinecraftClient.Protocol.Handlers
                             //   String identifier: 1.16 and 1.16.1
                             //   varInt: [1.9.1 to 1.15.2]
                             //   byte: below 1.9.1
+                            string? dimensionTypeName = null;
                             Dictionary<string, object>? dimensionType = null;
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 if (protocolVersion >= MC_1_19_Version)
-                                    dataTypes.ReadNextString(packetData);     // Dimension Type: Identifier
+                                    dimensionTypeName = dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
                                 else if (protocolVersion >= MC_1_16_2_Version)
                                     dimensionType = dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
@@ -405,9 +406,15 @@ namespace MinecraftClient.Protocol.Handlers
                                 string dimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
                                 if (handler.GetTerrainEnabled())
                                 {
-                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion < MC_1_19_Version)
+                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion <= MC_1_18_2_Version)
+                                    {
                                         World.StoreOneDimension(dimensionName, dimensionType!);
-                                    World.SetDimension(dimensionName);
+                                        World.SetDimension(dimensionName);
+                                    }
+                                    else if (protocolVersion >= MC_1_19_Version)
+                                    {
+                                        World.SetDimension(dimensionTypeName!);
+                                    }
                                 }
                             }
 
