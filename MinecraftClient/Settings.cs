@@ -203,6 +203,17 @@ namespace MinecraftClient
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;
         public static bool AutoFishing_Antidespawn = false;
+        public static bool AutoFishing_Mainhand = true;
+        public static bool AutoFishing_AutoStart = true;
+        public static double AutoFishing_CastDelay = 0.4;
+        public static double AutoFishing_FishingDelay = 3.0; 
+        public static double AutoFishing_FishingTimeout = 300.0;
+        public static double AutoFishing_DurabilityLimit = 2;
+        public static bool AutoFishing_AutoRodSwitch = true;
+        public static double AutoFishing_StationaryThreshold = 0.001;
+        public static double AutoFishing_HookThreshold = 0.2;
+        public static bool AutoFishing_LogFishingBobber = false;
+        public static double[,]? AutoFishing_Location = null;
 
         //Auto Eating
         public static bool AutoEat_Enabled = false;
@@ -711,6 +722,17 @@ namespace MinecraftClient
                     {
                         case "enabled": AutoFishing_Enabled = str2bool(argValue); return true;
                         case "antidespawn": AutoFishing_Antidespawn = str2bool(argValue); return true;
+                        case "main_hand": AutoFishing_Mainhand = str2bool(argValue); return true;
+                        case "auto_start": AutoFishing_AutoStart = str2bool(argValue); return true;
+                        case "cast_delay": AutoFishing_CastDelay = str2double(argValue); return true;
+                        case "fishing_delay": AutoFishing_FishingDelay = str2double(argValue); return true;
+                        case "fishing_timeout": AutoFishing_FishingTimeout = str2double(argValue); return true;
+                        case "durability_limit": AutoFishing_DurabilityLimit = str2int(argValue); return true;
+                        case "auto_rod_switch": AutoFishing_AutoRodSwitch = str2bool(argValue); return true; 
+                        case "stationary_threshold": AutoFishing_StationaryThreshold = str2double(argValue); return true;
+                        case "hook_threshold": AutoFishing_HookThreshold = str2double(argValue); return true;
+                        case "log_fishing_bobber": AutoFishing_LogFishingBobber = str2bool(argValue); return true;
+                        case "location": AutoFishing_Location = str2locationList(argValue); return true;
                     }
                     break;
 
@@ -863,9 +885,24 @@ namespace MinecraftClient
         /// <returns>Float number</returns>
         public static float str2float(string str)
         {
-            float f;
-            if (float.TryParse(str.Trim(), out f))
-                return f;
+            if (float.TryParse(str.Trim(), out float num))
+                return num;
+            else
+            {
+                ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Convert the specified string to a double number, defaulting to zero if invalid argument
+        /// </summary>
+        /// <param name="str">String to parse as a float number</param>
+        /// <returns>Double number</returns>
+        public static double str2double(string str)
+        {
+            if (double.TryParse(str.Trim(), out double num))
+                return num;
             else
             {
                 ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
@@ -884,6 +921,46 @@ namespace MinecraftClient
                 return false;
             str = str.Trim().ToLowerInvariant();
             return str == "true" || str == "1";
+        }
+
+        /// <summary>
+        /// Convert the specified string to a list of location, returning null if invalid argument
+        /// </summary>
+        /// <param name="str">String to parse as a location list</param>
+        /// <returns>Location list (null or double[*,5] or double[*,3] or double[*,2])</returns>
+        public static double[,]? str2locationList(string str)
+        {
+            string[] locationStrList = str.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            double[,]? res = null;
+            int codLen = 0;
+            for (int i = 0; i < locationStrList.Length; ++i)
+            {
+                string[] coordinates_str_list = locationStrList[i].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                int curCodLen = coordinates_str_list.Length;
+                if ((curCodLen == 2 || curCodLen == 3 || curCodLen == 5) && (i == 0 || curCodLen == codLen))
+                {
+                    if (i == 0)
+                    {
+                        res = new double[locationStrList.Length, curCodLen];
+                        codLen = curCodLen;
+                    }
+
+                    for (int j = 0; j < curCodLen; ++j)
+                    {
+                        if (!double.TryParse(coordinates_str_list[j], out res![i, j]))
+                        {
+                            ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2locationList.convert_fail", coordinates_str_list[j]));
+                            return null;
+                        }
+                    }
+                }
+                else
+                {
+                    ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2locationList.format_err", locationStrList[i]));
+                    return null;
+                }
+            }
+            return res;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]

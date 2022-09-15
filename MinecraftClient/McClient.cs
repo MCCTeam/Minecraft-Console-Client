@@ -1278,6 +1278,15 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Use the item currently in the player's left hand
+        /// </summary>
+        /// <returns>TRUE if the item was successfully used</returns>
+        public bool UseItemOnLeftHand()
+        {
+            return InvokeOnMainThread(() => handler.SendUseItem(1, this.sequenceId));
+        }
+
+        /// <summary>
         /// Try to merge a slot
         /// </summary>
         /// <param name="inventory">The container where the item is located</param>

@@ -602,7 +602,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         bool lastVerifyResult = player.IsMessageChainLegal();
                                         verifyResult = player.VerifyMessageHead(ref precedingSignature, ref headerSignature, ref bodyDigest);
                                         if (lastVerifyResult && !verifyResult)
-                                            log.Warn("Player " + player.Name + "'s message chain is broken!");
+                                            log.Warn(Translations.Get("chat.message_chain_broken", player.Name));
                                     }
                                 }
                             }

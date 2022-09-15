@@ -74,8 +74,7 @@ namespace MinecraftClient.Commands
 
                     Location goal = Movement.Move(handler.GetCurrentLocation(), direction);
 
-                    ChunkColumn? chunkColumn = handler.GetWorld().GetChunkColumn(goal);
-                    if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+                    if (!Movement.CheckChunkLoading(handler.GetWorld(), handler.GetCurrentLocation(), goal))
                         return Translations.Get("cmd.move.chunk_not_loaded", goal.X, goal.Y, goal.Z);
 
                     if (Movement.CanMove(handler.GetWorld(), handler.GetCurrentLocation(), direction))
@@ -98,8 +97,7 @@ namespace MinecraftClient.Commands
                         double z = args[2].StartsWith('~') ? current.Z + (args[2].Length > 1 ? double.Parse(args[2][1..]) : 0) : double.Parse(args[2]);
                         Location goal = new(x, y, z);
 
-                        ChunkColumn? chunkColumn = handler.GetWorld().GetChunkColumn(goal);
-                        if (chunkColumn == null || chunkColumn.FullyLoaded == false)
+                        if (!Movement.CheckChunkLoading(handler.GetWorld(), current, goal))
                             return Translations.Get("cmd.move.chunk_not_loaded", x, y, z);
 
                         if (takeRisk || Movement.PlayerFitsHere(handler.GetWorld(), goal))
