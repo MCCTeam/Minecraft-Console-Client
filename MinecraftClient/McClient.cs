@@ -195,6 +195,7 @@ namespace MinecraftClient
                     if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
                     if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
                     if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
+                    if (Settings.FollowPlayer_Enabled) { BotLoad(new FollowPlayer(Settings.FollowPlayer_UpdateLimit, Settings.FollowPlayer_UpdateLimit)); }
 
                     //Add your ChatBot here by uncommenting and adapting
                     //BotLoad(new ChatBots.YourBot());
@@ -316,7 +317,7 @@ namespace MinecraftClient
                 {
                     if (e is not ThreadAbortException)
                         Log.Warn("Update: Got error from " + bot.ToString() + ": " + e.ToString());
-                    else 
+                    else
                         throw; //ThreadAbortException should not be caught
                 }
             }
@@ -1667,8 +1668,8 @@ namespace MinecraftClient
                                         upper2backpack = true;
                                         lowerStartSlot = 1;
                                     }
-                                    else if (item != null && item.Count == 1 && (item.Type == ItemType.NetheriteIngot || 
-                                        item.Type == ItemType.Emerald || item.Type == ItemType.Diamond || item.Type == ItemType.GoldIngot || 
+                                    else if (item != null && item.Count == 1 && (item.Type == ItemType.NetheriteIngot ||
+                                        item.Type == ItemType.Emerald || item.Type == ItemType.Diamond || item.Type == ItemType.GoldIngot ||
                                         item.Type == ItemType.IronIngot) && !inventory.Items.ContainsKey(0))
                                     {
                                         lower2upper = true;
