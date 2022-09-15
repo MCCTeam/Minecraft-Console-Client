@@ -1470,7 +1470,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (handler.GetEntityHandlingEnabled())
                             {
                                 int EntityID = dataTypes.ReadNextVarInt(packetData);
-                                Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
+                                Dictionary<int, object?> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
 
                                 int healthField; // See https://wiki.vg/Entity_metadata#Living_Entity
                                 if (protocolVersion > MC_1_19_2_Version)
@@ -1484,8 +1484,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 else
                                     throw new NotImplementedException(Translations.Get("exception.palette.healthfield"));
 
-                                if (metadata.ContainsKey(healthField) && metadata[healthField] != null && metadata[healthField].GetType() == typeof(float))
-                                    handler.OnEntityHealth(EntityID, (float)metadata[healthField]);
+                                if (metadata.TryGetValue(healthField, out object? healthObj) && healthObj != null && healthObj.GetType() == typeof(float))
+                                    handler.OnEntityHealth(EntityID, (float)healthObj);
+
                                 handler.OnEntityMetadata(EntityID, metadata);
                             }
                             break;
