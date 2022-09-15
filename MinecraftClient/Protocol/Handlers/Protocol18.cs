@@ -608,11 +608,12 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             break;
                         case PacketTypesIn.Respawn:
+                            string? dimensionTypeNameRespawn = null;
                             Dictionary<string, object>? dimensionTypeRespawn = null;
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 if (protocolVersion >= MC_1_19_Version)
-                                    dataTypes.ReadNextString(packetData);     // Dimension Type: Identifier
+                                    dimensionTypeNameRespawn = dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
                                 else if (protocolVersion >= MC_1_16_2_Version)
                                     dimensionTypeRespawn = dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
@@ -629,9 +630,15 @@ namespace MinecraftClient.Protocol.Handlers
                                 string dimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
                                 if (handler.GetTerrainEnabled())
                                 {
-                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion < MC_1_19_Version)
+                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion <= MC_1_18_2_Version)
+                                    {
                                         World.StoreOneDimension(dimensionName, dimensionTypeRespawn!);
-                                    World.SetDimension(dimensionName);
+                                        World.SetDimension(dimensionName);
+                                    }
+                                    else if (protocolVersion >= MC_1_19_Version)
+                                    {
+                                        World.SetDimension(dimensionTypeNameRespawn!);
+                                    }
                                 }
                             }
 
