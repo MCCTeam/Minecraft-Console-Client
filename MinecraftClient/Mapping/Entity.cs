@@ -91,7 +91,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Entity metadata
         /// </summary>
-        public Dictionary<int, object> Metadata;
+        public Dictionary<int, object?> Metadata;
 
         /// <summary>
         /// Entity equipment
