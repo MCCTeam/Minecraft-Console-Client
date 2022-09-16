@@ -318,7 +318,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="EntityID">Entity ID</param>
         /// <param name="metadata">Entity metadata</param>
-        void OnEntityMetadata(int EntityID, Dictionary<int, object> metadata);
+        void OnEntityMetadata(int EntityID, Dictionary<int, object?> metadata);
 
         /// <summary>
         /// Called when and explosion occurs on the server

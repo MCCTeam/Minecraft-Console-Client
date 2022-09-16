@@ -580,9 +580,9 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        public Dictionary<int, object> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette)
+        public Dictionary<int, object?> ReadNextMetadata(Queue<byte> cache, ItemPalette itemPalette)
         {
-            Dictionary<int, object> data = new Dictionary<int, object>();
+            Dictionary<int, object?> data = new();
             byte key = ReadNextByte(cache);
             while (key != 0xff)
             {
@@ -600,7 +600,7 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                 }
                 // Value's data type is depended on Type
-                object value = null;
+                object? value = null;
 
                 // This is backward compatible since new type is appended to the end
                 // Version upgrade note
@@ -625,9 +625,7 @@ namespace MinecraftClient.Protocol.Handlers
                         break;
                     case 5: // Optional Chat
                         if (ReadNextBool(cache))
-                        {
                             value = ReadNextString(cache);
-                        }
                         break;
                     case 6: // Slot
                         value = ReadNextItemSlot(cache, itemPalette);
@@ -636,11 +634,12 @@ namespace MinecraftClient.Protocol.Handlers
                         value = ReadNextBool(cache);
                         break;
                     case 8: // Rotation (3x floats)
-                        List<float> t = new List<float>();
-                        t.Add(ReadNextFloat(cache));
-                        t.Add(ReadNextFloat(cache));
-                        t.Add(ReadNextFloat(cache));
-                        value = t;
+                        value = new List<float>
+                        {
+                            ReadNextFloat(cache),
+                            ReadNextFloat(cache),
+                            ReadNextFloat(cache)
+                        };
                         break;
                     case 9: // Position
                         value = ReadNextLocation(cache);
@@ -689,11 +688,12 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case 16: // Villager Data (3x VarInt)
-                        List<int> d = new List<int>();
-                        d.Add(ReadNextVarInt(cache));
-                        d.Add(ReadNextVarInt(cache));
-                        d.Add(ReadNextVarInt(cache));
-                        value = d;
+                        value = new List<int>
+                        {
+                            ReadNextVarInt(cache),
+                            ReadNextVarInt(cache),
+                            ReadNextVarInt(cache)
+                        };
                         break;
                     case 17: // Optional VarInt
                         if (ReadNextBool(cache))
@@ -702,6 +702,21 @@ namespace MinecraftClient.Protocol.Handlers
                         }
                         break;
                     case 18: // Pose
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case 19: // Cat Variant
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case 20: // Frog Varint
+                        value = ReadNextVarInt(cache);
+                        break;
+                    case 21: // GlobalPos at 1.19.2+; Painting Variant at 1.19-
+                        if (protocolversion <= Protocol18Handler.MC_1_19_Version)
+                            value = ReadNextVarInt(cache);
+                        else
+                            value = null; // Dimension and blockPos, currently not in use
+                        break;
+                    case 22: // Painting Variant
                         value = ReadNextVarInt(cache);
                         break;
                     default:

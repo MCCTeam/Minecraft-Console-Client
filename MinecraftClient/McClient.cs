@@ -3135,31 +3135,32 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="entityID">Entity ID</param>
         /// <param name="metadata">The metadata of the entity</param>
-        public void OnEntityMetadata(int entityID, Dictionary<int, object> metadata)
+        public void OnEntityMetadata(int entityID, Dictionary<int, object?> metadata)
         {
             if (entities.ContainsKey(entityID))
             {
                 Entity entity = entities[entityID];
                 entity.Metadata = metadata;
-                if (entity.Type.ContainsItem() && metadata.ContainsKey(7) && metadata[7] != null && metadata[7].GetType() == typeof(Item))
+                if (entity.Type.ContainsItem() && metadata.TryGetValue(7, out object? itemObj) && itemObj != null && itemObj.GetType() == typeof(Item))
                 {
-                    Item item = (Item)metadata[7];
+                    Item item = (Item)itemObj;
                     if (item == null)
                         entity.Item = new Item(ItemType.Air, 0, null);
                     else entity.Item = item;
                 }
-                if (metadata.ContainsKey(6) && metadata[6] != null && metadata[6].GetType() == typeof(Int32))
+                if (metadata.TryGetValue(6, out object? poseObj) && poseObj != null && poseObj.GetType() == typeof(Int32))
                 {
-                    entity.Pose = (EntityPose)metadata[6];
+                    entity.Pose = (EntityPose)poseObj;
                 }
-                if (metadata.ContainsKey(2) && metadata[2] != null && metadata[2].GetType() == typeof(string))
+                if (metadata.TryGetValue(2, out object? nameObj) && nameObj != null && nameObj.GetType() == typeof(string))
                 {
-                    entity.CustomNameJson = metadata[2].ToString();
-                    entity.CustomName = ChatParser.ParseText(metadata[2].ToString());
+                    string name = nameObj.ToString()!;
+                    entity.CustomNameJson = name;
+                    entity.CustomName = ChatParser.ParseText(name);
                 }
-                if (metadata.ContainsKey(3) && metadata[3] != null && metadata[3].GetType() == typeof(bool))
+                if (metadata.TryGetValue(3, out object? nameVisableObj) && nameVisableObj != null && nameVisableObj.GetType() == typeof(bool))
                 {
-                    entity.IsCustomNameVisible = bool.Parse(metadata[3].ToString());
+                    entity.IsCustomNameVisible = bool.Parse(nameVisableObj.ToString()!);
                 }
                 DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
             }
