@@ -381,11 +381,12 @@ namespace MinecraftClient.Protocol.Handlers
                             //   String identifier: 1.16 and 1.16.1
                             //   varInt: [1.9.1 to 1.15.2]
                             //   byte: below 1.9.1
+                            string? dimensionTypeName = null;
                             Dictionary<string, object>? dimensionType = null;
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 if (protocolVersion >= MC_1_19_Version)
-                                    dataTypes.ReadNextString(packetData);     // Dimension Type: Identifier
+                                    dimensionTypeName = dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
                                 else if (protocolVersion >= MC_1_16_2_Version)
                                     dimensionType = dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
@@ -405,9 +406,15 @@ namespace MinecraftClient.Protocol.Handlers
                                 string dimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
                                 if (handler.GetTerrainEnabled())
                                 {
-                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion < MC_1_19_Version)
+                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion <= MC_1_18_2_Version)
+                                    {
                                         World.StoreOneDimension(dimensionName, dimensionType!);
-                                    World.SetDimension(dimensionName);
+                                        World.SetDimension(dimensionName);
+                                    }
+                                    else if (protocolVersion >= MC_1_19_Version)
+                                    {
+                                        World.SetDimension(dimensionTypeName!);
+                                    }
                                 }
                             }
 
@@ -601,11 +608,12 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             break;
                         case PacketTypesIn.Respawn:
+                            string? dimensionTypeNameRespawn = null;
                             Dictionary<string, object>? dimensionTypeRespawn = null;
                             if (protocolVersion >= MC_1_16_Version)
                             {
                                 if (protocolVersion >= MC_1_19_Version)
-                                    dataTypes.ReadNextString(packetData);     // Dimension Type: Identifier
+                                    dimensionTypeNameRespawn = dataTypes.ReadNextString(packetData); // Dimension Type: Identifier
                                 else if (protocolVersion >= MC_1_16_2_Version)
                                     dimensionTypeRespawn = dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
@@ -622,9 +630,15 @@ namespace MinecraftClient.Protocol.Handlers
                                 string dimensionName = dataTypes.ReadNextString(packetData); // Dimension Name (World Name) - 1.16 and above
                                 if (handler.GetTerrainEnabled())
                                 {
-                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion < MC_1_19_Version)
+                                    if (protocolVersion >= MC_1_16_2_Version && protocolVersion <= MC_1_18_2_Version)
+                                    {
                                         World.StoreOneDimension(dimensionName, dimensionTypeRespawn!);
-                                    World.SetDimension(dimensionName);
+                                        World.SetDimension(dimensionName);
+                                    }
+                                    else if (protocolVersion >= MC_1_19_Version)
+                                    {
+                                        World.SetDimension(dimensionTypeNameRespawn!);
+                                    }
                                 }
                             }
 
@@ -1456,7 +1470,7 @@ namespace MinecraftClient.Protocol.Handlers
                             if (handler.GetEntityHandlingEnabled())
                             {
                                 int EntityID = dataTypes.ReadNextVarInt(packetData);
-                                Dictionary<int, object> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
+                                Dictionary<int, object?> metadata = dataTypes.ReadNextMetadata(packetData, itemPalette);
 
                                 int healthField; // See https://wiki.vg/Entity_metadata#Living_Entity
                                 if (protocolVersion > MC_1_19_2_Version)
@@ -1470,8 +1484,9 @@ namespace MinecraftClient.Protocol.Handlers
                                 else
                                     throw new NotImplementedException(Translations.Get("exception.palette.healthfield"));
 
-                                if (metadata.ContainsKey(healthField) && metadata[healthField] != null && metadata[healthField].GetType() == typeof(float))
-                                    handler.OnEntityHealth(EntityID, (float)metadata[healthField]);
+                                if (metadata.TryGetValue(healthField, out object? healthObj) && healthObj != null && healthObj.GetType() == typeof(float))
+                                    handler.OnEntityHealth(EntityID, (float)healthObj);
+
                                 handler.OnEntityMetadata(EntityID, metadata);
                             }
                             break;
