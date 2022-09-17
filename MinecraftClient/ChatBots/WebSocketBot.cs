@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
@@ -871,27 +868,12 @@ namespace MinecraftClient.ChatBots
 
         public override void OnBlockBreakAnimation(Entity entity, Location location, byte stage)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"entity\": " + EntityToJson(entity) + ",");
-            json.Append("\"location\": " + LocationToJson(location) + ",");
-            json.Append("\"stage\": " + stage);
-            json.Append("}");
-
-            SendEvent("OnBlockBreakAnimation", json.ToString());
+            SendEvent("OnBlockBreakAnimation", new { entity, location, stage });
         }
 
         public override void OnEntityAnimation(Entity entity, byte animation)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"entity\": " + EntityToJson(entity) + ",");
-            json.Append("\"animation\": " + animation);
-            json.Append("}");
-
-            SendEvent("OnEntityAnimation", json.ToString());
+            SendEvent("OnEntityAnimation", new { entity, animation });
         }
 
         public override void GetText(string text)
@@ -900,11 +882,11 @@ namespace MinecraftClient.ChatBots
             string username = "";
 
             if (IsPrivateMessage(text, ref message, ref username))
-                SendEvent("OnChatPrivate", "{\"sender\": \"" + username + "\", \"message\": \"" + message + "\", \"rawText\": \"" + text + "\"}");
+                SendEvent("OnChatPrivate", new { sender = username, message, rawText = text });
             else if (IsChatMessage(text, ref message, ref username))
-                SendEvent("OnChatPublic", "{\"sender\": \"" + username + "\", \"message\": \"" + message + "\", \"rawText\": \"" + text + "\"}");
+                SendEvent("OnChatPublic", new { sender = username, message, rawText = text });
             else if (IsTeleportRequest(text, ref username))
-                SendEvent("OnTeleportRequest", "{\"sender\": \"" + username + "\", \"rawText\": \"" + text + "\"}");
+                SendEvent("OnTeleportRequest", new { sender = username, rawText = text });
         }
 
         public override void GetText(string text, string? json)
@@ -935,253 +917,133 @@ namespace MinecraftClient.ChatBots
                     break;
             }
 
-            SendEvent("OnDisconnect", "{\"reason\": \"" + reasonString + "\", \"message\": \"" + message + "\"}");
+            SendEvent("OnDisconnect", new { reason = reasonString, message });
             return false;
         }
 
         public override void OnPlayerProperty(Dictionary<string, double> prop)
         {
-            SendEvent("OnPlayerProperty", JsonConvert.SerializeObject(prop));
+            SendEvent("OnPlayerProperty", prop);
         }
 
         public override void OnServerTpsUpdate(Double tps)
         {
-            SendEvent("OnServerTpsUpdate", "{\"tps\": " + Math.Round(tps) + "}");
+            SendEvent("OnServerTpsUpdate", new { tps });
         }
 
         public override void OnTimeUpdate(long WorldAge, long TimeOfDay)
         {
-            SendEvent("OnTimeUpdate", "{\"worldAge\": " + WorldAge + ", \"timeOfDay\": " + TimeOfDay + "}");
+            SendEvent("OnTimeUpdate", new { worldAge = WorldAge, timeOfDay = TimeOfDay });
         }
 
         public override void OnEntityMove(Entity entity)
         {
-            SendEvent("OnEntityMove", EntityToJson(entity));
+            SendEvent("OnEntityMove", entity);
         }
 
         public override void OnInternalCommand(string commandName, string commandParams, string Result)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"command\": \"" + commandName + "\",");
-            json.Append("\"parameters\": \"" + commandParams + "\",");
-            json.Append("\"result\": \"" + Result.Replace("\"", "'") + "\"");
-            json.Append("}");
-
-            SendEvent("OnInternalCommand", json.ToString());
+            SendEvent("OnInternalCommand", new { command = commandName, parameters = commandParams, result = Result.Replace("\"", "'") });
         }
 
         public override void OnEntitySpawn(Entity entity)
         {
-            SendEvent("OnEntitySpawn", EntityToJson(entity));
+            SendEvent("OnEntitySpawn", entity);
         }
 
         public override void OnEntityDespawn(Entity entity)
         {
-            SendEvent("OnEntityDespawn", EntityToJson(entity));
+            SendEvent("OnEntityDespawn", entity);
         }
 
         public override void OnHeldItemChange(byte slot)
         {
-            SendEvent("OnHeldItemChange", "{\"itemSlot\": " + slot + "}");
+            SendEvent("OnHeldItemChange", new { itemSlot = slot });
         }
 
         public override void OnHealthUpdate(float health, int food)
         {
-            SendEvent("OnHealthUpdate", "{\"health\": " + health + ", \"food\": " + food + "}");
+            SendEvent("OnHealthUpdate", new { health, food });
         }
 
         public override void OnExplosion(Location explode, float strength, int recordcount)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"location\": " + LocationToJson(explode) + ",");
-            json.Append("\"strength\": " + strength + ",");
-            json.Append("\"recordCount\": " + recordcount);
-            json.Append("}");
-
-            SendEvent("OnExplosion", json.ToString());
+            SendEvent("OnExplosion", new { location = explode, strength, recordCount = recordcount });
         }
 
         public override void OnSetExperience(float Experiencebar, int Level, int TotalExperience)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"experienceBar\": " + Math.Floor(Experiencebar) + ",");
-            json.Append("\"level\": " + Level + ",");
-            json.Append("\"totalExperience\": " + TotalExperience);
-            json.Append("}");
-
-            SendEvent("OnSetExperience", json.ToString());
+            SendEvent("OnSetExperience", new { experienceBar = Experiencebar, level = Level, totalExperience = TotalExperience });
         }
 
         public override void OnGamemodeUpdate(string playername, Guid uuid, int gamemode)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"playerName\": \"" + playername + "\",");
-            json.Append("\"uuid\": \"" + uuid + "\",");
-            json.Append("\"gameMode\": \"" + GameModeString(gamemode) + "\"");
-            json.Append("}");
-
-            SendEvent("OnGamemodeUpdate", json.ToString());
+            SendEvent("OnGamemodeUpdate", new { playerName = playername, uuid, gameMode = GameModeString(gamemode) });
         }
 
         public override void OnLatencyUpdate(string playername, Guid uuid, int latency)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"playerName\": \"" + playername + "\",");
-            json.Append("\"uuid\": \"" + uuid + "\",");
-            json.Append("\"latency\": " + latency);
-            json.Append("}");
-
-            SendEvent("OnLatencyUpdate", json.ToString());
+            SendEvent("OnLatencyUpdate", new { playerName = playername, uuid, latency });
         }
 
         public override void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"mapId\": " + mapid + ",");
-            json.Append("\"trackingPosition\": " + trackingposition + ",");
-            json.Append("\"locked\": " + locked + ",");
-            json.Append("\"iconCount\": " + iconcount);
-            json.Append("}");
-
-            SendEvent("OnMapData", json.ToString());
+            SendEvent("OnMapData", new { mapId = mapid, trackingPosition = trackingposition, locked, iconCount = iconcount });
         }
 
         public override void OnTradeList(int windowID, List<VillagerTrade> trades, VillagerInfo villagerInfo)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"windowId\": " + windowID + ",");
-            json.Append("\"trades\": " + JsonConvert.SerializeObject(trades) + ",");
-            json.Append("\"villagerInfo\": " + JsonConvert.SerializeObject(villagerInfo) + "");
-            json.Append("}");
-
-            SendEvent("OnTradeList", json.ToString());
+            SendEvent("OnTradeList", new { windowId = windowID, trades, villagerInfo });
         }
 
         public override void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json_)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"action\": " + action + ",");
-            json.Append("\"titleText\": \"" + titletext + "\",");
-            json.Append("\"subtitleText\": \"" + subtitletext + "\",");
-            json.Append("\"actionBarText\": \"" + actionbartext + "\",");
-            json.Append("\"fadeIn\": " + fadein + ",");
-            json.Append("\"stay\": " + stay + ",");
-            json.Append("\"rawJson\": " + Json.EscapeString(json_));
-            json.Append("}");
-
-            SendEvent("OnTitle", json.ToString());
+            SendEvent("OnTitle", new { action, titleText = titletext, subtitleText = subtitletext, actionBarText = actionbartext, fadeIn = fadein, stay, rawJson = json_ });
         }
 
         public override void OnEntityEquipment(Entity entity, int slot, Item item)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"entity\": " + EntityToJson(entity) + ",");
-            json.Append("\"slot\": " + slot + ",");
-            json.Append("\"item\": " + ItemToJson(item));
-            json.Append("}");
-
-            SendEvent("OnEntityEquipment", json.ToString());
+            SendEvent("OnEntityEquipment", new { entity, slot, item });
         }
 
         public override void OnEntityEffect(Entity entity, Effects effect, int amplifier, int duration, byte flags)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"entity\": " + EntityToJson(entity) + ",");
-            json.Append("\"effect\": \"" + effect.ToString() + "\",");
-            json.Append("\"amplifier\": " + amplifier + ",");
-            json.Append("\"duration\": " + duration + ",");
-            json.Append("\"flags\": " + flags);
-            json.Append("}");
-
-            SendEvent("OnEntityEffect", json.ToString());
+            SendEvent("OnEntityEffect", new { entity, effect, amplifier, duration, flags });
         }
 
         public override void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type, string json_)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"objectiveName\": \"" + objectivename + "\",");
-            json.Append("\"mode\": " + mode + ",");
-            json.Append("\"objectiveValue\": \"" + objectivevalue + "\",");
-            json.Append("\"type\": " + type + ",");
-            json.Append("\"rawJson\": " + json_);
-            json.Append("}");
-
-            SendEvent("OnScoreboardObjective", json.ToString());
+            SendEvent("OnScoreboardObjective", new { objectiveName = objectivename, mode, objectiveValue = objectivevalue, type, rawJson = json_ });
         }
 
         public override void OnUpdateScore(string entityname, int action, string objectivename, int value)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"entityName\": \"" + entityname + "\",");
-            json.Append("\"action\": " + action + ",");
-            json.Append("\"objectiveName\": \"" + objectivename + "\",");
-            json.Append("\"type\": " + value);
-            json.Append("}");
-
-            SendEvent("OnUpdateScore", json.ToString());
+            SendEvent("OnUpdateScore", new { entityName = entityname, action, objectiveName = objectivename, type = value });
         }
 
         public override void OnInventoryUpdate(int inventoryId)
         {
-            SendEvent("OnInventoryUpdate", "{\"inventoryId\": " + inventoryId + "}");
+            SendEvent("OnInventoryUpdate", new { inventoryId });
         }
 
         public override void OnInventoryOpen(int inventoryId)
         {
-            SendEvent("OnInventoryOpen", "{\"inventoryId\": " + inventoryId + "}");
+            SendEvent("OnInventoryOpen", new { inventoryId });
         }
 
         public override void OnInventoryClose(int inventoryId)
         {
-            SendEvent("OnInventoryClose", "{\"inventoryId\": " + inventoryId + "}");
+            SendEvent("OnInventoryClose", new { inventoryId });
         }
 
         public override void OnPlayerJoin(Guid uuid, string name)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"uuid\": \"" + uuid + "\",");
-            json.Append("\"name\": \"" + name + "\"");
-            json.Append("}");
-
-            SendEvent("OnPlayerJoin", json.ToString());
+            SendEvent("OnPlayerJoin", new { uuid, name });
         }
 
         public override void OnPlayerLeave(Guid uuid, string? name)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"uuid\": \"" + uuid + "\",");
-            json.Append("\"name\": \"" + (name == null ? "null" : name) + "\"");
-            json.Append("}");
-
-            SendEvent("OnPlayerLeave", json.ToString());
+            SendEvent("OnPlayerLeave", new { uuid, name = (name == null ? "null" : name) });
         }
 
         public override void OnDeath()
@@ -1196,50 +1058,34 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityHealth(Entity entity, float health)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"entity\": " + EntityToJson(entity) + ",");
-            json.Append("\"health\": " + JsonConvert.SerializeObject(health));
-            json.Append("}");
-
-            SendEvent("OnEntityHealth", json.ToString());
+            SendEvent("OnEntityHealth", new { entity, health });
         }
 
         public override void OnEntityMetadata(Entity entity, Dictionary<int, object> metadata)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"entity\": " + EntityToJson(entity) + ",");
-            json.Append("\"metadata\": " + JsonConvert.SerializeObject(metadata));
-            json.Append("}");
-
-            SendEvent("OnEntityMetadata", json.ToString());
+            SendEvent("OnEntityMetadata", new { entity, metadata });
         }
 
         public override void OnPlayerStatus(byte statusId)
         {
-            SendEvent("OnPlayerStatus", "{\"statusId\": " + statusId + "}");
+            SendEvent("OnPlayerStatus", new { statusId });
         }
 
         public override void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
         {
-            StringBuilder json = new StringBuilder();
-
-            json.Append("{");
-            json.Append("\"packetId\": " + packetID + ",");
-            json.Append("\"isLogin\": " + isLogin + ",");
-            json.Append("\"isInbound\": " + isInbound + ",");
-            json.Append("\"packetData\": " + JsonConvert.SerializeObject(packetData));
-            json.Append("}");
-
-            SendEvent("OnNetworkPacket", json.ToString());
+            SendEvent("OnNetworkPacket", new { packetId = packetID, isLogin, isInbound, packetData });
         }
 
         // ==========================================================================================
         // Helper methods
         // ==========================================================================================
+
+        private void SendEvent(string type, object data, bool overrideAuth = false)
+        {
+            foreach (KeyValuePair<string, WsServer.WsBehavior> pair in _sessions!)
+                SendSessionEvent(pair.Value, type, JsonConvert.SerializeObject(data), overrideAuth);
+        }
+
         private void SendEvent(string type, string data, bool overrideAuth = false)
         {
             foreach (KeyValuePair<string, WsServer.WsBehavior> pair in _sessions!)
