@@ -145,7 +145,7 @@ namespace MinecraftClient
         /// <param name="text">Text from the server</param>
         /// <param name="json">Raw JSON from the server. This parameter will be NULL on MC 1.5 or lower!</param>
         public virtual void GetText(string text, string? json) { }
-        
+
         /// <summary>
         /// Is called when the client has been disconnected fom the server
         /// </summary>
@@ -245,7 +245,7 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="gamemode">New Game Mode (0: Survival, 1: Creative, 2: Adventure, 3: Spectator).</param>
         public virtual void OnGamemodeUpdate(string playername, Guid uuid, int gamemode) { }
-        
+
         /// <summary>
         /// Called when the Latency has been updated for a player
         /// </summary>
@@ -253,7 +253,7 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="latency">Latency.</param>
         public virtual void OnLatencyUpdate(string playername, Guid uuid, int latency) { }
-        
+
         /// <summary>
         /// Called when the Latency has been updated for a player
         /// </summary>
@@ -262,16 +262,22 @@ namespace MinecraftClient
         /// <param name="uuid">Player UUID</param>
         /// <param name="latency">Latency.</param>
         public virtual void OnLatencyUpdate(Entity entity, string playername, Guid uuid, int latency) { }
-        
+
         /// <summary>
-        /// Called when a map was updated
+        /// Called when an update of the map is sent by the server, take a look at https://wiki.vg/Protocol#Map_Data for more info on the fields
+        /// Map format and colors: https://minecraft.fandom.com/wiki/Map_item_format
         /// </summary>
-        /// <param name="mapid"></param>
-        /// <param name="scale"></param>
-        /// <param name="trackingposition"></param>
-        /// <param name="locked"></param>
-        /// <param name="iconcount"></param>
-        public virtual void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount) { }
+        /// <param name="mapid">Map ID of the map being modified</param>
+        /// <param name="scale">A scale of the Map, from 0 for a fully zoomed-in map (1 block per pixel) to 4 for a fully zoomed-out map (16 blocks per pixel)</param>
+        /// <param name="trackingposition">Specifies whether player and item frame icons are shown </param>
+        /// <param name="locked">True if the map has been locked in a cartography table </param>
+        /// <param name="icons">A list of MapIcon objects of map icons, send only if trackingPosition is true</param>
+        /// <param name="columnsUpdated">Numbs of columns that were updated (map width) (NOTE: If it is 0, the next fields are not used/are set to default values of 0 and null respectively)</param>
+        /// <param name="rowsUpdated">Map height</param>
+        /// <param name="mapCoulmnX">x offset of the westernmost column</param>
+        /// <param name="mapRowZ">z offset of the northernmost row</param>
+        /// <param name="colors">a byte array of colors on the map</param>
+        public virtual void OnMapData(int mapid, byte scale, bool trackingPosition, bool locked, List<MapIcon> icons, byte columnsUpdated, byte rowsUpdated, byte mapCoulmnX, byte mapRowZ, byte[]? colors) { }
 
         /// <summary>
         /// Called when tradeList is received from server
@@ -319,7 +325,7 @@ namespace MinecraftClient
         /// <param name="objectivevalue">Only if mode is 0 or 2. The text to be displayed for the score</param>
         /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
         public virtual void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type, string json) { }
-        
+
         /// <summary>
         /// Called when a scoreboard updated
         /// </summary>
@@ -360,12 +366,12 @@ namespace MinecraftClient
         /// <param name="uuid">UUID of the player</param>
         /// <param name="name">Name of the player</param>
         public virtual void OnPlayerLeave(Guid uuid, string? name) { }
-        
+
         /// <summary>
         /// Called when the player deaths
         /// </summary>
         public virtual void OnDeath() { }
-        
+
         /// <summary>
         /// Called when the player respawns
         /// </summary>
@@ -451,14 +457,14 @@ namespace MinecraftClient
         /// </summary>
         public static string GetVerbatim(string text)
         {
-            if ( String.IsNullOrEmpty(text) )
+            if (String.IsNullOrEmpty(text))
                 return String.Empty;
 
             int idx = 0;
             var data = new char[text.Length];
 
-            for ( int i = 0; i < text.Length; i++ )
-                if ( text[i] != '§' )
+            for (int i = 0; i < text.Length; i++)
+                if (text[i] != '§')
                     data[idx++] = text[i];
                 else
                     i++;
@@ -478,7 +484,7 @@ namespace MinecraftClient
                 if (!((c >= 'a' && c <= 'z')
                         || (c >= 'A' && c <= 'Z')
                         || (c >= '0' && c <= '9')
-                        || c == '_') )
+                        || c == '_'))
                     return false;
 
             return true;
@@ -950,7 +956,7 @@ namespace MinecraftClient
                 return Handler.GetWorld();
             return null;
         }
-        
+
         /// <summary>
         /// Get all Entities
         /// </summary>
@@ -968,7 +974,7 @@ namespace MinecraftClient
         {
             return Handler.GetPlayersLatency();
         }
-        
+
         /// <summary>
         /// Get the current location of the player (Feet location)
         /// </summary>
@@ -1002,7 +1008,7 @@ namespace MinecraftClient
         {
             return Handler.ClientIsMoving();
         }
-        
+
         /// <summary>
         /// Look at the specified location
         /// </summary>
@@ -1086,7 +1092,7 @@ namespace MinecraftClient
         {
             return Handler.GetUsername();
         }
-        
+
         /// <summary>
         /// Return the Gamemode of the current account
         /// </summary>
@@ -1361,7 +1367,7 @@ namespace MinecraftClient
         {
             return Handler.GetCurrentSlot();
         }
-        
+
         /// <summary>
         /// Clean all inventory
         /// </summary>
@@ -1370,7 +1376,7 @@ namespace MinecraftClient
         {
             return Handler.ClearInventories();
         }
-        
+
         /// <summary>
         /// Update sign text
         /// </summary>
@@ -1410,7 +1416,7 @@ namespace MinecraftClient
         {
             return Handler.SpectateByUUID(UUID);
         }
-        
+
         /// <summary>
         /// Update command block
         /// </summary>
@@ -1456,7 +1462,7 @@ namespace MinecraftClient
         {
             return Handler.GetMaxChatMessageLength();
         }
-        
+
         /// <summary>
         /// Respawn player
         /// </summary>

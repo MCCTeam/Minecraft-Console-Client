@@ -112,7 +112,7 @@ namespace MinecraftClient.Protocol
         /// This method is called when the protocol handler receives a title
         /// </summary>
         void OnTitle(int action, string titletext, string subtitletext, string actionbartext, int fadein, int stay, int fadeout, string json);
-        
+
         /// <summary>
         /// Called when receiving a connection keep-alive from the server
         /// </summary>
@@ -216,7 +216,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         /// <param name="entity">Spawned entity</param>
         void OnSpawnEntity(Entity entity);
-        
+
         /// <summary>
         /// Called when an entity has spawned
         /// </summary>
@@ -224,7 +224,7 @@ namespace MinecraftClient.Protocol
         /// <param name="slot">Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)/param>
         /// <param name="item">Item/param>
         void OnEntityEquipment(int entityid, int slot, Item item);
-        
+
         /// <summary>
         /// Called when a player spawns or enters the client's render distance
         /// </summary>
@@ -312,7 +312,7 @@ namespace MinecraftClient.Protocol
         /// <param name="entityID">Entity ID</param>
         /// <param name="health">The health of the entity</param>
         void OnEntityHealth(int entityID, float health);
-        
+
         /// <summary>
         /// Called when entity metadata or metadata changed.
         /// </summary>
@@ -334,14 +334,14 @@ namespace MinecraftClient.Protocol
         /// <param name="uuid">Affected player's UUID</param>
         /// <param name="gamemode">New game mode</param>
         void OnGamemodeUpdate(Guid uuid, int gamemode);
-        
+
         /// <summary>
         /// Called when a player's latency has changed
         /// </summary>
         /// <param name="uuid">Affected player's UUID</param>
         /// <param name="latency">latency</param>
         void OnLatencyUpdate(Guid uuid, int latency);
-        
+
         /// <summary>
         /// Called when Experience bar is updated
         /// </summary>
@@ -356,17 +356,23 @@ namespace MinecraftClient.Protocol
         /// <remarks>Used for setting player slot after joining game</remarks>
         /// <param name="slot"></param>
         void OnHeldItemChange(byte slot);
-        
+
         /// <summary>
-        /// Called map data
+        /// Called when an update of the map is sent by the server, take a look at https://wiki.vg/Protocol#Map_Data for more info on the fields
+        /// Map format and colors: https://minecraft.fandom.com/wiki/Map_item_format
         /// </summary>
-        /// <param name="mapid"></param>
-        /// <param name="scale"></param>
-        /// <param name="trackingposition"></param>
-        /// <param name="locked"></param>
-        /// <param name="iconcount"></param>
-        void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount);
-        
+        /// <param name="mapid">Map ID of the map being modified</param>
+        /// <param name="scale">A scale of the Map, from 0 for a fully zoomed-in map (1 block per pixel) to 4 for a fully zoomed-out map (16 blocks per pixel)</param>
+        /// <param name="trackingposition">Specifies whether player and item frame icons are shown </param>
+        /// <param name="locked">True if the map has been locked in a cartography table </param>
+        /// <param name="icons">A list of MapIcon objects of map icons, send only if trackingPosition is true</param>
+        /// <param name="columnsUpdated">Numbs of columns that were updated (map width) (NOTE: If it is 0, the next fields are not used/are set to default values of 0 and null respectively)</param>
+        /// <param name="rowsUpdated">Map height</param>
+        /// <param name="mapCoulmnX">x offset of the westernmost column</param>
+        /// <param name="mapRowZ">z offset of the northernmost row</param>
+        /// <param name="colors">a byte array of colors on the map</param>
+        void OnMapData(int mapid, byte scale, bool trackingPosition, bool locked, List<MapIcon> icons, byte columnsUpdated, byte rowsUpdated, byte mapCoulmnX, byte mapRowZ, byte[]? colors);
+
         /// <summary>
         /// Called when the Player entity ID has been received from the server
         /// </summary>
@@ -393,7 +399,7 @@ namespace MinecraftClient.Protocol
         /// <param name="objectivevalue">Only if mode is 0 or 2. The text to be displayed for the score</param>
         /// <param name="type">Only if mode is 0 or 2. 0 = "integer", 1 = "hearts".</param>
         void OnScoreboardObjective(string objectivename, byte mode, string objectivevalue, int type);
-        
+
         /// <summary>
         /// Called when DisplayScoreboard
         /// </summary>
