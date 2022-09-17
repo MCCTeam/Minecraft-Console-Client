@@ -3063,16 +3063,22 @@ namespace MinecraftClient
         }
 
         /// <summary>
-        /// Called map data
+        /// Called when an update of the map is sent by the server, take a look at https://wiki.vg/Protocol#Map_Data for more info on the fields
+        /// Map format and colors: https://minecraft.fandom.com/wiki/Map_item_format
         /// </summary>
-        /// <param name="mapid"></param>
-        /// <param name="scale"></param>
-        /// <param name="trackingposition"></param>
-        /// <param name="locked"></param>
-        /// <param name="iconcount"></param>
-        public void OnMapData(int mapid, byte scale, bool trackingposition, bool locked, int iconcount)
+        /// <param name="mapid">Map ID of the map being modified</param>
+        /// <param name="scale">A scale of the Map, from 0 for a fully zoomed-in map (1 block per pixel) to 4 for a fully zoomed-out map (16 blocks per pixel)</param>
+        /// <param name="trackingposition">Specifies whether player and item frame icons are shown </param>
+        /// <param name="locked">True if the map has been locked in a cartography table </param>
+        /// <param name="icons">A list of MapIcon objects of map icons, send only if trackingPosition is true</param>
+        /// <param name="columnsUpdated">Numbs of columns that were updated (map width) (NOTE: If it is 0, the next fields are not used/are set to default values of 0 and null respectively)</param>
+        /// <param name="rowsUpdated">Map height</param>
+        /// <param name="mapCoulmnX">x offset of the westernmost column</param>
+        /// <param name="mapRowZ">z offset of the northernmost row</param>
+        /// <param name="colors">a byte array of colors on the map</param>
+        public void OnMapData(int mapid, byte scale, bool trackingPosition, bool locked, List<MapIcon> icons, byte columnsUpdated, byte rowsUpdated, byte mapCoulmnX, byte mapCoulmnZ, byte[]? colors)
         {
-            DispatchBotEvent(bot => bot.OnMapData(mapid, scale, trackingposition, locked, iconcount));
+            DispatchBotEvent(bot => bot.OnMapData(mapid, scale, trackingPosition, locked, icons, columnsUpdated, rowsUpdated, mapCoulmnX, mapCoulmnZ, colors));
         }
 
         /// <summary>

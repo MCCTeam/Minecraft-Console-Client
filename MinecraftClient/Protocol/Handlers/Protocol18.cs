@@ -156,7 +156,7 @@ namespace MinecraftClient.Protocol.Handlers
                 entityPalette = new EntityPalette114();
             else if (protocolVersion >= MC_1_13_Version)
                 entityPalette = new EntityPalette113();
-            else 
+            else
                 entityPalette = new EntityPalette112();
 
             // Item palette
@@ -173,7 +173,7 @@ namespace MinecraftClient.Protocol.Handlers
                 itemPalette = new ItemPalette1162();
             else if (protocolVersion >= MC_1_16_1_Version)
                 itemPalette = new ItemPalette1161();
-            else 
+            else
                 itemPalette = new ItemPalette115();
 
             // MessageType 
@@ -586,7 +586,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte[] bodyDigest = dataTypes.ReadNextByteArray(packetData);
 
                                 bool verifyResult;
-                                
+
                                 if (!isOnlineMode)
                                     verifyResult = false;
                                 else if (senderUUID == handler.GetUserUuid())
@@ -594,7 +594,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 else
                                 {
                                     PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
-                                    
+
                                     if (player == null || !player.IsMessageChainLegal())
                                         verifyResult = false;
                                     else
@@ -783,7 +783,7 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.MapData:
                             int mapid = dataTypes.ReadNextVarInt(packetData);
                             byte scale = dataTypes.ReadNextByte(packetData);
-                            bool trackingposition = protocolVersion >= MC_1_17_Version ? false : dataTypes.ReadNextBool(packetData);
+                            bool trackingPosition = protocolVersion >= MC_1_17_Version ? false : dataTypes.ReadNextBool(packetData);
                             bool locked = false;
                             if (protocolVersion >= MC_1_14_Version)
                             {
@@ -791,10 +791,48 @@ namespace MinecraftClient.Protocol.Handlers
                             }
                             if (protocolVersion >= MC_1_17_Version)
                             {
-                                trackingposition = dataTypes.ReadNextBool(packetData);
+                                trackingPosition = dataTypes.ReadNextBool(packetData);
                             }
-                            int iconcount = dataTypes.ReadNextVarInt(packetData);
-                            handler.OnMapData(mapid, scale, trackingposition, locked, iconcount);
+
+                            int iconcount = 0;
+                            List<MapIcon> icons = new();
+
+                            if (trackingPosition)
+                            {
+                                iconcount = dataTypes.ReadNextVarInt(packetData);
+
+                                for (int i = 0; i < iconcount; i++)
+                                {
+                                    MapIcon mapIcon = new();
+
+                                    mapIcon.Type = (MapIconType)dataTypes.ReadNextVarInt(packetData);
+                                    mapIcon.X = dataTypes.ReadNextByte(packetData);
+                                    mapIcon.Z = dataTypes.ReadNextByte(packetData);
+                                    mapIcon.Direction = dataTypes.ReadNextByte(packetData);
+                                    bool mapIconHasDisplayName = dataTypes.ReadNextBool(packetData);
+
+                                    if (mapIconHasDisplayName)
+                                        mapIcon.DisplayName = ChatParser.ParseText(dataTypes.ReadNextString(packetData));
+
+                                    icons.Add(mapIcon);
+                                }
+                            }
+
+                            byte columnsUpdated = dataTypes.ReadNextByte(packetData); // width
+                            byte rowsUpdated = 0; // height
+                            byte mapCoulmnX = 0;
+                            byte mapRowZ = 0;
+                            byte[]? colors = null;
+
+                            if (columnsUpdated > 0)
+                            {
+                                rowsUpdated = dataTypes.ReadNextByte(packetData); // height
+                                mapCoulmnX = dataTypes.ReadNextByte(packetData);
+                                mapRowZ = dataTypes.ReadNextByte(packetData);
+                                colors = dataTypes.ReadNextByteArray(packetData);
+                            }
+
+                            handler.OnMapData(mapid, scale, trackingPosition, locked, icons, columnsUpdated, rowsUpdated, mapCoulmnX, mapRowZ, colors);
                             break;
                         case PacketTypesIn.TradeList:
                             if ((protocolVersion >= MC_1_14_Version) && (handler.GetInventoryEnabled()))
@@ -1365,7 +1403,7 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 int entityid = dataTypes.ReadNextVarInt(packetData);
                                 Inventory.Effects effect = Effects.Speed;
-                                int effectId = protocolVersion >= MC_1_18_2_Version ? 
+                                int effectId = protocolVersion >= MC_1_18_2_Version ?
                                     dataTypes.ReadNextVarInt(packetData) : dataTypes.ReadNextByte(packetData);
                                 if (Enum.TryParse(effectId.ToString(), out effect))
                                 {
@@ -1657,7 +1695,8 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     netMain.Item2.Cancel();
                 }
-                if (netReader != null){
+                if (netReader != null)
+                {
                     netReader.Item2.Cancel();
                     socketWrapper.Disconnect();
                 }
@@ -2192,7 +2231,7 @@ namespace MinecraftClient.Protocol.Handlers
                 DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                 fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                List<Tuple<string, string>>? needSigned = 
+                List<Tuple<string, string>>? needSigned =
                     playerKeyPair != null ? CollectCommandArguments(command) : null; // List< Argument Name, Argument Value >
                 if (needSigned == null || needSigned!.Count == 0)
                 {
