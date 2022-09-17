@@ -156,7 +156,7 @@ namespace MinecraftClient.Protocol.Handlers
                 entityPalette = new EntityPalette114();
             else if (protocolVersion >= MC_1_13_Version)
                 entityPalette = new EntityPalette113();
-            else 
+            else
                 entityPalette = new EntityPalette112();
 
             // Item palette
@@ -173,7 +173,7 @@ namespace MinecraftClient.Protocol.Handlers
                 itemPalette = new ItemPalette1162();
             else if (protocolVersion >= MC_1_16_1_Version)
                 itemPalette = new ItemPalette1161();
-            else 
+            else
                 itemPalette = new ItemPalette115();
 
             // MessageType 
@@ -586,7 +586,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte[] bodyDigest = dataTypes.ReadNextByteArray(packetData);
 
                                 bool verifyResult;
-                                
+
                                 if (!isOnlineMode)
                                     verifyResult = false;
                                 else if (senderUUID == handler.GetUserUuid())
@@ -594,7 +594,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 else
                                 {
                                     PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
-                                    
+
                                     if (player == null || !player.IsMessageChainLegal())
                                         verifyResult = false;
                                     else
@@ -1365,7 +1365,7 @@ namespace MinecraftClient.Protocol.Handlers
                             {
                                 int entityid = dataTypes.ReadNextVarInt(packetData);
                                 Inventory.Effects effect = Effects.Speed;
-                                int effectId = protocolVersion >= MC_1_18_2_Version ? 
+                                int effectId = protocolVersion >= MC_1_18_2_Version ?
                                     dataTypes.ReadNextVarInt(packetData) : dataTypes.ReadNextByte(packetData);
                                 if (Enum.TryParse(effectId.ToString(), out effect))
                                 {
@@ -1540,16 +1540,20 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnSetExperience(experiencebar, level, totalexperience);
                             break;
                         case PacketTypesIn.Explosion:
-                            Location explosionLocation;
-                            if (protocolVersion >= MC_1_19_Version)
-                                explosionLocation = new(dataTypes.ReadNextDouble(packetData), dataTypes.ReadNextDouble(packetData), dataTypes.ReadNextDouble(packetData));
-                            else
-                                explosionLocation = new(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
+                            Location explosionLocation = new(dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData), dataTypes.ReadNextFloat(packetData));
+
                             float explosionStrength = dataTypes.ReadNextFloat(packetData);
                             int explosionBlockCount = protocolVersion >= MC_1_17_Version
                                 ? dataTypes.ReadNextVarInt(packetData)
                                 : dataTypes.ReadNextInt(packetData);
-                            // Ignoring additional fields (records, pushback)
+
+                            for (int i = 0; i < explosionBlockCount; i++)
+                                dataTypes.ReadData(3, packetData);
+
+                            float playerVelocityX = dataTypes.ReadNextFloat(packetData);
+                            float playerVelocityY = dataTypes.ReadNextFloat(packetData);
+                            float playerVelocityZ = dataTypes.ReadNextFloat(packetData);
+
                             handler.OnExplosion(explosionLocation, explosionStrength, explosionBlockCount);
                             break;
                         case PacketTypesIn.HeldItemChange:
@@ -1657,7 +1661,8 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     netMain.Item2.Cancel();
                 }
-                if (netReader != null){
+                if (netReader != null)
+                {
                     netReader.Item2.Cancel();
                     socketWrapper.Disconnect();
                 }
@@ -2192,7 +2197,7 @@ namespace MinecraftClient.Protocol.Handlers
                 DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                 fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                List<Tuple<string, string>>? needSigned = 
+                List<Tuple<string, string>>? needSigned =
                     playerKeyPair != null ? CollectCommandArguments(command) : null; // List< Argument Name, Argument Value >
                 if (needSigned == null || needSigned!.Count == 0)
                 {
