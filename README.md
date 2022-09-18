@@ -4,7 +4,7 @@
 
 # Minecraft Console Client (MCC)
 
-[Documentation](https://mccteam.github.io/docs/) | [Download](#download) | [Installation](https://mccteam.github.io/docs/guide/installation.html) | [Configuration](https://mccteam.github.io/docs/guide/configuration.html) | [Usage](https://mccteam.github.io/docs/guide/usage.html)
+[Documentation](https://mccteam.github.io/) | [Download](#download) | [Installation](https://mccteam.github.io/guide/installation.html) | [Configuration](https://mccteam.github.io/guide/configuration.html) | [Usage](https://mccteam.github.io/guide/usage.html)
 
 [![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 
@@ -21,10 +21,10 @@ Get development builds from the [Releases section](https://github.com/MCCTeam/Mi
 ## How to use 📚
 
 -   🌐 [Full Documentation](https://mccteam.github.io/)
--   📦 [Installation](https://mccteam.github.io/docs/guide/installation.html)
--   📖 [Usage](https://mccteam.github.io/docs/guide/usage.html)
--   ⚙️ [Configuration](https://mccteam.github.io/docs/guide/configuration.html)
--   🤖 [Chat Bots](https://mccteam.github.io/docs/guide/chat-bots.html)
+-   📦 [Installation](https://mccteam.github.io/guide/installation.html)
+-   📖 [Usage](https://mccteam.github.io/guide/usage.html)
+-   ⚙️ [Configuration](https://mccteam.github.io/guide/configuration.html)
+-   🤖 [Chat Bots](https://mccteam.github.io/guide/chat-bots.html)
 -   📝 [Sample configuration files](MinecraftClient/config/)
 
 ## Getting Help 🙋
@@ -53,7 +53,7 @@ For the names of the translation file, please see [this comment](https://github.
 
 ## Building from the source 🏗️
 
-This section has been moved to our new [Documentation website](https://mccteam.github.io/docs/guide/installation.html#building-from-the-source-code).
+This section has been moved to our new [Documentation website](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
 
 ## License ⚖️
 
