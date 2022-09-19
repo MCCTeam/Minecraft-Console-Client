@@ -571,7 +571,7 @@ namespace MinecraftClient
                     {
                         string response_msg = "";
                         string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
-                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg) && Settings.internalCmdChar == '/')
+                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg, Settings.GetVariables()) && Settings.internalCmdChar == '/')
                         {
                             SendText(text);
                         }
@@ -659,6 +659,7 @@ namespace MinecraftClient
             else if (cmds.ContainsKey(command_name))
             {
                 response_msg = cmds[command_name].Run(this, command, localVars);
+
                 foreach (ChatBot bot in bots.ToArray())
                 {
                     try
