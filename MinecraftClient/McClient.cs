@@ -2996,7 +2996,7 @@ namespace MinecraftClient
                 }
                 else
                 {
-                    Log.Info(Translations.Get("mcc.player_dead"));
+                    Log.Info(Translations.Get("mcc.player_dead", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
                 }
                 DispatchBotEvent(bot => bot.OnDeath());
             }
