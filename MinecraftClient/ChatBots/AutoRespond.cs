@@ -12,6 +12,7 @@ namespace MinecraftClient.ChatBots
     class AutoRespond : ChatBot
     {
         private string matchesFile;
+        private bool matchColors;
         private List<RespondRule> respondRules;
         private enum MessageType { Public, Private, Other };
 
@@ -19,9 +20,10 @@ namespace MinecraftClient.ChatBots
         /// Create a new AutoRespond bot
         /// </summary>
         /// <param name="matchesFile">INI File to load matches from</param>
-        public AutoRespond(string matchesFile)
+        public AutoRespond(string matchesFile, bool matchColors)
         {
             this.matchesFile = matchesFile;
+            this.matchColors = matchColors;
         }
 
         /// <summary>
@@ -262,7 +264,8 @@ namespace MinecraftClient.ChatBots
         public override void GetText(string text)
         {
             //Remove colour codes
-            text = GetVerbatim(text);
+            if (!this.matchColors)
+                text = GetVerbatim(text);
 
             //Get Message type
             string sender = "", message = "";

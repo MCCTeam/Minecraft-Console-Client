@@ -191,6 +191,7 @@ namespace MinecraftClient
         //Auto Respond
         public static bool AutoRespond_Enabled = false;
         public static string AutoRespond_Matches = "matches.ini";
+        public static bool AutoRespond_MatchColors = false;
 
         //Auto Attack
         public static bool AutoAttack_Enabled = false;
@@ -206,7 +207,7 @@ namespace MinecraftClient
         public static bool AutoFishing_Mainhand = true;
         public static bool AutoFishing_AutoStart = true;
         public static double AutoFishing_CastDelay = 0.4;
-        public static double AutoFishing_FishingDelay = 3.0; 
+        public static double AutoFishing_FishingDelay = 3.0;
         public static double AutoFishing_FishingTimeout = 300.0;
         public static double AutoFishing_DurabilityLimit = 2;
         public static bool AutoFishing_AutoRodSwitch = true;
@@ -697,6 +698,7 @@ namespace MinecraftClient
                     {
                         case "enabled": AutoRespond_Enabled = str2bool(argValue); return true;
                         case "matchesfile": AutoRespond_Matches = argValue; return true;
+                        case "matchcolors": AutoRespond_MatchColors = str2bool(argValue); return true;
                     }
                     break;
 
@@ -733,7 +735,7 @@ namespace MinecraftClient
                         case "fishing_delay": AutoFishing_FishingDelay = str2double(argValue); return true;
                         case "fishing_timeout": AutoFishing_FishingTimeout = str2double(argValue); return true;
                         case "durability_limit": AutoFishing_DurabilityLimit = str2int(argValue); return true;
-                        case "auto_rod_switch": AutoFishing_AutoRodSwitch = str2bool(argValue); return true; 
+                        case "auto_rod_switch": AutoFishing_AutoRodSwitch = str2bool(argValue); return true;
                         case "stationary_threshold": AutoFishing_StationaryThreshold = str2double(argValue); return true;
                         case "hook_threshold": AutoFishing_HookThreshold = str2double(argValue); return true;
                         case "log_fishing_bobber": AutoFishing_LogFishingBobber = str2bool(argValue); return true;
