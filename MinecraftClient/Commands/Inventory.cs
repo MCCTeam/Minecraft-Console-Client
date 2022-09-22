@@ -65,7 +65,7 @@ namespace MinecraftClient.Commands
                             else
                                 return Translations.Get("cmd.inventory.need_creative");
                         }
-                        else 
+                        else
                             return GetCmdDescTranslated();
                     }
                     else if (args[0].ToLower().StartsWith("p"))
@@ -81,6 +81,18 @@ namespace MinecraftClient.Commands
                             inventoryId = availableIds.Max(); // use foreground container
                         else
                             return Translations.Get("cmd.inventory.container_not_found");
+                    }
+                    else if (args[0].ToLower().StartsWith("list") || args[0].ToLower().StartsWith("l"))
+                    {
+                        Dictionary<int, Container> inventories = handler.GetInventories();
+                        List<int> availableIds = inventories.Keys.ToList();
+                        StringBuilder response = new();
+                        response.Append(Translations.Get("cmd.inventory.inventories_available") + ":\n");
+
+                        foreach (int id in availableIds)
+                            response.AppendLine(String.Format(" #{0} - {1}§8", id, inventories[id].Title));
+
+                        return response.ToString();
                     }
                     else if (args[0].ToLower() == "help")
                     {
@@ -195,7 +207,7 @@ namespace MinecraftClient.Commands
                     return response.ToString();
                 }
             }
-            else 
+            else
                 return Translations.Get("extra.inventory_required");
         }
 

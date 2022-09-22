@@ -28,6 +28,7 @@ namespace MinecraftClient.Inventory
         Loom,
         Merchant,
         ShulkerBox,
+        SmightingTable,
         Smoker,
         Cartography,
         Stonecutter,
