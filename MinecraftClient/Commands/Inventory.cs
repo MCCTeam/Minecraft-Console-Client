@@ -82,7 +82,7 @@ namespace MinecraftClient.Commands
                         else
                             return Translations.Get("cmd.inventory.container_not_found");
                     }
-                    else if (args[0].ToLower().StartsWith("list") || args[0].ToLower().StartsWith("l"))
+                    else if (args[0].ToLower().StartsWith("inventories") || args[0].ToLower().StartsWith("i"))
                     {
                         Dictionary<int, Container> inventories = handler.GetInventories();
                         List<int> availableIds = inventories.Keys.ToList();
@@ -240,6 +240,7 @@ namespace MinecraftClient.Commands
                 "drop" => Translations.Get("cmd.inventory.help.drop") + usageStr + "/inventory <player|container|<id>> drop <slot> [all]\nAll means drop full stack",
                 "creativegive" => Translations.Get("cmd.inventory.help.creativegive") + usageStr + "/inventory creativegive <slot> <itemtype> <amount>",
                 "creativedelete" => Translations.Get("cmd.inventory.help.creativedelete") + usageStr + "/inventory creativedelete <slot>",
+                "inventories" => Translations.Get("cmd.inventory.help.list") + usageStr + "/inventory <inventories/i> - Lists available inventories",
                 "help" => GetHelp(),
                 _ => Translations.Get("cmd.inventory.help.unknown") + GetAvailableActions(),
             };
