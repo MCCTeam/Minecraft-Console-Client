@@ -584,6 +584,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             Dictionary<int, object?> data = new();
             byte key = ReadNextByte(cache);
+
             while (key != 0xff)
             {
                 int type = ReadNextVarInt(cache);
@@ -599,6 +600,7 @@ namespace MinecraftClient.Protocol.Handlers
                         type += 1;
                     }
                 }
+
                 // Value's data type is depended on Type
                 object? value = null;
 
