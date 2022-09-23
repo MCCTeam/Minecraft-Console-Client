@@ -55,21 +55,21 @@ namespace MinecraftClient.Inventory
                 case ContainerType.Generic_9x6: return DefaultConfigResource.ContainerType_Generic_9x6;
                 case ContainerType.Generic_3x3: return DefaultConfigResource.ContainerType_Generic_3x3;
                 case ContainerType.Crafting: return DefaultConfigResource.ContainerType_Crafting;
-                case ContainerType.BlastFurnace: return null;
-                case ContainerType.Furnace: return null;
-                case ContainerType.Smoker: return null;
+                case ContainerType.BlastFurnace: return DefaultConfigResource.ContainerType_Furnace;
+                case ContainerType.Furnace: return DefaultConfigResource.ContainerType_Furnace;
+                case ContainerType.Smoker: return DefaultConfigResource.ContainerType_Furnace;
                 case ContainerType.Enchantment: return null;
                 case ContainerType.BrewingStand: return DefaultConfigResource.ContainerType_BrewingStand;
                 case ContainerType.Merchant: return null;
                 case ContainerType.Beacon: return null;
                 case ContainerType.Anvil: return null;
-                case ContainerType.Hopper: return null;
-                case ContainerType.ShulkerBox: return null;
+                case ContainerType.Hopper: return DefaultConfigResource.ContainerType_Hopper;
+                case ContainerType.ShulkerBox: return DefaultConfigResource.ContainerType_Generic_9x3;
                 case ContainerType.Loom: return null;
                 case ContainerType.Stonecutter: return null;
                 case ContainerType.Lectern: return null;
                 case ContainerType.Cartography: return null;
-                case ContainerType.Grindstone: return null;
+                case ContainerType.Grindstone: return DefaultConfigResource.ContainerType_Grindstone;
                 case ContainerType.Unknown: return null;
                 default: return null;
             }
