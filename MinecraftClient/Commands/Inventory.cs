@@ -112,7 +112,6 @@ namespace MinecraftClient.Commands
                         Dictionary<int, List<Item>> foundItems = new();
 
                         List<Container> availableInventories = inventories.Values.ToList();
-                        //availableInventories.Remove(availableInventories.Find(i => i.ID == 0)!);
 
                         availableInventories.ForEach(inventory =>
                         {
