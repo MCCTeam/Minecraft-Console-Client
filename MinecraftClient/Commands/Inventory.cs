@@ -87,10 +87,72 @@ namespace MinecraftClient.Commands
                         Dictionary<int, Container> inventories = handler.GetInventories();
                         List<int> availableIds = inventories.Keys.ToList();
                         StringBuilder response = new();
-                        response.Append(Translations.Get("cmd.inventory.inventories_available") + ":\n");
+                        response.AppendLine(Translations.Get("cmd.inventory.inventories_available"));
 
                         foreach (int id in availableIds)
                             response.AppendLine(String.Format(" #{0} - {1}§8", id, inventories[id].Title));
+
+                        return response.ToString();
+                    }
+                    else if (args[0].ToLower().StartsWith("search") || args[0].ToLower().StartsWith("s"))
+                    {
+                        if (args.Length < 2)
+                            return GetCmdDescTranslated();
+
+                        if (!Enum.TryParse(args[1], true, out ItemType parsedItemType))
+                            return GetCmdDescTranslated();
+
+                        bool shouldUseItemCount = args.Length >= 3;
+                        int itemCount = 0;
+
+                        if (shouldUseItemCount && !int.TryParse(args[2], out itemCount))
+                            return GetCmdDescTranslated();
+
+                        Dictionary<int, Container> inventories = handler.GetInventories();
+                        Dictionary<int, List<Item>> foundItems = new();
+
+                        List<Container> availableInventories = inventories.Values.ToList();
+                        //availableInventories.Remove(availableInventories.Find(i => i.ID == 0)!);
+
+                        availableInventories.ForEach(inventory =>
+                        {
+                            inventory.Items.Values
+                                .ToList()
+                                .FindAll(item => item.Type == parsedItemType && (shouldUseItemCount ? item.Count == itemCount : true))
+                                .ForEach(item =>
+                                {
+                                    if (!foundItems.ContainsKey(inventory.ID))
+                                    {
+                                        foundItems.Add(inventory.ID, new List<Item>() { item });
+                                        return;
+                                    }
+
+                                    List<Item> invItems = foundItems[inventory.ID];
+                                    invItems.Add(item);
+                                    foundItems.Remove(inventory.ID);
+                                    foundItems.Add(inventory.ID, invItems);
+                                });
+                        });
+
+                        if (foundItems.Count == 0)
+                            return Translations.Get("cmd.inventory.no_found_items");
+
+                        StringBuilder response = new();
+
+                        response.AppendLine(Translations.Get("cmd.inventory.found_items") + ":");
+
+                        foreach ((int invId, List<Item> itemsList) in new SortedDictionary<int, List<Item>>(foundItems))
+                        {
+                            if (itemsList.Count > 0)
+                            {
+                                response.AppendLine(String.Format("{0} (#{1}):", inventories[invId].Title, invId));
+
+                                foreach (Item item in itemsList)
+                                    response.AppendLine(String.Format("\t- {0}", item.ToString()));
+
+                                response.AppendLine(" ");
+                            }
+                        }
 
                         return response.ToString();
                     }
@@ -240,7 +302,8 @@ namespace MinecraftClient.Commands
                 "drop" => Translations.Get("cmd.inventory.help.drop") + usageStr + "/inventory <player|container|<id>> drop <slot> [all]\nAll means drop full stack",
                 "creativegive" => Translations.Get("cmd.inventory.help.creativegive") + usageStr + "/inventory creativegive <slot> <itemtype> <amount>",
                 "creativedelete" => Translations.Get("cmd.inventory.help.creativedelete") + usageStr + "/inventory creativedelete <slot>",
-                "inventories" => Translations.Get("cmd.inventory.help.list") + usageStr + "/inventory <inventories/i> - Lists available inventories",
+                "inventories" => Translations.Get("cmd.inventory.help.inventories") + usageStr + "/inventory inventories",
+                "search" => Translations.Get("cmd.inventory.help.search") + usageStr + "/inventory search <item type> [count]",
                 "help" => GetHelp(),
                 _ => Translations.Get("cmd.inventory.help.unknown") + GetAvailableActions(),
             };
