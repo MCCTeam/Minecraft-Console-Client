@@ -33,6 +33,9 @@ namespace MinecraftClient.ChatBots
         {
             if (!Settings.ReplayMod_Enabled)
             {
+                if (replay.RecordRunning)
+                    PerformInternalCommand("replay stop");
+
                 UnloadBot();
                 return;
             }
