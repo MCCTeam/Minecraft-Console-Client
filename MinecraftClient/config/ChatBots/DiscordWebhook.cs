@@ -1,5 +1,6 @@
 //MCCScript 1.0
 //using System.Collections.Specialized;
+//using MinecraftClient.Protocol;
 
 MCC.LoadBot(new DiscordWebhook());
 
@@ -126,16 +127,16 @@ class SkinAPI
         if (settings.GetNamesToUuidMojangCache().ContainsKey(name))
             return settings.GetNamesToUuidMojangCache()[name];
 
-        using (WebClient wc = new WebClient())
+        try
         {
-            try
-            {
-                string uuid = Json.ParseJson(wc.DownloadString("https://api.mojang.com/users/profiles/minecraft/" + name)).Properties["id"].StringValue;
-                settings.GetNamesToUuidMojangCache().Add(name, uuid);
-                return uuid;
-            }
-            catch (Exception) { return "00000000000000000000000000000000"; }
+            var request = new ProxiedWebRequest("https://api.mojang.com/users/profiles/minecraft/" + name);
+            request.Accept = "application/json";
+            var response = request.Get();
+            string uuid = Json.ParseJson(response.Body).Properties["id"].StringValue;
+            settings.GetNamesToUuidMojangCache().Add(name, uuid);
+            return uuid;
         }
+        catch (Exception) { return "00000000000000000000000000000000"; }
     }
 
     /// <summary>
@@ -272,23 +273,6 @@ class MessageCache
         Message temp = msg;
         msg = null;
         return temp;
-    }
-}
-
-class HTTP
-{
-    public static byte[] Post(string url, NameValueCollection pairs)
-    {
-        ServicePointManager.Expect100Continue = true;
-		ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
-                   | SecurityProtocolType.Tls11
-                   | SecurityProtocolType.Tls12
-                   | SecurityProtocolType.Ssl3;
-        
-        using (WebClient webClient = new WebClient())
-        {
-            return webClient.UploadValues(url, pairs);
-        }
     }
 }
 
@@ -442,6 +426,19 @@ class DiscordWebhook : ChatBot
         return pings;
     }
 
+    public string Sanizize(string input)
+    {
+        return string.Join(" ",
+            input.Replace("\"", "'")
+            .Replace("\n", "\\n")
+            .Replace("{", "")
+            .Replace("}", "")
+            .Trim()
+            .Split(' ')
+            .Where(s => !string.IsNullOrWhiteSpace(s)))
+            .Replace("\\n ", "\\n");
+    }
+
     /// <summary>
     /// Sends the message to the discord webhook.
     /// </summary>
@@ -455,22 +452,15 @@ class DiscordWebhook : ChatBot
             LogDebugToConsole("Send webhook request to Discord.");
             try
             {
-                HTTP.Post(settings.WebhookURL, new NameValueCollection()
-                    {
-                        {
-                            "username",
-                            msg.SenderName
-                        },
-                        {
-                            "content",
-                            msg.Content
-                        },
-                        {
-                            "avatar_url",
-                            msg.SenderName == "[Server]" ? sAPI.GetSkinURLCrafatar("f78a4d8dd51b4b3998a3230f2de0c670") : sAPI.GetSkinURLCrafatar(msg.SenderUUID)
-                        }
-                    }
-                );
+                StringBuilder requestData = new StringBuilder();
+
+                requestData.Append("{");
+                requestData.Append("\"username\": \"" + msg.SenderName + "\", ");
+                requestData.Append("\"content\": \"" + Sanizize(msg.Content) + "\", ");
+                requestData.Append("\"avatar_url\": \"" + (msg.SenderName == "[Server]" ? sAPI.GetSkinURLCrafatar("f78a4d8dd51b4b3998a3230f2de0c670") : sAPI.GetSkinURLCrafatar(msg.SenderUUID)) + "\"");
+                requestData.Append("}");
+
+                PostRequest(settings.WebhookURL, "application/json", requestData.ToString());
             }
             catch (Exception e)
             {
@@ -527,6 +517,14 @@ class DiscordWebhook : ChatBot
         }
 
         return result;
+    }
+
+    public string PostRequest(string url, string contentType, string content)
+    {
+        var request = new ProxiedWebRequest(url);
+        request.Accept = contentType;
+        var response = request.Post(contentType, content);
+        return response.Body;
     }
 
     /// <summary>
