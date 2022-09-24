@@ -31,11 +31,14 @@ namespace MinecraftClient.ChatBots
 
         public override void OnSettingsReload()
         {
-            if (!Settings.ReplayMod_Enabled)
+            if (replay != null)
             {
                 if (replay.RecordRunning)
-                    PerformInternalCommand("replay stop");
+                    replay.OnShutDown();
+            }
 
+            if (!Settings.ReplayMod_Enabled)
+            {
                 UnloadBot();
                 return;
             }
@@ -49,6 +52,15 @@ namespace MinecraftClient.ChatBots
             Setup();
         }
 
+        protected void OnBotUnload()
+        {
+            if (replay != null)
+            {
+                if (replay.RecordRunning)
+                    replay.OnShutDown();
+            }
+        }
+
         private void Setup()
         {
             SetNetworkPacketEventEnabled(true);
@@ -59,12 +71,13 @@ namespace MinecraftClient.ChatBots
 
         public override void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
         {
-            replay.AddPacket(packetID, packetData, isLogin, isInbound);
+            if (replay != null && replay.RecordRunning)
+                replay.AddPacket(packetID, packetData, isLogin, isInbound);
         }
 
         public override void Update()
         {
-            if (backupInterval > 0 && replay.RecordRunning)
+            if (replay != null && backupInterval > 0 && replay.RecordRunning)
             {
                 if (backupCounter <= 0)
                 {

@@ -271,7 +271,7 @@ namespace MinecraftClient
         /// <summary>
         /// Register bots
         /// </summary>
-        private void RegisterBots()
+        private void RegisterBots(bool hardReset = false)
         {
             if (Settings.AntiAFK_Enabled) { BotLoad(new AntiAFK(Settings.AntiAFK_Delay)); }
             if (Settings.Hangman_Enabled) { BotLoad(new HangmanGame(Settings.Hangman_English)); }
@@ -288,7 +288,7 @@ namespace MinecraftClient
             if (Settings.Mailer_Enabled) { BotLoad(new Mailer()); }
             if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
             if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
-            if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
+            if (Settings.ReplayMod_Enabled && !hardReset) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
 
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
@@ -729,17 +729,17 @@ namespace MinecraftClient
             Program.ReloadSettings();
 
             if (hard)
-                ReloadBots();
+                ReloadBots(true);
             else bots.ForEach(bot => bot.OnSettingsReload());
         }
 
         /// <summary>
         /// Reload loaded bots (Only builtin bots)
         /// </summary>
-        public void ReloadBots()
+        public void ReloadBots(bool hard = false)
         {
             UnloadAllBots();
-            RegisterBots();
+            RegisterBots(hard);
 
             if (client.Client.Connected)
                 bots.ForEach(bot => bot.AfterGameJoined());
