@@ -837,8 +837,6 @@ namespace MinecraftClient
         /// </summary>
         public void BotLoad(ChatBot b, bool init = true)
         {
-            b.OnUnload();
-
             if (InvokeRequired)
             {
                 InvokeOnMainThread(() => BotLoad(b, init));
@@ -859,14 +857,13 @@ namespace MinecraftClient
         /// </summary>
         public void BotUnLoad(ChatBot b)
         {
-            b.OnUnload();
-
             if (InvokeRequired)
             {
                 InvokeOnMainThread(() => BotUnLoad(b));
                 return;
             }
 
+            b.OnUnload();
             bots.RemoveAll(item => object.ReferenceEquals(item, b));
 
             // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
