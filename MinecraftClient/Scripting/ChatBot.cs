@@ -102,6 +102,11 @@ namespace MinecraftClient
         public virtual void Initialize() { }
 
         /// <summary>
+        /// This method is called when the bot is being unloaded, you can use it to free up resources like DB connections
+        /// </summary>
+        public virtual void OnUnload() { }
+
+        /// <summary>
         /// Called after the server has been joined successfully and chat messages are able to be sent.
         /// This method is called again after reconnecting to the server, whereas Initialize() is called only once.
         ///

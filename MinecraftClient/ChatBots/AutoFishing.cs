@@ -54,29 +54,6 @@ namespace MinecraftClient.ChatBots
                 LogToConsoleTranslated("bot.autoFish.no_inv_handle");
         }
 
-        /// <summary>
-        /// Update settings when reloaded
-        /// </summary>
-        public /* override */ void OnSettingsReload()
-        {
-            if (Settings.AutoFishing_Enabled)
-            {
-                if (!GetEntityHandlingEnabled())
-                {
-                    LogToConsoleTranslated("extra.entity_required");
-                    state = FishingState.WaitJoinGame;
-                }
-                inventoryEnabled = GetInventoryEnabled();
-                if (!inventoryEnabled)
-                    LogToConsoleTranslated("bot.autoFish.no_inv_handle");
-            }
-            else
-            {
-                UnloadBot();
-                return;
-            }
-        }
-
         private void StartFishing()
         {
             isFishing = false;
@@ -262,7 +239,7 @@ namespace MinecraftClient.ChatBots
                 if (Settings.AutoFishing_LogFishingBobber)
                     LogToConsole(string.Format("FishingBobber {0}  Dx={1:0.000000} Dy={2:0.000000} Dz={3:0.000000}", Pos, Dx, Math.Abs(Dy), Dz));
 
-                if (Math.Abs(Dx) < Math.Abs(Settings.AutoFishing_StationaryThreshold) && 
+                if (Math.Abs(Dx) < Math.Abs(Settings.AutoFishing_StationaryThreshold) &&
                     Math.Abs(Dz) < Math.Abs(Settings.AutoFishing_StationaryThreshold) &&
                     Math.Abs(Dy) > Math.Abs(Settings.AutoFishing_HookThreshold))
                 {

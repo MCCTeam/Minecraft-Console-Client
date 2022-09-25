@@ -178,28 +178,7 @@ namespace MinecraftClient
                 LoadCommands();
 
                 if (botsOnHold.Count == 0)
-                {
-                    if (Settings.AntiAFK_Enabled) { BotLoad(new ChatBots.AntiAFK(Settings.AntiAFK_Delay)); }
-                    if (Settings.Hangman_Enabled) { BotLoad(new ChatBots.HangmanGame(Settings.Hangman_English)); }
-                    if (Settings.Alerts_Enabled) { BotLoad(new ChatBots.Alerts()); }
-                    if (Settings.ChatLog_Enabled) { BotLoad(new ChatBots.ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-                    if (Settings.PlayerLog_Enabled) { BotLoad(new ChatBots.PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
-                    if (Settings.AutoRelog_Enabled) { BotLoad(new ChatBots.AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries)); }
-                    if (Settings.ScriptScheduler_Enabled) { BotLoad(new ChatBots.ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
-                    if (Settings.RemoteCtrl_Enabled) { BotLoad(new ChatBots.RemoteControl()); }
-                    if (Settings.AutoRespond_Enabled) { BotLoad(new ChatBots.AutoRespond(Settings.AutoRespond_Matches, Settings.AutoRespond_MatchColors)); }
-                    if (Settings.AutoAttack_Enabled) { BotLoad(new ChatBots.AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction)); }
-                    if (Settings.AutoFishing_Enabled) { BotLoad(new ChatBots.AutoFishing()); }
-                    if (Settings.AutoEat_Enabled) { BotLoad(new ChatBots.AutoEat(Settings.AutoEat_hungerThreshold)); }
-                    if (Settings.Mailer_Enabled) { BotLoad(new ChatBots.Mailer()); }
-                    if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
-                    if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
-                    if (Settings.ReplayMod_Enabled) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
-                    if (Settings.FollowPlayer_Enabled) { BotLoad(new FollowPlayer(Settings.FollowPlayer_UpdateLimit, Settings.FollowPlayer_UpdateLimit)); }
-
-                    //Add your ChatBot here by uncommenting and adapting
-                    //BotLoad(new ChatBots.YourBot());
-                }
+                    RegisterBots();
             }
 
             try
@@ -285,6 +264,32 @@ namespace MinecraftClient
                     Program.HandleFailure();
                 }
             }
+        }
+
+        /// <summary>
+        /// Register bots
+        /// </summary>
+        private void RegisterBots(bool reload = false)
+        {
+            if (Settings.AntiAFK_Enabled) { BotLoad(new AntiAFK(Settings.AntiAFK_Delay)); }
+            if (Settings.Hangman_Enabled) { BotLoad(new HangmanGame(Settings.Hangman_English)); }
+            if (Settings.Alerts_Enabled) { BotLoad(new Alerts()); }
+            if (Settings.ChatLog_Enabled) { BotLoad(new ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
+            if (Settings.PlayerLog_Enabled) { BotLoad(new PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
+            if (Settings.AutoRelog_Enabled) { BotLoad(new AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries)); }
+            if (Settings.ScriptScheduler_Enabled) { BotLoad(new ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
+            if (Settings.RemoteCtrl_Enabled) { BotLoad(new RemoteControl()); }
+            if (Settings.AutoRespond_Enabled) { BotLoad(new AutoRespond(Settings.AutoRespond_Matches, Settings.AutoRespond_MatchColors)); }
+            if (Settings.AutoAttack_Enabled) { BotLoad(new AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction)); }
+            if (Settings.AutoFishing_Enabled) { BotLoad(new AutoFishing()); }
+            if (Settings.AutoEat_Enabled) { BotLoad(new AutoEat(Settings.AutoEat_hungerThreshold)); }
+            if (Settings.Mailer_Enabled) { BotLoad(new Mailer()); }
+            if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
+            if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
+            if (Settings.ReplayMod_Enabled && reload) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
+
+            //Add your ChatBot here by uncommenting and adapting
+            //BotLoad(new ChatBots.YourBot());
         }
 
         /// <summary>
@@ -714,6 +719,37 @@ namespace MinecraftClient
             }
         }
 
+        /// <summary>
+        /// Reload settings and bots
+        /// </summary>
+        /// <param name="hard">Marks if bots need to be hard reloaded</param>
+        public void ReloadSettings()
+        {
+            Program.ReloadSettings();
+            ReloadBots();
+        }
+
+        /// <summary>
+        /// Reload loaded bots (Only builtin bots)
+        /// </summary>
+        public void ReloadBots()
+        {
+            UnloadAllBots();
+            RegisterBots(true);
+
+            if (client.Client.Connected)
+                bots.ForEach(bot => bot.AfterGameJoined());
+        }
+
+        /// <summary>
+        /// Unload All Bots
+        /// </summary>
+        public void UnloadAllBots()
+        {
+            foreach (ChatBot bot in GetLoadedChatBots())
+                BotUnLoad(bot);
+        }
+
         #endregion
 
         #region Thread-Invoke: Cross-thread method calls
@@ -823,6 +859,7 @@ namespace MinecraftClient
                 return;
             }
 
+            b.OnUnload();
             bots.RemoveAll(item => object.ReferenceEquals(item, b));
 
             // ToList is needed to avoid an InvalidOperationException from modfiying the list while it's being iterated upon.
