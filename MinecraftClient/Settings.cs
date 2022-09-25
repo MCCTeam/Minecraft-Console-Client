@@ -1156,6 +1156,17 @@ namespace MinecraftClient
                             case "login": result.Append(Login); break;
                             case "serverip": result.Append(ServerIP); break;
                             case "serverport": result.Append(ServerPort); break;
+                            case "datetime":
+                                DateTime time = DateTime.Now;
+                                result.Append(String.Format("{0}-{1}-{2} {3}:{4}:{5}",
+                                    time.Year.ToString("0000"),
+                                    time.Month.ToString("00"),
+                                    time.Day.ToString("00"),
+                                    time.Hour.ToString("00"),
+                                    time.Minute.ToString("00"),
+                                    time.Second.ToString("00")));
+
+                                break;
                             default:
                                 if (localVars != null && localVars.ContainsKey(varname_lower))
                                 {
