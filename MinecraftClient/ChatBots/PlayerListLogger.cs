@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MinecraftClient.ChatBots
 {
@@ -34,19 +35,26 @@ namespace MinecraftClient.ChatBots
             count++;
             if (count == timeping)
             {
-                SendText("/list");
-                count = 0;
-            }
-        }
+                string[] playerList = GetOnlinePlayers();
 
-        public override void GetText(string text)
-        {
-            if (text.Contains("Joueurs en ligne") || text.Contains("Connected:") || text.Contains("online:"))
-            {
-                LogToConsole("Saving Player List");
+                StringBuilder sb = new StringBuilder();
+
+                for (int i = 0; i < playerList.Length; i++)
+                {
+                    sb.Append(playerList[i]);
+
+                    // Do not add a comma after the last username
+                    if (i != playerList.Length - 1)
+                        sb.Append(", ");
+                }
+
+                LogDebugToConsole("Saving Player List");
+
                 DateTime now = DateTime.Now;
                 string TimeStamp = "[" + now.Year + '/' + now.Month + '/' + now.Day + ' ' + now.Hour + ':' + now.Minute + ']';
-                System.IO.File.AppendAllText(file, TimeStamp + "\n" + GetVerbatim(text) + "\n\n");
+                System.IO.File.AppendAllText(file, TimeStamp + "\n" + sb.ToString() + "\n\n");
+
+                count = 0;
             }
         }
     }
