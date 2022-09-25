@@ -20,6 +20,7 @@ namespace MinecraftClient.ChatBots
             public bool triggerOnTime = false;
             public bool triggerOnInterval = false;
             public int triggerOnInterval_Interval = 0;
+            public int triggerOnInterval_Interval_Max = 0;
             public int triggerOnInterval_Interval_Countdown = 0;
             public List<DateTime> triggerOnTime_Times = new List<DateTime>();
             public bool triggerOnTime_alreadyTriggered = false;
@@ -75,7 +76,27 @@ namespace MinecraftClient.ChatBots
                                     case "triggerontime": current_task.triggerOnTime = Settings.str2bool(argValue); break;
                                     case "triggeroninterval": current_task.triggerOnInterval = Settings.str2bool(argValue); break;
                                     case "timevalue": try { current_task.triggerOnTime_Times.Add(DateTime.ParseExact(argValue, "HH:mm", CultureInfo.InvariantCulture)); } catch { } break;
-                                    case "timeinterval": int interval = 1; int.TryParse(argValue, out interval); current_task.triggerOnInterval_Interval = interval; break;
+                                    case "timeinterval":
+                                        int interval = 1;
+                                        int intervalMax = 0;
+
+                                        if (argValue.Contains("-"))
+                                        {
+                                            string[] parts = argValue.Split("-");
+
+                                            if (parts.Length == 2)
+                                            {
+                                                int.TryParse(parts[0].Trim(), out interval);
+                                                int.TryParse(parts[1].Trim(), out intervalMax);
+                                            }
+                                            else interval = 1;
+                                        }
+                                        else int.TryParse(argValue, out interval);
+
+                                        current_task.triggerOnInterval_Interval = interval;
+                                        current_task.triggerOnInterval_Interval_Max = intervalMax;
+
+                                        break;
                                     case "script": current_task.action = "script " + argValue; break; //backward compatibility with older tasks.ini
                                     case "action": current_task.action = argValue; break;
                                 }
@@ -106,7 +127,7 @@ namespace MinecraftClient.ChatBots
                         || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0)
                         || (current_task.triggerOnInterval && current_task.triggerOnInterval_Interval > 0))
                     {
-                        
+
                         LogDebugToConsoleTranslated("bot.scriptScheduler.loaded_task", Task2String(current_task));
                         current_task.triggerOnInterval_Interval_Countdown = current_task.triggerOnInterval_Interval; //Init countdown for interval
                         tasks.Add(current_task);
@@ -135,7 +156,7 @@ namespace MinecraftClient.ChatBots
                         if (task.triggerOnTime)
                         {
                             bool matching_time_found = false;
-                            
+
                             foreach (DateTime time in task.triggerOnTime_Times)
                             {
                                 if (time.Hour == DateTime.Now.Hour && time.Minute == DateTime.Now.Minute)
@@ -158,7 +179,12 @@ namespace MinecraftClient.ChatBots
                         {
                             if (task.triggerOnInterval_Interval_Countdown == 0)
                             {
-                                task.triggerOnInterval_Interval_Countdown = task.triggerOnInterval_Interval;
+                                int time = task.triggerOnInterval_Interval;
+
+                                if (task.triggerOnInterval_Interval_Max != 0)
+                                    time = new Random().Next(task.triggerOnInterval_Interval, task.triggerOnInterval_Interval_Max);
+
+                                task.triggerOnInterval_Interval_Countdown = time;
                                 LogDebugToConsoleTranslated("bot.scriptScheduler.running_inverval", task.action);
                                 PerformInternalCommand(task.action);
                             }
