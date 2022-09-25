@@ -153,8 +153,10 @@ namespace MinecraftClient
         //Alerts Settings
         public static bool Alerts_Enabled = false;
         public static bool Alerts_Beep_Enabled = true;
+        public static bool Alerts_File_Logging = false;
         public static string Alerts_MatchesFile = "alerts.txt";
         public static string Alerts_ExcludesFile = "alerts-exclude.txt";
+        public static string Alerts_LogFile = "alerts-log.txt";
 
         //ChatLog Settings
         public static bool ChatLog_Enabled = false;
@@ -575,6 +577,8 @@ namespace MinecraftClient
                         case "alertsfile": Alerts_MatchesFile = argValue; return true;
                         case "excludesfile": Alerts_ExcludesFile = argValue; return true;
                         case "beeponalert": Alerts_Beep_Enabled = str2bool(argValue); return true;
+                        case "logtofile": Alerts_File_Logging = str2bool(argValue); return true;
+                        case "logfile": Alerts_LogFile = argValue; return true;
                     }
                     break;
 
