@@ -10,6 +10,8 @@ using MinecraftClient.Mapping;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using MinecraftClient.ChatBots;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MinecraftClient
 {
@@ -256,7 +258,7 @@ namespace MinecraftClient
         private static string ServerAliasTemp = null;
 
         //Mapping for settings sections in the INI file
-        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, Logging, Signature };
+        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, PlayerListLogger, Logging, Signature };
 
         /// <summary>
         /// Get settings section from name
@@ -854,6 +856,14 @@ namespace MinecraftClient
                         case "stop_at_distance": FollowPlayer_StopAtDistance = str2int(argValue); return true;
                     }
                     break;
+                case Section.PlayerListLogger:
+                    switch (ToLowerIfNeed(argName))
+                    {
+                        case "enabled": PlayerLog_Enabled = str2bool(argValue); return true;
+                        case "log_file": PlayerLog_File = argValue; return true;
+                        case "log_delay": PlayerLog_Delay = str2int(argValue); return true;
+                    }
+                    break;
             }
             return false;
         }
@@ -1146,6 +1156,17 @@ namespace MinecraftClient
                             case "login": result.Append(Login); break;
                             case "serverip": result.Append(ServerIP); break;
                             case "serverport": result.Append(ServerPort); break;
+                            case "datetime":
+                                DateTime time = DateTime.Now;
+                                result.Append(String.Format("{0}-{1}-{2} {3}:{4}:{5}",
+                                    time.Year.ToString("0000"),
+                                    time.Month.ToString("00"),
+                                    time.Day.ToString("00"),
+                                    time.Hour.ToString("00"),
+                                    time.Minute.ToString("00"),
+                                    time.Second.ToString("00")));
+
+                                break;
                             default:
                                 if (localVars != null && localVars.ContainsKey(varname_lower))
                                 {
