@@ -44,17 +44,15 @@ namespace MinecraftClient.ChatBots
             Setup();
         }
 
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.ScriptScheduler_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             this.tasksfile = Settings.ScriptScheduler_TasksFile;
 
             Setup();
+            return true;
         }
 
         private void Setup()

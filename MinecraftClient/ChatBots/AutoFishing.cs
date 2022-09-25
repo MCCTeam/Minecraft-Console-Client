@@ -37,23 +37,20 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Update settings when reloaded
         /// </summary>
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.AutoFishing_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             if (!GetEntityHandlingEnabled())
             {
                 LogToConsoleTranslated("extra.entity_required");
                 LogToConsoleTranslated("general.bot_unload");
-                UnloadBot();
-                return;
+                return false;
             }
 
             inventoryEnabled = GetInventoryEnabled();
+            return true;
         }
 
         public override void Update()

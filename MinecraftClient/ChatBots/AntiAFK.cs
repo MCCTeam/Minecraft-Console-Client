@@ -27,15 +27,13 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Update settings when reloaded
         /// </summary>
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.AntiAFK_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             Setup(Settings.AntiAFK_Delay);
+            return true;
         }
 
         public void Setup(int pingparam)

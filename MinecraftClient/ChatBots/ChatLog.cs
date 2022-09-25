@@ -78,15 +78,13 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Update settings when reloaded
         /// </summary>
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.ChatLog_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             Setup(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime);
+            return true;
         }
 
         public static MessageFilter str2filter(string filtername)

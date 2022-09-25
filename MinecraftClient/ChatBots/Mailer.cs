@@ -161,15 +161,13 @@ namespace MinecraftClient.ChatBots
             RegisterChatBotCommand("mailer", Translations.Get("bot.mailer.cmd"), "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
         }
 
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.Mailer_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             Setup();
+            return true;
         }
 
         private void Setup()

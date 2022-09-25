@@ -730,7 +730,17 @@ namespace MinecraftClient
 
             if (hard)
                 ReloadBots(true);
-            else bots.ForEach(bot => bot.OnSettingsReload());
+            else
+            {
+                List<ChatBot> queuedForUnload = new List<ChatBot>();
+                bots.ForEach(bot =>
+                {
+                    if (!bot.OnSettingsReload())
+                        queuedForUnload.Add(bot);
+                });
+
+                queuedForUnload.ForEach(bot => BotUnLoad(bot));
+            }
         }
 
         /// <summary>

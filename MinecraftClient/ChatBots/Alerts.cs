@@ -25,15 +25,14 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Update settings when reloaded
         /// </summary>
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.Alerts_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             Setup();
+
+            return true;
         }
 
         public void Setup()

@@ -1,5 +1,6 @@
 ﻿using MinecraftClient.Mapping;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -73,23 +74,21 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Update settings when reloaded
         /// </summary>
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.AutoAttack_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             if (!GetEntityHandlingEnabled())
             {
                 LogToConsoleTranslated("extra.entity_required");
                 LogToConsoleTranslated("general.bot_unload");
-                UnloadBot();
-                return;
+                return false;
             }
 
             Setup(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction);
+
+            return true;
         }
 
         public override void Initialize()

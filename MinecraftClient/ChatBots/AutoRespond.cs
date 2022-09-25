@@ -24,16 +24,14 @@ namespace MinecraftClient.ChatBots
             this.matchesFile = matchesFile;
         }
 
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.AutoRespond_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             this.matchesFile = Settings.AutoRespond_Matches;
             Setup();
+            return true;
         }
 
         /// <summary>
@@ -179,10 +177,11 @@ namespace MinecraftClient.ChatBots
 
         private void Setup()
         {
-            respondRules.Clear();
-
             if (File.Exists(matchesFile))
             {
+                if (respondRules != null)
+                    respondRules.Clear();
+
                 Regex matchRegex = null;
                 string matchString = null;
                 string matchAction = null;

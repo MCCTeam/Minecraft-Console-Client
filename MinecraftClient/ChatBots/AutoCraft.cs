@@ -163,15 +163,13 @@ namespace MinecraftClient.ChatBots
             this.configPath = configPath;
         }
 
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.AutoCraft_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             PerformInternalCommand("autocraft reload");
+            return true;
         }
 
         public override void Initialize()

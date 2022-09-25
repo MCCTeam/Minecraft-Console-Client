@@ -11,13 +11,12 @@ namespace MinecraftClient.ChatBots
 
     public class RemoteControl : ChatBot
     {
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.RemoteCtrl_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
+
+            return true;
         }
 
         public override void GetText(string text)

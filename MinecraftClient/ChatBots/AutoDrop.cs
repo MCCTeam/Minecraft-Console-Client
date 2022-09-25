@@ -41,23 +41,20 @@ namespace MinecraftClient.ChatBots
         /// <summary>
         /// Update settings when reloaded
         /// </summary>
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.AutoDrop_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             if (!GetInventoryEnabled())
             {
                 LogToConsoleTranslated("extra.inventory_required");
                 LogToConsoleTranslated("general.bot_unload");
-                UnloadBot();
-                return;
+                return false;
             }
 
             Setup(Settings.AutoDrop_Mode, Settings.AutoDrop_items);
+            return true;
         }
 
         /// <summary>

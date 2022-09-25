@@ -29,7 +29,7 @@ namespace MinecraftClient.ChatBots
             RegisterChatBotCommand("replay", Translations.Get("bot.replayCapture.cmd"), "replay <save|stop>", Command);
         }
 
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (replay != null)
             {
@@ -38,10 +38,7 @@ namespace MinecraftClient.ChatBots
             }
 
             if (!Settings.ReplayMod_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             int backupInterval = Settings.ReplayMod_BackupInterval;
 
@@ -50,6 +47,7 @@ namespace MinecraftClient.ChatBots
             else this.backupInterval = -1;
 
             Setup();
+            return true;
         }
 
         protected void OnBotUnload()

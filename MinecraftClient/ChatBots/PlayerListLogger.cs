@@ -28,18 +28,16 @@ namespace MinecraftClient.ChatBots
             if (timeping < 10) { timeping = 10; } //To avoid flooding
         }
 
-        public override void OnSettingsReload()
+        public override bool OnSettingsReload()
         {
             if (!Settings.PlayerLog_Enabled)
-            {
-                UnloadBot();
-                return;
-            }
+                return false;
 
             count = 0;
             file = Settings.ExpandVars(Settings.PlayerLog_File);
             timeping = Settings.PlayerLog_Delay;
             if (timeping < 10) { timeping = 10; } //To avoid flooding
+            return true;
         }
 
         public override void Update()
