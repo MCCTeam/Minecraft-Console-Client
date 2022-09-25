@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using static System.Net.WebRequestMethods;
 
 namespace MinecraftClient.ChatBots
 {
@@ -13,6 +14,7 @@ namespace MinecraftClient.ChatBots
     {
         private string[] dictionary = new string[0];
         private string[] excludelist = new string[0];
+        private bool logToFile = false;
 
         /// <summary>
         /// Intitialize the Alerts bot
@@ -21,6 +23,7 @@ namespace MinecraftClient.ChatBots
         {
             dictionary = LoadDistinctEntriesFromFile(Settings.Alerts_MatchesFile);
             excludelist = LoadDistinctEntriesFromFile(Settings.Alerts_ExcludesFile);
+            logToFile = Settings.Alerts_File_Logging;
         }
 
         /// <summary>
@@ -42,6 +45,13 @@ namespace MinecraftClient.ChatBots
                         Console.Beep(); //Text found !
 
                     ConsoleIO.WriteLine(text.Replace(alert, "§c" + alert + "§r"));
+
+                    if (logToFile && Settings.Alerts_LogFile.Length > 0)
+                    {
+                        DateTime now = DateTime.Now;
+                        string TimeStamp = "[" + now.Year + '/' + now.Month + '/' + now.Day + ' ' + now.Hour + ':' + now.Minute + ']';
+                        System.IO.File.AppendAllText(Settings.Alerts_LogFile, TimeStamp + " " + GetVerbatim(text) + "\n");
+                    }
                 }
             }
         }
