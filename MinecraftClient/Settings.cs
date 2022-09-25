@@ -10,6 +10,8 @@ using MinecraftClient.Mapping;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using MinecraftClient.ChatBots;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MinecraftClient
 {
@@ -256,7 +258,7 @@ namespace MinecraftClient
         private static string ServerAliasTemp = null;
 
         //Mapping for settings sections in the INI file
-        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, Logging, Signature };
+        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, PlayerListLogger, Logging, Signature };
 
         /// <summary>
         /// Get settings section from name
@@ -852,6 +854,14 @@ namespace MinecraftClient
                         case "enabled": FollowPlayer_Enabled = str2bool(argValue); return true;
                         case "update_limit": FollowPlayer_UpdateLimit = str2int(argValue); return true;
                         case "stop_at_distance": FollowPlayer_StopAtDistance = str2int(argValue); return true;
+                    }
+                    break;
+                case Section.PlayerListLogger:
+                    switch (ToLowerIfNeed(argName))
+                    {
+                        case "enabled": PlayerLog_Enabled = str2bool(argValue); return true;
+                        case "log_file": PlayerLog_File = argValue; return true;
+                        case "log_delay": PlayerLog_Delay = str2int(argValue); return true;
                     }
                     break;
             }
