@@ -55,6 +55,52 @@ namespace MinecraftClient.Mapping
         }
 
         /// <summary>
+        /// Return TRUE if the Entity is a passive mob
+        /// </summary>
+        /// <remarks>New mobs added in newer Minecraft versions might be absent from the list</remarks>
+        /// <returns>TRUE if a passive mob</returns>
+        public static bool IsPassive(this EntityType e)
+        {
+            switch (e)
+            {
+                case EntityType.Bat:
+                case EntityType.Cat:
+                case EntityType.Chicken:
+                case EntityType.Cod:
+                case EntityType.Cow:
+                case EntityType.Dolphin:
+                case EntityType.Donkey:
+                case EntityType.Fox:
+                case EntityType.Frog:
+                case EntityType.GlowSquid:
+                case EntityType.Goat:
+                case EntityType.Horse:
+                case EntityType.IronGolem:
+                case EntityType.Llama:
+                case EntityType.Mooshroom:
+                case EntityType.Mule:
+                case EntityType.Ocelot:
+                case EntityType.Panda:
+                case EntityType.Parrot:
+                case EntityType.Pig:
+                case EntityType.Salmon:
+                case EntityType.Sheep:
+                case EntityType.Silverfish:
+                case EntityType.SnowGolem:
+                case EntityType.Squid:
+                case EntityType.Turtle:
+                case EntityType.Villager:
+                case EntityType.WanderingTrader:
+                case EntityType.Wolf:
+                case EntityType.ZombieHorse:
+                case EntityType.SkeletonHorse:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
         /// Indicates whether the entity type contains an inner item
         /// </summary>
         /// <returns>TRUE if item holder (Item Entity, ItemFrame...)</returns>
