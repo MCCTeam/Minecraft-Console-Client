@@ -1,8 +1,7 @@
 ﻿using MinecraftClient.Mapping;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
 
 namespace MinecraftClient.ChatBots
 {
@@ -23,8 +22,13 @@ namespace MinecraftClient.ChatBots
         private bool singleMode = true;
         private bool priorityDistance = true;
         private InteractType interactMode;
+        private bool attackHostile = true;
+        private bool attackPassive = false;
+        private bool attackPlayers = false;
+        private List<EntityType> blacklistedEntityTypes = new();
 
-        public AutoAttack(string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, InteractType interaction = InteractType.Attack)
+        public AutoAttack(
+            string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, InteractType interaction = InteractType.Attack)
         {
             if (mode == "single")
                 singleMode = true;
@@ -51,6 +55,24 @@ namespace MinecraftClient.ChatBots
                     this.overrideAttackSpeed = overrideAttackSpeed;
                     this.attackCooldownSeconds = cooldownSeconds;
                     attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
+                }
+            }
+
+            this.attackHostile = Settings.AutoAttack_Attack_Hostile;
+            this.attackPassive = Settings.AutoAttack_Attack_Passive;
+            this.attackPlayers = Settings.AutoAttack_Attack_Players;
+
+            if (File.Exists(Settings.AutoAttack_Blacklist))
+            {
+                string[] blacklist = LoadDistinctEntriesFromFile(Settings.AutoAttack_Blacklist);
+
+                if (blacklist.Length > 0)
+                {
+                    foreach (var item in blacklist)
+                    {
+                        if (Enum.TryParse(item, true, out EntityType resultingType))
+                            blacklistedEntityTypes.Add(resultingType);
+                    }
                 }
             }
         }
@@ -149,7 +171,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityHealth(Entity entity, float health)
         {
-            if (!entity.Type.IsHostile())
+            if (!IsAllowedToAttack(entity))
                 return;
 
             if (entitiesToAttack.ContainsKey(entity.ID))
@@ -161,6 +183,25 @@ namespace MinecraftClient.ChatBots
                     entitiesToAttack.Remove(entity.ID);
                 }
             }
+        }
+
+        private bool IsAllowedToAttack(Entity entity)
+        {
+            bool result = false;
+
+            if (attackHostile && entity.Type.IsHostile())
+                result = true;
+
+            if (attackPassive && entity.Type.IsPassive())
+                result = true;
+
+            if (attackPlayers && entity.Type == EntityType.Player)
+                result = true;
+
+            if (blacklistedEntityTypes.Contains(entity.Type))
+                result = false;
+
+            return result;
         }
 
         public override void OnEntityMove(Entity entity)
@@ -197,6 +238,7 @@ namespace MinecraftClient.ChatBots
         {
             if (overrideAttackSpeed)
                 return;
+
             serverTPS = tps;
             // re-calculate attack speed
             attackCooldownSeconds = 1 / attackSpeed * (serverTPS / 20.0); // server tps will affect the cooldown
@@ -211,7 +253,7 @@ namespace MinecraftClient.ChatBots
         /// <returns>If the entity should be attacked</returns>
         public bool shouldAttackEntity(Entity entity)
         {
-            if (!entity.Type.IsHostile() || entity.Health <= 0)
+            if (!IsAllowedToAttack(entity) || entity.Health <= 0)
                 return false;
 
             bool isBeingAttacked = entitiesToAttack.ContainsKey(entity.ID);
