@@ -737,7 +737,7 @@ namespace MinecraftClient
                             AutoAttack_Attack_Passive = str2bool(argValue); return true;
                         case "listmode":
                             AutoAttack_ListMode = argValue; return true;
-                        case "blacklist":
+                        case "listfile":
                             AutoAttack_ListFile = argValue; return true;
                     }
                     break;

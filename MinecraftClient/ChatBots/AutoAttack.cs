@@ -71,6 +71,7 @@ namespace MinecraftClient.ChatBots
                     listMode = "blacklist";
                 }
             }
+            else LogToConsole(Translations.TryGet("bot.autoAttack.invalidlist"));
 
             if (File.Exists(Settings.AutoAttack_ListFile))
             {
