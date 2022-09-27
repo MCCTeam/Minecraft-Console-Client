@@ -206,8 +206,8 @@ namespace MinecraftClient
         public static InteractType AutoAttack_Interaction = InteractType.Attack;
         public static bool AutoAttack_Attack_Hostile = true;
         public static bool AutoAttack_Attack_Passive = false;
-        public static bool AutoAttack_Attack_Players = false;
-        public static string AutoAttack_Blacklist = "attack-blacklist.txt";
+        public static string AutoAttack_ListMode = "blacklist";
+        public static string AutoAttack_ListFile = "autoattack-list.txt";
 
         //Auto Fishing
         public static bool AutoFishing_Enabled = false;
@@ -735,10 +735,10 @@ namespace MinecraftClient
                             AutoAttack_Attack_Hostile = str2bool(argValue); return true;
                         case "attackpassive":
                             AutoAttack_Attack_Passive = str2bool(argValue); return true;
-                        case "attackplayers":
-                            AutoAttack_Attack_Players = str2bool(argValue); return true;
+                        case "listmode":
+                            AutoAttack_ListMode = argValue; return true;
                         case "blacklist":
-                            AutoAttack_Blacklist = argValue; return true;
+                            AutoAttack_ListFile = argValue; return true;
                     }
                     break;
 

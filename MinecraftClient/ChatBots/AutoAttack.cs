@@ -24,8 +24,8 @@ namespace MinecraftClient.ChatBots
         private InteractType interactMode;
         private bool attackHostile = true;
         private bool attackPassive = false;
-        private bool attackPlayers = false;
-        private List<EntityType> blacklistedEntityTypes = new();
+        private string listMode = "blacklist";
+        private List<EntityType> listedEntites = new();
 
         public AutoAttack(
             string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, InteractType interaction = InteractType.Attack)
@@ -60,18 +60,28 @@ namespace MinecraftClient.ChatBots
 
             this.attackHostile = Settings.AutoAttack_Attack_Hostile;
             this.attackPassive = Settings.AutoAttack_Attack_Passive;
-            this.attackPlayers = Settings.AutoAttack_Attack_Players;
 
-            if (File.Exists(Settings.AutoAttack_Blacklist))
+            if (Settings.AutoAttack_ListMode.Length > 0)
             {
-                string[] blacklist = LoadDistinctEntriesFromFile(Settings.AutoAttack_Blacklist);
+                listMode = Settings.AutoAttack_ListMode.ToLower();
 
-                if (blacklist.Length > 0)
+                if (!(listMode.Equals("whitelist", StringComparison.OrdinalIgnoreCase) || listMode.Equals("blacklist", StringComparison.OrdinalIgnoreCase)))
                 {
-                    foreach (var item in blacklist)
+                    LogToConsole(Translations.TryGet("bot.autoAttack.invalidlist"));
+                    listMode = "blacklist";
+                }
+            }
+
+            if (File.Exists(Settings.AutoAttack_ListFile))
+            {
+                string[] entityList = LoadDistinctEntriesFromFile(Settings.AutoAttack_ListFile);
+
+                if (entityList.Length > 0)
+                {
+                    foreach (var item in entityList)
                     {
                         if (Enum.TryParse(item, true, out EntityType resultingType))
-                            blacklistedEntityTypes.Add(resultingType);
+                            listedEntites.Add(resultingType);
                     }
                 }
             }
@@ -195,11 +205,11 @@ namespace MinecraftClient.ChatBots
             if (attackPassive && entity.Type.IsPassive())
                 result = true;
 
-            if (attackPlayers && entity.Type == EntityType.Player)
-                result = true;
-
-            if (blacklistedEntityTypes.Contains(entity.Type))
-                result = false;
+            if (listedEntites.Count > 0)
+            {
+                bool inList = listedEntites.Contains(entity.Type);
+                result = listMode.Equals("blacklist") ? (inList ? false : result) : (inList ? true : false);
+            }
 
             return result;
         }
