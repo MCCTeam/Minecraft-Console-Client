@@ -288,6 +288,7 @@ namespace MinecraftClient
             if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
             if (Settings.ReplayMod_Enabled && reload) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
             if (Settings.FollowPlayer_Enabled) { BotLoad(new FollowPlayer(Settings.FollowPlayer_UpdateLimit, Settings.FollowPlayer_UpdateLimit)); }
+            if (Settings.Map_Enabled) { BotLoad(new Map()); }
 
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
