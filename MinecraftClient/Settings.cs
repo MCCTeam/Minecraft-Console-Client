@@ -255,6 +255,14 @@ namespace MinecraftClient
         public static int FollowPlayer_UpdateLimit = 10;
         public static int FollowPlayer_StopAtDistance = 3;
 
+        // Map
+        public static bool Map_Enabled = false;
+        public static bool Map_Should_Resize = false;
+        public static int Map_Resize_To = 256;
+        public static bool Map_Auto_Render_On_Update = false;
+        public static bool Map_Delete_All_On_Unload = true;
+        public static bool Map_Notify_On_First_Update = true;
+
         //Custom app variables and Minecraft accounts
         private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
         private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
@@ -264,7 +272,7 @@ namespace MinecraftClient
         private static string ServerAliasTemp = null;
 
         //Mapping for settings sections in the INI file
-        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, PlayerListLogger, Logging, Signature };
+        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, PlayerListLogger, Map, Logging, Signature };
 
         /// <summary>
         /// Get settings section from name
@@ -878,6 +886,17 @@ namespace MinecraftClient
                         case "enabled": PlayerLog_Enabled = str2bool(argValue); return true;
                         case "log_file": PlayerLog_File = argValue; return true;
                         case "log_delay": PlayerLog_Delay = str2int(argValue); return true;
+                    }
+                    break;
+                case Section.Map:
+                    switch (ToLowerIfNeed(argName))
+                    {
+                        case "enabled": Map_Enabled = str2bool(argValue); return true;
+                        case "resize_map": Map_Should_Resize = str2bool(argValue); return true;
+                        case "resize_to": Map_Resize_To = str2int(argValue); return true;
+                        case "auto_render_on_update": Map_Auto_Render_On_Update = str2bool(argValue); return true;
+                        case "delete_rendered_on_unload": Map_Delete_All_On_Unload = str2bool(argValue); return true;
+                        case "notify_on_first_update": Map_Notify_On_First_Update = str2bool(argValue); return true;
                     }
                     break;
             }
