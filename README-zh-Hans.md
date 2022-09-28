@@ -6,7 +6,7 @@
 我的世界控制台客户端(MCC)是一个轻量级的程序，它允许你连接至任何我的世界服务器，
 简单快速地发送指令和接收聊天信息而不需要开启游戏。它也提供了多种自动化管理服务器和进行其他操作的可能性。
 
-**注意！** MCC仅可以连接到**我的世界Java版**，而**不能连接到我的世界基岩版/中国版！**
+**注意！** MCC仅可以连接到**我的世界Java版国际版**，而**不能连接到我的世界基岩版/中国版！**
 
 ## 正在寻找维护者
 
@@ -22,9 +22,9 @@
 在此查看[示例配置文件](MinecraftClient/config/) ，其中有基础使用教程 README 文件。<br>
 更多帮助和信息可以从[我的世界官方论坛](http://www.minecraftforum.net/topic/1314800-/)中查询。
 
-## 从原代码编译
+## 从源码编译
 
-首先，下载[原代码zip压缩包](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip)，将其解压并进入`MinecraftClient`文件夹
+首先，下载[源码zip压缩包](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip)，将其解压并进入`MinecraftClient`文件夹
 
 编辑 `MinecraftClient.csproj` 的[第四行](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4)，将编译目标设置为 `Release`:
 
@@ -46,7 +46,7 @@
 
 ## 贡献代码
 
-如果您希望为我的世界控制台客户端出一份力的话，我们不胜感激，您可以fork此repo并提交合并请求。 *Indev* 分支将不会继续被使用, 我们将只会把MCC作为测试版软件发布。
+如果您希望为我的世界控制台客户端出一份力的话，我们不胜感激，您可以fork此仓库并提交合并请求。 *Indev* 分支将不会继续被使用, 我们将只会把MCC作为测试版软件发布。
 
 ## 许可证
 
