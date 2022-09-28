@@ -154,9 +154,7 @@ namespace MinecraftClient.ChatBots
                         LogDebugToConsole("Unknown color encountered: " + inputColor + " (Hex: " + hexCode + "), using: RGB(248, 0, 248)");
                     }
 
-                    // I know that the parameter order is worong, but with the correct order it looks very ugly
-                    // Once we get a correct color scheme, we will return it as it should be: A, R, G, B
-                    image.SetPixel(x, y, Color.FromArgb(color.R, color.G, color.B, color.A));
+                    image.SetPixel(x, y, Color.FromArgb(color.A, color.R, color.G, color.B));
                 }
             }
 
@@ -273,26 +271,16 @@ namespace MinecraftClient.ChatBots
             {61, new byte[]{127, 167, 150}}
         };
 
-        public static ColorRGBA ColorByteToRGBA(byte recievedColorId)
+        public static ColorRGBA ColorByteToRGBA(byte receivedColorId)
         {
+            // Much thanks to DevBobcorn
+            byte baseColorId = (byte)(receivedColorId >> 2); // Divide received color id by 4 to get the base color id
+
             // Any new colors that we haven't added will be purple like in the missing CS: Source Texture
-            if (!Colors.ContainsKey(recievedColorId))
+            if (!Colors.ContainsKey(baseColorId))
                 return new ColorRGBA { R = 248, G = 0, B = 248, A = 255, Unknown = true };
 
-            // Temporary
-            return new ColorRGBA
-            {
-                R = Colors[recievedColorId][0],
-                G = Colors[recievedColorId][1],
-                B = Colors[recievedColorId][2],
-                A = 255
-            };
-
-            // Note: Disabled until we find a working color scheme
-            // Please, do not remove.
-
-            /*
-            byte shadeId = (byte)((byte)recievedColorId % 4);
+            byte shadeId = (byte)(receivedColorId % 4);
             byte shadeMultiplier = 255;
 
             switch (shadeId)
@@ -306,18 +294,18 @@ namespace MinecraftClient.ChatBots
                     break;
 
                 case 3:
-                    // NOTE: If we ever add map support bellow 1.8, this needs to be 220 before 1.8
-                    shadeMultiplier = 135; 
+                    // NOTE: If we ever add map support below 1.8, this needs to be 220 before 1.8
+                    shadeMultiplier = 135;
                     break;
             }
 
             return new ColorRGBA
             {
-                R = (byte)((Colors[recievedColorId][0] * shadeMultiplier) / 255),
-                G = (byte)((Colors[recievedColorId][1] * shadeMultiplier) / 255),
-                B = (byte)((Colors[recievedColorId][2] * shadeMultiplier) / 255),
+                R = (byte)((Colors[baseColorId][0] * shadeMultiplier) / 255),
+                G = (byte)((Colors[baseColorId][1] * shadeMultiplier) / 255),
+                B = (byte)((Colors[baseColorId][2] * shadeMultiplier) / 255),
                 A = 255
-            };*/
+            };
         }
     }
 }
