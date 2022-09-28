@@ -33,7 +33,7 @@ namespace MinecraftClient.ChatBots
             deleteAllOnExit = Settings.Map_Delete_All_On_Unload;
             notifyOnFirstUpdate = Settings.Map_Notify_On_First_Update;
 
-            RegisterChatBotCommand("maps", "bot.map.cmd.desc", "maps <list/render <id>> | maps <l/r <id>>", OnMapCommand);
+            RegisterChatBotCommand("maps", "bot.map.cmd.desc", "maps list|render <id> or maps l|r <id>", OnMapCommand);
         }
 
         public override void OnUnload()

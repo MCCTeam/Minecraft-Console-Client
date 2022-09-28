@@ -24,9 +24,11 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        int x = int.Parse(args[0]);
-                        int y = int.Parse(args[1]);
-                        int z = int.Parse(args[2]);
+                        Location current = handler.GetCurrentLocation();
+                        double x = args[0].StartsWith('~') ? current.X + (args[0].Length > 1 ? double.Parse(args[0][1..]) : 0) : double.Parse(args[0]);
+                        double y = args[1].StartsWith('~') ? current.Y + (args[1].Length > 1 ? double.Parse(args[1][1..]) : 0) : double.Parse(args[1]);
+                        double z = args[2].StartsWith('~') ? current.Z + (args[2].Length > 1 ? double.Parse(args[2][1..]) : 0) : double.Parse(args[2]);
+
                         Location blockToBreak = new Location(x, y, z);
                         if (blockToBreak.DistanceSquared(handler.GetCurrentLocation().EyesLocation()) > 25)
                             return Translations.Get("cmd.dig.too_far");
