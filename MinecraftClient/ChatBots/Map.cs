@@ -201,9 +201,7 @@ namespace MinecraftClient.ChatBots
 
     class MapColors
     {
-        // Currently only 1.18 colors
-        // Note: This is a wrong color scheme, doesn't really work well, but it is decent enough
-        // We need to find a working one.
+        // When colors are updated in a new update, you can get them using the game code: net\minecraft\world\level\material\MaterialColor.java
         public static Dictionary<byte, byte[]> Colors = new()
         {
             //Color ID      R    G    B
@@ -273,8 +271,9 @@ namespace MinecraftClient.ChatBots
 
         public static ColorRGBA ColorByteToRGBA(byte receivedColorId)
         {
+            // Divide received color id by 4 to get the base color id
             // Much thanks to DevBobcorn
-            byte baseColorId = (byte)(receivedColorId >> 2); // Divide received color id by 4 to get the base color id
+            byte baseColorId = (byte)(receivedColorId >> 2);
 
             // Any new colors that we haven't added will be purple like in the missing CS: Source Texture
             if (!Colors.ContainsKey(baseColorId))
