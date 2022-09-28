@@ -42,6 +42,14 @@ namespace MinecraftClient.ChatBots
                     useTerrainHandling = false;
                     LogToConsole(Translations.TryGet("bot.antiafk.not_using_terrain_handling"));
                 }
+                else
+                {
+                    if (walkRange <= 0)
+                    {
+                        walkRange = 5;
+                        LogToConsole(Translations.TryGet("bot.antiafk.invalid_walk_range"));
+                    }
+                }
             }
 
             if (string.IsNullOrEmpty(pingparam))
