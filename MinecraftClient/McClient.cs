@@ -271,7 +271,7 @@ namespace MinecraftClient
         /// </summary>
         private void RegisterBots(bool reload = false)
         {
-            if (Settings.AntiAFK_Enabled) { BotLoad(new AntiAFK(Settings.AntiAFK_Delay)); }
+            if (Settings.AntiAFK_Enabled) { BotLoad(new AntiAFK(Settings.AntiAFK_Delay, Settings.AntiAFK_UseTerrain_Handling, Settings.AntiAFK_Walk_Range, Settings.AntiAFK_Walk_Retries)); }
             if (Settings.Hangman_Enabled) { BotLoad(new HangmanGame(Settings.Hangman_English)); }
             if (Settings.Alerts_Enabled) { BotLoad(new Alerts()); }
             if (Settings.ChatLog_Enabled) { BotLoad(new ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
