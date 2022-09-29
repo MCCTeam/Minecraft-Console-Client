@@ -74,6 +74,95 @@ namespace MinecraftClient.Mapping
         }
 
         /// <summary>
+        /// Parse location from the string.
+        /// return NULL if the parsing fails.
+        /// </summary>
+        /// <param name="x">The string representation of the X-axis coordinate.</param>
+        /// <param name="y">The string representation of the Y-axis coordinate.</param>
+        /// <param name="z">The string representation of the Z-axis coordinate.</param>
+        /// <returns>The location represented by the string.</returns>
+        public static Location Parse(string x, string y, string z)
+        {
+            Location.TryParse(x, y, z, out Location? res);
+            if (res == null)
+                throw new FormatException();
+            else
+                return (Location)res;
+        }
+
+        public static bool TryParse(string x, string y, string z, out Location? location)
+        {
+            string[] coord_str = new string[] { x.Trim(), y.Trim(), z.Trim() };
+            double[] coord_res = new double[3];
+
+            for (int i = 0; i < 3; ++i)
+            {
+                if (!double.TryParse(coord_str[i], out coord_res[i]))
+                {
+                    location = null;
+                    return false;
+                }
+            }
+
+            location = new Location(coord_res[0], coord_res[1], coord_res[2]);
+            return true;
+        }
+
+        /// <summary>
+        /// Parse location from the string (relative coordinate representation is supported).
+        /// return NULL if the parsing fails.
+        /// </summary>
+        /// <param name="current">Relative position base point.</param>
+        /// <param name="x">The string representation of the X-axis coordinate.</param>
+        /// <param name="y">The string representation of the Y-axis coordinate.</param>
+        /// <param name="z">The string representation of the Z-axis coordinate.</param>
+        /// <returns>The location represented by the string.</returns>
+        public static Location Parse(Location current, string x, string y, string z)
+        {
+            Location.TryParse(current, x, y, z, out Location? res);
+            if (res == null)
+                throw new FormatException();
+            else
+                return (Location)res;
+        }
+
+        public static bool TryParse(Location current, string x, string y, string z, out Location? location)
+        {
+            string[] coord_str = new string[] { x.Trim(), y.Trim(), z.Trim() };
+            double[] coord_res = new double[3];
+            double[] coord_cur = new double[] { current.X, current.Y, current.Z };
+
+            for (int i = 0; i < 3; ++i)
+            {
+                if (coord_str[i].StartsWith('~'))
+                {
+                    if (coord_str[i].Length > 1)
+                    {
+                        if (!double.TryParse(coord_str[i][1..], out coord_res[i]))
+                        {
+                            location = null;
+                            return false;
+                        }
+                        coord_res[i] += coord_cur[i];
+                    }
+                    else
+                        coord_res[i] = coord_cur[i];
+                }
+                else
+                {
+                    if (!double.TryParse(coord_str[i], out coord_res[i]))
+                    {
+                        location = null;
+                        return false;
+                    }
+                }
+            }
+
+            location = new Location(coord_res[0], coord_res[1], coord_res[2]);
+            return true;
+        }
+
+        /// <summary>
         /// Round coordinates
         /// </summary>
         /// <returns>New location</returns>
