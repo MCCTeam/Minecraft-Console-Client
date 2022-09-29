@@ -24,16 +24,14 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        int x = int.Parse(args[0]);
-                        int y = int.Parse(args[1]);
-                        int z = int.Parse(args[2]);
-                        Location blockToBreak = new Location(x, y, z);
-                        if (blockToBreak.DistanceSquared(handler.GetCurrentLocation().EyesLocation()) > 25)
+                        Location current = handler.GetCurrentLocation();
+                        Location blockToBreak = Location.Parse(current, args[0], args[1], args[2]);
+                        if (blockToBreak.DistanceSquared(current.EyesLocation()) > 25)
                             return Translations.Get("cmd.dig.too_far");
                         if (handler.GetWorld().GetBlock(blockToBreak).Type == Material.Air)
                             return Translations.Get("cmd.dig.no_block");
                         if (handler.DigBlock(blockToBreak))
-                            return Translations.Get("cmd.dig.dig", x, y, z);
+                            return Translations.Get("cmd.dig.dig", blockToBreak.X, blockToBreak.Y, blockToBreak.Z);
                         else return "cmd.dig.fail";
                     }
                     catch (FormatException) { return GetCmdDescTranslated(); }

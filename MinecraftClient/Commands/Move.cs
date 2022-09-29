@@ -91,7 +91,6 @@ namespace MinecraftClient.Commands
                     try
                     {
                         Location current = handler.GetCurrentLocation(), currentCenter = current.ToCenter();
-
                         Location goal = Location.Parse(current, args[0], args[1], args[2]);
 
                         if (!Movement.CheckChunkLoading(handler.GetWorld(), current, goal))
