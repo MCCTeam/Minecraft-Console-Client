@@ -966,7 +966,7 @@ namespace MinecraftClient
                 return num;
             else
             {
-                ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
+                ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2double", str));
                 return 0;
             }
         }
