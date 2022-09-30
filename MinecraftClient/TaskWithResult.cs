@@ -9,12 +9,12 @@ namespace MinecraftClient
     /// <typeparam name="T">Type of the return value</typeparam>
     public class TaskWithResult<T>
     {
-        private AutoResetEvent resultEvent = new AutoResetEvent(false);
-        private Func<T> task;
-        private T? result = default(T);
+        private readonly AutoResetEvent resultEvent = new(false);
+        private readonly Func<T> task;
+        private T? result = default;
         private Exception? exception = null;
         private bool taskRun = false;
-        private object taskRunLock = new object();
+        private readonly object taskRunLock = new();
 
         /// <summary>
         /// Create a new asynchronous task with return value

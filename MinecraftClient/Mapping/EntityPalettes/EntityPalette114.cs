@@ -8,7 +8,7 @@ namespace MinecraftClient.Mapping.EntityPalettes
     /// </summary>
     public class EntityPalette114 : EntityPalette
     {
-        private static Dictionary<int, EntityType> mappings = new Dictionary<int, EntityType>();
+        private static readonly Dictionary<int, EntityType> mappings = new();
 
         static EntityPalette114()
         {

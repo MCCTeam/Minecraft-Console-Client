@@ -5,9 +5,9 @@ namespace MinecraftClient.Logger
 {
     public class FileLogLogger : FilteredLogger
     {
-        private string logFile;
-        private bool prependTimestamp;
-        private object logFileLock = new object();
+        private readonly string logFile;
+        private readonly bool prependTimestamp;
+        private readonly object logFileLock = new();
 
         public FileLogLogger(string file, bool prependTimestamp = false)
         {
@@ -36,8 +36,8 @@ namespace MinecraftClient.Logger
                     Directory.CreateDirectory(directory);
                 lock (logFileLock)
                 {
-                    FileStream stream = new FileStream(logFile, FileMode.OpenOrCreate);
-                    StreamWriter writer = new StreamWriter(stream);
+                    FileStream stream = new(logFile, FileMode.OpenOrCreate);
+                    StreamWriter writer = new(stream);
                     stream.Seek(0, SeekOrigin.End);
                     writer.WriteLine(msg);
                     writer.Dispose();

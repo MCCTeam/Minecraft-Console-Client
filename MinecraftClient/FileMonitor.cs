@@ -11,8 +11,8 @@ namespace MinecraftClient
     /// </summary>
     public class FileMonitor : IDisposable
     {
-        private Tuple<FileSystemWatcher, CancellationTokenSource>? monitor = null;
-        private Tuple<Thread, CancellationTokenSource>? polling = null;
+        private readonly Tuple<FileSystemWatcher, CancellationTokenSource>? monitor = null;
+        private readonly Tuple<Thread, CancellationTokenSource>? polling = null;
 
         /// <summary>
         /// Create a new FileMonitor and start monitoring
@@ -94,7 +94,7 @@ namespace MinecraftClient
         /// <returns>Last write time, or DateTime.MinValue if the file does not exist</returns>
         private DateTime GetLastWrite(string path)
         {
-            FileInfo fileInfo = new FileInfo(path);
+            FileInfo fileInfo = new(path);
             if (fileInfo.Exists)
             {
                 return fileInfo.LastWriteTime;

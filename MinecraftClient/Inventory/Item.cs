@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace MinecraftClient.Inventory
 {
@@ -58,8 +59,7 @@ namespace MinecraftClient.Inventory
             {
                 if (NBT != null && NBT.ContainsKey("display"))
                 {
-                    var displayProperties = NBT["display"] as Dictionary<string, object>;
-                    if (displayProperties != null && displayProperties.ContainsKey("Name"))
+                    if (NBT["display"] is Dictionary<string, object> displayProperties && displayProperties.ContainsKey("Name"))
                     {
                         string? displayName = displayProperties["Name"] as string;
                         if (!String.IsNullOrEmpty(displayName))
@@ -77,18 +77,15 @@ namespace MinecraftClient.Inventory
         {
             get
             {
-                List<string> lores = new List<string>();
+                List<string> lores = new();
                 if (NBT != null && NBT.ContainsKey("display"))
                 {
-                    var displayProperties = NBT["display"] as Dictionary<string, object>;
-                    if (displayProperties != null && displayProperties.ContainsKey("Lore"))
+                    if (NBT["display"] is Dictionary<string, object> displayProperties && displayProperties.ContainsKey("Lore"))
                     {
                         object[] displayName = (object[])displayProperties["Lore"];
-                        foreach (string st in displayName)
-                        {
-                            string str = MinecraftClient.Protocol.ChatParser.ParseText(st.ToString());
-                            lores.Add(str);
-                        }
+                        lores.AddRange(from string st in displayName
+                                       let str = MinecraftClient.Protocol.ChatParser.ParseText(st.ToString())
+                                       select str);
                         return lores.ToArray();
                     }
                 }

@@ -24,35 +24,33 @@ namespace DynamicRun.Builder
         {
             ConsoleIO.WriteLogLine($"Starting compilation of: '{fileName}'");
 
-            using (var peStream = new MemoryStream())
+            using var peStream = new MemoryStream();
+            var result = GenerateCode(filepath, fileName).Emit(peStream);
+
+            if (!result.Success)
             {
-                var result = GenerateCode(filepath, fileName).Emit(peStream);
+                ConsoleIO.WriteLogLine("Compilation done with error.");
 
-                if (!result.Success)
-                {
-                    ConsoleIO.WriteLogLine("Compilation done with error.");
-
-                    var failures = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
-
-                    return new CompileResult()
-                    {
-                        Assembly = null,
-                        HasCompiledSucecssfully = false,
-                        Failures = failures.ToList()
-                    };
-                }
-
-                ConsoleIO.WriteLogLine("Compilation done without any error.");
-
-                peStream.Seek(0, SeekOrigin.Begin);
+                var failures = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
 
                 return new CompileResult()
                 {
-                    Assembly = peStream.ToArray(),
-                    HasCompiledSucecssfully = true,
-                    Failures = null
+                    Assembly = null,
+                    HasCompiledSucecssfully = false,
+                    Failures = failures.ToList()
                 };
             }
+
+            ConsoleIO.WriteLogLine("Compilation done without any error.");
+
+            peStream.Seek(0, SeekOrigin.Begin);
+
+            return new CompileResult()
+            {
+                Assembly = peStream.ToArray(),
+                HasCompiledSucecssfully = true,
+                Failures = null
+            };
         }
 
         private static CSharpCompilation GenerateCode(string sourceCode, string fileName)
@@ -149,12 +147,8 @@ namespace DynamicRun.Builder
 
         private static Stream? GetStreamForFileEntry(MemoryMappedViewAccessor viewAccessor, FileEntry file)
         {
-            var stream = typeof(BundleExtractor).GetMethod("GetStreamForFileEntry", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { viewAccessor, file }) as Stream;
-
-            if (stream == null)
-            {
+            if (typeof(BundleExtractor).GetMethod("GetStreamForFileEntry", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { viewAccessor, file }) is not Stream stream)
                 throw new InvalidOperationException("The executable does not contain the assembly. Assembly name: " + file.RelativePath);
-            }
 
             return stream;
         }

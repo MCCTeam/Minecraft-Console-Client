@@ -22,7 +22,7 @@ namespace MinecraftClient.Protocol
         {
             Json.JSONData rawJson = Json.ParseJson(File.ReadAllText(registriesJsonFile));
             Json.JSONData rawRegistry = rawJson.Properties[jsonRegistryName].Properties["entries"];
-            Dictionary<int, string> registry = new Dictionary<int, string>();
+            Dictionary<int, string> registry = new();
 
             foreach (KeyValuePair<string, Json.JSONData> entry in rawRegistry.Properties)
             {
@@ -32,7 +32,7 @@ namespace MinecraftClient.Protocol
                 string entryName = String.Concat(
                     entry.Key.Replace("minecraft:", "")
                     .Split('_')
-                    .Select(word => char.ToUpper(word[0]) + word.Substring(1))
+                    .Select(word => char.ToUpper(word[0]) + word[1..])
                 );
 
                 if (registry.ContainsKey(entryId))
@@ -53,7 +53,7 @@ namespace MinecraftClient.Protocol
         /// <param name="enumNamespace">Output enum namespace, e.g. MinecraftClient.Inventory</param>
         public static void GenerateEnum(string registriesJsonFile, string jsonRegistryName, string outputEnum, string enumNamespace)
         {
-            List<string> outputEnumLines = new List<string>();
+            List<string> outputEnumLines = new();
 
             outputEnumLines.AddRange(new[] {
                 "namespace " + enumNamespace,
@@ -86,8 +86,8 @@ namespace MinecraftClient.Protocol
         /// <param name="paletteNamespace">Palette namespace, e.g. MinecraftClient.EntityPalettes</param>
         public static void GenerateEnumWithPalette(string registriesJsonFile, string jsonRegistryName, string outputEnum, string enumNamespace, string outputPalette, string paletteNamespace)
         {
-            List<string> outputEnumLines = new List<string>();
-            List<string> outputPaletteLines = new List<string>();
+            List<string> outputEnumLines = new();
+            List<string> outputPaletteLines = new();
 
             outputEnumLines.AddRange(new[] {
                 "namespace " + enumNamespace,
@@ -103,7 +103,7 @@ namespace MinecraftClient.Protocol
                 "{",
                 "    public class " + outputPalette + "XXX : " + outputPalette,
                 "    {",
-                "        private static Dictionary<int, " + outputEnum + "> mappings = new Dictionary<int, " + outputEnum + ">();",
+                "        private static readonly Dictionary<int, " + outputEnum + "> mappings = new();",
                 "",
                 "        static " + outputPalette + "XXX()",
                 "        {",

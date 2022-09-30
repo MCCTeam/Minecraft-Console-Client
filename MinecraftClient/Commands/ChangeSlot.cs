@@ -14,12 +14,12 @@ namespace MinecraftClient.Commands
             if (!handler.GetInventoryEnabled())
                 return Translations.Get("extra.inventory_required");
 
-            if (hasArg(command))
+            if (HasArg(command))
             {
                 short slot;
                 try
                 {
-                    slot = Convert.ToInt16(getArg(command));
+                    slot = Convert.ToInt16(GetArg(command));
                 }
                 catch (FormatException)
                 {

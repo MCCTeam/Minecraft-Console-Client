@@ -10,12 +10,12 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                string[] temp = getArg(command).Split('=');
+                string[] temp = GetArg(command).Split('=');
                 if (temp.Length > 1)
                 {
-                    if (Settings.SetVar(temp[0], getArg(command).Substring(temp[0].Length + 1)))
+                    if (Settings.SetVar(temp[0], GetArg(command).Substring(temp[0].Length + 1)))
                     {
                         return ""; //Success
                     }

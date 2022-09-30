@@ -40,13 +40,13 @@ namespace MinecraftClient.Mapping
                 if (Palette.IdHasMetadata)
                 {
                     if (value > (ushort.MaxValue >> 4) || value < 0)
-                        throw new ArgumentOutOfRangeException("value", "Invalid block ID. Accepted range: 0-4095");
+                        throw new ArgumentOutOfRangeException(nameof(value), "Invalid block ID. Accepted range: 0-4095");
                     blockIdAndMeta = (ushort)(value << 4 | BlockMeta);
                 }
                 else
                 {
                     if (value > ushort.MaxValue || value < 0)
-                        throw new ArgumentOutOfRangeException("value", "Invalid block ID. Accepted range: 0-65535");
+                        throw new ArgumentOutOfRangeException(nameof(value), "Invalid block ID. Accepted range: 0-65535");
                     blockIdAndMeta = (ushort)value;
                 }
             }

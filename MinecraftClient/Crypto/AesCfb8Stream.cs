@@ -16,8 +16,8 @@ namespace MinecraftClient.Crypto
 
         private bool inStreamEnded = false;
 
-        private byte[] ReadStreamIV = new byte[16];
-        private byte[] WriteStreamIV = new byte[16];
+        private readonly byte[] ReadStreamIV = new byte[16];
+        private readonly byte[] WriteStreamIV = new byte[16];
 
         public Stream BaseStream { get; set; }
 

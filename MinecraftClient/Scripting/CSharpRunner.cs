@@ -13,7 +13,7 @@ namespace MinecraftClient
     /// </summary>
     class CSharpRunner
     {
-        private static readonly Dictionary<ulong, byte[]> CompileCache = new Dictionary<ulong, byte[]>();
+        private static readonly Dictionary<ulong, byte[]> CompileCache = new();
 
         /// <summary>
         /// Run the specified C# script file
@@ -36,8 +36,8 @@ namespace MinecraftClient
             ulong scriptHash = QuickHash(lines);
             byte[]? assembly = null;
 
-            Compiler compiler = new Compiler();
-            CompileRunner runner = new CompileRunner();
+            Compiler compiler = new();
+            CompileRunner runner = new();
 
             //No need to compile two scripts at the same time
             lock (CompileCache)
@@ -47,10 +47,10 @@ namespace MinecraftClient
                 {
                     //Process different sections of the script file
                     bool scriptMain = true;
-                    List<string> script = new List<string>();
-                    List<string> extensions = new List<string>();
-                    List<string> libs = new List<string>();
-                    List<string> dlls = new List<string>();
+                    List<string> script = new();
+                    List<string> extensions = new();
+                    List<string> libs = new();
+                    List<string> dlls = new();
                     foreach (string line in lines)
                     {
                         if (line.StartsWith("//using"))
@@ -163,7 +163,7 @@ namespace MinecraftClient
     /// </summary>
     public class CSharpException : Exception
     {
-        private CSErrorType _type;
+        private readonly CSErrorType _type;
         public CSErrorType ExceptionType { get { return _type; } }
         public override string Message { get { return InnerException!.Message; } }
         public override string ToString() { return InnerException!.ToString(); }
@@ -182,7 +182,7 @@ namespace MinecraftClient
         /// <summary>
         /// Holds local variables passed along with the script
         /// </summary>
-        private Dictionary<string, object>? localVars;
+        private readonly Dictionary<string, object>? localVars;
 
         /// <summary>
         /// Create a new C# API Wrapper
@@ -226,8 +226,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
         new public bool PerformInternalCommand(string command, Dictionary<string, object>? localVars = null)
         {
-            if (localVars == null)
-                localVars = this.localVars;
+            localVars ??= this.localVars;
             bool result = base.PerformInternalCommand(command, localVars);
             return result;
         }
@@ -319,8 +318,8 @@ namespace MinecraftClient
         public T? GetVar<T>(string varName)
         {
             object? value = GetVar(varName);
-            if (value is T)
-                return (T)value;
+            if (value is T Tval)
+                return Tval;
             if (value != null)
             {
                 try
@@ -331,7 +330,7 @@ namespace MinecraftClient
                 }
                 catch (NotSupportedException) { /* Was worth trying */ }
             }
-            return default(T);
+            return default;
         }
 
         //Named shortcuts for GetVar<type>(varname)

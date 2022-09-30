@@ -14,10 +14,10 @@ namespace MinecraftClient.Commands
         {
             if (handler.GetTerrainEnabled())
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
                 if (args.Length == 1)
                 {
-                    string dirStr = getArg(command).Trim().ToLower();
+                    string dirStr = GetArg(command).Trim().ToLower();
                     Direction direction;
                     switch (dirStr)
                     {

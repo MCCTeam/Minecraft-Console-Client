@@ -8,8 +8,8 @@ namespace MinecraftClient.ChatBots
     {
         private string? _playerToFollow = null;
         private int _updateCounter = 0;
-        private int _updateLimit;
-        private int _stopAtDistance;
+        private readonly int _updateLimit;
+        private readonly int _stopAtDistance;
         private bool _unsafeEnabled = false;
 
         public FollowPlayer(int updateLimit = 15, int stopAtDistance = 3)
@@ -112,7 +112,7 @@ namespace MinecraftClient.ChatBots
                 return;
 
             // Stop at specified distance from plater (prevents pushing player around)
-            double distance = Distance(entity.Location, GetCurrentLocation());
+            double distance = entity.Location.Distance(GetCurrentLocation());
 
             if (distance < _stopAtDistance)
                 return;
@@ -152,14 +152,6 @@ namespace MinecraftClient.ChatBots
                 LogToConsoleTranslated("cmd.follow.stopping");
                 _playerToFollow = null;
             }
-        }
-
-        private double Distance(Location location1, Location location2)
-        {
-            return Math.Sqrt(
-                ((location1.X - location2.X) * (location1.X - location2.X)) +
-                ((location1.Y - location2.Y) * (location1.Y - location2.Y)) +
-                ((location1.Z - location2.Z) * (location1.Z - location2.Z)));
         }
 
         private bool CanMoveThere(Location location)

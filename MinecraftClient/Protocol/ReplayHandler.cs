@@ -21,16 +21,16 @@ namespace MinecraftClient.Protocol
 
         private readonly string recordingTmpFileName = @"recording.tmcpr";
         private readonly string temporaryCache = @"recording_cache";
-        private DataTypes dataTypes;
-        private PacketTypePalette packetType;
-        private int protocolVersion;
-        private BinaryWriter? recordStream;
-        private DateTime recordStartTime;
+        private readonly DataTypes dataTypes;
+        private readonly PacketTypePalette packetType;
+        private readonly int protocolVersion;
+        private readonly BinaryWriter? recordStream;
+        private readonly DateTime recordStartTime;
         private DateTime lastPacketTime;
         private bool prepareCleanUp = false;
         private bool cleanedUp = false;
 
-        private static bool logOutput = true;
+        private static readonly bool logOutput = true;
 
         private int playerEntityID;
         private Guid playerUUID;
@@ -137,17 +137,13 @@ namespace MinecraftClient.Protocol
 
             using (Stream recordingFile = new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Open))
             {
-                using (Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open))
-                {
-                    using (ZipOutputStream zs = new ZipOutputStream(Path.Combine(ReplayFileDirectory, replayFileName)))
-                    {
-                        zs.PutNextEntry(recordingTmpFileName);
-                        recordingFile.CopyTo(zs);
-                        zs.PutNextEntry(MetaData.MetaDataFileName);
-                        metaDataFile.CopyTo(zs);
-                        zs.Close();
-                    }
-                }
+                using Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open);
+                using ZipOutputStream zs = new(Path.Combine(ReplayFileDirectory, replayFileName));
+                zs.PutNextEntry(recordingTmpFileName);
+                recordingFile.CopyTo(zs);
+                zs.PutNextEntry(MetaData.MetaDataFileName);
+                metaDataFile.CopyTo(zs);
+                zs.Close();
             }
 
             File.Delete(Path.Combine(temporaryCache, recordingTmpFileName));
@@ -171,20 +167,18 @@ namespace MinecraftClient.Protocol
 
             using (Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open))
             {
-                using (ZipOutputStream zs = new ZipOutputStream(replayFileName))
-                {
-                    zs.PutNextEntry(recordingTmpFileName);
-                    // .CopyTo() method start from stream current position
-                    // We need to reset position in order to get full content
-                    var lastPosition = recordStream!.BaseStream.Position;
-                    recordStream.BaseStream.Position = 0;
-                    recordStream.BaseStream.CopyTo(zs);
-                    recordStream.BaseStream.Position = lastPosition;
+                using ZipOutputStream zs = new(replayFileName);
+                zs.PutNextEntry(recordingTmpFileName);
+                // .CopyTo() method start from stream current position
+                // We need to reset position in order to get full content
+                var lastPosition = recordStream!.BaseStream.Position;
+                recordStream.BaseStream.Position = 0;
+                recordStream.BaseStream.CopyTo(zs);
+                recordStream.BaseStream.Position = lastPosition;
 
-                    zs.PutNextEntry(MetaData.MetaDataFileName);
-                    metaDataFile.CopyTo(zs);
-                    zs.Close();
-                }
+                zs.PutNextEntry(MetaData.MetaDataFileName);
+                metaDataFile.CopyTo(zs);
+                zs.Close();
             }
 
             WriteDebugLog("Backup replay file created.");
@@ -238,12 +232,12 @@ namespace MinecraftClient.Protocol
             lastPacketTime = DateTime.Now;
             // build raw packet
             // format: packetID + packetData
-            List<byte> rawPacket = new List<byte>();
+            List<byte> rawPacket = new();
             rawPacket.AddRange(dataTypes.GetVarInt(packetID).ToArray());
             rawPacket.AddRange(packetData.ToArray());
             // build format
             // format: timestamp + packetLength + RawPacket
-            List<byte> line = new List<byte>();
+            List<byte> line = new();
             int nowTime = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
             line.AddRange(BitConverter.GetBytes((Int32)nowTime).Reverse().ToArray());
             line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count).Reverse().ToArray());
@@ -299,15 +293,14 @@ namespace MinecraftClient.Protocol
         /// <param name="isLogin"></param>
         private void HandleInBoundPacket(int packetID, IEnumerable<byte> packetData, bool isLogin)
         {
-            Queue<byte> p = new Queue<byte>(packetData);
+            Queue<byte> p = new(packetData);
             PacketTypesIn pType = packetType.GetIncommingTypeById(packetID);
             // Login success. Get player UUID
             if (isLogin && packetID == 0x02)
             {
-                Guid uuid;
                 if (protocolVersion < Protocol18Handler.MC_1_16_Version)
                 {
-                    if (Guid.TryParse(dataTypes.ReadNextString(p), out uuid))
+                    if (Guid.TryParse(dataTypes.ReadNextString(p), out Guid uuid))
                     {
                         SetClientPlayerUUID(uuid);
                         WriteDebugLog("User UUID: " + uuid.ToString());
@@ -382,7 +375,7 @@ namespace MinecraftClient.Protocol
 
         private byte[] GetSpawnPlayerPacket(int entityID, Guid playerUUID, Location location, double pitch, double yaw)
         {
-            List<byte> packet = new List<byte>();
+            List<byte> packet = new();
             packet.AddRange(dataTypes.GetVarInt(entityID));
             packet.AddRange(playerUUID.ToBigEndianBytes());
             packet.AddRange(dataTypes.GetDouble(location.X));

@@ -11,8 +11,8 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     class AutoRespond : ChatBot
     {
-        private string matchesFile;
-        private bool matchColors;
+        private readonly string matchesFile;
+        private readonly bool matchColors;
         private List<RespondRule>? respondRules;
         private enum MessageType { Public, Private, Other };
 
@@ -31,13 +31,13 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         private class RespondRule
         {
-            private Regex? regex;
-            private string? match;
-            private string? actionPublic;
-            private string? actionPrivate;
-            private string? actionOther;
-            private bool ownersOnly;
-            private TimeSpan cooldown;
+            private readonly Regex? regex;
+            private readonly string? match;
+            private readonly string? actionPublic;
+            private readonly string? actionPrivate;
+            private readonly string? actionOther;
+            private readonly bool ownersOnly;
+            private readonly TimeSpan cooldown;
             private DateTime cooldownExpiration;
 
             /// <summary>
@@ -182,9 +182,9 @@ namespace MinecraftClient.ChatBots
                     string line = lineRAW.Split('#')[0].Trim();
                     if (line.Length > 0)
                     {
-                        if (line[0] == '[' && line[line.Length - 1] == ']')
+                        if (line[0] == '[' && line[^1] == ']')
                         {
-                            switch (line.Substring(1, line.Length - 2).ToLower())
+                            switch (line[1..^1].ToLower())
                             {
                                 case "match":
                                     CheckAddMatch(matchRegex, matchString, matchAction, matchActionPrivate, matchActionOther, ownersOnly, cooldown);
@@ -203,7 +203,7 @@ namespace MinecraftClient.ChatBots
                             string argName = line.Split('=')[0];
                             if (line.Length > (argName.Length + 1))
                             {
-                                string argValue = line.Substring(argName.Length + 1);
+                                string argValue = line[(argName.Length + 1)..];
                                 switch (argName.ToLower())
                                 {
                                     case "regex": matchRegex = new Regex(argValue); break;
@@ -281,7 +281,7 @@ namespace MinecraftClient.ChatBots
             {
                 foreach (RespondRule rule in respondRules!)
                 {
-                    Dictionary<string, object> localVars = new Dictionary<string, object>();
+                    Dictionary<string, object> localVars = new();
                     string? toPerform = rule.Match(sender, message, msgType, localVars);
                     if (!String.IsNullOrEmpty(toPerform))
                     {

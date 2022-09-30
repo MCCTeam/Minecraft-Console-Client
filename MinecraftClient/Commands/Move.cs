@@ -13,7 +13,7 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            List<string> args = getArgs(command.ToLower()).ToList();
+            List<string> args = GetArgs(command.ToLower()).ToList();
             bool takeRisk = false;
 
             if (args.Count < 1)
@@ -21,7 +21,7 @@ namespace MinecraftClient.Commands
                 string desc = GetCmdDescTranslated();
 
                 if (handler.GetTerrainEnabled())
-                    handler.Log.Info(getChunkLoadingStatus(handler.GetWorld()));
+                    handler.Log.Info(GetChunkLoadingStatus(handler.GetWorld()));
 
                 return desc;
             }
@@ -65,7 +65,7 @@ namespace MinecraftClient.Commands
                         case "south": direction = Direction.South; break;
                         case "center":
                             Location current = handler.GetCurrentLocation();
-                            Location currentCenter = new Location(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
+                            Location currentCenter = new(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
                             handler.MoveTo(currentCenter, allowDirectTeleport: true);
                             return Translations.Get("cmd.move.walk", currentCenter, current);
                         case "get": return handler.GetCurrentLocation().ToString();
@@ -114,7 +114,7 @@ namespace MinecraftClient.Commands
             else return Translations.Get("extra.terrainandmovement_required");
         }
 
-        private string getChunkLoadingStatus(World world)
+        private static string GetChunkLoadingStatus(World world)
         {
             double chunkLoadedRatio;
             if (world.chunkCnt == 0)

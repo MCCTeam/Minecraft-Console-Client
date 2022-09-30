@@ -180,7 +180,7 @@ namespace MinecraftClient
 
             try
             {
-                client = ProxyHandler.newTcpClient(host, port);
+                client = ProxyHandler.NewTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
                 client.ReceiveTimeout = Settings.Timeout * 1000; // Default: 30 seconds
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
@@ -647,9 +647,9 @@ namespace MinecraftClient
             string command_name = command.Split(' ')[0].ToLower();
             if (command_name == "help")
             {
-                if (Command.hasArg(command))
+                if (Command.HasArg(command))
                 {
-                    string help_cmdname = Command.getArgs(command)[0].ToLower();
+                    string help_cmdname = Command.GetArgs(command)[0].ToLower();
                     if (help_cmdname == "help")
                     {
                         response_msg = Translations.Get("icmd.help");
@@ -670,7 +670,7 @@ namespace MinecraftClient
                 {
                     try
                     {
-                        bot.OnInternalCommand(command_name, string.Join(" ", Command.getArgs(command)), response_msg);
+                        bot.OnInternalCommand(command_name, string.Join(" ", Command.GetArgs(command)), response_msg);
                     }
                     catch (Exception e)
                     {
@@ -707,7 +707,7 @@ namespace MinecraftClient
                             Command cmd = (Command)Activator.CreateInstance(type)!;
                             cmds[Settings.ToLowerIfNeed(cmd.CmdName)] = cmd;
                             cmd_names.Add(Settings.ToLowerIfNeed(cmd.CmdName));
-                            foreach (string alias in cmd.getCMDAliases())
+                            foreach (string alias in cmd.GetCMDAliases())
                                 cmds[Settings.ToLowerIfNeed(alias)] = cmd;
                         }
                         catch (Exception e)

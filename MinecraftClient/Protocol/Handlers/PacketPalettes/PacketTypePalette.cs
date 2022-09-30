@@ -30,9 +30,9 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         protected abstract Dictionary<int, PacketTypesIn> GetListIn();
         protected abstract Dictionary<int, PacketTypesOut> GetListOut();
 
-        private Dictionary<PacketTypesIn, int> reverseMappingIn = new Dictionary<PacketTypesIn, int>();
+        private readonly Dictionary<PacketTypesIn, int> reverseMappingIn = new();
 
-        private Dictionary<PacketTypesOut, int> reverseMappingOut = new Dictionary<PacketTypesOut, int>();
+        private readonly Dictionary<PacketTypesOut, int> reverseMappingOut = new();
 
         private bool forgeEnabled = false;
 
@@ -55,8 +55,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         /// <returns>Packet type</returns>
         public PacketTypesIn GetIncommingTypeById(int packetId)
         {
-            PacketTypesIn p;
-            if (GetListIn().TryGetValue(packetId, out p))
+            if (GetListIn().TryGetValue(packetId, out PacketTypesIn p))
             {
                 return p;
             }
@@ -87,8 +86,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         /// <returns>Packet type</returns>
         public PacketTypesOut GetOutgoingTypeById(int packetId)
         {
-            PacketTypesOut p;
-            if (GetListOut().TryGetValue(packetId, out p))
+            if (GetListOut().TryGetValue(packetId, out PacketTypesOut p))
             {
                 return p;
             }

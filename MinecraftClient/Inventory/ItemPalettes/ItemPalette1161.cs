@@ -8,7 +8,7 @@ namespace MinecraftClient.Inventory.ItemPalettes
     /// </summary>
     public class ItemPalette1161 : ItemPalette
     {
-        private static Dictionary<int, ItemType> mappings = new Dictionary<int, ItemType>();
+        private static readonly Dictionary<int, ItemType> mappings = new();
 
         static ItemPalette1161()
         {

@@ -10,7 +10,7 @@ namespace MinecraftClient.ChatBots
     public class ReplayCapture : ChatBot
     {
         private ReplayHandler? replay;
-        private int backupInterval = 3000; // Unit: second * 10
+        private readonly int backupInterval = 3000; // Unit: second * 10
         private int backupCounter = -1;
 
         public ReplayCapture(int backupInterval)

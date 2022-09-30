@@ -6,7 +6,7 @@ namespace MinecraftClient.ChatBots
     {
         byte LastSlot = 0;
         public static bool Eating = false;
-        private int HungerThreshold = 6;
+        private readonly int HungerThreshold = 6;
         private int DelayCounter = 0;
 
         public AutoEat(int Threshold)

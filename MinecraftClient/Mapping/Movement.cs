@@ -23,7 +23,7 @@ namespace MinecraftClient.Mapping
         {
             if (Settings.GravityEnabled)
             {
-                Location onFoots = new Location(location.X, Math.Floor(location.Y), location.Z);
+                Location onFoots = new(location.X, Math.Floor(location.Y), location.Z);
                 Location belowFoots = Move(location, Direction.Down);
                 if (location.Y > Math.Truncate(location.Y) + 0.0001)
                 {
@@ -94,7 +94,7 @@ namespace MinecraftClient.Mapping
             {
                 //Use MC-Like falling algorithm
                 double Y = start.Y;
-                Queue<Location> fallSteps = new Queue<Location>();
+                Queue<Location> fallSteps = new();
                 fallSteps.Enqueue(start);
                 double motionPrev = motionY;
                 motionY -= 0.08D;
@@ -142,7 +142,7 @@ namespace MinecraftClient.Mapping
         /// <returns>A list of locations, or null if calculation failed</returns>
         public static Queue<Location>? CalculatePath(World world, Location start, Location goal, bool allowUnsafe, int maxOffset, int minOffset, TimeSpan timeout)
         {
-            CancellationTokenSource cts = new CancellationTokenSource();
+            CancellationTokenSource cts = new();
             Task<Queue<Location>?> pathfindingTask = Task.Factory.StartNew(() => Movement.CalculatePath(world, start, goal, allowUnsafe, maxOffset, minOffset, cts.Token));
             pathfindingTask.Wait(timeout);
             if (!pathfindingTask.IsCompleted)
@@ -171,7 +171,7 @@ namespace MinecraftClient.Mapping
         {
             // This is a bad configuration
             if (minOffset > maxOffset)
-                throw new ArgumentException("minOffset must be lower or equal to maxOffset", "minOffset");
+                throw new ArgumentException("minOffset must be lower or equal to maxOffset", nameof(minOffset));
 
             // Round start coordinates for easier calculation
             Location startLower = start.ToFloor();
@@ -186,11 +186,11 @@ namespace MinecraftClient.Mapping
             ///---///
 
             // Dictionary that contains the relation between all coordinates and resolves the final path
-            Dictionary<Location, Location> CameFrom = new Dictionary<Location, Location>();
+            Dictionary<Location, Location> CameFrom = new();
             // Create a Binary Heap for all open positions => Allows fast access to Nodes with lowest scores
-            BinaryHeap openSet = new BinaryHeap();
+            BinaryHeap openSet = new();
             // Dictionary to keep track of the G-Score of every location
-            Dictionary<Location, int> gScoreDict = new Dictionary<Location, int>();
+            Dictionary<Location, int> gScoreDict = new();
 
             // Set start values for variables
             openSet.Insert(0, (int)startLower.DistanceSquared(goalLower), startLower);
@@ -313,9 +313,9 @@ namespace MinecraftClient.Mapping
             }
 
             // List which contains all nodes in form of a Binary Heap
-            private List<Node> heapList;
+            private readonly List<Node> heapList;
             // Hashset for quick checks of locations included in the heap
-            private HashSet<Location> locationList;
+            private readonly HashSet<Location> locationList;
             public Node? MinH_ScoreNode;
 
             public BinaryHeap()
@@ -337,7 +337,7 @@ namespace MinecraftClient.Mapping
                 int i = heapList.Count;
 
                 // Temporarily save the node created with the parameters to allow comparisons
-                Node newNode = new Node(newG_Score, newH_Score, loc);
+                Node newNode = new(newG_Score, newH_Score, loc);
 
                 // Add new note to the end of the list
                 heapList.Add(newNode);
@@ -384,7 +384,7 @@ namespace MinecraftClient.Mapping
                 locationList.Remove(rootNode.Location);
 
                 // Temporarirly store the last item's value.
-                Node lastNode = heapList[heapList.Count - 1];
+                Node lastNode = heapList[^1];
 
                 // Remove the last value.
                 heapList.RemoveAt(heapList.Count - 1);
@@ -640,7 +640,7 @@ namespace MinecraftClient.Mapping
                     return Move(Direction.North) + Move(Direction.West);
 
                 default:
-                    throw new ArgumentException("Unknown direction", "direction");
+                    throw new ArgumentException("Unknown direction", nameof(direction));
             }
         }
 

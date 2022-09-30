@@ -17,7 +17,8 @@ namespace MinecraftClient.Commands
                 color = "§c";  // Red
             else if (tps < 15)
                 color = "§e";  // Yellow
-            else color = "§a"; // Green
+            else 
+                color = "§a"; // Green
             return Translations.Get("cmd.tps.current") + ": " + color + tps;
         }
     }

@@ -12,12 +12,12 @@ namespace MinecraftClient.Protocol.Handlers
     /// </summary>
     class Protocol18Forge
     {
-        private int protocolversion;
-        private DataTypes dataTypes;
-        private Protocol18Handler protocol18;
-        private IMinecraftComHandler mcHandler;
+        private readonly int protocolversion;
+        private readonly DataTypes dataTypes;
+        private readonly Protocol18Handler protocol18;
+        private readonly IMinecraftComHandler mcHandler;
 
-        private ForgeInfo? forgeInfo;
+        private readonly ForgeInfo? forgeInfo;
         private FMLHandshakeClientState fmlHandshakeState = FMLHandshakeClientState.START;
         private bool ForgeEnabled() { return forgeInfo != null; }
 
@@ -283,7 +283,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (fmlChannel == "fml:handshake")
                 {
                     bool fmlResponseReady = false;
-                    List<byte> fmlResponsePacket = new List<byte>();
+                    List<byte> fmlResponsePacket = new();
 
                     switch (packetID)
                     {
@@ -303,17 +303,17 @@ namespace MinecraftClient.Protocol.Handlers
                             if (Settings.DebugMessages)
                                 Translations.WriteLineFormatted("forge.fml2.mod");
 
-                            List<string> mods = new List<string>();
+                            List<string> mods = new();
                             int modCount = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < modCount; i++)
                                 mods.Add(dataTypes.ReadNextString(packetData));
 
-                            Dictionary<string, string> channels = new Dictionary<string, string>();
+                            Dictionary<string, string> channels = new();
                             int channelCount = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < channelCount; i++)
                                 channels.Add(dataTypes.ReadNextString(packetData), dataTypes.ReadNextString(packetData));
 
-                            List<string> registries = new List<string>();
+                            List<string> registries = new();
                             int registryCount = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < registryCount; i++)
                                 registries.Add(dataTypes.ReadNextString(packetData));

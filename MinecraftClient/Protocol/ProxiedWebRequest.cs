@@ -17,13 +17,13 @@ namespace MinecraftClient.Protocol
     {
         private readonly string httpVersion = "HTTP/1.0"; // Use 1.0 here because 1.1 server may send chunked data
 
-        private Uri uri;
-        private string host { get { return uri.Host; } }
-        private int port { get { return uri.Port; } }
-        private string path { get { return uri.PathAndQuery; } }
-        private bool isSecure { get { return uri.Scheme == "https"; } }
+        private readonly Uri uri;
+        private string Host { get { return uri.Host; } }
+        private int Port { get { return uri.Port; } }
+        private string Path { get { return uri.PathAndQuery; } }
+        private bool IsSecure { get { return uri.Scheme == "https"; } }
 
-        public NameValueCollection Headers = new NameValueCollection();
+        public NameValueCollection Headers = new();
 
         public string UserAgent { get { return Headers.Get("User-Agent") ?? String.Empty; } set { Headers.Set("User-Agent", value); } }
         public string Accept { get { return Headers.Get("Accept") ?? String.Empty; } set { Headers.Set("Accept", value); } }
@@ -56,7 +56,7 @@ namespace MinecraftClient.Protocol
         /// </summary>
         private void SetupBasicHeaders()
         {
-            Headers.Add("Host", host);
+            Headers.Add("Host", Host);
             Headers.Add("User-Agent", "MCC/" + Program.Version);
             Headers.Add("Accept", "*/*");
             Headers.Add("Connection", "close");
@@ -93,9 +93,9 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private Response Send(string method, string body = "")
         {
-            List<string> requestMessage = new List<string>()
+            List<string> requestMessage = new()
             {
-                string.Format("{0} {1} {2}", method.ToUpper(), path, httpVersion) // Request line
+                string.Format("{0} {1} {2}", method.ToUpper(), Path, httpVersion) // Request line
             };
             foreach (string key in Headers) // Headers
             {
@@ -118,12 +118,12 @@ namespace MinecraftClient.Protocol
             Response response = Response.Empty();
             AutoTimeout.Perform(() =>
             {
-                TcpClient client = ProxyHandler.newTcpClient(host, port, true);
+                TcpClient client = ProxyHandler.NewTcpClient(Host, Port, true);
                 Stream stream;
-                if (isSecure)
+                if (IsSecure)
                 {
                     stream = new SslStream(client.GetStream());
-                    ((SslStream)stream).AuthenticateAsClient(host, null, SslProtocols.Tls12, true); // Enable TLS 1.2. Hotfix for #1774
+                    ((SslStream)stream).AuthenticateAsClient(Host, null, SslProtocols.Tls12, true); // Enable TLS 1.2. Hotfix for #1774
                 }
                 else
                 {
@@ -133,7 +133,7 @@ namespace MinecraftClient.Protocol
                 byte[] data = Encoding.ASCII.GetBytes(h);
                 stream.Write(data, 0, data.Length);
                 stream.Flush();
-                StreamReader sr = new StreamReader(stream);
+                StreamReader sr = new(stream);
                 string rawResult = sr.ReadToEnd();
                 response = ParseResponse(rawResult);
                 try
@@ -157,11 +157,11 @@ namespace MinecraftClient.Protocol
         {
             int statusCode;
             string responseBody = "";
-            NameValueCollection headers = new NameValueCollection();
-            NameValueCollection cookies = new NameValueCollection();
+            NameValueCollection headers = new();
+            NameValueCollection cookies = new();
             if (raw.StartsWith("HTTP/1.1") || raw.StartsWith("HTTP/1.0"))
             {
-                Queue<string> msg = new Queue<string>(raw.Split(new string[] { "\r\n" }, StringSplitOptions.None));
+                Queue<string> msg = new(raw.Split(new string[] { "\r\n" }, StringSplitOptions.None));
                 statusCode = int.Parse(msg.Dequeue().Split(' ')[1]);
 
                 while (msg.Peek() != "")
@@ -264,7 +264,7 @@ namespace MinecraftClient.Protocol
                         sb.AppendLine("Body: (Truncated to 200 characters)");
                     }
                     else sb.AppendLine("Body: ");
-                    sb.AppendLine(Body.Length > 200 ? Body.Substring(0, 200) + "..." : Body);
+                    sb.AppendLine(Body.Length > 200 ? Body[..200] + "..." : Body);
                 }
                 return sb.ToString();
             }

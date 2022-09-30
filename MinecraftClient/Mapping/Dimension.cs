@@ -127,12 +127,10 @@ namespace MinecraftClient.Mapping
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
         public Dimension(string name, Dictionary<string, object> nbt)
         {
-            if (name == null)
-                throw new ArgumentNullException("name");
-            if (nbt == null)
-                throw new ArgumentNullException("nbt Data");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
 
-            Name = name;
+            if (nbt == null)
+                throw new ArgumentNullException(nameof(nbt));
 
             if (nbt.ContainsKey("piglin_safe"))
                 piglinSafe = 1 == (byte)nbt["piglin_safe"];

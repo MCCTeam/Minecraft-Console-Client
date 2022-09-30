@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MinecraftClient.Mapping
 {
@@ -20,7 +21,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         private static Dimension curDimension = new();
 
-        private static Dictionary<string, Dimension> dimensionList = new();
+        private static readonly Dictionary<string, Dimension> dimensionList = new();
 
         /// <summary>
         /// Chunk data parsing progress
@@ -59,10 +60,11 @@ namespace MinecraftClient.Mapping
         public static void StoreDimensionList(Dictionary<string, object> registryCodec)
         {
             var dimensionListNbt = (object[])(((Dictionary<string, object>)registryCodec["minecraft:dimension_type"])["value"]);
-            foreach (Dictionary<string, object> dimensionNbt in dimensionListNbt)
+            foreach (var (dimensionName, dimensionType) in from Dictionary<string, object> dimensionNbt in dimensionListNbt
+                                                           let dimensionName = (string)dimensionNbt["name"]
+                                                           let dimensionType = (Dictionary<string, object>)dimensionNbt["element"]
+                                                           select (dimensionName, dimensionType))
             {
-                string dimensionName = (string)dimensionNbt["name"];
-                Dictionary<string, object> dimensionType = (Dictionary<string, object>)dimensionNbt["element"];
                 StoreOneDimension(dimensionName, dimensionType);
             }
         }
@@ -167,16 +169,16 @@ namespace MinecraftClient.Mapping
         /// <returns>Block matching the specified block type</returns>
         public List<Location> FindBlock(Location from, Material block, int radiusx, int radiusy, int radiusz)
         {
-            Location minPoint = new Location(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
-            Location maxPoint = new Location(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);
-            List<Location> list = new List<Location> { };
+            Location minPoint = new(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
+            Location maxPoint = new(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);
+            List<Location> list = new() { };
             for (double x = minPoint.X; x <= maxPoint.X; x++)
             {
                 for (double y = minPoint.Y; y <= maxPoint.Y; y++)
                 {
                     for (double z = minPoint.Z; z <= maxPoint.Z; z++)
                     {
-                        Location doneloc = new Location(x, y, z);
+                        Location doneloc = new(x, y, z);
                         Block doneblock = GetBlock(doneloc);
                         Material blockType = doneblock.Type;
                         if (blockType == block)
@@ -230,7 +232,7 @@ namespace MinecraftClient.Mapping
             double x = -Math.Cos(rotY) * Math.Sin(rotX);
             double y = -Math.Sin(rotY);
             double z = Math.Cos(rotY) * Math.Cos(rotX);
-            Location vector = new Location(x, y, z);
+            Location vector = new(x, y, z);
             for (int i = 0; i < 5; i++)
             {
                 Location newVector = vector * i;

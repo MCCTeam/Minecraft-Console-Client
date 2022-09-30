@@ -8,7 +8,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
     /// </summary>
     public class Palette113 : BlockPalette
     {
-        private static Dictionary<int, Material> materials = new Dictionary<int, Material>();
+        private static readonly Dictionary<int, Material> materials = new();
 
         static Palette113()
         {

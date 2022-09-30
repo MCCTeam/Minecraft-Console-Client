@@ -8,8 +8,8 @@ namespace MinecraftClient.Inventory
     /// </summary>
     public class ItemMovingHelper
     {
-        private Container c;
-        private McClient mc;
+        private readonly Container c;
+        private readonly McClient mc;
 
         /// <summary>
         /// Create a helper that contains useful methods to move item around in container
@@ -76,7 +76,7 @@ namespace MinecraftClient.Inventory
         {
             if (!HasItem(source))
                 return false;
-            List<int> availableSlots = new List<int>(slots.Count());
+            List<int> availableSlots = new(slots.Count());
             // filter out different item type or non-empty slots (they will be ignored silently)
             foreach (var slot in slots)
                 if (ItemTypeEqual(source, slot) || !HasItem(slot))

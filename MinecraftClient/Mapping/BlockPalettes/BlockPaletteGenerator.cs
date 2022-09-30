@@ -47,8 +47,8 @@ namespace MinecraftClient.Mapping.BlockPalettes
             string outputPalettePath = Path.Combine(Path.GetDirectoryName(blocksJsonFile)!, outputClass + "XXX.cs");
             string outputEnumPath = Path.Combine(Path.GetDirectoryName(blocksJsonFile)!, outputEnum + "XXX.cs");
 
-            HashSet<int> knownStates = new HashSet<int>();
-            Dictionary<string, HashSet<int>> blocks = new Dictionary<string, HashSet<int>>();
+            HashSet<int> knownStates = new();
+            Dictionary<string, HashSet<int>> blocks = new();
 
             Json.JSONData palette = Json.ParseJson(File.ReadAllText(blocksJsonFile, Encoding.UTF8));
             foreach (KeyValuePair<string, Json.JSONData> item in palette.Properties)
@@ -76,8 +76,8 @@ namespace MinecraftClient.Mapping.BlockPalettes
                 }
             }
 
-            HashSet<string> materials = new HashSet<string>();
-            List<string> outFile = new List<string>();
+            HashSet<string> materials = new();
+            List<string> outFile = new();
             outFile.AddRange(new[] {
                 "using System.Collections.Generic;",
                 "",
@@ -85,7 +85,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
                 "{",
                 "    public class PaletteXXX : BlockPalette",
                 "    {",
-                "        private static Dictionary<int, Material> materials = new Dictionary<int, Material>();",
+                "        private static readonly Dictionary<int, Material> materials = new();",
                 "",
                 "        static PaletteXXX()",
                 "        {",
@@ -102,7 +102,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
                     if (idList.Count > 1)
                     {
                         idList.Sort();
-                        Queue<int> idQueue = new Queue<int>(idList);
+                        Queue<int> idQueue = new(idList);
 
                         while (idQueue.Count > 0)
                         {

@@ -8,7 +8,7 @@ namespace MinecraftClient.Protocol.Message
     /// </summary>
     public class LastSeenMessageList
     {
-        public static readonly LastSeenMessageList EMPTY = new(new Entry[0]);
+        public static readonly LastSeenMessageList EMPTY = new(Array.Empty<Entry>());
         public static readonly int MAX_ENTRIES = 5;
 
         public Entry[] entries;

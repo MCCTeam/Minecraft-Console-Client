@@ -141,27 +141,27 @@ namespace MinecraftClient.Protocol
         /// <returns>Color code</returns>
         private static string Color2tag(string colorname)
         {
-            switch (colorname.ToLower())
+            return colorname.ToLower() switch
             {
-                /* MC 1.7+ Name           MC 1.6 Name           Classic tag */
-                case "black":        /*  Blank if same  */      return "§0";
-                case "dark_blue": return "§1";
-                case "dark_green": return "§2";
-                case "dark_aqua": case "dark_cyan": return "§3";
-                case "dark_red": return "§4";
-                case "dark_purple": case "dark_magenta": return "§5";
-                case "gold": case "dark_yellow": return "§6";
-                case "gray": return "§7";
-                case "dark_gray": return "§8";
-                case "blue": return "§9";
-                case "green": return "§a";
-                case "aqua": case "cyan": return "§b";
-                case "red": return "§c";
-                case "light_purple": case "magenta": return "§d";
-                case "yellow": return "§e";
-                case "white": return "§f";
-                default: return "";
-            }
+                /* MC 1.7+ Name   |   MC 1.6 Name   |   Classic tag */
+                "black"                             =>     "§0",
+                "dark_blue"                         =>     "§1",
+                "dark_green"                        =>     "§2",
+                "dark_aqua"      or "dark_cyan"     =>     "§3",
+                "dark_red"                          =>     "§4",
+                "dark_purple"    or "dark_magenta"  =>     "§5",
+                "gold"           or "dark_yellow"   =>     "§6",
+                "gray"                              =>     "§7",
+                "dark_gray"                         =>     "§8",
+                "blue"                              =>     "§9",
+                "green"                             =>     "§a",
+                "aqua"           or "cyan"          =>     "§b",
+                "red"                               =>     "§c",
+                "light_purple"   or "magenta"       =>     "§d",
+                "yellow"                            =>     "§e",
+                "white"                             =>     "§f",
+                _ => "",
+            };
         }
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace MinecraftClient.Protocol
         /// <summary>
         /// Set of translation rules for formatting text
         /// </summary>
-        private static Dictionary<string, string> TranslationRules = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> TranslationRules = new();
 
         /// <summary>
         /// Initialize translation rules.
@@ -216,7 +216,7 @@ namespace MinecraftClient.Protocol
                     string[] tmp = assets_index.Split(new string[] { "minecraft/lang/" + Settings.Language.ToLower() + ".json" }, StringSplitOptions.None);
                     tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
                     string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
-                    string translation_file_location = Settings.TranslationsFile_Website_Download + '/' + hash.Substring(0, 2) + '/' + hash;
+                    string translation_file_location = Settings.TranslationsFile_Website_Download + '/' + hash[..2] + '/' + hash;
                     if (Settings.DebugMessages)
                         ConsoleIO.WriteLineFormatted(Translations.Get("chat.request", translation_file_location));
 
@@ -285,7 +285,7 @@ namespace MinecraftClient.Protocol
             {
                 int using_idx = 0;
                 string rule = TranslationRules[rulename];
-                StringBuilder result = new StringBuilder();
+                StringBuilder result = new();
                 for (int i = 0; i < rule.Length; i++)
                 {
                     if (rule[i] == '%' && i + 1 < rule.Length)
@@ -364,7 +364,7 @@ namespace MinecraftClient.Protocol
                     }
                     else if (data.Properties.ContainsKey("translate"))
                     {
-                        List<string> using_data = new List<string>();
+                        List<string> using_data = new();
                         if (data.Properties.ContainsKey("using") && !data.Properties.ContainsKey("with"))
                             data.Properties["with"] = data.Properties["using"];
                         if (data.Properties.ContainsKey("with"))

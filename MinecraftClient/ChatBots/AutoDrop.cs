@@ -17,10 +17,10 @@ namespace MinecraftClient.ChatBots
         private bool enable = true;
 
         private int updateDebounce = 0;
-        private int updateDebounceValue = 2;
+        private readonly int updateDebounceValue = 2;
         private int inventoryUpdated = -1;
 
-        private List<ItemType> itemList = new List<ItemType>();
+        private readonly List<ItemType> itemList = new();
 
         public AutoDrop(string mode, string itemList)
         {
@@ -39,13 +39,12 @@ namespace MinecraftClient.ChatBots
         /// <returns>Item type array</returns>
         private ItemType[] ItemListParser(string itemList)
         {
-            string trimed = new string(itemList.Where(c => !char.IsWhiteSpace(c)).ToArray());
+            string trimed = new(itemList.Where(c => !char.IsWhiteSpace(c)).ToArray());
             string[] list = trimed.Split(',');
-            List<ItemType> result = new List<ItemType>();
+            List<ItemType> result = new();
             foreach (string t in list)
             {
-                ItemType item;
-                if (Enum.TryParse(t, true, out item))
+                if (Enum.TryParse(t, true, out ItemType item))
                 {
                     result.Add(item);
                 }
@@ -70,8 +69,7 @@ namespace MinecraftClient.ChatBots
                     case "add":
                         if (args.Length >= 2)
                         {
-                            ItemType item;
-                            if (Enum.TryParse(args[1], true, out item))
+                            if (Enum.TryParse(args[1], true, out ItemType item))
                             {
                                 itemList.Add(item);
                                 return Translations.Get("bot.autoDrop.added", item.ToString());
@@ -88,8 +86,7 @@ namespace MinecraftClient.ChatBots
                     case "remove":
                         if (args.Length >= 2)
                         {
-                            ItemType item;
-                            if (Enum.TryParse(args[1], true, out item))
+                            if (Enum.TryParse(args[1], true, out ItemType item))
                             {
                                 if (itemList.Contains(item))
                                 {
@@ -154,7 +151,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private string GetHelp()
+        private static string GetHelp()
         {
             return Translations.Get("general.available_cmd", "on, off, add, remove, list, mode");
         }

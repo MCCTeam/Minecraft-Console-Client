@@ -85,7 +85,7 @@ namespace MinecraftClient
         /// </summary>
         public static void DebugReadInput()
         {
-            ConsoleKeyInfo k = new ConsoleKeyInfo();
+            ConsoleKeyInfo k;
             while (true)
             {
                 k = Console.ReadKey(true);
@@ -117,14 +117,11 @@ namespace MinecraftClient
         /// </param>
         public static void WriteLineFormatted(string str, bool acceptnewlines = false, bool? displayTimestamp = null)
         {
-            StringBuilder output = new StringBuilder();
+            StringBuilder output = new();
 
             if (!String.IsNullOrEmpty(str))
             {
-                if (displayTimestamp == null)
-                {
-                    displayTimestamp = EnableTimestamps;
-                }
+                displayTimestamp ??= EnableTimestamps;
                 if (displayTimestamp.Value)
                 {
                     int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;

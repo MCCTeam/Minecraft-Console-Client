@@ -15,14 +15,14 @@ namespace MinecraftClient.ChatBots
     public class Script : ChatBot
     {
         private string? file;
-        private string[] lines = new string[0];
-        private string[] args = new string[0];
+        private string[] lines = Array.Empty<string>();
+        private string[] args = Array.Empty<string>();
         private int sleepticks = 10;
         private int nextline = 0;
-        private string? owner;
+        private readonly string? owner;
         private bool csharp;
         private Thread? thread;
-        private Dictionary<string, object>? localVars;
+        private readonly Dictionary<string, object>? localVars;
 
         public Script(string filename)
         {
@@ -38,8 +38,8 @@ namespace MinecraftClient.ChatBots
 
         private void ParseArguments(string argstr)
         {
-            List<string> args = new List<string>();
-            StringBuilder str = new StringBuilder();
+            List<string> args = new();
+            StringBuilder str = new();
 
             bool escape = false;
             bool quotes = false;
@@ -112,7 +112,7 @@ namespace MinecraftClient.ChatBots
                 string caller = "Script";
                 try
                 {
-                    StackFrame frame = new StackFrame(1);
+                    StackFrame frame = new(1);
                     MethodBase method = frame.GetMethod()!;
                     Type type = method.DeclaringType!;
                     caller = type.Name;
@@ -168,8 +168,10 @@ namespace MinecraftClient.ChatBots
                                 SendPrivateMessage(owner, errorMessage);
                             LogToConsole(e.InnerException);
                         }
-                    });
-                    thread.Name = "MCC Script - " + file;
+                    })
+                    {
+                        Name = "MCC Script - " + file
+                    };
                     thread.Start();
                 }
 
@@ -201,7 +203,7 @@ namespace MinecraftClient.ChatBots
                                         int ticks = 10;
                                         try
                                         {
-                                            ticks = Convert.ToInt32(instruction_line.Substring(5, instruction_line.Length - 5));
+                                            ticks = Convert.ToInt32(instruction_line[5..]);
                                         }
                                         catch { }
                                         sleepticks = ticks;

@@ -5,8 +5,8 @@ namespace MinecraftClient.Protocol.Handlers
 {
     public class PacketTypeHandler
     {
-        private int protocol;
-        private bool forgeEnabled = false;
+        private readonly int protocol;
+        private readonly bool forgeEnabled = false;
 
         /// <summary>
         /// Initialize the handler

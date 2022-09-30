@@ -23,7 +23,7 @@ namespace MinecraftClient.Protocol
                 case 0: break; // No pad chars in this case
                 case 2: output += "=="; break; // Two pad chars
                 case 3: output += "="; break; // One pad char
-                default: throw new System.ArgumentOutOfRangeException("input", "Illegal base64url string!");
+                default: throw new System.ArgumentOutOfRangeException(nameof(input), "Illegal base64url string!");
             }
             var converted = Convert.FromBase64String(output); // Standard base64 decoder
             return converted;

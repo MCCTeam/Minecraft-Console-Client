@@ -10,8 +10,8 @@ namespace MinecraftClient.ChatBots
     public class PlayerListLogger : ChatBot
     {
         private int count;
-        private int timeping;
-        private string file;
+        private readonly int timeping;
+        private readonly string file;
 
         /// <summary>
         /// This bot sends a  /list command every X seconds and save the result.
@@ -34,7 +34,7 @@ namespace MinecraftClient.ChatBots
             {
                 string[] playerList = GetOnlinePlayers();
 
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
 
                 for (int i = 0; i < playerList.Length; i++)
                 {

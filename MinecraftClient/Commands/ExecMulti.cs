@@ -12,9 +12,9 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                string commandsString = getArg(command);
+                string commandsString = GetArg(command);
 
                 if (commandsString.Contains("execmulti", StringComparison.OrdinalIgnoreCase) || commandsString.Contains("execif", StringComparison.OrdinalIgnoreCase))
                     return Translations.TryGet("cmd.execmulti.prevent");

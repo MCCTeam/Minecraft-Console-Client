@@ -13,9 +13,9 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
                 if (args.Length > 0)
                 {
                     if (args[0] == "status")
@@ -28,7 +28,7 @@ namespace MinecraftClient.Commands
 
                         StringBuilder sb = new();
 
-                        sb.Append(getChunkLoadingStatus(handler.GetWorld()));
+                        sb.Append(GetChunkLoadingStatus(handler.GetWorld()));
                         sb.Append('\n');
 
                         sb.Append(String.Format("Current location：{0}, chunk: ({1}, {2}).\n", current, current.ChunkX, current.ChunkZ));
@@ -223,7 +223,7 @@ namespace MinecraftClient.Commands
                 return GetCmdDescTranslated();
         }
 
-        private Tuple<int, int>? ParseChunkPos(string[] args)
+        private static Tuple<int, int>? ParseChunkPos(string[] args)
         {
             try
             {
@@ -249,7 +249,7 @@ namespace MinecraftClient.Commands
             }
         }
 
-        private string getChunkLoadingStatus(World world)
+        private static string GetChunkLoadingStatus(World world)
         {
             double chunkLoadedRatio;
             if (world.chunkCnt == 0)

@@ -10,9 +10,9 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                ConsoleIO.WriteLogLine(getArg(command));
+                ConsoleIO.WriteLogLine(GetArg(command));
                 return "";
             }
             else return GetCmdDescTranslated();

@@ -41,9 +41,9 @@ namespace MinecraftClient
                 string line = lineRaw.Split('#')[0].Trim();
                 if (line.Length > 0 && line[0] != ';')
                 {
-                    if (line[0] == '[' && line[line.Length - 1] == ']')
+                    if (line[0] == '[' && line[^1] == ']')
                     {
-                        iniSection = line.Substring(1, line.Length - 2);
+                        iniSection = line[1..^1];
                         if (lowerCase)
                             iniSection = iniSection.ToLower();
                     }
@@ -54,7 +54,7 @@ namespace MinecraftClient
                             argName = argName.ToLower();
                         if (line.Length > (argName.Length + 1))
                         {
-                            string argValue = line.Substring(argName.Length + 1);
+                            string argValue = line[(argName.Length + 1)..];
                             if (!iniContents.ContainsKey(iniSection))
                                 iniContents[iniSection] = new Dictionary<string, string>();
                             iniContents[iniSection][argName] = argValue;
@@ -86,7 +86,7 @@ namespace MinecraftClient
         /// <returns>Lines of the INI file</returns>
         public static string[] Generate(Dictionary<string, Dictionary<string, string>> contents, string? description = null, bool autoCase = true)
         {
-            List<string> lines = new List<string>();
+            List<string> lines = new();
             if (!String.IsNullOrWhiteSpace(description))
                 lines.Add('#' + description);
             foreach (var section in contents)
@@ -95,10 +95,10 @@ namespace MinecraftClient
                     lines.Add("");
                 if (!String.IsNullOrEmpty(section.Key))
                 {
-                    lines.Add("[" + (autoCase ? char.ToUpper(section.Key[0]) + section.Key.Substring(1) : section.Key) + ']');
+                    lines.Add("[" + (autoCase ? char.ToUpper(section.Key[0]) + section.Key[1..] : section.Key) + ']');
                     foreach (var item in section.Value)
                         if (!String.IsNullOrEmpty(item.Key))
-                            lines.Add((autoCase ? char.ToUpper(item.Key[0]) + item.Key.Substring(1) : item.Key) + '=' + item.Value);
+                            lines.Add((autoCase ? char.ToUpper(item.Key[0]) + item.Key[1..] : item.Key) + '=' + item.Value);
                 }
             }
             return lines.ToArray();

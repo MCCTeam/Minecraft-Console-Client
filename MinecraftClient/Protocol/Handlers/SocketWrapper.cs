@@ -9,7 +9,7 @@ namespace MinecraftClient.Protocol.Handlers
     /// </summary>
     class SocketWrapper
     {
-        TcpClient c;
+        readonly TcpClient c;
         AesCfb8Stream? s;
         bool encrypted = false;
 

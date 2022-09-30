@@ -15,10 +15,10 @@ namespace MinecraftClient
     /// </remarks>
     public static class Translations
     {
-        private static Dictionary<string, string> translations;
-        private static string translationFilePath = "lang" + Path.DirectorySeparatorChar + "mcc";
-        private static string defaultTranslation = "en.ini";
-        private static Regex translationKeyRegex = new Regex(@"\(\[(.*?)\]\)", RegexOptions.Compiled); // Extract string inside ([ ])
+        private static readonly Dictionary<string, string> translations;
+        private static readonly string translationFilePath = "lang" + Path.DirectorySeparatorChar + "mcc";
+        private static readonly string defaultTranslation = "en.ini";
+        private static readonly Regex translationKeyRegex = new(@"\(\[(.*?)\]\)", RegexOptions.Compiled); // Extract string inside ([ ])
 
         /// <summary>
         /// Return a tranlation for the requested text. Support string formatting
@@ -162,13 +162,13 @@ namespace MinecraftClient
                     continue;
                 if (line.StartsWith("#")) // ignore comment line started with #
                     continue;
-                if (line[0] == '[' && line[line.Length - 1] == ']') // ignore section
+                if (line[0] == '[' && line[^1] == ']') // ignore section
                     continue;
 
                 string translationName = line.Split('=')[0];
                 if (line.Length > (translationName.Length + 1))
                 {
-                    string translationValue = line.Substring(translationName.Length + 1).Replace("\\n", "\n");
+                    string translationValue = line[(translationName.Length + 1)..].Replace("\\n", "\n");
                     translations[translationName] = translationValue;
                 }
             }

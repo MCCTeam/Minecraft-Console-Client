@@ -7,9 +7,9 @@ namespace MinecraftClient
     /// </summary>
     class TaskWithDelay
     {
-        private Action _task;
+        private readonly Action _task;
         private int tickCounter;
-        private DateTime dateToLaunch;
+        private readonly DateTime dateToLaunch;
 
         public Action Task { get { return _task; } }
 

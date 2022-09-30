@@ -40,8 +40,10 @@ namespace MinecraftClient.Protocol.Handlers.Forge
             switch (fmlVersion)
             {
                 case FMLVersion.FML2:
-                    Mods = new List<ForgeMod>();
-                    Mods.Add(new ForgeMod("forge", "ANY"));
+                    Mods = new List<ForgeMod>
+                    {
+                        new ForgeMod("forge", "ANY")
+                    };
                     Version = fmlVersion;
                     break;
                 default:

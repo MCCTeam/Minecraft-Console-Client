@@ -15,9 +15,9 @@ namespace MinecraftClient.Commands
             if (!handler.GetTerrainEnabled())
                 return Translations.Get("extra.terrainandmovement_required");
 
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
                 if (args.Length == 3)
                 {
                     try

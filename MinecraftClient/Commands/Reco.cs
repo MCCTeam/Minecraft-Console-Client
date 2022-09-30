@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient? handler, string command, Dictionary<string, object>? localVars)
         {
-            string[] args = getArgs(command);
+            string[] args = GetArgs(command);
             if (args.Length > 0)
             {
                 if (!Settings.SetAccount(args[0]))

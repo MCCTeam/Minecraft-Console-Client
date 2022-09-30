@@ -83,7 +83,7 @@ namespace MinecraftClient
         public static string TranslationsFile_Website_Index = "https://launchermeta.mojang.com/v1/packages/e5af543d9b3ce1c063a97842c38e50e29f961f00/1.17.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static TimeSpan messageCooldown = TimeSpan.FromSeconds(2);
-        public static List<string> Bots_Owners = new List<string>();
+        public static List<string> Bots_Owners = new();
         public static string Language = "en_GB";
         public static bool interactiveMode = true;
         public static char internalCmdChar = '/';
@@ -264,9 +264,9 @@ namespace MinecraftClient
         public static bool Map_Notify_On_First_Update = true;
 
         //Custom app variables and Minecraft accounts
-        private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
-        private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
-        private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
+        private static readonly Dictionary<string, object> AppVars = new();
+        private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new();
+        private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new();
 
         //Temporary Server Alias storage when server list is not loaded yet
         private static string? ServerAliasTemp = null;
@@ -281,8 +281,7 @@ namespace MinecraftClient
         /// <returns>Section enum</returns>
         private static Section GetSection(string name)
         {
-            Section pMode;
-            if (Enum.TryParse(name, true, out pMode))
+            if (Enum.TryParse(name, true, out Section pMode))
                 return pMode;
             return Section.Default;
         }
@@ -338,11 +337,11 @@ namespace MinecraftClient
                 if (argument.StartsWith("--"))
                 {
                     //Load settings as --setting=value and --section.setting=value
-                    if (!argument.Contains("="))
+                    if (!argument.Contains('='))
                         throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
                     Section section = Section.Main;
-                    string argName = argument.Substring(2).Split('=')[0];
-                    string argValue = argument.Substring(argName.Length + 3);
+                    string argName = argument[2..].Split('=')[0];
+                    string argValue = argument[(argName.Length + 3)..];
                     if (argName.Contains('.'))
                     {
                         string sectionName = argName.Split('.')[0];
@@ -428,7 +427,7 @@ namespace MinecraftClient
                             Bots_Owners.Clear();
                             string lowerArgValue = ToLowerIfNeed(argValue);
                             string[] names = lowerArgValue.Split(',');
-                            if (!argValue.Contains(",") && lowerArgValue.EndsWith(".txt") && File.Exists(argValue))
+                            if (!argValue.Contains(',') && lowerArgValue.EndsWith(".txt") && File.Exists(argValue))
                                 names = File.ReadAllLines(argValue);
                             foreach (string name in names)
                                 if (!String.IsNullOrWhiteSpace(name))
@@ -508,12 +507,12 @@ namespace MinecraftClient
                             return true;
 
                         case "brandinfo":
-                            switch (ToLowerIfNeed(argValue.Trim()))
+                            BrandInfo = ToLowerIfNeed(argValue.Trim()) switch
                             {
-                                case "mcc": BrandInfo = MCCBrandInfo; break;
-                                case "vanilla": BrandInfo = "vanilla"; break;
-                                default: BrandInfo = null; break;
-                            }
+                                "mcc" => MCCBrandInfo,
+                                "vanilla" => "vanilla",
+                                _ => null,
+                            };
                             return true;
 
                         case "resolvesrvrecords":
@@ -1163,13 +1162,13 @@ namespace MinecraftClient
         /// <returns>Modifier string</returns>
         public static string ExpandVars(string str, Dictionary<string, object>? localVars = null)
         {
-            StringBuilder result = new StringBuilder();
+            StringBuilder result = new();
             for (int i = 0; i < str.Length; i++)
             {
                 if (str[i] == '%')
                 {
                     bool varname_ok = false;
-                    StringBuilder var_name = new StringBuilder();
+                    StringBuilder var_name = new();
 
                     for (int j = i + 1; j < str.Length; j++)
                     {

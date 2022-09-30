@@ -57,12 +57,12 @@ namespace MinecraftClient.Protocol.Message
             this.senderUUID = senderUUID;
         }
 
-        public LastSeenMessageList.Entry? toLastSeenMessageEntry()
+        public LastSeenMessageList.Entry? ToLastSeenMessageEntry()
         {
             return signature != null ? new LastSeenMessageList.Entry(senderUUID, signature) : null;
         }
 
-        public bool lacksSender()
+        public bool LacksSender()
         {
             return senderUUID == Guid.Empty;
         }

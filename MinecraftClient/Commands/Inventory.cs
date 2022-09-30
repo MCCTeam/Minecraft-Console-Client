@@ -16,7 +16,7 @@ namespace MinecraftClient.Commands
         {
             if (handler.GetInventoryEnabled())
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
                 if (args.Length >= 1)
                 {
                     int inventoryId;

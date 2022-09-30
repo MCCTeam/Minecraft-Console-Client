@@ -15,13 +15,12 @@ namespace MinecraftClient.Commands
         {
             if (handler.GetEntityHandlingEnabled())
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
                 if (args.Length >= 1)
                 {
                     try
                     {
-                        int entityID = 0;
-                        int.TryParse(args[0], out entityID);
+                        int entityID = int.Parse(args[0]);
                         if (entityID != 0)
                         {
                             if (handler.GetEntities().ContainsKey(entityID))
@@ -99,8 +98,7 @@ namespace MinecraftClient.Commands
                         }
                         else
                         {
-                            EntityType interacttype = EntityType.Player;
-                            Enum.TryParse(args[0], out interacttype);
+                            EntityType interacttype = Enum.Parse<EntityType>(args[0]);
                             string actionst = "cmd.entityCmd.attacked";
                             int actioncount = 0;
                             foreach (var entity2 in handler.GetEntities())
@@ -133,8 +131,10 @@ namespace MinecraftClient.Commands
                 else
                 {
                     Dictionary<int, Entity> entities = handler.GetEntities();
-                    List<string> response = new List<string>();
-                    response.Add(Translations.Get("cmd.entityCmd.entities"));
+                    List<string> response = new()
+                    {
+                        Translations.Get("cmd.entityCmd.entities")
+                    };
                     foreach (var entity2 in entities)
                     {
                         int id = entity2.Key;

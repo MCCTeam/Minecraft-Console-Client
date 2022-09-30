@@ -9,31 +9,31 @@
         /// <returns>Slot count of the container</returns>
         public static int SlotCount(this ContainerType c)
         {
-            switch (c)
+            return c switch
             {
-                case ContainerType.PlayerInventory: return 46;
-                case ContainerType.Generic_9x3: return 63;
-                case ContainerType.Generic_9x6: return 90;
-                case ContainerType.Generic_3x3: return 45;
-                case ContainerType.Crafting: return 46;
-                case ContainerType.BlastFurnace: return 39;
-                case ContainerType.Furnace: return 39;
-                case ContainerType.Smoker: return 39;
-                case ContainerType.Enchantment: return 38;
-                case ContainerType.BrewingStand: return 41;
-                case ContainerType.Merchant: return 39;
-                case ContainerType.Beacon: return 37;
-                case ContainerType.Anvil: return 39;
-                case ContainerType.Hopper: return 41;
-                case ContainerType.ShulkerBox: return 63;
-                case ContainerType.Loom: return 40;
-                case ContainerType.Stonecutter: return 38;
-                case ContainerType.Lectern: return 37;
-                case ContainerType.Cartography: return 39;
-                case ContainerType.Grindstone: return 39;
-                case ContainerType.Unknown: return 0;
-                default: return 0;
-            }
+                ContainerType.PlayerInventory => 46,
+                ContainerType.Generic_9x3 => 63,
+                ContainerType.Generic_9x6 => 90,
+                ContainerType.Generic_3x3 => 45,
+                ContainerType.Crafting => 46,
+                ContainerType.BlastFurnace => 39,
+                ContainerType.Furnace => 39,
+                ContainerType.Smoker => 39,
+                ContainerType.Enchantment => 38,
+                ContainerType.BrewingStand => 41,
+                ContainerType.Merchant => 39,
+                ContainerType.Beacon => 37,
+                ContainerType.Anvil => 39,
+                ContainerType.Hopper => 41,
+                ContainerType.ShulkerBox => 63,
+                ContainerType.Loom => 40,
+                ContainerType.Stonecutter => 38,
+                ContainerType.Lectern => 37,
+                ContainerType.Cartography => 39,
+                ContainerType.Grindstone => 39,
+                ContainerType.Unknown => 0,
+                _ => 0,
+            };
         }
 
         /// <summary>

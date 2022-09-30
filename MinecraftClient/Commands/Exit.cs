@@ -14,7 +14,7 @@ namespace MinecraftClient.Commands
             return "";
         }
 
-        public override IEnumerable<string> getCMDAliases()
+        public override IEnumerable<string> GetCMDAliases()
         {
             return new string[] { "quit" };
         }

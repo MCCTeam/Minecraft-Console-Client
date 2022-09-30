@@ -15,7 +15,7 @@ namespace MinecraftClient.WinAPI
         /// <summary>
         /// Store codes to run before quitting
         /// </summary>
-        private static List<Action> actions = new List<Action>();
+        private static readonly List<Action> actions = new();
 
         static ExitCleanUp()
         {
@@ -81,7 +81,7 @@ namespace MinecraftClient.WinAPI
         [DllImport("Kernel32")]
         private static extern bool SetConsoleCtrlHandler(ConsoleCtrlHandler handler, bool add);
         private delegate bool ConsoleCtrlHandler(CtrlType sig);
-        private static ConsoleCtrlHandler? _handler;
+        private static readonly ConsoleCtrlHandler? _handler;
 
         enum CtrlType
         {

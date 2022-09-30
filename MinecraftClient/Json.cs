@@ -26,7 +26,7 @@ namespace MinecraftClient
         public class JSONData
         {
             public enum DataType { Object, Array, String };
-            private DataType type;
+            private readonly DataType type;
             public DataType Type { get { return type; } }
             public Dictionary<string, JSONData> Properties;
             public List<JSONData> DataArray;
@@ -149,7 +149,7 @@ namespace MinecraftClient
                     case '.':
                     case '-':
                         data = new JSONData(JSONData.DataType.String);
-                        StringBuilder sb = new StringBuilder();
+                        StringBuilder sb = new();
                         while ((toparse[cursorpos] >= '0' && toparse[cursorpos] <= '9') || toparse[cursorpos] == '.' || toparse[cursorpos] == '-')
                         {
                             sb.Append(toparse[cursorpos]);

@@ -8,8 +8,8 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class Alerts : ChatBot
     {
-        private string[] dictionary = new string[0];
-        private string[] excludelist = new string[0];
+        private string[] dictionary = Array.Empty<string>();
+        private string[] excludelist = Array.Empty<string>();
         private bool logToFile = false;
 
         /// <summary>

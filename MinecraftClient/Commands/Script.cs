@@ -10,9 +10,9 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                handler.BotLoad(new ChatBots.Script(getArg(command), null, localVars));
+                handler.BotLoad(new ChatBots.Script(GetArg(command), null, localVars));
                 return "";
             }
             else return GetCmdDescTranslated();

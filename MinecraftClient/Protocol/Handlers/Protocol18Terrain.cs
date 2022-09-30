@@ -14,9 +14,9 @@ namespace MinecraftClient.Protocol.Handlers
     /// </summary>
     class Protocol18Terrain
     {
-        private int protocolversion;
-        private DataTypes dataTypes;
-        private IMinecraftComHandler handler;
+        private readonly int protocolversion;
+        private readonly DataTypes dataTypes;
+        private readonly IMinecraftComHandler handler;
 
         /// <summary>
         /// Initialize a new Terrain Decoder
@@ -275,7 +275,7 @@ namespace MinecraftClient.Protocol.Handlers
                         // Block IDs are packed in the array of 64-bits integers
                         ulong[] dataArray = dataTypes.ReadNextULongArray(cache);
 
-                        Chunk chunk = new Chunk();
+                        Chunk chunk = new();
 
                         if (dataArray.Length > 0)
                         {
@@ -397,10 +397,10 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         if ((chunkMask & (1 << chunkY)) != 0)
                         {
-                            Chunk chunk = new Chunk();
+                            Chunk chunk = new();
 
                             //Read chunk data, all at once for performance reasons, and build the chunk object
-                            Queue<ushort> queue = new Queue<ushort>(dataTypes.ReadNextUShortsLittleEndian(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ, cache));
+                            Queue<ushort> queue = new(dataTypes.ReadNextUShortsLittleEndian(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ, cache));
                             for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                                 for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
                                     for (int blockX = 0; blockX < Chunk.SizeX; blockX++)
@@ -455,8 +455,8 @@ namespace MinecraftClient.Protocol.Handlers
                     }
 
                     //Read chunk data, unpacking 4-bit values into 8-bit values for block metadata
-                    Queue<byte> blockTypes = new Queue<byte>(dataTypes.ReadData(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount, cache));
-                    Queue<byte> blockMeta = new Queue<byte>();
+                    Queue<byte> blockTypes = new(dataTypes.ReadData(Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount, cache));
+                    Queue<byte> blockMeta = new();
                     foreach (byte packed in dataTypes.ReadData((Chunk.SizeX * Chunk.SizeY * Chunk.SizeZ * sectionCount) / 2, cache))
                     {
                         byte hig = (byte)(packed >> 4);
@@ -479,7 +479,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         if ((chunkMask & (1 << chunkY)) != 0)
                         {
-                            Chunk chunk = new Chunk();
+                            Chunk chunk = new();
 
                             for (int blockY = 0; blockY < Chunk.SizeY; blockY++)
                                 for (int blockZ = 0; blockZ < Chunk.SizeZ; blockZ++)
