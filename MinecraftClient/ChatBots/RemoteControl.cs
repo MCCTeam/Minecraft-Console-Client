@@ -17,7 +17,7 @@ namespace MinecraftClient.ChatBots
             string command = "", sender = "";
             if (IsPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower().Trim()))
             {
-                string response = "";
+                string? response = "";
                 PerformInternalCommand(command, ref response);
                 response = GetVerbatim(response);
                 foreach (char disallowedChar in McClient.GetDisallowedChatCharacters())

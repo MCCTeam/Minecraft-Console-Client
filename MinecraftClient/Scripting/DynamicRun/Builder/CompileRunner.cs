@@ -14,7 +14,7 @@ namespace DynamicRun.Builder
 {
     internal class CompileRunner
     {
-        public object? Execute(byte[] compiledAssembly, string[] args, Dictionary<string, object> localVars, ChatBot apiHandler)
+        public object? Execute(byte[] compiledAssembly, string[] args, Dictionary<string, object>? localVars, ChatBot apiHandler)
         {
             var assemblyLoadContextWeakRef = LoadAndExecute(compiledAssembly, args, localVars, apiHandler);
 
@@ -29,20 +29,18 @@ namespace DynamicRun.Builder
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Tuple<WeakReference, object?> LoadAndExecute(byte[] compiledAssembly, string[] args, Dictionary<string, object> localVars, ChatBot apiHandler)
+        private static Tuple<WeakReference, object?> LoadAndExecute(byte[] compiledAssembly, string[] args, Dictionary<string, object>? localVars, ChatBot apiHandler)
         {
-            using (var asm = new MemoryStream(compiledAssembly))
-            {
-                var assemblyLoadContext = new SimpleUnloadableAssemblyLoadContext();
+            using var asm = new MemoryStream(compiledAssembly);
+            var assemblyLoadContext = new SimpleUnloadableAssemblyLoadContext();
 
-                var assembly = assemblyLoadContext.LoadFromStream(asm);
-                var compiledScript = assembly.CreateInstance("ScriptLoader.Script");
-                var execResult  = compiledScript.GetType().GetMethod("__run").Invoke(compiledScript, new object[] { new CSharpAPI(apiHandler, localVars), args });
-                
-                assemblyLoadContext.Unload();
+            var assembly = assemblyLoadContext.LoadFromStream(asm);
+            var compiledScript = assembly.CreateInstance("ScriptLoader.Script")!;
+            var execResult = compiledScript.GetType().GetMethod("__run")!.Invoke(compiledScript, new object[] { new CSharpAPI(apiHandler, localVars), args });
 
-                return new (new WeakReference(assemblyLoadContext), execResult);
-            }
+            assemblyLoadContext.Unload();
+
+            return new(new WeakReference(assemblyLoadContext), execResult);
         }
     }
 }

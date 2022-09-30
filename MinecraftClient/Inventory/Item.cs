@@ -53,7 +53,7 @@ namespace MinecraftClient.Inventory
         /// <summary>
         /// Retrieve item display name from NBT properties. NULL if no display name is defined.
         /// </summary>
-        public string DisplayName
+        public string? DisplayName
         {
             get
             {
@@ -62,9 +62,9 @@ namespace MinecraftClient.Inventory
                     var displayProperties = NBT["display"] as Dictionary<string, object>;
                     if (displayProperties != null && displayProperties.ContainsKey("Name"))
                     {
-                        string displayName = displayProperties["Name"] as string;
+                        string? displayName = displayProperties["Name"] as string;
                         if (!String.IsNullOrEmpty(displayName))
-                            return MinecraftClient.Protocol.ChatParser.ParseText(displayProperties["Name"].ToString());
+                            return MinecraftClient.Protocol.ChatParser.ParseText(displayProperties["Name"].ToString()!);
                     }
                 }
                 return null;
@@ -74,7 +74,7 @@ namespace MinecraftClient.Inventory
         /// <summary>
         /// Retrieve item lores from NBT properties. Returns null if no lores is defined.
         /// </summary>
-        public string[] Lores
+        public string[]? Lores
         {
             get
             {
@@ -84,7 +84,7 @@ namespace MinecraftClient.Inventory
                     var displayProperties = NBT["display"] as Dictionary<string, object>;
                     if (displayProperties != null && displayProperties.ContainsKey("Lore"))
                     {
-                        object[] displayName = displayProperties["Lore"] as object[];
+                        object[] displayName = (object[])displayProperties["Lore"];
                         foreach (string st in displayName)
                         {
                             string str = MinecraftClient.Protocol.ChatParser.ParseText(st.ToString());
@@ -109,7 +109,7 @@ namespace MinecraftClient.Inventory
                     object damage = NBT["Damage"];
                     if (damage != null)
                     {
-                        return int.Parse(damage.ToString());
+                        return int.Parse(damage.ToString()!);
                     }
                 }
                 return 0;
@@ -118,18 +118,18 @@ namespace MinecraftClient.Inventory
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
+
             sb.AppendFormat("x{0,-2} {1}", Count, Type.ToString());
-            string displayName = DisplayName;
+
+            string? displayName = DisplayName;
             if (!String.IsNullOrEmpty(displayName))
-            {
                 sb.AppendFormat(" - {0}§8", displayName);
-            }
+
             int damage = Damage;
             if (damage != 0)
-            {
                 sb.AppendFormat(" | {0}: {1}", Translations.Get("cmd.inventory.damage"), damage);
-            }
+
             return sb.ToString();
         }
     }

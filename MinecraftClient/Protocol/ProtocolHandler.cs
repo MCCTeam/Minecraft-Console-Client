@@ -124,7 +124,7 @@ namespace MinecraftClient.Protocol
         /// <param name="ProtocolVersion">Protocol version to handle</param>
         /// <param name="Handler">Handler with the appropriate callbacks</param>
         /// <returns></returns>
-        public static IMinecraftCom GetProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo forgeInfo, IMinecraftComHandler Handler)
+        public static IMinecraftCom GetProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo? forgeInfo, IMinecraftComHandler Handler)
         {
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
 

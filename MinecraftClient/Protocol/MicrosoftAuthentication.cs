@@ -205,7 +205,7 @@ namespace MinecraftClient.Protocol
 
             if (response.StatusCode >= 300 && response.StatusCode <= 399)
             {
-                string url = response.Headers.Get("Location");
+                string url = response.Headers.Get("Location")!;
                 string hash = url.Split('#')[1];
 
                 var request2 = new ProxiedWebRequest(url);

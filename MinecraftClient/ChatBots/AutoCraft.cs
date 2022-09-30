@@ -16,7 +16,7 @@ namespace MinecraftClient.ChatBots
         private bool craftingFailed = false;
         private int inventoryInUse = -2;
         private int index = 0;
-        private Recipe recipeInUse;
+        private Recipe? recipeInUse;
         private List<ActionStep> actionSteps = new List<ActionStep>();
 
         private Location tableLocation = new Location();
@@ -123,9 +123,10 @@ namespace MinecraftClient.ChatBots
             /// Materials needed and their position
             /// </summary>
             /// <remarks>position start with 1, from left to right, top to bottom</remarks>
-            public Dictionary<int, ItemType> Materials;
+            public Dictionary<int, ItemType>? Materials;
 
             public Recipe() { }
+
             public Recipe(Dictionary<int, ItemType> materials, ItemType resultItem, ContainerType type)
             {
                 Materials = materials;
@@ -141,7 +142,7 @@ namespace MinecraftClient.ChatBots
             /// <remarks>so that it can be used in crafting table</remarks>
             public static Recipe ConvertToCraftingTable(Recipe recipe)
             {
-                if (recipe.CraftingAreaType == ContainerType.PlayerInventory)
+                if (recipe.CraftingAreaType == ContainerType.PlayerInventory && recipe.Materials != null)
                 {
                     if (recipe.Materials.ContainsKey(4))
                     {
@@ -398,9 +399,10 @@ namespace MinecraftClient.ChatBots
                         ItemType itemType;
                         if (Enum.TryParse(value, true, out itemType))
                         {
-                            if (recipes[lastRecipe].Materials != null && recipes[lastRecipe].Materials.Count > 0)
+                            Dictionary<int, ItemType>? materials = recipes[lastRecipe].Materials;
+                            if (materials != null && materials.Count > 0)
                             {
-                                recipes[lastRecipe].Materials.Add(slot, itemType);
+                                materials.Add(slot, itemType);
                             }
                             else
                             {
@@ -487,7 +489,7 @@ namespace MinecraftClient.ChatBots
                     // After table opened, we need to wait for server to update table inventory items
                     waitingForUpdate = true;
                     inventoryInUse = inventoryId;
-                    PrepareCrafting(recipeInUse);
+                    PrepareCrafting(recipeInUse!);
                 }
             }
         }
@@ -562,11 +564,14 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
+            if (recipe.Materials != null)
             {
-                // Steps for moving items from inventory to crafting area
-                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Value));
-                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Key));
+                foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
+                {
+                    // Steps for moving items from inventory to crafting area
+                    actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Value));
+                    actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Key));
+                }
             }
             if (actionSteps.Count > 0)
             {
@@ -626,10 +631,10 @@ namespace MinecraftClient.ChatBots
                         else
                         {
                             int[] slots = GetInventories()[step.InventoryID].SearchItem(step.ItemType);
-                            if (slots.Count() > 0)
+                            if (slots.Length > 0)
                             {
                                 int ignoredSlot;
-                                if (recipeInUse.CraftingAreaType == ContainerType.PlayerInventory)
+                                if (recipeInUse!.CraftingAreaType == ContainerType.PlayerInventory)
                                     ignoredSlot = 9;
                                 else
                                     ignoredSlot = 10;

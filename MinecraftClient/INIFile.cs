@@ -73,7 +73,7 @@ namespace MinecraftClient
         /// <param name="contents">Data to put into the file</param>
         /// <param name="description">INI file description, inserted as a comment on first line of the INI file</param>
         /// <param name="autoCase">Automatically change first char of section and keys to uppercase</param>
-        public static void WriteFile(string iniFile, Dictionary<string, Dictionary<string, string>> contents, string description = null, bool autoCase = true)
+        public static void WriteFile(string iniFile, Dictionary<string, Dictionary<string, string>> contents, string? description = null, bool autoCase = true)
         {
             File.WriteAllLines(iniFile, Generate(contents, description, autoCase), Encoding.UTF8);
         }
@@ -85,7 +85,7 @@ namespace MinecraftClient
         /// <param name="description">INI file description, inserted as a comment on first line of the INI file</param>
         /// <param name="autoCase">Automatically change first char of section and keys to uppercase</param>
         /// <returns>Lines of the INI file</returns>
-        public static string[] Generate(Dictionary<string, Dictionary<string, string>> contents, string description = null, bool autoCase = true)
+        public static string[] Generate(Dictionary<string, Dictionary<string, string>> contents, string? description = null, bool autoCase = true)
         {
             List<string> lines = new List<string>();
             if (!String.IsNullOrWhiteSpace(description))

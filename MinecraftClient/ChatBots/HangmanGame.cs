@@ -29,6 +29,7 @@ namespace MinecraftClient.ChatBots
         public HangmanGame(bool english)
         {
             English = english;
+            discovered = Array.Empty<bool>();
         }
 
         public override void Update()

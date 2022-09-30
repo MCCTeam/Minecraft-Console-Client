@@ -35,7 +35,7 @@ namespace MinecraftClient.Inventory
         /// <param name="dest">Dest slot</param>
         /// <param name="destContainer">Dest slot's container (only if dest slot is in other container)</param>
         /// <returns>True if success or false if Failed</returns>
-        public bool MoveTo(int source, int dest, Container destContainer = null)
+        public bool MoveTo(int source, int dest, Container? destContainer = null)
         {
             // Condition: source has item and dest has no item
             if (ValidateSlots(source, dest, destContainer) &&
@@ -53,7 +53,7 @@ namespace MinecraftClient.Inventory
         /// <param name="slot2">Slot 2</param>
         /// <param name="destContainer">Slot2 container (only if slot2 is in other container)</param>
         /// <returns>True if success or False if Failed</returns>
-        public bool Swap(int slot1, int slot2, Container destContainer = null)
+        public bool Swap(int slot1, int slot2, Container? destContainer = null)
         {
             // Condition: Both slot1 and slot2 has item
             if (ValidateSlots(slot1, slot2, destContainer) &&
@@ -126,7 +126,7 @@ namespace MinecraftClient.Inventory
         /// <param name="s2">Slot 2</param>
         /// <param name="s2Container">Second container (only if slot2 is in other container)</param>
         /// <returns>The compare result</returns>
-        private bool ValidateSlots(int s1, int s2, Container s2Container = null)
+        private bool ValidateSlots(int s1, int s2, Container? s2Container = null)
         {
             if (s2Container == null)
                 return (s1 != s2 && s1 < c.Type.SlotCount() && s2 < c.Type.SlotCount());
@@ -140,10 +140,9 @@ namespace MinecraftClient.Inventory
         /// <param name="slot">Slot ID</param>
         /// <param name="c">Specify another contianer (only if the slot is in other container)</param>
         /// <returns>True if has item</returns>
-        private bool HasItem(int slot, Container c = null)
+        private bool HasItem(int slot, Container? c = null)
         {
-            if (c == null)
-                c = this.c;
+            c ??= this.c;
             return c.Items.ContainsKey(slot);
         }
 
@@ -154,7 +153,7 @@ namespace MinecraftClient.Inventory
         /// <param name="slot2"></param>
         /// <param name="s2Container">Second container (only if slot2 is in other container)</param>
         /// <returns>True if they are equal</returns>
-        private bool ItemTypeEqual(int slot1, int slot2, Container s2Container = null)
+        private bool ItemTypeEqual(int slot1, int slot2, Container? s2Container = null)
         {
             if (s2Container == null)
             {

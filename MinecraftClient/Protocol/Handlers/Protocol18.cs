@@ -88,7 +88,7 @@ namespace MinecraftClient.Protocol.Handlers
         ILogger log;
         RandomNumberGenerator randomGen;
 
-        public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo forgeInfo)
+        public Protocol18Handler(TcpClient Client, int protocolVersion, IMinecraftComHandler handler, ForgeInfo? forgeInfo)
         {
             ConsoleIO.SetAutoCompleteEngine(this);
             ChatParser.InitTranslations();
@@ -1159,6 +1159,7 @@ namespace MinecraftClient.Protocol.Handlers
                                             // Property: Tuple<Name, Value, Signature(empty if there is no signature)
                                             // The Property field looks as in the response of https://wiki.vg/Mojang_API#UUID_to_Profile_and_Skin.2FCape
                                             const bool useProperty = false;
+#pragma warning disable CS0162 // Unreachable code detected
                                             Tuple<string, string, string?>[]? properties = useProperty ?
                                                 new Tuple<string, string, string?>[propNum] : null;
                                             for (int p = 0; p < propNum; p++)
@@ -1171,6 +1172,7 @@ namespace MinecraftClient.Protocol.Handlers
                                                 if (useProperty)
                                                     properties![p] = new(propertyName, val, propertySignature);
                                             }
+#pragma warning restore CS0162 // Unreachable code detected
 
                                             int gameMode = dataTypes.ReadNextVarInt(packetData);                        // Gamemode
                                             handler.OnGamemodeUpdate(uuid, gameMode);
@@ -1332,7 +1334,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 Dictionary<int, Item> inventorySlots = new Dictionary<int, Item>();
                                 for (int slotId = 0; slotId < elements; slotId++)
                                 {
-                                    Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
+                                    Item? item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                     if (item != null)
                                         inventorySlots[slotId] = item;
                                 }
@@ -1351,7 +1353,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 if (protocolVersion >= MC_1_17_1_Version)
                                     stateId = dataTypes.ReadNextVarInt(packetData); // State ID - 1.17.1 and above
                                 short slotID = dataTypes.ReadNextShort(packetData);
-                                Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
+                                Item? item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                 handler.OnSetSlot(windowID, slotID, item, stateId);
                             }
                             break;
@@ -1408,14 +1410,14 @@ namespace MinecraftClient.Protocol.Handlers
                                         //  Top bit set if another entry follows, and otherwise unset if this is the last item in the array
                                         hasNext = (bitsData >> 7) == 1 ? true : false;
                                         int slot2 = bitsData >> 1;
-                                        Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
+                                        Item? item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                         handler.OnEntityEquipment(entityid, slot2, item);
                                     } while (hasNext);
                                 }
                                 else
                                 {
                                     int slot2 = dataTypes.ReadNextVarInt(packetData);
-                                    Item item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
+                                    Item? item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                     handler.OnEntityEquipment(entityid, slot2, item);
                                 }
                             }
@@ -1884,7 +1886,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>True if encryption was successful</returns>
         private bool StartEncryption(string uuid, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, PlayerKeyPair? playerKeyPair, SessionToken session)
         {
-            RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey);
+            RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
             log.Debug(Translations.Get("debug.crypto"));

@@ -26,8 +26,8 @@ namespace MinecraftClient.Protocol
 
         public NameValueCollection Headers = new NameValueCollection();
 
-        public string UserAgent { get { return Headers.Get("User-Agent"); } set { Headers.Set("User-Agent", value); } }
-        public string Accept { get { return Headers.Get("Accept"); } set { Headers.Set("Accept", value); } }
+        public string UserAgent { get { return Headers.Get("User-Agent") ?? String.Empty; } set { Headers.Set("User-Agent", value); } }
+        public string Accept { get { return Headers.Get("Accept") ?? String.Empty; } set { Headers.Set("Accept", value); } }
         public string Cookie { set { Headers.Set("Cookie", value); } }
 
         /// <summary>
@@ -186,23 +186,11 @@ namespace MinecraftClient.Protocol
                 if (msg.Count > 0) 
                     responseBody = msg.Dequeue();
 
-                return new Response()
-                {
-                    StatusCode = statusCode,
-                    Body = responseBody,
-                    Headers = headers,
-                    Cookies = cookies
-                };
+                return new Response(statusCode, responseBody, headers, cookies);
             }
             else
             {
-                return new Response()
-                {
-                    StatusCode = 520, // 502 - Web Server Returned an Unknown Error
-                    Body = "",
-                    Headers = headers,
-                    Cookies = cookies
-                };
+                return new Response(520 /* Web Server Returned an Unknown Error */, "", headers, cookies);
             }
         }
 
@@ -233,19 +221,21 @@ namespace MinecraftClient.Protocol
             public NameValueCollection Headers;
             public NameValueCollection Cookies;
 
+            public Response(int statusCode, string body, NameValueCollection headers, NameValueCollection cookies)
+            {
+                StatusCode = statusCode;
+                Body = body;
+                Headers = headers;
+                Cookies = cookies;
+            }
+
             /// <summary>
             /// Get an empty response object
             /// </summary>
             /// <returns></returns>
             public static Response Empty()
             {
-                return new Response()
-                {
-                    StatusCode = 204, // 204 - No content
-                    Body = "",
-                    Headers = new NameValueCollection(),
-                    Cookies = new NameValueCollection()
-                };
+                return new Response(204 /* No content */, "", new NameValueCollection(), new NameValueCollection());
             }
 
             public override string ToString()

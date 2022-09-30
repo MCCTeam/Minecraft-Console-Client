@@ -71,7 +71,7 @@ namespace MinecraftClient.Protocol
                 "}"
             });
 
-            string outputEnumPath = Path.Combine(Path.GetDirectoryName(registriesJsonFile), outputEnum + "XXX.cs");
+            string outputEnumPath = Path.Combine(Path.GetDirectoryName(registriesJsonFile)!, outputEnum + "XXX.cs");
             File.WriteAllLines(outputEnumPath, outputEnumLines);
         }
 
@@ -134,8 +134,8 @@ namespace MinecraftClient.Protocol
                 "}"
             });
 
-            string outputEnumPath = Path.Combine(Path.GetDirectoryName(registriesJsonFile), outputEnum + "XXX.cs");
-            string outputPalettePath = Path.Combine(Path.GetDirectoryName(registriesJsonFile), outputPalette + "XXX.cs");
+            string outputEnumPath = Path.Combine(Path.GetDirectoryName(registriesJsonFile)!, outputEnum + "XXX.cs");
+            string outputPalettePath = Path.Combine(Path.GetDirectoryName(registriesJsonFile)!, outputPalette + "XXX.cs");
 
             File.WriteAllLines(outputEnumPath, outputEnumLines);
             File.WriteAllLines(outputPalettePath, outputPaletteLines);

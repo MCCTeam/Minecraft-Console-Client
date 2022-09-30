@@ -34,7 +34,7 @@ namespace MinecraftClient.Logger
                 if (prependTimestamp)
                     msg = GetTimestamp() + ' ' + msg;
 
-                string directory = Path.GetDirectoryName(logFile);
+                string? directory = Path.GetDirectoryName(logFile);
                 if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
                 lock (logFileLock)

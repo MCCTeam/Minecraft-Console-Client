@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "log <text>"; } }
         public override string CmdDesc { get { return "cmd.log.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (hasArg(command))
             {

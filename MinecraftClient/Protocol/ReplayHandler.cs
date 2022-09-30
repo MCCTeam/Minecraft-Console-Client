@@ -26,7 +26,7 @@ namespace MinecraftClient.Protocol
         private DataTypes dataTypes;
         private PacketTypePalette packetType;
         private int protocolVersion;
-        private BinaryWriter recordStream;
+        private BinaryWriter? recordStream;
         private DateTime recordStartTime;
         private DateTime lastPacketTime;
         private bool prepareCleanUp = false;
@@ -42,18 +42,6 @@ namespace MinecraftClient.Protocol
 
         public ReplayHandler(int protocolVersion)
         {
-            Initialize(protocolVersion);
-        }
-
-        public ReplayHandler(int protocolVersion, string serverName, string recordingDirectory = @"replay_recordings")
-        {
-            Initialize(protocolVersion);
-            this.MetaData.serverName = serverName;
-            ReplayFileDirectory = recordingDirectory;
-        }
-
-        private void Initialize(int protocolVersion)
-        {
             this.dataTypes = new DataTypes(protocolVersion);
             this.packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
             this.protocolVersion = protocolVersion;
@@ -66,14 +54,26 @@ namespace MinecraftClient.Protocol
             recordStream = new BinaryWriter(new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Create, FileAccess.ReadWrite));
             recordStartTime = DateTime.Now;
 
-            MetaData = new MetaDataHandler();
-            MetaData.date = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
-            MetaData.protocol = protocolVersion;
-            MetaData.mcversion = ProtocolHandler.ProtocolVersion2MCVer(protocolVersion);
+            MetaData = new MetaDataHandler
+            {
+                date = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds,
+                protocol = protocolVersion,
+                mcversion = ProtocolHandler.ProtocolVersion2MCVer(protocolVersion)
+            };
             MetaData.SaveToFile();
 
             playerLastPosition = new Location(0, 0, 0);
             WriteLog("Start recording.");
+        }
+
+        public ReplayHandler(int protocolVersion, string serverName, string recordingDirectory = @"replay_recordings")
+            :this(protocolVersion)
+        {
+            this.dataTypes = new DataTypes(protocolVersion);
+            this.packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
+
+            this.MetaData.serverName = serverName;
+            ReplayFileDirectory = recordingDirectory;
         }
 
         ~ReplayHandler()
@@ -97,7 +97,7 @@ namespace MinecraftClient.Protocol
         {
             try
             {
-                recordStream.Flush();
+                recordStream!.Flush();
                 recordStream.Close();
             }
             catch { }
@@ -178,7 +178,7 @@ namespace MinecraftClient.Protocol
                     zs.PutNextEntry(recordingTmpFileName);
                     // .CopyTo() method start from stream current position
                     // We need to reset position in order to get full content
-                    var lastPosition = recordStream.BaseStream.Position;
+                    var lastPosition = recordStream!.BaseStream.Position;
                     recordStream.BaseStream.Position = 0;
                     recordStream.BaseStream.CopyTo(zs);
                     recordStream.BaseStream.Position = lastPosition;
@@ -251,7 +251,7 @@ namespace MinecraftClient.Protocol
             line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count).Reverse().ToArray());
             line.AddRange(rawPacket.ToArray());
             // Write out to the file
-            recordStream.Write(line.ToArray());
+            recordStream!.Write(line.ToArray());
         }
 
         /// <summary>
@@ -423,7 +423,7 @@ namespace MinecraftClient.Protocol
         public readonly string temporaryCache = @"recording_cache";
 
         public bool singlePlayer = false;
-        public string serverName;
+        public string? serverName;
         public int duration = 0; // duration of the whole replay
         public long date; // start time of the recording in unix timestamp milliseconds
         public string mcversion = "0.0"; // e.g. 1.15.2

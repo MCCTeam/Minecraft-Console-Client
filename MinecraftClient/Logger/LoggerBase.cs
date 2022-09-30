@@ -30,7 +30,7 @@ namespace MinecraftClient.Logger
 
         public void Chat(object msg)
         {
-            Chat(msg.ToString());
+            Chat(msg.ToString()!);
         }
 
         public abstract void Debug(string msg);
@@ -42,7 +42,7 @@ namespace MinecraftClient.Logger
 
         public void Debug(object msg)
         {
-            Debug(msg.ToString());
+            Debug(msg.ToString()!);
         }
 
         public abstract void Error(string msg);
@@ -54,7 +54,7 @@ namespace MinecraftClient.Logger
 
         public void Error(object msg)
         {
-            Error(msg.ToString());
+            Error(msg.ToString()!);
         }
 
         public abstract void Info(string msg);
@@ -66,7 +66,7 @@ namespace MinecraftClient.Logger
 
         public void Info(object msg)
         {
-            Info(msg.ToString());
+            Info(msg.ToString()!);
         }
 
         public abstract void Warn(string msg);
@@ -78,12 +78,12 @@ namespace MinecraftClient.Logger
 
         public void Warn(object msg)
         {
-            Warn(msg.ToString());
+            Warn(msg.ToString()!);
         }
 
         protected virtual void Log(object msg)
         {
-            ConsoleIO.WriteLineFormatted(msg.ToString());
+            ConsoleIO.WriteLineFormatted(msg.ToString()!);
         }
 
         protected virtual void Log(string msg)

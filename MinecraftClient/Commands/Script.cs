@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "script <scriptname>"; } }
         public override string CmdDesc { get { return "cmd.script.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (hasArg(command))
             {

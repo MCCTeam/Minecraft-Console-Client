@@ -14,7 +14,7 @@ namespace MinecraftClient.ChatBots
     {
         private class TaskDesc
         {
-            public string action = null;
+            public string? action = null;
             public bool triggerOnFirstLogin = false;
             public bool triggerOnLogin = false;
             public bool triggerOnTime = false;
@@ -46,8 +46,8 @@ namespace MinecraftClient.ChatBots
             if (System.IO.File.Exists(tasksfile))
             {
                 LogDebugToConsoleTranslated("bot.scriptScheduler.loading", System.IO.Path.GetFullPath(tasksfile));
-                TaskDesc current_task = null;
-                String[] lines = System.IO.File.ReadAllLines(tasksfile, Encoding.UTF8);
+                TaskDesc? current_task = null;
+                string[] lines = System.IO.File.ReadAllLines(tasksfile, Encoding.UTF8);
                 foreach (string lineRAW in lines)
                 {
                     string line = lineRAW.Split('#')[0].Trim();
@@ -113,7 +113,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private void checkAddTask(TaskDesc current_task)
+        private void checkAddTask(TaskDesc? current_task)
         {
             //Check if we built a valid task before adding it
             if (current_task != null)
@@ -166,7 +166,7 @@ namespace MinecraftClient.ChatBots
                                     {
                                         task.triggerOnTime_alreadyTriggered = true;
                                         LogDebugToConsoleTranslated("bot.scriptScheduler.running_time", task.action);
-                                        PerformInternalCommand(task.action);
+                                        PerformInternalCommand(task.action!);
                                     }
                                 }
                             }
@@ -186,7 +186,7 @@ namespace MinecraftClient.ChatBots
 
                                 task.triggerOnInterval_Interval_Countdown = time;
                                 LogDebugToConsoleTranslated("bot.scriptScheduler.running_inverval", task.action);
-                                PerformInternalCommand(task.action);
+                                PerformInternalCommand(task.action!);
                             }
                             else task.triggerOnInterval_Interval_Countdown--;
                         }
@@ -199,7 +199,7 @@ namespace MinecraftClient.ChatBots
                         if (task.triggerOnLogin || (firstlogin_done == false && task.triggerOnFirstLogin))
                         {
                             LogDebugToConsoleTranslated("bot.scriptScheduler.running_login", task.action);
-                            PerformInternalCommand(task.action);
+                            PerformInternalCommand(task.action!);
                         }
                     }
 

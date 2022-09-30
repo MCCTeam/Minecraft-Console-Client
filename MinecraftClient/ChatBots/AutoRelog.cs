@@ -100,7 +100,7 @@ namespace MinecraftClient.ChatBots
             return false;
         }
 
-        private void LaunchDelayedReconnection(string msg)
+        private void LaunchDelayedReconnection(string? msg)
         {
             int delay = random.Next(delayMin, delayMax);
             LogDebugToConsoleTranslated(String.IsNullOrEmpty(msg) ? "bot.autoRelog.reconnect_always" : "bot.autoRelog.reconnect", msg);

@@ -36,13 +36,13 @@ namespace MinecraftClient
     /// </remarks>
     static class Program
     {
-        private static McClient client;
-        public static string[] startupargs;
+        private static McClient? client;
+        public static string[]? startupargs;
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
         public const string MCHighestVersion = "1.19.2";
-        public static readonly string BuildInfo = null;
+        public static readonly string? BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
         private static bool useMcVersionOnce = false;
@@ -508,7 +508,11 @@ namespace MinecraftClient
                         if (Settings.ConsoleTitle != "")
                             Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
                     }
-                    catch (NotSupportedException) { HandleFailure(Translations.Get("error.unsupported"), true); }
+                    catch (NotSupportedException)
+                    { 
+                        HandleFailure(Translations.Get("error.unsupported"), true); 
+                    }
+                    catch (Exception) { }
                 }
                 else HandleFailure(Translations.Get("error.determine"), true);
             }
@@ -584,7 +588,7 @@ namespace MinecraftClient
         /// <param name="errorMessage">Error message to display and optionally pass to AutoRelog bot</param>
         /// <param name="versionError">Specify if the error is related to an incompatible or unkown server version</param>
         /// <param name="disconnectReason">If set, the error message will be processed by the AutoRelog bot</param>
-        public static void HandleFailure(string errorMessage = null, bool versionError = false, ChatBots.AutoRelog.DisconnectReason? disconnectReason = null)
+        public static void HandleFailure(string? errorMessage = null, bool versionError = false, ChatBots.AutoRelog.DisconnectReason? disconnectReason = null)
         {
             if (!String.IsNullOrEmpty(errorMessage))
             {
@@ -722,7 +726,7 @@ namespace MinecraftClient
         /// <param name="nameSpace">Namespace to process</param>
         /// <param name="assembly">Assembly to use. Default is Assembly.GetExecutingAssembly()</param>
         /// <returns></returns>
-        public static Type[] GetTypesInNamespace(string nameSpace, Assembly assembly = null)
+        public static Type[] GetTypesInNamespace(string nameSpace, Assembly? assembly = null)
         {
             if (assembly == null) { assembly = Assembly.GetExecutingAssembly(); }
             return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
@@ -733,12 +737,10 @@ namespace MinecraftClient
         /// </summary>
         static Program()
         {
-            AssemblyConfigurationAttribute attribute
-             = typeof(Program)
+            if (typeof(Program)
                 .Assembly
                 .GetCustomAttributes(typeof(System.Reflection.AssemblyConfigurationAttribute), false)
-                .FirstOrDefault() as AssemblyConfigurationAttribute;
-            if (attribute != null)
+                .FirstOrDefault() is AssemblyConfigurationAttribute attribute)
                 BuildInfo = attribute.Configuration;
         }
     }

@@ -54,7 +54,7 @@ namespace MinecraftClient
         private object locationLock = new();
         private bool locationReceived = false;
         private World world = new();
-        private Queue<Location> steps;
+        private Queue<Location>? steps;
         private Queue<Location>? path;
         private Location location;
         private float? _yaw; // Used for calculation ONLY!!! Doesn't reflect the client yaw
@@ -152,7 +152,6 @@ namespace MinecraftClient
             inventoryHandlingEnabled = Settings.InventoryHandling;
             entityHandlingEnabled = Settings.EntityHandling;
 
-            bool retry = false;
             this.sessionid = session.ID;
             if (!Guid.TryParse(session.PlayerID, out this.uuid))
                 this.uuid = Guid.Empty;
@@ -225,45 +224,47 @@ namespace MinecraftClient
                     else
                     {
                         Log.Error(Translations.Get("error.login_failed"));
-                        retry = true;
+                        goto Retry;
                     }
                 }
                 catch (Exception e)
                 {
                     Log.Error(e.GetType().Name + ": " + e.Message);
                     Log.Error(Translations.Get("error.join"));
-                    retry = true;
+                    goto Retry;
                 }
             }
             catch (SocketException e)
             {
                 Log.Error(e.Message);
                 Log.Error(Translations.Get("error.connect"));
-                retry = true;
+                goto Retry;
             }
 
-            if (retry)
+            return;
+
+        Retry:
+            if (timeoutdetector != null)
             {
-                if (timeoutdetector != null)
-                {
-                    timeoutdetector.Item2.Cancel();
-                    timeoutdetector = null;
-                }
-                if (ReconnectionAttemptsLeft > 0)
-                {
-                    Log.Info(Translations.Get("mcc.reconnect", ReconnectionAttemptsLeft));
-                    Thread.Sleep(5000);
-                    ReconnectionAttemptsLeft--;
-                    Program.Restart();
-                }
-                else if (command == null && Settings.interactiveMode)
-                {
-                    ConsoleInteractive.ConsoleReader.StopReadThread();
-                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
-                    Program.HandleFailure();
-                }
+                timeoutdetector.Item2.Cancel();
+                timeoutdetector = null;
             }
+            if (ReconnectionAttemptsLeft > 0)
+            {
+                Log.Info(Translations.Get("mcc.reconnect", ReconnectionAttemptsLeft));
+                Thread.Sleep(5000);
+                ReconnectionAttemptsLeft--;
+                Program.Restart();
+            }
+            else if (command == null && Settings.interactiveMode)
+            {
+                ConsoleInteractive.ConsoleReader.StopReadThread();
+                ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
+                Program.HandleFailure();
+            }
+
+            throw new Exception("Initialization failed.");
         }
 
         /// <summary>
@@ -576,13 +577,13 @@ namespace MinecraftClient
                 {
                     if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
                     {
-                        string response_msg = "";
+                        string? response_msg = "";
                         string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
                         if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg, Settings.GetVariables()) && Settings.internalCmdChar == '/')
                         {
                             SendText(text);
                         }
-                        else if (response_msg.Length > 0)
+                        else if (!String.IsNullOrEmpty(response_msg))
                         {
                             Log.Info(response_msg);
                         }
@@ -641,7 +642,7 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object>? localVars = null)
+        public bool PerformInternalCommand(string command, ref string? response_msg, Dictionary<string, object>? localVars = null)
         {
             /* Process the provided command */
 
@@ -677,7 +678,7 @@ namespace MinecraftClient
                     {
                         if (!(e is ThreadAbortException))
                         {
-                            Log.Warn(Translations.Get("icmd.error", bot.ToString(), e.ToString()));
+                            Log.Warn(Translations.Get("icmd.error", bot.ToString()!, e.ToString()));
                         }
                         else throw; //ThreadAbortException should not be caught
                     }
@@ -705,7 +706,7 @@ namespace MinecraftClient
                     {
                         try
                         {
-                            Command cmd = (Command)Activator.CreateInstance(type);
+                            Command cmd = (Command)Activator.CreateInstance(type)!;
                             cmds[Settings.ToLowerIfNeed(cmd.CmdName)] = cmd;
                             cmd_names.Add(Settings.ToLowerIfNeed(cmd.CmdName));
                             foreach (string alias in cmd.getCMDAliases())
@@ -1871,7 +1872,7 @@ namespace MinecraftClient
                                     break;
                                 case ContainerType.Lectern:
                                     return false;
-                                    break;
+                                    // break;
                                 case ContainerType.Loom:
                                     if (slotId >= 0 && slotId <= 3)
                                     {
@@ -2364,11 +2365,11 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (!(e is ThreadAbortException))
+                    if (e is not ThreadAbortException)
                     {
                         //Retrieve parent method name to determine which event caused the exception
                         System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
-                        System.Reflection.MethodBase method = frame.GetMethod();
+                        System.Reflection.MethodBase method = frame.GetMethod()!;
                         string parentMethodName = method.Name;
 
                         //Display a meaningful error message to help debugging the ChatBot
@@ -2464,7 +2465,7 @@ namespace MinecraftClient
         /// <returns>Current goal of movement. Location.Zero if not set.</returns>
         public Location GetCurrentMovementGoal()
         {
-            return ClientIsMoving() ? Location.Zero : path.Last();
+            return (ClientIsMoving() || path == null) ? Location.Zero : path.Last();
         }
 
         /// <summary>
@@ -2694,7 +2695,7 @@ namespace MinecraftClient
         /// <param name="inventoryID">Window ID</param>
         /// <param name="slotID">Slot ID</param>
         /// <param name="item">Item (may be null for empty slot)</param>
-        public void OnSetSlot(byte inventoryID, short slotID, Item item, int stateId)
+        public void OnSetSlot(byte inventoryID, short slotID, Item? item, int stateId)
         {
             if (inventories.ContainsKey(inventoryID))
                 inventories[inventoryID].StateID = stateId;
@@ -2860,7 +2861,7 @@ namespace MinecraftClient
         /// <param name="entityid"> Entity ID</param>
         /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
-        public void OnEntityEquipment(int entityid, int slot, Item item)
+        public void OnEntityEquipment(int entityid, int slot, Item? item)
         {
             if (entities.ContainsKey(entityid))
             {

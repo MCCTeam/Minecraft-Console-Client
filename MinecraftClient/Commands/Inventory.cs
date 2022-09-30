@@ -183,7 +183,7 @@ namespace MinecraftClient.Commands
                         response.Append(Translations.Get("cmd.inventory.inventory"));
                         response.AppendLine(String.Format(" #{0} - {1}§8", inventoryId, inventory.Title));
 
-                        string asciiArt = inventory.Type.GetAsciiArt();
+                        string? asciiArt = inventory.Type.GetAsciiArt();
                         if (asciiArt != null && Settings.DisplayInventoryLayout)
                             response.AppendLine(asciiArt);
 

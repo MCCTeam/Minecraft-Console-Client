@@ -14,7 +14,7 @@ namespace MinecraftClient
     /// </summary>
     public static class ConsoleIO
     {
-        private static IAutoComplete autocomplete_engine;
+        private static IAutoComplete? autocomplete_engine;
 
         /// <summary>
         /// Reset the IO mechanism and clear all buffers
@@ -77,7 +77,7 @@ namespace MinecraftClient
         public static string ReadLine()
         {
             if (BasicIO)
-                return Console.ReadLine();
+                return Console.ReadLine() ?? String.Empty;
             else 
                 return ConsoleInteractive.ConsoleReader.RequestImmediateInput();
         }

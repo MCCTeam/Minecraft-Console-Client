@@ -60,7 +60,7 @@ namespace DynamicRun.Builder
 
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
 
-            var mods = Assembly.GetEntryAssembly().GetModules();
+            var mods = Assembly.GetEntryAssembly()!.GetModules();
             
 #pragma warning disable IL3000
             // System.Private.CoreLib
@@ -97,7 +97,7 @@ namespace DynamicRun.Builder
                     
                     Stream? assemblyStream;
 
-                    var assemblyrefs = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList();
+                    var assemblyrefs = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList()!;
                     assemblyrefs.Add(new ("MinecraftClient"));
                     
                     foreach (var refs in assemblyrefs) {
@@ -119,7 +119,7 @@ namespace DynamicRun.Builder
                             }
 
                             assemblyStream = GetStreamForFileEntry(viewAccessor, reference); 
-                            references.Add(MetadataReference.CreateFromStream(assemblyStream));
+                            references.Add(MetadataReference.CreateFromStream(assemblyStream!));
                             continue;
                         }
                         references.Add(MetadataReference.CreateFromFile(loadedAssembly.Location));

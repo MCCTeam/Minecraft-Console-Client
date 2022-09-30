@@ -16,7 +16,7 @@ namespace MinecraftClient.Mapping
         /// Get or set global block ID to Material mapping
         /// The global Palette is a concept introduced with Minecraft 1.13
         /// </summary>
-        public static BlockPalette Palette { get; set; }
+        public static BlockPalette Palette { get; set; } = new Palette112();
 
         /// <summary>
         /// Storage for block ID and metadata, as ushort for compatibility, performance and lower memory footprint

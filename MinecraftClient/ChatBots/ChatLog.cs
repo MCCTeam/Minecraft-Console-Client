@@ -115,7 +115,7 @@ namespace MinecraftClient.ChatBots
                 tosave = GetTimestamp() + ' ' + tosave;
             lock (logfileLock)
             {
-                string directory = Path.GetDirectoryName(logfile);
+                string? directory = Path.GetDirectoryName(logfile);
                 if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
                 FileStream stream = new FileStream(logfile, FileMode.OpenOrCreate);

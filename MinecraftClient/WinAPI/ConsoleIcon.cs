@@ -7,6 +7,8 @@ using System.Threading;
 using System.Net;
 using System.IO;
 using System.Drawing;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace MinecraftClient.WinAPI
 {
@@ -47,33 +49,41 @@ namespace MinecraftClient.WinAPI
         public static void setPlayerIconAsync(string playerName) {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                Thread t = new Thread(new ThreadStart(delegate 
+                Thread t = new(new ThreadStart(delegate
                 {
-                        HttpWebRequest httpWebRequest = (HttpWebRequest) HttpWebRequest.Create("https://minotar.net/helm/" + playerName + "/100.png");
-                        try 
+                    HttpClient httpClient = new();
+                    try
+                    {
+                        Task<Stream> httpWebRequest = httpClient.GetStreamAsync("https://minotar.net/helm/" + playerName + "/100.png");
+                        httpWebRequest.RunSynchronously();
+                        Stream imageStream = httpWebRequest.Result;
+                        try
                         {
-                            using (HttpWebResponse httpWebReponse = (HttpWebResponse) httpWebRequest.GetResponse()) {
-                                try 
-                                {
-                                    Bitmap skin = new Bitmap(Image.FromStream(httpWebReponse.GetResponseStream())); //Read skin from network
-                                    SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
-                                    SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
-                                }
-                                catch (ArgumentException)
-                                {
-                                    /* Invalid image in HTTP response */
-                                }
-                            }
+                            Bitmap skin = new(Image.FromStream(imageStream)); //Read skin from network
+                            SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
+                            SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
                         }
-                        catch (WebException) //Skin not found? Reset to default icon
+                        catch (ArgumentException)
                         {
-                            revertToMCCIcon();
+                            /* Invalid image in HTTP response */
                         }
+                        imageStream.Dispose();
+                        httpWebRequest.Dispose();
+                    }
+                    catch (HttpRequestException) //Skin not found? Reset to default icon
+                    {
+                        revertToMCCIcon();
+                    }
+                    finally
+                    {
+                        httpClient.Dispose();
+                    }
                 }
-                ));
-                t.Name = "Player skin icon setter";
+                ))
+                {
+                    Name = "Player skin icon setter"
+                };
                 t.Start();
-
             }
         }
 
@@ -86,7 +96,7 @@ namespace MinecraftClient.WinAPI
             {
                 try
                 {
-                    Icon defaultIcon = Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    Icon defaultIcon = Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
                     SetWindowIcon(Icon.FromHandle(defaultIcon.Handle)); // Windows 10+ (New console)
                     SetConsoleIcon(defaultIcon.Handle); // Windows 8 and lower (Older console)
                 }

@@ -17,22 +17,22 @@ namespace MinecraftClient.ChatBots
 
     public class Script : ChatBot
     {
-        private string file;
+        private string? file;
         private string[] lines = new string[0];
         private string[] args = new string[0];
         private int sleepticks = 10;
         private int nextline = 0;
-        private string owner;
+        private string? owner;
         private bool csharp;
-        private Thread thread;
-        private Dictionary<string, object> localVars;
+        private Thread? thread;
+        private Dictionary<string, object>? localVars;
 
         public Script(string filename)
         {
             ParseArguments(filename);
         }
 
-        public Script(string filename, string ownername, Dictionary<string, object> localVars)
+        public Script(string filename, string? ownername, Dictionary<string, object>? localVars)
             : this(filename)
         {
             this.owner = ownername;
@@ -116,8 +116,8 @@ namespace MinecraftClient.ChatBots
                 try
                 {
                     StackFrame frame = new StackFrame(1);
-                    MethodBase method = frame.GetMethod();
-                    Type type = method.DeclaringType;
+                    MethodBase method = frame.GetMethod()!;
+                    Type type = method.DeclaringType!;
                     caller = type.Name;
                 }
                 catch { }
@@ -130,7 +130,7 @@ namespace MinecraftClient.ChatBots
         public override void Initialize()
         {
             //Load the given file from the startup parameters
-            if (LookForScript(ref file))
+            if (LookForScript(ref file!))
             {
                 lines = System.IO.File.ReadAllLines(file, Encoding.UTF8);
                 csharp = file.EndsWith(".cs");

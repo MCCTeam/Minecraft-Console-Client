@@ -31,7 +31,7 @@ namespace MinecraftClient
         /// <param name="timeout">Maximum timeout</param>
         /// <returns>True if the action finished whithout timing out</returns>
         public static bool Perform(Action action, TimeSpan timeout) {
-            Thread thread = new Thread(new ThreadStart(action));
+            Thread? thread = new Thread(new ThreadStart(action));
             thread.Start();
             bool success = thread.Join(timeout);
             if (!success)

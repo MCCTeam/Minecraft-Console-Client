@@ -14,7 +14,7 @@ namespace MinecraftClient.Protocol.Keys
     {
         private const string KeysCacheFilePlaintext = "ProfileKeyCache.ini";
 
-        private static FileMonitor cachemonitor;
+        private static FileMonitor? cachemonitor;
         private static Dictionary<string, PlayerKeyPair> keys = new Dictionary<string, PlayerKeyPair>();
         private static Timer updatetimer = new Timer(100);
         private static List<KeyValuePair<string, PlayerKeyPair>> pendingadds = new List<KeyValuePair<string, PlayerKeyPair>>();
@@ -93,7 +93,7 @@ namespace MinecraftClient.Protocol.Keys
         /// </summary>
         /// <param name="sender">Sender</param>
         /// <param name="e">Event data</param>
-        private static void HandlePending(object sender, ElapsedEventArgs e)
+        private static void HandlePending(object? sender, ElapsedEventArgs e)
         {
             updatetimer.Stop();
             LoadFromDisk();

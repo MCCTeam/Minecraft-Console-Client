@@ -147,8 +147,8 @@ namespace MinecraftClient.ChatBots
         private DateTime nextMailSend = DateTime.Now;
         private MailDatabase mailDatabase = new MailDatabase();
         private IgnoreList ignoreList = new IgnoreList();
-        private FileMonitor mailDbFileMonitor;
-        private FileMonitor ignoreListFileMonitor;
+        private FileMonitor? mailDbFileMonitor;
+        private FileMonitor? ignoreListFileMonitor;
         private object readWriteLock = new object();
 
         /// <summary>
@@ -207,8 +207,8 @@ namespace MinecraftClient.ChatBots
             }
 
             //Initialize file monitors. In case the bot needs to unload for some reason in the future, do not forget to .Dispose() them
-            mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_DatabaseFile), Path.GetFileName(Settings.Mailer_DatabaseFile), FileMonitorCallback);
-            ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_IgnoreListFile), Path.GetFileName(Settings.Mailer_IgnoreListFile), FileMonitorCallback);
+            mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_DatabaseFile)!, Path.GetFileName(Settings.Mailer_DatabaseFile), FileMonitorCallback);
+            ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_IgnoreListFile)!, Path.GetFileName(Settings.Mailer_IgnoreListFile), FileMonitorCallback);
 
             RegisterChatBotCommand("mailer", Translations.Get("bot.mailer.cmd"), "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
         }

@@ -402,7 +402,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single item slot from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The item that was read or NULL for an empty slot</returns>
-        public Item ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
+        public Item? ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
         {
             List<byte> slotData = new List<byte>();
             if (protocolversion > Protocol18Handler.MC_1_13_Version)
@@ -736,9 +736,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The item that was read or NULL for an empty slot</returns>
         public VillagerTrade ReadNextTrade(Queue<byte> cache, ItemPalette itemPalette)
         {
-            Item inputItem1 = ReadNextItemSlot(cache, itemPalette);
-            Item outputItem = ReadNextItemSlot(cache, itemPalette);
-            Item inputItem2 = null;
+            Item inputItem1 = ReadNextItemSlot(cache, itemPalette)!;
+            Item outputItem = ReadNextItemSlot(cache, itemPalette)!;
+            Item? inputItem2 = null;
             if (ReadNextBool(cache)) //check if villager has second item
             {
                 inputItem2 = ReadNextItemSlot(cache, itemPalette);
@@ -781,7 +781,7 @@ namespace MinecraftClient.Protocol.Handlers
                 bytes.Add(10); // TAG_Compound
 
                 // NBT root name
-                string rootName = null;
+                string? rootName = null;
 
                 if (nbt.ContainsKey(""))
                     rootName = nbt[""] as string;

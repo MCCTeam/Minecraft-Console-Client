@@ -27,7 +27,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// CustomName of the entity.
         /// </summary>
-        public string CustomNameJson;
+        public string? CustomNameJson;
         
         /// <summary>
         /// IsCustomNameVisible of the entity.
@@ -37,7 +37,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// CustomName of the entity.
         /// </summary>
-        public string CustomName;
+        public string? CustomName;
         
         /// <summary>
         /// Latency of the entity if it is a player.
@@ -91,7 +91,7 @@ namespace MinecraftClient.Mapping
         /// <summary>
         /// Entity metadata
         /// </summary>
-        public Dictionary<int, object?> Metadata;
+        public Dictionary<int, object?>? Metadata;
 
         /// <summary>
         /// Entity equipment

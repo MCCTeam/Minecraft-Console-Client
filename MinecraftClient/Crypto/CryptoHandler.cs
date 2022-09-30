@@ -21,7 +21,7 @@ namespace MinecraftClient.Crypto
         /// <param name="x509key">Byte array containing the encoded key</param>
         /// <returns>Returns the corresponding RSA Crypto Service</returns>
 
-        public static RSACryptoServiceProvider DecodeRSAPublicKey(byte[] x509key)
+        public static RSACryptoServiceProvider? DecodeRSAPublicKey(byte[] x509key)
         {
             /* Code from StackOverflow no. 18091460 */
 
@@ -120,8 +120,9 @@ namespace MinecraftClient.Crypto
 
         public static byte[] GenerateAESPrivateKey()
         {
-            AesManaged AES = new AesManaged();
-            AES.KeySize = 128; AES.GenerateKey();
+            Aes AES = Aes.Create();
+            AES.KeySize = 128;
+            AES.GenerateKey();
             return AES.Key;
         }
 
@@ -151,11 +152,11 @@ namespace MinecraftClient.Crypto
 
         private static byte[] digest(byte[][] tohash)
         {
-            SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider();
+            SHA1 sha1 = SHA1.Create();
             for (int i = 0; i < tohash.Length; i++)
                 sha1.TransformBlock(tohash[i], 0, tohash[i].Length, tohash[i], 0);
             sha1.TransformFinalBlock(new byte[] { }, 0, 0);
-            return sha1.Hash;
+            return sha1.Hash!;
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]"; } }
         public override string CmdDesc { get { return "walk or start walking. \"-f\": force unsafe movements like falling or touching fire"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             List<string> args = getArgs(command.ToLower()).ToList();
             bool takeRisk = false;

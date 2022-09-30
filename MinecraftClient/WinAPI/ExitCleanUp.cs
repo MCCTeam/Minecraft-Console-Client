@@ -31,10 +31,12 @@ namespace MinecraftClient.WinAPI
             catch (DllNotFoundException)
             {
                 // Probably on mono, fallback to ctrl+c only
-                Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+                static void value(object sender, ConsoleCancelEventArgs e)
                 {
                     RunCleanUp();
-                };
+                }
+
+                Console.CancelKeyPress += value!;
             }
         }
 
@@ -81,7 +83,7 @@ namespace MinecraftClient.WinAPI
         [DllImport("Kernel32")]
         private static extern bool SetConsoleCtrlHandler(ConsoleCtrlHandler handler, bool add);
         private delegate bool ConsoleCtrlHandler(CtrlType sig);
-        private static ConsoleCtrlHandler _handler;
+        private static ConsoleCtrlHandler? _handler;
 
         enum CtrlType
         {

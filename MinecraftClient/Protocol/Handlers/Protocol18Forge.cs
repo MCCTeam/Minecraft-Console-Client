@@ -17,7 +17,7 @@ namespace MinecraftClient.Protocol.Handlers
         private Protocol18Handler protocol18;
         private IMinecraftComHandler mcHandler;
 
-        private ForgeInfo forgeInfo;
+        private ForgeInfo? forgeInfo;
         private FMLHandshakeClientState fmlHandshakeState = FMLHandshakeClientState.START;
         private bool ForgeEnabled() { return forgeInfo != null; }
 
@@ -27,7 +27,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="forgeInfo">Forge Server Information</param>
         /// <param name="protocolVersion">Minecraft protocol version</param>
         /// <param name="dataTypes">Minecraft data types handler</param>
-        public Protocol18Forge(ForgeInfo forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
+        public Protocol18Forge(ForgeInfo? forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
         {
             this.forgeInfo = forgeInfo;
             this.protocolversion = protocolVersion;
@@ -44,7 +44,7 @@ namespace MinecraftClient.Protocol.Handlers
         public string GetServerAddress(string serverAddress)
         {
             if (ForgeEnabled())
-                return serverAddress + "\0" + forgeInfo.Version + "\0";
+                return serverAddress + "\0" + forgeInfo!.Version + "\0";
             return serverAddress;
         }
 
@@ -54,7 +54,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Whether the handshake was successful.</returns>
         public bool CompleteForgeHandshake()
         {
-            if (ForgeEnabled() && forgeInfo.Version == FMLVersion.FML)
+            if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML)
             {
                 while (fmlHandshakeState != FMLHandshakeClientState.DONE)
                 {
@@ -103,7 +103,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the plugin message was recognized and handled</returns>
         public bool HandlePluginMessage(string channel, Queue<byte> packetData, ref int currentDimension)
         {
-            if (ForgeEnabled() && forgeInfo.Version == FMLVersion.FML && fmlHandshakeState != FMLHandshakeClientState.DONE)
+            if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML && fmlHandshakeState != FMLHandshakeClientState.DONE)
             {
                 if (channel == "FML|HS")
                 {
@@ -239,7 +239,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE/FALSE depending on whether the packet was understood or not</returns>
         public bool HandleLoginPluginRequest(string channel, Queue<byte> packetData, ref List<byte> responseData)
         {
-            if (ForgeEnabled() && forgeInfo.Version == FMLVersion.FML2 && channel == "fml:loginwrapper")
+            if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML2 && channel == "fml:loginwrapper")
             {
                 // Forge Handshake handler source code used to implement the FML2 packets:
                 // https://github.com/MinecraftForge/MinecraftForge/blob/master/src/main/java/net/minecraftforge/fml/network/FMLNetworkConstants.java

@@ -24,7 +24,7 @@ namespace MinecraftClient
         {
             if (Settings.DebugMessages)
             {
-                string callerClass = new System.Diagnostics.StackFrame(1).GetMethod().DeclaringType.Name;
+                string callerClass = new System.Diagnostics.StackFrame(1).GetMethod()!.DeclaringType!.Name;
                 ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.init", callerClass, Path.Combine(folder, filename)));
             }
 
@@ -42,7 +42,7 @@ namespace MinecraftClient
             {
                 if (Settings.DebugMessages)
                 {
-                    string callerClass = new System.Diagnostics.StackFrame(1).GetMethod().DeclaringType.Name;
+                    string callerClass = new System.Diagnostics.StackFrame(1).GetMethod()!.DeclaringType!.Name;
                     ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.fail", callerClass));
                 }
 
@@ -110,11 +110,10 @@ namespace MinecraftClient
         /// <param name="encoding">Encoding (default is UTF8)</param>
         /// <exception cref="System.IO.IOException">Thrown when failing to read the file despite multiple retries</exception>
         /// <returns>All lines</returns>
-        public static string[] ReadAllLinesWithRetries(string filePath, int maxTries = 3, Encoding encoding = null)
+        public static string[] ReadAllLinesWithRetries(string filePath, int maxTries = 3, Encoding? encoding = null)
         {
             int attempt = 0;
-            if (encoding == null)
-                encoding = Encoding.UTF8;
+            encoding ??= Encoding.UTF8;
             while (true)
             {
                 try
@@ -138,11 +137,10 @@ namespace MinecraftClient
         /// <param name="lines">The lines to write to the file</param>
         /// <param name="maxTries">Maximum read attempts</param>
         /// <param name="encoding">Encoding (default is UTF8)</param>
-        public static void WriteAllLinesWithRetries(string filePath, IEnumerable<string> lines, int maxTries = 3, Encoding encoding = null)
+        public static void WriteAllLinesWithRetries(string filePath, IEnumerable<string> lines, int maxTries = 3, Encoding? encoding = null)
         {
             int attempt = 0;
-            if (encoding == null)
-                encoding = Encoding.UTF8;
+            encoding ??= Encoding.UTF8;
             while (true)
             {
                 try

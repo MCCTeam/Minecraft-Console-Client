@@ -14,7 +14,7 @@ namespace MinecraftClient.Proxy
         public enum Type { HTTP, SOCKS4, SOCKS4a, SOCKS5 };
 
         private static ProxyClientFactory factory = new ProxyClientFactory();
-        private static IProxyClient proxy;
+        private static IProxyClient? proxy;
         private static bool proxy_ok = false;
 
         /// <summary>

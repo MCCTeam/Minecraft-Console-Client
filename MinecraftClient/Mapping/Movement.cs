@@ -195,7 +195,7 @@ namespace MinecraftClient.Mapping
             // Set start values for variables
             openSet.Insert(0, (int)startLower.DistanceSquared(goalLower), startLower);
             gScoreDict[startLower] = 0;
-            BinaryHeap.Node current = null;
+            BinaryHeap.Node? current = null;
 
             ///---///
             // Start of A*
@@ -239,7 +239,7 @@ namespace MinecraftClient.Mapping
             }
 
             //// Goal could not be reached. Set the path to the closest location if close enough
-            if (current != null && (maxOffset == int.MaxValue || openSet.MinH_ScoreNode.H_score <= maxOffset))
+            if (current != null && openSet.MinH_ScoreNode != null && (maxOffset == int.MaxValue || openSet.MinH_ScoreNode.H_score <= maxOffset))
                 return ReconstructPath(CameFrom, openSet.MinH_ScoreNode.Location, start, goal);
             else
                 return null;
@@ -316,7 +316,7 @@ namespace MinecraftClient.Mapping
             private List<Node> heapList;
             // Hashset for quick checks of locations included in the heap
             private HashSet<Location> locationList;
-            public Node MinH_ScoreNode;
+            public Node? MinH_ScoreNode;
 
             public BinaryHeap()
             {

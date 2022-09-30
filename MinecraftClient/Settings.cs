@@ -93,7 +93,7 @@ namespace MinecraftClient
         public static bool playerHeadAsIcon = false;
         public static string chatbotLogFile = "";
         public static bool CacheScripts = true;
-        public static string BrandInfo = MCCBrandInfo;
+        public static string? BrandInfo = MCCBrandInfo;
         public static bool DisplaySystemMessages = true;
         public static bool DisplayXPBarMessages = true;
         public static bool DisplayChatLinks = true;
@@ -131,8 +131,8 @@ namespace MinecraftClient
         public static bool InfoMessages = true;
         public static bool WarningMessages = true;
         public static bool ErrorMessages = true;
-        public static Regex ChatFilter = null;
-        public static Regex DebugFilter = null;
+        public static Regex? ChatFilter = null;
+        public static Regex? DebugFilter = null;
         public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
         public static bool LogToFile = false;
         public static string LogFile = "console-log.txt";
@@ -191,9 +191,9 @@ namespace MinecraftClient
 
         //Chat Message Parsing
         public static bool ChatFormat_Builtins = true;
-        public static Regex ChatFormat_Public = null;
-        public static Regex ChatFormat_Private = null;
-        public static Regex ChatFormat_TeleportRequest = null;
+        public static Regex? ChatFormat_Public = null;
+        public static Regex? ChatFormat_Private = null;
+        public static Regex? ChatFormat_TeleportRequest = null;
 
         //Auto Respond
         public static bool AutoRespond_Enabled = false;
@@ -272,7 +272,7 @@ namespace MinecraftClient
         private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
 
         //Temporary Server Alias storage when server list is not loaded yet
-        private static string ServerAliasTemp = null;
+        private static string? ServerAliasTemp = null;
 
         //Mapping for settings sections in the INI file
         private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, PlayerListLogger, Map, Logging, Signature };
@@ -1142,7 +1142,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="varName">Variable name</param>
         /// <returns>The value or null if the variable does not exists</returns>
-        public static object GetVar(string varName)
+        public static object? GetVar(string varName)
         {
             if (AppVars.ContainsKey(varName))
                 return AppVars[varName];
@@ -1164,7 +1164,7 @@ namespace MinecraftClient
         /// <param name="str">String to parse</param>
         /// <param name="localContext">Optional local variables overriding global variables</param>
         /// <returns>Modifier string</returns>
-        public static string ExpandVars(string str, Dictionary<string, object> localVars = null)
+        public static string ExpandVars(string str, Dictionary<string, object>? localVars = null)
         {
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < str.Length; i++)

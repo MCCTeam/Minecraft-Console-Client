@@ -282,15 +282,15 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="obj">Object to compare to</param>
         /// <returns>TRUE if the locations are equals</returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null)
                 return false;
-            if (obj is Location)
+            if (obj is Location location)
             {
-                return ((int)this.X) == ((int)((Location)obj).X)
-                    && ((int)this.Y) == ((int)((Location)obj).Y)
-                    && ((int)this.Z) == ((int)((Location)obj).Z);
+                return ((int)this.X) == ((int)location.X)
+                    && ((int)this.Y) == ((int)location.Y)
+                    && ((int)this.Z) == ((int)location.Z);
             }
             return false;
         }
@@ -301,7 +301,7 @@ namespace MinecraftClient.Mapping
         /// <param name="loc1">First location to compare</param>
         /// <param name="loc2">Second location to compare</param>
         /// <returns>TRUE if the locations are equals</returns>
-        public static bool operator ==(Location loc1, Location loc2)
+        public static bool operator ==(Location? loc1, Location? loc2)
         {
             if (loc1 == null && loc2 == null)
                 return true;
@@ -316,7 +316,7 @@ namespace MinecraftClient.Mapping
         /// <param name="loc1">First location to compare</param>
         /// <param name="loc2">Second location to compare</param>
         /// <returns>TRUE if the locations are equals</returns>
-        public static bool operator !=(Location loc1, Location loc2)
+        public static bool operator !=(Location? loc1, Location? loc2)
         {
             if (loc1 == null && loc2 == null)
                 return false;

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol
@@ -204,9 +206,14 @@ namespace MinecraftClient.Protocol
             if (!File.Exists(Language_File))
             {
                 ConsoleIO.WriteLineFormatted(Translations.Get("chat.download", Settings.Language));
+                HttpClient httpClient = new();
                 try
                 {
-                    string assets_index = DownloadString(Settings.TranslationsFile_Website_Index);
+                    Task<string> fetch_index = httpClient.GetStringAsync(Settings.TranslationsFile_Website_Index);
+                    fetch_index.RunSynchronously();
+                    string assets_index = fetch_index.Result;
+                    fetch_index.Dispose();
+
                     string[] tmp = assets_index.Split(new string[] { "minecraft/lang/" + Settings.Language.ToLower() + ".json" }, StringSplitOptions.None);
                     tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
                     string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
@@ -214,19 +221,23 @@ namespace MinecraftClient.Protocol
                     if (Settings.DebugMessages)
                         ConsoleIO.WriteLineFormatted(Translations.Get("chat.request", translation_file_location));
 
-                    StringBuilder stringBuilder = new StringBuilder();
-                    foreach (KeyValuePair<string, Json.JSONData> entry in Json.ParseJson(DownloadString(translation_file_location)).Properties)
-                    {
-                        stringBuilder.Append(entry.Key + "=" + entry.Value.StringValue + Environment.NewLine);
-                    }
+                    Task<string> fetch_file = httpClient.GetStringAsync(translation_file_location);
+                    fetch_file.RunSynchronously();
+                    string translation_file = fetch_file.Result;
+                    fetch_file.Dispose();
 
+                    StringBuilder stringBuilder = new();
+                    foreach (KeyValuePair<string, Json.JSONData> entry in Json.ParseJson(translation_file).Properties)
+                        stringBuilder.Append(entry.Key).Append('=').Append(entry.Value.StringValue).Append(Environment.NewLine);
                     File.WriteAllText(Language_File, stringBuilder.ToString());
+
                     ConsoleIO.WriteLineFormatted(Translations.Get("chat.done", Language_File));
                 }
                 catch
                 {
                     Translations.WriteLineFormatted("chat.fail");
                 }
+                httpClient.Dispose();
             }
 
             //Download Failed? Defaulting to en_GB.lang if the game is installed
@@ -382,23 +393,6 @@ namespace MinecraftClient.Protocol
             }
 
             return "";
-        }
-
-        /// <summary>
-        /// Do a HTTP request to get a webpage or text data from a server file
-        /// </summary>
-        /// <param name="url">URL of resource</param>
-        /// <returns>Returns resource data if success, otherwise a WebException is raised</returns>
-        private static string DownloadString(string url)
-        {
-            System.Net.HttpWebRequest myRequest = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
-            myRequest.Method = "GET";
-            System.Net.WebResponse myResponse = myRequest.GetResponse();
-            StreamReader sr = new StreamReader(myResponse.GetResponseStream(), Encoding.UTF8);
-            string result = sr.ReadToEnd();
-            sr.Close();
-            myResponse.Close();
-            return result;
         }
     }
 }

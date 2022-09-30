@@ -27,7 +27,7 @@ namespace MinecraftClient.Protocol.Handlers
         private bool encrypted = false;
         private int protocolversion;
         private Tuple<Thread, CancellationTokenSource>? netRead = null;
-        Crypto.AesCfb8Stream s;
+        Crypto.AesCfb8Stream? s;
         TcpClient c;
 
         public Protocol16Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
@@ -58,7 +58,10 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        // "IMinecraftComHandler handler" will not be used here.
         private Protocol16Handler(TcpClient Client)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             this.c = Client;
         }
@@ -425,20 +428,18 @@ namespace MinecraftClient.Protocol.Handlers
             while (read < offset)
             {
                 if (encrypted)
-                {
-                    read += s.Read(buffer, start + read, offset - read);
-                }
-                else read += c.Client.Receive(buffer, start + read, offset - read, f);
+                    read += s!.Read(buffer, start + read, offset - read);
+                else
+                    read += c.Client.Receive(buffer, start + read, offset - read, f);
             }
         }
 
         private void Send(byte[] buffer)
         {
             if (encrypted)
-            {
-                s.Write(buffer, 0, buffer.Length);
-            }
-            else c.Client.Send(buffer);
+                s!.Write(buffer, 0, buffer.Length);
+            else
+                c.Client.Send(buffer);
         }
 
         private bool Handshake(string uuid, string username, string sessionID, string host, int port, SessionToken session)
@@ -506,7 +507,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool StartEncryption(string uuid, string username, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session)
         {
-            RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey);
+            RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
             if (Settings.DebugMessages)

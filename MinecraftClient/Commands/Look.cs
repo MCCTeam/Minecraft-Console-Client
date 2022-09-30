@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "look <x y z|yaw pitch|up|down|east|west|north|south>"; } }
         public override string CmdDesc { get { return "cmd.look.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (handler.GetTerrainEnabled())
             {

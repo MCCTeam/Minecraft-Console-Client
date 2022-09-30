@@ -42,10 +42,10 @@ namespace MinecraftClient.Mapping.BlockPalettes
         /// <param name="outputEnum">output path for material.cs</param>
         /// <remarks>java -cp minecraft_server.jar net.minecraft.data.Main --reports</remarks>
         /// <returns>state => block name mappings</returns>
-        public static void JsonToClass(string blocksJsonFile, string outputClass, string outputEnum = null)
+        public static void JsonToClass(string blocksJsonFile, string outputClass, string? outputEnum = null)
         {
-            string outputPalettePath = Path.Combine(Path.GetDirectoryName(blocksJsonFile), outputClass + "XXX.cs");
-            string outputEnumPath = Path.Combine(Path.GetDirectoryName(blocksJsonFile), outputEnum + "XXX.cs");
+            string outputPalettePath = Path.Combine(Path.GetDirectoryName(blocksJsonFile)!, outputClass + "XXX.cs");
+            string outputEnumPath = Path.Combine(Path.GetDirectoryName(blocksJsonFile)!, outputEnum + "XXX.cs");
 
             HashSet<int> knownStates = new HashSet<int>();
             Dictionary<string, HashSet<int>> blocks = new Dictionary<string, HashSet<int>>();

@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "tps"; } }
         public override string CmdDesc { get { return "cmd.tps.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             var tps = Math.Round(handler.GetServerTPS(), 2);
             string color;

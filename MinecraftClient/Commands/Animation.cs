@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "animation <mainhand|offhand>"; } }
         public override string CmdDesc { get { return "cmd.animation.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (hasArg(command))
             {

@@ -37,8 +37,8 @@ namespace MinecraftClient
         protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
         protected List<ChatBot> GetLoadedChatBots() { return Handler.GetLoadedChatBots(); }
         protected void UnLoadBot(ChatBot bot) { Handler.BotUnLoad(bot); }
-        private McClient _handler = null;
-        private ChatBot master = null;
+        private McClient? _handler = null;
+        private ChatBot? master = null;
         private List<string> registeredPluginChannels = new List<String>();
         private List<string> registeredCommands = new List<string>();
         private object delayTasksLock = new object();
@@ -310,7 +310,7 @@ namespace MinecraftClient
         /// <param name="entity"> Entity</param>
         /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
-        public virtual void OnEntityEquipment(Entity entity, int slot, Item item) { }
+        public virtual void OnEntityEquipment(Entity entity, int slot, Item? item) { }
 
         /// <summary>
         /// Called when an entity has effect applied
@@ -439,9 +439,9 @@ namespace MinecraftClient
         /// <param name="command">The command to process</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        protected bool PerformInternalCommand(string command, Dictionary<string, object> localVars = null)
+        protected bool PerformInternalCommand(string command, Dictionary<string, object>? localVars = null)
         {
-            string temp = "";
+            string? temp = "";
             return Handler.PerformInternalCommand(command, ref temp, localVars);
         }
 
@@ -452,7 +452,7 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        protected bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object> localVars = null)
+        protected bool PerformInternalCommand(string command, ref string? response_msg, Dictionary<string, object>? localVars = null)
         {
             return Handler.PerformInternalCommand(command, ref response_msg, localVars);
         }
@@ -460,7 +460,7 @@ namespace MinecraftClient
         /// <summary>
         /// Remove color codes ("§c") from a text message received from the server
         /// </summary>
-        public static string GetVerbatim(string text)
+        public static string GetVerbatim(string? text)
         {
             if (String.IsNullOrEmpty(text))
                 return String.Empty;
@@ -770,7 +770,7 @@ namespace MinecraftClient
         /// Write some text in the console. Nothing will be sent to the server.
         /// </summary>
         /// <param name="text">Log text to write</param>
-        protected void LogToConsole(object text)
+        protected void LogToConsole(object? text)
         {
             if (_handler == null || master == null)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", this.GetType().Name, text));
@@ -782,7 +782,7 @@ namespace MinecraftClient
             {
                 if (!File.Exists(logfile))
                 {
-                    try { Directory.CreateDirectory(Path.GetDirectoryName(logfile)); }
+                    try { Directory.CreateDirectory(Path.GetDirectoryName(logfile)!); }
                     catch { return; /* Invalid path or access denied */ }
                     try { File.WriteAllText(logfile, ""); }
                     catch { return; /* Invalid file name or access denied */ }
@@ -817,7 +817,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="key">Translation key</param>
         /// <param name="args"></param>
-        protected void LogDebugToConsoleTranslated(string key, params object[] args)
+        protected void LogDebugToConsoleTranslated(string key, params object?[] args)
         {
             LogDebugToConsole(Translations.TryGet(key, args));
         }
@@ -872,7 +872,7 @@ namespace MinecraftClient
         /// <param name="filename">File name</param>
         /// <param name="playername">Player name to send error messages, if applicable</param>
         /// <param name="localVars">Local variables for use in the Script</param>
-        protected void RunScript(string filename, string playername = null, Dictionary<string, object> localVars = null)
+        protected void RunScript(string filename, string? playername = null, Dictionary<string, object>? localVars = null)
         {
             Handler.BotLoad(new ChatBots.Script(filename, playername, localVars));
         }
@@ -955,11 +955,9 @@ namespace MinecraftClient
         /// Get the current Minecraft World
         /// </summary>
         /// <returns>Minecraft world or null if associated setting is disabled</returns>
-        protected Mapping.World GetWorld()
+        protected World GetWorld()
         {
-            if (GetTerrainEnabled())
-                return Handler.GetWorld();
-            return null;
+            return Handler.GetWorld();
         }
 
         /// <summary>
@@ -1247,7 +1245,7 @@ namespace MinecraftClient
         /// <param name="itemType">Item type</param>
         /// <param name="count">Item count</param>
         /// <returns>TRUE if item given successfully</returns>
-        protected bool CreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object> nbt = null)
+        protected bool CreativeGive(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt = null)
         {
             return Handler.DoCreativeGive(slot, itemType, count, nbt);
         }
@@ -1320,7 +1318,7 @@ namespace MinecraftClient
         protected Container GetPlayerInventory()
         {
             Container container = Handler.GetPlayerInventory();
-            return container == null ? null : new Container(container.ID, container.Type, container.Title, container.Items);
+            return new Container(container.ID, container.Type, container.Title, container.Items);
         }
 
         /// <summary>
@@ -1580,7 +1578,7 @@ namespace MinecraftClient
             public override string CmdUsage { get { return _cmdUsage; } }
             public override string CmdDesc { get { return _cmdDesc; } }
 
-            public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+            public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
             {
                 return this.Runner(command, getArgs(command));
             }

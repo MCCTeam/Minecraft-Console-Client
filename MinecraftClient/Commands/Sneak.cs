@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "Sneak"; } }
         public override string CmdDesc { get { return "cmd.sneak.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (sneaking)
             {

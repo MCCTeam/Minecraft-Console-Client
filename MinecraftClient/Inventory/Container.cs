@@ -23,7 +23,7 @@ namespace MinecraftClient.Inventory
         /// <summary>
         /// title of container
         /// </summary>
-        public string Title;
+        public string? Title;
 
         /// <summary>
         /// state of container
@@ -34,11 +34,6 @@ namespace MinecraftClient.Inventory
         /// Container Items
         /// </summary>
         public Dictionary<int, Item> Items;
-
-        /// <summary>
-        /// Create an empty container
-        /// </summary>
-        public Container() { }
 
         /// <summary>
         /// Create an empty container with ID, Type and Title
@@ -61,7 +56,7 @@ namespace MinecraftClient.Inventory
         /// <param name="type">Container Type</param>
         /// <param name="title">Container Title</param>
         /// <param name="items">Container Items (key: slot ID, value: item info)</param>
-        public Container(int id, ContainerType type, string title, Dictionary<int, Item> items)
+        public Container(int id, ContainerType type, string? title, Dictionary<int, Item> items)
         {
             ID = id;
             Type = type;

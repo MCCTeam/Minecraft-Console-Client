@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 /// !!! ATTENTION !!!
 /// By using these functions you agree to the ToS of the Mojang API.
@@ -72,7 +74,7 @@ namespace MinecraftClient.Protocol
     public static class MojangAPI
     {
         // Initialize webclient for all functions
-        private static readonly WebClient wc = new WebClient();
+        private static readonly HttpClient httpClient = new();
 
         // Can be removed in newer C# versions.
         // Replace with DateTimeOffset.FromUnixTimeMilliseconds()
@@ -119,7 +121,11 @@ namespace MinecraftClient.Protocol
         {
             try
             {
-                return Json.ParseJson(wc.DownloadString("https://api.mojang.com/users/profiles/minecraft/" + name)).Properties["id"].StringValue;
+                Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/users/profiles/minecraft/" + name);
+                fetchTask.RunSynchronously();
+                string result = Json.ParseJson(fetchTask.Result).Properties["id"].StringValue;
+                fetchTask.Dispose();
+                return result;
             }
             catch (Exception) { return string.Empty; }
         }
@@ -134,7 +140,10 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
-                var nameChanges = Json.ParseJson(wc.DownloadString("https://api.mojang.com/user/profiles/" + uuid + "/names")).DataArray;
+                Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
+                fetchTask.RunSynchronously();
+                var nameChanges = Json.ParseJson(fetchTask.Result).DataArray;
+                fetchTask.Dispose();
 
                 // Names are sorted from past to most recent. We need to get the last name in the list
                 return nameChanges[nameChanges.Count - 1].Properties["name"].StringValue;
@@ -155,7 +164,10 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
-                jsonDataList = Json.ParseJson(wc.DownloadString("https://api.mojang.com/user/profiles/" + uuid + "/names")).DataArray;
+                Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
+                fetchTask.RunSynchronously();
+                jsonDataList = Json.ParseJson(fetchTask.Result).DataArray;
+                fetchTask.Dispose();
             }
             catch (Exception) { return tempDict; }
 
@@ -198,7 +210,10 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
-                jsonDataList = Json.ParseJson(wc.DownloadString("https://status.mojang.com/check")).DataArray;
+                Task<string> fetchTask = httpClient.GetStringAsync("https://status.mojang.com/check");
+                fetchTask.RunSynchronously();
+                jsonDataList = Json.ParseJson(fetchTask.Result).DataArray;
+                fetchTask.Dispose();
             }
             catch (Exception) { new MojangServiceStatus(); }
 
@@ -228,8 +243,11 @@ namespace MinecraftClient.Protocol
             // Perform web request
             try
             {
+                Task<string> fetchTask = httpClient.GetStringAsync("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
+                fetchTask.RunSynchronously();
                 // Obtain the Base64 encoded skin information from the API. Discard the rest, since it can be obtained easier through other requests.
-                base64SkinInfo = Json.ParseJson(wc.DownloadString("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid)).Properties["properties"].DataArray[0].Properties["value"].StringValue;
+                base64SkinInfo = Json.ParseJson(fetchTask.Result).Properties["properties"].DataArray[0].Properties["value"].StringValue;
+                fetchTask.Dispose();
             }
             catch (Exception) { return new SkinInfo(); }
 

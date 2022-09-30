@@ -23,7 +23,7 @@ namespace MinecraftClient.Protocol.Session
             "launcher_profiles.json"
         );
 
-        private static FileMonitor cachemonitor;
+        private static FileMonitor? cachemonitor;
         private static Dictionary<string, SessionToken> sessions = new Dictionary<string, SessionToken>();
         private static Timer updatetimer = new Timer(100);
         private static List<KeyValuePair<string, SessionToken>> pendingadds = new List<KeyValuePair<string, SessionToken>>();
@@ -102,7 +102,7 @@ namespace MinecraftClient.Protocol.Session
         /// </summary>
         /// <param name="sender">Sender</param>
         /// <param name="e">Event data</param>
-        private static void HandlePending(object sender, ElapsedEventArgs e)
+        private static void HandlePending(object? sender, ElapsedEventArgs e)
         {
             updatetimer.Stop();
             LoadFromDisk();
@@ -176,15 +176,16 @@ namespace MinecraftClient.Protocol.Session
 
                 try
                 {
-                    using (FileStream fs = new FileStream(SessionCacheFileSerialized, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using FileStream fs = new(SessionCacheFileSerialized, FileMode.Open, FileAccess.Read, FileShare.Read);
+#pragma warning disable SYSLIB0011 // BinaryFormatter.Deserialize() is obsolete
+                    // Possible risk of information disclosure or remote code execution. The impact of this vulnerability is limited to the user side only.
+                    Dictionary<string, SessionToken> sessionsTemp = (Dictionary<string, SessionToken>)formatter.Deserialize(fs);
+#pragma warning restore SYSLIB0011 // BinaryFormatter.Deserialize() is obsolete
+                    foreach (KeyValuePair<string, SessionToken> item in sessionsTemp)
                     {
-                        Dictionary<string, SessionToken> sessionsTemp = (Dictionary<string, SessionToken>)formatter.Deserialize(fs);
-                        foreach (KeyValuePair<string, SessionToken> item in sessionsTemp)
-                        {
-                            if (Settings.DebugMessages)
-                                ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", item.Key, item.Value.ID));
-                            sessions[item.Key] = item.Value;
-                        }
+                        if (Settings.DebugMessages)
+                            ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", item.Key, item.Value.ID));
+                        sessions[item.Key] = item.Value;
                     }
                 }
                 catch (IOException ex)

@@ -25,15 +25,14 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="msgName">text identifier</param>
         /// <returns>returns translation for this identifier</returns>
-        public static string Get(string msgName, params object[] args)
+        public static string Get(string msgName, params object?[] args)
         {
             if (translations.ContainsKey(msgName))
             {
                 if (args.Length > 0)
-                {
                     return string.Format(translations[msgName], args);
-                }
-                else return translations[msgName];
+                else 
+                    return translations[msgName];
             }
             return msgName.ToUpper();
         }
@@ -45,11 +44,12 @@ namespace MinecraftClient
         /// <param name="args"></param>
         /// <returns>Translated text or original text if not found</returns>
         /// <remarks>Useful when not sure msgName is a translation mapping key or a normal text</remarks>
-        public static string TryGet(string msgName, params object[] args)
+        public static string TryGet(string msgName, params object?[] args)
         {
             if (translations.ContainsKey(msgName))
                 return Get(msgName, args);
-            else return msgName;
+            else
+                return msgName;
         }
 
         /// <summary>

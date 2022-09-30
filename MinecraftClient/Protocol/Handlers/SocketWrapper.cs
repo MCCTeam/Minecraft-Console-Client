@@ -10,7 +10,7 @@ namespace MinecraftClient.Protocol.Handlers
     class SocketWrapper
     {
         TcpClient c;
-        AesCfb8Stream s;
+        AesCfb8Stream? s;
         bool encrypted = false;
 
         /// <summary>
@@ -62,10 +62,9 @@ namespace MinecraftClient.Protocol.Handlers
             while (read < offset)
             {
                 if (encrypted)
-                {
-                    read += s.Read(buffer, start + read, offset - read);
-                }
-                else read += c.Client.Receive(buffer, start + read, offset - read, f);
+                    read += s!.Read(buffer, start + read, offset - read);
+                else
+                    read += c.Client.Receive(buffer, start + read, offset - read, f);
             }
         }
 
@@ -92,10 +91,9 @@ namespace MinecraftClient.Protocol.Handlers
         public void SendDataRAW(byte[] buffer)
         {
             if (encrypted)
-            {
-                s.Write(buffer, 0, buffer.Length);
-            }
-            else c.Client.Send(buffer);
+                s!.Write(buffer, 0, buffer.Length);
+            else
+                c.Client.Send(buffer);
         }
 
         /// <summary>

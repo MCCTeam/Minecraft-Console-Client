@@ -12,7 +12,7 @@ namespace MinecraftClient.Logger
 
         protected bool ShouldDisplay(FilterChannel channel, string msg)
         {
-            Regex regexToUse = null;
+            Regex? regexToUse = null;
             // Convert to bool for XOR later. Whitelist = 0, Blacklist = 1
             bool filterMode = Settings.FilterMode == Settings.FilterModeEnum.Blacklist ? true : false;
             switch (channel)
