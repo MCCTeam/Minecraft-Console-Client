@@ -2902,9 +2902,9 @@ namespace MinecraftClient
         {
             foreach (int a in Entities)
             {
-                if (entities.ContainsKey(a))
+                if (entities.TryGetValue(a, out Entity? entity))
                 {
-                    DispatchBotEvent(bot => bot.OnEntityDespawn(entities[a]));
+                    DispatchBotEvent(bot => bot.OnEntityDespawn(entity));
                     entities.Remove(a);
                 }
             }
