@@ -55,7 +55,7 @@ namespace MinecraftClient.WinAPI
                     try
                     {
                         Task<Stream> httpWebRequest = httpClient.GetStreamAsync("https://minotar.net/helm/" + playerName + "/100.png");
-                        httpWebRequest.RunSynchronously();
+                        httpWebRequest.Wait();
                         Stream imageStream = httpWebRequest.Result;
                         try
                         {

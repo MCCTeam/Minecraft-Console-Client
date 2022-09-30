@@ -210,7 +210,7 @@ namespace MinecraftClient.Protocol
                 try
                 {
                     Task<string> fetch_index = httpClient.GetStringAsync(Settings.TranslationsFile_Website_Index);
-                    fetch_index.RunSynchronously();
+                    fetch_index.Wait();
                     string assets_index = fetch_index.Result;
                     fetch_index.Dispose();
 
@@ -222,7 +222,7 @@ namespace MinecraftClient.Protocol
                         ConsoleIO.WriteLineFormatted(Translations.Get("chat.request", translation_file_location));
 
                     Task<string> fetch_file = httpClient.GetStringAsync(translation_file_location);
-                    fetch_file.RunSynchronously();
+                    fetch_file.Wait();
                     string translation_file = fetch_file.Result;
                     fetch_file.Dispose();
 

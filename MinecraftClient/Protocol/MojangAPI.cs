@@ -122,7 +122,7 @@ namespace MinecraftClient.Protocol
             try
             {
                 Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/users/profiles/minecraft/" + name);
-                fetchTask.RunSynchronously();
+                fetchTask.Wait();
                 string result = Json.ParseJson(fetchTask.Result).Properties["id"].StringValue;
                 fetchTask.Dispose();
                 return result;
@@ -141,7 +141,7 @@ namespace MinecraftClient.Protocol
             try
             {
                 Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
-                fetchTask.RunSynchronously();
+                fetchTask.Wait();
                 var nameChanges = Json.ParseJson(fetchTask.Result).DataArray;
                 fetchTask.Dispose();
 
@@ -165,7 +165,7 @@ namespace MinecraftClient.Protocol
             try
             {
                 Task<string> fetchTask = httpClient.GetStringAsync("https://api.mojang.com/user/profiles/" + uuid + "/names");
-                fetchTask.RunSynchronously();
+                fetchTask.Wait();
                 jsonDataList = Json.ParseJson(fetchTask.Result).DataArray;
                 fetchTask.Dispose();
             }
@@ -211,7 +211,7 @@ namespace MinecraftClient.Protocol
             try
             {
                 Task<string> fetchTask = httpClient.GetStringAsync("https://status.mojang.com/check");
-                fetchTask.RunSynchronously();
+                fetchTask.Wait();
                 jsonDataList = Json.ParseJson(fetchTask.Result).DataArray;
                 fetchTask.Dispose();
             }
@@ -244,7 +244,7 @@ namespace MinecraftClient.Protocol
             try
             {
                 Task<string> fetchTask = httpClient.GetStringAsync("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid);
-                fetchTask.RunSynchronously();
+                fetchTask.Wait();
                 // Obtain the Base64 encoded skin information from the API. Discard the rest, since it can be obtained easier through other requests.
                 base64SkinInfo = Json.ParseJson(fetchTask.Result).Properties["properties"].DataArray[0].Properties["value"].StringValue;
                 fetchTask.Dispose();
