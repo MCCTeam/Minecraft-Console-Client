@@ -141,8 +141,11 @@ namespace MinecraftClient
 
         //AntiAFK Settings
         public static bool AntiAFK_Enabled = false;
-        public static int AntiAFK_Delay = 600;
+        public static string AntiAFK_Delay = "600";
         public static string AntiAFK_Command = "/ping";
+        public static bool AntiAFK_UseTerrain_Handling = false;
+        public static int AntiAFK_Walk_Range = 5;
+        public static int AntiAFK_Walk_Retries = 20;
 
         //Hangman Settings
         public static bool Hangman_Enabled = false;
@@ -598,8 +601,11 @@ namespace MinecraftClient
                     switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": AntiAFK_Enabled = str2bool(argValue); return true;
-                        case "delay": AntiAFK_Delay = str2int(argValue); return true;
+                        case "delay": AntiAFK_Delay = argValue; return true;
                         case "command": AntiAFK_Command = argValue == "" ? "/ping" : argValue; return true;
+                        case "use_terrain_handling": AntiAFK_UseTerrain_Handling = str2bool(argValue); return true;
+                        case "walk_range": AntiAFK_Walk_Range = str2int(argValue); return true;
+                        case "walk_retries": AntiAFK_Walk_Retries = str2int(argValue); return true;
                     }
                     break;
 

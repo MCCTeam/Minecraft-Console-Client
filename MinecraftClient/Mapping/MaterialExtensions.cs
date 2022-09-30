@@ -752,6 +752,7 @@ namespace MinecraftClient.Mapping
                     return false;
             }
         }
+
         /// <summary>
         /// Check if the provided material is a liquid a player can swim into
         /// </summary>
@@ -763,6 +764,37 @@ namespace MinecraftClient.Mapping
             {
                 case Material.Water:
                 case Material.Lava:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Check if the provided material is a bed
+        /// </summary>
+        /// <param name="m">Material to test</param>
+        /// <returns>True if the material is a bed</returns>
+        public static bool IsBed(this Material m)
+        {
+            switch (m)
+            {
+                case Material.BlackBed:
+                case Material.BlueBed:
+                case Material.BrownBed:
+                case Material.CyanBed:
+                case Material.GrayBed:
+                case Material.GreenBed:
+                case Material.LightBlueBed:
+                case Material.LightGrayBed:
+                case Material.LimeBed:
+                case Material.MagentaBed:
+                case Material.OrangeBed:
+                case Material.PinkBed:
+                case Material.PurpleBed:
+                case Material.RedBed:
+                case Material.WhiteBed:
+                case Material.YellowBed:
                     return true;
                 default:
                     return false;
