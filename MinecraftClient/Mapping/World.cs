@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 
 namespace MinecraftClient.Mapping
 {
@@ -78,7 +75,7 @@ namespace MinecraftClient.Mapping
         public static void StoreOneDimension(string dimensionName, Dictionary<string, object> dimensionType)
         {
             if (dimensionList.ContainsKey(dimensionName))
-                    dimensionList.Remove(dimensionName);
+                dimensionList.Remove(dimensionName);
             dimensionList.Add(dimensionName, new Dimension(dimensionName, dimensionType));
         }
 

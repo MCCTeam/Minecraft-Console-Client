@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol.Message
 {
@@ -103,7 +100,7 @@ namespace MinecraftClient.Protocol.Message
                 entries[size++] = lastEntry;
 
             LastSeenMessageList.Entry[] msgList = new LastSeenMessageList.Entry[size];
-            for (int i = 0; i < size; ++i) 
+            for (int i = 0; i < size; ++i)
                 msgList[i] = entries[i];
             lastSeenMessages = new LastSeenMessageList(msgList);
         }

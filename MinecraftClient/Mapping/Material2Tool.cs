@@ -1,5 +1,5 @@
-﻿using MinecraftClient.Inventory;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Mapping
 {

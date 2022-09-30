@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace MinecraftClient.Logger
+﻿namespace MinecraftClient.Logger
 {
     /// <summary>
     /// Abstract class providing basic implementation of the ILogger interface

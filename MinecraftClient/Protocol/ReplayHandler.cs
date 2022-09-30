@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using MinecraftClient.Protocol.Handlers;
-using System.Runtime.InteropServices;
+using System.Linq;
 using Ionic.Zip;
 using MinecraftClient.Mapping;
+using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 
 namespace MinecraftClient.Protocol
@@ -42,8 +40,8 @@ namespace MinecraftClient.Protocol
 
         public ReplayHandler(int protocolVersion)
         {
-            this.dataTypes = new DataTypes(protocolVersion);
-            this.packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
+            dataTypes = new DataTypes(protocolVersion);
+            packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
             this.protocolVersion = protocolVersion;
 
             if (!Directory.Exists(ReplayFileDirectory))
@@ -67,12 +65,12 @@ namespace MinecraftClient.Protocol
         }
 
         public ReplayHandler(int protocolVersion, string serverName, string recordingDirectory = @"replay_recordings")
-            :this(protocolVersion)
+            : this(protocolVersion)
         {
-            this.dataTypes = new DataTypes(protocolVersion);
-            this.packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
+            dataTypes = new DataTypes(protocolVersion);
+            packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
 
-            this.MetaData.serverName = serverName;
+            MetaData.serverName = serverName;
             ReplayFileDirectory = recordingDirectory;
         }
 
@@ -215,7 +213,7 @@ namespace MinecraftClient.Protocol
         /// <param name="isInbound"></param>
         public void AddPacket(int packetID, IEnumerable<byte> packetData, bool isLogin, bool isInbound)
         {
-            try 
+            try
             {
                 if (isInbound)
                     HandleInBoundPacket(packetID, packetData, isLogin);

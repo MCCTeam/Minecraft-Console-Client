@@ -102,7 +102,7 @@ namespace MinecraftClient.Mapping
                 Y += motionY;
                 if (Y < goal.Y)
                     return new Queue<Location>(new[] { goal });
-                else 
+                else
                     return new Queue<Location>(new[] { new Location(start.X, Y, start.Z) });
             }
             else
@@ -120,7 +120,7 @@ namespace MinecraftClient.Mapping
                         movementSteps.Enqueue(start + step * i);
                     return movementSteps;
                 }
-                else 
+                else
                     return new Queue<Location>(new[] { goal });
             }
         }
@@ -184,7 +184,7 @@ namespace MinecraftClient.Mapping
             ///---///
             // Prepare variables and datastructures for A*
             ///---///
-            
+
             // Dictionary that contains the relation between all coordinates and resolves the final path
             Dictionary<Location, Location> CameFrom = new Dictionary<Location, Location>();
             // Create a Binary Heap for all open positions => Allows fast access to Nodes with lowest scores
@@ -306,8 +306,8 @@ namespace MinecraftClient.Mapping
 
                 public Node(int g_score, int h_score, Location loc)
                 {
-                    this.G_score = g_score;
-                    this.H_score = h_score;
+                    G_score = g_score;
+                    H_score = h_score;
                     Location = loc;
                 }
             }
@@ -524,7 +524,7 @@ namespace MinecraftClient.Mapping
         public static bool IsSafe(World world, Location location)
         {
             return
-                //No block that can harm the player
+                   //No block that can harm the player
                    !world.GetBlock(location).Type.CanHarmPlayers()
                 && !world.GetBlock(Move(location, Direction.Up)).Type.CanHarmPlayers()
                 && !world.GetBlock(Move(location, Direction.Down)).Type.CanHarmPlayers()

@@ -34,12 +34,12 @@ namespace MinecraftClient.Protocol.Keys
 
         public bool NeedRefresh()
         {
-            return DateTime.Now.ToUniversalTime() > this.RefreshedAfter;
+            return DateTime.Now.ToUniversalTime() > RefreshedAfter;
         }
 
         public bool IsExpired()
         {
-            return DateTime.Now.ToUniversalTime() > this.ExpiresAt;
+            return DateTime.Now.ToUniversalTime() > ExpiresAt;
         }
 
         public long GetExpirationMilliseconds()

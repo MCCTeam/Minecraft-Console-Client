@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient
@@ -107,7 +106,7 @@ namespace MinecraftClient
 
             for (int i = 0; i < cmdLine.Length; i++)
             {
-                if ((cmdLine[i] == '"' && i > 0 && cmdLine[i-1] != '\\') || (cmdLine[i] == '"' && i == 0))
+                if ((cmdLine[i] == '"' && i > 0 && cmdLine[i - 1] != '\\') || (cmdLine[i] == '"' && i == 0))
                 {
                     if (inQuotedArg)
                     {

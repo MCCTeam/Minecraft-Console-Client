@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MinecraftClient.Crypto;
-using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
+using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Keys;
 
 namespace MinecraftClient.Protocol

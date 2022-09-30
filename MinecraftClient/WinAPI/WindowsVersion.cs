@@ -22,14 +22,14 @@ namespace MinecraftClient.WinAPI
         {
             get
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     dynamic? major;
                     // The 'CurrentMajorVersionNumber' string value in the CurrentVersion key is new for Windows 10, 
                     // and will most likely (hopefully) be there for some time before MS decides to change this - again...
-                    if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMajorVersionNumber", out major)) 
+                    if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMajorVersionNumber", out major))
                     {
-                        return (uint) major;
+                        return (uint)major;
                     }
 
                     // When the 'CurrentMajorVersionNumber' value is not present we fallback to reading the previous key used for this: 'CurrentVersion'
@@ -54,14 +54,14 @@ namespace MinecraftClient.WinAPI
         {
             get
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     dynamic? minor;
                     // The 'CurrentMinorVersionNumber' string value in the CurrentVersion key is new for Windows 10, 
                     // and will most likely (hopefully) be there for some time before MS decides to change this - again...
-                    if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMinorVersionNumber", out minor)) 
+                    if (TryGetRegistryKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion", "CurrentMinorVersionNumber", out minor))
                     {
-                        return (uint) minor;
+                        return (uint)minor;
                     }
 
                     // When the 'CurrentMinorVersionNumber' value is not present we fallback to reading the previous key used for this: 'CurrentVersion'
@@ -88,16 +88,18 @@ namespace MinecraftClient.WinAPI
         /// <returns>TRUE if successfully retrieved</returns>
         private static bool TryGetRegistryKey(string path, string key, out dynamic? value)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 value = null;
-                try {
+                try
+                {
                     var rk = Registry.LocalMachine.OpenSubKey(path);
                     if (rk == null) return false;
                     value = rk.GetValue(key);
                     return value != null;
                 }
-                catch {
+                catch
+                {
                     return false;
                 }
             }

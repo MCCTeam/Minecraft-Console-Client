@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
-using MinecraftClient.Mapping;
-using MinecraftClient.Crypto;
-using MinecraftClient.Inventory;
-using MinecraftClient.Mapping.EntityPalettes;
-using MinecraftClient.Inventory.ItemPalettes;
 using System.Runtime.CompilerServices;
+using System.Text;
+using MinecraftClient.Inventory;
+using MinecraftClient.Inventory.ItemPalettes;
+using MinecraftClient.Mapping;
+using MinecraftClient.Mapping.EntityPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -28,7 +25,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="protocol">Protocol version</param>
         public DataTypes(int protocol)
         {
-            this.protocolversion = protocol;
+            protocolversion = protocol;
         }
 
         /// <summary>

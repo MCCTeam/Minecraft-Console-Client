@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace MinecraftClient.Mapping.BlockPalettes
@@ -79,7 +79,6 @@ namespace MinecraftClient.Mapping.BlockPalettes
             HashSet<string> materials = new HashSet<string>();
             List<string> outFile = new List<string>();
             outFile.AddRange(new[] {
-                "using System;",
                 "using System.Collections.Generic;",
                 "",
                 "namespace MinecraftClient.Mapping.BlockPalettes",

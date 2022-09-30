@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using MinecraftClient.Crypto;
-using MinecraftClient.Proxy;
-using System.Security.Cryptography;
-using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
+using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Keys;
-using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.Session;
+using MinecraftClient.Proxy;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -35,9 +35,9 @@ namespace MinecraftClient.Protocol.Handlers
             ConsoleIO.SetAutoCompleteEngine(this);
             if (protocolversion >= 72)
                 ChatParser.InitTranslations();
-            this.c = Client;
-            this.protocolversion = ProtocolVersion;
-            this.handler = Handler;
+            c = Client;
+            protocolversion = ProtocolVersion;
+            handler = Handler;
 
             if (Handler.GetTerrainEnabled())
             {
@@ -63,7 +63,7 @@ namespace MinecraftClient.Protocol.Handlers
         private Protocol16Handler(TcpClient Client)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            this.c = Client;
+            c = Client;
         }
 
         private void Updater(object? o)

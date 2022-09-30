@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MinecraftClient.Protocol.Handlers.Forge;
 using System.Threading;
+using MinecraftClient.Protocol.Handlers.Forge;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -30,7 +30,7 @@ namespace MinecraftClient.Protocol.Handlers
         public Protocol18Forge(ForgeInfo? forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
         {
             this.forgeInfo = forgeInfo;
-            this.protocolversion = protocolVersion;
+            protocolversion = protocolVersion;
             this.dataTypes = dataTypes;
             this.protocol18 = protocol18;
             this.mcHandler = mcHandler;

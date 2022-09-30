@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
@@ -130,7 +126,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         /// Public method for getting the type mapping
         /// </summary>
         /// <returns>PacketTypesOut with packet ID as index</returns>
-        public Dictionary<int ,PacketTypesOut> GetMappingOut()
+        public Dictionary<int, PacketTypesOut> GetMappingOut()
         {
             return GetListOut();
         }
@@ -146,7 +142,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         /// <param name="enabled"></param>
         public void SetForgeEnabled(bool enabled)
         {
-            this.forgeEnabled = enabled;
+            forgeEnabled = enabled;
         }
     }
 }

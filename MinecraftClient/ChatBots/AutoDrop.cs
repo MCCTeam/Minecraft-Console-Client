@@ -1,8 +1,7 @@
-﻿using MinecraftClient.Inventory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.ChatBots
 {
@@ -109,7 +108,7 @@ namespace MinecraftClient.ChatBots
                         }
                         else
                         {
-                            return Translations.Get("cmd.inventory.help.usage") +  ": remove <item name>";
+                            return Translations.Get("cmd.inventory.help.usage") + ": remove <item name>";
                         }
                     case "list":
                         if (itemList.Count > 0)

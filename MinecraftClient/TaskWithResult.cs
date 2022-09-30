@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace MinecraftClient
@@ -49,7 +46,7 @@ namespace MinecraftClient
             {
                 if (taskRun)
                     return result!;
-                else 
+                else
                     throw new InvalidOperationException("Attempting to retrieve the result of an unfinished task");
             }
         }

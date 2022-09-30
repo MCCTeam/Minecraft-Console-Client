@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 //using System.Linq;
 //using System.Text;
 using MinecraftClient.Mapping;
@@ -27,7 +25,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="dataTypes">Minecraft Protocol Data Types</param>
         public Protocol18Terrain(int protocolVersion, DataTypes dataTypes, IMinecraftComHandler handler)
         {
-            this.protocolversion = protocolVersion;
+            protocolversion = protocolVersion;
             this.dataTypes = dataTypes;
             this.handler = handler;
         }
@@ -179,7 +177,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     // 1.18 and above always contains all chunk section in data
                     // 1.17 and 1.17.1 need vertical strip bitmask to know if the chunk section is included
-                    if ((protocolversion >= Protocol18Handler.MC_1_18_1_Version) || 
+                    if ((protocolversion >= Protocol18Handler.MC_1_18_1_Version) ||
                         ((verticalStripBitmask![chunkY / 64] & (1UL << (chunkY % 64))) != 0))
                     {
                         // Non-air block count inside chunk section, for lighting purposes

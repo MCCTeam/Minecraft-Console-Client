@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
+using System.Linq;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 
@@ -359,7 +358,7 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            
+
         }
 
         #region Method for parsing different section of config
@@ -379,7 +378,7 @@ namespace MinecraftClient.ChatBots
                     else throw new Exception(Translations.Get("bot.autoCraft.exception.invalid_table", key));
                     break;
                 case "onfailure":
-                    abortOnFailure = value.ToLower() == "abort" ? true : false;
+                    abortOnFailure = value.ToLower() == "abort";
                     break;
                 case "updatedebounce":
                     updateDebounceValue = Convert.ToInt32(value);
@@ -693,7 +692,7 @@ namespace MinecraftClient.ChatBots
                 }
                 HandleError();
             }
-            
+
         }
 
         /// <summary>

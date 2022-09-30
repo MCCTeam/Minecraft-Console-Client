@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
@@ -58,7 +56,7 @@ namespace MinecraftClient.Commands
                         return Translations.Get("cmd.look.block", block);
                     }
                     catch (FormatException) { return CmdUsage; }
-                    
+
                 }
                 else return GetCmdDescTranslated();
             }

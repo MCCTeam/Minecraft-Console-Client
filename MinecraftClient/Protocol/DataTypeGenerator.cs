@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 
 namespace MinecraftClient.Protocol
 {
@@ -97,7 +97,6 @@ namespace MinecraftClient.Protocol
             });
 
             outputPaletteLines.AddRange(new[] {
-                "using System;",
                 "using System.Collections.Generic;",
                 "",
                 "namespace " + paletteNamespace,

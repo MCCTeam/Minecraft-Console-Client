@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
 using System.Collections.Specialized;
-using System.Net.Sockets;
-using MinecraftClient.Proxy;
+using System.IO;
 using System.Net.Security;
+using System.Net.Sockets;
 using System.Security.Authentication;
+using System.Text;
+using MinecraftClient.Proxy;
 
 namespace MinecraftClient.Protocol
 {
@@ -142,8 +141,9 @@ namespace MinecraftClient.Protocol
                     sr.Close();
                     stream.Close();
                     client.Close();
-                } catch { }
-            }, 
+                }
+                catch { }
+            },
             TimeSpan.FromSeconds(30));
             return response;
         }
@@ -163,7 +163,7 @@ namespace MinecraftClient.Protocol
             {
                 Queue<string> msg = new Queue<string>(raw.Split(new string[] { "\r\n" }, StringSplitOptions.None));
                 statusCode = int.Parse(msg.Dequeue().Split(' ')[1]);
-                
+
                 while (msg.Peek() != "")
                 {
                     string[] header = msg.Dequeue().Split(new char[] { ':' }, 2); // Split first ':' only
@@ -183,7 +183,7 @@ namespace MinecraftClient.Protocol
                     }
                 }
                 msg.Dequeue();
-                if (msg.Count > 0) 
+                if (msg.Count > 0)
                     responseBody = msg.Dequeue();
 
                 return new Response(statusCode, responseBody, headers, cookies);

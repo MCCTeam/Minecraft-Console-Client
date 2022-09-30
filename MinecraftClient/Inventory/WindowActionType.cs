@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace MinecraftClient.Inventory
+﻿namespace MinecraftClient.Inventory
 {
     /// <summary>
     /// Represents mouse interactions with an inventory window

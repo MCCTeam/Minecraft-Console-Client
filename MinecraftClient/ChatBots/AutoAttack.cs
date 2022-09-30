@@ -1,7 +1,7 @@
-﻿using MinecraftClient.Mapping;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.ChatBots
 {
@@ -53,13 +53,13 @@ namespace MinecraftClient.ChatBots
                 else
                 {
                     this.overrideAttackSpeed = overrideAttackSpeed;
-                    this.attackCooldownSeconds = cooldownSeconds;
+                    attackCooldownSeconds = cooldownSeconds;
                     attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
                 }
             }
 
-            this.attackHostile = Settings.AutoAttack_Attack_Hostile;
-            this.attackPassive = Settings.AutoAttack_Attack_Passive;
+            attackHostile = Settings.AutoAttack_Attack_Hostile;
+            attackPassive = Settings.AutoAttack_Attack_Passive;
 
             if (Settings.AutoAttack_ListMode.Length > 0)
             {
@@ -209,7 +209,7 @@ namespace MinecraftClient.ChatBots
             if (listedEntites.Count > 0)
             {
                 bool inList = listedEntites.Contains(entity.Type);
-                result = listMode.Equals("blacklist") ? (inList ? false : result) : (inList ? true : false);
+                result = listMode.Equals("blacklist") ? (!inList && result) : (inList);
             }
 
             return result;

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace MinecraftClient.Inventory
+﻿namespace MinecraftClient.Inventory
 {
     // For MC 1.14 after ONLY
     public enum ContainerType

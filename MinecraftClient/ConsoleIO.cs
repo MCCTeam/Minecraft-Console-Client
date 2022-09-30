@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading;
 
 namespace MinecraftClient
 {
@@ -78,7 +76,7 @@ namespace MinecraftClient
         {
             if (BasicIO)
                 return Console.ReadLine() ?? String.Empty;
-            else 
+            else
                 return ConsoleInteractive.ConsoleReader.RequestImmediateInput();
         }
 
@@ -120,7 +118,7 @@ namespace MinecraftClient
         public static void WriteLineFormatted(string str, bool acceptnewlines = false, bool? displayTimestamp = null)
         {
             StringBuilder output = new StringBuilder();
-            
+
             if (!String.IsNullOrEmpty(str))
             {
                 if (displayTimestamp == null)
@@ -183,10 +181,10 @@ namespace MinecraftClient
         public static void AutocompleteHandler(object? sender, ConsoleKey e)
         {
             if (e != ConsoleKey.Tab) return;
-            
+
             if (autocomplete_engine == null)
                 return;
-            
+
             var buffer = ConsoleInteractive.ConsoleReader.GetBufferContent();
             autocomplete_engine.AutoComplete(buffer.Text[..buffer.CursorPosition]);
         }

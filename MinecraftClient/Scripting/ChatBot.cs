@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.IO;
-using System.Threading;
 using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
@@ -32,7 +31,7 @@ namespace MinecraftClient
         public enum DisconnectReason { InGameKick, LoginRejected, ConnectionLost, UserLogout };
 
         //Handler will be automatically set on bot loading, don't worry about this
-        public void SetHandler(McClient handler) { this._handler = handler; }
+        public void SetHandler(McClient handler) { _handler = handler; }
         protected void SetMaster(ChatBot master) { this.master = master; }
         protected void LoadBot(ChatBot bot) { Handler.BotUnLoad(bot); Handler.BotLoad(bot); }
         protected List<ChatBot> GetLoadedChatBots() { return Handler.GetLoadedChatBots(); }
@@ -773,9 +772,9 @@ namespace MinecraftClient
         protected void LogToConsole(object? text)
         {
             if (_handler == null || master == null)
-                ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", this.GetType().Name, text));
+                ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", GetType().Name, text));
             else
-                Handler.Log.Info(String.Format("[{0}] {1}", this.GetType().Name, text));
+                Handler.Log.Info(String.Format("[{0}] {1}", GetType().Name, text));
             string logfile = Settings.ExpandVars(Settings.chatbotLogFile);
 
             if (!String.IsNullOrEmpty(logfile))
@@ -831,7 +830,7 @@ namespace MinecraftClient
         protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0)
         {
             if (Settings.DebugMessages)
-                ConsoleIO.WriteLogLine(Translations.Get("chatbot.reconnect", this.GetType().Name));
+                ConsoleIO.WriteLogLine(Translations.Get("chatbot.reconnect", GetType().Name));
             McClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart(delaySeconds);
         }
@@ -1168,7 +1167,7 @@ namespace MinecraftClient
         /// <param name="channel">The name of the channel to register</param>
         protected void RegisterPluginChannel(string channel)
         {
-            this.registeredPluginChannels.Add(channel);
+            registeredPluginChannels.Add(channel);
             Handler.RegisterPluginChannel(channel, this);
         }
 
@@ -1178,7 +1177,7 @@ namespace MinecraftClient
         /// <param name="channel">The name of the channel to unregister</param>
         protected void UnregisterPluginChannel(string channel)
         {
-            this.registeredPluginChannels.RemoveAll(chan => chan == channel);
+            registeredPluginChannels.RemoveAll(chan => chan == channel);
             Handler.UnregisterPluginChannel(channel, this);
         }
 
@@ -1194,7 +1193,7 @@ namespace MinecraftClient
         {
             if (!sendEvenIfNotRegistered)
             {
-                if (!this.registeredPluginChannels.Contains(channel))
+                if (!registeredPluginChannels.Contains(channel))
                 {
                     return false;
                 }
@@ -1580,7 +1579,7 @@ namespace MinecraftClient
 
             public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
             {
-                return this.Runner(command, getArgs(command));
+                return Runner(command, getArgs(command));
             }
 
             /// <summary>
@@ -1592,10 +1591,10 @@ namespace MinecraftClient
             /// <param name="callback">Method for handling the command</param>
             public ChatBotCommand(string cmdName, string cmdDesc, string cmdUsage, CommandRunner callback)
             {
-                this._cmdName = cmdName;
-                this._cmdDesc = cmdDesc;
-                this._cmdUsage = cmdUsage;
-                this.Runner = callback;
+                _cmdName = cmdName;
+                _cmdDesc = cmdDesc;
+                _cmdUsage = cmdUsage;
+                Runner = callback;
             }
         }
     }

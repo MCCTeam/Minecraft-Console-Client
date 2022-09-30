@@ -49,7 +49,7 @@ namespace MinecraftClient
                 monitor = null;
                 var cancellationTokenSource = new CancellationTokenSource();
                 polling = new Tuple<Thread, CancellationTokenSource>(new Thread(() => PollingThread(folder, filename, handler, cancellationTokenSource.Token)), cancellationTokenSource);
-                polling.Item1.Name = String.Format("{0} Polling thread: {1}", this.GetType().Name, Path.Combine(folder, filename));
+                polling.Item1.Name = String.Format("{0} Polling thread: {1}", GetType().Name, Path.Combine(folder, filename));
                 polling.Item1.Start();
             }
         }

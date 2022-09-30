@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient.Inventory
@@ -33,9 +32,9 @@ namespace MinecraftClient.Inventory
         /// <param name="nbt">Item Metadata</param>
         public Item(ItemType itemType, int count, Dictionary<string, object>? nbt)
         {
-            this.Type = itemType;
-            this.Count = count;
-            this.NBT = nbt;
+            Type = itemType;
+            Count = count;
+            NBT = nbt;
         }
 
         /// <summary>
@@ -70,7 +69,7 @@ namespace MinecraftClient.Inventory
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Retrieve item lores from NBT properties. Returns null if no lores is defined.
         /// </summary>
@@ -96,7 +95,7 @@ namespace MinecraftClient.Inventory
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Retrieve item damage from NBT properties. Returns 0 if no damage is defined.
         /// </summary>

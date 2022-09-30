@@ -117,7 +117,7 @@ namespace MinecraftClient.Commands
                         {
                             inventory.Items.Values
                                 .ToList()
-                                .FindAll(item => item.Type == parsedItemType && (shouldUseItemCount ? item.Count == itemCount : true))
+                                .FindAll(item => item.Type == parsedItemType && (!shouldUseItemCount || item.Count == itemCount))
                                 .ForEach(item =>
                                 {
                                     if (!foundItems.ContainsKey(inventory.ID))

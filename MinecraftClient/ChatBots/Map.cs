@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using MinecraftClient.Mapping;
-using System.Drawing;
 using MinecraftClient.Protocol.Handlers;
 
 namespace MinecraftClient.ChatBots

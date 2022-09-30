@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using MinecraftClient.Mapping;
 
@@ -135,7 +134,7 @@ namespace MinecraftClient.Commands
 
 
                         // \ud83d\udd33: 🔳, \ud83d\udfe8: 🟨, \ud83d\udfe9: 🟩, \u25A1: □, \u25A3: ▣, \u25A0: ■
-                        string[] chunkStatusStr = Settings.EnableEmoji ? 
+                        string[] chunkStatusStr = Settings.EnableEmoji ?
                             new string[] { "\ud83d\udd33", "\ud83d\udfe8", "\ud83d\udfe9" } : new string[] { "\u25A1", "\u25A3", "\u25A0" };
 
                         // Output
@@ -177,7 +176,7 @@ namespace MinecraftClient.Commands
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
                             if (chunkColumn != null)
                                 chunkColumn.FullyLoaded = false;
-                            return (chunkColumn == null) ? "Fail: chunk dosen't exist!" : 
+                            return (chunkColumn == null) ? "Fail: chunk dosen't exist!" :
                                 String.Format("Successfully marked chunk ({0}, {1}) as loading.", chunkX, chunkZ);
                         }
                         else
@@ -194,7 +193,7 @@ namespace MinecraftClient.Commands
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
                             if (chunkColumn != null)
                                 chunkColumn.FullyLoaded = true;
-                            return (chunkColumn == null) ? "Fail: chunk dosen't exist!" : 
+                            return (chunkColumn == null) ? "Fail: chunk dosen't exist!" :
                                 String.Format("Successfully marked chunk ({0}, {1}) as loaded.", chunkX, chunkZ);
                         }
                         else
@@ -220,7 +219,7 @@ namespace MinecraftClient.Commands
                 else
                     return GetCmdDescTranslated();
             }
-            else 
+            else
                 return GetCmdDescTranslated();
         }
 

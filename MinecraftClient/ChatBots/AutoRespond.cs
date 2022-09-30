@@ -1,6 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -52,13 +52,13 @@ namespace MinecraftClient.ChatBots
             public RespondRule(Regex regex, string? actionPublic, string? actionPrivate, string? actionOther, bool ownersOnly, TimeSpan cooldown)
             {
                 this.regex = regex;
-                this.match = null;
+                match = null;
                 this.actionPublic = actionPublic;
                 this.actionPrivate = actionPrivate;
                 this.actionOther = actionOther;
                 this.ownersOnly = ownersOnly;
                 this.cooldown = cooldown;
-                this.cooldownExpiration = DateTime.MinValue;
+                cooldownExpiration = DateTime.MinValue;
             }
 
             /// <summary>
@@ -71,14 +71,14 @@ namespace MinecraftClient.ChatBots
             /// <param name="cooldown">Minimal cooldown between two matches</param>
             public RespondRule(string? match, string? actionPublic, string? actionPrivate, string? actionOther, bool ownersOnly, TimeSpan cooldown)
             {
-                this.regex = null;
+                regex = null;
                 this.match = match;
                 this.actionPublic = actionPublic;
                 this.actionPrivate = actionPrivate;
                 this.actionOther = actionOther;
                 this.ownersOnly = ownersOnly;
                 this.cooldown = cooldown;
-                this.cooldownExpiration = DateTime.MinValue;
+                cooldownExpiration = DateTime.MinValue;
             }
 
             /// <summary>
@@ -264,7 +264,7 @@ namespace MinecraftClient.ChatBots
         public override void GetText(string text)
         {
             //Remove colour codes
-            if (!this.matchColors)
+            if (!matchColors)
                 text = GetVerbatim(text);
 
             //Get Message type

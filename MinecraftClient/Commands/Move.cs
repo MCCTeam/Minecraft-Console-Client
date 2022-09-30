@@ -81,7 +81,7 @@ namespace MinecraftClient.Commands
                     {
                         if (handler.MoveTo(goal, allowUnsafe: takeRisk))
                             return Translations.Get("cmd.move.moving", args[0]);
-                        else 
+                        else
                             return takeRisk ? Translations.Get("cmd.move.dir_fail") : Translations.Get("cmd.move.suggestforce");
                     }
                     else return Translations.Get("cmd.move.dir_fail");

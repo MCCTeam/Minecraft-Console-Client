@@ -1,26 +1,26 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
-using System.Threading;
-using System.Security.Cryptography;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using MinecraftClient.Crypto;
-using MinecraftClient.Proxy;
+using MinecraftClient.Inventory;
+using MinecraftClient.Inventory.ItemPalettes;
+using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
-using MinecraftClient.Inventory;
-using MinecraftClient.Inventory.ItemPalettes;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
-using MinecraftClient.Logger;
 using MinecraftClient.Protocol.Keys;
-using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.Session;
+using MinecraftClient.Proxy;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -92,15 +92,15 @@ namespace MinecraftClient.Protocol.Handlers
         {
             ConsoleIO.SetAutoCompleteEngine(this);
             ChatParser.InitTranslations();
-            this.socketWrapper = new SocketWrapper(Client);
-            this.dataTypes = new DataTypes(protocolVersion);
+            socketWrapper = new SocketWrapper(Client);
+            dataTypes = new DataTypes(protocolVersion);
             this.protocolVersion = protocolVersion;
             this.handler = handler;
-            this.pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
-            this.pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
-            this.packetPalette = new PacketTypeHandler(protocolVersion, forgeInfo != null).GetTypeHandler();
-            this.log = handler.GetLogger();
-            this.randomGen = RandomNumberGenerator.Create();
+            pForge = new Protocol18Forge(forgeInfo, protocolVersion, dataTypes, this, handler);
+            pTerrain = new Protocol18Terrain(protocolVersion, dataTypes, handler);
+            packetPalette = new PacketTypeHandler(protocolVersion, forgeInfo != null).GetTypeHandler();
+            log = handler.GetLogger();
+            randomGen = RandomNumberGenerator.Create();
 
             if (handler.GetTerrainEnabled() && protocolVersion > MC_1_19_2_Version)
             {
@@ -391,12 +391,12 @@ namespace MinecraftClient.Protocol.Handlers
                                     dimensionType = dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
                                     dataTypes.ReadNextString(packetData);
-                                this.currentDimension = 0;
+                                currentDimension = 0;
                             }
                             else if (protocolVersion >= MC_1_9_1_Version)
-                                this.currentDimension = dataTypes.ReadNextInt(packetData);
+                                currentDimension = dataTypes.ReadNextInt(packetData);
                             else
-                                this.currentDimension = (sbyte)dataTypes.ReadNextByte(packetData);
+                                currentDimension = (sbyte)dataTypes.ReadNextByte(packetData);
 
                             if (protocolVersion < MC_1_14_Version)
                                 dataTypes.ReadNextByte(packetData);           // Difficulty - 1.13 and below
@@ -506,7 +506,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 else
                                 {
                                     PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
-                                    verifyResult = player == null ? false : player.VerifyMessage(signedChat, timestamp, salt, ref messageSignature);
+                                    verifyResult = player != null && player.VerifyMessage(signedChat, timestamp, salt, ref messageSignature);
                                 }
 
                                 ChatMessage chat = new(signedChat, true, messageType, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, messageSignature, verifyResult);
@@ -573,7 +573,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 ChatMessage chat = new(signedChat, false, chatTypeId, senderUUID, unsignedChatContent, senderDisplayName, senderTeamName, timestamp, headerSignature, verifyResult);
                                 if (isOnlineMode && !chat.lacksSender())
-                                    this.acknowledge(chat);
+                                    acknowledge(chat);
                                 handler.OnTextReceived(chat);
                             }
                             break;
@@ -618,11 +618,11 @@ namespace MinecraftClient.Protocol.Handlers
                                     dimensionTypeRespawn = dataTypes.ReadNextNbt(packetData);        // Dimension Type: NBT Tag Compound
                                 else
                                     dataTypes.ReadNextString(packetData);
-                                this.currentDimension = 0;
+                                currentDimension = 0;
                             }
                             else
                             {   // 1.15 and below
-                                this.currentDimension = dataTypes.ReadNextInt(packetData);
+                                currentDimension = dataTypes.ReadNextInt(packetData);
                             }
 
                             if (protocolVersion >= MC_1_16_Version)
@@ -816,7 +816,7 @@ namespace MinecraftClient.Protocol.Handlers
                             List<MapIcon> icons = new();
 
                             // 1,9 + = needs tracking position to be true to get the icons
-                            if (protocolVersion > MC_1_9_Version ? trackingPosition : true)
+                            if (protocolVersion <= MC_1_9_Version || trackingPosition)
                             {
                                 iconcount = dataTypes.ReadNextVarInt(packetData);
 
@@ -1408,7 +1408,7 @@ namespace MinecraftClient.Protocol.Handlers
                                     {
                                         byte bitsData = dataTypes.ReadNextByte(packetData);
                                         //  Top bit set if another entry follows, and otherwise unset if this is the last item in the array
-                                        hasNext = (bitsData >> 7) == 1 ? true : false;
+                                        hasNext = (bitsData >> 7) == 1;
                                         int slot2 = bitsData >> 1;
                                         Item? item = dataTypes.ReadNextItemSlot(packetData, itemPalette);
                                         handler.OnEntityEquipment(entityid, slot2, item);
@@ -1856,7 +1856,7 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else if (packetID == 0x01) //Encryption request
                 {
-                    this.isOnlineMode = true;
+                    isOnlineMode = true;
                     string serverID = dataTypes.ReadNextString(packetData);
                     byte[] serverPublicKey = dataTypes.ReadNextByteArray(packetData);
                     byte[] token = dataTypes.ReadNextByteArray(packetData);
@@ -2186,8 +2186,8 @@ namespace MinecraftClient.Protocol.Handlers
 
         public LastSeenMessageList.Acknowledgment consumeAcknowledgment()
         {
-            this.pendingAcknowledgments = 0;
-            return new LastSeenMessageList.Acknowledgment(this.lastSeenMessagesCollector.GetLastSeenMessages(), this.lastReceivedMessage);
+            pendingAcknowledgments = 0;
+            return new LastSeenMessageList.Acknowledgment(lastSeenMessagesCollector.GetLastSeenMessages(), lastReceivedMessage);
         }
 
         public void acknowledge(ChatMessage message)
@@ -2200,7 +2200,7 @@ namespace MinecraftClient.Protocol.Handlers
                 lastReceivedMessage = null;
 
                 if (pendingAcknowledgments++ > 64)
-                    SendMessageAcknowledgment(this.consumeAcknowledgment());
+                    SendMessageAcknowledgment(consumeAcknowledgment());
             }
         }
 
@@ -2274,7 +2274,7 @@ namespace MinecraftClient.Protocol.Handlers
             try
             {
                 LastSeenMessageList.Acknowledgment? acknowledgment =
-                    (protocolVersion >= MC_1_19_2_Version) ? this.consumeAcknowledgment() : null;
+                    (protocolVersion >= MC_1_19_2_Version) ? consumeAcknowledgment() : null;
 
                 List<byte> fields = new();
 
@@ -2351,7 +2351,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolVersion >= MC_1_19_Version)
                 {
                     LastSeenMessageList.Acknowledgment? acknowledgment =
-                        (protocolVersion >= MC_1_19_2_Version) ? this.consumeAcknowledgment() : null;
+                        (protocolVersion >= MC_1_19_2_Version) ? consumeAcknowledgment() : null;
 
                     // Timestamp: Instant(Long)
                     DateTimeOffset timeNow = DateTimeOffset.UtcNow;

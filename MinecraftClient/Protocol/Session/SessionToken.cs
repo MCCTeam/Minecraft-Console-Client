@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol.Session
@@ -34,7 +33,7 @@ namespace MinecraftClient.Protocol.Session
 
         public bool SessionPreCheck()
         {
-            if (this.ID == string.Empty || this.PlayerID == String.Empty || this.ServerPublicKey == null)
+            if (ID == string.Empty || PlayerID == String.Empty || ServerPublicKey == null)
                 return false;
             if (Crypto.CryptoHandler.ClientAESPrivateKey == null)
                 Crypto.CryptoHandler.ClientAESPrivateKey = Crypto.CryptoHandler.GenerateAESPrivateKey();
@@ -46,7 +45,7 @@ namespace MinecraftClient.Protocol.Session
 
         public override string ToString()
         {
-            return String.Join(",", ID, PlayerName, PlayerID, ClientID, RefreshToken, ServerIDhash, 
+            return String.Join(",", ID, PlayerName, PlayerID, ClientID, RefreshToken, ServerIDhash,
                 (ServerPublicKey == null) ? String.Empty : Convert.ToBase64String(ServerPublicKey));
         }
 

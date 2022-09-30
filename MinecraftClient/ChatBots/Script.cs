@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using Microsoft.CSharp;
-using System.CodeDom.Compiler;
-using System.Reflection;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Text;
+using System.Threading;
 
 namespace MinecraftClient.ChatBots
 {
@@ -35,7 +32,7 @@ namespace MinecraftClient.ChatBots
         public Script(string filename, string? ownername, Dictionary<string, object>? localVars)
             : this(filename)
         {
-            this.owner = ownername;
+            owner = ownername;
             this.localVars = localVars;
         }
 
@@ -145,7 +142,7 @@ namespace MinecraftClient.ChatBots
 
                 if (!String.IsNullOrEmpty(owner))
                     SendPrivateMessage(owner, Translations.Get("bot.script.file_not_found", file));
-                
+
                 UnloadBot(); //No need to keep the bot active
             }
         }

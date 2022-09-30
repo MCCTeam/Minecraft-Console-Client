@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
@@ -31,7 +31,7 @@ namespace MinecraftClient
             {
                 if (args.Length > 0)
                     return string.Format(translations[msgName], args);
-                else 
+                else
                     return translations[msgName];
             }
             return msgName.ToUpper();
@@ -121,7 +121,7 @@ namespace MinecraftClient
                     ? CultureInfo.CurrentCulture.Name
                     : CultureInfo.CurrentCulture.Parent.Name;
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string langDir = baseDir + ((baseDir.EndsWith(Path.DirectorySeparatorChar) ? String.Empty : Path.DirectorySeparatorChar) + 
+            string langDir = baseDir + ((baseDir.EndsWith(Path.DirectorySeparatorChar) ? String.Empty : Path.DirectorySeparatorChar) +
                 translationFilePath + Path.DirectorySeparatorChar);
             string langFileSystemLanguage = langDir + systemLanguage + ".ini";
             string langFileConfigLanguage = langDir + language + ".ini";

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace MinecraftClient.Commands
 {
@@ -19,7 +16,7 @@ namespace MinecraftClient.Commands
                 var result = handler.SendEntityAction(Protocol.EntityActionType.StopSneaking);
                 if (result)
                     sneaking = false;
-                return  Translations.Get(result ? "cmd.sneak.off" : "general.fail");
+                return Translations.Get(result ? "cmd.sneak.off" : "general.fail");
             }
             else
             {
@@ -28,7 +25,7 @@ namespace MinecraftClient.Commands
                     sneaking = true;
                 return Translations.Get(result ? "cmd.sneak.on" : "general.fail");
             }
-            
+
         }
     }
 }

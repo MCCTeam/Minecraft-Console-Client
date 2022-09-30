@@ -18,7 +18,7 @@ using SingleFileExtractor.Core;
 
 namespace DynamicRun.Builder
 {
-    internal class Compiler 
+    internal class Compiler
     {
         public CompileResult Compile(string filepath, string fileName)
         {
@@ -34,7 +34,8 @@ namespace DynamicRun.Builder
 
                     var failures = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
 
-                    return new CompileResult() {
+                    return new CompileResult()
+                    {
                         Assembly = null,
                         HasCompiledSucecssfully = false,
                         Failures = failures.ToList()
@@ -45,7 +46,8 @@ namespace DynamicRun.Builder
 
                 peStream.Seek(0, SeekOrigin.Begin);
 
-                return new CompileResult() {
+                return new CompileResult()
+                {
                     Assembly = peStream.ToArray(),
                     HasCompiledSucecssfully = true,
                     Failures = null
@@ -61,7 +63,7 @@ namespace DynamicRun.Builder
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
 
             var mods = Assembly.GetEntryAssembly()!.GetModules();
-            
+
 #pragma warning disable IL3000
             // System.Private.CoreLib
             var A = typeof(object).Assembly.Location;
@@ -89,18 +91,19 @@ namespace DynamicRun.Builder
                     ExecutableReader e = new();
                     File.Delete(tempFileName);
                     File.Copy(executablePath, tempFileName);
-                    
+
                     // Access the contents of the executable.
                     var viewAccessor = MemoryMappedFile.CreateFromFile(tempFileName, FileMode.Open).CreateViewAccessor();
                     var manifest = e.ReadManifest(viewAccessor);
                     var files = manifest.Files;
-                    
+
                     Stream? assemblyStream;
 
                     var assemblyrefs = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList()!;
-                    assemblyrefs.Add(new ("MinecraftClient"));
-                    
-                    foreach (var refs in assemblyrefs) {
+                    assemblyrefs.Add(new("MinecraftClient"));
+
+                    foreach (var refs in assemblyrefs)
+                    {
                         var loadedAssembly = Assembly.Load(refs);
                         if (string.IsNullOrEmpty(loadedAssembly.Location))
                         {
@@ -118,7 +121,7 @@ namespace DynamicRun.Builder
                                 throw new InvalidOperationException("The executable does not contain a referenced assembly. Assembly name: " + refs.Name);
                             }
 
-                            assemblyStream = GetStreamForFileEntry(viewAccessor, reference); 
+                            assemblyStream = GetStreamForFileEntry(viewAccessor, reference);
                             references.Add(MetadataReference.CreateFromStream(assemblyStream!));
                             continue;
                         }
@@ -138,17 +141,17 @@ namespace DynamicRun.Builder
 #pragma warning restore IL3000
             return CSharpCompilation.Create($"{fileName}.dll",
                 new[] { parsedSyntaxTree },
-                references: references, 
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, 
+                references: references,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                     optimizationLevel: OptimizationLevel.Release,
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default));
         }
-        
+
         private static Stream? GetStreamForFileEntry(MemoryMappedViewAccessor viewAccessor, FileEntry file)
         {
             var stream = typeof(BundleExtractor).GetMethod("GetStreamForFileEntry", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { viewAccessor, file }) as Stream;
 
-            if (stream == null) 
+            if (stream == null)
             {
                 throw new InvalidOperationException("The executable does not contain the assembly. Assembly name: " + file.RelativePath);
             }
@@ -156,11 +159,13 @@ namespace DynamicRun.Builder
             return stream;
         }
 
-        internal struct CompileResult {
+        internal struct CompileResult
+        {
             internal byte[]? Assembly;
             internal bool HasCompiledSucecssfully;
             internal List<Diagnostic>? Failures;
-            public CompileResult(bool hasCompiledSucecssfully, List<Diagnostic>? failures, byte[]? assembly) {
+            public CompileResult(bool hasCompiledSucecssfully, List<Diagnostic>? failures, byte[]? assembly)
+            {
                 HasCompiledSucecssfully = hasCompiledSucecssfully;
                 Failures = failures;
                 Assembly = assembly;

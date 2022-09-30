@@ -23,12 +23,12 @@ namespace MinecraftClient.Mapping
         /// Nickname of the entity if it is a player.
         /// </summary>
         public string? Name;
-        
+
         /// <summary>
         /// CustomName of the entity.
         /// </summary>
         public string? CustomNameJson;
-        
+
         /// <summary>
         /// IsCustomNameVisible of the entity.
         /// </summary>
@@ -38,7 +38,7 @@ namespace MinecraftClient.Mapping
         /// CustomName of the entity.
         /// </summary>
         public string? CustomName;
-        
+
         /// <summary>
         /// Latency of the entity if it is a player.
         /// </summary>
@@ -77,17 +77,17 @@ namespace MinecraftClient.Mapping
         /// Health of the entity
         /// </summary>
         public float Health;
-        
+
         /// <summary>
         /// Item of the entity if ItemFrame or Item
         /// </summary>
         public Item Item;
-        
+
         /// <summary>
         /// Entity pose in the Minecraft world
         /// </summary>
         public EntityPose Pose;
-        
+
         /// <summary>
         /// Entity metadata
         /// </summary>
@@ -107,11 +107,11 @@ namespace MinecraftClient.Mapping
         public Entity(int ID, EntityType type, Location location)
         {
             this.ID = ID;
-            this.Type = type;
-            this.Location = location;
-            this.Health = 1.0f;
-            this.Equipment = new Dictionary<int, Item>();
-            this.Item = new Item(ItemType.Air, 0, null);
+            Type = type;
+            Location = location;
+            Health = 1.0f;
+            Equipment = new Dictionary<int, Item>();
+            Item = new Item(ItemType.Air, 0, null);
         }
 
         /// <summary>
@@ -123,14 +123,14 @@ namespace MinecraftClient.Mapping
         public Entity(int ID, EntityType type, Location location, byte yaw, byte pitch, int objectData)
         {
             this.ID = ID;
-            this.Type = type;
-            this.Location = location;
-            this.Health = 1.0f;
-            this.Equipment = new Dictionary<int, Item>();
-            this.Item = new Item(ItemType.Air, 0, null);
-            this.Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
-            this.Pitch = pitch * (1 / 256) * 360;
-            this.ObjectData = objectData;
+            Type = type;
+            Location = location;
+            Health = 1.0f;
+            Equipment = new Dictionary<int, Item>();
+            Item = new Item(ItemType.Air, 0, null);
+            Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
+            Pitch = pitch * (1 / 256) * 360;
+            ObjectData = objectData;
         }
 
         /// <summary>
@@ -144,15 +144,15 @@ namespace MinecraftClient.Mapping
         public Entity(int ID, EntityType type, Location location, Guid uuid, string? name, byte yaw, byte pitch)
         {
             this.ID = ID;
-            this.Type = type;
-            this.Location = location;
-            this.UUID = uuid;
-            this.Name = name;
-            this.Health = 1.0f;
-            this.Equipment = new Dictionary<int, Item>();
-            this.Item = new Item(ItemType.Air, 0, null);
-            this.Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
-            this.Pitch = pitch * (1 / 256) * 360;
+            Type = type;
+            Location = location;
+            UUID = uuid;
+            Name = name;
+            Health = 1.0f;
+            Equipment = new Dictionary<int, Item>();
+            Item = new Item(ItemType.Air, 0, null);
+            Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
+            Pitch = pitch * (1 / 256) * 360;
         }
     }
 }

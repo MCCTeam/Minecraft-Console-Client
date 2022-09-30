@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace MinecraftClient.Protocol.Handlers.PacketPalettes
@@ -36,7 +33,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             List<string> lines = new List<string>();
             lines.Add("=== Inbound Packets ===");
             int i = 0;
-            foreach(var t in palette.GetMappingIn())
+            foreach (var t in palette.GetMappingIn())
             {
                 lines.Add(string.Format("{{ 0x{0}, {1} }},", i.ToString("X2"), t.Value));
                 i++;
@@ -120,10 +117,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             const string TAB2 = "        ";
             const string TAB3 = "            ";
             List<string> lines = new List<string>();
-            lines.Add("using System;");
             lines.Add("using System.Collections.Generic;");
-            lines.Add("using System.Linq;");
-            lines.Add("using System.Text;");
             lines.Add("");
             lines.Add("namespace " + namespaceToUse);
             lines.Add("{");

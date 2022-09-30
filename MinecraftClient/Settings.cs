@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using System.Text.RegularExpressions;
-using MinecraftClient.Protocol.Session;
-using MinecraftClient.Protocol;
-using MinecraftClient.Mapping;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using MinecraftClient.ChatBots;
-using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using MinecraftClient.Mapping;
+using MinecraftClient.Protocol;
+using MinecraftClient.Protocol.Session;
 
 namespace MinecraftClient
 {

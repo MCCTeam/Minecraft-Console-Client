@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Drawing;
+using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Net;
-using System.IO;
-using System.Drawing;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace MinecraftClient.WinAPI
@@ -23,7 +19,7 @@ namespace MinecraftClient.WinAPI
 
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
         private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, IntPtr lParam);
-        
+
         /// <summary>
         /// An application sends the WM_SETICON message to associate a new large or small icon with a window.
         /// The system displays the large icon in the ALT+TAB dialog box, and the small icon in the window caption.
@@ -33,20 +29,21 @@ namespace MinecraftClient.WinAPI
             SETICON = 0x0080,
         }
 
-        private static void SetWindowIcon(System.Drawing.Icon icon) 
+        private static void SetWindowIcon(System.Drawing.Icon icon)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 IntPtr mwHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
-                IntPtr result01 = SendMessage(mwHandle, (int)WinMessages.SETICON, 0, icon.Handle);
-                IntPtr result02 = SendMessage(mwHandle, (int)WinMessages.SETICON, 1, icon.Handle);
+                SendMessage(mwHandle, (int)WinMessages.SETICON, 0, icon.Handle);
+                SendMessage(mwHandle, (int)WinMessages.SETICON, 1, icon.Handle);
             }
         }
 
         /// <summary>
         /// Asynchronously download the player's skin and set the head as console icon
         /// </summary>
-        public static void setPlayerIconAsync(string playerName) {
+        public static void SetPlayerIconAsync(string playerName)
+        {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 Thread t = new(new ThreadStart(delegate
@@ -72,7 +69,7 @@ namespace MinecraftClient.WinAPI
                     }
                     catch (HttpRequestException) //Skin not found? Reset to default icon
                     {
-                        revertToMCCIcon();
+                        RevertToMCCIcon();
                     }
                     finally
                     {
@@ -90,7 +87,7 @@ namespace MinecraftClient.WinAPI
         /// <summary>
         /// Set the icon back to the default MCC icon
         /// </summary>
-        public static void revertToMCCIcon()
+        public static void RevertToMCCIcon()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) //Windows Only
             {

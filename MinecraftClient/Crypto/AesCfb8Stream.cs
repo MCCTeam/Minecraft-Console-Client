@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
-using System.IO;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace MinecraftClient.Crypto
 {

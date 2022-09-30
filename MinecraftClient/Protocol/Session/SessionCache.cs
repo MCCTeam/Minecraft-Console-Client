@@ -1,5 +1,4 @@
-﻿using MinecraftClient.Protocol;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -107,7 +106,7 @@ namespace MinecraftClient.Protocol.Session
             updatetimer.Stop();
             LoadFromDisk();
 
-            foreach(KeyValuePair<string, SessionToken> pending in pendingadds.ToArray())
+            foreach (KeyValuePair<string, SessionToken> pending in pendingadds.ToArray())
             {
                 Store(pending.Key, pending.Value);
                 pendingadds.Remove(pending);

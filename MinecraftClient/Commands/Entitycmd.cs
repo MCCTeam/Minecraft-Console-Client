@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 

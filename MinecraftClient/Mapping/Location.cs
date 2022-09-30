@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace MinecraftClient.Mapping
 {
@@ -168,7 +165,7 @@ namespace MinecraftClient.Mapping
         /// <returns>New location</returns>
         public Location ToFloor()
         {
-            return new Location(Math.Floor(this.X), Math.Floor(this.Y), Math.Floor(this.Z));
+            return new Location(Math.Floor(X), Math.Floor(Y), Math.Floor(Z));
         }
 
         /// <summary>
@@ -177,7 +174,7 @@ namespace MinecraftClient.Mapping
         /// <returns>New location</returns>
         public Location ToCenter()
         {
-            return new Location(Math.Floor(this.X) + 0.5, this.Y, Math.Floor(this.Z) + 0.5);
+            return new Location(Math.Floor(X) + 0.5, Y, Math.Floor(Z) + 0.5);
         }
 
         /// <summary>
@@ -288,9 +285,9 @@ namespace MinecraftClient.Mapping
                 return false;
             if (obj is Location location)
             {
-                return ((int)this.X) == ((int)location.X)
-                    && ((int)this.Y) == ((int)location.Y)
-                    && ((int)this.Z) == ((int)location.Z);
+                return ((int)X) == ((int)location.X)
+                    && ((int)Y) == ((int)location.Y)
+                    && ((int)Z) == ((int)location.Z);
             }
             return false;
         }

@@ -19,7 +19,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="client">TcpClient connected to the server</param>
         public SocketWrapper(TcpClient client)
         {
-            this.c = client;
+            c = client;
         }
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (encrypted)
                 throw new InvalidOperationException("Stream is already encrypted!?");
-            this.s = new AesCfb8Stream(c.GetStream(), secretKey);
-            this.encrypted = true;
+            s = new AesCfb8Stream(c.GetStream(), secretKey);
+            encrypted = true;
         }
 
         /// <summary>

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Net.Sockets;
 using System.Net.Security;
-using System.Threading;
+using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Text;
 using DnsClient;
-using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
-using System.Security.Authentication;
+using MinecraftClient.Proxy;
 
 namespace MinecraftClient.Protocol
 {

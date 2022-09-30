@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Reflection;
-using System.Threading;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Text;
 using DynamicRun.Builder;
 
 namespace MinecraftClient
@@ -37,7 +35,7 @@ namespace MinecraftClient
             //Script hash for determining if it was previously compiled
             ulong scriptHash = QuickHash(lines);
             byte[]? assembly = null;
-            
+
             Compiler compiler = new Compiler();
             CompileRunner runner = new CompileRunner();
 
@@ -105,7 +103,7 @@ namespace MinecraftClient
 
                     //Compile the C# class in memory using all the currently loaded assemblies
                     var result = compiler.Compile(code, Guid.NewGuid().ToString());
-                    
+
                     //Process compile warnings and errors
                     if (result.Failures != null)
                         throw new CSharpException(CSErrorType.LoadError,
@@ -123,7 +121,8 @@ namespace MinecraftClient
             //Run the compiled assembly with exception handling
             if (run)
             {
-                try {
+                try
+                {
                     var compiled = runner.Execute(assembly!, args, localVars, apiHandler);
                     return compiled;
                 }
@@ -191,7 +190,7 @@ namespace MinecraftClient
         /// <param name="apiHandler">ChatBot API Handler</param>
         /// <param name="tickHandler">ChatBot tick handler</param>
         /// <param name="localVars">Local variables passed along with the script</param>
-        public CSharpAPI(ChatBot apiHandler, Dictionary<string , object>? localVars)
+        public CSharpAPI(ChatBot apiHandler, Dictionary<string, object>? localVars)
         {
             SetMaster(apiHandler);
             this.localVars = localVars;

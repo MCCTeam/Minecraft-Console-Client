@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MinecraftClient.Commands
 {
@@ -29,9 +27,9 @@ namespace MinecraftClient.Commands
                 }
                 if (slot >= 1 && slot <= 9)
                 {
-                    if (handler.ChangeSlot(slot-=1))
+                    if (handler.ChangeSlot(slot -= 1))
                     {
-                        return Translations.Get("cmd.changeSlot.changed", (slot+=1));
+                        return Translations.Get("cmd.changeSlot.changed", (slot += 1));
                     }
                     else
                     {

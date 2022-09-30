@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
+using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol

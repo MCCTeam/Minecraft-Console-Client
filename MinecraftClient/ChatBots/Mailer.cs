@@ -1,8 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace MinecraftClient.ChatBots
 {
@@ -117,12 +117,12 @@ namespace MinecraftClient.ChatBots
             public Mail(string sender, string recipient, string message, bool anonymous, DateTime datesent)
             {
                 this.sender = sender;
-                this.senderLower = sender.ToLower();
+                senderLower = sender.ToLower();
                 this.recipient = recipient;
-                this.recipientLower = recipient.ToLower();
+                recipientLower = recipient.ToLower();
                 this.message = message;
                 this.datesent = datesent;
-                this.delivered = false;
+                delivered = false;
                 this.anonymous = anonymous;
             }
 
@@ -336,7 +336,7 @@ namespace MinecraftClient.ChatBots
                 switch (commandName)
                 {
                     case "getmails": // Sorry, I (ReinforceZwei) replaced "=" to "-" because it would affect the parsing of translation file (key=value)
-                        return Translations.Get("bot.mailer.cmd.getmails", string.Join("\n", mailDatabase)); 
+                        return Translations.Get("bot.mailer.cmd.getmails", string.Join("\n", mailDatabase));
 
                     case "getignored":
                         return Translations.Get("bot.mailer.cmd.getignored", string.Join("\n", ignoreList));

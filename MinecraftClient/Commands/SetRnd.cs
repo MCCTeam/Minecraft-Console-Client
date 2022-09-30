@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace MinecraftClient.Commands
 {
@@ -17,8 +16,8 @@ namespace MinecraftClient.Commands
             {
                 string[] args = getArg(command).Split(' ');
 
-               if (args.Length > 1)
-               {
+                if (args.Length > 1)
+                {
                     // detect "to" keyword in string
                     if (args.Length == 2 && args[1].Contains("to"))
                     {
