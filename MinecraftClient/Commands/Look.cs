@@ -51,12 +51,9 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        int x = int.Parse(args[0]);
-                        int y = int.Parse(args[1]);
-                        int z = int.Parse(args[2]);
-
-                        Location block = new Location(x, y, z);
-                        handler.UpdateLocation(handler.GetCurrentLocation(), block);
+                        Location current = handler.GetCurrentLocation();
+                        Location block = Location.Parse(current, args[0], args[1], args[2]);
+                        handler.UpdateLocation(current, block);
 
                         return Translations.Get("cmd.look.block", block);
                     }

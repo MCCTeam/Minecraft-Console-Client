@@ -21,11 +21,8 @@ namespace MinecraftClient.Commands
                 string[] args = getArgs(command);
                 if (args.Length >= 3)
                 {
-                    Location current = handler.GetCurrentLocation();
-                    double x = args[0].StartsWith('~') ? current.X + (args[0].Length > 1 ? double.Parse(args[0][1..]) : 0) : double.Parse(args[0]);
-                    double y = args[1].StartsWith('~') ? current.Y + (args[1].Length > 1 ? double.Parse(args[1][1..]) : 0) : double.Parse(args[1]);
-                    double z = args[2].StartsWith('~') ? current.Z + (args[2].Length > 1 ? double.Parse(args[2][1..]) : 0) : double.Parse(args[2]);
-                    Location block = new Location(x, y, z).ToFloor(), blockCenter = block.ToCenter();
+                    Location block = Location.Parse(handler.GetCurrentLocation(), args[0], args[1], args[2]).ToFloor();
+                    Location blockCenter = block.ToCenter();
                     bool res = handler.PlaceBlock(block, Direction.Down);
                     return Translations.Get("cmd.useblock.use", blockCenter.X, blockCenter.Y, blockCenter.Z, res ? "succeeded" : "failed");
                 }

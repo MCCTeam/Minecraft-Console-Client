@@ -91,14 +91,10 @@ namespace MinecraftClient.Commands
                     try
                     {
                         Location current = handler.GetCurrentLocation(), currentCenter = current.ToCenter();
-                        
-                        double x = args[0].StartsWith('~') ? current.X + (args[0].Length > 1 ? double.Parse(args[0][1..]) : 0) : double.Parse(args[0]);
-                        double y = args[1].StartsWith('~') ? current.Y + (args[1].Length > 1 ? double.Parse(args[1][1..]) : 0) : double.Parse(args[1]);
-                        double z = args[2].StartsWith('~') ? current.Z + (args[2].Length > 1 ? double.Parse(args[2][1..]) : 0) : double.Parse(args[2]);
-                        Location goal = new(x, y, z);
+                        Location goal = Location.Parse(current, args[0], args[1], args[2]);
 
                         if (!Movement.CheckChunkLoading(handler.GetWorld(), current, goal))
-                            return Translations.Get("cmd.move.chunk_not_loaded", x, y, z);
+                            return Translations.Get("cmd.move.chunk_not_loaded", goal.X, goal.Y, goal.Z);
 
                         if (takeRisk || Movement.PlayerFitsHere(handler.GetWorld(), goal))
                         {
