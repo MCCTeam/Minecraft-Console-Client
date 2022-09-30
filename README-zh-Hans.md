@@ -1,62 +1,68 @@
-我的世界控制台客户端
-========================
+<div align="center">
 
-[![Appveyor build status](https://ci.appveyor.com/api/projects/status/github/ORelio/Minecraft-Console-Client?branch=Indev)](https://ci.appveyor.com/project/ORelio/minecraft-console-client)
+<img src="https://i.pics.rs/LLDhE.png" alt="Logo"/>
 
-我的世界控制台客户端(MCC)是一个轻量级的程序，它允许你连接至任何我的世界服务器，
-简单快速地发送指令和接收聊天信息而不需要开启游戏。它也提供了多种自动化管理服务器和进行其他操作的可能性。
+# Minecraft 控制台客户端 (MCC)
 
-**注意！** MCC仅可以连接到**我的世界Java版国际版**，而**不能连接到我的世界基岩版/中国版！**
+[文档](https://mccteam.github.io/) | [下载](#download) | [安装](https://mccteam.github.io/guide/installation.html) | [配置](https://mccteam.github.io/guide/configuration.html) | [使用](https://mccteam.github.io/guide/usage.html)
 
-## 正在寻找维护者
+[![GitHub Actions 构建状态](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord 服务器" /></a>
 
-由于不再有足够的时间来为新的我的世界版本提供升级和修复错误，开发者正在寻找有开发动力的人来接手该项目。如果您认为您可以接手该项目，请查看 [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) 部分 :)
+</div>
 
-## 下载
+## **About ℹ️**
 
-从最新的[开发构建](https://ci.appveyor.com/project/ORelio/minecraft-console-client/build/artifacts)处获取exe文件。
-这是一个同样兼容于macOS以及Linux的.NET可执行文件。
+**Minecraft Console Client (MCC)** is a lightweight cross-platform open-source Minecraft TUI client for **Java** edition that allows you to connect to any Minecraft Java server, send commands and receive text messages in a fast and easy way without having to open the main Minecraft game.
 
-## 如何使用
+## Download
 
-在此查看[示例配置文件](MinecraftClient/config/) ，其中有基础使用教程 README 文件。<br>
-更多帮助和信息可以从[我的世界官方论坛](http://www.minecraftforum.net/topic/1314800-/)中查询。
+Get development builds from the [Releases section](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
 
-## 从源码编译
+## How to use 📚
 
-首先，下载[源码zip压缩包](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip)，将其解压并进入`MinecraftClient`文件夹
+-   🌐 [Full Documentation](https://mccteam.github.io/)
+-   📦 [Installation](https://mccteam.github.io/guide/installation.html)
+-   📖 [Usage](https://mccteam.github.io/guide/usage.html)
+-   ⚙️ [Configuration](https://mccteam.github.io/guide/configuration.html)
+-   🤖 [Chat Bots](https://mccteam.github.io/guide/chat-bots.html)
+-   📝 [Sample configuration files](MinecraftClient/config/)
 
-编辑 `MinecraftClient.csproj` 的[第四行](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4)，将编译目标设置为 `Release`:
+## Getting Help 🙋
 
-```xml
-<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-```
+Check out the [Website](https://mccteam.github.io/), [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) and existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Maybe your question is answered there. If not, please open a [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) and ask your question. If you find a bug, please report it in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section.
 
-### 在Windows环境下
+## Discord
 
-1. 找到 `C:\Windows\Microsoft.NET\Framework\v4.X.XXXXX` 下的 `MSBuild.exe`
-2. 将 `MinecraftClient.csproj` 拖到 `MSBuild.exe` 上方并放开以开始编译
-3. 如果编译成功，您将可以在 `MinecraftClient\bin\Release` 路径下找到 `MinecraftClient.exe`
+We now have a Discord server, click [here](https://discord.gg/sfBv4TtpC9) to join.
 
-### 在macOS/Linux环境下
+## Helping Us ❤️
 
-1. 安装[Mono Framework](https://www.mono-project.com/download/stable/#download-lin)
-2. 在终端内执行 `msbuild MinecraftClient.csproj`
-3. 如果编译成功，您将可以在 `MinecraftClient\bin\Release` 路径下找到 `MinecraftClient.exe`
+We are a small community so we need help to implement upgrades for new Minecraft versions, fixing bugs and expanding the project. We are always looking for motivated people to contribute. If you feel like it could be you, please have a look at the [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) section :)
 
-## 贡献代码
+## How to contribute 📝
 
-如果您希望为我的世界控制台客户端出一份力的话，我们不胜感激，您可以fork此仓库并提交合并请求。 *Indev* 分支将不会继续被使用, 我们将只会把MCC作为测试版软件发布。
+If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the _Master_ branch. To contribute to the website / online documentation see also the [Website repository](https://github.com/MCCTeam/MCCTeam.github.io).
 
-## 许可证
+## Translating Minecraft Console Client 🌍
 
-除非有特殊说明，此项目代码全部来自MCC开发者，并以CDDL-1.0协议发布。
-在其他情况下，许可证和原作者会被提及于源码文件的顶部。
-CDDL-1.0许可证的主要条件基本上在列明于下列：
+If you would like to translate Minecraft Console Client to a different language, please download the translation file from [the lang folder](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) or just fork the repository. Once you finished the translation work, submit a pull request or send us the file through an [Issue](https://github.com/MCCTeam/Minecraft-Console-Client/issues) in case you are not familiar with Git.
 
-- 你可以在任何一个程序使用许可证编码不管是使用完整的或一部分，程序的许可证是处于完整（或者相当的，不包括你借用的编码）。程序本身可以使开放来源或是封闭来源，自由的或商业的。
-- 无论如何，在CDDL编码（在CDDl编码里被任何编码引用直接修改会被认为是增建部分于CDDL编码里，所以是被限制于这需求；列子：对math fuction的改进使用快速查阅资料表会让资料表被认为是个增建部分，不管这是否在自己本身的来源编码之中）里，所有案列例如任何修改，改进，或者是增建部分必须使其公开的和自由的在来源中，当然也被限制于CDDL许可证里。
-- 在任何程序（来源或二进制）使用CDDL编码，确认必须要被给于CDDl编码的来源（任何一个项目或作者）。同样的，对CDDL编码（必须分布作为来源）的改进不得移除作为指引来源编码的通知。
+To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if it does not exist.
 
-更多资讯在 http://qstuff.blogspot.fr/2007/04/why-cddl.html<br>
-完整许可证在 http://opensource.org/licenses/CDDL-1.0
+For the names of the translation file, please see [this comment](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
+
+## Building from the source 🏗️
+
+This section has been moved to our new [Documentation website](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
+
+## License ⚖️
+
+Unless specifically stated, the code is from the MCC Team or Contributors, and available under CDDL-1.0. Else, the license and original author are mentioned in source file headers.
+The main terms of the CDDL-1.0 license are basically the following:
+
+-   You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial.
+-   However, in all cases, any modifications, improvements, or additions to the CDDL code (any code that is referenced in direct modifications to the CDDL code is considered an addition to the CDDL code, and so is bound by this requirement; e.g. a modification of a math function to use a fast lookup table makes that table itself an addition to the CDDL code, regardless of whether it's in a source code file of its own) must be made publicly and freely available in source, under the CDDL license itself.
+-   In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
+
+More info at http://qstuff.blogspot.fr/2007/04/why-cddl.html
+Full license at http://opensource.org/licenses/CDDL-1.0
