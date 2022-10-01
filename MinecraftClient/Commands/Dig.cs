@@ -20,7 +20,7 @@ namespace MinecraftClient.Commands
             string[] args = getArgs(command);
             if (args.Length == 0)
             {
-                Location? blockToBreak = RaycastHelper.RaycastBlock(handler, 4.0, false);
+                Location? blockToBreak = RaycastHelper.RaycastBlock(handler, 4.5, false);
                 if (blockToBreak == null)
                     return Translations.Get("cmd.dig.too_far");
                 Location blockToBreak_loc = (Location)blockToBreak!;
@@ -30,7 +30,7 @@ namespace MinecraftClient.Commands
                 if (handler.DigBlock(blockToBreak_loc, lookAtBlock: false))
                     return Translations.Get("cmd.dig.dig", blockToBreak_loc.X, blockToBreak_loc.Y, blockToBreak_loc.Z, block.Type);
                 else
-                    return "cmd.dig.fail";
+                    return Translations.Get("cmd.dig.fail");
             }
             else if (args.Length == 3)
             {
@@ -46,7 +46,7 @@ namespace MinecraftClient.Commands
                     else if (handler.DigBlock(blockToBreak))
                         return Translations.Get("cmd.dig.dig", blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.Type);
                     else
-                        return "cmd.dig.fail";
+                        return Translations.Get("cmd.dig.fail");
                 }
                 catch (FormatException) { return GetCmdDescTranslated(); }
             }
