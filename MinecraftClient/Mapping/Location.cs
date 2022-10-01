@@ -277,6 +277,11 @@ namespace MinecraftClient.Mapping
             return this + new Location(0, 1.62, 0);
         }
 
+        public Location Add(Location loc)
+        {
+            return new(this.X + loc.X, this.Y + loc.Y, this.Z + loc.Z);
+        }
+
         /// <summary>
         /// Compare two locations. Locations are equals if the integer part of their coordinates are equals.
         /// </summary>
