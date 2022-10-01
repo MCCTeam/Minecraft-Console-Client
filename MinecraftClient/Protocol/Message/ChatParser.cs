@@ -143,24 +143,28 @@ namespace MinecraftClient.Protocol
         {
             return colorname.ToLower() switch
             {
-                /* MC 1.7+ Name   |   MC 1.6 Name   |   Classic tag */
-                "black"                             =>     "§0",
-                "dark_blue"                         =>     "§1",
-                "dark_green"                        =>     "§2",
-                "dark_aqua"      or "dark_cyan"     =>     "§3",
-                "dark_red"                          =>     "§4",
-                "dark_purple"    or "dark_magenta"  =>     "§5",
-                "gold"           or "dark_yellow"   =>     "§6",
-                "gray"                              =>     "§7",
-                "dark_gray"                         =>     "§8",
-                "blue"                              =>     "§9",
-                "green"                             =>     "§a",
-                "aqua"           or "cyan"          =>     "§b",
-                "red"                               =>     "§c",
-                "light_purple"   or "magenta"       =>     "§d",
-                "yellow"                            =>     "§e",
-                "white"                             =>     "§f",
-                _ => "",
+#pragma warning disable format // @formatter:off
+
+           /*   MC 1.7+ Name   ||   MC 1.6 Name   ||   Classic tag   */
+                "black"                           =>      "§0",
+                "dark_blue"                       =>      "§1",
+                "dark_green"                      =>      "§2",
+                "dark_aqua"    or  "dark_cyan"    =>      "§3",
+                "dark_red"                        =>      "§4",
+                "dark_purple"  or  "dark_magenta" =>      "§5",
+                "gold"         or  "dark_yellow"  =>      "§6",
+                "gray"                            =>      "§7",
+                "dark_gray"                       =>      "§8",
+                "blue"                            =>      "§9",
+                "green"                           =>      "§a",
+                "aqua"         or  "cyan"         =>      "§b",
+                "red"                             =>      "§c",
+                "light_purple" or  "magenta"      =>      "§d",
+                "yellow"                          =>      "§e",
+                "white"                           =>      "§f",
+                _                                 =>       "" ,
+
+#pragma warning restore format // @formatter:on
             };
         }
 

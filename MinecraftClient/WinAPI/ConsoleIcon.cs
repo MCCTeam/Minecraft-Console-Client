@@ -93,7 +93,7 @@ namespace MinecraftClient.WinAPI
             {
                 try
                 {
-                    Icon defaultIcon = Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
+                    Icon defaultIcon = Icon.ExtractAssociatedIcon(Environment.ProcessPath!)!;
                     SetWindowIcon(Icon.FromHandle(defaultIcon.Handle)); // Windows 10+ (New console)
                     SetConsoleIcon(defaultIcon.Handle); // Windows 8 and lower (Older console)
                 }
