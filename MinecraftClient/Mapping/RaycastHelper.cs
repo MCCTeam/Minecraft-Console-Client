@@ -19,7 +19,7 @@ namespace MinecraftClient.Mapping
         {
             Location camera = playerLocation.EyesLocation();
             Location rotation = MathHelper.GetRotationVector(yaw, pitch);
-            Location end = camera.Add(rotation * maxDistance);
+            Location end = camera + (rotation * maxDistance);
             return Raycast(world, camera, end, includeFluids);
         }
 
