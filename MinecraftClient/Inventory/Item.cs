@@ -63,7 +63,7 @@ namespace MinecraftClient.Inventory
                     {
                         string? displayName = displayProperties["Name"] as string;
                         if (!String.IsNullOrEmpty(displayName))
-                            return MinecraftClient.Protocol.ChatParser.ParseText(displayProperties["Name"].ToString()!);
+                            return MinecraftClient.Protocol.ChatParser.ParseText(displayProperties["Name"].ToString() ?? string.Empty);
                     }
                 }
                 return null;
@@ -105,7 +105,7 @@ namespace MinecraftClient.Inventory
                     object damage = NBT["Damage"];
                     if (damage != null)
                     {
-                        return int.Parse(damage.ToString()!);
+                        return int.Parse(damage.ToString() ?? string.Empty);
                     }
                 }
                 return 0;

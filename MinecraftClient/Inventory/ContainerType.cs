@@ -54,19 +54,21 @@
         {
             return type switch
             {
-                ContainerTypeOld.CONTAINER => ContainerType.Unknown,
-                ContainerTypeOld.CHEST => ContainerType.Generic_9x3,
-                ContainerTypeOld.CRAFTING_TABLE => ContainerType.Crafting,
-                ContainerTypeOld.FURNACE => ContainerType.Furnace,
-                ContainerTypeOld.DISPENSER => ContainerType.Generic_3x3,
-                ContainerTypeOld.ENCHANTING_TABLE => ContainerType.Enchantment,
-                ContainerTypeOld.BREWING_STAND => ContainerType.BrewingStand,
-                ContainerTypeOld.VILLAGER => ContainerType.Merchant,
-                ContainerTypeOld.HOPPER => ContainerType.Hopper,
-                ContainerTypeOld.DROPPER => ContainerType.Generic_3x3,
-                ContainerTypeOld.SHULKER_BOX => ContainerType.ShulkerBox,
-                ContainerTypeOld.ENTITYHORSE => ContainerType.Unknown,
-                _ => ContainerType.Unknown,
+#pragma warning disable format // @formatter:off
+                ContainerTypeOld.CONTAINER         =>  ContainerType.Unknown,
+                ContainerTypeOld.CHEST             =>  ContainerType.Generic_9x3,
+                ContainerTypeOld.CRAFTING_TABLE    =>  ContainerType.Crafting,
+                ContainerTypeOld.FURNACE           =>  ContainerType.Furnace,
+                ContainerTypeOld.DISPENSER         =>  ContainerType.Generic_3x3,
+                ContainerTypeOld.ENCHANTING_TABLE  =>  ContainerType.Enchantment,
+                ContainerTypeOld.BREWING_STAND     =>  ContainerType.BrewingStand,
+                ContainerTypeOld.VILLAGER          =>  ContainerType.Merchant,
+                ContainerTypeOld.HOPPER            =>  ContainerType.Hopper,
+                ContainerTypeOld.DROPPER           =>  ContainerType.Generic_3x3,
+                ContainerTypeOld.SHULKER_BOX       =>  ContainerType.ShulkerBox,
+                ContainerTypeOld.ENTITYHORSE       =>  ContainerType.Unknown,
+                _                                  =>  ContainerType.Unknown,
+#pragma warning restore format // @formatter:on
             };
         }
     }

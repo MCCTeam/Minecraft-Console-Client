@@ -69,12 +69,14 @@ namespace MinecraftClient.ChatBots
         {
             return Settings.ToLowerIfNeed(filtername) switch
             {
-                "all" => MessageFilter.AllText,
-                "messages" => MessageFilter.AllMessages,
-                "chat" => MessageFilter.OnlyChat,
-                "private" => MessageFilter.OnlyWhispers,
-                "internal" => MessageFilter.OnlyInternalCommands,
-                _ => MessageFilter.AllText,
+#pragma warning disable format // @formatter:off
+                "all"       =>  MessageFilter.AllText,
+                "messages"  =>  MessageFilter.AllMessages,
+                "chat"      =>  MessageFilter.OnlyChat,
+                "private"   =>  MessageFilter.OnlyWhispers,
+                "internal"  =>  MessageFilter.OnlyInternalCommands,
+                _           =>  MessageFilter.AllText,
+#pragma warning restore format // @formatter:on
             };
         }
 

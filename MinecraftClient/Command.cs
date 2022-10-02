@@ -67,10 +67,9 @@ namespace MinecraftClient
         public static string GetArg(string command)
         {
             if (HasArg(command))
-            {
                 return command[(command.IndexOf(' ') + 1)..];
-            }
-            else return "";
+            else
+                return string.Empty;
         }
 
         /// <summary>
@@ -80,14 +79,10 @@ namespace MinecraftClient
         public static string[] GetArgs(string command)
         {
             string[] args = GetArg(command).Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (args.Length == 1 && args[0] == "")
-            {
+            if (args.Length == 1 && args[0] == string.Empty)
                 return Array.Empty<string>();
-            }
             else
-            {
                 return args;
-            }
         }
 
         /// <summary>

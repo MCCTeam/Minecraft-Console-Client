@@ -214,8 +214,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully sent (Deprectated, always returns TRUE for compatibility purposes with existing scripts)</returns>
         public bool SendText(object text)
         {
-            _ = base.SendText(text is string str ? str : text.ToString()!);
-            return true;
+            return base.SendText(text is string str ? str : (text.ToString() ?? string.Empty));
         }
 
         /// <summary>
@@ -227,8 +226,7 @@ namespace MinecraftClient
         new public bool PerformInternalCommand(string command, Dictionary<string, object>? localVars = null)
         {
             localVars ??= this.localVars;
-            bool result = base.PerformInternalCommand(command, localVars);
-            return result;
+            return base.PerformInternalCommand(command, localVars);
         }
 
         /// <summary>
@@ -241,7 +239,8 @@ namespace MinecraftClient
         {
             if (extraAttempts == -999999)
                 base.ReconnectToTheServer();
-            else base.ReconnectToTheServer(extraAttempts);
+            else
+                base.ReconnectToTheServer(extraAttempts);
         }
 
         /// <summary>
@@ -293,7 +292,8 @@ namespace MinecraftClient
         {
             if (localVars != null && localVars.ContainsKey(varName))
                 return localVars[varName];
-            return Settings.GetVar(varName);
+            else
+                return Settings.GetVar(varName);
         }
 
         /// <summary>
@@ -326,7 +326,7 @@ namespace MinecraftClient
                 {
                     TypeConverter converter = TypeDescriptor.GetConverter(typeof(T));
                     if (converter != null)
-                        return (T?)converter.ConvertFromString(value.ToString()!);
+                        return (T?)converter.ConvertFromString(value.ToString() ?? string.Empty);
                 }
                 catch (NotSupportedException) { /* Was worth trying */ }
             }

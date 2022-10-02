@@ -42,10 +42,8 @@ namespace MinecraftClient.ChatBots
             /// <param name="filePath">Path to destination file</param>
             public void SaveToFile(string filePath)
             {
-                List<string> lines = new()
-                {
-                    "#Ignored Players"
-                };
+                List<string> lines = new();
+                lines.Add("#Ignored Players");
                 foreach (string player in this)
                     lines.Add(player);
                 FileMonitor.WriteAllLinesWithRetries(filePath, lines);
@@ -92,11 +90,13 @@ namespace MinecraftClient.ChatBots
                     mailCount++;
                     Dictionary<string, string> iniSection = new()
                     {
-                        ["sender"] = mail.Sender,
-                        ["recipient"] = mail.Recipient,
-                        ["content"] = mail.Content,
-                        ["timestamp"] = mail.DateSent.ToString(),
-                        ["anonymous"] = mail.Anonymous.ToString()
+#pragma warning disable format // @formatter:off
+                        ["sender"]     =  mail.Sender,
+                        ["recipient"]  =  mail.Recipient,
+                        ["content"]    =  mail.Content,
+                        ["timestamp"]  =  mail.DateSent.ToString(),
+                        ["anonymous"]  =  mail.Anonymous.ToString()
+#pragma warning restore format // @formatter:on
                     };
                     iniFileDict["mail" + mailCount] = iniSection;
                 }

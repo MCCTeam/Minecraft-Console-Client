@@ -21,7 +21,7 @@ namespace MinecraftClient.Commands
                 string desc = GetCmdDescTranslated();
 
                 if (handler.GetTerrainEnabled())
-                    handler.Log.Info(GetChunkLoadingStatus(handler.GetWorld()));
+                    handler.Log.Info(World.GetChunkLoadingStatus(handler.GetWorld()));
 
                 return desc;
             }
@@ -112,20 +112,6 @@ namespace MinecraftClient.Commands
                 else return GetCmdDescTranslated();
             }
             else return Translations.Get("extra.terrainandmovement_required");
-        }
-
-        private static string GetChunkLoadingStatus(World world)
-        {
-            double chunkLoadedRatio;
-            if (world.chunkCnt == 0)
-                chunkLoadedRatio = 0;
-            else
-                chunkLoadedRatio = (world.chunkCnt - world.chunkLoadNotCompleted) / (double)world.chunkCnt;
-
-            string status = Translations.Get("cmd.move.chunk_loading_status",
-                    chunkLoadedRatio, world.chunkCnt - world.chunkLoadNotCompleted, world.chunkCnt);
-
-            return status;
         }
     }
 }

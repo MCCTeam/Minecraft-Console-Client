@@ -676,7 +676,7 @@ namespace MinecraftClient
                     {
                         if (e is not ThreadAbortException)
                         {
-                            Log.Warn(Translations.Get("icmd.error", bot.ToString()!, e.ToString()));
+                            Log.Warn(Translations.Get("icmd.error", bot.ToString() ?? string.Empty, e.ToString()));
                         }
                         else throw; //ThreadAbortException should not be caught
                     }
@@ -3197,13 +3197,13 @@ namespace MinecraftClient
                 }
                 if (metadata.TryGetValue(2, out object? nameObj) && nameObj != null && nameObj.GetType() == typeof(string))
                 {
-                    string name = nameObj.ToString()!;
+                    string name = nameObj.ToString() ?? string.Empty;
                     entity.CustomNameJson = name;
                     entity.CustomName = ChatParser.ParseText(name);
                 }
                 if (metadata.TryGetValue(3, out object? nameVisableObj) && nameVisableObj != null && nameVisableObj.GetType() == typeof(bool))
                 {
-                    entity.IsCustomNameVisible = bool.Parse(nameVisableObj.ToString()!);
+                    entity.IsCustomNameVisible = bool.Parse(nameVisableObj.ToString() ?? string.Empty);
                 }
                 DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
             }

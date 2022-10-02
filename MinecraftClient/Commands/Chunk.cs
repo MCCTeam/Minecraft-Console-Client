@@ -28,7 +28,7 @@ namespace MinecraftClient.Commands
 
                         StringBuilder sb = new();
 
-                        sb.Append(GetChunkLoadingStatus(handler.GetWorld()));
+                        sb.Append(World.GetChunkLoadingStatus(handler.GetWorld()));
                         sb.Append('\n');
 
                         sb.Append(String.Format("Current location：{0}, chunk: ({1}, {2}).\n", current, current.ChunkX, current.ChunkZ));
@@ -247,20 +247,6 @@ namespace MinecraftClient.Commands
             {
                 return null;
             }
-        }
-
-        private static string GetChunkLoadingStatus(World world)
-        {
-            double chunkLoadedRatio;
-            if (world.chunkCnt == 0)
-                chunkLoadedRatio = 0;
-            else
-                chunkLoadedRatio = (world.chunkCnt - world.chunkLoadNotCompleted) / (double)world.chunkCnt;
-
-            string status = Translations.Get("cmd.move.chunk_loading_status",
-                    chunkLoadedRatio, world.chunkCnt - world.chunkLoadNotCompleted, world.chunkCnt);
-
-            return status;
         }
     }
 }

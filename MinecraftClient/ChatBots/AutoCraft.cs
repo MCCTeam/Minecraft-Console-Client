@@ -230,14 +230,16 @@ namespace MinecraftClient.ChatBots
         {
             return cmd.ToLower() switch
             {
-                "load" => Translations.Get("bot.autocraft.help.load"),
-                "list" => Translations.Get("bot.autocraft.help.list"),
-                "reload" => Translations.Get("bot.autocraft.help.reload"),
-                "resetcfg" => Translations.Get("bot.autocraft.help.resetcfg"),
-                "start" => Translations.Get("bot.autocraft.help.start"),
-                "stop" => Translations.Get("bot.autocraft.help.stop"),
-                "help" => Translations.Get("bot.autocraft.help.help"),
-                _ => GetHelp(),
+#pragma warning disable format // @formatter:off
+                "load"      =>   Translations.Get("bot.autocraft.help.load"),
+                "list"      =>   Translations.Get("bot.autocraft.help.list"),
+                "reload"    =>   Translations.Get("bot.autocraft.help.reload"),
+                "resetcfg"  =>   Translations.Get("bot.autocraft.help.resetcfg"),
+                "start"     =>   Translations.Get("bot.autocraft.help.start"),
+                "stop"      =>   Translations.Get("bot.autocraft.help.stop"),
+                "help"      =>   Translations.Get("bot.autocraft.help.help"),
+                _           =>    GetHelp(),
+#pragma warning restore format // @formatter:on
             };
         }
 
@@ -682,7 +684,6 @@ namespace MinecraftClient.ChatBots
                 }
                 HandleError();
             }
-
         }
 
         /// <summary>

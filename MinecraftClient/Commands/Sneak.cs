@@ -25,7 +25,6 @@ namespace MinecraftClient.Commands
                     sneaking = true;
                 return Translations.Get(result ? "cmd.sneak.on" : "general.fail");
             }
-
         }
     }
 }

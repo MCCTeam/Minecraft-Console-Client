@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace MinecraftClient.ChatBots
@@ -32,24 +33,14 @@ namespace MinecraftClient.ChatBots
             count++;
             if (count == timeping)
             {
-                string[] playerList = GetOnlinePlayers();
-
-                StringBuilder sb = new();
-
-                for (int i = 0; i < playerList.Length; i++)
-                {
-                    sb.Append(playerList[i]);
-
-                    // Do not add a comma after the last username
-                    if (i != playerList.Length - 1)
-                        sb.Append(", ");
-                }
+                DateTime now = DateTime.Now;
 
                 LogDebugToConsole("Saving Player List");
 
-                DateTime now = DateTime.Now;
-                string TimeStamp = "[" + now.Year + '/' + now.Month + '/' + now.Day + ' ' + now.Hour + ':' + now.Minute + ']';
-                System.IO.File.AppendAllText(file, TimeStamp + "\n" + sb.ToString() + "\n\n");
+                StringBuilder sb = new();
+                sb.AppendLine(string.Format("[{0}/{1}/{2} {3}:{4}]", now.Year, now.Month, now.Day, now.Hour, now.Minute));
+                sb.AppendLine(string.Join(", ", GetOnlinePlayers())).AppendLine();
+                System.IO.File.AppendAllText(file, sb.ToString());
 
                 count = 0;
             }

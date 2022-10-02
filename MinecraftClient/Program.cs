@@ -519,15 +519,17 @@ namespace MinecraftClient
                 string failureReason = "";
                 failureReason = result switch
                 {
-                    ProtocolHandler.LoginResult.AccountMigrated => "error.login.migrated",
-                    ProtocolHandler.LoginResult.ServiceUnavailable => "error.login.server",
-                    ProtocolHandler.LoginResult.WrongPassword => "error.login.blocked",
-                    ProtocolHandler.LoginResult.InvalidResponse => "error.login.response",
-                    ProtocolHandler.LoginResult.NotPremium => "error.login.premium",
-                    ProtocolHandler.LoginResult.OtherError => "error.login.network",
-                    ProtocolHandler.LoginResult.SSLError => "error.login.ssl",
-                    ProtocolHandler.LoginResult.UserCancel => "error.login.cancel",
-                    _ => "error.login.unknown",
+#pragma warning disable format // @formatter:off
+                    ProtocolHandler.LoginResult.AccountMigrated     =>  "error.login.migrated",
+                    ProtocolHandler.LoginResult.ServiceUnavailable  =>  "error.login.server",
+                    ProtocolHandler.LoginResult.WrongPassword       =>  "error.login.blocked",
+                    ProtocolHandler.LoginResult.InvalidResponse     =>  "error.login.response",
+                    ProtocolHandler.LoginResult.NotPremium          =>  "error.login.premium",
+                    ProtocolHandler.LoginResult.OtherError          =>  "error.login.network",
+                    ProtocolHandler.LoginResult.SSLError            =>  "error.login.ssl",
+                    ProtocolHandler.LoginResult.UserCancel          =>  "error.login.cancel",
+                    _                                               =>  "error.login.unknown",
+#pragma warning restore format // @formatter:on
                 };
                 failureMessage += Translations.Get(failureReason);
                 HandleFailure(failureMessage, false, ChatBot.DisconnectReason.LoginRejected);

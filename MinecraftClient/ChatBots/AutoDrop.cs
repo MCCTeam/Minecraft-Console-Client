@@ -40,15 +40,10 @@ namespace MinecraftClient.ChatBots
         private ItemType[] ItemListParser(string itemList)
         {
             string trimed = new(itemList.Where(c => !char.IsWhiteSpace(c)).ToArray());
-            string[] list = trimed.Split(',');
             List<ItemType> result = new();
-            foreach (string t in list)
-            {
+            foreach (string t in trimed.Split(','))
                 if (Enum.TryParse(t, true, out ItemType item))
-                {
                     result.Add(item);
-                }
-            }
             return result.ToArray();
         }
 

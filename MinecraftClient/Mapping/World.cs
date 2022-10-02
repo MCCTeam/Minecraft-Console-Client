@@ -217,5 +217,19 @@ namespace MinecraftClient.Mapping
             chunkCnt = 0;
             chunkLoadNotCompleted = 0;
         }
+
+        public static string GetChunkLoadingStatus(World world)
+        {
+            double chunkLoadedRatio;
+            if (world.chunkCnt == 0)
+                chunkLoadedRatio = 0;
+            else
+                chunkLoadedRatio = (world.chunkCnt - world.chunkLoadNotCompleted) / (double)world.chunkCnt;
+
+            string status = Translations.Get("cmd.move.chunk_loading_status",
+                    chunkLoadedRatio, world.chunkCnt - world.chunkLoadNotCompleted, world.chunkCnt);
+
+            return status;
+        }
     }
 }
