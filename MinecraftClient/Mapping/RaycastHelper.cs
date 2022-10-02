@@ -10,35 +10,38 @@ namespace MinecraftClient.Mapping
 {
     public static class RaycastHelper
     {
-        public static Location? RaycastBlock(McClient handler, double maxDistance, bool includeFluids)
+        public static Tuple<bool, Location, Block> RaycastBlock(McClient handler, double maxDistance, bool includeFluids)
         {
-            Location camera = handler.GetCurrentLocation().EyesLocation();
-            Location rotation = MathHelper.GetRotationVector(handler.GetYaw(), handler.GetPitch());
-            Location end = camera.Add(rotation * maxDistance);
-            return Raycast(handler.GetWorld(), camera, end, includeFluids);
+            return RaycastBlock(handler.GetWorld(), handler.GetCurrentLocation(), handler.GetYaw(), handler.GetPitch(), maxDistance, includeFluids);
         }
 
-        public static Location? RaycastEntity(McClient handler, double maxDistance)
+        public static Tuple<bool, Location, Block> RaycastBlock(World world, Location playerLocation, float yaw, float pitch, double maxDistance, bool includeFluids)
+        {
+            Location camera = playerLocation.EyesLocation();
+            Location rotation = MathHelper.GetRotationVector(yaw, pitch);
+            Location end = camera.Add(rotation * maxDistance);
+            return Raycast(world, camera, end, includeFluids);
+        }
+
+        public static Tuple<bool, Location, Entity> RaycastEntity(McClient handler, double maxDistance)
         {
             throw new NotImplementedException();
         }
 
-        private static bool CheckRaycastResult(World world, Location location, bool includeFluids)
+        private static Block CheckRaycastResult(World world, Location location, bool includeFluids)
         {
             Block block = world.GetBlock(location);
 
-            if (block.Type == Material.Air)
-                return false;
-            else if (!includeFluids && MaterialExtensions.IsLiquid(block.Type))
-                return false;
+            if (!includeFluids && MaterialExtensions.IsLiquid(block.Type))
+                return Block.Air;
             else
-                return true;
+                return block;
         }
 
-        public static Location? Raycast(World world, Location start, Location end, bool includeFluids)
+        public static Tuple<bool, Location, Block> Raycast(World world, Location start, Location end, bool includeFluids)
         {
             if (start == end)
-                return null;
+                return new(false, Location.Zero, Block.Air);
             
             double start_x = MathHelper.Lerp(-1.0E-7, start.X, end.X);
             double start_y = MathHelper.Lerp(-1.0E-7, start.Y, end.Y);
@@ -48,9 +51,9 @@ namespace MinecraftClient.Mapping
             double end_z = MathHelper.Lerp(-1.0E-7, end.Z, start.Z);
 
             Location res_location = new(Math.Floor(start_x), Math.Floor(start_y), Math.Floor(start_z));
-
-            if (CheckRaycastResult(world, res_location, includeFluids))
-                return res_location;
+            Block block = CheckRaycastResult(world, res_location, includeFluids);
+            if (block.Type != Material.Air)
+                return new(true, res_location, block);
 
             double dx = end_x - start_x;
             double dy = end_y - start_y;
@@ -90,12 +93,13 @@ namespace MinecraftClient.Mapping
                     res_location.Z += dz_sign;
                     z_frac += z_step;
                 }
-
-                if (CheckRaycastResult(world, res_location, includeFluids))
-                    return res_location;
+                
+                block = CheckRaycastResult(world, res_location, includeFluids);
+                if (block.Type != Material.Air)
+                    return new(true, res_location, block);
             }
 
-            return null;
+            return new(false, Location.Zero, Block.Air);
         }
     }
 

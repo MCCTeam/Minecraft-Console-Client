@@ -21,18 +21,13 @@ namespace MinecraftClient.Commands
                 if (args.Length == 0)
                 {
                     const double maxDistance = 8.0;
-                Retry:
-                    Location? target = RaycastHelper.RaycastBlock(handler, maxDistance, false);
-                    if (target == null)
+                    (bool hasBlock, Location target, Block block) = RaycastHelper.RaycastBlock(handler, maxDistance, false);
+                    if (!hasBlock)
                         return Translations.Get("cmd.look.noinspection", maxDistance);
                     else
                     {
-                        Location target_loc = (Location)target;
-                        Block block = handler.GetWorld().GetBlock(target_loc);
-                        if (block.Type == Material.Air)
-                            goto Retry;
-                        Location current = handler.GetCurrentLocation(), target_center = target_loc.ToCenter();
-                        return Translations.Get("cmd.look.inspection", block.Type, target_loc!.X, target_loc.Y, target_loc.Z,
+                        Location current = handler.GetCurrentLocation(), target_center = target.ToCenter();
+                        return Translations.Get("cmd.look.inspection", block.Type, target.X, target.Y, target.Z,
                             current.Distance(target_center), current.EyesLocation().Distance(target_center));
                     }
                 }

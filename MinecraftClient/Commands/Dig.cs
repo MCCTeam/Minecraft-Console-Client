@@ -20,15 +20,13 @@ namespace MinecraftClient.Commands
             string[] args = getArgs(command);
             if (args.Length == 0)
             {
-                Location? blockToBreak = RaycastHelper.RaycastBlock(handler, 4.5, false);
-                if (blockToBreak == null)
+                (bool hasBlock, Location blockToBreak, Block block) = RaycastHelper.RaycastBlock(handler, 4.5, false);
+                if (!hasBlock)
                     return Translations.Get("cmd.dig.too_far");
-                Location blockToBreak_loc = (Location)blockToBreak!;
-                Block block = handler.GetWorld().GetBlock(blockToBreak_loc);
-                if (block.Type == Material.Air)
+                else if (block.Type == Material.Air)
                     return Translations.Get("cmd.dig.no_block");
-                if (handler.DigBlock(blockToBreak_loc, lookAtBlock: false))
-                    return Translations.Get("cmd.dig.dig", blockToBreak_loc.X, blockToBreak_loc.Y, blockToBreak_loc.Z, block.Type);
+                else if (handler.DigBlock(blockToBreak, lookAtBlock: false))
+                    return Translations.Get("cmd.dig.dig", blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.Type);
                 else
                     return Translations.Get("cmd.dig.fail");
             }

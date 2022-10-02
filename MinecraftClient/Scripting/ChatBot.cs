@@ -1039,7 +1039,7 @@ namespace MinecraftClient
         /// <param name="maxDistance">Maximum distance from sight</param>
         /// <param name="includeFluids">Whether to detect fluid</param>
         /// <returns>Position of the block</returns>
-        protected Location? GetIntersectingBlock(double maxDistance = 4.5, bool includeFluids = false)
+        protected Tuple<bool, Location, Block> GetIntersectingBlock(double maxDistance = 4.5, bool includeFluids = false)
         {
             return RaycastHelper.RaycastBlock(Handler, maxDistance, includeFluids);
         }
