@@ -15,7 +15,20 @@ namespace MinecraftClient.Commands
             if (handler.GetTerrainEnabled())
             {
                 string[] args = GetArgs(command);
-                if (args.Length == 1)
+                if (args.Length == 0)
+                {
+                    const double maxDistance = 8.0;
+                    (bool hasBlock, Location target, Block block) = RaycastHelper.RaycastBlock(handler, maxDistance, false);
+                    if (!hasBlock)
+                        return Translations.Get("cmd.look.noinspection", maxDistance);
+                    else
+                    {
+                        Location current = handler.GetCurrentLocation(), target_center = target.ToCenter();
+                        return Translations.Get("cmd.look.inspection", block.Type, target.X, target.Y, target.Z,
+                            current.Distance(target_center), current.EyesLocation().Distance(target_center));
+                    }
+                }
+                else if (args.Length == 1)
                 {
                     string dirStr = GetArg(command).Trim().ToLower();
                     Direction direction;
@@ -37,8 +50,8 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        float yaw = Single.Parse(args[0]);
-                        float pitch = Single.Parse(args[1]);
+                        float yaw = float.Parse(args[0]);
+                        float pitch = float.Parse(args[1]);
 
                         handler.UpdateLocation(handler.GetCurrentLocation(), yaw, pitch);
                         return Translations.Get("cmd.look.at", yaw.ToString("0.00"), pitch.ToString("0.00"));
@@ -56,7 +69,7 @@ namespace MinecraftClient.Commands
                         return Translations.Get("cmd.look.block", block);
                     }
                     catch (FormatException) { return CmdUsage; }
-
+                    
                 }
                 else return GetCmdDescTranslated();
             }

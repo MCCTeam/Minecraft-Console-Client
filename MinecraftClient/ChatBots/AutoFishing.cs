@@ -200,7 +200,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityDespawn(Entity entity)
         {
-            if (entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
+            if (entity != null && entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
             {
                 if (Settings.AutoFishing_LogFishingBobber)
                     LogToConsole(string.Format("FishingBobber despawn at {0}", entity.Location));
@@ -225,7 +225,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-            if (isFishing && fishingBobber!.ID == entity.ID)
+            if (isFishing && entity != null && fishingBobber!.ID == entity.ID)
             {
                 Location Pos = entity.Location;
                 double Dx = LastPos.X - Pos.X;

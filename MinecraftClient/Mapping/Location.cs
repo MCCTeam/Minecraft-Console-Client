@@ -8,6 +8,8 @@ namespace MinecraftClient.Mapping
     /// </summary>
     public struct Location
     {
+        public static readonly Location Zero = new(0, 0, 0);
+
         /// <summary>
         /// The X Coordinate
         /// </summary>
@@ -22,17 +24,6 @@ namespace MinecraftClient.Mapping
         /// The Z coordinate
         /// </summary>
         public double Z;
-
-        /// <summary>
-        /// Get location with zeroed coordinates
-        /// </summary>
-        public static Location Zero
-        {
-            get
-            {
-                return new Location(0, 0, 0);
-            }
-        }
 
         /// <summary>
         /// Create a new location
@@ -298,6 +289,11 @@ namespace MinecraftClient.Mapping
         /// <param name="loc1">First location to compare</param>
         /// <param name="loc2">Second location to compare</param>
         /// <returns>TRUE if the locations are equals</returns>
+        public static bool operator ==(Location loc1, Location loc2)
+        {
+            return loc1.Equals(loc2);
+        }
+
         public static bool operator ==(Location? loc1, Location? loc2)
         {
             if (loc1 == null && loc2 == null)
@@ -313,6 +309,11 @@ namespace MinecraftClient.Mapping
         /// <param name="loc1">First location to compare</param>
         /// <param name="loc2">Second location to compare</param>
         /// <returns>TRUE if the locations are equals</returns>
+        public static bool operator !=(Location loc1, Location loc2)
+        {
+            return !loc1.Equals(loc2);
+        }
+
         public static bool operator !=(Location? loc1, Location? loc2)
         {
             if (loc1 == null && loc2 == null)
