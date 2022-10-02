@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using MinecraftClient.Mapping;
 
@@ -17,7 +18,20 @@ namespace MinecraftClient.Commands
             if (handler.GetTerrainEnabled())
             {
                 string[] args = getArgs(command);
-                if (args.Length == 1)
+                if (args.Length == 0)
+                {
+                    const double maxDistance = 8.0;
+                    (bool hasBlock, Location target, Block block) = RaycastHelper.RaycastBlock(handler, maxDistance, false);
+                    if (!hasBlock)
+                        return Translations.Get("cmd.look.noinspection", maxDistance);
+                    else
+                    {
+                        Location current = handler.GetCurrentLocation(), target_center = target.ToCenter();
+                        return Translations.Get("cmd.look.inspection", block.Type, target.X, target.Y, target.Z,
+                            current.Distance(target_center), current.EyesLocation().Distance(target_center));
+                    }
+                }
+                else if (args.Length == 1)
                 {
                     string dirStr = getArg(command).Trim().ToLower();
                     Direction direction;
