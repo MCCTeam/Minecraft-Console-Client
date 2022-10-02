@@ -1034,6 +1034,17 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// Find the block on the line of sight.
+        /// </summary>
+        /// <param name="maxDistance">Maximum distance from sight</param>
+        /// <param name="includeFluids">Whether to detect fluid</param>
+        /// <returns>Position of the block</returns>
+        protected Tuple<bool, Location, Block> GetLookingBlock(double maxDistance = 4.5, bool includeFluids = false)
+        {
+            return RaycastHelper.RaycastBlock(Handler, maxDistance, includeFluids);
+        }
+
+        /// <summary>
         /// Get a Y-M-D h:m:s timestamp representing the current system date and time
         /// </summary>
         protected static string GetTimestamp()

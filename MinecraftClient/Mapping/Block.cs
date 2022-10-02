@@ -12,6 +12,8 @@ namespace MinecraftClient.Mapping
     /// </summary>
     public struct Block
     {
+        public static readonly Block Air = new(0);
+
         /// <summary>
         /// Get or set global block ID to Material mapping
         /// The global Palette is a concept introduced with Minecraft 1.13

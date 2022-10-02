@@ -11,6 +11,8 @@ namespace MinecraftClient.Mapping
     /// </summary>
     public struct Location
     {
+        public static readonly Location Zero = new(0, 0, 0);
+
         /// <summary>
         /// The X Coordinate
         /// </summary>
@@ -25,17 +27,6 @@ namespace MinecraftClient.Mapping
         /// The Z coordinate
         /// </summary>
         public double Z;
-
-        /// <summary>
-        /// Get location with zeroed coordinates
-        /// </summary>
-        public static Location Zero
-        {
-            get
-            {
-                return new Location(0, 0, 0);
-            }
-        }
 
         /// <summary>
         /// Create a new location
