@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using MinecraftClient.Mapping;
-using System.Drawing;
 using MinecraftClient.Protocol.Handlers;
 
 namespace MinecraftClient.ChatBots
 {
     class Map : ChatBot
     {
-        private string baseDirectory = @"Rendered_Maps";
+        private readonly string baseDirectory = @"Rendered_Maps";
 
-        private Dictionary<int, McMap> cachedMaps = new();
+        private readonly Dictionary<int, McMap> cachedMaps = new();
         private bool shouldResize = true;
         private int resizeTo = 256;
         private bool autoRenderOnUpdate = true;
@@ -40,7 +40,7 @@ namespace MinecraftClient.ChatBots
         {
             if (deleteAllOnExit)
             {
-                DirectoryInfo di = new DirectoryInfo(baseDirectory);
+                DirectoryInfo di = new(baseDirectory);
                 FileInfo[] files = di.GetFiles();
 
                 foreach (FileInfo file in files)
@@ -101,19 +101,20 @@ namespace MinecraftClient.ChatBots
             if (columnsUpdated == 0 && cachedMaps.ContainsKey(mapid))
                 return;
 
-            McMap map = new McMap();
-
-            map.MapId = mapid;
-            map.Scale = scale;
-            map.TrackingPosition = trackingPosition;
-            map.Locked = locked;
-            map.MapIcons = icons;
-            map.Width = rowsUpdated;
-            map.Height = columnsUpdated;
-            map.X = mapCoulmnX;
-            map.Z = mapRowZ;
-            map.Colors = colors;
-            map.LastUpdated = DateTime.Now;
+            McMap map = new()
+            {
+                MapId = mapid,
+                Scale = scale,
+                TrackingPosition = trackingPosition,
+                Locked = locked,
+                MapIcons = icons,
+                Width = rowsUpdated,
+                Height = columnsUpdated,
+                X = mapCoulmnX,
+                Z = mapRowZ,
+                Colors = colors,
+                LastUpdated = DateTime.Now
+            };
 
             if (!cachedMaps.ContainsKey(mapid))
             {
@@ -139,7 +140,7 @@ namespace MinecraftClient.ChatBots
             if (File.Exists(fileName))
                 File.Delete(fileName);
 
-            Bitmap image = new Bitmap(map.Width, map.Height);
+            Bitmap image = new(map.Width, map.Height);
 
             for (int x = 0; x < map.Width; ++x)
             {
@@ -168,7 +169,7 @@ namespace MinecraftClient.ChatBots
         }
         private Bitmap ResizeBitmap(Bitmap sourceBMP, int width, int height)
         {
-            Bitmap result = new Bitmap(width, height);
+            Bitmap result = new(width, height);
             using (Graphics g = Graphics.FromImage(result))
                 g.DrawImage(sourceBMP, 0, 0, width, height);
             return result;

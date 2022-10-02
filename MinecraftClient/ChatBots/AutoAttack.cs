@@ -1,7 +1,7 @@
-﻿using MinecraftClient.Mapping;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.ChatBots
 {
@@ -10,22 +10,22 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     class AutoAttack : ChatBot
     {
-        private Dictionary<int, Entity> entitiesToAttack = new Dictionary<int, Entity>(); // mobs within attack range
+        private readonly Dictionary<int, Entity> entitiesToAttack = new(); // mobs within attack range
         private int attackCooldown = 6;
         private int attackCooldownCounter = 6;
         private Double attackSpeed = 4;
         private Double attackCooldownSeconds;
-        private bool overrideAttackSpeed = false;
-        private int attackRange = 4;
+        private readonly bool overrideAttackSpeed = false;
+        private readonly int attackRange = 4;
         private Double serverTPS;
         private float health = 100;
-        private bool singleMode = true;
-        private bool priorityDistance = true;
-        private InteractType interactMode;
-        private bool attackHostile = true;
-        private bool attackPassive = false;
-        private string listMode = "blacklist";
-        private List<EntityType> listedEntites = new();
+        private readonly bool singleMode = true;
+        private readonly bool priorityDistance = true;
+        private readonly InteractType interactMode;
+        private readonly bool attackHostile = true;
+        private readonly bool attackPassive = false;
+        private readonly string listMode = "blacklist";
+        private readonly List<EntityType> listedEntites = new();
 
         public AutoAttack(
             string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, InteractType interaction = InteractType.Attack)
@@ -53,13 +53,13 @@ namespace MinecraftClient.ChatBots
                 else
                 {
                     this.overrideAttackSpeed = overrideAttackSpeed;
-                    this.attackCooldownSeconds = cooldownSeconds;
+                    attackCooldownSeconds = cooldownSeconds;
                     attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
                 }
             }
 
-            this.attackHostile = Settings.AutoAttack_Attack_Hostile;
-            this.attackPassive = Settings.AutoAttack_Attack_Passive;
+            attackHostile = Settings.AutoAttack_Attack_Hostile;
+            attackPassive = Settings.AutoAttack_Attack_Passive;
 
             if (Settings.AutoAttack_ListMode.Length > 0)
             {
@@ -140,7 +140,7 @@ namespace MinecraftClient.ChatBots
                         if (entitiesToAttack.ContainsKey(priorityEntity))
                         {
                             // check entity distance and health again
-                            if (shouldAttackEntity(entitiesToAttack[priorityEntity]))
+                            if (ShouldAttackEntity(entitiesToAttack[priorityEntity]))
                             {
                                 InteractEntity(priorityEntity, interactMode); // hit the entity!
                                 SendAnimation(Inventory.Hand.MainHand); // Arm animation
@@ -152,7 +152,7 @@ namespace MinecraftClient.ChatBots
                         foreach (KeyValuePair<int, Entity> entity in entitiesToAttack)
                         {
                             // check that we are in range once again.
-                            if (shouldAttackEntity(entity.Value))
+                            if (ShouldAttackEntity(entity.Value))
                             {
                                 InteractEntity(entity.Key, interactMode); // hit the entity!
                             }
@@ -169,7 +169,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntitySpawn(Entity entity)
         {
-            shouldAttackEntity(entity);
+            ShouldAttackEntity(entity);
         }
 
         public override void OnEntityDespawn(Entity entity)
@@ -209,7 +209,7 @@ namespace MinecraftClient.ChatBots
             if (listedEntites.Count > 0)
             {
                 bool inList = listedEntites.Contains(entity.Type);
-                result = listMode.Equals("blacklist") ? (inList ? false : result) : (inList ? true : false);
+                result = listMode.Equals("blacklist") ? (!inList && result) : (inList);
             }
 
             return result;
@@ -217,7 +217,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-            shouldAttackEntity(entity);
+            ShouldAttackEntity(entity);
         }
 
         public override void OnHealthUpdate(float health, int food)
@@ -262,7 +262,7 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         /// <param name="entity">The entity to handle</param>
         /// <returns>If the entity should be attacked</returns>
-        public bool shouldAttackEntity(Entity entity)
+        public bool ShouldAttackEntity(Entity entity)
         {
             if (!IsAllowedToAttack(entity) || entity.Health <= 0)
                 return false;

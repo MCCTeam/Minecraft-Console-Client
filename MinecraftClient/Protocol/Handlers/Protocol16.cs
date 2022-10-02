@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Net.Sockets;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using MinecraftClient.Crypto;
-using MinecraftClient.Proxy;
-using System.Security.Cryptography;
-using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
+using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Keys;
-using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.Session;
+using MinecraftClient.Proxy;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -21,23 +21,23 @@ namespace MinecraftClient.Protocol.Handlers
 
     class Protocol16Handler : IMinecraftCom
     {
-        IMinecraftComHandler handler;
+        readonly IMinecraftComHandler handler;
         private bool autocomplete_received = false;
         private string autocomplete_result = "";
         private bool encrypted = false;
-        private int protocolversion;
+        private readonly int protocolversion;
         private Tuple<Thread, CancellationTokenSource>? netRead = null;
-        Crypto.AesCfb8Stream s;
-        TcpClient c;
+        Crypto.AesCfb8Stream? s;
+        readonly TcpClient c;
 
         public Protocol16Handler(TcpClient Client, int ProtocolVersion, IMinecraftComHandler Handler)
         {
             ConsoleIO.SetAutoCompleteEngine(this);
             if (protocolversion >= 72)
                 ChatParser.InitTranslations();
-            this.c = Client;
-            this.protocolversion = ProtocolVersion;
-            this.handler = Handler;
+            c = Client;
+            protocolversion = ProtocolVersion;
+            handler = Handler;
 
             if (Handler.GetTerrainEnabled())
             {
@@ -58,9 +58,12 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        // "IMinecraftComHandler handler" will not be used here.
         private Protocol16Handler(TcpClient Client)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            this.c = Client;
+            c = Client;
         }
 
         private void Updater(object? o)
@@ -94,15 +97,15 @@ namespace MinecraftClient.Protocol.Handlers
             bool connection_ok = true;
             while (c.Client.Available > 0 && connection_ok)
             {
-                byte id = readNextByte();
-                connection_ok = processPacket(id);
+                byte id = ReadNextByte();
+                connection_ok = ProcessPacket(id);
             }
             return connection_ok;
         }
 
-        private bool processPacket(byte id)
+        private bool ProcessPacket(byte id)
         {
-            int nbr = 0;
+            int nbr;
             switch (id)
             {
                 case 0x00:
@@ -110,98 +113,98 @@ namespace MinecraftClient.Protocol.Handlers
                     Receive(keepalive, 1, 4, SocketFlags.None);
                     handler.OnServerKeepAlive();
                     Send(keepalive); break;
-                case 0x01: readData(4); readNextString(); readData(5); break;
-                case 0x02: readData(1); readNextString(); readNextString(); readData(4); break;
+                case 0x01: ReadData(4); ReadNextString(); ReadData(5); break;
+                case 0x02: ReadData(1); ReadNextString(); ReadNextString(); ReadData(4); break;
                 case 0x03:
-                    string message = readNextString();
+                    string message = ReadNextString();
                     handler.OnTextReceived(new ChatMessage(message, protocolversion >= 72, 0, Guid.Empty)); break;
-                case 0x04: readData(16); break;
-                case 0x05: readData(6); readNextItemSlot(); break;
-                case 0x06: readData(12); break;
-                case 0x07: readData(9); break;
-                case 0x08: if (protocolversion >= 72) { readData(10); } else readData(8); break;
-                case 0x09: readData(8); readNextString(); break;
-                case 0x0A: readData(1); break;
-                case 0x0B: readData(33); break;
-                case 0x0C: readData(9); break;
-                case 0x0D: readData(41); break;
-                case 0x0E: readData(11); break;
-                case 0x0F: readData(10); readNextItemSlot(); readData(3); break;
-                case 0x10: readData(2); break;
-                case 0x11: readData(14); break;
-                case 0x12: readData(5); break;
-                case 0x13: if (protocolversion >= 72) { readData(9); } else readData(5); break;
-                case 0x14: readData(4); readNextString(); readData(16); readNextEntityMetaData(); break;
-                case 0x16: readData(8); break;
-                case 0x17: readData(19); readNextObjectData(); break;
-                case 0x18: readData(26); readNextEntityMetaData(); break;
-                case 0x19: readData(4); readNextString(); readData(16); break;
-                case 0x1A: readData(18); break;
-                case 0x1B: if (protocolversion >= 72) { readData(10); } break;
-                case 0x1C: readData(10); break;
-                case 0x1D: nbr = (int)readNextByte(); readData(nbr * 4); break;
-                case 0x1E: readData(4); break;
-                case 0x1F: readData(7); break;
-                case 0x20: readData(6); break;
-                case 0x21: readData(9); break;
-                case 0x22: readData(18); break;
-                case 0x23: readData(5); break;
-                case 0x26: readData(5); break;
-                case 0x27: if (protocolversion >= 72) { readData(9); } else readData(8); break;
-                case 0x28: readData(4); readNextEntityMetaData(); break;
-                case 0x29: readData(8); break;
-                case 0x2A: readData(5); break;
-                case 0x2B: readData(8); break;
-                case 0x2C: if (protocolversion >= 72) { readNextEntityProperties(protocolversion); } break;
-                case 0x33: readData(13); nbr = readNextInt(); readData(nbr); break;
-                case 0x34: readData(10); nbr = readNextInt(); readData(nbr); break;
-                case 0x35: readData(12); break;
-                case 0x36: readData(14); break;
-                case 0x37: readData(17); break;
-                case 0x38: readNextChunkBulkData(); break;
-                case 0x3C: readData(28); nbr = readNextInt(); readData(3 * nbr); readData(12); break;
-                case 0x3D: readData(18); break;
-                case 0x3E: readNextString(); readData(17); break;
-                case 0x3F: if (protocolversion > 51) { readNextString(); readData(32); } break;
-                case 0x46: readData(2); break;
-                case 0x47: readData(17); break;
-                case 0x64: readNextWindowData(protocolversion); break;
-                case 0x65: readData(1); break;
-                case 0x66: readData(7); readNextItemSlot(); break;
-                case 0x67: readData(3); readNextItemSlot(); break;
-                case 0x68: readData(1); for (nbr = readNextShort(); nbr > 0; nbr--) { readNextItemSlot(); } break;
-                case 0x69: readData(5); break;
-                case 0x6A: readData(4); break;
-                case 0x6B: readData(2); readNextItemSlot(); break;
-                case 0x6C: readData(2); break;
-                case 0x82: readData(10); readNextString(); readNextString(); readNextString(); readNextString(); break;
-                case 0x83: readData(4); nbr = readNextShort(); readData(nbr); break;
-                case 0x84: readData(11); nbr = readNextShort(); if (nbr > 0) { readData(nbr); } break;
-                case 0x85: if (protocolversion >= 74) { readData(13); } break;
+                case 0x04: ReadData(16); break;
+                case 0x05: ReadData(6); ReadNextItemSlot(); break;
+                case 0x06: ReadData(12); break;
+                case 0x07: ReadData(9); break;
+                case 0x08: if (protocolversion >= 72) { ReadData(10); } else ReadData(8); break;
+                case 0x09: ReadData(8); ReadNextString(); break;
+                case 0x0A: ReadData(1); break;
+                case 0x0B: ReadData(33); break;
+                case 0x0C: ReadData(9); break;
+                case 0x0D: ReadData(41); break;
+                case 0x0E: ReadData(11); break;
+                case 0x0F: ReadData(10); ReadNextItemSlot(); ReadData(3); break;
+                case 0x10: ReadData(2); break;
+                case 0x11: ReadData(14); break;
+                case 0x12: ReadData(5); break;
+                case 0x13: if (protocolversion >= 72) { ReadData(9); } else ReadData(5); break;
+                case 0x14: ReadData(4); ReadNextString(); ReadData(16); ReadNextEntityMetaData(); break;
+                case 0x16: ReadData(8); break;
+                case 0x17: ReadData(19); ReadNextObjectData(); break;
+                case 0x18: ReadData(26); ReadNextEntityMetaData(); break;
+                case 0x19: ReadData(4); ReadNextString(); ReadData(16); break;
+                case 0x1A: ReadData(18); break;
+                case 0x1B: if (protocolversion >= 72) { ReadData(10); } break;
+                case 0x1C: ReadData(10); break;
+                case 0x1D: nbr = (int)ReadNextByte(); ReadData(nbr * 4); break;
+                case 0x1E: ReadData(4); break;
+                case 0x1F: ReadData(7); break;
+                case 0x20: ReadData(6); break;
+                case 0x21: ReadData(9); break;
+                case 0x22: ReadData(18); break;
+                case 0x23: ReadData(5); break;
+                case 0x26: ReadData(5); break;
+                case 0x27: if (protocolversion >= 72) { ReadData(9); } else ReadData(8); break;
+                case 0x28: ReadData(4); ReadNextEntityMetaData(); break;
+                case 0x29: ReadData(8); break;
+                case 0x2A: ReadData(5); break;
+                case 0x2B: ReadData(8); break;
+                case 0x2C: if (protocolversion >= 72) { ReadNextEntityProperties(protocolversion); } break;
+                case 0x33: ReadData(13); nbr = ReadNextInt(); ReadData(nbr); break;
+                case 0x34: ReadData(10); nbr = ReadNextInt(); ReadData(nbr); break;
+                case 0x35: ReadData(12); break;
+                case 0x36: ReadData(14); break;
+                case 0x37: ReadData(17); break;
+                case 0x38: ReadNextChunkBulkData(); break;
+                case 0x3C: ReadData(28); nbr = ReadNextInt(); ReadData(3 * nbr); ReadData(12); break;
+                case 0x3D: ReadData(18); break;
+                case 0x3E: ReadNextString(); ReadData(17); break;
+                case 0x3F: if (protocolversion > 51) { ReadNextString(); ReadData(32); } break;
+                case 0x46: ReadData(2); break;
+                case 0x47: ReadData(17); break;
+                case 0x64: ReadNextWindowData(protocolversion); break;
+                case 0x65: ReadData(1); break;
+                case 0x66: ReadData(7); ReadNextItemSlot(); break;
+                case 0x67: ReadData(3); ReadNextItemSlot(); break;
+                case 0x68: ReadData(1); for (nbr = ReadNextShort(); nbr > 0; nbr--) { ReadNextItemSlot(); } break;
+                case 0x69: ReadData(5); break;
+                case 0x6A: ReadData(4); break;
+                case 0x6B: ReadData(2); ReadNextItemSlot(); break;
+                case 0x6C: ReadData(2); break;
+                case 0x82: ReadData(10); ReadNextString(); ReadNextString(); ReadNextString(); ReadNextString(); break;
+                case 0x83: ReadData(4); nbr = ReadNextShort(); ReadData(nbr); break;
+                case 0x84: ReadData(11); nbr = ReadNextShort(); if (nbr > 0) { ReadData(nbr); } break;
+                case 0x85: if (protocolversion >= 74) { ReadData(13); } break;
                 case 0xC8:
-                    if (readNextInt() == 2022) { Translations.WriteLogLine("mcc.player_dead"); }
-                    if (protocolversion >= 72) { readData(4); } else readData(1);
+                    if (ReadNextInt() == 2022) { Translations.WriteLogLine("mcc.player_dead"); }
+                    if (protocolversion >= 72) { ReadData(4); } else ReadData(1);
                     break;
                 case 0xC9:
-                    string name = readNextString(); bool online = readNextByte() != 0x00; readData(2);
-                    Guid FakeUUID = new Guid(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
+                    string name = ReadNextString(); bool online = ReadNextByte() != 0x00; ReadData(2);
+                    Guid FakeUUID = new(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(name)).Take(16).ToArray());
                     if (online) { handler.OnPlayerJoin(new PlayerInfo(name, FakeUUID)); } else { handler.OnPlayerLeave(FakeUUID); }
                     break;
-                case 0xCA: if (protocolversion >= 72) { readData(9); } else readData(3); break;
-                case 0xCB: autocomplete_result = readNextString(); autocomplete_received = true; break;
-                case 0xCC: readNextString(); readData(4); break;
-                case 0xCD: readData(1); break;
-                case 0xCE: if (protocolversion > 51) { readNextString(); readNextString(); readData(1); } break;
-                case 0xCF: if (protocolversion > 51) { readNextString(); readData(1); readNextString(); } readData(4); break;
-                case 0xD0: if (protocolversion > 51) { readData(1); readNextString(); } break;
-                case 0xD1: if (protocolversion > 51) { readNextTeamData(); } break;
+                case 0xCA: if (protocolversion >= 72) { ReadData(9); } else ReadData(3); break;
+                case 0xCB: autocomplete_result = ReadNextString(); autocomplete_received = true; break;
+                case 0xCC: ReadNextString(); ReadData(4); break;
+                case 0xCD: ReadData(1); break;
+                case 0xCE: if (protocolversion > 51) { ReadNextString(); ReadNextString(); ReadData(1); } break;
+                case 0xCF: if (protocolversion > 51) { ReadNextString(); ReadData(1); ReadNextString(); } ReadData(4); break;
+                case 0xD0: if (protocolversion > 51) { ReadData(1); ReadNextString(); } break;
+                case 0xD1: if (protocolversion > 51) { ReadNextTeamData(); } break;
                 case 0xFA:
-                    string channel = readNextString();
-                    byte[] payload = readNextByteArray();
+                    string channel = ReadNextString();
+                    byte[] payload = ReadNextByteArray();
                     handler.OnPluginChannelMessage(channel, payload);
                     break;
                 case 0xFF:
-                    string reason = readNextString();
+                    string reason = ReadNextString();
                     handler.OnConnectionLost(ChatBot.DisconnectReason.InGameKick, reason); break;
                 default: return false; //unknown packet!
             }
@@ -237,7 +240,7 @@ namespace MinecraftClient.Protocol.Handlers
             catch { }
         }
 
-        private void readData(int offset)
+        private void ReadData(int offset)
         {
             if (offset > 0)
             {
@@ -250,9 +253,9 @@ namespace MinecraftClient.Protocol.Handlers
             }
         }
 
-        private string readNextString()
+        private string ReadNextString()
         {
-            ushort length = (ushort)readNextShort();
+            ushort length = (ushort)ReadNextShort();
             if (length > 0)
             {
                 byte[] cache = new byte[length * 2];
@@ -267,15 +270,15 @@ namespace MinecraftClient.Protocol.Handlers
             return false;
         }
 
-        private byte[] readNextByteArray()
+        private byte[] ReadNextByteArray()
         {
-            short len = readNextShort();
+            short len = ReadNextShort();
             byte[] data = new byte[len];
             Receive(data, 0, len, SocketFlags.None);
             return data;
         }
 
-        private short readNextShort()
+        private short ReadNextShort()
         {
             byte[] tmp = new byte[2];
             Receive(tmp, 0, 2, SocketFlags.None);
@@ -283,7 +286,7 @@ namespace MinecraftClient.Protocol.Handlers
             return BitConverter.ToInt16(tmp, 0);
         }
 
-        private int readNextInt()
+        private int ReadNextInt()
         {
             byte[] tmp = new byte[4];
             Receive(tmp, 0, 4, SocketFlags.None);
@@ -291,28 +294,28 @@ namespace MinecraftClient.Protocol.Handlers
             return BitConverter.ToInt32(tmp, 0);
         }
 
-        private byte readNextByte()
+        private byte ReadNextByte()
         {
             byte[] result = new byte[1];
             Receive(result, 0, 1, SocketFlags.None);
             return result[0];
         }
 
-        private void readNextItemSlot()
+        private void ReadNextItemSlot()
         {
-            short itemid = readNextShort();
+            short itemid = ReadNextShort();
             //If slot not empty (item ID != -1)
             if (itemid != -1)
             {
-                readData(1); //Item count
-                readData(2); //Item damage
-                short length = readNextShort();
+                ReadData(1); //Item count
+                ReadData(2); //Item damage
+                short length = ReadNextShort();
                 //If length of optional NBT data > 0, read it
-                if (length > 0) { readData(length); }
+                if (length > 0) { ReadData(length); }
             }
         }
 
-        private void readNextEntityMetaData()
+        private void ReadNextEntityMetaData()
         {
             do
             {
@@ -323,100 +326,100 @@ namespace MinecraftClient.Protocol.Handlers
                 int type = id[0] >> 5;
                 switch (type)
                 {
-                    case 0: readData(1); break;        //Byte
-                    case 1: readData(2); break;        //Short
-                    case 2: readData(4); break;        //Int
-                    case 3: readData(4); break;        //Float
-                    case 4: readNextString(); break;   //String
-                    case 5: readNextItemSlot(); break; //Slot
-                    case 6: readData(12); break;       //Vector (3 Int)
+                    case 0: ReadData(1); break;        //Byte
+                    case 1: ReadData(2); break;        //Short
+                    case 2: ReadData(4); break;        //Int
+                    case 3: ReadData(4); break;        //Float
+                    case 4: ReadNextString(); break;   //String
+                    case 5: ReadNextItemSlot(); break; //Slot
+                    case 6: ReadData(12); break;       //Vector (3 Int)
                 }
             } while (true);
         }
 
-        private void readNextObjectData()
+        private void ReadNextObjectData()
         {
-            int id = readNextInt();
-            if (id != 0) { readData(6); }
+            int id = ReadNextInt();
+            if (id != 0) { ReadData(6); }
         }
 
-        private void readNextTeamData()
+        private void ReadNextTeamData()
         {
-            readNextString(); //Internal Name
-            byte mode = readNextByte();
+            ReadNextString(); //Internal Name
+            byte mode = ReadNextByte();
 
             if (mode == 0 || mode == 2)
             {
-                readNextString(); //Display Name
-                readNextString(); //Prefix
-                readNextString(); //Suffix
-                readData(1); //Friendly Fire
+                ReadNextString(); //Display Name
+                ReadNextString(); //Prefix
+                ReadNextString(); //Suffix
+                ReadData(1); //Friendly Fire
             }
 
             if (mode == 0 || mode == 3 || mode == 4)
             {
-                short count = readNextShort();
+                short count = ReadNextShort();
                 for (int i = 0; i < count; i++)
                 {
-                    readNextString(); //Players
+                    ReadNextString(); //Players
                 }
             }
         }
 
-        private void readNextEntityProperties(int protocolversion)
+        private void ReadNextEntityProperties(int protocolversion)
         {
             if (protocolversion >= 72)
             {
                 if (protocolversion >= 74)
                 {
                     //Minecraft 1.6.2
-                    readNextInt(); //Entity ID
-                    int count = readNextInt();
+                    ReadNextInt(); //Entity ID
+                    int count = ReadNextInt();
                     for (int i = 0; i < count; i++)
                     {
-                        readNextString(); //Property name
-                        readData(8); //Property value (Double)
-                        short othercount = readNextShort();
-                        readData(25 * othercount);
+                        ReadNextString(); //Property name
+                        ReadData(8); //Property value (Double)
+                        short othercount = ReadNextShort();
+                        ReadData(25 * othercount);
                     }
                 }
                 else
                 {
                     //Minecraft 1.6.0 / 1.6.1
-                    readNextInt(); //Entity ID
-                    int count = readNextInt();
+                    ReadNextInt(); //Entity ID
+                    int count = ReadNextInt();
                     for (int i = 0; i < count; i++)
                     {
-                        readNextString(); //Property name
-                        readData(8); //Property value (Double)
+                        ReadNextString(); //Property name
+                        ReadData(8); //Property value (Double)
                     }
                 }
             }
         }
 
-        private void readNextWindowData(int protocolversion)
+        private void ReadNextWindowData(int protocolversion)
         {
-            readData(1);
-            byte windowtype = readNextByte();
-            readNextString();
-            readData(1);
+            ReadData(1);
+            byte windowtype = ReadNextByte();
+            ReadNextString();
+            ReadData(1);
             if (protocolversion > 51)
             {
-                readData(1);
+                ReadData(1);
                 if (protocolversion >= 72 && windowtype == 0xb)
                 {
-                    readNextInt();
+                    ReadNextInt();
                 }
             }
         }
 
-        private void readNextChunkBulkData()
+        private void ReadNextChunkBulkData()
         {
-            short chunkcount = readNextShort();
-            int datalen = readNextInt();
-            readData(1);
-            readData(datalen);
-            readData(12 * (chunkcount));
+            short chunkcount = ReadNextShort();
+            int datalen = ReadNextInt();
+            ReadData(1);
+            ReadData(datalen);
+            ReadData(12 * (chunkcount));
         }
 
         private void Receive(byte[] buffer, int start, int offset, SocketFlags f)
@@ -425,20 +428,18 @@ namespace MinecraftClient.Protocol.Handlers
             while (read < offset)
             {
                 if (encrypted)
-                {
-                    read += s.Read(buffer, start + read, offset - read);
-                }
-                else read += c.Client.Receive(buffer, start + read, offset - read, f);
+                    read += s!.Read(buffer, start + read, offset - read);
+                else
+                    read += c.Client.Receive(buffer, start + read, offset - read, f);
             }
         }
 
         private void Send(byte[] buffer)
         {
             if (encrypted)
-            {
-                s.Write(buffer, 0, buffer.Length);
-            }
-            else c.Client.Send(buffer);
+                s!.Write(buffer, 0, buffer.Length);
+            else
+                c.Client.Send(buffer);
         }
 
         private bool Handshake(string uuid, string username, string sessionID, string host, int port, SessionToken session)
@@ -481,14 +482,14 @@ namespace MinecraftClient.Protocol.Handlers
             Receive(pid, 0, 1, SocketFlags.None);
             while (pid[0] == 0xFA) //Skip some early plugin messages
             {
-                processPacket(pid[0]);
+                ProcessPacket(pid[0]);
                 Receive(pid, 0, 1, SocketFlags.None);
             }
             if (pid[0] == 0xFD)
             {
-                string serverID = readNextString();
-                byte[] PublicServerkey = readNextByteArray();
-                byte[] token = readNextByteArray();
+                string serverID = ReadNextString();
+                byte[] PublicServerkey = ReadNextByteArray();
+                byte[] token = ReadNextByteArray();
 
                 if (serverID == "-")
                     Translations.WriteLineFormatted("mcc.server_offline");
@@ -506,7 +507,7 @@ namespace MinecraftClient.Protocol.Handlers
 
         private bool StartEncryption(string uuid, string username, string sessionID, byte[] token, string serverIDhash, byte[] serverPublicKey, SessionToken session)
         {
-            RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey);
+            RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
             if (Settings.DebugMessages)
@@ -515,7 +516,7 @@ namespace MinecraftClient.Protocol.Handlers
             if (serverIDhash != "-")
             {
                 Translations.WriteLine("mcc.session");
-                string serverHash = CryptoHandler.getServerHash(serverIDhash, serverPublicKey, secretKey);
+                string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
 
                 bool needCheckSession = true;
                 if (session.ServerPublicKey != null && session.SessionPreCheckTask != null
@@ -568,7 +569,7 @@ namespace MinecraftClient.Protocol.Handlers
             Receive(pid, 0, 1, SocketFlags.None);
             if (pid[0] == 0xFC)
             {
-                readData(4);
+                ReadData(4);
                 s = new AesCfb8Stream(c.GetStream(), secretKey);
                 encrypted = true;
                 return true;
@@ -595,18 +596,18 @@ namespace MinecraftClient.Protocol.Handlers
                             Receive(pid, 0, 1, SocketFlags.None);
                             while (pid[0] >= 0xC0 && pid[0] != 0xFF) //Skip some early packets or plugin messages
                             {
-                                processPacket(pid[0]);
+                                ProcessPacket(pid[0]);
                                 Receive(pid, 0, 1, SocketFlags.None);
                             }
                             if (pid[0] == (byte)1)
                             {
-                                readData(4); readNextString(); readData(5);
+                                ReadData(4); ReadNextString(); ReadData(5);
                                 StartUpdating();
                                 return true; //The Server accepted the request
                             }
                             else if (pid[0] == (byte)0xFF)
                             {
-                                string reason = readNextString();
+                                string reason = ReadNextString();
                                 handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, reason);
                                 return false;
                             }
@@ -804,7 +805,7 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] dataLength = BitConverter.GetBytes((short)data.Length);
                 Array.Reverse(dataLength);
 
-                Send(concatBytes(new byte[] { 0xFA }, channelLength, channelData, dataLength, data));
+                Send(ConcatBytes(new byte[] { 0xFA }, channelLength, channelData, dataLength, data));
 
                 return true;
             }
@@ -815,7 +816,7 @@ namespace MinecraftClient.Protocol.Handlers
         IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
         {
             if (String.IsNullOrEmpty(BehindCursor))
-                return new string[] { };
+                return Array.Empty<string>();
 
             byte[] autocomplete = new byte[3 + (BehindCursor.Length * 2)];
             autocomplete[0] = 0xCB;
@@ -835,20 +836,20 @@ namespace MinecraftClient.Protocol.Handlers
             return autocomplete_result.Split((char)0x00);
         }
 
-        private static byte[] concatBytes(params byte[][] bytes)
+        private static byte[] ConcatBytes(params byte[][] bytes)
         {
-            List<byte> result = new List<byte>();
+            List<byte> result = new();
             foreach (byte[] array in bytes)
                 result.AddRange(array);
             return result.ToArray();
         }
 
-        public static bool doPing(string host, int port, ref int protocolversion)
+        public static bool DoPing(string host, int port, ref int protocolversion)
         {
             try
             {
                 string version = "";
-                TcpClient tcp = ProxyHandler.newTcpClient(host, port);
+                TcpClient tcp = ProxyHandler.NewTcpClient(host, port);
                 tcp.ReceiveTimeout = 30000; // 30 seconds
                 tcp.ReceiveTimeout = 5000; //MC 1.7.2+ SpigotMC servers won't respond, so we need a reasonable timeout.
                 byte[] ping = new byte[2] { 0xfe, 0x01 };
@@ -857,8 +858,8 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (ping[0] == 0xff)
                 {
-                    Protocol16Handler ComTmp = new Protocol16Handler(tcp);
-                    string result = ComTmp.readNextString();
+                    Protocol16Handler ComTmp = new(tcp);
+                    string result = ComTmp.ReadNextString();
 
                     if (Settings.DebugMessages)
                     {

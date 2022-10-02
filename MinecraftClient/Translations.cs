@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient
 {
@@ -15,25 +15,24 @@ namespace MinecraftClient
     /// </remarks>
     public static class Translations
     {
-        private static Dictionary<string, string> translations;
-        private static string translationFilePath = "lang" + Path.DirectorySeparatorChar + "mcc";
-        private static string defaultTranslation = "en.ini";
-        private static Regex translationKeyRegex = new Regex(@"\(\[(.*?)\]\)", RegexOptions.Compiled); // Extract string inside ([ ])
+        private static readonly Dictionary<string, string> translations;
+        private static readonly string translationFilePath = "lang" + Path.DirectorySeparatorChar + "mcc";
+        private static readonly string defaultTranslation = "en.ini";
+        private static readonly Regex translationKeyRegex = new(@"\(\[(.*?)\]\)", RegexOptions.Compiled); // Extract string inside ([ ])
 
         /// <summary>
         /// Return a tranlation for the requested text. Support string formatting
         /// </summary>
         /// <param name="msgName">text identifier</param>
         /// <returns>returns translation for this identifier</returns>
-        public static string Get(string msgName, params object[] args)
+        public static string Get(string msgName, params object?[] args)
         {
             if (translations.ContainsKey(msgName))
             {
                 if (args.Length > 0)
-                {
                     return string.Format(translations[msgName], args);
-                }
-                else return translations[msgName];
+                else
+                    return translations[msgName];
             }
             return msgName.ToUpper();
         }
@@ -45,11 +44,12 @@ namespace MinecraftClient
         /// <param name="args"></param>
         /// <returns>Translated text or original text if not found</returns>
         /// <remarks>Useful when not sure msgName is a translation mapping key or a normal text</remarks>
-        public static string TryGet(string msgName, params object[] args)
+        public static string TryGet(string msgName, params object?[] args)
         {
             if (translations.ContainsKey(msgName))
                 return Get(msgName, args);
-            else return msgName;
+            else
+                return msgName;
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace MinecraftClient
                     ? CultureInfo.CurrentCulture.Name
                     : CultureInfo.CurrentCulture.Parent.Name;
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string langDir = baseDir + ((baseDir.EndsWith(Path.DirectorySeparatorChar) ? String.Empty : Path.DirectorySeparatorChar) + 
+            string langDir = baseDir + ((baseDir.EndsWith(Path.DirectorySeparatorChar) ? String.Empty : Path.DirectorySeparatorChar) +
                 translationFilePath + Path.DirectorySeparatorChar);
             string langFileSystemLanguage = langDir + systemLanguage + ".ini";
             string langFileConfigLanguage = langDir + language + ".ini";
@@ -162,13 +162,13 @@ namespace MinecraftClient
                     continue;
                 if (line.StartsWith("#")) // ignore comment line started with #
                     continue;
-                if (line[0] == '[' && line[line.Length - 1] == ']') // ignore section
+                if (line[0] == '[' && line[^1] == ']') // ignore section
                     continue;
 
                 string translationName = line.Split('=')[0];
                 if (line.Length > (translationName.Length + 1))
                 {
-                    string translationValue = line.Substring(translationName.Length + 1).Replace("\\n", "\n");
+                    string translationValue = line[(translationName.Length + 1)..].Replace("\\n", "\n");
                     translations[translationName] = translationValue;
                 }
             }

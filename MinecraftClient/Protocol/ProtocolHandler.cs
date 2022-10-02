@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Net.Sockets;
 using System.Net.Security;
-using System.Threading;
+using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Text;
 using DnsClient;
-using MinecraftClient.Proxy;
 using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
-using System.Security.Authentication;
+using MinecraftClient.Proxy;
 
 namespace MinecraftClient.Protocol
 {
@@ -88,8 +87,8 @@ namespace MinecraftClient.Protocol
             {
                 try
                 {
-                    if (Protocol18Handler.doPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp)
-                        || Protocol16Handler.doPing(serverIP, serverPort, ref protocolversionTmp))
+                    if (Protocol18Handler.DoPing(serverIP, serverPort, ref protocolversionTmp, ref forgeInfoTmp)
+                        || Protocol16Handler.DoPing(serverIP, serverPort, ref protocolversionTmp))
                     {
                         success = true;
                     }
@@ -124,7 +123,7 @@ namespace MinecraftClient.Protocol
         /// <param name="ProtocolVersion">Protocol version to handle</param>
         /// <param name="Handler">Handler with the appropriate callbacks</param>
         /// <returns></returns>
-        public static IMinecraftCom GetProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo forgeInfo, IMinecraftComHandler Handler)
+        public static IMinecraftCom GetProtocolHandler(TcpClient Client, int ProtocolVersion, ForgeInfo? forgeInfo, IMinecraftComHandler Handler)
         {
             int[] supportedVersions_Protocol16 = { 51, 60, 61, 72, 73, 74, 78 };
 
@@ -728,7 +727,7 @@ namespace MinecraftClient.Protocol
         /// <returns>List of ID of available Realms worlds</returns>
         public static List<string> RealmsListWorlds(string username, string uuid, string accesstoken)
         {
-            List<string> realmsWorldsResult = new List<string>(); // Store world ID
+            List<string> realmsWorldsResult = new(); // Store world ID
             try
             {
                 string result = "";
@@ -739,7 +738,7 @@ namespace MinecraftClient.Protocol
                     && realmsWorlds.Properties["servers"].Type == Json.JSONData.DataType.Array
                     && realmsWorlds.Properties["servers"].DataArray.Count > 0)
                 {
-                    List<string> availableWorlds = new List<string>(); // Store string to print
+                    List<string> availableWorlds = new(); // Store string to print
                     int index = 0;
                     foreach (Json.JSONData realmsServer in realmsWorlds.Properties["servers"].DataArray)
                     {
@@ -833,17 +832,19 @@ namespace MinecraftClient.Protocol
         /// <returns>HTTP Status code</returns>
         private static int DoHTTPSGet(string host, string endpoint, string cookies, ref string result)
         {
-            List<String> http_request = new List<string>();
-            http_request.Add("GET " + endpoint + " HTTP/1.1");
-            http_request.Add("Cookie: " + cookies);
-            http_request.Add("Cache-Control: no-cache");
-            http_request.Add("Pragma: no-cache");
-            http_request.Add("Host: " + host);
-            http_request.Add("User-Agent: Java/1.6.0_27");
-            http_request.Add("Accept-Charset: ISO-8859-1,UTF-8;q=0.7,*;q=0.7");
-            http_request.Add("Connection: close");
-            http_request.Add("");
-            http_request.Add("");
+            List<String> http_request = new()
+            {
+                "GET " + endpoint + " HTTP/1.1",
+                "Cookie: " + cookies,
+                "Cache-Control: no-cache",
+                "Pragma: no-cache",
+                "Host: " + host,
+                "User-Agent: Java/1.6.0_27",
+                "Accept-Charset: ISO-8859-1,UTF-8;q=0.7,*;q=0.7",
+                "Connection: close",
+                "",
+                ""
+            };
             return DoHTTPSRequest(http_request, host, ref result);
         }
 
@@ -857,15 +858,17 @@ namespace MinecraftClient.Protocol
         /// <returns>HTTP Status code</returns>
         private static int DoHTTPSPost(string host, string endpoint, string request, ref string result)
         {
-            List<String> http_request = new List<string>();
-            http_request.Add("POST " + endpoint + " HTTP/1.1");
-            http_request.Add("Host: " + host);
-            http_request.Add("User-Agent: MCC/" + Program.Version);
-            http_request.Add("Content-Type: application/json");
-            http_request.Add("Content-Length: " + Encoding.ASCII.GetBytes(request).Length);
-            http_request.Add("Connection: close");
-            http_request.Add("");
-            http_request.Add(request);
+            List<String> http_request = new()
+            {
+                "POST " + endpoint + " HTTP/1.1",
+                "Host: " + host,
+                "User-Agent: MCC/" + Program.Version,
+                "Content-Type: application/json",
+                "Content-Length: " + Encoding.ASCII.GetBytes(request).Length,
+                "Connection: close",
+                "",
+                request
+            };
             return DoHTTPSRequest(http_request, host, ref result);
         }
 
@@ -889,8 +892,8 @@ namespace MinecraftClient.Protocol
                     if (Settings.DebugMessages)
                         ConsoleIO.WriteLineFormatted(Translations.Get("debug.request", host));
 
-                    TcpClient client = ProxyHandler.newTcpClient(host, 443, true);
-                    SslStream stream = new SslStream(client.GetStream());
+                    TcpClient client = ProxyHandler.NewTcpClient(host, 443, true);
+                    SslStream stream = new(client.GetStream());
                     stream.AuthenticateAsClient(host, null, SslProtocols.Tls12, true); // Enable TLS 1.2. Hotfix for #1780
 
                     if (Settings.DebugMessages)
@@ -898,7 +901,7 @@ namespace MinecraftClient.Protocol
                             ConsoleIO.WriteLineFormatted("§8> " + line);
 
                     stream.Write(Encoding.ASCII.GetBytes(String.Join("\r\n", headers.ToArray())));
-                    System.IO.StreamReader sr = new System.IO.StreamReader(stream);
+                    System.IO.StreamReader sr = new(stream);
                     string raw_result = sr.ReadToEnd();
 
                     if (Settings.DebugMessages)
@@ -910,14 +913,14 @@ namespace MinecraftClient.Protocol
 
                     if (raw_result.StartsWith("HTTP/1.1"))
                     {
-                        postResult = raw_result.Substring(raw_result.IndexOf("\r\n\r\n") + 4);
+                        postResult = raw_result[(raw_result.IndexOf("\r\n\r\n") + 4)..];
                         statusCode = Settings.str2int(raw_result.Split(' ')[1]);
                     }
                     else statusCode = 520; //Web server is returning an unknown error
                 }
                 catch (Exception e)
                 {
-                    if (!(e is System.Threading.ThreadAbortException))
+                    if (e is not System.Threading.ThreadAbortException)
                     {
                         exception = e;
                     }
@@ -938,7 +941,7 @@ namespace MinecraftClient.Protocol
         /// <returns>Encoded text</returns>
         private static string JsonEncode(string text)
         {
-            StringBuilder result = new StringBuilder();
+            StringBuilder result = new();
 
             foreach (char c in text)
             {
@@ -965,7 +968,7 @@ namespace MinecraftClient.Protocol
         public static DateTime UnixTimeStampToDateTime(long unixTimeStamp)
         {
             // Unix timestamp is seconds past epoch
-            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            DateTime dateTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dateTime;
         }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol.Message
 {
@@ -41,7 +37,7 @@ namespace MinecraftClient.Protocol.Message
             isSystemChat = false;
             this.content = content;
             this.isJson = isJson;
-            this.chatTypeId = chatType;
+            chatTypeId = chatType;
             this.senderUUID = senderUUID;
             this.unsignedContent = unsignedContent;
             this.displayName = displayName;
@@ -57,18 +53,18 @@ namespace MinecraftClient.Protocol.Message
             this.isSystemChat = isSystemChat;
             this.content = content;
             this.isJson = isJson;
-            this.chatTypeId = chatType;
+            chatTypeId = chatType;
             this.senderUUID = senderUUID;
         }
 
-        public LastSeenMessageList.Entry? toLastSeenMessageEntry()
+        public LastSeenMessageList.Entry? ToLastSeenMessageEntry()
         {
             return signature != null ? new LastSeenMessageList.Entry(senderUUID, signature) : null;
         }
 
-        public bool lacksSender()
+        public bool LacksSender()
         {
-            return this.senderUUID == Guid.Empty;
+            return senderUUID == Guid.Empty;
         }
     }
 }

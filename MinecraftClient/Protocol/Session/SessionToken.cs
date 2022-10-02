@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol.Session
@@ -9,7 +8,7 @@ namespace MinecraftClient.Protocol.Session
     [Serializable]
     public class SessionToken
     {
-        private static readonly Regex JwtRegex = new Regex("^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$");
+        private static readonly Regex JwtRegex = new("^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$");
 
         public string ID { get; set; }
         public string PlayerName { get; set; }
@@ -34,11 +33,10 @@ namespace MinecraftClient.Protocol.Session
 
         public bool SessionPreCheck()
         {
-            if (this.ID == string.Empty || this.PlayerID == String.Empty || this.ServerPublicKey == null)
+            if (ID == string.Empty || PlayerID == String.Empty || ServerPublicKey == null)
                 return false;
-            if (Crypto.CryptoHandler.ClientAESPrivateKey == null)
-                Crypto.CryptoHandler.ClientAESPrivateKey = Crypto.CryptoHandler.GenerateAESPrivateKey();
-            string serverHash = Crypto.CryptoHandler.getServerHash(ServerIDhash, ServerPublicKey, Crypto.CryptoHandler.ClientAESPrivateKey);
+            Crypto.CryptoHandler.ClientAESPrivateKey ??= Crypto.CryptoHandler.GenerateAESPrivateKey();
+            string serverHash = Crypto.CryptoHandler.GetServerHash(ServerIDhash, ServerPublicKey, Crypto.CryptoHandler.ClientAESPrivateKey);
             if (ProtocolHandler.SessionCheck(PlayerID, ID, serverHash))
                 return true;
             return false;
@@ -46,7 +44,7 @@ namespace MinecraftClient.Protocol.Session
 
         public override string ToString()
         {
-            return String.Join(",", ID, PlayerName, PlayerID, ClientID, RefreshToken, ServerIDhash, 
+            return String.Join(",", ID, PlayerName, PlayerID, ClientID, RefreshToken, ServerIDhash,
                 (ServerPublicKey == null) ? String.Empty : Convert.ToBase64String(ServerPublicKey));
         }
 
@@ -56,11 +54,13 @@ namespace MinecraftClient.Protocol.Session
             if (fields.Length < 4)
                 throw new InvalidDataException("Invalid string format");
 
-            SessionToken session = new SessionToken();
-            session.ID = fields[0];
-            session.PlayerName = fields[1];
-            session.PlayerID = fields[2];
-            session.ClientID = fields[3];
+            SessionToken session = new()
+            {
+                ID = fields[0],
+                PlayerName = fields[1],
+                PlayerID = fields[2],
+                ClientID = fields[3]
+            };
             // Backward compatible with old session file without refresh token field
             if (fields.Length > 4)
                 session.RefreshToken = fields[4];
@@ -83,15 +83,13 @@ namespace MinecraftClient.Protocol.Session
             }
             else
                 session.ServerPublicKey = null;
-
-            Guid temp;
             if (!JwtRegex.IsMatch(session.ID))
                 throw new InvalidDataException("Invalid session ID");
             if (!ChatBot.IsValidName(session.PlayerName))
                 throw new InvalidDataException("Invalid player name");
-            if (!Guid.TryParseExact(session.PlayerID, "N", out temp))
+            if (!Guid.TryParseExact(session.PlayerID, "N", out _))
                 throw new InvalidDataException("Invalid player ID");
-            if (!Guid.TryParseExact(session.ClientID, "N", out temp))
+            if (!Guid.TryParseExact(session.ClientID, "N", out _))
                 throw new InvalidDataException("Invalid client ID");
             // No validation on refresh token because it is custom format token (not Jwt)
 

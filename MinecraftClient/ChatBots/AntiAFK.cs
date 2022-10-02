@@ -10,14 +10,14 @@ namespace MinecraftClient.ChatBots
     public class AntiAFK : ChatBot
     {
         private int count;
-        private string pingparam;
+        private readonly string pingparam;
         private int timeping = 600;
         private int timepingMax = -1;
         private bool useTerrainHandling = false;
         private bool previousSneakState = false;
         private int walkRange = 5;
-        private int walkRetries = 10;
-        private Random random = new Random();
+        private readonly int walkRetries = 10;
+        private readonly Random random = new();
 
         /// <summary>
         /// This bot sends a /ping command every X seconds in order to stay non-afk.
@@ -57,7 +57,7 @@ namespace MinecraftClient.ChatBots
             else
             {
                 // Handle the random range
-                if (pingparam.Contains("-"))
+                if (pingparam.Contains('-'))
                 {
                     string[] parts = pingparam.Split("-");
 
@@ -85,10 +85,7 @@ namespace MinecraftClient.ChatBots
 
             if (timepingMax != -1 && timeping > timepingMax)
             {
-                int temporary = timepingMax;
-                timepingMax = timeping;
-                timeping = temporary;
-
+                (timeping, timepingMax) = (timepingMax, timeping);
                 LogToConsole(Translations.TryGet("bot.antiafk.swapping"));
             }
 

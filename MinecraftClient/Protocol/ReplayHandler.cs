@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using MinecraftClient.Protocol.Handlers;
-using System.Runtime.InteropServices;
+using System.Linq;
 using Ionic.Zip;
 using MinecraftClient.Mapping;
+using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 
 namespace MinecraftClient.Protocol
@@ -23,16 +21,16 @@ namespace MinecraftClient.Protocol
 
         private readonly string recordingTmpFileName = @"recording.tmcpr";
         private readonly string temporaryCache = @"recording_cache";
-        private DataTypes dataTypes;
-        private PacketTypePalette packetType;
-        private int protocolVersion;
-        private BinaryWriter recordStream;
-        private DateTime recordStartTime;
+        private readonly DataTypes dataTypes;
+        private readonly PacketTypePalette packetType;
+        private readonly int protocolVersion;
+        private readonly BinaryWriter? recordStream;
+        private readonly DateTime recordStartTime;
         private DateTime lastPacketTime;
         private bool prepareCleanUp = false;
         private bool cleanedUp = false;
 
-        private static bool logOutput = true;
+        private static readonly bool logOutput = true;
 
         private int playerEntityID;
         private Guid playerUUID;
@@ -42,20 +40,8 @@ namespace MinecraftClient.Protocol
 
         public ReplayHandler(int protocolVersion)
         {
-            Initialize(protocolVersion);
-        }
-
-        public ReplayHandler(int protocolVersion, string serverName, string recordingDirectory = @"replay_recordings")
-        {
-            Initialize(protocolVersion);
-            this.MetaData.serverName = serverName;
-            ReplayFileDirectory = recordingDirectory;
-        }
-
-        private void Initialize(int protocolVersion)
-        {
-            this.dataTypes = new DataTypes(protocolVersion);
-            this.packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
+            dataTypes = new DataTypes(protocolVersion);
+            packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
             this.protocolVersion = protocolVersion;
 
             if (!Directory.Exists(ReplayFileDirectory))
@@ -66,14 +52,26 @@ namespace MinecraftClient.Protocol
             recordStream = new BinaryWriter(new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Create, FileAccess.ReadWrite));
             recordStartTime = DateTime.Now;
 
-            MetaData = new MetaDataHandler();
-            MetaData.date = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
-            MetaData.protocol = protocolVersion;
-            MetaData.mcversion = ProtocolHandler.ProtocolVersion2MCVer(protocolVersion);
+            MetaData = new MetaDataHandler
+            {
+                date = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds,
+                protocol = protocolVersion,
+                mcversion = ProtocolHandler.ProtocolVersion2MCVer(protocolVersion)
+            };
             MetaData.SaveToFile();
 
             playerLastPosition = new Location(0, 0, 0);
             WriteLog("Start recording.");
+        }
+
+        public ReplayHandler(int protocolVersion, string serverName, string recordingDirectory = @"replay_recordings")
+            : this(protocolVersion)
+        {
+            dataTypes = new DataTypes(protocolVersion);
+            packetType = new PacketTypeHandler().GetTypeHandler(protocolVersion);
+
+            MetaData.serverName = serverName;
+            ReplayFileDirectory = recordingDirectory;
         }
 
         ~ReplayHandler()
@@ -97,7 +95,7 @@ namespace MinecraftClient.Protocol
         {
             try
             {
-                recordStream.Flush();
+                recordStream!.Flush();
                 recordStream.Close();
             }
             catch { }
@@ -139,17 +137,13 @@ namespace MinecraftClient.Protocol
 
             using (Stream recordingFile = new FileStream(Path.Combine(temporaryCache, recordingTmpFileName), FileMode.Open))
             {
-                using (Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open))
-                {
-                    using (ZipOutputStream zs = new ZipOutputStream(Path.Combine(ReplayFileDirectory, replayFileName)))
-                    {
-                        zs.PutNextEntry(recordingTmpFileName);
-                        recordingFile.CopyTo(zs);
-                        zs.PutNextEntry(MetaData.MetaDataFileName);
-                        metaDataFile.CopyTo(zs);
-                        zs.Close();
-                    }
-                }
+                using Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open);
+                using ZipOutputStream zs = new(Path.Combine(ReplayFileDirectory, replayFileName));
+                zs.PutNextEntry(recordingTmpFileName);
+                recordingFile.CopyTo(zs);
+                zs.PutNextEntry(MetaData.MetaDataFileName);
+                metaDataFile.CopyTo(zs);
+                zs.Close();
             }
 
             File.Delete(Path.Combine(temporaryCache, recordingTmpFileName));
@@ -173,20 +167,18 @@ namespace MinecraftClient.Protocol
 
             using (Stream metaDataFile = new FileStream(Path.Combine(temporaryCache, MetaData.MetaDataFileName), FileMode.Open))
             {
-                using (ZipOutputStream zs = new ZipOutputStream(replayFileName))
-                {
-                    zs.PutNextEntry(recordingTmpFileName);
-                    // .CopyTo() method start from stream current position
-                    // We need to reset position in order to get full content
-                    var lastPosition = recordStream.BaseStream.Position;
-                    recordStream.BaseStream.Position = 0;
-                    recordStream.BaseStream.CopyTo(zs);
-                    recordStream.BaseStream.Position = lastPosition;
+                using ZipOutputStream zs = new(replayFileName);
+                zs.PutNextEntry(recordingTmpFileName);
+                // .CopyTo() method start from stream current position
+                // We need to reset position in order to get full content
+                var lastPosition = recordStream!.BaseStream.Position;
+                recordStream.BaseStream.Position = 0;
+                recordStream.BaseStream.CopyTo(zs);
+                recordStream.BaseStream.Position = lastPosition;
 
-                    zs.PutNextEntry(MetaData.MetaDataFileName);
-                    metaDataFile.CopyTo(zs);
-                    zs.Close();
-                }
+                zs.PutNextEntry(MetaData.MetaDataFileName);
+                metaDataFile.CopyTo(zs);
+                zs.Close();
             }
 
             WriteDebugLog("Backup replay file created.");
@@ -215,7 +207,7 @@ namespace MinecraftClient.Protocol
         /// <param name="isInbound"></param>
         public void AddPacket(int packetID, IEnumerable<byte> packetData, bool isLogin, bool isInbound)
         {
-            try 
+            try
             {
                 if (isInbound)
                     HandleInBoundPacket(packetID, packetData, isLogin);
@@ -240,18 +232,18 @@ namespace MinecraftClient.Protocol
             lastPacketTime = DateTime.Now;
             // build raw packet
             // format: packetID + packetData
-            List<byte> rawPacket = new List<byte>();
+            List<byte> rawPacket = new();
             rawPacket.AddRange(dataTypes.GetVarInt(packetID).ToArray());
             rawPacket.AddRange(packetData.ToArray());
             // build format
             // format: timestamp + packetLength + RawPacket
-            List<byte> line = new List<byte>();
+            List<byte> line = new();
             int nowTime = Convert.ToInt32((lastPacketTime - recordStartTime).TotalMilliseconds);
             line.AddRange(BitConverter.GetBytes((Int32)nowTime).Reverse().ToArray());
             line.AddRange(BitConverter.GetBytes((Int32)rawPacket.Count).Reverse().ToArray());
             line.AddRange(rawPacket.ToArray());
             // Write out to the file
-            recordStream.Write(line.ToArray());
+            recordStream!.Write(line.ToArray());
         }
 
         /// <summary>
@@ -301,15 +293,14 @@ namespace MinecraftClient.Protocol
         /// <param name="isLogin"></param>
         private void HandleInBoundPacket(int packetID, IEnumerable<byte> packetData, bool isLogin)
         {
-            Queue<byte> p = new Queue<byte>(packetData);
+            Queue<byte> p = new(packetData);
             PacketTypesIn pType = packetType.GetIncommingTypeById(packetID);
             // Login success. Get player UUID
             if (isLogin && packetID == 0x02)
             {
-                Guid uuid;
                 if (protocolVersion < Protocol18Handler.MC_1_16_Version)
                 {
-                    if (Guid.TryParse(dataTypes.ReadNextString(p), out uuid))
+                    if (Guid.TryParse(dataTypes.ReadNextString(p), out Guid uuid))
                     {
                         SetClientPlayerUUID(uuid);
                         WriteDebugLog("User UUID: " + uuid.ToString());
@@ -384,7 +375,7 @@ namespace MinecraftClient.Protocol
 
         private byte[] GetSpawnPlayerPacket(int entityID, Guid playerUUID, Location location, double pitch, double yaw)
         {
-            List<byte> packet = new List<byte>();
+            List<byte> packet = new();
             packet.AddRange(dataTypes.GetVarInt(entityID));
             packet.AddRange(playerUUID.ToBigEndianBytes());
             packet.AddRange(dataTypes.GetDouble(location.X));
@@ -423,7 +414,7 @@ namespace MinecraftClient.Protocol
         public readonly string temporaryCache = @"recording_cache";
 
         public bool singlePlayer = false;
-        public string serverName;
+        public string? serverName;
         public int duration = 0; // duration of the whole replay
         public long date; // start time of the recording in unix timestamp milliseconds
         public string mcversion = "0.0"; // e.g. 1.15.2

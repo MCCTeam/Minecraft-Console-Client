@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace MinecraftClient.Mapping
 {
@@ -159,7 +156,7 @@ namespace MinecraftClient.Mapping
         /// <returns>New location</returns>
         public Location ToFloor()
         {
-            return new Location(Math.Floor(this.X), Math.Floor(this.Y), Math.Floor(this.Z));
+            return new Location(Math.Floor(X), Math.Floor(Y), Math.Floor(Z));
         }
 
         /// <summary>
@@ -168,7 +165,7 @@ namespace MinecraftClient.Mapping
         /// <returns>New location</returns>
         public Location ToCenter()
         {
-            return new Location(Math.Floor(this.X) + 0.5, this.Y, Math.Floor(this.Z) + 0.5);
+            return new Location(Math.Floor(X) + 0.5, Y, Math.Floor(Z) + 0.5);
         }
 
         /// <summary>
@@ -273,15 +270,15 @@ namespace MinecraftClient.Mapping
         /// </summary>
         /// <param name="obj">Object to compare to</param>
         /// <returns>TRUE if the locations are equals</returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj == null)
                 return false;
-            if (obj is Location)
+            if (obj is Location location)
             {
-                return ((int)this.X) == ((int)((Location)obj).X)
-                    && ((int)this.Y) == ((int)((Location)obj).Y)
-                    && ((int)this.Z) == ((int)((Location)obj).Z);
+                return ((int)X) == ((int)location.X)
+                    && ((int)Y) == ((int)location.Y)
+                    && ((int)Z) == ((int)location.Z);
             }
             return false;
         }
@@ -293,6 +290,11 @@ namespace MinecraftClient.Mapping
         /// <param name="loc2">Second location to compare</param>
         /// <returns>TRUE if the locations are equals</returns>
         public static bool operator ==(Location loc1, Location loc2)
+        {
+            return loc1.Equals(loc2);
+        }
+
+        public static bool operator ==(Location? loc1, Location? loc2)
         {
             if (loc1 == null && loc2 == null)
                 return true;
@@ -308,6 +310,11 @@ namespace MinecraftClient.Mapping
         /// <param name="loc2">Second location to compare</param>
         /// <returns>TRUE if the locations are equals</returns>
         public static bool operator !=(Location loc1, Location loc2)
+        {
+            return !loc1.Equals(loc2);
+        }
+
+        public static bool operator !=(Location? loc1, Location? loc2)
         {
             if (loc1 == null && loc2 == null)
                 return false;

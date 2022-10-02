@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace MinecraftClient.Logger
 {
@@ -12,9 +8,9 @@ namespace MinecraftClient.Logger
 
         protected bool ShouldDisplay(FilterChannel channel, string msg)
         {
-            Regex regexToUse = null;
+            Regex? regexToUse = null;
             // Convert to bool for XOR later. Whitelist = 0, Blacklist = 1
-            bool filterMode = Settings.FilterMode == Settings.FilterModeEnum.Blacklist ? true : false;
+            bool filterMode = Settings.FilterMode == Settings.FilterModeEnum.Blacklist;
             switch (channel)
             {
                 case FilterChannel.Chat: regexToUse = Settings.ChatFilter; break;

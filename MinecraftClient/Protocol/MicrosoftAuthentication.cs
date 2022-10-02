@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace MinecraftClient.Protocol
 {
@@ -58,8 +57,10 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         private static LoginResponse RequestToken(string postData)
         {
-            var request = new ProxiedWebRequest(tokenUrl);
-            request.UserAgent = "MCC/" + Program.Version;
+            var request = new ProxiedWebRequest(tokenUrl)
+            {
+                UserAgent = "MCC/" + Program.Version
+            };
             var response = request.Post("application/x-www-form-urlencoded", postData);
             var jsonData = Json.ParseJson(response.Body);
 
@@ -132,17 +133,17 @@ namespace MinecraftClient.Protocol
 
     static class XboxLive
     {
-        private static string authorize = "https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en";
-        private static string xbl = "https://user.auth.xboxlive.com/user/authenticate";
-        private static string xsts = "https://xsts.auth.xboxlive.com/xsts/authorize";
+        private static readonly string authorize = "https://login.live.com/oauth20_authorize.srf?client_id=000000004C12AE6F&redirect_uri=https://login.live.com/oauth20_desktop.srf&scope=service::user.auth.xboxlive.com::MBI_SSL&display=touch&response_type=token&locale=en";
+        private static readonly string xbl = "https://user.auth.xboxlive.com/user/authenticate";
+        private static readonly string xsts = "https://xsts.auth.xboxlive.com/xsts/authorize";
 
-        private static string userAgent = "Mozilla/5.0 (XboxReplay; XboxLiveAuth/3.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
+        private static readonly string userAgent = "Mozilla/5.0 (XboxReplay; XboxLiveAuth/3.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
 
-        private static Regex ppft = new Regex("sFTTag:'.*value=\"(.*)\"\\/>'");
-        private static Regex urlPost = new Regex("urlPost:'(.+?(?=\'))");
-        private static Regex confirm = new Regex("identity\\/confirm");
-        private static Regex invalidAccount = new Regex("Sign in to", RegexOptions.IgnoreCase);
-        private static Regex twoFA = new Regex("Help us protect your account", RegexOptions.IgnoreCase);
+        private static readonly Regex ppft = new("sFTTag:'.*value=\"(.*)\"\\/>'");
+        private static readonly Regex urlPost = new("urlPost:'(.+?(?=\'))");
+        private static readonly Regex confirm = new("identity\\/confirm");
+        private static readonly Regex invalidAccount = new("Sign in to", RegexOptions.IgnoreCase);
+        private static readonly Regex twoFA = new("Help us protect your account", RegexOptions.IgnoreCase);
 
         public static string SignInUrl { get { return authorize; } }
 
@@ -153,8 +154,10 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static PreAuthResponse PreAuth()
         {
-            var request = new ProxiedWebRequest(authorize);
-            request.UserAgent = userAgent;
+            var request = new ProxiedWebRequest(authorize)
+            {
+                UserAgent = userAgent
+            };
             var response = request.Get();
 
             string html = response.Body;
@@ -188,8 +191,10 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static Microsoft.LoginResponse UserLogin(string email, string password, PreAuthResponse preAuth)
         {
-            var request = new ProxiedWebRequest(preAuth.UrlPost, preAuth.Cookie);
-            request.UserAgent = userAgent;
+            var request = new ProxiedWebRequest(preAuth.UrlPost, preAuth.Cookie)
+            {
+                UserAgent = userAgent
+            };
 
             string postData = "login=" + Uri.EscapeDataString(email)
                  + "&loginfmt=" + Uri.EscapeDataString(email)
@@ -205,7 +210,7 @@ namespace MinecraftClient.Protocol
 
             if (response.StatusCode >= 300 && response.StatusCode <= 399)
             {
-                string url = response.Headers.Get("Location");
+                string url = response.Headers.Get("Location")!;
                 string hash = url.Split('#')[1];
 
                 var request2 = new ProxiedWebRequest(url);
@@ -257,9 +262,11 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static XblAuthenticateResponse XblAuthenticate(Microsoft.LoginResponse loginResponse)
         {
-            var request = new ProxiedWebRequest(xbl);
-            request.UserAgent = userAgent;
-            request.Accept = "application/json";
+            var request = new ProxiedWebRequest(xbl)
+            {
+                UserAgent = userAgent,
+                Accept = "application/json"
+            };
             request.Headers.Add("x-xbl-contract-version", "0");
 
             var accessToken = loginResponse.AccessToken;
@@ -312,9 +319,11 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static XSTSAuthenticateResponse XSTSAuthenticate(XblAuthenticateResponse xblResponse)
         {
-            var request = new ProxiedWebRequest(xsts);
-            request.UserAgent = userAgent;
-            request.Accept = "application/json";
+            var request = new ProxiedWebRequest(xsts)
+            {
+                UserAgent = userAgent,
+                Accept = "application/json"
+            };
             request.Headers.Add("x-xbl-contract-version", "1");
 
             string payload = "{"
@@ -388,9 +397,9 @@ namespace MinecraftClient.Protocol
 
     static class MinecraftWithXbox
     {
-        private static string loginWithXbox = "https://api.minecraftservices.com/authentication/login_with_xbox";
-        private static string ownership = "https://api.minecraftservices.com/entitlements/mcstore";
-        private static string profile = "https://api.minecraftservices.com/minecraft/profile";
+        private static readonly string loginWithXbox = "https://api.minecraftservices.com/authentication/login_with_xbox";
+        private static readonly string ownership = "https://api.minecraftservices.com/entitlements/mcstore";
+        private static readonly string profile = "https://api.minecraftservices.com/minecraft/profile";
 
         /// <summary>
         /// Login to Minecraft using the XSTS token and user hash obtained before
@@ -400,8 +409,10 @@ namespace MinecraftClient.Protocol
         /// <returns></returns>
         public static string LoginWithXbox(string userHash, string xstsToken)
         {
-            var request = new ProxiedWebRequest(loginWithXbox);
-            request.Accept = "application/json";
+            var request = new ProxiedWebRequest(loginWithXbox)
+            {
+                Accept = "application/json"
+            };
 
             string payload = "{\"identityToken\": \"XBL3.0 x=" + userHash + ";" + xstsToken + "\"}";
             var response = request.Post("application/json", payload);

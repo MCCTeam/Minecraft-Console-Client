@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MinecraftClient.Protocol.Handlers;
-
-namespace MinecraftClient.Mapping
+﻿namespace MinecraftClient.Mapping
 {
     public class MapIcon
     {

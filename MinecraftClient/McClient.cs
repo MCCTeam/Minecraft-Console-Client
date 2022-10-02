@@ -1,21 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
-using System.IO;
-using System.Net;
 using MinecraftClient.ChatBots;
-using MinecraftClient.Protocol;
-using MinecraftClient.Proxy;
-using MinecraftClient.Protocol.Handlers.Forge;
-using MinecraftClient.Mapping;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
+using MinecraftClient.Mapping;
+using MinecraftClient.Protocol;
+using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Keys;
-using MinecraftClient.Protocol.Session;
 using MinecraftClient.Protocol.Message;
+using MinecraftClient.Protocol.Session;
+using MinecraftClient.Proxy;
 
 namespace MinecraftClient
 {
@@ -32,15 +30,15 @@ namespace MinecraftClient
 
         private static bool commandsLoaded = false;
 
-        private Queue<string> chatQueue = new();
+        private readonly Queue<string> chatQueue = new();
         private static DateTime nextMessageSendTime = DateTime.MinValue;
 
-        private Queue<Action> threadTasks = new();
-        private object threadTasksLock = new();
+        private readonly Queue<Action> threadTasks = new();
+        private readonly object threadTasksLock = new();
 
         private readonly List<ChatBot> bots = new();
         private static readonly List<ChatBot> botsOnHold = new();
-        private static Dictionary<int, Container> inventories = new();
+        private static readonly Dictionary<int, Container> inventories = new();
 
         private readonly Dictionary<string, List<ChatBot>> registeredBotPluginChannels = new();
         private readonly List<string> registeredServerPluginChannels = new();
@@ -51,10 +49,10 @@ namespace MinecraftClient
         private bool inventoryHandlingRequested = false;
         private bool entityHandlingEnabled;
 
-        private object locationLock = new();
+        private readonly object locationLock = new();
         private bool locationReceived = false;
-        private World world = new();
-        private Queue<Location> steps;
+        private readonly World world = new();
+        private Queue<Location>? steps;
         private Queue<Location>? path;
         private Location location;
         private float? _yaw; // Used for calculation ONLY!!! Doesn't reflect the client yaw
@@ -66,16 +64,16 @@ namespace MinecraftClient
         public int currentMovementSpeed = 4;
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
 
-        private string host;
-        private int port;
-        private int protocolversion;
-        private string username;
+        private readonly string host;
+        private readonly int port;
+        private readonly int protocolversion;
+        private readonly string username;
         private Guid uuid;
         private string uuidStr;
-        private string sessionid;
-        private PlayerKeyPair? playerKeyPair;
+        private readonly string sessionid;
+        private readonly PlayerKeyPair? playerKeyPair;
         private DateTime lastKeepAlive;
-        private object lastKeepAliveLock = new();
+        private readonly object lastKeepAliveLock = new();
         private int respawnTicks = 0;
         private int gamemode = 0;
         private bool isSupportPreviewsChat;
@@ -90,7 +88,7 @@ namespace MinecraftClient
         private byte CurrentSlot = 0;
 
         // Entity handling
-        private Dictionary<int, Entity> entities = new();
+        private readonly Dictionary<int, Entity> entities = new();
 
         // server TPS
         private long lastAge = 0;
@@ -98,7 +96,7 @@ namespace MinecraftClient
         private double serverTPS = 0;
         private double averageTPS = 20;
         private const int maxSamples = 5;
-        private List<double> tpsSamples = new(maxSamples);
+        private readonly List<double> tpsSamples = new(maxSamples);
         private double sampleSum = 0;
 
         // ChatBot OnNetworkPacket event
@@ -125,12 +123,12 @@ namespace MinecraftClient
         public int GetGamemode() { return gamemode; }
         public bool GetNetworkPacketCaptureEnabled() { return networkPacketCaptureEnabled; }
         public int GetProtocolVersion() { return protocolversion; }
-        public ILogger GetLogger() { return this.Log; }
+        public ILogger GetLogger() { return Log; }
         public int GetPlayerEntityID() { return playerEntityID; }
         public List<ChatBot> GetLoadedChatBots() { return new List<ChatBot>(bots); }
 
-        TcpClient client;
-        IMinecraftCom handler;
+        readonly TcpClient client;
+        readonly IMinecraftCom handler;
         CancellationTokenSource? cmdprompt = null;
         Tuple<Thread, CancellationTokenSource>? timeoutdetector = null;
 
@@ -152,18 +150,17 @@ namespace MinecraftClient
             inventoryHandlingEnabled = Settings.InventoryHandling;
             entityHandlingEnabled = Settings.EntityHandling;
 
-            bool retry = false;
-            this.sessionid = session.ID;
-            if (!Guid.TryParse(session.PlayerID, out this.uuid))
-                this.uuid = Guid.Empty;
-            this.uuidStr = session.PlayerID;
-            this.username = session.PlayerName;
-            this.host = server_ip;
+            sessionid = session.ID;
+            if (!Guid.TryParse(session.PlayerID, out uuid))
+                uuid = Guid.Empty;
+            uuidStr = session.PlayerID;
+            username = session.PlayerName;
+            host = server_ip;
             this.port = port;
             this.protocolversion = protocolversion;
             this.playerKeyPair = playerKeyPair;
 
-            this.Log = Settings.LogToFile
+            Log = Settings.LogToFile
                 ? new FileLogLogger(Settings.ExpandVars(Settings.LogFile), Settings.PrependTimestamp)
                 : new FilteredLogger();
             Log.DebugEnabled = Settings.DebugMessages;
@@ -183,7 +180,7 @@ namespace MinecraftClient
 
             try
             {
-                client = ProxyHandler.newTcpClient(host, port);
+                client = ProxyHandler.NewTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
                 client.ReceiveTimeout = Settings.Timeout * 1000; // Default: 30 seconds
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
@@ -225,45 +222,47 @@ namespace MinecraftClient
                     else
                     {
                         Log.Error(Translations.Get("error.login_failed"));
-                        retry = true;
+                        goto Retry;
                     }
                 }
                 catch (Exception e)
                 {
                     Log.Error(e.GetType().Name + ": " + e.Message);
                     Log.Error(Translations.Get("error.join"));
-                    retry = true;
+                    goto Retry;
                 }
             }
             catch (SocketException e)
             {
                 Log.Error(e.Message);
                 Log.Error(Translations.Get("error.connect"));
-                retry = true;
+                goto Retry;
             }
 
-            if (retry)
+            return;
+
+        Retry:
+            if (timeoutdetector != null)
             {
-                if (timeoutdetector != null)
-                {
-                    timeoutdetector.Item2.Cancel();
-                    timeoutdetector = null;
-                }
-                if (ReconnectionAttemptsLeft > 0)
-                {
-                    Log.Info(Translations.Get("mcc.reconnect", ReconnectionAttemptsLeft));
-                    Thread.Sleep(5000);
-                    ReconnectionAttemptsLeft--;
-                    Program.Restart();
-                }
-                else if (command == null && Settings.interactiveMode)
-                {
-                    ConsoleInteractive.ConsoleReader.StopReadThread();
-                    ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
-                    ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
-                    Program.HandleFailure();
-                }
+                timeoutdetector.Item2.Cancel();
+                timeoutdetector = null;
             }
+            if (ReconnectionAttemptsLeft > 0)
+            {
+                Log.Info(Translations.Get("mcc.reconnect", ReconnectionAttemptsLeft));
+                Thread.Sleep(5000);
+                ReconnectionAttemptsLeft--;
+                Program.Restart();
+            }
+            else if (command == null && Settings.interactiveMode)
+            {
+                ConsoleInteractive.ConsoleReader.StopReadThread();
+                ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
+                ConsoleInteractive.ConsoleReader.OnKeyInput -= ConsoleIO.AutocompleteHandler;
+                Program.HandleFailure();
+            }
+
+            throw new Exception("Initialization failed.");
         }
 
         /// <summary>
@@ -502,7 +501,7 @@ namespace MinecraftClient
             }
 
             //Process AutoRelog last to make sure other bots can perform their cleanup tasks first (issue #1517)
-            List<ChatBot> onDisconnectBotList = bots.Where(bot => !(bot is AutoRelog)).ToList();
+            List<ChatBot> onDisconnectBotList = bots.Where(bot => bot is not AutoRelog).ToList();
             onDisconnectBotList.AddRange(bots.Where(bot => bot is AutoRelog));
 
             foreach (ChatBot bot in onDisconnectBotList)
@@ -513,7 +512,7 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (!(e is ThreadAbortException))
+                    if (e is not ThreadAbortException)
                     {
                         Log.Warn("OnDisconnect: Got error from " + bot.ToString() + ": " + e.ToString());
                     }
@@ -576,13 +575,13 @@ namespace MinecraftClient
                 {
                     if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
                     {
-                        string response_msg = "";
-                        string command = Settings.internalCmdChar == ' ' ? text : text.Substring(1);
+                        string? response_msg = "";
+                        string command = Settings.internalCmdChar == ' ' ? text : text[1..];
                         if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg, Settings.GetVariables()) && Settings.internalCmdChar == '/')
                         {
                             SendText(text);
                         }
-                        else if (response_msg.Length > 0)
+                        else if (!String.IsNullOrEmpty(response_msg))
                         {
                             Log.Info(response_msg);
                         }
@@ -641,16 +640,16 @@ namespace MinecraftClient
         /// <param name="response_msg">May contain a confirmation or error message after processing the command, or "" otherwise.</param>
         /// <param name="localVars">Local variables passed along with the command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        public bool PerformInternalCommand(string command, ref string response_msg, Dictionary<string, object>? localVars = null)
+        public bool PerformInternalCommand(string command, ref string? response_msg, Dictionary<string, object>? localVars = null)
         {
             /* Process the provided command */
 
             string command_name = command.Split(' ')[0].ToLower();
             if (command_name == "help")
             {
-                if (Command.hasArg(command))
+                if (Command.HasArg(command))
                 {
-                    string help_cmdname = Command.getArgs(command)[0].ToLower();
+                    string help_cmdname = Command.GetArgs(command)[0].ToLower();
                     if (help_cmdname == "help")
                     {
                         response_msg = Translations.Get("icmd.help");
@@ -671,13 +670,13 @@ namespace MinecraftClient
                 {
                     try
                     {
-                        bot.OnInternalCommand(command_name, string.Join(" ", Command.getArgs(command)), response_msg);
+                        bot.OnInternalCommand(command_name, string.Join(" ", Command.GetArgs(command)), response_msg);
                     }
                     catch (Exception e)
                     {
-                        if (!(e is ThreadAbortException))
+                        if (e is not ThreadAbortException)
                         {
-                            Log.Warn(Translations.Get("icmd.error", bot.ToString(), e.ToString()));
+                            Log.Warn(Translations.Get("icmd.error", bot.ToString() ?? string.Empty, e.ToString()));
                         }
                         else throw; //ThreadAbortException should not be caught
                     }
@@ -705,10 +704,10 @@ namespace MinecraftClient
                     {
                         try
                         {
-                            Command cmd = (Command)Activator.CreateInstance(type);
+                            Command cmd = (Command)Activator.CreateInstance(type)!;
                             cmds[Settings.ToLowerIfNeed(cmd.CmdName)] = cmd;
                             cmd_names.Add(Settings.ToLowerIfNeed(cmd.CmdName));
-                            foreach (string alias in cmd.getCMDAliases())
+                            foreach (string alias in cmd.GetCMDAliases())
                                 cmds[Settings.ToLowerIfNeed(alias)] = cmd;
                         }
                         catch (Exception e)
@@ -773,7 +772,7 @@ namespace MinecraftClient
             }
             else
             {
-                TaskWithResult<T> taskWithResult = new TaskWithResult<T>(task);
+                TaskWithResult<T> taskWithResult = new(task);
                 lock (threadTasksLock)
                 {
                     threadTasks.Enqueue(taskWithResult.ExecuteSynchronously);
@@ -813,7 +812,7 @@ namespace MinecraftClient
         {
             get
             {
-                int callingThreadId = Thread.CurrentThread.ManagedThreadId;
+                int callingThreadId = Environment.CurrentManagedThreadId;
                 if (handler != null)
                 {
                     return handler.GetNetMainThreadId() != callingThreadId;
@@ -845,7 +844,7 @@ namespace MinecraftClient
             bots.Add(b);
             if (init)
                 DispatchBotEvent(bot => bot.Initialize(), new ChatBot[] { b });
-            if (this.handler != null)
+            if (handler != null)
                 DispatchBotEvent(bot => bot.AfterGameJoined(), new ChatBot[] { b });
             Settings.SingleCommand = "";
         }
@@ -1109,7 +1108,7 @@ namespace MinecraftClient
         /// <returns>Dictionay of online players, key is UUID, value is Player name</returns>
         public Dictionary<string, string> GetOnlinePlayersWithUUID()
         {
-            Dictionary<string, string> uuid2Player = new Dictionary<string, string>();
+            Dictionary<string, string> uuid2Player = new();
             lock (onlinePlayers)
             {
                 foreach (Guid key in onlinePlayers.Keys)
@@ -1165,7 +1164,7 @@ namespace MinecraftClient
                 else
                 {
                     // Calculate path through pathfinding. Path contains a list of 1-block movement that will be divided into steps
-                    path = Movement.CalculatePath(world, this.location, goal, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
+                    path = Movement.CalculatePath(world, location, goal, allowUnsafe, maxOffset, minOffset, timeout ?? TimeSpan.FromSeconds(5));
                     return path != null;
                 }
             }
@@ -1241,8 +1240,10 @@ namespace MinecraftClient
             }
             else
             {
-                List<ChatBot> bots = new List<ChatBot>();
-                bots.Add(bot);
+                List<ChatBot> bots = new()
+                {
+                    bot
+                };
                 registeredBotPluginChannels[channel] = bots;
                 SendPluginChannelMessage("REGISTER", Encoding.UTF8.GetBytes(channel), true);
             }
@@ -1315,7 +1316,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnHand()
         {
-            return InvokeOnMainThread(() => handler.SendUseItem(0, this.sequenceId));
+            return InvokeOnMainThread(() => handler.SendUseItem(0, sequenceId));
         }
 
         /// <summary>
@@ -1324,7 +1325,7 @@ namespace MinecraftClient
         /// <returns>TRUE if the item was successfully used</returns>
         public bool UseItemOnLeftHand()
         {
-            return InvokeOnMainThread(() => handler.SendUseItem(1, this.sequenceId));
+            return InvokeOnMainThread(() => handler.SendUseItem(1, sequenceId));
         }
 
         /// <summary>
@@ -1437,9 +1438,7 @@ namespace MinecraftClient
                                 else
                                 {
                                     // Swap two items
-                                    var itemTmp = playerInventory.Items[-1];
-                                    playerInventory.Items[-1] = inventory.Items[slotId];
-                                    inventory.Items[slotId] = itemTmp;
+                                    (inventory.Items[slotId], playerInventory.Items[-1]) = (playerInventory.Items[-1], inventory.Items[slotId]);
                                 }
                             }
                             else
@@ -1494,16 +1493,14 @@ namespace MinecraftClient
                                 else
                                 {
                                     // Swap two items
-                                    var itemTmp = playerInventory.Items[-1];
-                                    playerInventory.Items[-1] = inventory.Items[slotId];
-                                    inventory.Items[slotId] = itemTmp;
+                                    (inventory.Items[slotId], playerInventory.Items[-1]) = (playerInventory.Items[-1], inventory.Items[slotId]);
                                 }
                             }
                             else
                             {
                                 // Drop 1 item count from cursor
-                                var itemTmp = playerInventory.Items[-1];
-                                var itemClone = new Item(itemTmp.Type, 1, itemTmp.NBT);
+                                Item itemTmp = playerInventory.Items[-1];
+                                Item itemClone = new(itemTmp.Type, 1, itemTmp.NBT);
                                 inventory.Items[slotId] = itemClone;
                                 playerInventory.Items[-1].Count--;
                             }
@@ -1871,7 +1868,7 @@ namespace MinecraftClient
                                     break;
                                 case ContainerType.Lectern:
                                     return false;
-                                    break;
+                                // break;
                                 case ContainerType.Loom:
                                     if (slotId >= 0 && slotId <= 3)
                                     {
@@ -2213,7 +2210,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully placed</returns>
         public bool PlaceBlock(Location location, Direction blockFace, Hand hand = Hand.MainHand)
         {
-            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, this.sequenceId));
+            return InvokeOnMainThread(() => handler.SendPlayerBlockPlacement((int)hand, location, blockFace, sequenceId));
         }
 
         /// <summary>
@@ -2239,9 +2236,9 @@ namespace MinecraftClient
 
             // Send dig start and dig end, will need to wait for server response to know dig result
             // See https://wiki.vg/How_to_Write_a_Client#Digging for more details
-            return handler.SendPlayerDigging(0, location, blockFace, this.sequenceId)
+            return handler.SendPlayerDigging(0, location, blockFace, sequenceId)
                 && (!swingArms || DoAnimation((int)Hand.MainHand))
-                && handler.SendPlayerDigging(2, location, blockFace, this.sequenceId);
+                && handler.SendPlayerDigging(2, location, blockFace, sequenceId);
         }
 
         /// <summary>
@@ -2364,11 +2361,11 @@ namespace MinecraftClient
                 }
                 catch (Exception e)
                 {
-                    if (!(e is ThreadAbortException))
+                    if (e is not ThreadAbortException)
                     {
                         //Retrieve parent method name to determine which event caused the exception
-                        System.Diagnostics.StackFrame frame = new System.Diagnostics.StackFrame(1);
-                        System.Reflection.MethodBase method = frame.GetMethod();
+                        System.Diagnostics.StackFrame frame = new(1);
+                        System.Reflection.MethodBase method = frame.GetMethod()!;
                         string parentMethodName = method.Name;
 
                         //Display a meaningful error message to help debugging the ChatBot
@@ -2464,7 +2461,7 @@ namespace MinecraftClient
         /// <returns>Current goal of movement. Location.Zero if not set.</returns>
         public Location GetCurrentMovementGoal()
         {
-            return ClientIsMoving() ? Location.Zero : path.Last();
+            return (ClientIsMoving() || path == null) ? Location.Zero : path.Last();
         }
 
         /// <summary>
@@ -2529,8 +2526,8 @@ namespace MinecraftClient
         /// <param name="pitch">Pitch to look at</param>
         public void UpdateLocation(Location location, float yaw, float pitch)
         {
-            this._yaw = yaw;
-            this._pitch = pitch;
+            _yaw = yaw;
+            _pitch = pitch;
             UpdateLocation(location, false);
         }
 
@@ -2586,7 +2583,7 @@ namespace MinecraftClient
                 case Direction.South:
                     break;
                 default:
-                    throw new ArgumentException(Translations.Get("exception.unknown_direction"), "direction");
+                    throw new ArgumentException(Translations.Get("exception.unknown_direction"), nameof(direction));
             }
 
             UpdateLocation(location, yaw, pitch);
@@ -2694,7 +2691,7 @@ namespace MinecraftClient
         /// <param name="inventoryID">Window ID</param>
         /// <param name="slotID">Slot ID</param>
         /// <param name="item">Item (may be null for empty slot)</param>
-        public void OnSetSlot(byte inventoryID, short slotID, Item item, int stateId)
+        public void OnSetSlot(byte inventoryID, short slotID, Item? item, int stateId)
         {
             if (inventories.ContainsKey(inventoryID))
                 inventories[inventoryID].StateID = stateId;
@@ -2751,8 +2748,8 @@ namespace MinecraftClient
             if (player.Name == username)
             {
                 // 1.19+ offline server is possible to return different uuid
-                this.uuid = player.Uuid;
-                this.uuidStr = player.Uuid.ToString().Replace("-", string.Empty);
+                uuid = player.Uuid;
+                uuidStr = player.Uuid.ToString().Replace("-", string.Empty);
             }
 
             lock (onlinePlayers)
@@ -2860,7 +2857,7 @@ namespace MinecraftClient
         /// <param name="entityid"> Entity ID</param>
         /// <param name="slot"> Equipment slot. 0: main hand, 1: off hand, 2–5: armor slot (2: boots, 3: leggings, 4: chestplate, 5: helmet)</param>
         /// <param name="item"> Item)</param>
-        public void OnEntityEquipment(int entityid, int slot, Item item)
+        public void OnEntityEquipment(int entityid, int slot, Item? item)
         {
             if (entities.ContainsKey(entityid))
             {
@@ -2889,7 +2886,7 @@ namespace MinecraftClient
             if (onlinePlayers.ContainsKey(uuid))
             {
                 string playerName = onlinePlayers[uuid].Name;
-                if (playerName == this.username)
+                if (playerName == username)
                     this.gamemode = gamemode;
                 DispatchBotEvent(bot => bot.OnGamemodeUpdate(playerName, uuid, gamemode));
             }
@@ -2944,7 +2941,7 @@ namespace MinecraftClient
         {
             if (entities.ContainsKey(EntityID))
             {
-                Location location = new Location(X, Y, Z);
+                Location location = new(X, Y, Z);
                 entities[EntityID].Location = location;
                 DispatchBotEvent(bot => bot.OnEntityMove(entities[EntityID]));
             }
@@ -3200,13 +3197,13 @@ namespace MinecraftClient
                 }
                 if (metadata.TryGetValue(2, out object? nameObj) && nameObj != null && nameObj.GetType() == typeof(string))
                 {
-                    string name = nameObj.ToString()!;
+                    string name = nameObj.ToString() ?? string.Empty;
                     entity.CustomNameJson = name;
                     entity.CustomName = ChatParser.ParseText(name);
                 }
                 if (metadata.TryGetValue(3, out object? nameVisableObj) && nameVisableObj != null && nameVisableObj.GetType() == typeof(bool))
                 {
-                    entity.IsCustomNameVisible = bool.Parse(nameVisableObj.ToString()!);
+                    entity.IsCustomNameVisible = bool.Parse(nameVisableObj.ToString() ?? string.Empty);
                 }
                 DispatchBotEvent(bot => bot.OnEntityMetadata(entity, metadata));
             }
@@ -3271,7 +3268,7 @@ namespace MinecraftClient
         /// <param name="previewsChat">Indicates if the server previews chat</param>
         public void OnServerDataRecived(bool hasMotd, string motd, bool hasIcon, string iconBase64, bool previewsChat)
         {
-            this.isSupportPreviewsChat = previewsChat;
+            isSupportPreviewsChat = previewsChat;
         }
 
         /// <summary>
@@ -3280,7 +3277,7 @@ namespace MinecraftClient
         /// <param name="previewsChat">Indicates if the server previews chat</param>
         public void OnChatPreviewSettingUpdate(bool previewsChat)
         {
-            this.isSupportPreviewsChat = previewsChat;
+            isSupportPreviewsChat = previewsChat;
         }
 
         /// <summary>

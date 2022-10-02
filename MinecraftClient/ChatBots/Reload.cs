@@ -1,8 +1,4 @@
-using MinecraftClient.Mapping;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MinecraftClient.Commands
 {
@@ -12,7 +8,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "reload"; } }
         public override string CmdDesc { get { return "cmd.reload.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             handler.Log.Info(Translations.TryGet("cmd.reload.started"));
             handler.ReloadSettings();

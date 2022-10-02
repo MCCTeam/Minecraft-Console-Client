@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading;
 
 namespace MinecraftClient
 {
@@ -14,7 +12,7 @@ namespace MinecraftClient
     /// </summary>
     public static class ConsoleIO
     {
-        private static IAutoComplete autocomplete_engine;
+        private static IAutoComplete? autocomplete_engine;
 
         /// <summary>
         /// Reset the IO mechanism and clear all buffers
@@ -77,8 +75,8 @@ namespace MinecraftClient
         public static string ReadLine()
         {
             if (BasicIO)
-                return Console.ReadLine();
-            else 
+                return Console.ReadLine() ?? String.Empty;
+            else
                 return ConsoleInteractive.ConsoleReader.RequestImmediateInput();
         }
 
@@ -87,7 +85,7 @@ namespace MinecraftClient
         /// </summary>
         public static void DebugReadInput()
         {
-            ConsoleKeyInfo k = new ConsoleKeyInfo();
+            ConsoleKeyInfo k;
             while (true)
             {
                 k = Console.ReadKey(true);
@@ -119,14 +117,11 @@ namespace MinecraftClient
         /// </param>
         public static void WriteLineFormatted(string str, bool acceptnewlines = false, bool? displayTimestamp = null)
         {
-            StringBuilder output = new StringBuilder();
-            
+            StringBuilder output = new();
+
             if (!String.IsNullOrEmpty(str))
             {
-                if (displayTimestamp == null)
-                {
-                    displayTimestamp = EnableTimestamps;
-                }
+                displayTimestamp ??= EnableTimestamps;
                 if (displayTimestamp.Value)
                 {
                     int hour = DateTime.Now.Hour, minute = DateTime.Now.Minute, second = DateTime.Now.Second;
@@ -183,10 +178,10 @@ namespace MinecraftClient
         public static void AutocompleteHandler(object? sender, ConsoleKey e)
         {
             if (e != ConsoleKey.Tab) return;
-            
+
             if (autocomplete_engine == null)
                 return;
-            
+
             var buffer = ConsoleInteractive.ConsoleReader.GetBufferContent();
             autocomplete_engine.AutoComplete(buffer.Text[..buffer.CursorPosition]);
         }

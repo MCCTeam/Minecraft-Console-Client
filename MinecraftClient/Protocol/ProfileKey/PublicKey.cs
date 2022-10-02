@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Keys
@@ -18,26 +14,26 @@ namespace MinecraftClient.Protocol.Keys
 
         public PublicKey(string pemKey, string? sig = null, string? sigV2 = null)
         {
-            this.Key = KeyUtils.DecodePemKey(pemKey, "-----BEGIN RSA PUBLIC KEY-----", "-----END RSA PUBLIC KEY-----");
+            Key = KeyUtils.DecodePemKey(pemKey, "-----BEGIN RSA PUBLIC KEY-----", "-----END RSA PUBLIC KEY-----");
 
-            this.rsa = RSA.Create();
-            rsa.ImportSubjectPublicKeyInfo(this.Key, out _);
+            rsa = RSA.Create();
+            rsa.ImportSubjectPublicKeyInfo(Key, out _);
 
             if (!string.IsNullOrEmpty(sig))
-                this.Signature = Convert.FromBase64String(sig);
+                Signature = Convert.FromBase64String(sig);
 
             if (!string.IsNullOrEmpty(sigV2))
-                this.SignatureV2 = Convert.FromBase64String(sigV2!);
+                SignatureV2 = Convert.FromBase64String(sigV2!);
         }
 
         public PublicKey(byte[] key, byte[] signature)
         {
-            this.Key = key;
+            Key = key;
 
-            this.rsa = RSA.Create();
-            rsa.ImportSubjectPublicKeyInfo(this.Key, out _);
+            rsa = RSA.Create();
+            rsa.ImportSubjectPublicKeyInfo(Key, out _);
 
-            this.Signature = signature;
+            Signature = signature;
         }
 
         public bool VerifyData(byte[] data, byte[] signature)

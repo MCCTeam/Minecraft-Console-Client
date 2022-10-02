@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient
@@ -27,7 +26,7 @@ namespace MinecraftClient
         public class JSONData
         {
             public enum DataType { Object, Array, String };
-            private DataType type;
+            private readonly DataType type;
             public DataType Type { get { return type; } }
             public Dictionary<string, JSONData> Properties;
             public List<JSONData> DataArray;
@@ -137,9 +136,20 @@ namespace MinecraftClient
                         break;
 
                     //Number
-                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.': case '-':
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                    case '.':
+                    case '-':
                         data = new JSONData(JSONData.DataType.String);
-                        StringBuilder sb = new StringBuilder();
+                        StringBuilder sb = new();
                         while ((toparse[cursorpos] >= '0' && toparse[cursorpos] <= '9') || toparse[cursorpos] == '.' || toparse[cursorpos] == '-')
                         {
                             sb.Append(toparse[cursorpos]);

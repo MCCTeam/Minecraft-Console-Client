@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Commands
@@ -14,17 +13,16 @@ namespace MinecraftClient.Commands
 
         public override string CmdUsage { get { return "/dropitem <itemtype>"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (!handler.GetInventoryEnabled())
             {
                 return Translations.Get("extra.inventory_required");
             }
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                string arg = getArg(command);
-                ItemType itemType;
-                if (Enum.TryParse(arg, true, out itemType))
+                string arg = GetArg(command);
+                if (Enum.TryParse(arg, true, out ItemType itemType))
                 {
                     int inventoryId;
                     var inventories = handler.GetInventories();

@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
     public class PacketPalette113 : PacketTypePalette
     {
-        private Dictionary<int, PacketTypesIn> typeIn = new Dictionary<int, PacketTypesIn>()
+        private readonly Dictionary<int, PacketTypesIn> typeIn = new()
         {
             { 0x00, PacketTypesIn.SpawnEntity },
             { 0x01, PacketTypesIn.SpawnExperienceOrb },
@@ -97,7 +94,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x55, PacketTypesIn.Tags },
         };
 
-        private Dictionary<int, PacketTypesOut> typeOut = new Dictionary<int, PacketTypesOut>()
+        private readonly Dictionary<int, PacketTypesOut> typeOut = new()
         {
             { 0x00, PacketTypesOut.TeleportConfirm },
             { 0x01, PacketTypesOut.QueryBlockNBT },

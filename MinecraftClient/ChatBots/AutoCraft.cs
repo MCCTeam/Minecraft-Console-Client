@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
+using System.Linq;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 
@@ -16,23 +15,23 @@ namespace MinecraftClient.ChatBots
         private bool craftingFailed = false;
         private int inventoryInUse = -2;
         private int index = 0;
-        private Recipe recipeInUse;
-        private List<ActionStep> actionSteps = new List<ActionStep>();
+        private Recipe? recipeInUse;
+        private readonly List<ActionStep> actionSteps = new();
 
-        private Location tableLocation = new Location();
+        private Location tableLocation = new();
         private bool abortOnFailure = true;
         private int updateDebounceValue = 2;
         private int updateDebounce = 0;
-        private int updateTimeoutValue = 10;
+        private readonly int updateTimeoutValue = 10;
         private int updateTimeout = 0;
         private string timeoutAction = "unspecified";
 
-        private string configPath = @"autocraft\config.ini";
+        private readonly string configPath = @"autocraft\config.ini";
         private string lastRecipe = ""; // Used in parsing recipe config
 
-        private Dictionary<string, Recipe> recipes = new Dictionary<string, Recipe>();
+        private readonly Dictionary<string, Recipe> recipes = new();
 
-        private void resetVar()
+        private void ResetVar()
         {
             craftingFailed = false;
             waitingForTable = false;
@@ -123,9 +122,10 @@ namespace MinecraftClient.ChatBots
             /// Materials needed and their position
             /// </summary>
             /// <remarks>position start with 1, from left to right, top to bottom</remarks>
-            public Dictionary<int, ItemType> Materials;
+            public Dictionary<int, ItemType>? Materials;
 
             public Recipe() { }
+
             public Recipe(Dictionary<int, ItemType> materials, ItemType resultItem, ContainerType type)
             {
                 Materials = materials;
@@ -141,7 +141,7 @@ namespace MinecraftClient.ChatBots
             /// <remarks>so that it can be used in crafting table</remarks>
             public static Recipe ConvertToCraftingTable(Recipe recipe)
             {
-                if (recipe.CraftingAreaType == ContainerType.PlayerInventory)
+                if (recipe.CraftingAreaType == ContainerType.PlayerInventory && recipe.Materials != null)
                 {
                     if (recipe.Materials.ContainsKey(4))
                     {
@@ -202,7 +202,7 @@ namespace MinecraftClient.ChatBots
                             string name = args[1];
                             if (recipes.ContainsKey(name))
                             {
-                                resetVar();
+                                ResetVar();
                                 PrepareCrafting(recipes[name]);
                                 return "";
                             }
@@ -221,32 +221,26 @@ namespace MinecraftClient.ChatBots
             else return GetHelp();
         }
 
-        private string GetHelp()
+        private static string GetHelp()
         {
             return Translations.Get("bot.autoCraft.available_cmd", "load, list, reload, resetcfg, start, stop, help");
         }
 
         private string GetCommandHelp(string cmd)
         {
-            switch (cmd.ToLower())
+            return cmd.ToLower() switch
             {
-                case "load":
-                    return Translations.Get("bot.autocraft.help.load");
-                case "list":
-                    return Translations.Get("bot.autocraft.help.list");
-                case "reload":
-                    return Translations.Get("bot.autocraft.help.reload");
-                case "resetcfg":
-                    return Translations.Get("bot.autocraft.help.resetcfg");
-                case "start":
-                    return Translations.Get("bot.autocraft.help.start");
-                case "stop":
-                    return Translations.Get("bot.autocraft.help.stop");
-                case "help":
-                    return Translations.Get("bot.autocraft.help.help");
-                default:
-                    return GetHelp();
-            }
+#pragma warning disable format // @formatter:off
+                "load"      =>   Translations.Get("bot.autocraft.help.load"),
+                "list"      =>   Translations.Get("bot.autocraft.help.list"),
+                "reload"    =>   Translations.Get("bot.autocraft.help.reload"),
+                "resetcfg"  =>   Translations.Get("bot.autocraft.help.resetcfg"),
+                "start"     =>   Translations.Get("bot.autocraft.help.start"),
+                "stop"      =>   Translations.Get("bot.autocraft.help.stop"),
+                "help"      =>   Translations.Get("bot.autocraft.help.help"),
+                _           =>    GetHelp(),
+#pragma warning restore format // @formatter:on
+            };
         }
 
         #region Config handling
@@ -312,7 +306,7 @@ namespace MinecraftClient.ChatBots
 
             // local variable for use in parsing config
             string section = "";
-            Dictionary<string, Recipe> recipes = new Dictionary<string, Recipe>();
+            Dictionary<string, Recipe> recipes = new();
 
             foreach (string l in content)
             {
@@ -323,20 +317,20 @@ namespace MinecraftClient.ChatBots
                 if (line.Length <= 0)
                     continue;
 
-                if (line[0] == '[' && line[line.Length - 1] == ']')
+                if (line[0] == '[' && line[^1] == ']')
                 {
-                    section = line.Substring(1, line.Length - 2).ToLower();
+                    section = line[1..^1].ToLower();
                     continue;
                 }
 
                 string key = line.Split('=')[0].ToLower();
                 if (!(line.Length > (key.Length + 1)))
                     continue;
-                string value = line.Substring(key.Length + 1);
+                string value = line[(key.Length + 1)..];
                 switch (section)
                 {
-                    case "recipe": parseRecipe(key, value); break;
-                    case "autocraft": parseMain(key, value); break;
+                    case "recipe": ParseRecipe(key, value); break;
+                    case "autocraft": ParseMain(key, value); break;
                 }
             }
 
@@ -358,12 +352,12 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            
+
         }
 
         #region Method for parsing different section of config
 
-        private void parseMain(string key, string value)
+        private void ParseMain(string key, string value)
         {
             switch (key)
             {
@@ -378,7 +372,7 @@ namespace MinecraftClient.ChatBots
                     else throw new Exception(Translations.Get("bot.autoCraft.exception.invalid_table", key));
                     break;
                 case "onfailure":
-                    abortOnFailure = value.ToLower() == "abort" ? true : false;
+                    abortOnFailure = value.ToLower() == "abort";
                     break;
                 case "updatedebounce":
                     updateDebounceValue = Convert.ToInt32(value);
@@ -386,21 +380,21 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private void parseRecipe(string key, string value)
+        private void ParseRecipe(string key, string value)
         {
             if (key.StartsWith("slot"))
             {
-                int slot = Convert.ToInt32(key[key.Length - 1].ToString());
+                int slot = Convert.ToInt32(key[^1].ToString());
                 if (slot > 0 && slot < 10)
                 {
                     if (recipes.ContainsKey(lastRecipe))
                     {
-                        ItemType itemType;
-                        if (Enum.TryParse(value, true, out itemType))
+                        if (Enum.TryParse(value, true, out ItemType itemType))
                         {
-                            if (recipes[lastRecipe].Materials != null && recipes[lastRecipe].Materials.Count > 0)
+                            Dictionary<int, ItemType>? materials = recipes[lastRecipe].Materials;
+                            if (materials != null && materials.Count > 0)
                             {
-                                recipes[lastRecipe].Materials.Add(slot, itemType);
+                                materials.Add(slot, itemType);
                             }
                             else
                             {
@@ -450,8 +444,7 @@ namespace MinecraftClient.ChatBots
                     case "result":
                         if (recipes.ContainsKey(lastRecipe))
                         {
-                            ItemType itemType;
-                            if (Enum.TryParse(value, true, out itemType))
+                            if (Enum.TryParse(value, true, out ItemType itemType))
                             {
                                 recipes[lastRecipe].ResultItem = itemType;
                             }
@@ -487,7 +480,7 @@ namespace MinecraftClient.ChatBots
                     // After table opened, we need to wait for server to update table inventory items
                     waitingForUpdate = true;
                     inventoryInUse = inventoryId;
-                    PrepareCrafting(recipeInUse);
+                    PrepareCrafting(recipeInUse!);
                 }
             }
         }
@@ -562,11 +555,14 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
+            if (recipe.Materials != null)
             {
-                // Steps for moving items from inventory to crafting area
-                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Value));
-                actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Key));
+                foreach (KeyValuePair<int, ItemType> slot in recipe.Materials)
+                {
+                    // Steps for moving items from inventory to crafting area
+                    actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Value));
+                    actionSteps.Add(new ActionStep(ActionType.LeftClick, inventoryInUse, slot.Key));
+                }
             }
             if (actionSteps.Count > 0)
             {
@@ -626,15 +622,15 @@ namespace MinecraftClient.ChatBots
                         else
                         {
                             int[] slots = GetInventories()[step.InventoryID].SearchItem(step.ItemType);
-                            if (slots.Count() > 0)
+                            if (slots.Length > 0)
                             {
                                 int ignoredSlot;
-                                if (recipeInUse.CraftingAreaType == ContainerType.PlayerInventory)
+                                if (recipeInUse!.CraftingAreaType == ContainerType.PlayerInventory)
                                     ignoredSlot = 9;
                                 else
                                     ignoredSlot = 10;
                                 slots = slots.Where(slot => slot >= ignoredSlot).ToArray();
-                                if (slots.Count() > 0)
+                                if (slots.Length > 0)
                                     WindowAction(step.InventoryID, slots[0], WindowActionType.LeftClick);
                                 else
                                     craftingFailed = true;
@@ -688,7 +684,6 @@ namespace MinecraftClient.ChatBots
                 }
                 HandleError();
             }
-            
         }
 
         /// <summary>

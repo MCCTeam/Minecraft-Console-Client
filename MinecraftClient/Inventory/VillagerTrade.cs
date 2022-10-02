@@ -7,7 +7,7 @@
     {
         public Item InputItem1;
         public Item OutputItem;
-        public Item InputItem2;
+        public Item? InputItem2;
         public bool TradeDisabled;
         public int NumberOfTradeUses;
         public int MaximumNumberOfTradeUses;
@@ -16,18 +16,18 @@
         public float PriceMultiplier;
         public int Demand;
 
-        public VillagerTrade(Item inputItem1, Item outputItem, Item inputItem2, bool tradeDisabled, int numberOfTradeUses, int maximumNumberOfTradeUses, int xp, int specialPrice, float priceMultiplier, int demand)
+        public VillagerTrade(Item inputItem1, Item outputItem, Item? inputItem2, bool tradeDisabled, int numberOfTradeUses, int maximumNumberOfTradeUses, int xp, int specialPrice, float priceMultiplier, int demand)
         {
-            this.InputItem1 = inputItem1;
-            this.OutputItem = outputItem;
-            this.InputItem2 = inputItem2;
-            this.TradeDisabled = tradeDisabled;
-            this.NumberOfTradeUses = numberOfTradeUses;
-            this.MaximumNumberOfTradeUses = maximumNumberOfTradeUses;
-            this.Xp = xp;
-            this.SpecialPrice = specialPrice;
-            this.PriceMultiplier = priceMultiplier;
-            this.Demand = demand;
+            InputItem1 = inputItem1;
+            OutputItem = outputItem;
+            InputItem2 = inputItem2;
+            TradeDisabled = tradeDisabled;
+            NumberOfTradeUses = numberOfTradeUses;
+            MaximumNumberOfTradeUses = maximumNumberOfTradeUses;
+            Xp = xp;
+            SpecialPrice = specialPrice;
+            PriceMultiplier = priceMultiplier;
+            Demand = demand;
         }
     }
 }

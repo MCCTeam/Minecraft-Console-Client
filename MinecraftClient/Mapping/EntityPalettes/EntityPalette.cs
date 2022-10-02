@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace MinecraftClient.Mapping.EntityPalettes
 {
@@ -17,7 +14,7 @@ namespace MinecraftClient.Mapping.EntityPalettes
         /// Get mapping dictionary for pre-1.14 non-living entities.
         /// </summary>
         /// <returns>Palette dictionary for non-living entities (pre-1.14)</returns>
-        protected virtual Dictionary<int, EntityType> GetDictNonLiving()
+        protected virtual Dictionary<int, EntityType>? GetDictNonLiving()
         {
             return null;
         }
@@ -30,7 +27,7 @@ namespace MinecraftClient.Mapping.EntityPalettes
         public EntityType FromId(int id, bool living)
         {
             Dictionary<int, EntityType> entityTypes = GetDict();
-            Dictionary<int, EntityType> entityTypesNonLiving = GetDictNonLiving();
+            Dictionary<int, EntityType>? entityTypesNonLiving = GetDictNonLiving();
 
             if (entityTypesNonLiving != null && !living)
             {

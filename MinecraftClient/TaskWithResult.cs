@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace MinecraftClient
@@ -12,12 +9,12 @@ namespace MinecraftClient
     /// <typeparam name="T">Type of the return value</typeparam>
     public class TaskWithResult<T>
     {
-        private AutoResetEvent resultEvent = new AutoResetEvent(false);
-        private Func<T> task;
-        private T result = default(T);
-        private Exception exception = null;
+        private readonly AutoResetEvent resultEvent = new(false);
+        private readonly Func<T> task;
+        private T? result = default;
+        private Exception? exception = null;
         private bool taskRun = false;
-        private object taskRunLock = new object();
+        private readonly object taskRunLock = new();
 
         /// <summary>
         /// Create a new asynchronous task with return value
@@ -48,17 +45,16 @@ namespace MinecraftClient
             get
             {
                 if (taskRun)
-                {
-                    return result;
-                }
-                else throw new InvalidOperationException("Attempting to retrieve the result of an unfinished task");
+                    return result!;
+                else
+                    throw new InvalidOperationException("Attempting to retrieve the result of an unfinished task");
             }
         }
 
         /// <summary>
         /// Get the exception thrown by the inner delegate, if any
         /// </summary>
-        public Exception Exception
+        public Exception? Exception
         {
             get
             {
@@ -120,7 +116,7 @@ namespace MinecraftClient
             if (exception != null)
                 throw exception;
 
-            return result;
+            return result!;
         }
     }
 }

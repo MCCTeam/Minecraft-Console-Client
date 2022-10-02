@@ -4,7 +4,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
 {
     public class PacketPalette1192 : PacketTypePalette
     {
-        private Dictionary<int, PacketTypesIn> typeIn = new Dictionary<int, PacketTypesIn>()
+        private readonly Dictionary<int, PacketTypesIn> typeIn = new()
         {
             { 0x00, PacketTypesIn.SpawnEntity },                // Changed in 1.19 (Wiki name: Spawn Entity) - DONE
             { 0x01, PacketTypesIn.SpawnExperienceOrb },         // (Wiki name: Spawn Exeprience Orb)
@@ -116,7 +116,7 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             { 0x6B, PacketTypesIn.Tags },                       // (Wiki name: Update Tags)
         };
 
-        private Dictionary<int, PacketTypesOut> typeOut = new Dictionary<int, PacketTypesOut>()
+        private readonly Dictionary<int, PacketTypesOut> typeOut = new()
         {
             { 0x00, PacketTypesOut.TeleportConfirm },             // (Wiki name: Confirm Teleportation)
             { 0x01, PacketTypesOut.QueryBlockNBT },               // (Wiki name: Query Block Entity Tag)

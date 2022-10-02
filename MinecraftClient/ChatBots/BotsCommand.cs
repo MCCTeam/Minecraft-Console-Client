@@ -1,7 +1,5 @@
-using MinecraftClient.Mapping;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient.Commands
@@ -12,11 +10,11 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "bots [list|unload <bot name|all>]"; } }
         public override string CmdDesc { get { return "cmd.bots.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
 
                 if (args.Length == 1)
                 {

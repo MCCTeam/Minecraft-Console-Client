@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MinecraftClient
 {
@@ -30,14 +28,15 @@ namespace MinecraftClient
         /// <param name="action">Action to run</param>
         /// <param name="timeout">Maximum timeout</param>
         /// <returns>True if the action finished whithout timing out</returns>
-        public static bool Perform(Action action, TimeSpan timeout) {
-            Thread thread = new Thread(new ThreadStart(action));
+        public static bool Perform(Action action, TimeSpan timeout)
+        {
+            Thread thread = new(new ThreadStart(action));
             thread.Start();
+
             bool success = thread.Join(timeout);
             if (!success)
                 thread.Interrupt();
 
-            thread = null;
             return success;
         }
     }

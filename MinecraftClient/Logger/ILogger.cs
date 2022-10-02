@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace MinecraftClient.Logger
+﻿namespace MinecraftClient.Logger
 {
     public interface ILogger
     {

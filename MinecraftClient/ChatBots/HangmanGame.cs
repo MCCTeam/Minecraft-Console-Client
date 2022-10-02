@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient.ChatBots
@@ -12,14 +10,14 @@ namespace MinecraftClient.ChatBots
     public class HangmanGame : ChatBot
     {
         private int vie = 0;
-        private int vie_param = 10;
+        private readonly int vie_param = 10;
         private int compteur = 0;
-        private int compteur_param = 3000; //5 minutes
+        private readonly int compteur_param = 3000; //5 minutes
         private bool running = false;
         private bool[] discovered;
         private string word = "";
         private string letters = "";
-        private bool English;
+        private readonly bool English;
 
         /// <summary>
         /// Le jeu du Pendu / Hangman Game
@@ -29,6 +27,7 @@ namespace MinecraftClient.ChatBots
         public HangmanGame(bool english)
         {
             English = english;
+            discovered = Array.Empty<bool>();
         }
 
         public override void Update()
@@ -61,7 +60,7 @@ namespace MinecraftClient.ChatBots
                     switch (message)
                     {
                         case "start":
-                            start();
+                            Start();
                             break;
                         case "stop":
                             running = false;
@@ -108,11 +107,11 @@ namespace MinecraftClient.ChatBots
 
                                 if (running)
                                 {
-                                    SendText(English ? ("Mysterious word: " + word_cached + " (lives : " + vie + ")")
-                                    : ("Mot mystère : " + word_cached + " (vie : " + vie + ")"));
+                                    SendText(English ? ("Mysterious word: " + WordCached + " (lives : " + vie + ")")
+                                    : ("Mot mystère : " + WordCached + " (vie : " + vie + ")"));
                                 }
 
-                                if (winner)
+                                if (Winner)
                                 {
                                     SendText(English ? ("Congrats, " + username + '!') : ("Félicitations, " + username + " !"));
                                     running = false;
@@ -124,22 +123,22 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private void start()
+        private void Start()
         {
             vie = vie_param;
             running = true;
             letters = "";
-            word = chooseword();
+            word = Chooseword();
             compteur = compteur_param;
             discovered = new bool[word.Length];
 
             SendText(English ? "Hangman v1.0 - By ORelio" : "Pendu v1.0 - Par ORelio");
-            SendText(English ? ("Mysterious word: " + word_cached + " (lives : " + vie + ")")
-            : ("Mot mystère : " + word_cached + " (vie : " + vie + ")"));
+            SendText(English ? ("Mysterious word: " + WordCached + " (lives : " + vie + ")")
+            : ("Mot mystère : " + WordCached + " (vie : " + vie + ")"));
             SendText(English ? ("Try some letters ... :)") : ("Proposez une lettre ... :)"));
         }
 
-        private string chooseword()
+        private string Chooseword()
         {
             if (System.IO.File.Exists(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR))
             {
@@ -153,7 +152,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private string word_cached
+        private string WordCached
         {
             get
             {
@@ -170,7 +169,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private bool winner
+        private bool Winner
         {
             get
             {

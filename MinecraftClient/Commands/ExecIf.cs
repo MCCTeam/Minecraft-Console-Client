@@ -11,11 +11,11 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "execif <condition/expression> ---> <command>"; } }
         public override string CmdDesc { get { return "cmd.execif.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                string commandsString = getArg(command);
+                string commandsString = GetArg(command);
 
                 if (!commandsString.Contains("--->"))
                     return GetCmdDescTranslated();
@@ -41,44 +41,41 @@ namespace MinecraftClient.Commands
 
                     var result = interpreter.Eval<bool>(expressionText);
 
-                    if (result != null)
+                    bool shouldExec = result;
+
+                    /*if (result is bool)
+                        shouldExec = (bool)result;
+                    else if (result is string)
+                        shouldExec = !string.IsNullOrEmpty((string)result) && ((string)result).Trim().Contains("true", StringComparison.OrdinalIgnoreCase);
+                    else if (result is int)
+                        shouldExec = (int)result > 0;
+                    else if (result is double)
+                        shouldExec = (double)result > 0;
+                    else if (result is float)
+                        shouldExec = (float)result > 0;
+                    else if (result is Int16)
+                        shouldExec = (Int16)result > 0;
+                    else if (result is Int32)
+                        shouldExec = (Int32)result > 0;
+                    else if (result is Int64)
+                        shouldExec = (Int64)result > 0;
+                    */
+
+                    handler.Log.Debug("[Execif] Result Type: " + result.GetType().Name);
+
+                    if (shouldExec)
                     {
-                        bool shouldExec = result;
+                        string? output = "";
+                        handler.PerformInternalCommand(resultCommand, ref output);
 
-                        /*if (result is bool)
-                            shouldExec = (bool)result;
-                        else if (result is string)
-                            shouldExec = !string.IsNullOrEmpty((string)result) && ((string)result).Trim().Contains("true", StringComparison.OrdinalIgnoreCase);
-                        else if (result is int)
-                            shouldExec = (int)result > 0;
-                        else if (result is double)
-                            shouldExec = (double)result > 0;
-                        else if (result is float)
-                            shouldExec = (float)result > 0;
-                        else if (result is Int16)
-                            shouldExec = (Int16)result > 0;
-                        else if (result is Int32)
-                            shouldExec = (Int32)result > 0;
-                        else if (result is Int64)
-                            shouldExec = (Int64)result > 0;
-                        */
-
-                        handler.Log.Debug("[Execif] Result Type: " + result.GetType().Name);
-
-                        if (shouldExec)
-                        {
-                            string output = "";
-                            handler.PerformInternalCommand(resultCommand, ref output);
-
-                            if (string.IsNullOrEmpty(output))
-                                handler.Log.Debug(Translations.TryGet("cmd.execif.executed_no_output", expressionText, resultCommand));
-                            else handler.Log.Debug(Translations.TryGet("cmd.execif.executed", expressionText, resultCommand, output));
-
-                            return "";
-                        }
+                        if (string.IsNullOrEmpty(output))
+                            handler.Log.Debug(Translations.TryGet("cmd.execif.executed_no_output", expressionText, resultCommand));
+                        else handler.Log.Debug(Translations.TryGet("cmd.execif.executed", expressionText, resultCommand, output));
 
                         return "";
                     }
+
+                    return "";
                 }
                 catch (Exception e)
                 {
@@ -86,8 +83,6 @@ namespace MinecraftClient.Commands
                     handler.Log.Error(Translations.TryGet("cmd.execif.error", e.Message));
                     return "";
                 }
-
-                return GetCmdDescTranslated();
             }
 
             return GetCmdDescTranslated();

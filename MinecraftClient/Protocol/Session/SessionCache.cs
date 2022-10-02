@@ -1,5 +1,4 @@
-﻿using MinecraftClient.Protocol;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -23,11 +22,11 @@ namespace MinecraftClient.Protocol.Session
             "launcher_profiles.json"
         );
 
-        private static FileMonitor cachemonitor;
-        private static Dictionary<string, SessionToken> sessions = new Dictionary<string, SessionToken>();
-        private static Timer updatetimer = new Timer(100);
-        private static List<KeyValuePair<string, SessionToken>> pendingadds = new List<KeyValuePair<string, SessionToken>>();
-        private static BinaryFormatter formatter = new BinaryFormatter();
+        private static FileMonitor? cachemonitor;
+        private static readonly Dictionary<string, SessionToken> sessions = new();
+        private static readonly Timer updatetimer = new(100);
+        private static readonly List<KeyValuePair<string, SessionToken>> pendingadds = new();
+        private static readonly BinaryFormatter formatter = new();
 
         /// <summary>
         /// Retrieve whether SessionCache contains a session for the given login.
@@ -102,12 +101,12 @@ namespace MinecraftClient.Protocol.Session
         /// </summary>
         /// <param name="sender">Sender</param>
         /// <param name="e">Event data</param>
-        private static void HandlePending(object sender, ElapsedEventArgs e)
+        private static void HandlePending(object? sender, ElapsedEventArgs e)
         {
             updatetimer.Stop();
             LoadFromDisk();
 
-            foreach(KeyValuePair<string, SessionToken> pending in pendingadds.ToArray())
+            foreach (KeyValuePair<string, SessionToken> pending in pendingadds.ToArray())
             {
                 Store(pending.Key, pending.Value);
                 pendingadds.Remove(pending);
@@ -125,7 +124,7 @@ namespace MinecraftClient.Protocol.Session
             {
                 if (Settings.DebugMessages)
                     ConsoleIO.WriteLineFormatted(Translations.Get("cache.loading", Path.GetFileName(SessionCacheFileMinecraft)));
-                Json.JSONData mcSession = new Json.JSONData(Json.JSONData.DataType.String);
+                Json.JSONData mcSession = new(Json.JSONData.DataType.String);
                 try
                 {
                     mcSession = Json.ParseJson(File.ReadAllText(SessionCacheFileMinecraft));
@@ -135,12 +134,11 @@ namespace MinecraftClient.Protocol.Session
                     && mcSession.Properties.ContainsKey("clientToken")
                     && mcSession.Properties.ContainsKey("authenticationDatabase"))
                 {
-                    Guid temp;
                     string clientID = mcSession.Properties["clientToken"].StringValue.Replace("-", "");
                     Dictionary<string, Json.JSONData> sessionItems = mcSession.Properties["authenticationDatabase"].Properties;
                     foreach (string key in sessionItems.Keys)
                     {
-                        if (Guid.TryParseExact(key, "N", out temp))
+                        if (Guid.TryParseExact(key, "N", out Guid temp))
                         {
                             Dictionary<string, Json.JSONData> sessionItem = sessionItems[key].Properties;
                             if (sessionItem.ContainsKey("displayName")
@@ -176,15 +174,16 @@ namespace MinecraftClient.Protocol.Session
 
                 try
                 {
-                    using (FileStream fs = new FileStream(SessionCacheFileSerialized, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using FileStream fs = new(SessionCacheFileSerialized, FileMode.Open, FileAccess.Read, FileShare.Read);
+#pragma warning disable SYSLIB0011 // BinaryFormatter.Deserialize() is obsolete
+                    // Possible risk of information disclosure or remote code execution. The impact of this vulnerability is limited to the user side only.
+                    Dictionary<string, SessionToken> sessionsTemp = (Dictionary<string, SessionToken>)formatter.Deserialize(fs);
+#pragma warning restore SYSLIB0011 // BinaryFormatter.Deserialize() is obsolete
+                    foreach (KeyValuePair<string, SessionToken> item in sessionsTemp)
                     {
-                        Dictionary<string, SessionToken> sessionsTemp = (Dictionary<string, SessionToken>)formatter.Deserialize(fs);
-                        foreach (KeyValuePair<string, SessionToken> item in sessionsTemp)
-                        {
-                            if (Settings.DebugMessages)
-                                ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", item.Key, item.Value.ID));
-                            sessions[item.Key] = item.Value;
-                        }
+                        if (Settings.DebugMessages)
+                            ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", item.Key, item.Value.ID));
+                        sessions[item.Key] = item.Value;
                     }
                 }
                 catch (IOException ex)
@@ -250,9 +249,11 @@ namespace MinecraftClient.Protocol.Session
             if (Settings.DebugMessages)
                 Translations.WriteLineFormatted("cache.saving");
 
-            List<string> sessionCacheLines = new List<string>();
-            sessionCacheLines.Add("# Generated by MCC v" + Program.Version + " - Keep it secret & Edit at own risk!");
-            sessionCacheLines.Add("# Login=SessionID,PlayerName,UUID,ClientID,RefreshToken,ServerIDhash,ServerPublicKey");
+            List<string> sessionCacheLines = new()
+            {
+                "# Generated by MCC v" + Program.Version + " - Keep it secret & Edit at own risk!",
+                "# Login=SessionID,PlayerName,UUID,ClientID,RefreshToken,ServerIDhash,ServerPublicKey"
+            };
             foreach (KeyValuePair<string, SessionToken> entry in sessions)
                 sessionCacheLines.Add(entry.Key + '=' + entry.Value.ToString());
 

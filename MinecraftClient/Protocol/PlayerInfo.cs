@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
 
@@ -76,12 +73,12 @@ namespace MinecraftClient.Protocol
 
         public bool IsMessageChainLegal()
         {
-            return this.lastMessageVerified;
+            return lastMessageVerified;
         }
 
         public bool IsKeyExpired()
         {
-            return DateTime.Now.ToUniversalTime() > this.KeyExpiresAt;
+            return DateTime.Now.ToUniversalTime() > KeyExpiresAt;
         }
 
         /// <summary>
@@ -119,16 +116,16 @@ namespace MinecraftClient.Protocol
         /// <returns>Is this message chain vaild</returns>
         public bool VerifyMessage(string message, long timestamp, long salt, ref byte[] signature, ref byte[]? precedingSignature, LastSeenMessageList lastSeenMessages)
         {
-            if (this.lastMessageVerified == false)
+            if (lastMessageVerified == false)
                 return false;
             if (PublicKey == null || IsKeyExpired() || (this.precedingSignature != null && precedingSignature == null))
             {
-                this.lastMessageVerified = false;
+                lastMessageVerified = false;
                 return false;
             }
             if (this.precedingSignature != null && !this.precedingSignature.SequenceEqual(precedingSignature!))
             {
-                this.lastMessageVerified = false;
+                lastMessageVerified = false;
                 return false;
             }
 
@@ -139,7 +136,7 @@ namespace MinecraftClient.Protocol
 
             bool res = PublicKey.VerifyMessage(message, Uuid, timeOffset, ref saltByte, ref signature, ref precedingSignature, lastSeenMessages);
 
-            this.lastMessageVerified = res;
+            lastMessageVerified = res;
             this.precedingSignature = signature;
 
             return res;
@@ -154,22 +151,22 @@ namespace MinecraftClient.Protocol
         /// <returns>Is this message chain vaild</returns>
         public bool VerifyMessageHead(ref byte[]? precedingSignature, ref byte[] headerSignature, ref byte[] bodyDigest)
         {
-            if (this.lastMessageVerified == false)
+            if (lastMessageVerified == false)
                 return false;
             if (PublicKey == null || IsKeyExpired() || (this.precedingSignature != null && precedingSignature == null))
             {
-                this.lastMessageVerified = false;
+                lastMessageVerified = false;
                 return false;
             }
             if (this.precedingSignature != null && !this.precedingSignature.SequenceEqual(precedingSignature!))
             {
-                this.lastMessageVerified = false;
+                lastMessageVerified = false;
                 return false;
             }
 
             bool res = PublicKey.VerifyHeader(Uuid, ref bodyDigest, ref headerSignature, ref precedingSignature);
 
-            this.lastMessageVerified = res;
+            lastMessageVerified = res;
             this.precedingSignature = headerSignature;
 
             return res;

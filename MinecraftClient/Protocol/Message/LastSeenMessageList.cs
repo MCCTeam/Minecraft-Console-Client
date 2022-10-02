@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinecraftClient.Protocol.Message
 {
@@ -11,7 +8,7 @@ namespace MinecraftClient.Protocol.Message
     /// </summary>
     public class LastSeenMessageList
     {
-        public static readonly LastSeenMessageList EMPTY = new(new Entry[0]);
+        public static readonly LastSeenMessageList EMPTY = new(Array.Empty<Entry>());
         public static readonly int MAX_ENTRIES = 5;
 
         public Entry[] entries;
@@ -103,7 +100,7 @@ namespace MinecraftClient.Protocol.Message
                 entries[size++] = lastEntry;
 
             LastSeenMessageList.Entry[] msgList = new LastSeenMessageList.Entry[size];
-            for (int i = 0; i < size; ++i) 
+            for (int i = 0; i < size; ++i)
                 msgList[i] = entries[i];
             lastSeenMessages = new LastSeenMessageList(msgList);
         }

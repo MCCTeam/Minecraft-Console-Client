@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
@@ -12,12 +10,12 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "dig <x> <y> <z>"; } }
         public override string CmdDesc { get { return "cmd.dig.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (!handler.GetTerrainEnabled())
                 return Translations.Get("extra.terrainandmovement_required");
 
-            string[] args = getArgs(command);
+            string[] args = GetArgs(command);
             if (args.Length == 0)
             {
                 (bool hasBlock, Location blockLoc, Block block) = RaycastHelper.RaycastBlock(handler, 4.5, false);
