@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MinecraftClient.Commands
 {
@@ -11,17 +9,17 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "changeslot <1-9>"; } }
         public override string CmdDesc { get { return "cmd.changeSlot.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (!handler.GetInventoryEnabled())
                 return Translations.Get("extra.inventory_required");
 
-            if (hasArg(command))
+            if (HasArg(command))
             {
                 short slot;
                 try
                 {
-                    slot = Convert.ToInt16(getArg(command));
+                    slot = Convert.ToInt16(GetArg(command));
                 }
                 catch (FormatException)
                 {
@@ -29,9 +27,9 @@ namespace MinecraftClient.Commands
                 }
                 if (slot >= 1 && slot <= 9)
                 {
-                    if (handler.ChangeSlot(slot-=1))
+                    if (handler.ChangeSlot(slot -= 1))
                     {
-                        return Translations.Get("cmd.changeSlot.changed", (slot+=1));
+                        return Translations.Get("cmd.changeSlot.changed", (slot += 1));
                     }
                     else
                     {

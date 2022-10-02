@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinecraftClient.Mapping
 {
@@ -120,7 +117,7 @@ namespace MinecraftClient.Mapping
         /// </summary>
         public Dimension()
         {
-            this.Name = "minecraft:overworld";
+            Name = "minecraft:overworld";
         }
 
         /// <summary>
@@ -130,73 +127,66 @@ namespace MinecraftClient.Mapping
         /// <param name="nbt">The dimension type (NBT Tag Compound)</param>
         public Dimension(string name, Dictionary<string, object> nbt)
         {
-            if (name == null)
-                throw new ArgumentNullException("name");
-            if (nbt == null)
-                throw new ArgumentNullException("nbt Data");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
 
-            this.Name = name;
+            if (nbt == null)
+                throw new ArgumentNullException(nameof(nbt));
 
             if (nbt.ContainsKey("piglin_safe"))
-                this.piglinSafe = 1 == (byte)nbt["piglin_safe"];
+                piglinSafe = Convert.ToBoolean(nbt["piglin_safe"]);
             if (nbt.ContainsKey("monster_spawn_light_level"))
             {
                 try
                 {
                     var monsterSpawnLightLevelObj = nbt["monster_spawn_light_level"];
-                    if (monsterSpawnLightLevelObj.GetType() == typeof(int))
-                        this.monsterSpawnMinLightLevel = this.monsterSpawnMaxLightLevel = (int)monsterSpawnLightLevelObj;
-                    else
+                    try 
+                    { 
+                        monsterSpawnMinLightLevel = monsterSpawnMaxLightLevel = Convert.ToInt32(monsterSpawnLightLevelObj); 
+                    }
+                    catch (Exception)
                     {
                         var inclusive = (Dictionary<string, object>)(((Dictionary<string, object>)monsterSpawnLightLevelObj)["value"]);
-                        this.monsterSpawnMinLightLevel = (int)inclusive["min_inclusive"];
-                        this.monsterSpawnMaxLightLevel = (int)inclusive["max_inclusive"];
+                        monsterSpawnMinLightLevel = Convert.ToInt32(inclusive["min_inclusive"]);
+                        monsterSpawnMaxLightLevel = Convert.ToInt32(inclusive["max_inclusive"]);
                     }
 
                 }
                 catch (KeyNotFoundException) { }
             }
             if (nbt.ContainsKey("monster_spawn_block_light_limit"))
-                this.monsterSpawnBlockLightLimit = (int)nbt["monster_spawn_block_light_limit"];
+                monsterSpawnBlockLightLimit = Convert.ToInt32(nbt["monster_spawn_block_light_limit"]);
             if (nbt.ContainsKey("natural"))
-                this.natural = 1 == (byte)nbt["natural"];
+                natural = Convert.ToBoolean(nbt["natural"]);
             if (nbt.ContainsKey("ambient_light"))
-                this.ambientLight = (float)nbt["ambient_light"];
+                ambientLight = (float)Convert.ToDouble(nbt["ambient_light"]);
             if (nbt.ContainsKey("fixed_time"))
-                this.fixedTime = (long)nbt["fixed_time"];
+                fixedTime = Convert.ToInt64(nbt["fixed_time"]);
             if (nbt.ContainsKey("infiniburn"))
-                this.infiniburn = (string)nbt["infiniburn"];
+                infiniburn = Convert.ToString(nbt["infiniburn"]) ?? string.Empty;
             if (nbt.ContainsKey("respawn_anchor_works"))
-                this.respawnAnchorWorks = 1 == (byte)nbt["respawn_anchor_works"];
+                respawnAnchorWorks = Convert.ToBoolean(nbt["respawn_anchor_works"]);
             if (nbt.ContainsKey("has_skylight"))
-                this.hasSkylight = 1 == (byte)nbt["has_skylight"];
+                hasSkylight = Convert.ToBoolean(nbt["has_skylight"]);
             if (nbt.ContainsKey("bed_works"))
-                this.bedWorks = 1 == (byte)nbt["bed_works"];
+                bedWorks = Convert.ToBoolean(nbt["bed_works"]);
             if (nbt.ContainsKey("effects"))
-                this.effects = (string)nbt["effects"];
+                effects = Convert.ToString(nbt["effects"]) ?? string.Empty;
             if (nbt.ContainsKey("has_raids"))
-                this.hasRaids = 1 == (byte)nbt["has_raids"];
+                hasRaids = Convert.ToBoolean(nbt["has_raids"]);
             if (nbt.ContainsKey("min_y"))
-                this.minY = (int)nbt["min_y"];
+                minY = Convert.ToInt32(nbt["min_y"]);
             if (nbt.ContainsKey("height"))
-                this.height = (int)nbt["height"];
+                height = Convert.ToInt32(nbt["height"]);
             if (nbt.ContainsKey("min_y") && nbt.ContainsKey("height"))
-                this.maxY = this.minY + this.height;
+                maxY = minY + height;
             if (nbt.ContainsKey("logical_height") && nbt["logical_height"].GetType() != typeof(byte))
-                this.logicalHeight = (int)nbt["logical_height"];
+                logicalHeight = Convert.ToInt32(nbt["logical_height"]);
             if (nbt.ContainsKey("coordinate_scale"))
-            {
-                var coordinateScaleObj = nbt["coordinate_scale"];
-                if (coordinateScaleObj.GetType() == typeof(float))
-                    this.coordinateScale = (float)coordinateScaleObj;
-                else
-                    this.coordinateScale = (double)coordinateScaleObj;
-            }
+                coordinateScale = Convert.ToDouble(nbt["coordinate_scale"]);
             if (nbt.ContainsKey("ultrawarm"))
-                this.ultrawarm = 1 == (byte)nbt["ultrawarm"];
+                ultrawarm = Convert.ToBoolean(nbt["ultrawarm"]);
             if (nbt.ContainsKey("has_ceiling"))
-                this.hasCeiling = 1 == (byte)nbt["has_ceiling"];
+                hasCeiling = Convert.ToBoolean(nbt["has_ceiling"]);
         }
-
     }
 }

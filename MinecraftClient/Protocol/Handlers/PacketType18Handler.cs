@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
 {
     public class PacketTypeHandler
     {
-        private int protocol;
-        private bool forgeEnabled = false;
+        private readonly int protocol;
+        private readonly bool forgeEnabled = false;
 
         /// <summary>
         /// Initialize the handler
@@ -41,7 +37,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns></returns>
         public PacketTypePalette GetTypeHandler()
         {
-            return GetTypeHandler(this.protocol);
+            return GetTypeHandler(protocol);
         }
         /// <summary>
         /// Get the packet type palette
@@ -81,7 +77,7 @@ namespace MinecraftClient.Protocol.Handlers
             else
                 p = new PacketPalette1192();
 
-            p.SetForgeEnabled(this.forgeEnabled);
+            p.SetForgeEnabled(forgeEnabled);
             return p;
         }
     }

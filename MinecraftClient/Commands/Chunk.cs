@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using MinecraftClient.Mapping;
 
@@ -14,9 +13,9 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
                 if (args.Length > 0)
                 {
                     if (args[0] == "status")
@@ -29,7 +28,7 @@ namespace MinecraftClient.Commands
 
                         StringBuilder sb = new();
 
-                        sb.Append(getChunkLoadingStatus(handler.GetWorld()));
+                        sb.Append(World.GetChunkLoadingStatus(handler.GetWorld()));
                         sb.Append('\n');
 
                         sb.Append(String.Format("Current location：{0}, chunk: ({1}, {2}).\n", current, current.ChunkX, current.ChunkZ));
@@ -135,7 +134,7 @@ namespace MinecraftClient.Commands
 
 
                         // \ud83d\udd33: 🔳, \ud83d\udfe8: 🟨, \ud83d\udfe9: 🟩, \u25A1: □, \u25A3: ▣, \u25A0: ■
-                        string[] chunkStatusStr = Settings.EnableEmoji ? 
+                        string[] chunkStatusStr = Settings.EnableEmoji ?
                             new string[] { "\ud83d\udd33", "\ud83d\udfe8", "\ud83d\udfe9" } : new string[] { "\u25A1", "\u25A3", "\u25A0" };
 
                         // Output
@@ -177,7 +176,7 @@ namespace MinecraftClient.Commands
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
                             if (chunkColumn != null)
                                 chunkColumn.FullyLoaded = false;
-                            return (chunkColumn == null) ? "Fail: chunk dosen't exist!" : 
+                            return (chunkColumn == null) ? "Fail: chunk dosen't exist!" :
                                 String.Format("Successfully marked chunk ({0}, {1}) as loading.", chunkX, chunkZ);
                         }
                         else
@@ -194,7 +193,7 @@ namespace MinecraftClient.Commands
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
                             if (chunkColumn != null)
                                 chunkColumn.FullyLoaded = true;
-                            return (chunkColumn == null) ? "Fail: chunk dosen't exist!" : 
+                            return (chunkColumn == null) ? "Fail: chunk dosen't exist!" :
                                 String.Format("Successfully marked chunk ({0}, {1}) as loaded.", chunkX, chunkZ);
                         }
                         else
@@ -220,11 +219,11 @@ namespace MinecraftClient.Commands
                 else
                     return GetCmdDescTranslated();
             }
-            else 
+            else
                 return GetCmdDescTranslated();
         }
 
-        private Tuple<int, int>? ParseChunkPos(string[] args)
+        private static Tuple<int, int>? ParseChunkPos(string[] args)
         {
             try
             {
@@ -248,20 +247,6 @@ namespace MinecraftClient.Commands
             {
                 return null;
             }
-        }
-
-        private string getChunkLoadingStatus(World world)
-        {
-            double chunkLoadedRatio;
-            if (world.chunkCnt == 0)
-                chunkLoadedRatio = 0;
-            else
-                chunkLoadedRatio = (world.chunkCnt - world.chunkLoadNotCompleted) / (double)world.chunkCnt;
-
-            string status = Translations.Get("cmd.move.chunk_loading_status",
-                    chunkLoadedRatio, world.chunkCnt - world.chunkLoadNotCompleted, world.chunkCnt);
-
-            return status;
         }
     }
 }

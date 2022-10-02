@@ -1,8 +1,5 @@
-using MinecraftClient.Mapping;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
 {
@@ -16,9 +13,9 @@ namespace MinecraftClient.Commands
         {
             if (!handler.GetTerrainEnabled())
                 return Translations.Get("extra.terrainandmovement_required");
-            else if (hasArg(command))
+            else if (HasArg(command))
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
                 if (args.Length >= 3)
                 {
                     Location block = Location.Parse(handler.GetCurrentLocation(), args[0], args[1], args[2]).ToFloor();

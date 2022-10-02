@@ -1,5 +1,5 @@
-﻿using MinecraftClient.Inventory;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Mapping
 {
@@ -8,7 +8,7 @@ namespace MinecraftClient.Mapping
         // Made with the following ressources: https://minecraft.fandom.com/wiki/Breaking
         // Sorted in alphabetical order.
         // Minable by Any Pickaxe.
-        private static readonly List<Material> pickaxeTier0 = new List<Material>()
+        private static readonly List<Material> pickaxeTier0 = new()
         {
             Material.ActivatorRail,
             Material.Andesite,
@@ -281,7 +281,7 @@ namespace MinecraftClient.Mapping
             Material.YellowTerracotta,
         };
         // Minable by Stone, iron, diamond, netherite.
-        private static readonly List<Material> pickaxeTier1 = new List<Material>()
+        private static readonly List<Material> pickaxeTier1 = new()
         {
             Material.CopperOre,
             Material.CopperBlock,
@@ -329,7 +329,7 @@ namespace MinecraftClient.Mapping
             Material.WeatheredCutCopper,
         };
         // Minable by Iron, diamond, netherite.
-        private static readonly List<Material> pickaxeTier2 = new List<Material>()
+        private static readonly List<Material> pickaxeTier2 = new()
         {
             Material.DeepslateDiamondOre,
             Material.DeepslateEmeraldOre,
@@ -345,7 +345,7 @@ namespace MinecraftClient.Mapping
             Material.RedstoneOre,
         };
         // Minable by Diamond, Netherite.
-        private static readonly List<Material> pickaxeTier3 = new List<Material>()
+        private static readonly List<Material> pickaxeTier3 = new()
         {
             Material.AncientDebris,
             Material.CryingObsidian,
@@ -355,7 +355,7 @@ namespace MinecraftClient.Mapping
         };
 
         // Every shovel can mine every block (speed difference).
-        private static readonly List<Material> shovel = new List<Material>()
+        private static readonly List<Material> shovel = new()
         {
             Material.BlackConcretePowder,
             Material.BlueConcretePowder,
@@ -393,7 +393,7 @@ namespace MinecraftClient.Mapping
             Material.YellowConcretePowder,
         };
         // Every axe can mine every block (speed difference).
-        private static readonly List<Material> axe = new List<Material>()
+        private static readonly List<Material> axe = new()
         {
             Material.AcaciaButton,
             Material.AcaciaDoor,
@@ -578,7 +578,7 @@ namespace MinecraftClient.Mapping
             Material.YellowWallBanner,
         };
         // Every block a shear can mine.
-        private static readonly List<Material> shears = new List<Material>()
+        private static readonly List<Material> shears = new()
         {
             Material.AcaciaLeaves,
             Material.AzaleaLeaves,
@@ -607,7 +607,7 @@ namespace MinecraftClient.Mapping
             Material.YellowWool,
         };
         // Every block that is mined with a sword.
-        private static readonly List<Material> sword = new List<Material>()
+        private static readonly List<Material> sword = new()
         {
             Material.Bamboo,
             Material.Cobweb,
@@ -620,7 +620,7 @@ namespace MinecraftClient.Mapping
             Material.InfestedStoneBricks,
         };
         // Every block that can be mined with a hoe.
-        private static readonly List<Material> hoe = new List<Material>()
+        private static readonly List<Material> hoe = new()
         {
             Material.AcaciaLeaves,
             Material.BirchLeaves,
@@ -639,14 +639,14 @@ namespace MinecraftClient.Mapping
             Material.WetSponge,
         };
         // Liquids
-        private static readonly List<Material> bucket = new List<Material>()
+        private static readonly List<Material> bucket = new()
         {
             Material.Lava,
             Material.Water
         };
 
         // Unbreakable Blocks
-        private static readonly List<Material> unbreakable = new List<Material>()
+        private static readonly List<Material> unbreakable = new()
         {
             Material.Air,
             Material.Barrier,
@@ -773,7 +773,7 @@ namespace MinecraftClient.Mapping
                     ItemType.Bucket,
                 };
             }
-            else { return new ItemType[0]; }
+            else { return System.Array.Empty<ItemType>(); }
         }
 
         public static bool IsUnbreakable(Material block) { return unbreakable.Contains(block); }

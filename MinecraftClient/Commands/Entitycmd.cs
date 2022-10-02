@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 
@@ -12,17 +11,16 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "entity <id|entitytype> <attack|use>"; } }
         public override string CmdDesc { get { return ""; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (handler.GetEntityHandlingEnabled())
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
                 if (args.Length >= 1)
                 {
                     try
                     {
-                        int entityID = 0;
-                        int.TryParse(args[0], out entityID);
+                        int entityID = int.Parse(args[0]);
                         if (entityID != 0)
                         {
                             if (handler.GetEntities().ContainsKey(entityID))
@@ -44,8 +42,8 @@ namespace MinecraftClient.Commands
                                         float health = entity.Health;
                                         int latency = entity.Latency;
                                         Item item = entity.Item;
-                                        string nickname = entity.Name;
-                                        string customname = entity.CustomName;
+                                        string? nickname = entity.Name;
+                                        string? customname = entity.CustomName;
                                         EntityPose pose = entity.Pose;
                                         EntityType type = entity.Type;
                                         double distance = Math.Round(entity.Location.Distance(handler.GetCurrentLocation()), 2);
@@ -66,7 +64,7 @@ namespace MinecraftClient.Commands
                                             done += Translations.Replace("\n [MCC] ([cmd.entityCmd.latency]): {0}", latency);
                                         else if (type == EntityType.Item || type == EntityType.ItemFrame || type == Mapping.EntityType.EyeOfEnder || type == Mapping.EntityType.Egg || type == Mapping.EntityType.EnderPearl || type == Mapping.EntityType.Potion || type == Mapping.EntityType.Fireball || type == Mapping.EntityType.FireworkRocket)
                                         {
-                                            string displayName = item.DisplayName;
+                                            string? displayName = item.DisplayName;
                                             if (String.IsNullOrEmpty(displayName))
                                                 done += Translations.Replace("\n [MCC] ([cmd.entityCmd.item]): {0} x{1}", item.Type, item.Count);
                                             else
@@ -100,8 +98,7 @@ namespace MinecraftClient.Commands
                         }
                         else
                         {
-                            EntityType interacttype = EntityType.Player;
-                            Enum.TryParse(args[0], out interacttype);
+                            EntityType interacttype = Enum.Parse<EntityType>(args[0]);
                             string actionst = "cmd.entityCmd.attacked";
                             int actioncount = 0;
                             foreach (var entity2 in handler.GetEntities())
@@ -134,15 +131,17 @@ namespace MinecraftClient.Commands
                 else
                 {
                     Dictionary<int, Entity> entities = handler.GetEntities();
-                    List<string> response = new List<string>();
-                    response.Add(Translations.Get("cmd.entityCmd.entities"));
+                    List<string> response = new()
+                    {
+                        Translations.Get("cmd.entityCmd.entities")
+                    };
                     foreach (var entity2 in entities)
                     {
                         int id = entity2.Key;
                         float health = entity2.Value.Health;
                         int latency = entity2.Value.Latency;
-                        string nickname = entity2.Value.Name;
-                        string customname = entity2.Value.CustomName;
+                        string? nickname = entity2.Value.Name;
+                        string? customname = entity2.Value.CustomName;
                         EntityPose pose = entity2.Value.Pose;
                         EntityType type = entity2.Value.Type;
                         Item item = entity2.Value.Item;

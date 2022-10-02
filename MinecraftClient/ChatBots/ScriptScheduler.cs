@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Globalization;
+using System.Text;
 
 namespace MinecraftClient.ChatBots
 {
@@ -14,7 +13,7 @@ namespace MinecraftClient.ChatBots
     {
         private class TaskDesc
         {
-            public string action = null;
+            public string? action = null;
             public bool triggerOnFirstLogin = false;
             public bool triggerOnLogin = false;
             public bool triggerOnTime = false;
@@ -22,17 +21,17 @@ namespace MinecraftClient.ChatBots
             public int triggerOnInterval_Interval = 0;
             public int triggerOnInterval_Interval_Max = 0;
             public int triggerOnInterval_Interval_Countdown = 0;
-            public List<DateTime> triggerOnTime_Times = new List<DateTime>();
+            public List<DateTime> triggerOnTime_Times = new();
             public bool triggerOnTime_alreadyTriggered = false;
         }
 
         private static bool firstlogin_done = false;
 
-        private string tasksfile;
+        private readonly string tasksfile;
         private bool serverlogin_done;
-        private List<TaskDesc> tasks = new List<TaskDesc>();
+        private readonly List<TaskDesc> tasks = new();
         private int verifytasks_timeleft = 10;
-        private int verifytasks_delay = 10;
+        private readonly int verifytasks_delay = 10;
 
         public ScriptScheduler(string tasksfile)
         {
@@ -46,19 +45,19 @@ namespace MinecraftClient.ChatBots
             if (System.IO.File.Exists(tasksfile))
             {
                 LogDebugToConsoleTranslated("bot.scriptScheduler.loading", System.IO.Path.GetFullPath(tasksfile));
-                TaskDesc current_task = null;
-                String[] lines = System.IO.File.ReadAllLines(tasksfile, Encoding.UTF8);
+                TaskDesc? current_task = null;
+                string[] lines = System.IO.File.ReadAllLines(tasksfile, Encoding.UTF8);
                 foreach (string lineRAW in lines)
                 {
                     string line = lineRAW.Split('#')[0].Trim();
                     if (line.Length > 0)
                     {
-                        if (line[0] == '[' && line[line.Length - 1] == ']')
+                        if (line[0] == '[' && line[^1] == ']')
                         {
-                            switch (line.Substring(1, line.Length - 2).ToLower())
+                            switch (line[1..^1].ToLower())
                             {
                                 case "task":
-                                    checkAddTask(current_task);
+                                    CheckAddTask(current_task);
                                     current_task = new TaskDesc(); //Create a blank task
                                     break;
                             }
@@ -68,7 +67,7 @@ namespace MinecraftClient.ChatBots
                             string argName = line.Split('=')[0];
                             if (line.Length > (argName.Length + 1))
                             {
-                                string argValue = line.Substring(argName.Length + 1);
+                                string argValue = line[(argName.Length + 1)..];
                                 switch (argName.ToLower())
                                 {
                                     case "triggeronfirstlogin": current_task.triggerOnFirstLogin = Settings.str2bool(argValue); break;
@@ -77,21 +76,26 @@ namespace MinecraftClient.ChatBots
                                     case "triggeroninterval": current_task.triggerOnInterval = Settings.str2bool(argValue); break;
                                     case "timevalue": try { current_task.triggerOnTime_Times.Add(DateTime.ParseExact(argValue, "HH:mm", CultureInfo.InvariantCulture)); } catch { } break;
                                     case "timeinterval":
-                                        int interval = 1;
+                                        int interval;
                                         int intervalMax = 0;
 
-                                        if (argValue.Contains("-"))
+                                        if (argValue.Contains('-'))
                                         {
                                             string[] parts = argValue.Split("-");
-
                                             if (parts.Length == 2)
                                             {
-                                                int.TryParse(parts[0].Trim(), out interval);
-                                                int.TryParse(parts[1].Trim(), out intervalMax);
+                                                interval = int.Parse(parts[0].Trim());
+                                                intervalMax = int.Parse(parts[1].Trim());
                                             }
-                                            else interval = 1;
+                                            else
+                                            {
+                                                interval = 1;
+                                            }
                                         }
-                                        else int.TryParse(argValue, out interval);
+                                        else
+                                        {
+                                            interval = int.Parse(argValue);
+                                        }
 
                                         current_task.triggerOnInterval_Interval = interval;
                                         current_task.triggerOnInterval_Interval_Max = intervalMax;
@@ -104,7 +108,7 @@ namespace MinecraftClient.ChatBots
                         }
                     }
                 }
-                checkAddTask(current_task);
+                CheckAddTask(current_task);
             }
             else
             {
@@ -113,7 +117,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private void checkAddTask(TaskDesc current_task)
+        private void CheckAddTask(TaskDesc? current_task)
         {
             //Check if we built a valid task before adding it
             if (current_task != null)
@@ -166,7 +170,7 @@ namespace MinecraftClient.ChatBots
                                     {
                                         task.triggerOnTime_alreadyTriggered = true;
                                         LogDebugToConsoleTranslated("bot.scriptScheduler.running_time", task.action);
-                                        PerformInternalCommand(task.action);
+                                        PerformInternalCommand(task.action!);
                                     }
                                 }
                             }
@@ -186,7 +190,7 @@ namespace MinecraftClient.ChatBots
 
                                 task.triggerOnInterval_Interval_Countdown = time;
                                 LogDebugToConsoleTranslated("bot.scriptScheduler.running_inverval", task.action);
-                                PerformInternalCommand(task.action);
+                                PerformInternalCommand(task.action!);
                             }
                             else task.triggerOnInterval_Interval_Countdown--;
                         }
@@ -199,7 +203,7 @@ namespace MinecraftClient.ChatBots
                         if (task.triggerOnLogin || (firstlogin_done == false && task.triggerOnFirstLogin))
                         {
                             LogDebugToConsoleTranslated("bot.scriptScheduler.running_login", task.action);
-                            PerformInternalCommand(task.action);
+                            PerformInternalCommand(task.action!);
                         }
                     }
 

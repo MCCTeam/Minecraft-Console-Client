@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace MinecraftClient.Inventory.ItemPalettes
 {
     public abstract class ItemPalette
     {
         protected abstract Dictionary<int, ItemType> GetDict();
-        private readonly Dictionary<ItemType, int> DictReverse = new Dictionary<ItemType, int>();
+        private readonly Dictionary<ItemType, int> DictReverse = new();
 
         public ItemPalette()
         {

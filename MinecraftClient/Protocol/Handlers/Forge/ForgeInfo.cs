@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MinecraftClient.Protocol.Handlers.Forge
 {
@@ -42,9 +40,11 @@ namespace MinecraftClient.Protocol.Handlers.Forge
             switch (fmlVersion)
             {
                 case FMLVersion.FML2:
-                    this.Mods = new List<ForgeMod>();
-                    this.Mods.Add(new ForgeMod("forge", "ANY"));
-                    this.Version = fmlVersion;
+                    Mods = new List<ForgeMod>
+                    {
+                        new ForgeMod("forge", "ANY")
+                    };
+                    Version = fmlVersion;
                     break;
                 default:
                     throw new InvalidOperationException(Translations.Get("error.forgeforce"));
@@ -58,8 +58,8 @@ namespace MinecraftClient.Protocol.Handlers.Forge
         /// <param name="fmlVersion">Forge protocol version</param>
         internal ForgeInfo(Json.JSONData data, FMLVersion fmlVersion)
         {
-            this.Mods = new List<ForgeMod>();
-            this.Version = fmlVersion;
+            Mods = new List<ForgeMod>();
+            Version = fmlVersion;
 
             switch (fmlVersion)
             {
@@ -89,7 +89,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                         String modid = mod.Properties["modid"].StringValue;
                         String modversion = mod.Properties["version"].StringValue;
 
-                        this.Mods.Add(new ForgeMod(modid, modversion));
+                        Mods.Add(new ForgeMod(modid, modversion));
                     }
 
                     break;
@@ -129,7 +129,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                         String modid = mod.Properties["modId"].StringValue;
                         String modmarker = mod.Properties["modmarker"].StringValue;
 
-                        this.Mods.Add(new ForgeMod(modid, modmarker));
+                        Mods.Add(new ForgeMod(modid, modmarker));
                     }
 
                     break;

@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Keys

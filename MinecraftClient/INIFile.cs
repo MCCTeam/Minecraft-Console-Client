@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient
@@ -42,9 +41,9 @@ namespace MinecraftClient
                 string line = lineRaw.Split('#')[0].Trim();
                 if (line.Length > 0 && line[0] != ';')
                 {
-                    if (line[0] == '[' && line[line.Length - 1] == ']')
+                    if (line[0] == '[' && line[^1] == ']')
                     {
-                        iniSection = line.Substring(1, line.Length - 2);
+                        iniSection = line[1..^1];
                         if (lowerCase)
                             iniSection = iniSection.ToLower();
                     }
@@ -55,7 +54,7 @@ namespace MinecraftClient
                             argName = argName.ToLower();
                         if (line.Length > (argName.Length + 1))
                         {
-                            string argValue = line.Substring(argName.Length + 1);
+                            string argValue = line[(argName.Length + 1)..];
                             if (!iniContents.ContainsKey(iniSection))
                                 iniContents[iniSection] = new Dictionary<string, string>();
                             iniContents[iniSection][argName] = argValue;
@@ -73,7 +72,7 @@ namespace MinecraftClient
         /// <param name="contents">Data to put into the file</param>
         /// <param name="description">INI file description, inserted as a comment on first line of the INI file</param>
         /// <param name="autoCase">Automatically change first char of section and keys to uppercase</param>
-        public static void WriteFile(string iniFile, Dictionary<string, Dictionary<string, string>> contents, string description = null, bool autoCase = true)
+        public static void WriteFile(string iniFile, Dictionary<string, Dictionary<string, string>> contents, string? description = null, bool autoCase = true)
         {
             File.WriteAllLines(iniFile, Generate(contents, description, autoCase), Encoding.UTF8);
         }
@@ -85,9 +84,9 @@ namespace MinecraftClient
         /// <param name="description">INI file description, inserted as a comment on first line of the INI file</param>
         /// <param name="autoCase">Automatically change first char of section and keys to uppercase</param>
         /// <returns>Lines of the INI file</returns>
-        public static string[] Generate(Dictionary<string, Dictionary<string, string>> contents, string description = null, bool autoCase = true)
+        public static string[] Generate(Dictionary<string, Dictionary<string, string>> contents, string? description = null, bool autoCase = true)
         {
-            List<string> lines = new List<string>();
+            List<string> lines = new();
             if (!String.IsNullOrWhiteSpace(description))
                 lines.Add('#' + description);
             foreach (var section in contents)
@@ -96,10 +95,10 @@ namespace MinecraftClient
                     lines.Add("");
                 if (!String.IsNullOrEmpty(section.Key))
                 {
-                    lines.Add("[" + (autoCase ? char.ToUpper(section.Key[0]) + section.Key.Substring(1) : section.Key) + ']');
+                    lines.Add("[" + (autoCase ? char.ToUpper(section.Key[0]) + section.Key[1..] : section.Key) + ']');
                     foreach (var item in section.Value)
                         if (!String.IsNullOrEmpty(item.Key))
-                            lines.Add((autoCase ? char.ToUpper(item.Key[0]) + item.Key.Substring(1) : item.Key) + '=' + item.Value);
+                            lines.Add((autoCase ? char.ToUpper(item.Key[0]) + item.Key[1..] : item.Key) + '=' + item.Value);
                 }
             }
             return lines.ToArray();

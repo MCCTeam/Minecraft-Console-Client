@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Reflection;
-using System.Threading;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Text;
 using DynamicRun.Builder;
 
 namespace MinecraftClient
@@ -15,7 +13,7 @@ namespace MinecraftClient
     /// </summary>
     class CSharpRunner
     {
-        private static readonly Dictionary<ulong, byte[]> CompileCache = new Dictionary<ulong, byte[]>();
+        private static readonly Dictionary<ulong, byte[]> CompileCache = new();
 
         /// <summary>
         /// Run the specified C# script file
@@ -27,7 +25,7 @@ namespace MinecraftClient
         /// <param name="run">Set to false to compile and cache the script without launching it</param>
         /// <exception cref="CSharpException">Thrown if an error occured</exception>
         /// <returns>Result of the execution, returned by the script</returns>
-        public static object? Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object> localVars, bool run = true)
+        public static object? Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object>? localVars, bool run = true)
         {
             //Script compatibility check for handling future versions differently
             if (lines.Length < 1 || lines[0] != "//MCCScript 1.0")
@@ -37,9 +35,9 @@ namespace MinecraftClient
             //Script hash for determining if it was previously compiled
             ulong scriptHash = QuickHash(lines);
             byte[]? assembly = null;
-            
-            Compiler compiler = new Compiler();
-            CompileRunner runner = new CompileRunner();
+
+            Compiler compiler = new();
+            CompileRunner runner = new();
 
             //No need to compile two scripts at the same time
             lock (CompileCache)
@@ -49,10 +47,10 @@ namespace MinecraftClient
                 {
                     //Process different sections of the script file
                     bool scriptMain = true;
-                    List<string> script = new List<string>();
-                    List<string> extensions = new List<string>();
-                    List<string> libs = new List<string>();
-                    List<string> dlls = new List<string>();
+                    List<string> script = new();
+                    List<string> extensions = new();
+                    List<string> libs = new();
+                    List<string> dlls = new();
                     foreach (string line in lines)
                     {
                         if (line.StartsWith("//using"))
@@ -105,7 +103,7 @@ namespace MinecraftClient
 
                     //Compile the C# class in memory using all the currently loaded assemblies
                     var result = compiler.Compile(code, Guid.NewGuid().ToString());
-                    
+
                     //Process compile warnings and errors
                     if (result.Failures != null)
                         throw new CSharpException(CSErrorType.LoadError,
@@ -123,7 +121,8 @@ namespace MinecraftClient
             //Run the compiled assembly with exception handling
             if (run)
             {
-                try {
+                try
+                {
                     var compiled = runner.Execute(assembly!, args, localVars, apiHandler);
                     return compiled;
                 }
@@ -164,10 +163,10 @@ namespace MinecraftClient
     /// </summary>
     public class CSharpException : Exception
     {
-        private CSErrorType _type;
+        private readonly CSErrorType _type;
         public CSErrorType ExceptionType { get { return _type; } }
-        public override string Message { get { return InnerException.Message; } }
-        public override string ToString() { return InnerException.ToString(); }
+        public override string Message { get { return InnerException!.Message; } }
+        public override string ToString() { return InnerException!.ToString(); }
         public CSharpException(CSErrorType type, Exception inner)
             : base(inner != null ? inner.Message : "", inner)
         {
@@ -183,7 +182,7 @@ namespace MinecraftClient
         /// <summary>
         /// Holds local variables passed along with the script
         /// </summary>
-        private Dictionary<string, object> localVars;
+        private readonly Dictionary<string, object>? localVars;
 
         /// <summary>
         /// Create a new C# API Wrapper
@@ -191,7 +190,7 @@ namespace MinecraftClient
         /// <param name="apiHandler">ChatBot API Handler</param>
         /// <param name="tickHandler">ChatBot tick handler</param>
         /// <param name="localVars">Local variables passed along with the script</param>
-        public CSharpAPI(ChatBot apiHandler, Dictionary<string , object> localVars)
+        public CSharpAPI(ChatBot apiHandler, Dictionary<string, object>? localVars)
         {
             SetMaster(apiHandler);
             this.localVars = localVars;
@@ -215,8 +214,7 @@ namespace MinecraftClient
         /// <returns>TRUE if successfully sent (Deprectated, always returns TRUE for compatibility purposes with existing scripts)</returns>
         public bool SendText(object text)
         {
-            base.SendText(text is string ? (string)text : text.ToString());
-            return true;
+            return base.SendText(text is string str ? str : (text.ToString() ?? string.Empty));
         }
 
         /// <summary>
@@ -225,12 +223,10 @@ namespace MinecraftClient
         /// <param name="command">The command to process</param>
         /// <param name="localVars">Local variables passed along with the internal command</param>
         /// <returns>TRUE if the command was indeed an internal MCC command</returns>
-        new public bool PerformInternalCommand(string command, Dictionary<string, object> localVars = null)
+        new public bool PerformInternalCommand(string command, Dictionary<string, object>? localVars = null)
         {
-            if (localVars == null)
-                localVars = this.localVars;
-            bool result = base.PerformInternalCommand(command, localVars);
-            return result;
+            localVars ??= this.localVars;
+            return base.PerformInternalCommand(command, localVars);
         }
 
         /// <summary>
@@ -243,7 +239,8 @@ namespace MinecraftClient
         {
             if (extraAttempts == -999999)
                 base.ReconnectToTheServer();
-            else base.ReconnectToTheServer(extraAttempts);
+            else
+                base.ReconnectToTheServer(extraAttempts);
         }
 
         /// <summary>
@@ -291,11 +288,12 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="varName">Name of the variable</param>
         /// <returns>Value of the variable or null if no variable</returns>
-        public object GetVar(string varName)
+        public object? GetVar(string varName)
         {
             if (localVars != null && localVars.ContainsKey(varName))
                 return localVars[varName];
-            return Settings.GetVar(varName);
+            else
+                return Settings.GetVar(varName);
         }
 
         /// <summary>
@@ -317,26 +315,26 @@ namespace MinecraftClient
         /// <typeparam name="T">Variable type</typeparam>
         /// <param name="varName">Variable name</param>
         /// <returns>Variable as specified type or default value for this type</returns>
-        public T GetVar<T>(string varName)
+        public T? GetVar<T>(string varName)
         {
-            object value = GetVar(varName);
-            if (value is T)
-                return (T)value;
+            object? value = GetVar(varName);
+            if (value is T Tval)
+                return Tval;
             if (value != null)
             {
                 try
                 {
                     TypeConverter converter = TypeDescriptor.GetConverter(typeof(T));
                     if (converter != null)
-                        return (T)converter.ConvertFromString(value.ToString());
+                        return (T?)converter.ConvertFromString(value.ToString() ?? string.Empty);
                 }
                 catch (NotSupportedException) { /* Was worth trying */ }
             }
-            return default(T);
+            return default;
         }
 
         //Named shortcuts for GetVar<type>(varname)
-        public string GetVarAsString(string varName) { return GetVar<string>(varName); }
+        public string? GetVarAsString(string varName) { return GetVar<string>(varName); }
         public int GetVarAsInt(string varName) { return GetVar<int>(varName); }
         public double GetVarAsDouble(string varName) { return GetVar<double>(varName); }
         public bool GetVarAsBool(string varName) { return GetVar<bool>(varName); }
@@ -374,12 +372,18 @@ namespace MinecraftClient
         /// <param name="script">Script to call</param>
         /// <param name="args">Arguments to pass to the script</param>
         /// <returns>An object returned by the script, or null</returns>
-        public object CallScript(string script, string[] args)
+        public object? CallScript(string script, string[] args)
         {
-            string[] lines = null;
             ChatBots.Script.LookForScript(ref script);
-            try { lines = File.ReadAllLines(script, Encoding.UTF8); }
-            catch (Exception e) { throw new CSharpException(CSErrorType.FileReadError, e); }
+            string[] lines;
+            try
+            {
+                lines = File.ReadAllLines(script, Encoding.UTF8);
+            }
+            catch (Exception e)
+            {
+                throw new CSharpException(CSErrorType.FileReadError, e);
+            }
             return CSharpRunner.Run(this, lines, args, localVars);
         }
     }

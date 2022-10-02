@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using System.Linq;
 
 namespace MinecraftClient.Inventory
 {
@@ -33,9 +33,9 @@ namespace MinecraftClient.Inventory
         /// <param name="nbt">Item Metadata</param>
         public Item(ItemType itemType, int count, Dictionary<string, object>? nbt)
         {
-            this.Type = itemType;
-            this.Count = count;
-            this.NBT = nbt;
+            Type = itemType;
+            Count = count;
+            NBT = nbt;
         }
 
         /// <summary>
@@ -53,50 +53,46 @@ namespace MinecraftClient.Inventory
         /// <summary>
         /// Retrieve item display name from NBT properties. NULL if no display name is defined.
         /// </summary>
-        public string DisplayName
+        public string? DisplayName
         {
             get
             {
                 if (NBT != null && NBT.ContainsKey("display"))
                 {
-                    var displayProperties = NBT["display"] as Dictionary<string, object>;
-                    if (displayProperties != null && displayProperties.ContainsKey("Name"))
+                    if (NBT["display"] is Dictionary<string, object> displayProperties && displayProperties.ContainsKey("Name"))
                     {
-                        string displayName = displayProperties["Name"] as string;
+                        string? displayName = displayProperties["Name"] as string;
                         if (!String.IsNullOrEmpty(displayName))
-                            return MinecraftClient.Protocol.ChatParser.ParseText(displayProperties["Name"].ToString());
+                            return MinecraftClient.Protocol.ChatParser.ParseText(displayProperties["Name"].ToString() ?? string.Empty);
                     }
                 }
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Retrieve item lores from NBT properties. Returns null if no lores is defined.
         /// </summary>
-        public string[] Lores
+        public string[]? Lores
         {
             get
             {
-                List<string> lores = new List<string>();
+                List<string> lores = new();
                 if (NBT != null && NBT.ContainsKey("display"))
                 {
-                    var displayProperties = NBT["display"] as Dictionary<string, object>;
-                    if (displayProperties != null && displayProperties.ContainsKey("Lore"))
+                    if (NBT["display"] is Dictionary<string, object> displayProperties && displayProperties.ContainsKey("Lore"))
                     {
-                        object[] displayName = displayProperties["Lore"] as object[];
-                        foreach (string st in displayName)
-                        {
-                            string str = MinecraftClient.Protocol.ChatParser.ParseText(st.ToString());
-                            lores.Add(str);
-                        }
+                        object[] displayName = (object[])displayProperties["Lore"];
+                        lores.AddRange(from string st in displayName
+                                       let str = MinecraftClient.Protocol.ChatParser.ParseText(st.ToString())
+                                       select str);
                         return lores.ToArray();
                     }
                 }
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Retrieve item damage from NBT properties. Returns 0 if no damage is defined.
         /// </summary>
@@ -109,7 +105,7 @@ namespace MinecraftClient.Inventory
                     object damage = NBT["Damage"];
                     if (damage != null)
                     {
-                        return int.Parse(damage.ToString());
+                        return int.Parse(damage.ToString() ?? string.Empty);
                     }
                 }
                 return 0;
@@ -118,18 +114,18 @@ namespace MinecraftClient.Inventory
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
+
             sb.AppendFormat("x{0,-2} {1}", Count, Type.ToString());
-            string displayName = DisplayName;
+
+            string? displayName = DisplayName;
             if (!String.IsNullOrEmpty(displayName))
-            {
                 sb.AppendFormat(" - {0}§8", displayName);
-            }
+
             int damage = Damage;
             if (damage != 0)
-            {
                 sb.AppendFormat(" | {0}: {1}", Translations.Get("cmd.inventory.damage"), damage);
-            }
+
             return sb.ToString();
         }
     }

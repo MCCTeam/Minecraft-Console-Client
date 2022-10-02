@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
@@ -19,6 +19,11 @@
     <StartupObject>MinecraftClient.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Protocol\Handlers\Compression\**" />
+    <EmbeddedResource Remove="Protocol\Handlers\Compression\**" />
+    <None Remove="Protocol\Handlers\Compression\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Resources\AppIcon.ico" />
     <Content Include="Resources\containers\ContainerType.BrewingStand.txt" />
     <Content Include="Resources\containers\ContainerType.Crafting.txt" />
@@ -28,16 +33,16 @@
     <Content Include="Resources\containers\ContainerType.PlayerInventory.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DnsClient" Version="1.5.0" />
+    <PackageReference Include="DnsClient" Version="1.6.1" />
+    <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="DynamicExpresso.Core" Version="2.13.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0-1.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.2.233001">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.2" />
     <PackageReference Include="SingleFileExtractor.Core" Version="1.0.1" />
-    <PackageReference Include="starksoft.aspen" Version="1.1.8" />
+	<PackageReference Include="starksoft.aspen" Version="1.1.8">
+		<NoWarn>NU1701</NoWarn>
+	</PackageReference>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>

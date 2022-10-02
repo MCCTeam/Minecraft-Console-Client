@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace MinecraftClient.Commands
 {
@@ -11,11 +8,11 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "send <text>"; } }
         public override string CmdDesc { get { return "cmd.send.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            if (hasArg(command))
+            if (HasArg(command))
             {
-                handler.SendText(getArg(command));
+                handler.SendText(GetArg(command));
                 return "";
             }
             else return GetCmdDescTranslated();

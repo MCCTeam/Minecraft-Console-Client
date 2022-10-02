@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using System.Text.RegularExpressions;
-using MinecraftClient.Protocol.Session;
-using MinecraftClient.Protocol;
-using MinecraftClient.Mapping;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using MinecraftClient.ChatBots;
-using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using MinecraftClient.Mapping;
+using MinecraftClient.Protocol;
+using MinecraftClient.Protocol.Session;
 
 namespace MinecraftClient
 {
@@ -86,14 +83,14 @@ namespace MinecraftClient
         public static string TranslationsFile_Website_Index = "https://launchermeta.mojang.com/v1/packages/e5af543d9b3ce1c063a97842c38e50e29f961f00/1.17.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
         public static TimeSpan messageCooldown = TimeSpan.FromSeconds(2);
-        public static List<string> Bots_Owners = new List<string>();
+        public static List<string> Bots_Owners = new();
         public static string Language = "en_GB";
         public static bool interactiveMode = true;
         public static char internalCmdChar = '/';
         public static bool playerHeadAsIcon = false;
         public static string chatbotLogFile = "";
         public static bool CacheScripts = true;
-        public static string BrandInfo = MCCBrandInfo;
+        public static string? BrandInfo = MCCBrandInfo;
         public static bool DisplaySystemMessages = true;
         public static bool DisplayXPBarMessages = true;
         public static bool DisplayChatLinks = true;
@@ -131,8 +128,8 @@ namespace MinecraftClient
         public static bool InfoMessages = true;
         public static bool WarningMessages = true;
         public static bool ErrorMessages = true;
-        public static Regex ChatFilter = null;
-        public static Regex DebugFilter = null;
+        public static Regex? ChatFilter = null;
+        public static Regex? DebugFilter = null;
         public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
         public static bool LogToFile = false;
         public static string LogFile = "console-log.txt";
@@ -191,9 +188,9 @@ namespace MinecraftClient
 
         //Chat Message Parsing
         public static bool ChatFormat_Builtins = true;
-        public static Regex ChatFormat_Public = null;
-        public static Regex ChatFormat_Private = null;
-        public static Regex ChatFormat_TeleportRequest = null;
+        public static Regex? ChatFormat_Public = null;
+        public static Regex? ChatFormat_Private = null;
+        public static Regex? ChatFormat_TeleportRequest = null;
 
         //Auto Respond
         public static bool AutoRespond_Enabled = false;
@@ -267,12 +264,12 @@ namespace MinecraftClient
         public static bool Map_Notify_On_First_Update = true;
 
         //Custom app variables and Minecraft accounts
-        private static readonly Dictionary<string, object> AppVars = new Dictionary<string, object>();
-        private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new Dictionary<string, KeyValuePair<string, string>>();
-        private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new Dictionary<string, KeyValuePair<string, ushort>>();
+        private static readonly Dictionary<string, object> AppVars = new();
+        private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new();
+        private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new();
 
         //Temporary Server Alias storage when server list is not loaded yet
-        private static string ServerAliasTemp = null;
+        private static string? ServerAliasTemp = null;
 
         //Mapping for settings sections in the INI file
         private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, PlayerListLogger, Map, Logging, Signature };
@@ -284,8 +281,7 @@ namespace MinecraftClient
         /// <returns>Section enum</returns>
         private static Section GetSection(string name)
         {
-            Section pMode;
-            if (Enum.TryParse(name, true, out pMode))
+            if (Enum.TryParse(name, true, out Section pMode))
                 return pMode;
             return Section.Default;
         }
@@ -341,11 +337,11 @@ namespace MinecraftClient
                 if (argument.StartsWith("--"))
                 {
                     //Load settings as --setting=value and --section.setting=value
-                    if (!argument.Contains("="))
+                    if (!argument.Contains('='))
                         throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
                     Section section = Section.Main;
-                    string argName = argument.Substring(2).Split('=')[0];
-                    string argValue = argument.Substring(argName.Length + 3);
+                    string argName = argument[2..].Split('=')[0];
+                    string argValue = argument[(argName.Length + 3)..];
                     if (argName.Contains('.'))
                     {
                         string sectionName = argName.Split('.')[0];
@@ -431,7 +427,7 @@ namespace MinecraftClient
                             Bots_Owners.Clear();
                             string lowerArgValue = ToLowerIfNeed(argValue);
                             string[] names = lowerArgValue.Split(',');
-                            if (!argValue.Contains(",") && lowerArgValue.EndsWith(".txt") && File.Exists(argValue))
+                            if (!argValue.Contains(',') && lowerArgValue.EndsWith(".txt") && File.Exists(argValue))
                                 names = File.ReadAllLines(argValue);
                             foreach (string name in names)
                                 if (!String.IsNullOrWhiteSpace(name))
@@ -511,12 +507,12 @@ namespace MinecraftClient
                             return true;
 
                         case "brandinfo":
-                            switch (ToLowerIfNeed(argValue.Trim()))
+                            BrandInfo = ToLowerIfNeed(argValue.Trim()) switch
                             {
-                                case "mcc": BrandInfo = MCCBrandInfo; break;
-                                case "vanilla": BrandInfo = "vanilla"; break;
-                                default: BrandInfo = null; break;
-                            }
+                                "mcc" => MCCBrandInfo,
+                                "vanilla" => "vanilla",
+                                _ => null,
+                            };
                             return true;
 
                         case "resolvesrvrecords":
@@ -1142,7 +1138,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="varName">Variable name</param>
         /// <returns>The value or null if the variable does not exists</returns>
-        public static object GetVar(string varName)
+        public static object? GetVar(string varName)
         {
             if (AppVars.ContainsKey(varName))
                 return AppVars[varName];
@@ -1164,15 +1160,15 @@ namespace MinecraftClient
         /// <param name="str">String to parse</param>
         /// <param name="localContext">Optional local variables overriding global variables</param>
         /// <returns>Modifier string</returns>
-        public static string ExpandVars(string str, Dictionary<string, object> localVars = null)
+        public static string ExpandVars(string str, Dictionary<string, object>? localVars = null)
         {
-            StringBuilder result = new StringBuilder();
+            StringBuilder result = new();
             for (int i = 0; i < str.Length; i++)
             {
                 if (str[i] == '%')
                 {
                     bool varname_ok = false;
-                    StringBuilder var_name = new StringBuilder();
+                    StringBuilder var_name = new();
 
                     for (int j = i + 1; j < str.Length; j++)
                     {

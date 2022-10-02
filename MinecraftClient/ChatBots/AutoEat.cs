@@ -1,8 +1,4 @@
 ﻿using MinecraftClient.Inventory;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MinecraftClient.ChatBots
 {
@@ -10,7 +6,7 @@ namespace MinecraftClient.ChatBots
     {
         byte LastSlot = 0;
         public static bool Eating = false;
-        private int HungerThreshold = 6;
+        private readonly int HungerThreshold = 6;
         private int DelayCounter = 0;
 
         public AutoEat(int Threshold)

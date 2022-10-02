@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient
@@ -50,12 +49,12 @@ namespace MinecraftClient
         /// Return a list of aliases for this command.
         /// Override this method if you wish to put aliases to the command
         /// </summary>
-        public virtual IEnumerable<string> getCMDAliases() { return new string[0]; }
+        public virtual IEnumerable<string> GetCMDAliases() { return Array.Empty<string>(); }
 
         /// <summary>
         /// Check if at least one argument has been passed to the command
         /// </summary>
-        public static bool hasArg(string command)
+        public static bool HasArg(string command)
         {
             int first_space = command.IndexOf(' ');
             return (first_space > 0 && first_space < command.Length - 1);
@@ -65,30 +64,25 @@ namespace MinecraftClient
         /// Extract the argument string from the command
         /// </summary>
         /// <returns>Argument or "" if no argument</returns>
-        public static string getArg(string command)
+        public static string GetArg(string command)
         {
-            if (hasArg(command))
-            {
-                return command.Substring(command.IndexOf(' ') + 1);
-            }
-            else return "";
+            if (HasArg(command))
+                return command[(command.IndexOf(' ') + 1)..];
+            else
+                return string.Empty;
         }
 
         /// <summary>
         /// Extract the arguments as a string array from the command
         /// </summary>
         /// <returns>Argument array or empty array if no arguments</returns>
-        public static string[] getArgs(string command)
+        public static string[] GetArgs(string command)
         {
-            string[] args = getArg(command).Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (args.Length == 1 && args[0] == "")
-            {
-                return new string[] { };
-            }
+            string[] args = GetArg(command).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length == 1 && args[0] == string.Empty)
+                return Array.Empty<string>();
             else
-            {
                 return args;
-            }
         }
 
         /// <summary>
@@ -97,7 +91,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="cmdLine">Provided arguments as a string</param>
         /// <returns>All extracted arguments in a string list</returns>
-        public static List<string> parseCommandLine(string cmdLine)
+        public static List<string> ParseCommandLine(string cmdLine)
         {
             var args = new List<string>();
             if (string.IsNullOrWhiteSpace(cmdLine)) return args;
@@ -107,7 +101,7 @@ namespace MinecraftClient
 
             for (int i = 0; i < cmdLine.Length; i++)
             {
-                if ((cmdLine[i] == '"' && i > 0 && cmdLine[i-1] != '\\') || (cmdLine[i] == '"' && i == 0))
+                if ((cmdLine[i] == '"' && i > 0 && cmdLine[i - 1] != '\\') || (cmdLine[i] == '"' && i == 0))
                 {
                     if (inQuotedArg)
                     {
@@ -136,7 +130,7 @@ namespace MinecraftClient
                 {
                     if (cmdLine[i] == '\\' && cmdLine[i + 1] == '\"')
                     {
-                        currentArg.Append("\"");
+                        currentArg.Append('"');
                         i += 1;
                     }
                     else

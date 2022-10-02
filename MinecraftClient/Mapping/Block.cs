@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using MinecraftClient.Mapping.BlockPalettes;
 
 namespace MinecraftClient.Mapping
@@ -18,7 +15,7 @@ namespace MinecraftClient.Mapping
         /// Get or set global block ID to Material mapping
         /// The global Palette is a concept introduced with Minecraft 1.13
         /// </summary>
-        public static BlockPalette Palette { get; set; }
+        public static BlockPalette Palette { get; set; } = new Palette112();
 
         /// <summary>
         /// Storage for block ID and metadata, as ushort for compatibility, performance and lower memory footprint
@@ -45,13 +42,13 @@ namespace MinecraftClient.Mapping
                 if (Palette.IdHasMetadata)
                 {
                     if (value > (ushort.MaxValue >> 4) || value < 0)
-                        throw new ArgumentOutOfRangeException("value", "Invalid block ID. Accepted range: 0-4095");
+                        throw new ArgumentOutOfRangeException(nameof(value), "Invalid block ID. Accepted range: 0-4095");
                     blockIdAndMeta = (ushort)(value << 4 | BlockMeta);
                 }
                 else
                 {
                     if (value > ushort.MaxValue || value < 0)
-                        throw new ArgumentOutOfRangeException("value", "Invalid block ID. Accepted range: 0-65535");
+                        throw new ArgumentOutOfRangeException(nameof(value), "Invalid block ID. Accepted range: 0-65535");
                     blockIdAndMeta = (ushort)value;
                 }
             }
@@ -100,9 +97,9 @@ namespace MinecraftClient.Mapping
         {
             if (!Palette.IdHasMetadata)
                 throw new InvalidOperationException("Current global Palette does not support block Metadata");
-            this.blockIdAndMeta = 0;
-            this.BlockId = type;
-            this.BlockMeta = metadata;
+            blockIdAndMeta = 0;
+            BlockId = type;
+            BlockMeta = metadata;
         }
 
         /// <summary>
@@ -112,7 +109,7 @@ namespace MinecraftClient.Mapping
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public Block(ushort typeAndMeta)
         {
-            this.blockIdAndMeta = typeAndMeta;
+            blockIdAndMeta = typeAndMeta;
         }
 
         /// <summary>

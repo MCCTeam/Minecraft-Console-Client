@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MinecraftClient.ChatBots
@@ -10,11 +8,11 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class AutoRelog : ChatBot
     {
-        private static Random random = new Random();
-        private string[] dictionary = new string[0];
-        private int attempts;
-        private int delayMin;
-        private int delayMax;
+        private static readonly Random random = new();
+        private string[] dictionary = Array.Empty<string>();
+        private readonly int attempts;
+        private readonly int delayMin;
+        private readonly int delayMax;
 
         /// <summary>
         /// This bot automatically re-join the server if kick message contains predefined string
@@ -100,7 +98,7 @@ namespace MinecraftClient.ChatBots
             return false;
         }
 
-        private void LaunchDelayedReconnection(string msg)
+        private void LaunchDelayedReconnection(string? msg)
         {
             int delay = random.Next(delayMin, delayMax);
             LogDebugToConsoleTranslated(String.IsNullOrEmpty(msg) ? "bot.autoRelog.reconnect_always" : "bot.autoRelog.reconnect", msg);
@@ -113,7 +111,7 @@ namespace MinecraftClient.ChatBots
         {
             if (Settings.AutoRelog_Enabled)
             {
-                AutoRelog bot = new AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries);
+                AutoRelog bot = new(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries);
                 bot.Initialize();
                 return bot.OnDisconnect(reason, message);
             }

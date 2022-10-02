@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using MinecraftClient.Protocol;
 
 namespace MinecraftClient.ChatBots
@@ -11,15 +9,16 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class ReplayCapture : ChatBot
     {
-        private ReplayHandler replay;
-        private int backupInterval = 3000; // Unit: second * 10
+        private ReplayHandler? replay;
+        private readonly int backupInterval = 3000; // Unit: second * 10
         private int backupCounter = -1;
 
         public ReplayCapture(int backupInterval)
         {
             if (backupInterval != -1)
                 this.backupInterval = backupInterval * 10;
-            else this.backupInterval = -1;
+            else
+                this.backupInterval = -1;
         }
 
         public override void Initialize()
@@ -34,12 +33,12 @@ namespace MinecraftClient.ChatBots
 
         public override void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound)
         {
-            replay.AddPacket(packetID, packetData, isLogin, isInbound);
+            replay!.AddPacket(packetID, packetData, isLogin, isInbound);
         }
 
         public override void Update()
         {
-            if (backupInterval > 0 && replay.RecordRunning)
+            if (backupInterval > 0 && replay!.RecordRunning)
             {
                 if (backupCounter <= 0)
                 {
@@ -52,7 +51,7 @@ namespace MinecraftClient.ChatBots
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
         {
-            replay.OnShutDown();
+            replay!.OnShutDown();
             return base.OnDisconnect(reason, message);
         }
 
@@ -60,7 +59,7 @@ namespace MinecraftClient.ChatBots
         {
             try
             {
-                if (replay.RecordRunning)
+                if (replay!.RecordRunning)
                 {
                     if (args.Length > 0)
                     {

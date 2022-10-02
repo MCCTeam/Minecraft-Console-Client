@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
-using MinecraftClient.Mapping;
-using MinecraftClient.Crypto;
-using MinecraftClient.Inventory;
-using MinecraftClient.Mapping.EntityPalettes;
-using MinecraftClient.Inventory.ItemPalettes;
 using System.Runtime.CompilerServices;
+using System.Text;
+using MinecraftClient.Inventory;
+using MinecraftClient.Inventory.ItemPalettes;
+using MinecraftClient.Mapping;
+using MinecraftClient.Mapping.EntityPalettes;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -20,7 +17,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <summary>
         /// Protocol version for adjusting data types
         /// </summary>
-        private int protocolversion;
+        private readonly int protocolversion;
 
         /// <summary>
         /// Initialize a new DataTypes instance
@@ -28,7 +25,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="protocol">Protocol version</param>
         public DataTypes(int protocol)
         {
-            this.protocolversion = protocol;
+            protocolversion = protocol;
         }
 
         /// <summary>
@@ -223,7 +220,7 @@ namespace MinecraftClient.Protocol.Handlers
             Span<byte> javaUUID = stackalloc byte[16];
             for (int i = 0; i < 16; ++i)
                 javaUUID[i] = cache.Dequeue();
-            Guid guid = new Guid(javaUUID);
+            Guid guid = new(javaUUID);
             if (BitConverter.IsLittleEndian)
                 guid = guid.ToLittleEndian();
             return guid;
@@ -402,9 +399,8 @@ namespace MinecraftClient.Protocol.Handlers
         /// Read a single item slot from a cache of bytes and remove it from the cache
         /// </summary>
         /// <returns>The item that was read or NULL for an empty slot</returns>
-        public Item ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
+        public Item? ReadNextItemSlot(Queue<byte> cache, ItemPalette itemPalette)
         {
-            List<byte> slotData = new List<byte>();
             if (protocolversion > Protocol18Handler.MC_1_13_Version)
             {
                 // MC 1.13 and greater
@@ -440,21 +436,15 @@ namespace MinecraftClient.Protocol.Handlers
         public Entity ReadNextEntity(Queue<byte> cache, EntityPalette entityPalette, bool living)
         {
             int entityID = ReadNextVarInt(cache);
-            Guid entityUUID = Guid.Empty;
             if (protocolversion > Protocol18Handler.MC_1_8_Version)
-            {
-                entityUUID = ReadNextUUID(cache);
-            }
+                ReadNextUUID(cache);
+
             EntityType entityType;
             // Entity type data type change from byte to varint after 1.14
             if (protocolversion > Protocol18Handler.MC_1_13_Version)
-            {
                 entityType = entityPalette.FromId(ReadNextVarInt(cache), living);
-            }
             else
-            {
                 entityType = entityPalette.FromId(ReadNextByte(cache), living);
-            }
 
             Double entityX = ReadNextDouble(cache);
             Double entityY = ReadNextDouble(cache);
@@ -493,7 +483,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// </summary>
         private Dictionary<string, object> ReadNextNbt(Queue<byte> cache, bool root)
         {
-            Dictionary<string, object> nbtData = new Dictionary<string, object>();
+            Dictionary<string, object> nbtData = new();
 
             if (root)
             {
@@ -736,9 +726,9 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>The item that was read or NULL for an empty slot</returns>
         public VillagerTrade ReadNextTrade(Queue<byte> cache, ItemPalette itemPalette)
         {
-            Item inputItem1 = ReadNextItemSlot(cache, itemPalette);
-            Item outputItem = ReadNextItemSlot(cache, itemPalette);
-            Item inputItem2 = null;
+            Item inputItem1 = ReadNextItemSlot(cache, itemPalette)!;
+            Item outputItem = ReadNextItemSlot(cache, itemPalette)!;
+            Item? inputItem2 = null;
             if (ReadNextBool(cache)) //check if villager has second item
             {
                 inputItem2 = ReadNextItemSlot(cache, itemPalette);
@@ -774,20 +764,19 @@ namespace MinecraftClient.Protocol.Handlers
             if (nbt == null || nbt.Count == 0)
                 return new byte[] { 0 }; // TAG_End
 
-            List<byte> bytes = new List<byte>();
+            List<byte> bytes = new();
 
             if (root)
             {
                 bytes.Add(10); // TAG_Compound
 
                 // NBT root name
-                string rootName = null;
+                string? rootName = null;
 
                 if (nbt.ContainsKey(""))
                     rootName = nbt[""] as string;
 
-                if (rootName == null)
-                    rootName = "";
+                rootName ??= "";
 
                 bytes.AddRange(GetUShort((ushort)rootName.Length));
                 bytes.AddRange(Encoding.ASCII.GetBytes(rootName));
@@ -799,10 +788,9 @@ namespace MinecraftClient.Protocol.Handlers
                 if (item.Key == "" && root)
                     continue;
 
-                byte fieldType;
                 byte[] fieldNameLength = GetUShort((ushort)item.Key.Length);
                 byte[] fieldName = Encoding.ASCII.GetBytes(item.Key);
-                byte[] fieldData = GetNbtField(item.Value, out fieldType);
+                byte[] fieldData = GetNbtField(item.Value, out byte fieldType);
                 bytes.Add(fieldType);
                 bytes.AddRange(fieldNameLength);
                 bytes.AddRange(fieldName);
@@ -866,7 +854,7 @@ namespace MinecraftClient.Protocol.Handlers
             {
                 fieldType = 9; // TAG_List
 
-                List<object> list = new List<object>((object[])obj);
+                List<object> list = new((object[])obj);
                 int arrayLengthTotal = list.Count;
 
                 // Treat empty list as TAG_Byte, length 0
@@ -874,17 +862,15 @@ namespace MinecraftClient.Protocol.Handlers
                     return ConcatBytes(new[] { (byte)1 }, GetInt(0));
 
                 // Encode first list item, retain its type
-                byte firstItemType;
                 string firstItemTypeString = list[0].GetType().Name;
-                byte[] firstItemBytes = GetNbtField(list[0], out firstItemType);
+                byte[] firstItemBytes = GetNbtField(list[0], out byte firstItemType);
                 list.RemoveAt(0);
 
                 // Encode further list items, check they have the same type
-                byte subsequentItemType;
-                List<byte> subsequentItemsBytes = new List<byte>();
+                List<byte> subsequentItemsBytes = new();
                 foreach (object item in list)
                 {
-                    subsequentItemsBytes.AddRange(GetNbtField(item, out subsequentItemType));
+                    subsequentItemsBytes.AddRange(GetNbtField(item, out byte subsequentItemType));
                     if (subsequentItemType != firstItemType)
                         throw new System.IO.InvalidDataException(
                             "GetNbt: Cannot encode object[] list with mixed types: " + firstItemTypeString + ", " + item.GetType().Name + " into NBT!");
@@ -903,7 +889,7 @@ namespace MinecraftClient.Protocol.Handlers
                 fieldType = 11; // TAG_Int_Array
 
                 int[] srcIntList = (int[])obj;
-                List<byte> encIntList = new List<byte>();
+                List<byte> encIntList = new();
                 encIntList.AddRange(GetInt(srcIntList.Length));
                 foreach (int item in srcIntList)
                     encIntList.AddRange(GetInt(item));
@@ -914,7 +900,7 @@ namespace MinecraftClient.Protocol.Handlers
                 fieldType = 12; // TAG_Long_Array
 
                 long[] srcLongList = (long[])obj;
-                List<byte> encLongList = new List<byte>();
+                List<byte> encLongList = new();
                 encLongList.AddRange(GetInt(srcLongList.Length));
                 foreach (long item in srcLongList)
                     encLongList.AddRange(GetLong(item));
@@ -933,7 +919,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Byte array for this integer</returns>
         public byte[] GetVarInt(int paramInt)
         {
-            List<byte> bytes = new List<byte>();
+            List<byte> bytes = new();
             while ((paramInt & -128) != 0)
             {
                 bytes.Add((byte)(paramInt & 127 | 128));
@@ -950,8 +936,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Byte array for this boolean</returns>
         public byte[] GetBool(bool paramBool)
         {
-            List<byte> bytes = new List<byte>();
-            bytes.Add((byte)Convert.ToByte(paramBool));
+            List<byte> bytes = new()
+            {
+                (byte)Convert.ToByte(paramBool)
+            };
             return bytes.ToArray();
         }
 
@@ -1138,16 +1126,16 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Block face byte enum</returns>
         public byte GetBlockFace(Direction direction)
         {
-            switch (direction)
+            return direction switch
             {
-                case Direction.Down: return 0;
-                case Direction.Up: return 1;
-                case Direction.North: return 2;
-                case Direction.South: return 3;
-                case Direction.West: return 4;
-                case Direction.East: return 5;
-                default: throw new NotImplementedException("Unknown direction: " + direction.ToString());
-            }
+                Direction.Down => 0,
+                Direction.Up => 1,
+                Direction.North => 2,
+                Direction.South => 3,
+                Direction.West => 4,
+                Direction.East => 5,
+                _ => throw new NotImplementedException("Unknown direction: " + direction.ToString()),
+            };
         }
 
         /// <summary>
@@ -1167,7 +1155,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Array containing all the data</returns>
         public byte[] ConcatBytes(params byte[][] bytes)
         {
-            List<byte> result = new List<byte>();
+            List<byte> result = new();
             foreach (byte[] array in bytes)
                 result.AddRange(array);
             return result.ToArray();

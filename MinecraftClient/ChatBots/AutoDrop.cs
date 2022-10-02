@@ -1,8 +1,7 @@
-﻿using MinecraftClient.Inventory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using MinecraftClient.Inventory;
 
 namespace MinecraftClient.ChatBots
 {
@@ -18,10 +17,10 @@ namespace MinecraftClient.ChatBots
         private bool enable = true;
 
         private int updateDebounce = 0;
-        private int updateDebounceValue = 2;
+        private readonly int updateDebounceValue = 2;
         private int inventoryUpdated = -1;
 
-        private List<ItemType> itemList = new List<ItemType>();
+        private readonly List<ItemType> itemList = new();
 
         public AutoDrop(string mode, string itemList)
         {
@@ -40,17 +39,11 @@ namespace MinecraftClient.ChatBots
         /// <returns>Item type array</returns>
         private ItemType[] ItemListParser(string itemList)
         {
-            string trimed = new string(itemList.Where(c => !char.IsWhiteSpace(c)).ToArray());
-            string[] list = trimed.Split(',');
-            List<ItemType> result = new List<ItemType>();
-            foreach (string t in list)
-            {
-                ItemType item;
-                if (Enum.TryParse(t, true, out item))
-                {
+            string trimed = new(itemList.Where(c => !char.IsWhiteSpace(c)).ToArray());
+            List<ItemType> result = new();
+            foreach (string t in trimed.Split(','))
+                if (Enum.TryParse(t, true, out ItemType item))
                     result.Add(item);
-                }
-            }
             return result.ToArray();
         }
 
@@ -71,8 +64,7 @@ namespace MinecraftClient.ChatBots
                     case "add":
                         if (args.Length >= 2)
                         {
-                            ItemType item;
-                            if (Enum.TryParse(args[1], true, out item))
+                            if (Enum.TryParse(args[1], true, out ItemType item))
                             {
                                 itemList.Add(item);
                                 return Translations.Get("bot.autoDrop.added", item.ToString());
@@ -89,8 +81,7 @@ namespace MinecraftClient.ChatBots
                     case "remove":
                         if (args.Length >= 2)
                         {
-                            ItemType item;
-                            if (Enum.TryParse(args[1], true, out item))
+                            if (Enum.TryParse(args[1], true, out ItemType item))
                             {
                                 if (itemList.Contains(item))
                                 {
@@ -109,7 +100,7 @@ namespace MinecraftClient.ChatBots
                         }
                         else
                         {
-                            return Translations.Get("cmd.inventory.help.usage") +  ": remove <item name>";
+                            return Translations.Get("cmd.inventory.help.usage") + ": remove <item name>";
                         }
                     case "list":
                         if (itemList.Count > 0)
@@ -155,7 +146,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private string GetHelp()
+        private static string GetHelp()
         {
             return Translations.Get("general.available_cmd", "on, off, add, remove, list, mode");
         }

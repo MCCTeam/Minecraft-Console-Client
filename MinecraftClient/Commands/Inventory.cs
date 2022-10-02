@@ -16,7 +16,7 @@ namespace MinecraftClient.Commands
         {
             if (handler.GetInventoryEnabled())
             {
-                string[] args = getArgs(command);
+                string[] args = GetArgs(command);
                 if (args.Length >= 1)
                 {
                     int inventoryId;
@@ -117,7 +117,7 @@ namespace MinecraftClient.Commands
                         {
                             inventory.Items.Values
                                 .ToList()
-                                .FindAll(item => item.Type == parsedItemType && (shouldUseItemCount ? item.Count == itemCount : true))
+                                .FindAll(item => item.Type == parsedItemType && (!shouldUseItemCount || item.Count == itemCount))
                                 .ForEach(item =>
                                 {
                                     if (!foundItems.ContainsKey(inventory.ID))
@@ -183,7 +183,7 @@ namespace MinecraftClient.Commands
                         response.Append(Translations.Get("cmd.inventory.inventory"));
                         response.AppendLine(String.Format(" #{0} - {1}§8", inventoryId, inventory.Title));
 
-                        string asciiArt = inventory.Type.GetAsciiArt();
+                        string? asciiArt = inventory.Type.GetAsciiArt();
                         if (asciiArt != null && Settings.DisplayInventoryLayout)
                             response.AppendLine(asciiArt);
 

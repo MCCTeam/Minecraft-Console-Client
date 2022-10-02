@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace MinecraftClient.Protocol.Handlers.Forge
+﻿namespace MinecraftClient.Protocol.Handlers.Forge
 {
     /// <summary>
     /// Copy of the forge enum for client states.

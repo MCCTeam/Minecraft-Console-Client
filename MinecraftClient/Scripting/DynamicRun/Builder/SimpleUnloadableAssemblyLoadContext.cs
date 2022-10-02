@@ -16,7 +16,7 @@ namespace DynamicRun.Builder
         {
         }
 
-        protected override Assembly Load(AssemblyName assemblyName)
+        protected override Assembly? Load(AssemblyName assemblyName)
         {
             return null;
         }

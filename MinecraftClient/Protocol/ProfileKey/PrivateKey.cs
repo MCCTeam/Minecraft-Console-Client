@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using MinecraftClient.Protocol.Message;
 
 namespace MinecraftClient.Protocol.Keys
@@ -18,10 +14,10 @@ namespace MinecraftClient.Protocol.Keys
 
         public PrivateKey(string pemKey)
         {
-            this.Key = KeyUtils.DecodePemKey(pemKey, "-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----");
+            Key = KeyUtils.DecodePemKey(pemKey, "-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----");
 
-            this.rsa = RSA.Create();
-            rsa.ImportPkcs8PrivateKey(this.Key, out _);
+            rsa = RSA.Create();
+            rsa.ImportPkcs8PrivateKey(Key, out _);
         }
 
         public byte[] SignData(byte[] data)
@@ -62,8 +58,8 @@ namespace MinecraftClient.Protocol.Keys
 
             byte[] msgSignData = KeyUtils.GetSignatureData(precedingSignature, uuid, bodyDigest);
             byte[] msgSign = SignData(msgSignData);
-            
-            this.precedingSignature = msgSign;
+
+            precedingSignature = msgSign;
 
             return msgSign;
         }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace MinecraftClient.Inventory
+﻿namespace MinecraftClient.Inventory
 {
     // For MC 1.14 after ONLY
     public enum ContainerType
@@ -57,22 +52,24 @@ namespace MinecraftClient.Inventory
     {
         public static ContainerType ToNew(ContainerTypeOld type)
         {
-            switch (type)
+            return type switch
             {
-                case ContainerTypeOld.CONTAINER: return ContainerType.Unknown;
-                case ContainerTypeOld.CHEST: return ContainerType.Generic_9x3;
-                case ContainerTypeOld.CRAFTING_TABLE: return ContainerType.Crafting;
-                case ContainerTypeOld.FURNACE: return ContainerType.Furnace;
-                case ContainerTypeOld.DISPENSER: return ContainerType.Generic_3x3;
-                case ContainerTypeOld.ENCHANTING_TABLE: return ContainerType.Enchantment;
-                case ContainerTypeOld.BREWING_STAND: return ContainerType.BrewingStand;
-                case ContainerTypeOld.VILLAGER: return ContainerType.Merchant;
-                case ContainerTypeOld.HOPPER: return ContainerType.Hopper;
-                case ContainerTypeOld.DROPPER: return ContainerType.Generic_3x3;
-                case ContainerTypeOld.SHULKER_BOX: return ContainerType.ShulkerBox;
-                case ContainerTypeOld.ENTITYHORSE: return ContainerType.Unknown;
-                default: return ContainerType.Unknown;
-            }
+#pragma warning disable format // @formatter:off
+                ContainerTypeOld.CONTAINER         =>  ContainerType.Unknown,
+                ContainerTypeOld.CHEST             =>  ContainerType.Generic_9x3,
+                ContainerTypeOld.CRAFTING_TABLE    =>  ContainerType.Crafting,
+                ContainerTypeOld.FURNACE           =>  ContainerType.Furnace,
+                ContainerTypeOld.DISPENSER         =>  ContainerType.Generic_3x3,
+                ContainerTypeOld.ENCHANTING_TABLE  =>  ContainerType.Enchantment,
+                ContainerTypeOld.BREWING_STAND     =>  ContainerType.BrewingStand,
+                ContainerTypeOld.VILLAGER          =>  ContainerType.Merchant,
+                ContainerTypeOld.HOPPER            =>  ContainerType.Hopper,
+                ContainerTypeOld.DROPPER           =>  ContainerType.Generic_3x3,
+                ContainerTypeOld.SHULKER_BOX       =>  ContainerType.ShulkerBox,
+                ContainerTypeOld.ENTITYHORSE       =>  ContainerType.Unknown,
+                _                                  =>  ContainerType.Unknown,
+#pragma warning restore format // @formatter:on
+            };
         }
     }
 }

@@ -1,22 +1,20 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using MinecraftClient.Protocol;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
-using MinecraftClient.Protocol.Handlers.Forge;
-using MinecraftClient.Protocol.Session;
-using MinecraftClient.Mapping.EntityPalettes;
-using MinecraftClient.Mapping.BlockPalettes;
-using MinecraftClient.Inventory.ItemPalettes;
-using MinecraftClient.WinAPI;
-using MinecraftClient.Protocol.Keys;
-using System.Security.Cryptography;
-using System.Xml.Linq;
 using System.Threading.Tasks;
+using MinecraftClient.Inventory.ItemPalettes;
+using MinecraftClient.Mapping.BlockPalettes;
+using MinecraftClient.Mapping.EntityPalettes;
+using MinecraftClient.Protocol;
+using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Protocol.Keys;
+using MinecraftClient.Protocol.Session;
+using MinecraftClient.WinAPI;
 
 namespace MinecraftClient
 {
@@ -36,13 +34,13 @@ namespace MinecraftClient
     /// </remarks>
     static class Program
     {
-        private static McClient client;
-        public static string[] startupargs;
+        private static McClient? client;
+        public static string[]? startupargs;
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
         public const string MCHighestVersion = "1.19.2";
-        public static readonly string BuildInfo = null;
+        public static readonly string? BuildInfo = null;
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
         private static bool useMcVersionOnce = false;
@@ -77,14 +75,14 @@ namespace MinecraftClient
 
             //Setup ConsoleIO
             ConsoleIO.LogPrefix = "§8[MCC] ";
-            if (args.Length >= 1 && args[args.Length - 1] == "BasicIO" || args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
+            if (args.Length >= 1 && args[^1] == "BasicIO" || args.Length >= 1 && args[^1] == "BasicIO-NoColor")
             {
-                if (args.Length >= 1 && args[args.Length - 1] == "BasicIO-NoColor")
+                if (args.Length >= 1 && args[^1] == "BasicIO-NoColor")
                 {
                     ConsoleIO.BasicIO_NoColor = true;
                 }
                 ConsoleIO.BasicIO = true;
-                args = args.Where(o => !Object.ReferenceEquals(o, args[args.Length - 1])).ToArray();
+                args = args.Where(o => !Object.ReferenceEquals(o, args[^1])).ToArray();
             }
 
             if (!ConsoleIO.BasicIO)
@@ -150,10 +148,10 @@ namespace MinecraftClient
                     {
                         if (argument.StartsWith("--") && !argument.Contains("--generate"))
                         {
-                            if (!argument.Contains("="))
+                            if (!argument.Contains('='))
                                 throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
 
-                            string[] argParts = argument.Substring(2).Split('=');
+                            string[] argParts = argument[2..].Split('=');
                             string argName = argParts[0].Trim();
                             string argValue = argParts[1].Replace("\"", "").Trim();
 
@@ -269,7 +267,7 @@ namespace MinecraftClient
                 // Do NOT use Program.Exit() as creating new Thread cause program to freeze
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
                 if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt = null; ConsoleIO.Reset(); }
-                if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
+                if (Settings.playerHeadAsIcon) { ConsoleIcon.RevertToMCCIcon(); }
             });
 
 
@@ -293,7 +291,7 @@ namespace MinecraftClient
         /// </summary>
         private static void InitializeClient()
         {
-            SessionToken session = new SessionToken();
+            SessionToken session = new();
             PlayerKeyPair? playerKeyPair = null;
 
             ProtocolHandler.LoginResult result = ProtocolHandler.LoginResult.LoginRequired;
@@ -390,12 +388,12 @@ namespace MinecraftClient
                     Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
 
                 if (Settings.playerHeadAsIcon)
-                    ConsoleIcon.setPlayerIconAsync(Settings.Username);
+                    ConsoleIcon.SetPlayerIconAsync(Settings.Username);
 
                 if (Settings.DebugMessages)
                     Translations.WriteLine("debug.session_id", session.ID);
 
-                List<string> availableWorlds = new List<string>();
+                List<string> availableWorlds = new();
                 if (Settings.MinecraftRealmsEnabled && !String.IsNullOrEmpty(session.ID))
                     availableWorlds = ProtocolHandler.RealmsListWorlds(Settings.Username, session.PlayerID, session.ID);
 
@@ -412,9 +410,8 @@ namespace MinecraftClient
                                 HandleFailure(Translations.Get("error.realms.access_denied"), false, ChatBot.DisconnectReason.LoginRejected);
                                 return;
                             }
-                            int worldIndex = 0;
                             string worldId = addressInput.Split(':')[1];
-                            if (!availableWorlds.Contains(worldId) && int.TryParse(worldId, out worldIndex) && worldIndex < availableWorlds.Count)
+                            if (!availableWorlds.Contains(worldId) && int.TryParse(worldId, out int worldIndex) && worldIndex < availableWorlds.Count)
                                 worldId = availableWorlds[worldIndex];
                             if (availableWorlds.Contains(worldId))
                             {
@@ -508,7 +505,11 @@ namespace MinecraftClient
                         if (Settings.ConsoleTitle != "")
                             Console.Title = Settings.ExpandVars(Settings.ConsoleTitle);
                     }
-                    catch (NotSupportedException) { HandleFailure(Translations.Get("error.unsupported"), true); }
+                    catch (NotSupportedException)
+                    {
+                        HandleFailure(Translations.Get("error.unsupported"), true);
+                    }
+                    catch (Exception) { }
                 }
                 else HandleFailure(Translations.Get("error.determine"), true);
             }
@@ -516,18 +517,20 @@ namespace MinecraftClient
             {
                 string failureMessage = Translations.Get("error.login");
                 string failureReason = "";
-                switch (result)
+                failureReason = result switch
                 {
-                    case ProtocolHandler.LoginResult.AccountMigrated: failureReason = "error.login.migrated"; break;
-                    case ProtocolHandler.LoginResult.ServiceUnavailable: failureReason = "error.login.server"; break;
-                    case ProtocolHandler.LoginResult.WrongPassword: failureReason = "error.login.blocked"; break;
-                    case ProtocolHandler.LoginResult.InvalidResponse: failureReason = "error.login.response"; break;
-                    case ProtocolHandler.LoginResult.NotPremium: failureReason = "error.login.premium"; break;
-                    case ProtocolHandler.LoginResult.OtherError: failureReason = "error.login.network"; break;
-                    case ProtocolHandler.LoginResult.SSLError: failureReason = "error.login.ssl"; break;
-                    case ProtocolHandler.LoginResult.UserCancel: failureReason = "error.login.cancel"; break;
-                    default: failureReason = "error.login.unknown"; break;
-                }
+#pragma warning disable format // @formatter:off
+                    ProtocolHandler.LoginResult.AccountMigrated     =>  "error.login.migrated",
+                    ProtocolHandler.LoginResult.ServiceUnavailable  =>  "error.login.server",
+                    ProtocolHandler.LoginResult.WrongPassword       =>  "error.login.blocked",
+                    ProtocolHandler.LoginResult.InvalidResponse     =>  "error.login.response",
+                    ProtocolHandler.LoginResult.NotPremium          =>  "error.login.premium",
+                    ProtocolHandler.LoginResult.OtherError          =>  "error.login.network",
+                    ProtocolHandler.LoginResult.SSLError            =>  "error.login.ssl",
+                    ProtocolHandler.LoginResult.UserCancel          =>  "error.login.cancel",
+                    _                                               =>  "error.login.unknown",
+#pragma warning restore format // @formatter:on
+                };
                 failureMessage += Translations.Get(failureReason);
                 HandleFailure(failureMessage, false, ChatBot.DisconnectReason.LoginRejected);
             }
@@ -572,7 +575,7 @@ namespace MinecraftClient
             {
                 if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
                 if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
-                if (Settings.playerHeadAsIcon) { ConsoleIcon.revertToMCCIcon(); }
+                if (Settings.playerHeadAsIcon) { ConsoleIcon.RevertToMCCIcon(); }
                 Environment.Exit(exitcode);
             })).Start();
         }
@@ -584,7 +587,7 @@ namespace MinecraftClient
         /// <param name="errorMessage">Error message to display and optionally pass to AutoRelog bot</param>
         /// <param name="versionError">Specify if the error is related to an incompatible or unkown server version</param>
         /// <param name="disconnectReason">If set, the error message will be processed by the AutoRelog bot</param>
-        public static void HandleFailure(string errorMessage = null, bool versionError = false, ChatBots.AutoRelog.DisconnectReason? disconnectReason = null)
+        public static void HandleFailure(string? errorMessage = null, bool versionError = false, ChatBots.AutoRelog.DisconnectReason? disconnectReason = null)
         {
             if (!String.IsNullOrEmpty(errorMessage))
             {
@@ -643,7 +646,7 @@ namespace MinecraftClient
 
                                     if (Settings.internalCmdChar != ' '
                                         && command[0] == Settings.internalCmdChar)
-                                        command = command.Substring(1);
+                                        command = command[1..];
 
                                     if (command.StartsWith("reco"))
                                     {
@@ -722,7 +725,7 @@ namespace MinecraftClient
         /// <param name="nameSpace">Namespace to process</param>
         /// <param name="assembly">Assembly to use. Default is Assembly.GetExecutingAssembly()</param>
         /// <returns></returns>
-        public static Type[] GetTypesInNamespace(string nameSpace, Assembly assembly = null)
+        public static Type[] GetTypesInNamespace(string nameSpace, Assembly? assembly = null)
         {
             if (assembly == null) { assembly = Assembly.GetExecutingAssembly(); }
             return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
@@ -733,12 +736,10 @@ namespace MinecraftClient
         /// </summary>
         static Program()
         {
-            AssemblyConfigurationAttribute attribute
-             = typeof(Program)
+            if (typeof(Program)
                 .Assembly
                 .GetCustomAttributes(typeof(System.Reflection.AssemblyConfigurationAttribute), false)
-                .FirstOrDefault() as AssemblyConfigurationAttribute;
-            if (attribute != null)
+                .FirstOrDefault() is AssemblyConfigurationAttribute attribute)
                 BuildInfo = attribute.Configuration;
         }
     }

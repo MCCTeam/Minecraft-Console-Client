@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using Microsoft.CSharp;
-using System.CodeDom.Compiler;
-using System.Reflection;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Text;
+using System.Threading;
 
 namespace MinecraftClient.ChatBots
 {
@@ -17,32 +14,32 @@ namespace MinecraftClient.ChatBots
 
     public class Script : ChatBot
     {
-        private string file;
-        private string[] lines = new string[0];
-        private string[] args = new string[0];
+        private string? file;
+        private string[] lines = Array.Empty<string>();
+        private string[] args = Array.Empty<string>();
         private int sleepticks = 10;
         private int nextline = 0;
-        private string owner;
+        private readonly string? owner;
         private bool csharp;
-        private Thread thread;
-        private Dictionary<string, object> localVars;
+        private Thread? thread;
+        private readonly Dictionary<string, object>? localVars;
 
         public Script(string filename)
         {
             ParseArguments(filename);
         }
 
-        public Script(string filename, string ownername, Dictionary<string, object> localVars)
+        public Script(string filename, string? ownername, Dictionary<string, object>? localVars)
             : this(filename)
         {
-            this.owner = ownername;
+            owner = ownername;
             this.localVars = localVars;
         }
 
         private void ParseArguments(string argstr)
         {
-            List<string> args = new List<string>();
-            StringBuilder str = new StringBuilder();
+            List<string> args = new();
+            StringBuilder str = new();
 
             bool escape = false;
             bool quotes = false;
@@ -115,9 +112,9 @@ namespace MinecraftClient.ChatBots
                 string caller = "Script";
                 try
                 {
-                    StackFrame frame = new StackFrame(1);
-                    MethodBase method = frame.GetMethod();
-                    Type type = method.DeclaringType;
+                    StackFrame frame = new(1);
+                    MethodBase method = frame.GetMethod()!;
+                    Type type = method.DeclaringType!;
                     caller = type.Name;
                 }
                 catch { }
@@ -130,7 +127,7 @@ namespace MinecraftClient.ChatBots
         public override void Initialize()
         {
             //Load the given file from the startup parameters
-            if (LookForScript(ref file))
+            if (LookForScript(ref file!))
             {
                 lines = System.IO.File.ReadAllLines(file, Encoding.UTF8);
                 csharp = file.EndsWith(".cs");
@@ -145,7 +142,7 @@ namespace MinecraftClient.ChatBots
 
                 if (!String.IsNullOrEmpty(owner))
                     SendPrivateMessage(owner, Translations.Get("bot.script.file_not_found", file));
-                
+
                 UnloadBot(); //No need to keep the bot active
             }
         }
@@ -171,8 +168,10 @@ namespace MinecraftClient.ChatBots
                                 SendPrivateMessage(owner, errorMessage);
                             LogToConsole(e.InnerException);
                         }
-                    });
-                    thread.Name = "MCC Script - " + file;
+                    })
+                    {
+                        Name = "MCC Script - " + file
+                    };
                     thread.Start();
                 }
 
@@ -204,7 +203,7 @@ namespace MinecraftClient.ChatBots
                                         int ticks = 10;
                                         try
                                         {
-                                            ticks = Convert.ToInt32(instruction_line.Substring(5, instruction_line.Length - 5));
+                                            ticks = Convert.ToInt32(instruction_line[5..]);
                                         }
                                         catch { }
                                         sleepticks = ticks;

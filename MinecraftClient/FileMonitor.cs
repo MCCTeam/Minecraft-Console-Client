@@ -11,8 +11,8 @@ namespace MinecraftClient
     /// </summary>
     public class FileMonitor : IDisposable
     {
-        private Tuple<FileSystemWatcher, CancellationTokenSource>? monitor = null;
-        private Tuple<Thread, CancellationTokenSource>? polling = null;
+        private readonly Tuple<FileSystemWatcher, CancellationTokenSource>? monitor = null;
+        private readonly Tuple<Thread, CancellationTokenSource>? polling = null;
 
         /// <summary>
         /// Create a new FileMonitor and start monitoring
@@ -24,7 +24,7 @@ namespace MinecraftClient
         {
             if (Settings.DebugMessages)
             {
-                string callerClass = new System.Diagnostics.StackFrame(1).GetMethod().DeclaringType.Name;
+                string callerClass = new System.Diagnostics.StackFrame(1).GetMethod()!.DeclaringType!.Name;
                 ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.init", callerClass, Path.Combine(folder, filename)));
             }
 
@@ -42,14 +42,14 @@ namespace MinecraftClient
             {
                 if (Settings.DebugMessages)
                 {
-                    string callerClass = new System.Diagnostics.StackFrame(1).GetMethod().DeclaringType.Name;
+                    string callerClass = new System.Diagnostics.StackFrame(1).GetMethod()!.DeclaringType!.Name;
                     ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.fail", callerClass));
                 }
 
                 monitor = null;
                 var cancellationTokenSource = new CancellationTokenSource();
                 polling = new Tuple<Thread, CancellationTokenSource>(new Thread(() => PollingThread(folder, filename, handler, cancellationTokenSource.Token)), cancellationTokenSource);
-                polling.Item1.Name = String.Format("{0} Polling thread: {1}", this.GetType().Name, Path.Combine(folder, filename));
+                polling.Item1.Name = String.Format("{0} Polling thread: {1}", GetType().Name, Path.Combine(folder, filename));
                 polling.Item1.Start();
             }
         }
@@ -94,7 +94,7 @@ namespace MinecraftClient
         /// <returns>Last write time, or DateTime.MinValue if the file does not exist</returns>
         private DateTime GetLastWrite(string path)
         {
-            FileInfo fileInfo = new FileInfo(path);
+            FileInfo fileInfo = new(path);
             if (fileInfo.Exists)
             {
                 return fileInfo.LastWriteTime;
@@ -110,11 +110,10 @@ namespace MinecraftClient
         /// <param name="encoding">Encoding (default is UTF8)</param>
         /// <exception cref="System.IO.IOException">Thrown when failing to read the file despite multiple retries</exception>
         /// <returns>All lines</returns>
-        public static string[] ReadAllLinesWithRetries(string filePath, int maxTries = 3, Encoding encoding = null)
+        public static string[] ReadAllLinesWithRetries(string filePath, int maxTries = 3, Encoding? encoding = null)
         {
             int attempt = 0;
-            if (encoding == null)
-                encoding = Encoding.UTF8;
+            encoding ??= Encoding.UTF8;
             while (true)
             {
                 try
@@ -138,11 +137,10 @@ namespace MinecraftClient
         /// <param name="lines">The lines to write to the file</param>
         /// <param name="maxTries">Maximum read attempts</param>
         /// <param name="encoding">Encoding (default is UTF8)</param>
-        public static void WriteAllLinesWithRetries(string filePath, IEnumerable<string> lines, int maxTries = 3, Encoding encoding = null)
+        public static void WriteAllLinesWithRetries(string filePath, IEnumerable<string> lines, int maxTries = 3, Encoding? encoding = null)
         {
             int attempt = 0;
-            if (encoding == null)
-                encoding = Encoding.UTF8;
+            encoding ??= Encoding.UTF8;
             while (true)
             {
                 try

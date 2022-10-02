@@ -34,12 +34,12 @@ namespace MinecraftClient.Protocol.Keys
 
         public bool NeedRefresh()
         {
-            return DateTime.Now.ToUniversalTime() > this.RefreshedAfter;
+            return DateTime.Now.ToUniversalTime() > RefreshedAfter;
         }
 
         public bool IsExpired()
         {
-            return DateTime.Now.ToUniversalTime() > this.ExpiresAt;
+            return DateTime.Now.ToUniversalTime() > ExpiresAt;
         }
 
         public long GetExpirationMilliseconds()
@@ -61,17 +61,17 @@ namespace MinecraftClient.Protocol.Keys
             if (fields.Length < 6)
                 throw new InvalidDataException("Invalid string format");
 
-            PublicKey publicKey = new PublicKey(pemKey: fields[0].Trim(),
+            PublicKey publicKey = new(pemKey: fields[0].Trim(),
                 sig: fields[1].Trim(), sigV2: fields[2].Trim());
 
-            PrivateKey privateKey = new PrivateKey(pemKey: fields[3].Trim());
+            PrivateKey privateKey = new(pemKey: fields[3].Trim());
 
             return new PlayerKeyPair(publicKey, privateKey, fields[4].Trim(), fields[5].Trim());
         }
 
         public override string ToString()
         {
-            List<string> datas = new List<string>();
+            List<string> datas = new();
             datas.Add(Convert.ToBase64String(PublicKey.Key));
             if (PublicKey.Signature == null)
                 datas.Add(String.Empty);

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MinecraftClient.Protocol.Handlers.Forge;
 using System.Threading;
+using MinecraftClient.Protocol.Handlers.Forge;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -12,12 +12,12 @@ namespace MinecraftClient.Protocol.Handlers
     /// </summary>
     class Protocol18Forge
     {
-        private int protocolversion;
-        private DataTypes dataTypes;
-        private Protocol18Handler protocol18;
-        private IMinecraftComHandler mcHandler;
+        private readonly int protocolversion;
+        private readonly DataTypes dataTypes;
+        private readonly Protocol18Handler protocol18;
+        private readonly IMinecraftComHandler mcHandler;
 
-        private ForgeInfo forgeInfo;
+        private readonly ForgeInfo? forgeInfo;
         private FMLHandshakeClientState fmlHandshakeState = FMLHandshakeClientState.START;
         private bool ForgeEnabled() { return forgeInfo != null; }
 
@@ -27,10 +27,10 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="forgeInfo">Forge Server Information</param>
         /// <param name="protocolVersion">Minecraft protocol version</param>
         /// <param name="dataTypes">Minecraft data types handler</param>
-        public Protocol18Forge(ForgeInfo forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
+        public Protocol18Forge(ForgeInfo? forgeInfo, int protocolVersion, DataTypes dataTypes, Protocol18Handler protocol18, IMinecraftComHandler mcHandler)
         {
             this.forgeInfo = forgeInfo;
-            this.protocolversion = protocolVersion;
+            protocolversion = protocolVersion;
             this.dataTypes = dataTypes;
             this.protocol18 = protocol18;
             this.mcHandler = mcHandler;
@@ -44,7 +44,7 @@ namespace MinecraftClient.Protocol.Handlers
         public string GetServerAddress(string serverAddress)
         {
             if (ForgeEnabled())
-                return serverAddress + "\0" + forgeInfo.Version + "\0";
+                return serverAddress + "\0" + forgeInfo!.Version + "\0";
             return serverAddress;
         }
 
@@ -54,7 +54,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Whether the handshake was successful.</returns>
         public bool CompleteForgeHandshake()
         {
-            if (ForgeEnabled() && forgeInfo.Version == FMLVersion.FML)
+            if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML)
             {
                 while (fmlHandshakeState != FMLHandshakeClientState.DONE)
                 {
@@ -103,7 +103,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE if the plugin message was recognized and handled</returns>
         public bool HandlePluginMessage(string channel, Queue<byte> packetData, ref int currentDimension)
         {
-            if (ForgeEnabled() && forgeInfo.Version == FMLVersion.FML && fmlHandshakeState != FMLHandshakeClientState.DONE)
+            if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML && fmlHandshakeState != FMLHandshakeClientState.DONE)
             {
                 if (channel == "FML|HS")
                 {
@@ -239,7 +239,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>TRUE/FALSE depending on whether the packet was understood or not</returns>
         public bool HandleLoginPluginRequest(string channel, Queue<byte> packetData, ref List<byte> responseData)
         {
-            if (ForgeEnabled() && forgeInfo.Version == FMLVersion.FML2 && channel == "fml:loginwrapper")
+            if (ForgeEnabled() && forgeInfo!.Version == FMLVersion.FML2 && channel == "fml:loginwrapper")
             {
                 // Forge Handshake handler source code used to implement the FML2 packets:
                 // https://github.com/MinecraftForge/MinecraftForge/blob/master/src/main/java/net/minecraftforge/fml/network/FMLNetworkConstants.java
@@ -283,7 +283,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (fmlChannel == "fml:handshake")
                 {
                     bool fmlResponseReady = false;
-                    List<byte> fmlResponsePacket = new List<byte>();
+                    List<byte> fmlResponsePacket = new();
 
                     switch (packetID)
                     {
@@ -303,17 +303,17 @@ namespace MinecraftClient.Protocol.Handlers
                             if (Settings.DebugMessages)
                                 Translations.WriteLineFormatted("forge.fml2.mod");
 
-                            List<string> mods = new List<string>();
+                            List<string> mods = new();
                             int modCount = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < modCount; i++)
                                 mods.Add(dataTypes.ReadNextString(packetData));
 
-                            Dictionary<string, string> channels = new Dictionary<string, string>();
+                            Dictionary<string, string> channels = new();
                             int channelCount = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < channelCount; i++)
                                 channels.Add(dataTypes.ReadNextString(packetData), dataTypes.ReadNextString(packetData));
 
-                            List<string> registries = new List<string>();
+                            List<string> registries = new();
                             int registryCount = dataTypes.ReadNextVarInt(packetData);
                             for (int i = 0; i < registryCount; i++)
                                 registries.Add(dataTypes.ReadNextString(packetData));

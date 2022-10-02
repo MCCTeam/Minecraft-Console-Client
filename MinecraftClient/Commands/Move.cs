@@ -11,9 +11,9 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]"; } }
         public override string CmdDesc { get { return "walk or start walking. \"-f\": force unsafe movements like falling or touching fire"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            List<string> args = getArgs(command.ToLower()).ToList();
+            List<string> args = GetArgs(command.ToLower()).ToList();
             bool takeRisk = false;
 
             if (args.Count < 1)
@@ -21,7 +21,7 @@ namespace MinecraftClient.Commands
                 string desc = GetCmdDescTranslated();
 
                 if (handler.GetTerrainEnabled())
-                    handler.Log.Info(getChunkLoadingStatus(handler.GetWorld()));
+                    handler.Log.Info(World.GetChunkLoadingStatus(handler.GetWorld()));
 
                 return desc;
             }
@@ -65,7 +65,7 @@ namespace MinecraftClient.Commands
                         case "south": direction = Direction.South; break;
                         case "center":
                             Location current = handler.GetCurrentLocation();
-                            Location currentCenter = new Location(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
+                            Location currentCenter = new(Math.Floor(current.X) + 0.5, current.Y, Math.Floor(current.Z) + 0.5);
                             handler.MoveTo(currentCenter, allowDirectTeleport: true);
                             return Translations.Get("cmd.move.walk", currentCenter, current);
                         case "get": return handler.GetCurrentLocation().ToString();
@@ -81,7 +81,7 @@ namespace MinecraftClient.Commands
                     {
                         if (handler.MoveTo(goal, allowUnsafe: takeRisk))
                             return Translations.Get("cmd.move.moving", args[0]);
-                        else 
+                        else
                             return takeRisk ? Translations.Get("cmd.move.dir_fail") : Translations.Get("cmd.move.suggestforce");
                     }
                     else return Translations.Get("cmd.move.dir_fail");
@@ -112,20 +112,6 @@ namespace MinecraftClient.Commands
                 else return GetCmdDescTranslated();
             }
             else return Translations.Get("extra.terrainandmovement_required");
-        }
-
-        private string getChunkLoadingStatus(World world)
-        {
-            double chunkLoadedRatio;
-            if (world.chunkCnt == 0)
-                chunkLoadedRatio = 0;
-            else
-                chunkLoadedRatio = (world.chunkCnt - world.chunkLoadNotCompleted) / (double)world.chunkCnt;
-
-            string status = Translations.Get("cmd.move.chunk_loading_status",
-                    chunkLoadedRatio, world.chunkCnt - world.chunkLoadNotCompleted, world.chunkCnt);
-
-            return status;
         }
     }
 }

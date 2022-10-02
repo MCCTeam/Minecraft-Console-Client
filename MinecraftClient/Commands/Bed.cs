@@ -12,9 +12,9 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "bed leave|sleep <x> <y> <z>|sleep <radius>"; } }
         public override string CmdDesc { get { return "cmd.bed.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
-            string[] args = getArgs(command);
+            string[] args = GetArgs(command);
 
             if (args.Length >= 1)
             {

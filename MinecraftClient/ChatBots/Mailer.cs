@@ -1,8 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace MinecraftClient.ChatBots
 {
@@ -23,7 +23,7 @@ namespace MinecraftClient.ChatBots
             /// <returns>Ignore list</returns>
             public static IgnoreList FromFile(string filePath)
             {
-                IgnoreList ignoreList = new IgnoreList();
+                IgnoreList ignoreList = new();
                 foreach (string line in FileMonitor.ReadAllLinesWithRetries(filePath))
                 {
                     if (!line.StartsWith("#"))
@@ -42,7 +42,7 @@ namespace MinecraftClient.ChatBots
             /// <param name="filePath">Path to destination file</param>
             public void SaveToFile(string filePath)
             {
-                List<string> lines = new List<string>();
+                List<string> lines = new();
                 lines.Add("#Ignored Players");
                 foreach (string player in this)
                     lines.Add(player);
@@ -62,7 +62,7 @@ namespace MinecraftClient.ChatBots
             /// <returns>Mail database</returns>
             public static MailDatabase FromFile(string filePath)
             {
-                MailDatabase database = new MailDatabase();
+                MailDatabase database = new();
                 Dictionary<string, Dictionary<string, string>> iniFileDict = INIFile.ParseFile(FileMonitor.ReadAllLinesWithRetries(filePath));
                 foreach (KeyValuePair<string, Dictionary<string, string>> iniSection in iniFileDict)
                 {
@@ -83,17 +83,21 @@ namespace MinecraftClient.ChatBots
             /// <param name="filePath">Path to destination file</param>
             public void SaveToFile(string filePath)
             {
-                Dictionary<string, Dictionary<string, string>> iniFileDict = new Dictionary<string, Dictionary<string, string>>();
+                Dictionary<string, Dictionary<string, string>> iniFileDict = new();
                 int mailCount = 0;
                 foreach (Mail mail in this)
                 {
                     mailCount++;
-                    Dictionary<string, string> iniSection = new Dictionary<string, string>();
-                    iniSection["sender"] = mail.Sender;
-                    iniSection["recipient"] = mail.Recipient;
-                    iniSection["content"] = mail.Content;
-                    iniSection["timestamp"] = mail.DateSent.ToString();
-                    iniSection["anonymous"] = mail.Anonymous.ToString();
+                    Dictionary<string, string> iniSection = new()
+                    {
+#pragma warning disable format // @formatter:off
+                        ["sender"]     =  mail.Sender,
+                        ["recipient"]  =  mail.Recipient,
+                        ["content"]    =  mail.Content,
+                        ["timestamp"]  =  mail.DateSent.ToString(),
+                        ["anonymous"]  =  mail.Anonymous.ToString()
+#pragma warning restore format // @formatter:on
+                    };
                     iniFileDict["mail" + mailCount] = iniSection;
                 }
                 FileMonitor.WriteAllLinesWithRetries(filePath, INIFile.Generate(iniFileDict, "Mail Database"));
@@ -105,24 +109,24 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         private class Mail
         {
-            private string sender;
-            private string senderLower;
-            private string recipient;
-            private string recipientLower;
-            private string message;
-            private DateTime datesent;
+            private readonly string sender;
+            private readonly string senderLower;
+            private readonly string recipient;
+            private readonly string recipientLower;
+            private readonly string message;
+            private readonly DateTime datesent;
             private bool delivered;
-            private bool anonymous;
+            private readonly bool anonymous;
 
             public Mail(string sender, string recipient, string message, bool anonymous, DateTime datesent)
             {
                 this.sender = sender;
-                this.senderLower = sender.ToLower();
+                senderLower = sender.ToLower();
                 this.recipient = recipient;
-                this.recipientLower = recipient.ToLower();
+                recipientLower = recipient.ToLower();
                 this.message = message;
                 this.datesent = datesent;
-                this.delivered = false;
+                delivered = false;
                 this.anonymous = anonymous;
             }
 
@@ -132,9 +136,9 @@ namespace MinecraftClient.ChatBots
             public string RecipientLowercase { get { return recipientLower; } }
             public string Content { get { return message; } }
             public DateTime DateSent { get { return datesent; } }
-            public bool Delivered { get { return delivered; } }
+            public bool Delivered => delivered;
             public bool Anonymous { get { return anonymous; } }
-            public void setDelivered() { delivered = true; }
+            public void SetDelivered() { delivered = true; }
 
             public override string ToString()
             {
@@ -145,11 +149,11 @@ namespace MinecraftClient.ChatBots
         // Internal variables
         private int maxMessageLength = 0;
         private DateTime nextMailSend = DateTime.Now;
-        private MailDatabase mailDatabase = new MailDatabase();
-        private IgnoreList ignoreList = new IgnoreList();
-        private FileMonitor mailDbFileMonitor;
-        private FileMonitor ignoreListFileMonitor;
-        private object readWriteLock = new object();
+        private MailDatabase mailDatabase = new();
+        private IgnoreList ignoreList = new();
+        private FileMonitor? mailDbFileMonitor;
+        private FileMonitor? ignoreListFileMonitor;
+        private readonly object readWriteLock = new();
 
         /// <summary>
         /// Initialization of the Mailer bot
@@ -207,8 +211,8 @@ namespace MinecraftClient.ChatBots
             }
 
             //Initialize file monitors. In case the bot needs to unload for some reason in the future, do not forget to .Dispose() them
-            mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_DatabaseFile), Path.GetFileName(Settings.Mailer_DatabaseFile), FileMonitorCallback);
-            ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_IgnoreListFile), Path.GetFileName(Settings.Mailer_IgnoreListFile), FileMonitorCallback);
+            mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_DatabaseFile)!, Path.GetFileName(Settings.Mailer_DatabaseFile), FileMonitorCallback);
+            ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_IgnoreListFile)!, Path.GetFileName(Settings.Mailer_IgnoreListFile), FileMonitorCallback);
 
             RegisterChatBotCommand("mailer", Translations.Get("bot.mailer.cmd"), "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
         }
@@ -246,7 +250,7 @@ namespace MinecraftClient.ChatBots
                                 && mailDatabase.Count < Settings.Mailer_MaxDatabaseSize
                                 && mailDatabase.Where(mail => mail.SenderLowercase == usernameLower).Count() < Settings.Mailer_MaxMailsPerPlayer)
                             {
-                                Queue<string> args = new Queue<string>(Command.getArgs(message));
+                                Queue<string> args = new(Command.GetArgs(message));
                                 if (args.Count >= 2)
                                 {
                                     bool anonymous = (command == "tellonym");
@@ -257,7 +261,7 @@ namespace MinecraftClient.ChatBots
                                     {
                                         if (message.Length <= maxMessageLength)
                                         {
-                                            Mail mail = new Mail(username, recipient, message, anonymous, DateTime.Now);
+                                            Mail mail = new(username, recipient, message, anonymous, DateTime.Now);
                                             LogToConsoleTranslated("bot.mailer.saving", mail.ToString());
                                             lock (readWriteLock)
                                             {
@@ -291,12 +295,12 @@ namespace MinecraftClient.ChatBots
                 LogDebugToConsoleTranslated("bot.mailer.process_mails", DateTime.Now);
 
                 // Process at most 3 mails at a time to avoid spamming. Other mails will be processed on next mail send
-                HashSet<string> onlinePlayersLowercase = new HashSet<string>(GetOnlinePlayers().Select(name => name.ToLower()));
+                HashSet<string> onlinePlayersLowercase = new(GetOnlinePlayers().Select(name => name.ToLower()));
                 foreach (Mail mail in mailDatabase.Where(mail => !mail.Delivered && onlinePlayersLowercase.Contains(mail.RecipientLowercase)).Take(3))
                 {
                     string sender = mail.Anonymous ? "Anonymous" : mail.Sender;
                     SendPrivateMessage(mail.Recipient, sender + " mailed: " + mail.Content);
-                    mail.setDelivered();
+                    mail.SetDelivered();
                     LogDebugToConsoleTranslated("bot.mailer.delivered", mail.ToString());
                 }
 
@@ -336,7 +340,7 @@ namespace MinecraftClient.ChatBots
                 switch (commandName)
                 {
                     case "getmails": // Sorry, I (ReinforceZwei) replaced "=" to "-" because it would affect the parsing of translation file (key=value)
-                        return Translations.Get("bot.mailer.cmd.getmails", string.Join("\n", mailDatabase)); 
+                        return Translations.Get("bot.mailer.cmd.getmails", string.Join("\n", mailDatabase));
 
                     case "getignored":
                         return Translations.Get("bot.mailer.cmd.getignored", string.Join("\n", ignoreList));

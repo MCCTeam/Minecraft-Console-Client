@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace MinecraftClient.Commands
 {
@@ -11,7 +8,7 @@ namespace MinecraftClient.Commands
         public override string CmdUsage { get { return "useitem"; } }
         public override string CmdDesc { get { return "cmd.useitem.desc"; } }
 
-        public override string Run(McClient handler, string command, Dictionary<string, object> localVars)
+        public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (handler.GetInventoryEnabled())
             {

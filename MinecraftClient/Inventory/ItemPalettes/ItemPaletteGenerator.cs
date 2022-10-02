@@ -1,8 +1,4 @@
 ﻿using MinecraftClient.Protocol;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace MinecraftClient.Inventory.ItemPalettes
 {
@@ -18,8 +14,8 @@ namespace MinecraftClient.Inventory.ItemPalettes
         {
             DataTypeGenerator.GenerateEnumWithPalette(
                 registriesJsonFile,
-                "minecraft:item", 
-                "ItemType", 
+                "minecraft:item",
+                "ItemType",
                 "MinecraftClient.Inventory",
                 "ItemPalette",
                 "MinecraftClient.Inventory.ItemPalettes");

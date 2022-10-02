@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace MinecraftClient.Mapping.BlockPalettes
@@ -11,7 +10,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
     /// </summary>
     public class Palette112 : BlockPalette
     {
-        private static Dictionary<int, Material> materials = new Dictionary<int, Material>()
+        private static readonly Dictionary<int, Material> materials = new()
         {
             { 0, Material.Air },
             { 1, Material.Stone },

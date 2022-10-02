@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 
 namespace MinecraftClient.Inventory.ItemPalettes
 {
     public class ItemPalette118 : ItemPalette
     {
-        private static Dictionary<int, ItemType> mappings = new Dictionary<int, ItemType>();
+        private static readonly Dictionary<int, ItemType> mappings = new();
 
         static ItemPalette118()
         {

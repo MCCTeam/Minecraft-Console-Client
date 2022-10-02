@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace MinecraftClient.ChatBots
@@ -13,13 +10,13 @@ namespace MinecraftClient.ChatBots
     public class ChatLog : ChatBot
     {
         public enum MessageFilter { AllText, AllMessages, OnlyChat, OnlyWhispers, OnlyInternalCommands };
-        private bool dateandtime;
-        private bool saveOther = true;
-        private bool saveChat = true;
-        private bool savePrivate = true;
-        private bool saveInternal = true;
-        private string logfile;
-        private object logfileLock = new object();
+        private readonly bool dateandtime;
+        private readonly bool saveOther = true;
+        private readonly bool saveChat = true;
+        private readonly bool savePrivate = true;
+        private readonly bool saveInternal = true;
+        private readonly string logfile;
+        private readonly object logfileLock = new();
 
         /// <summary>
         /// This bot saves the messages received in the specified file, with some filters and date/time tagging.
@@ -70,15 +67,17 @@ namespace MinecraftClient.ChatBots
 
         public static MessageFilter str2filter(string filtername)
         {
-            switch (Settings.ToLowerIfNeed(filtername))
+            return Settings.ToLowerIfNeed(filtername) switch
             {
-                case "all": return MessageFilter.AllText;
-                case "messages": return MessageFilter.AllMessages;
-                case "chat": return MessageFilter.OnlyChat;
-                case "private": return MessageFilter.OnlyWhispers;
-                case "internal": return MessageFilter.OnlyInternalCommands;
-                default: return MessageFilter.AllText;
-            }
+#pragma warning disable format // @formatter:off
+                "all"       =>  MessageFilter.AllText,
+                "messages"  =>  MessageFilter.AllMessages,
+                "chat"      =>  MessageFilter.OnlyChat,
+                "private"   =>  MessageFilter.OnlyWhispers,
+                "internal"  =>  MessageFilter.OnlyInternalCommands,
+                _           =>  MessageFilter.AllText,
+#pragma warning restore format // @formatter:on
+            };
         }
 
         public override void GetText(string text)
@@ -89,37 +88,37 @@ namespace MinecraftClient.ChatBots
 
             if (saveChat && IsChatMessage(text, ref message, ref sender))
             {
-                save("Chat " + sender + ": " + message);
+                Save("Chat " + sender + ": " + message);
             }
             else if (savePrivate && IsPrivateMessage(text, ref message, ref sender))
             {
-                save("Private " + sender + ": " + message);
+                Save("Private " + sender + ": " + message);
             }
             else if (saveOther)
             {
-                save("Other: " + text);
+                Save("Other: " + text);
             }
         }
 
-        public override void OnInternalCommand(string commandName,string commandParams, string result)
+        public override void OnInternalCommand(string commandName, string commandParams, string result)
         {
             if (saveInternal)
             {
-                save(string.Format("Internal {0}({1}): {2}", commandName, commandParams, result));
+                Save(string.Format("Internal {0}({1}): {2}", commandName, commandParams, result));
             }
         }
 
-        private void save(string tosave)
+        private void Save(string tosave)
         {
             if (dateandtime)
                 tosave = GetTimestamp() + ' ' + tosave;
             lock (logfileLock)
             {
-                string directory = Path.GetDirectoryName(logfile);
+                string? directory = Path.GetDirectoryName(logfile);
                 if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
-                FileStream stream = new FileStream(logfile, FileMode.OpenOrCreate);
-                StreamWriter writer = new StreamWriter(stream);
+                FileStream stream = new(logfile, FileMode.OpenOrCreate);
+                StreamWriter writer = new(stream);
                 stream.Seek(0, SeekOrigin.End);
                 writer.WriteLine(tosave);
                 writer.Dispose();

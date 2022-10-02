@@ -9,8 +9,8 @@ namespace MinecraftClient.Protocol.Handlers
     /// </summary>
     class SocketWrapper
     {
-        TcpClient c;
-        AesCfb8Stream s;
+        readonly TcpClient c;
+        AesCfb8Stream? s;
         bool encrypted = false;
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="client">TcpClient connected to the server</param>
         public SocketWrapper(TcpClient client)
         {
-            this.c = client;
+            c = client;
         }
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace MinecraftClient.Protocol.Handlers
         {
             if (encrypted)
                 throw new InvalidOperationException("Stream is already encrypted!?");
-            this.s = new AesCfb8Stream(c.GetStream(), secretKey);
-            this.encrypted = true;
+            s = new AesCfb8Stream(c.GetStream(), secretKey);
+            encrypted = true;
         }
 
         /// <summary>
@@ -62,10 +62,9 @@ namespace MinecraftClient.Protocol.Handlers
             while (read < offset)
             {
                 if (encrypted)
-                {
-                    read += s.Read(buffer, start + read, offset - read);
-                }
-                else read += c.Client.Receive(buffer, start + read, offset - read, f);
+                    read += s!.Read(buffer, start + read, offset - read);
+                else
+                    read += c.Client.Receive(buffer, start + read, offset - read, f);
             }
         }
 
@@ -92,10 +91,9 @@ namespace MinecraftClient.Protocol.Handlers
         public void SendDataRAW(byte[] buffer)
         {
             if (encrypted)
-            {
-                s.Write(buffer, 0, buffer.Length);
-            }
-            else c.Client.Send(buffer);
+                s!.Write(buffer, 0, buffer.Length);
+            else
+                c.Client.Send(buffer);
         }
 
         /// <summary>

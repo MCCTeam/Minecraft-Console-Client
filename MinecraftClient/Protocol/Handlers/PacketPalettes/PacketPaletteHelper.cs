@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace MinecraftClient.Protocol.Handlers.PacketPalettes
@@ -33,10 +30,12 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         public static void UpdatePacketIdByItemPosition(PacketTypePalette palette, string outputFile)
         {
             // I am just too tired to create another full .cs file so... please just copy and paste
-            List<string> lines = new List<string>();
-            lines.Add("=== Inbound Packets ===");
+            List<string> lines = new()
+            {
+                "=== Inbound Packets ==="
+            };
             int i = 0;
-            foreach(var t in palette.GetMappingIn())
+            foreach (var t in palette.GetMappingIn())
             {
                 lines.Add(string.Format("{{ 0x{0}, {1} }},", i.ToString("X2"), t.Value));
                 i++;
@@ -78,8 +77,10 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
         public static void UpdatePacketPositionToAscending(PacketTypePalette palette, string outputFile)
         {
             // I am just too tired to create another full .cs file so... please just copy and paste
-            List<string> lines = new List<string>();
-            lines.Add("=== Inbound Packets ===");
+            List<string> lines = new()
+            {
+                "=== Inbound Packets ==="
+            };
             for (int i = 0; i < palette.GetMappingIn().Count; i++)
             {
                 lines.Add(string.Format("{{ 0x{0}, {1} }},", i.ToString("X2"), palette.GetMappingIn()[i]));
@@ -119,25 +120,24 @@ namespace MinecraftClient.Protocol.Handlers.PacketPalettes
             const string TAB = "    ";
             const string TAB2 = "        ";
             const string TAB3 = "            ";
-            List<string> lines = new List<string>();
-            lines.Add("using System;");
-            lines.Add("using System.Collections.Generic;");
-            lines.Add("using System.Linq;");
-            lines.Add("using System.Text;");
-            lines.Add("");
-            lines.Add("namespace " + namespaceToUse);
-            lines.Add("{");
-            lines.Add(TAB + "public class " + className + " : PacketTypePalette");
-            lines.Add(TAB + "{");
-            lines.Add(TAB2 + "private Dictionary<int, PacketTypesIn> typeIn = new Dictionary<int, PacketTypesIn>()");
-            lines.Add(TAB2 + "{");
+            List<string> lines = new()
+            {
+                "using System.Collections.Generic;",
+                "",
+                "namespace " + namespaceToUse,
+                "{",
+                TAB + "public class " + className + " : PacketTypePalette",
+                TAB + "{",
+                TAB2 + "private readonly Dictionary<int, PacketTypesIn> typeIn = new()",
+                TAB2 + "{"
+            };
             for (int i = 0; i < pIn.Count; i++)
             {
                 lines.Add(TAB3 + string.Format("{{ 0x{0}, PacketTypesIn.{1} }},", i.ToString("X2"), pIn[i]));
             }
             lines.Add(TAB2 + "};");
             lines.Add("");
-            lines.Add(TAB2 + "private Dictionary<int, PacketTypesOut> typeOut = new Dictionary<int, PacketTypesOut>()");
+            lines.Add(TAB2 + "private readonly Dictionary<int, PacketTypesOut> typeOut = new()");
             lines.Add(TAB2 + "{");
             for (int i = 0; i < pOut.Count; i++)
             {
