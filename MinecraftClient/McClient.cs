@@ -3294,6 +3294,26 @@ namespace MinecraftClient
             ////handler.SetUserUUID(UUID);
 
         }
+
+        /// <summary>
+        /// Used for a wide variety of game events, from weather to bed use to gamemode to demo messages.
+        /// </summary>
+        /// <param name="reason">Event type</param>
+        /// <param name="value">Depends on Reason</param>
+        public void OnGameEvent(byte reason, float value)
+        {
+            switch (reason)
+            {
+                case 7:
+                    
+                    DispatchBotEvent(bot => bot.OnRainLevelChange(value));
+                    break;
+                case 8:
+                    DispatchBotEvent(bot => bot.OnThunderLevelChange(value));
+                    break;
+            }
+        }
+
         #endregion
     }
 }

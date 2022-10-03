@@ -425,5 +425,12 @@ namespace MinecraftClient.Protocol
         /// <param name="userName">The player's username received from the server</param>
         /// <param name="playerProperty">Tuple<Name, Value, Signature(empty if there is no signature)></param>
         public void OnLoginSuccess(Guid uuid, string userName, Tuple<string, string, string>[]? playerProperty);
+
+        /// <summary>
+        /// Used for a wide variety of game events, from weather to bed use to gamemode to demo messages.
+        /// </summary>
+        /// <param name="reason">Event type</param>
+        /// <param name="value">Depends on Reason</param>
+        public void OnGameEvent(byte reason, float value);
     }
 }

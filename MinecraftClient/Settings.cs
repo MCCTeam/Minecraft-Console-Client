@@ -152,6 +152,9 @@ namespace MinecraftClient
 
         //Alerts Settings
         public static bool Alerts_Enabled = false;
+        public static bool Alerts_Trigger_By_Words = false;
+        public static bool Alerts_Trigger_By_Rain = false;
+        public static bool Alerts_Trigger_By_Thunderstorm = false;
         public static bool Alerts_Beep_Enabled = true;
         public static bool Alerts_File_Logging = false;
         public static string Alerts_MatchesFile = "alerts.txt";
@@ -585,6 +588,9 @@ namespace MinecraftClient
                     switch (ToLowerIfNeed(argName))
                     {
                         case "enabled": Alerts_Enabled = str2bool(argValue); return true;
+                        case "trigger_by_words": Alerts_Trigger_By_Words = str2bool(argValue); return true;
+                        case "trigger_by_rain": Alerts_Trigger_By_Rain = str2bool(argValue); return true;
+                        case "trigger_by_thunderstorm": Alerts_Trigger_By_Thunderstorm = str2bool(argValue); return true;
                         case "alertsfile": Alerts_MatchesFile = argValue; return true;
                         case "excludesfile": Alerts_ExcludesFile = argValue; return true;
                         case "beeponalert": Alerts_Beep_Enabled = str2bool(argValue); return true;
