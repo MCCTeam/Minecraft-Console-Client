@@ -3305,7 +3305,6 @@ namespace MinecraftClient
             switch (reason)
             {
                 case 7:
-                    
                     DispatchBotEvent(bot => bot.OnRainLevelChange(value));
                     break;
                 case 8:
