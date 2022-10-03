@@ -1139,6 +1139,15 @@ namespace MinecraftClient.Protocol.Handlers
                                 handler.GetWorld()[chunkX, chunkZ] = null;
                             }
                             break;
+                        case PacketTypesIn.ChangeGameState:
+                            if (protocolVersion >= MC_1_15_2_Version)
+                            {
+                                byte reason = dataTypes.ReadNextByte(packetData);
+                                float state = dataTypes.ReadNextFloat(packetData);
+
+                                handler.OnGameEvent(reason, state);
+                            }
+                            break;
                         case PacketTypesIn.PlayerInfo:
                             if (protocolVersion >= MC_1_8_Version)
                             {
