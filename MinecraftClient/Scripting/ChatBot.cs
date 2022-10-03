@@ -413,6 +413,18 @@ namespace MinecraftClient
         /// <param name="isInbound">The packet is received from server or sent by client</param>
         public virtual void OnNetworkPacket(int packetID, List<byte> packetData, bool isLogin, bool isInbound) { }
 
+        /// <summary>
+        /// Called when the rain level have been changed
+        /// </summary>
+        /// <param name="level"></param>
+        public virtual void OnRainLevelChange(float level) { }
+
+        /// <summary>
+        /// Called when the thunder level have been changed
+        /// </summary>
+        /// <param name="level"></param>
+        public virtual void OnThunderLevelChange(float level) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */
