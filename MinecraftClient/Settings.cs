@@ -110,6 +110,7 @@ namespace MinecraftClient
         public static bool MoveHeadWhileWalking = true;
         public static int Timeout = 30;
         public static bool EnableEmoji = true;
+        public static int MovementSpeed = 2;
 
         // Signature
         public static bool LoginWithSecureProfile = true;
@@ -426,6 +427,7 @@ namespace MinecraftClient
                         case "moveheadwhilewalking": MoveHeadWhileWalking = str2bool(argValue); return true;
                         case "timeout": Timeout = str2int(argValue); return true;
                         case "enableemoji": EnableEmoji = str2bool(argValue); return true;
+                        case "movementspwwd": MovementSpeed = str2int(argValue); return true;
 
                         case "botowners":
                             Bots_Owners.Clear();
