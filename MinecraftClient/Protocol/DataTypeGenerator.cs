@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -26,7 +27,7 @@ namespace MinecraftClient.Protocol
 
             foreach (KeyValuePair<string, Json.JSONData> entry in rawRegistry.Properties)
             {
-                int entryId = int.Parse(entry.Value.Properties["protocol_id"].StringValue);
+                int entryId = int.Parse(entry.Value.Properties["protocol_id"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
 
                 //minecraft:item_name => ItemName
                 string entryName = String.Concat(

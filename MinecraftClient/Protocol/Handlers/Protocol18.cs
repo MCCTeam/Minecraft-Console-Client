@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -815,7 +816,7 @@ namespace MinecraftClient.Protocol.Handlers
                             List<MapIcon> icons = new();
 
                             // 1,9 + = needs tracking position to be true to get the icons
-                            if (protocolVersion <= MC_1_9_Version || trackingPosition)
+                            if (protocolVersion <= MC_1_16_5_Version || trackingPosition)
                             {
                                 iconcount = dataTypes.ReadNextVarInt(packetData);
 
@@ -2139,7 +2140,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                             //Retrieve protocol version number for handling this server
                             if (versionData.Properties.ContainsKey("protocol"))
-                                protocolVersion = int.Parse(versionData.Properties["protocol"].StringValue);
+                                protocolVersion = int.Parse(versionData.Properties["protocol"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
 
                             // Check for forge on the server.
                             Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);

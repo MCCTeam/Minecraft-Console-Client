@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.ChatBots
@@ -63,11 +64,11 @@ namespace MinecraftClient.ChatBots
 
                     if (parts.Length == 2)
                     {
-                        if (int.TryParse(parts[0].Trim(), out int firstTime))
+                        if (int.TryParse(parts[0].Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out int firstTime))
                         {
                             timeping = firstTime;
 
-                            if (int.TryParse(parts[1].Trim(), out int secondTime))
+                            if (int.TryParse(parts[1].Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out int secondTime))
                                 timepingMax = secondTime;
                             else LogToConsole(Translations.TryGet("bot.antiafk.invalid_range_partial", timeping));
                         }
@@ -77,7 +78,7 @@ namespace MinecraftClient.ChatBots
                 }
                 else
                 {
-                    if (int.TryParse(pingparam.Trim(), out int value))
+                    if (int.TryParse(pingparam.Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out int value))
                         timeping = value;
                     else LogToConsole(Translations.TryGet("bot.antiafk.invalid_value"));
                 }

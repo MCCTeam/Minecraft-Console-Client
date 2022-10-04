@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -317,7 +318,7 @@ namespace MinecraftClient.Protocol
             {
                 try
                 {
-                    return Int32.Parse(MCVersion);
+                    return Int32.Parse(MCVersion, NumberStyles.Any, CultureInfo.CurrentCulture);
                 }
                 catch
                 {
@@ -628,7 +629,7 @@ namespace MinecraftClient.Protocol
         {
             var payload = JwtPayloadDecode.GetPayload(session.ID);
             var json = Json.ParseJson(payload);
-            var expTimestamp = long.Parse(json.Properties["exp"].StringValue);
+            var expTimestamp = long.Parse(json.Properties["exp"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
             var now = DateTime.Now;
             var tokenExp = UnixTimeStampToDateTime(expTimestamp);
             if (Settings.DebugMessages)

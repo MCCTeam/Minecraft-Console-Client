@@ -61,7 +61,6 @@ namespace MinecraftClient
         private float playerPitch;
         private double motionY;
         public enum MovementType { Sneak, Walk, Sprint }
-        public int currentMovementSpeed = 4;
         private int sequenceId; // User for player block synchronization (Aka. digging, placing blocks, etc..)
 
         private readonly string host;
@@ -337,7 +336,7 @@ namespace MinecraftClient
             {
                 lock (locationLock)
                 {
-                    for (int i = 0; i < currentMovementSpeed; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    for (int i = 0; i < Settings.MovementSpeed; i++) //Needs to run at 20 tps; MCC runs at 10 tps
                     {
                         if (_yaw == null || _pitch == null)
                         {
@@ -2485,15 +2484,15 @@ namespace MinecraftClient
             {
                 case MovementType.Sneak:
                     // https://minecraft.fandom.com/wiki/Sneaking#Effects - Sneaking  1.31m/s
-                    currentMovementSpeed = 2;
+                    Settings.MovementSpeed = 2;
                     break;
                 case MovementType.Walk:
                     // https://minecraft.fandom.com/wiki/Walking#Usage - Walking 4.317 m/s
-                    currentMovementSpeed = 4;
+                    Settings.MovementSpeed = 4;
                     break;
                 case MovementType.Sprint:
                     // https://minecraft.fandom.com/wiki/Sprinting#Usage - Sprinting 5.612 m/s
-                    currentMovementSpeed = 5;
+                    Settings.MovementSpeed = 5;
                     break;
             }
         }
