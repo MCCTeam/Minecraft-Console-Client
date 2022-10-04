@@ -25,7 +25,7 @@
 -   📖 [使用](https://mccteam.github.io/guide/usage.html)
 -   ⚙️ [配置](https://mccteam.github.io/guide/configuration.html)
 -   🤖 [聊天机器人](https://mccteam.github.io/guide/chat-bots.html)
--   📝 [简易配置文件](MinecraftClient/config/)
+-   📝 [示例配置文件](MinecraftClient/config/)
 
 ## 获取帮助 🙋
 
