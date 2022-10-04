@@ -102,6 +102,9 @@ namespace MinecraftClient.ChatBots
             if (columnsUpdated == 0 && cachedMaps.ContainsKey(mapid))
                 return;
 
+            if (rowsUpdated <= 0 && columnsUpdated <= 0)
+                return;
+
             McMap map = new()
             {
                 MapId = mapid,
