@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -73,7 +74,7 @@ namespace MinecraftClient.Protocol
             {
                 string accessToken = jsonData.Properties["access_token"].StringValue;
                 string refreshToken = jsonData.Properties["refresh_token"].StringValue;
-                int expiresIn = int.Parse(jsonData.Properties["expires_in"].StringValue);
+                int expiresIn = int.Parse(jsonData.Properties["expires_in"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
 
                 // Extract email from JWT
                 string payload = JwtPayloadDecode.GetPayload(jsonData.Properties["id_token"].StringValue);
@@ -237,7 +238,7 @@ namespace MinecraftClient.Protocol
                     Email = email,
                     AccessToken = dict["access_token"],
                     RefreshToken = dict["refresh_token"],
-                    ExpiresIn = int.Parse(dict["expires_in"])
+                    ExpiresIn = int.Parse(dict["expires_in"], NumberStyles.Any, CultureInfo.CurrentCulture)
                 };
             }
             else

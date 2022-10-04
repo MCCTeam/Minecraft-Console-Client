@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 
@@ -20,7 +21,7 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        int entityID = int.Parse(args[0]);
+                        int entityID = int.Parse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture);
                         if (entityID != 0)
                         {
                             if (handler.GetEntities().ContainsKey(entityID))

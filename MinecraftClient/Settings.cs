@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -954,7 +955,7 @@ namespace MinecraftClient
         /// <returns>Float number</returns>
         public static float str2float(string str)
         {
-            if (float.TryParse(str.Trim(), out float num))
+            if (float.TryParse(str.Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out float num))
                 return num;
             else
             {
@@ -970,7 +971,7 @@ namespace MinecraftClient
         /// <returns>Double number</returns>
         public static double str2double(string str)
         {
-            if (double.TryParse(str.Trim(), out double num))
+            if (double.TryParse(str.Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out double num))
                 return num;
             else
             {
@@ -1016,7 +1017,7 @@ namespace MinecraftClient
 
                     for (int j = 0; j < curCodLen; ++j)
                     {
-                        if (!double.TryParse(coordinates_str_list[j], out res![i, j]))
+                        if (!double.TryParse(coordinates_str_list[j], NumberStyles.Any, CultureInfo.CurrentCulture, out res![i, j]))
                         {
                             ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2locationList.convert_fail", coordinates_str_list[j]));
                             return null;
