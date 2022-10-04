@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using MinecraftClient.Inventory;
@@ -24,14 +25,14 @@ namespace MinecraftClient.Commands
                     {
                         if (args.Length >= 4)
                         {
-                            if (!int.TryParse(args[1], out int slot))
+                            if (!int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int slot))
                                 return GetCmdDescTranslated();
 
                             if (Enum.TryParse(args[2], true, out ItemType itemType))
                             {
                                 if (handler.GetGamemode() == 1)
                                 {
-                                    if (!int.TryParse(args[3], out int count))
+                                    if (!int.TryParse(args[3], NumberStyles.Any, CultureInfo.CurrentCulture, out int count))
                                         return GetCmdDescTranslated();
 
                                     if (handler.DoCreativeGive(slot, itemType, count, null))
@@ -52,7 +53,7 @@ namespace MinecraftClient.Commands
                     {
                         if (args.Length >= 2)
                         {
-                            if (!int.TryParse(args[1], out int slot))
+                            if (!int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int slot))
                                 return GetCmdDescTranslated();
 
                             if (handler.GetGamemode() == 1)
@@ -105,7 +106,7 @@ namespace MinecraftClient.Commands
                         bool shouldUseItemCount = args.Length >= 3;
                         int itemCount = 0;
 
-                        if (shouldUseItemCount && !int.TryParse(args[2], out itemCount))
+                        if (shouldUseItemCount && !int.TryParse(args[2], NumberStyles.Any, CultureInfo.CurrentCulture, out itemCount))
                             return GetCmdDescTranslated();
 
                         Dictionary<int, Container> inventories = handler.GetInventories();
@@ -162,7 +163,7 @@ namespace MinecraftClient.Commands
                         else
                             return GetHelp();
                     }
-                    else if (!int.TryParse(args[0], out inventoryId))
+                    else if (!int.TryParse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture, out inventoryId))
                         return GetCmdDescTranslated();
 
                     Container? inventory = handler.GetInventory(inventoryId);
@@ -205,7 +206,7 @@ namespace MinecraftClient.Commands
                     }
                     else if (action == "click" && args.Length >= 3)
                     {
-                        if (!int.TryParse(args[2], out int slot))
+                        if (!int.TryParse(args[2], NumberStyles.Any, CultureInfo.CurrentCulture, out int slot))
                             return GetCmdDescTranslated();
 
                         WindowActionType actionType = WindowActionType.LeftClick;
@@ -224,7 +225,7 @@ namespace MinecraftClient.Commands
                     }
                     else if (action == "shiftclick" && args.Length >= 3)
                     {
-                        if (!int.TryParse(args[2], out int slot))
+                        if (!int.TryParse(args[2], NumberStyles.Any, CultureInfo.CurrentCulture, out int slot))
                             return GetCmdDescTranslated();
 
                         if (!handler.DoWindowAction(inventoryId, slot, WindowActionType.ShiftClick))
@@ -234,7 +235,7 @@ namespace MinecraftClient.Commands
                     }
                     else if (action == "drop" && args.Length >= 3)
                     {
-                        if (!int.TryParse(args[2], out int slot))
+                        if (!int.TryParse(args[2], NumberStyles.Any, CultureInfo.CurrentCulture, out int slot))
                             return GetCmdDescTranslated();
 
                         // check item exist

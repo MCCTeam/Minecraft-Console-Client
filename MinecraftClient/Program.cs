@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -411,7 +412,7 @@ namespace MinecraftClient
                                 return;
                             }
                             string worldId = addressInput.Split(':')[1];
-                            if (!availableWorlds.Contains(worldId) && int.TryParse(worldId, out int worldIndex) && worldIndex < availableWorlds.Count)
+                            if (!availableWorlds.Contains(worldId) && int.TryParse(worldId, NumberStyles.Any, CultureInfo.CurrentCulture, out int worldIndex) && worldIndex < availableWorlds.Count)
                                 worldId = availableWorlds[worldIndex];
                             if (availableWorlds.Contains(worldId))
                             {

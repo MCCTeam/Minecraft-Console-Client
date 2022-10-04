@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -162,7 +163,7 @@ namespace MinecraftClient.Protocol
             if (raw.StartsWith("HTTP/1.1") || raw.StartsWith("HTTP/1.0"))
             {
                 Queue<string> msg = new(raw.Split(new string[] { "\r\n" }, StringSplitOptions.None));
-                statusCode = int.Parse(msg.Dequeue().Split(' ')[1]);
+                statusCode = int.Parse(msg.Dequeue().Split(' ')[1], NumberStyles.Any, CultureInfo.CurrentCulture);
 
                 while (msg.Peek() != "")
                 {

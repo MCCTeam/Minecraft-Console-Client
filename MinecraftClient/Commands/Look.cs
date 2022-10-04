@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
@@ -50,8 +51,8 @@ namespace MinecraftClient.Commands
                 {
                     try
                     {
-                        float yaw = float.Parse(args[0]);
-                        float pitch = float.Parse(args[1]);
+                        float yaw = float.Parse(args[0], NumberStyles.Any, CultureInfo.CurrentCulture);
+                        float pitch = float.Parse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture);
 
                         handler.UpdateLocation(handler.GetCurrentLocation(), yaw, pitch);
                         return Translations.Get("cmd.look.at", yaw.ToString("0.00"), pitch.ToString("0.00"));

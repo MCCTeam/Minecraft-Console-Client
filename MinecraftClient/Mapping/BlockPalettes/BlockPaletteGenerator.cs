@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -66,7 +67,7 @@ namespace MinecraftClient.Mapping.BlockPalettes
 
                 foreach (Json.JSONData state in item.Value.Properties["states"].DataArray)
                 {
-                    int id = int.Parse(state.Properties["id"].StringValue);
+                    int id = int.Parse(state.Properties["id"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
 
                     if (knownStates.Contains(id))
                         throw new InvalidDataException("Duplicate state id " + id + "!?");

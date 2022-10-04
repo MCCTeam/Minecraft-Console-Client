@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using MinecraftClient.Mapping;
 
@@ -36,7 +37,10 @@ namespace MinecraftClient.Commands
                         {
                             sb.Append("Marked location: ");
                             if (args.Length == 1 + 3)
-                                sb.Append(String.Format("X:{0:0.00} Y:{1:0.00} Z:{2:0.00}, ", double.Parse(args[1]), double.Parse(args[2]), double.Parse(args[3])));
+                                sb.Append(String.Format("X:{0:0.00} Y:{1:0.00} Z:{2:0.00}, ", 
+                                    double.Parse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture), 
+                                    double.Parse(args[2], NumberStyles.Any, CultureInfo.CurrentCulture), 
+                                    double.Parse(args[3], NumberStyles.Any, CultureInfo.CurrentCulture)));
                             sb.Append(String.Format("chunk: ({0}, {1}).\n", markChunkX, markChunkZ));
                         }
 
@@ -230,14 +234,18 @@ namespace MinecraftClient.Commands
                 int chunkX, chunkZ;
                 if (args.Length == 1 + 3)
                 {
-                    Location pos = new(double.Parse(args[1]), double.Parse(args[2]), double.Parse(args[3]));
+                    Location pos = new(
+                        double.Parse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture), 
+                        double.Parse(args[2], NumberStyles.Any, CultureInfo.CurrentCulture), 
+                        double.Parse(args[3], NumberStyles.Any, CultureInfo.CurrentCulture)
+                        );
                     chunkX = pos.ChunkX;
                     chunkZ = pos.ChunkZ;
                 }
                 else if (args.Length == 1 + 2)
                 {
-                    chunkX = int.Parse(args[1]);
-                    chunkZ = int.Parse(args[2]);
+                    chunkX = int.Parse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture);
+                    chunkZ = int.Parse(args[2], NumberStyles.Any, CultureInfo.CurrentCulture);
                 }
                 else
                     return null;

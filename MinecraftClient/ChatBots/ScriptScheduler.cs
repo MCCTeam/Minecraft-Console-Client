@@ -84,8 +84,8 @@ namespace MinecraftClient.ChatBots
                                             string[] parts = argValue.Split("-");
                                             if (parts.Length == 2)
                                             {
-                                                interval = int.Parse(parts[0].Trim());
-                                                intervalMax = int.Parse(parts[1].Trim());
+                                                interval = int.Parse(parts[0].Trim(), NumberStyles.Any, CultureInfo.CurrentCulture);
+                                                intervalMax = int.Parse(parts[1].Trim(), NumberStyles.Any, CultureInfo.CurrentCulture);
                                             }
                                             else
                                             {
@@ -94,7 +94,7 @@ namespace MinecraftClient.ChatBots
                                         }
                                         else
                                         {
-                                            interval = int.Parse(argValue);
+                                            interval = int.Parse(argValue, NumberStyles.Any, CultureInfo.CurrentCulture);
                                         }
 
                                         current_task.triggerOnInterval_Interval = interval;

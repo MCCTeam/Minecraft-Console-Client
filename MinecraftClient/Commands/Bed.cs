@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using MinecraftClient.Mapping;
@@ -30,7 +31,7 @@ namespace MinecraftClient.Commands
                 {
                     if (args.Length == 2)
                     {
-                        if (!int.TryParse(args[1], out int radius))
+                        if (!int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int radius))
                             return CmdUsage;
 
                         handler.GetLogger().Info(Translations.TryGet("cmd.bed.searching", radius));

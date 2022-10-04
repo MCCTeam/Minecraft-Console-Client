@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -872,7 +873,7 @@ namespace MinecraftClient.Protocol.Handlers
                     if (result.Length > 2 && result[0] == '§' && result[1] == '1')
                     {
                         string[] tmp = result.Split((char)0x00);
-                        protocolversion = (byte)Int16.Parse(tmp[1]);
+                        protocolversion = (byte)Int16.Parse(tmp[1], NumberStyles.Any, CultureInfo.CurrentCulture);
                         version = tmp[2];
 
                         if (protocolversion == 127) //MC 1.7.2+
