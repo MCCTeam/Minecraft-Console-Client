@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Globalization;
 
 namespace MinecraftClient.Inventory
 {
@@ -105,7 +106,7 @@ namespace MinecraftClient.Inventory
                     object damage = NBT["Damage"];
                     if (damage != null)
                     {
-                        return int.Parse(damage.ToString() ?? string.Empty);
+                        return int.Parse(damage.ToString() ?? string.Empty, NumberStyles.Any, CultureInfo.CurrentCulture);
                     }
                 }
                 return 0;

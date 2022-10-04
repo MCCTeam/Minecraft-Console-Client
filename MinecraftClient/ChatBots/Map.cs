@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Handlers;
@@ -70,7 +71,7 @@ namespace MinecraftClient.ChatBots
                     if (args.Length < 2)
                         return "maps <list/render <id>> | maps <l/r <id>>";
 
-                    if (int.TryParse(args[1], out int mapId))
+                    if (int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int mapId))
                     {
                         if (!cachedMaps.ContainsKey(mapId))
                             return Translations.TryGet("bot.map.cmd.not_found", mapId);
@@ -99,6 +100,9 @@ namespace MinecraftClient.ChatBots
         public override void OnMapData(int mapid, byte scale, bool trackingPosition, bool locked, List<MapIcon> icons, byte columnsUpdated, byte rowsUpdated, byte mapCoulmnX, byte mapRowZ, byte[]? colors)
         {
             if (columnsUpdated == 0 && cachedMaps.ContainsKey(mapid))
+                return;
+
+            if (rowsUpdated <= 0 && columnsUpdated <= 0)
                 return;
 
             McMap map = new()

@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
 namespace MinecraftClient.WinAPI
@@ -35,7 +36,7 @@ namespace MinecraftClient.WinAPI
 
                     var versionParts = ((string)version!).Split('.');
                     if (versionParts.Length != 2) return 0;
-                    return uint.TryParse(versionParts[0], out uint majorAsUInt) ? majorAsUInt : 0;
+                    return uint.TryParse(versionParts[0], NumberStyles.Any, CultureInfo.CurrentCulture, out uint majorAsUInt) ? majorAsUInt : 0;
                 }
 
                 return 0;
@@ -62,7 +63,7 @@ namespace MinecraftClient.WinAPI
 
                     var versionParts = ((string)version!).Split('.');
                     if (versionParts.Length != 2) return 0;
-                    return uint.TryParse(versionParts[1], out uint minorAsUInt) ? minorAsUInt : 0;
+                    return uint.TryParse(versionParts[1], NumberStyles.Any, CultureInfo.CurrentCulture, out uint minorAsUInt) ? minorAsUInt : 0;
                 }
 
                 return 0;

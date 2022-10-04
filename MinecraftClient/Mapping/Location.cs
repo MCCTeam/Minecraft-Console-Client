@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace MinecraftClient.Mapping
@@ -85,7 +86,7 @@ namespace MinecraftClient.Mapping
 
             for (int i = 0; i < 3; ++i)
             {
-                if (!double.TryParse(coord_str[i], out coord_res[i]))
+                if (!double.TryParse(coord_str[i], NumberStyles.Any, CultureInfo.CurrentCulture, out coord_res[i]))
                 {
                     location = null;
                     return false;
@@ -126,7 +127,7 @@ namespace MinecraftClient.Mapping
                 {
                     if (coord_str[i].Length > 1)
                     {
-                        if (!double.TryParse(coord_str[i][1..], out coord_res[i]))
+                        if (!double.TryParse(coord_str[i][1..], NumberStyles.Any, CultureInfo.CurrentCulture, out coord_res[i]))
                         {
                             location = null;
                             return false;
@@ -138,7 +139,7 @@ namespace MinecraftClient.Mapping
                 }
                 else
                 {
-                    if (!double.TryParse(coord_str[i], out coord_res[i]))
+                    if (!double.TryParse(coord_str[i], NumberStyles.Any, CultureInfo.CurrentCulture, out coord_res[i]))
                     {
                         location = null;
                         return false;
