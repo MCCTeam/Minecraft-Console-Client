@@ -21,11 +21,11 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoCraft.Table_Location$")]
-            public LocationConfig Table_Location = new(123, 65, 456);
+            [TomlInlineComment("$config.ChatBot.AutoCraft.CraftingTable$")]
+            public LocationConfig CraftingTable = new(123, 65, 456);
 
-            [TomlInlineComment("$config.ChatBot.AutoCraft.On_Failure$")]
-            public OnFailConfig On_Failure = OnFailConfig.abort;
+            [TomlInlineComment("$config.ChatBot.AutoCraft.OnFailure$")]
+            public OnFailConfig OnFailure = OnFailConfig.abort;
 
             [TomlPrecedingComment("$config.ChatBot.AutoCraft.Recipes$")]
             public RecipeConfig[] Recipes = new RecipeConfig[]
@@ -53,7 +53,7 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
-                _Table_Location = new Location(Table_Location.X, Table_Location.Y, Table_Location.Z).ToFloor();
+                _Table_Location = new Location(CraftingTable.X, CraftingTable.Y, CraftingTable.Z).ToFloor();
                 foreach (RecipeConfig recipe in Recipes)
                 {
                     recipe.Name ??= string.Empty;
@@ -599,7 +599,7 @@ namespace MinecraftClient.ChatBots
                     // Inform user the missing meterial name
                     LogToConsoleTranslated("bot.autoCraft.missing_material", actionSteps[index - 1].ItemType.ToString());
                 }
-                if (Config.On_Failure == OnFailConfig.abort)
+                if (Config.OnFailure == OnFailConfig.abort)
                 {
                     StopCrafting();
                     LogToConsoleTranslated("bot.autoCraft.aborted");

@@ -31,22 +31,20 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.Alerts.Trigger_By_Thunderstorm$")]
             public bool Trigger_By_Thunderstorm = false;
 
-            [TomlInlineComment("$config.ChatBot.Alerts.Matches_File$")]
-            public string Matches_File = @"alerts.txt";
-
-            [TomlInlineComment("$config.ChatBot.Alerts.Excludes_File$")]
-            public string Excludes_File = @"alerts-exclude.txt";
-
             [TomlInlineComment("$config.ChatBot.Alerts.Log_To_File$")]
             public bool Log_To_File = false;
 
             [TomlInlineComment("$config.ChatBot.Alerts.Log_File$")]
             public string Log_File = @"alerts-log.txt";
 
+            [TomlPrecedingComment("$config.ChatBot.Alerts.Matches_File$")]
+            public string[] Matches = new string[] { "Yourname", " whispers ", "-> me", "admin", ".com" };
+
+            [TomlPrecedingComment("$config.ChatBot.Alerts.Excludes_File$")]
+            public string[] Excludes = new string[] { "myserver.com", "Yourname>:", "Player Yourname", "Yourname joined", "Yourname left", "[Lockette] (Admin)", " Yourname:", "Yourname is" };
+
             public void OnSettingUpdate()
             {
-                Matches_File ??= string.Empty;
-                Excludes_File ??= string.Empty;
                 Log_File ??= string.Empty;
 
                 if (!Enabled) return;
@@ -55,18 +53,6 @@ namespace MinecraftClient.ChatBots
 
                 if (Trigger_By_Words)
                 {
-                    if (!System.IO.File.Exists(Matches_File))
-                    {
-                        checkSuccessed = false;
-                        LogToConsole(BotName, "File not found: " + System.IO.Path.GetFullPath(Matches_File));
-                    }
-
-                    if (!System.IO.File.Exists(Excludes_File))
-                    {
-                        checkSuccessed = false;
-                        LogToConsole(BotName, "File not found: " + System.IO.Path.GetFullPath(Excludes_File));
-                    }
-
                     if (Log_To_File)
                     {
                         try
@@ -76,7 +62,7 @@ namespace MinecraftClient.ChatBots
                         catch
                         {
                             checkSuccessed = false;
-                            LogToConsole(BotName, "Can't write logs to " + System.IO.Path.GetFullPath(Excludes_File));
+                            LogToConsole(BotName, "Can't write logs to " + System.IO.Path.GetFullPath(Log_File));
                         }
                     }
                 }
@@ -89,24 +75,9 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private string[] dictionary = Array.Empty<string>();
-        private string[] excludelist = Array.Empty<string>();
-
         float curRainLevel = 0;
         float curThunderLevel = 0;
         const float threshold = 0.2f;
-
-        /// <summary>
-        /// Intitialize the Alerts bot
-        /// </summary>
-        public override void Initialize()
-        {
-            if (Config.Trigger_By_Words)
-            {
-                dictionary = LoadDistinctEntriesFromFile(Config.Matches_File);
-                excludelist = LoadDistinctEntriesFromFile(Config.Excludes_File);
-            }
-        }
 
         /// <summary>
         /// Process text received from the server to display alerts
@@ -120,10 +91,10 @@ namespace MinecraftClient.ChatBots
                 text = GetVerbatim(text).ToLower();
 
                 //Proceed only if no exclusions are found in text
-                if (!excludelist.Any(exclusion => text.Contains(exclusion)))
+                if (!Config.Excludes.Any(exclusion => text.Contains(exclusion)))
                 {
                     //Show an alert for each alert item found in text, if any
-                    foreach (string alert in dictionary.Where(alert => text.Contains(alert)))
+                    foreach (string alert in Config.Matches.Where(alert => text.Contains(alert)))
                     {
                         if (Config.Beep_Enabled)
                             Console.Beep(); //Text found !
