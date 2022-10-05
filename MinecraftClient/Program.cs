@@ -49,6 +49,7 @@ namespace MinecraftClient
         public const string MCLowestVersion = "1.4.6";
         public const string MCHighestVersion = "1.19.2";
         public static readonly string? BuildInfo = null;
+        private const string TranslationUrl = "https://mccteam.github.io/guide/contibuting.html#translations";
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
         private static bool useMcVersionOnce = false;
@@ -149,7 +150,7 @@ namespace MinecraftClient
                 //Load external translation file. Should be called AFTER settings loaded
                 Translations.LoadTranslationFile(Translations.GetTranslationPriority(Config.Main.Advanced.Language));
                 if (!Config.Main.Advanced.Language.StartsWith("en"))
-                    ConsoleIO.WriteLine(Translations.TryGet("mcc.help_us_translate"));
+                    ConsoleIO.WriteLine(Translations.TryGet("mcc.help_us_translate", TranslationUrl));
                 Settings.WriteToFile("MinecraftClient.ini", true); // format
             }
 
