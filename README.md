@@ -47,8 +47,9 @@ If you'd like to contribute to Minecraft Console Client, great, just fork the re
 
 Check out: [How to update or add translations for MCC](https://mccteam.github.io/guide/contibuting.html#translations).
 
-MCC now has translations in the following languages (Alphabetical order) :
+MCC now supports the following languages (Alphabetical order) :
   * `de.ini` : Deutsch - German
+  * `en.ini` : English - English
   * `fr.ini` : Français (France) - 	French
   * `ru.ini` : Русский (Russkiy) - Russian
   * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
