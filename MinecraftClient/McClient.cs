@@ -452,7 +452,7 @@ namespace MinecraftClient
 
             if (timeoutdetector != null)
             {
-                if (Thread.CurrentThread != timeoutdetector.Item1)
+                if (timeoutdetector != null && Thread.CurrentThread != timeoutdetector.Item1)
                     timeoutdetector.Item2.Cancel();
                 timeoutdetector = null;
             }

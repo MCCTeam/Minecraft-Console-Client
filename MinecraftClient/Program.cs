@@ -290,6 +290,7 @@ namespace MinecraftClient
                     return;
                 }
             }
+            InternalConfig.Username = Config.Main.General.Account.Login;
             if (string.IsNullOrEmpty(Config.Main.General.Account.Password) && !useBrowser &&
                 (Config.Main.Advanced.SessionCache == CacheType.none || !SessionCache.Contains(Settings.ToLowerIfNeed(Config.Main.General.Account.Login))))
             {
@@ -333,7 +334,7 @@ namespace MinecraftClient
                 Translations.WriteLineFormatted("mcc.offline");
                 result = ProtocolHandler.LoginResult.Success;
                 session.PlayerID = "0";
-                session.PlayerName = Config.Main.General.Account.Login;
+                session.PlayerName = InternalConfig.Username;
             }
             else
             {
@@ -372,13 +373,13 @@ namespace MinecraftClient
                     Translations.WriteLine("mcc.connecting", Config.Main.General.AccountType == LoginType.mojang ? "Minecraft.net" : "Microsoft");
                     result = ProtocolHandler.GetLogin(Config.Main.General.Account.Login, InternalConfig.Password, Config.Main.General.AccountType, out session);
                 }
+
+                if (result == ProtocolHandler.LoginResult.Success && Config.Main.Advanced.SessionCache != CacheType.none)
+                    SessionCache.Store(loginLower, session);
+
+                if (result == ProtocolHandler.LoginResult.Success)
+                    session.SessionPreCheckTask = Task.Factory.StartNew(() => session.SessionPreCheck());
             }
-
-            if (result == ProtocolHandler.LoginResult.Success && Config.Main.Advanced.SessionCache != CacheType.none)
-                SessionCache.Store(loginLower, session);
-
-            if (result == ProtocolHandler.LoginResult.Success)
-                session.SessionPreCheckTask = Task.Factory.StartNew(() => session.SessionPreCheck());
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
