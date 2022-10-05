@@ -33,6 +33,8 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
+                Kick_Messages_File ??= string.Empty;
+
                 if (Delay.min > Delay.max)
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);
 

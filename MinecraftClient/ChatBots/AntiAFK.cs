@@ -48,6 +48,8 @@ namespace MinecraftClient.ChatBots
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);
                     LogToConsole(BotName, Translations.TryGet("bot.antiafk.swapping"));
                 }
+
+                Command ??= string.Empty;
             }
 
             public struct Range

@@ -27,6 +27,8 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
+                Tasks_File ??= string.Empty;
+
                 if (!Enabled) return;
 
                 string Tasks_File_Full = Settings.Config.AppVar.ExpandVars(Tasks_File);

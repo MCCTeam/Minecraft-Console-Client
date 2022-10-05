@@ -36,6 +36,9 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
+                DatabaseFile ??= string.Empty;
+                IgnoreListFile ??= string.Empty;
+
                 if (!Enabled) return;
 
                 bool checkSuccessed = true;

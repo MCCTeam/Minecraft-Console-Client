@@ -31,6 +31,8 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
+                Matches_File ??= string.Empty;
+
                 if (!Enabled) return;
 
                 if (!File.Exists(Matches_File))

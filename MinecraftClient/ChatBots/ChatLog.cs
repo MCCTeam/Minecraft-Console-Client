@@ -29,6 +29,8 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
+                Log_File ??= string.Empty;
+
                 if (!Enabled) return;
 
                 string Log_File_Full = Settings.Config.AppVar.ExpandVars(Log_File);

@@ -28,6 +28,8 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
+                File ??= string.Empty;
+
                 if (Delay < 10)
                     Delay = 10;
             }
