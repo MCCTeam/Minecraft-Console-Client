@@ -56,8 +56,16 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.AutoFishing.Log_Fish_Bobber$")]
             public bool Log_Fish_Bobber = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoFishing.Movements$")]
-            public LocationConfig[] Movements = Array.Empty<LocationConfig>();
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Enable_Move$")]
+            public bool Enable_Move = false;
+
+            [TomlPrecedingComment("$config.ChatBot.AutoFishing.Movements$")]
+            public LocationConfig[] Movements = new LocationConfig[]
+            {
+                new LocationConfig(12.34f, -23.45f),
+                new LocationConfig(123.45, 64, -654.32, -25.14f, 36.25f),
+                new LocationConfig(-1245.63, 63.5, 1.2),
+            };
 
             public void OnSettingUpdate()
             {
@@ -249,7 +257,7 @@ namespace MinecraftClient.ChatBots
                     case FishingState.StartMove:
                         if (--counter < 0)
                         {
-                            if (Config.Movements.Length > 0)
+                            if (Config.Enable_Move && Config.Movements.Length > 0)
                             {
                                 if (GetTerrainEnabled())
                                 {
@@ -399,7 +407,7 @@ namespace MinecraftClient.ChatBots
         public void OnCaughtFish()
         {
             ++fishCount;
-            if (Config.Movements.Length > 0)
+            if (Config.Enable_Move && Config.Movements.Length > 0)
                 LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.caught_at",
                     fishingBobber!.Location.X, fishingBobber!.Location.Y, fishingBobber!.Location.Z, fishCount));
             else
