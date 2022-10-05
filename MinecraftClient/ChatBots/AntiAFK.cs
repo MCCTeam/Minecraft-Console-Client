@@ -43,6 +43,9 @@ namespace MinecraftClient.ChatBots
                     LogToConsole(BotName, Translations.TryGet("bot.antiafk.invalid_walk_range"));
                 }
 
+                Delay.min = Math.Max(10, Delay.min);
+                Delay.max = Math.Max(10, Delay.max);
+
                 if (Delay.min > Delay.max)
                 {
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);
@@ -58,14 +61,11 @@ namespace MinecraftClient.ChatBots
 
                 public Range(int value)
                 {
-                    value = Math.Max(value, 10);
                     min = max = value;
                 }
 
                 public Range(int min, int max)
                 {
-                    min = Math.Max(min, 10);
-                    max = Math.Max(max, 10);
                     this.min = min;
                     this.max = max;
                 }
