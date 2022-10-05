@@ -26,8 +26,7 @@ namespace MinecraftClient
 {
     public static class Settings
     {
-        // Minecraft Console Client client information used for BrandInfo setting
-        public const string MCCBrandInfo = "Minecraft-Console-Client/" + Program.Version;
+        private const int CommentsAlignPosition = 45;
 
         //Other Settings
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\48\482e0dae05abfa35ab5cb076e41fda77b4fb9a08"; //MC 1.19 en_GB.lang
@@ -165,7 +164,7 @@ namespace MinecraftClient
                 {
                     string config = match.Groups[1].Value, comment = match.Groups[2].Value;
                     if (config.Length > 0)
-                        newConfig.Append(config).Append(' ', Math.Max(1, 45 - config.Length) - 1);
+                        newConfig.Append(config).Append(' ', Math.Max(1, CommentsAlignPosition - config.Length) - 1);
                     newConfig.Append("# ").AppendLine(Translations.TryGet(comment).ReplaceLineEndings());
                 }
                 else
@@ -1103,7 +1102,7 @@ namespace MinecraftClient
         {
             return info switch
             {
-                BrandInfoType.mcc => Settings.MCCBrandInfo,
+                BrandInfoType.mcc => "Minecraft-Console-Client/" + Program.Version,
                 BrandInfoType.vanilla => "vanilla",
                 BrandInfoType.empty => null,
                 _ => null,

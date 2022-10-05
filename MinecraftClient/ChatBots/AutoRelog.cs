@@ -29,7 +29,7 @@ namespace MinecraftClient.ChatBots
             public bool Ignore_Kick_Message = false;
 
             [TomlInlineComment("$config.ChatBot.AutoRelog.Kick_Messages$")]
-            public string[] Kick_Messages = new string[] { "Reason1", "Reason2" };
+            public string[] Kick_Messages = new string[] { "Connection has been lost", "Server is restarting", "Server is full", "Too Many people" };
 
             public void OnSettingUpdate()
             {
