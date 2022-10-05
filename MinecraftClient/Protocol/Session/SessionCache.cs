@@ -4,6 +4,8 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Timers;
+using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
 
 namespace MinecraftClient.Protocol.Session
 {
@@ -54,11 +56,11 @@ namespace MinecraftClient.Protocol.Session
                 sessions.Add(login, session);
             }
 
-            if (Settings.SessionCaching == CacheType.Disk && updatetimer.Enabled == true)
+            if (Config.Main.Advanced.SessionCache == CacheType.disk && updatetimer.Enabled == true)
             {
                 pendingadds.Add(new KeyValuePair<string, SessionToken>(login, session));
             }
-            else if (Settings.SessionCaching == CacheType.Disk)
+            else if (Config.Main.Advanced.SessionCache == CacheType.disk)
             {
                 SaveToDisk();
             }
@@ -122,7 +124,7 @@ namespace MinecraftClient.Protocol.Session
             //Grab sessions in the Minecraft directory
             if (File.Exists(SessionCacheFileMinecraft))
             {
-                if (Settings.DebugMessages)
+                if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted(Translations.Get("cache.loading", Path.GetFileName(SessionCacheFileMinecraft)));
                 Json.JSONData mcSession = new(Json.JSONData.DataType.String);
                 try
@@ -155,7 +157,7 @@ namespace MinecraftClient.Protocol.Session
                                         sessionItem["uuid"].StringValue.Replace("-", ""),
                                         clientID
                                     ));
-                                    if (Settings.DebugMessages)
+                                    if (Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", login, session.ID));
                                     sessions[login] = session;
                                 }
@@ -169,7 +171,7 @@ namespace MinecraftClient.Protocol.Session
             //Serialized session cache file in binary format
             if (File.Exists(SessionCacheFileSerialized))
             {
-                if (Settings.DebugMessages)
+                if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted(Translations.Get("cache.converting", SessionCacheFileSerialized));
 
                 try
@@ -181,7 +183,7 @@ namespace MinecraftClient.Protocol.Session
 #pragma warning restore SYSLIB0011 // BinaryFormatter.Deserialize() is obsolete
                     foreach (KeyValuePair<string, SessionToken> item in sessionsTemp)
                     {
-                        if (Settings.DebugMessages)
+                        if (Config.Logging.DebugMessages)
                             ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", item.Key, item.Value.ID));
                         sessions[item.Key] = item.Value;
                     }
@@ -199,7 +201,7 @@ namespace MinecraftClient.Protocol.Session
             //User-editable session cache file in text format
             if (File.Exists(SessionCacheFilePlaintext))
             {
-                if (Settings.DebugMessages)
+                if (Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted(Translations.Get("cache.loading_session", SessionCacheFilePlaintext));
 
                 try
@@ -215,17 +217,17 @@ namespace MinecraftClient.Protocol.Session
                                 {
                                     string login = Settings.ToLowerIfNeed(keyValue[0]);
                                     SessionToken session = SessionToken.FromString(keyValue[1]);
-                                    if (Settings.DebugMessages)
+                                    if (Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", login, session.ID));
                                     sessions[login] = session;
                                 }
                                 catch (InvalidDataException e)
                                 {
-                                    if (Settings.DebugMessages)
+                                    if (Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string", keyValue[1], e.Message));
                                 }
                             }
-                            else if (Settings.DebugMessages)
+                            else if (Config.Logging.DebugMessages)
                             {
                                 ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_line", line));
                             }
@@ -246,7 +248,7 @@ namespace MinecraftClient.Protocol.Session
         /// </summary>
         private static void SaveToDisk()
         {
-            if (Settings.DebugMessages)
+            if (Config.Logging.DebugMessages)
                 Translations.WriteLineFormatted("cache.saving");
 
             List<string> sessionCacheLines = new()

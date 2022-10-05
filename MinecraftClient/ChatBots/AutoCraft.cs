@@ -4,11 +4,27 @@ using System.IO;
 using System.Linq;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
-    class AutoCraft : ChatBot
+    public class AutoCraft : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "AutoCraft";
+
+            public bool Enabled = false;
+
+            public string configFile = @"autocraft\config.ini";
+
+            public void OnSettingUpdate() { }
+        }
+
         private bool waitingForMaterials = false;
         private bool waitingForUpdate = false;
         private bool waitingForTable = false;
@@ -26,7 +42,6 @@ namespace MinecraftClient.ChatBots
         private int updateTimeout = 0;
         private string timeoutAction = "unspecified";
 
-        private readonly string configPath = @"autocraft\config.ini";
         private string lastRecipe = ""; // Used in parsing recipe config
 
         private readonly Dictionary<string, Recipe> recipes = new();
@@ -158,11 +173,6 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public AutoCraft(string configPath = @"autocraft\config.ini")
-        {
-            this.configPath = configPath;
-        }
-
         public override void Initialize()
         {
             if (!GetInventoryEnabled())
@@ -247,9 +257,9 @@ namespace MinecraftClient.ChatBots
 
         public void LoadConfig()
         {
-            if (!File.Exists(configPath))
+            if (!File.Exists(Config.configFile))
             {
-                if (!Directory.Exists(configPath))
+                if (!Directory.Exists(Config.configFile))
                 {
                     Directory.CreateDirectory(@"autocraft");
                 }
@@ -289,19 +299,19 @@ namespace MinecraftClient.ChatBots
                 "# For the naming of the items, please see",
                 "# https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs"
             };
-            File.WriteAllLines(configPath, content);
+            File.WriteAllLines(Config.configFile, content);
         }
 
         private void ParseConfig()
         {
-            string[] content = File.ReadAllLines(configPath);
+            string[] content = File.ReadAllLines(Config.configFile);
             if (content.Length <= 0)
             {
-                throw new Exception(Translations.Get("bot.autoCraft.exception.empty", configPath));
+                throw new Exception(Translations.Get("bot.autoCraft.exception.empty", Config.configFile));
             }
             if (content[0].ToLower() != "[autocraft]")
             {
-                throw new Exception(Translations.Get("bot.autoCraft.exception.invalid", configPath));
+                throw new Exception(Translations.Get("bot.autoCraft.exception.invalid", Config.configFile));
             }
 
             // local variable for use in parsing config

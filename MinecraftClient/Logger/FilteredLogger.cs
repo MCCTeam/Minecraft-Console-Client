@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Logger
 {
@@ -10,11 +11,23 @@ namespace MinecraftClient.Logger
         {
             Regex? regexToUse = null;
             // Convert to bool for XOR later. Whitelist = 0, Blacklist = 1
-            bool filterMode = Settings.FilterMode == Settings.FilterModeEnum.Blacklist;
+            bool filterMode = Config.Logging.FilterMode == LoggingConfigHealper.LoggingConfig.FilterModeEnum.blacklist;
             switch (channel)
             {
-                case FilterChannel.Chat: regexToUse = Settings.ChatFilter; break;
-                case FilterChannel.Debug: regexToUse = Settings.DebugFilter; break;
+                case FilterChannel.Chat:
+                    string chat = Config.Logging.ChatFilterRegex;
+                    if (string.IsNullOrEmpty(chat))
+                        regexToUse = null;
+                    else
+                        regexToUse = new(chat);
+                    break;
+                case FilterChannel.Debug:
+                    string debug = Config.Logging.DebugFilterRegex;
+                    if (string.IsNullOrEmpty(debug))
+                        regexToUse = null;
+                    else
+                        regexToUse = new(debug);
+                    break;
             }
             if (regexToUse != null)
             {

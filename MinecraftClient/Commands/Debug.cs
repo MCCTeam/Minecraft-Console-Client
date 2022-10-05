@@ -11,11 +11,10 @@ namespace MinecraftClient.Commands
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (HasArg(command))
-            {
-                Settings.DebugMessages = (GetArg(command).ToLower() == "on");
-            }
-            else Settings.DebugMessages = !Settings.DebugMessages;
-            return Translations.Get(Settings.DebugMessages ? "cmd.debug.state_on" : "cmd.debug.state_off");
+                Settings.Config.Logging.DebugMessages = (GetArg(command).ToLower() == "on");
+            else
+                Settings.Config.Logging.DebugMessages = !Settings.Config.Logging.DebugMessages;
+            return Translations.Get(Settings.Config.Logging.DebugMessages ? "cmd.debug.state_on" : "cmd.debug.state_off");
         }
     }
 }

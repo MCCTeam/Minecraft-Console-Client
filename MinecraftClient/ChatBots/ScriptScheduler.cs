@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -11,6 +13,32 @@ namespace MinecraftClient.ChatBots
 
     public class ScriptScheduler : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "ScriptScheduler";
+
+            public bool Enabled = false;
+
+            public string Tasks_File = @"tasks.ini";
+
+            public void OnSettingUpdate()
+            {
+                if (!Enabled) return;
+
+                string Tasks_File_Full = Settings.Config.AppVar.ExpandVars(Tasks_File);
+                if (!File.Exists(Tasks_File_Full))
+                {
+                    LogToConsole(BotName, Translations.TryGet("bot.scriptScheduler.not_found", Path.GetFullPath(Tasks_File_Full)));
+                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    Enabled = false;
+                }
+            }
+        }
+
         private class TaskDesc
         {
             public string? action = null;
@@ -27,26 +55,20 @@ namespace MinecraftClient.ChatBots
 
         private static bool firstlogin_done = false;
 
-        private readonly string tasksfile;
-        private bool serverlogin_done;
+        private bool serverlogin_done = false;
         private readonly List<TaskDesc> tasks = new();
         private int verifytasks_timeleft = 10;
         private readonly int verifytasks_delay = 10;
 
-        public ScriptScheduler(string tasksfile)
-        {
-            this.tasksfile = tasksfile;
-            serverlogin_done = false;
-        }
-
         public override void Initialize()
         {
             //Load the given file from the startup parameters
-            if (System.IO.File.Exists(tasksfile))
+            string Tasks_File_Full = Settings.Config.AppVar.ExpandVars(Config.Tasks_File);
+            if (File.Exists(Tasks_File_Full))
             {
-                LogDebugToConsoleTranslated("bot.scriptScheduler.loading", System.IO.Path.GetFullPath(tasksfile));
+                LogDebugToConsoleTranslated("bot.scriptScheduler.loading", System.IO.Path.GetFullPath(Tasks_File_Full));
                 TaskDesc? current_task = null;
-                string[] lines = System.IO.File.ReadAllLines(tasksfile, Encoding.UTF8);
+                string[] lines = System.IO.File.ReadAllLines(Tasks_File_Full, Encoding.UTF8);
                 foreach (string lineRAW in lines)
                 {
                     string line = lineRAW.Split('#')[0].Trim();
@@ -70,10 +92,10 @@ namespace MinecraftClient.ChatBots
                                 string argValue = line[(argName.Length + 1)..];
                                 switch (argName.ToLower())
                                 {
-                                    case "triggeronfirstlogin": current_task.triggerOnFirstLogin = Settings.str2bool(argValue); break;
-                                    case "triggeronlogin": current_task.triggerOnLogin = Settings.str2bool(argValue); break;
-                                    case "triggerontime": current_task.triggerOnTime = Settings.str2bool(argValue); break;
-                                    case "triggeroninterval": current_task.triggerOnInterval = Settings.str2bool(argValue); break;
+                                    case "triggeronfirstlogin": current_task.triggerOnFirstLogin = bool.Parse(argValue); break;
+                                    case "triggeronlogin": current_task.triggerOnLogin = bool.Parse(argValue); break;
+                                    case "triggerontime": current_task.triggerOnTime = bool.Parse(argValue); break;
+                                    case "triggeroninterval": current_task.triggerOnInterval = bool.Parse(argValue); break;
                                     case "timevalue": try { current_task.triggerOnTime_Times.Add(DateTime.ParseExact(argValue, "HH:mm", CultureInfo.InvariantCulture)); } catch { } break;
                                     case "timeinterval":
                                         int interval;
@@ -112,7 +134,7 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                LogToConsoleTranslated("bot.scriptScheduler.not_found", System.IO.Path.GetFullPath(tasksfile));
+                LogToConsoleTranslated("bot.scriptScheduler.not_found", Path.GetFullPath(Tasks_File_Full));
                 UnloadBot(); //No need to keep the bot active
             }
         }
