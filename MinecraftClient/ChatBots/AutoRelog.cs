@@ -28,18 +28,22 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.AutoRelog.Ignore_Kick_Message$")]
             public bool Ignore_Kick_Message = false;
 
-            [TomlInlineComment("$config.ChatBot.AutoRelog.Kick_Messages_File$")]
-            public string Kick_Messages_File = @"kickmessages.txt";
+            [TomlInlineComment("$config.ChatBot.AutoRelog.Kick_Messages$")]
+            public string[] Kick_Messages = new string[] { "Reason1", "Reason2" };
 
             public void OnSettingUpdate()
             {
-                Kick_Messages_File ??= string.Empty;
-
+                Delay.min = Math.Max(1, Delay.min);
+                Delay.max = Math.Max(1, Delay.max);
                 if (Delay.min > Delay.max)
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);
 
                 if (Retries == -1)
                     Retries = int.MaxValue;
+
+                if (Enabled)
+                    for (int i = 0; i < Kick_Messages.Length; i++)
+                        Kick_Messages[i] = Kick_Messages[i].ToLower();
             }
 
             public struct Range
@@ -48,14 +52,11 @@ namespace MinecraftClient.ChatBots
 
                 public Range(int value)
                 {
-                    value = Math.Max(value, 1);
                     min = max = value;
                 }
 
                 public Range(int min, int max)
                 {
-                    min = Math.Max(min, 1);
-                    max = Math.Max(max, 1);
                     this.min = min;
                     this.max = max;
                 }
@@ -63,7 +64,6 @@ namespace MinecraftClient.ChatBots
         }
 
         private static readonly Random random = new();
-        private string[] dictionary = Array.Empty<string>();
 
         /// <summary>
         /// This bot automatically re-join the server if kick message contains predefined string
@@ -82,27 +82,6 @@ namespace MinecraftClient.ChatBots
             if (Config.Ignore_Kick_Message)
             {
                 LogDebugToConsoleTranslated("bot.autoRelog.no_kick_msg");
-            }
-            else
-            {
-                if (System.IO.File.Exists(Config.Kick_Messages_File))
-                {
-                    LogDebugToConsoleTranslated("bot.autoRelog.loading", System.IO.Path.GetFullPath(Config.Kick_Messages_File));
-
-                    dictionary = System.IO.File.ReadAllLines(Config.Kick_Messages_File, Encoding.UTF8);
-
-                    for (int i = 0; i < dictionary.Length; i++)
-                    {
-                        LogDebugToConsoleTranslated("bot.autoRelog.loaded", dictionary[i]);
-                        dictionary[i] = dictionary[i].ToLower();
-                    }
-                }
-                else
-                {
-                    LogToConsoleTranslated("bot.autoRelog.not_found", System.IO.Path.GetFullPath(Config.Kick_Messages_File));
-
-                    LogDebugToConsoleTranslated("bot.autoRelog.curr_dir", System.IO.Directory.GetCurrentDirectory());
-                }
             }
         }
 
@@ -125,7 +104,7 @@ namespace MinecraftClient.ChatBots
                     return true;
                 }
 
-                foreach (string msg in dictionary)
+                foreach (string msg in Config.Kick_Messages)
                 {
                     if (comp.Contains(msg))
                     {

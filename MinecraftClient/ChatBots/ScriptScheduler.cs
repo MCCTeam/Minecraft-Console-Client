@@ -31,6 +31,11 @@ namespace MinecraftClient.ChatBots
             {
                 foreach (TaskConfig task in TaskList)
                 {
+                    task.Trigger_On_Interval.MinTime = Math.Max(1, task.Trigger_On_Interval.MinTime);
+                    task.Trigger_On_Interval.MaxTime = Math.Max(1, task.Trigger_On_Interval.MaxTime);
+                    if (task.Trigger_On_Interval.MinTime > task.Trigger_On_Interval.MaxTime)
+                        (task.Trigger_On_Interval.MinTime, task.Trigger_On_Interval.MaxTime) = (task.Trigger_On_Interval.MaxTime, task.Trigger_On_Interval.MinTime);
+
                     //Look for a valid action
                     if (!String.IsNullOrWhiteSpace(task.Action))
                     {
@@ -106,21 +111,17 @@ namespace MinecraftClient.ChatBots
                     public TriggerOnIntervalConfig(int value)
                     {
                         this.Enable = true;
-                        value = Math.Max(value, 10);
                         MinTime = MaxTime = value;
                     }
 
                     public TriggerOnIntervalConfig(bool Enable, int value)
                     {
                         this.Enable = Enable;
-                        value = Math.Max(value, 10);
                         MinTime = MaxTime = value;
                     }
 
                     public TriggerOnIntervalConfig(int min, int max)
                     {
-                        min = Math.Max(min, 10);
-                        max = Math.Max(max, 10);
                         this.MinTime = min;
                         this.MaxTime = max;
                     }
@@ -128,8 +129,6 @@ namespace MinecraftClient.ChatBots
                     public TriggerOnIntervalConfig(bool Enable, int min, int max)
                     {
                         this.Enable = Enable;
-                        min = Math.Max(min, 10);
-                        max = Math.Max(max, 10);
                         this.MinTime = min;
                         this.MaxTime = max;
                     }
