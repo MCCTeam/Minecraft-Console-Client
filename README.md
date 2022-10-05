@@ -45,11 +45,14 @@ If you'd like to contribute to Minecraft Console Client, great, just fork the re
 
 ## Translating Minecraft Console Client 🌍
 
-If you would like to translate Minecraft Console Client to a different language, please download the translation file from [the lang folder](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) or just fork the repository. Once you finished the translation work, submit a pull request or send us the file through an [Issue](https://github.com/MCCTeam/Minecraft-Console-Client/issues) in case you are not familiar with Git.
+Check out: [How to update or add translations for MCC](https://mccteam.github.io/guide/contibuting.html#translations).
 
-To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if it does not exist.
-
-For the names of the translation file, please see [this comment](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
+MCC now has translations in the following languages (Alphabetical order) :
+  * `de.ini` : Deutsch - German
+  * `fr.ini` : Français (France) - 	French
+  * `ru.ini` : Русский (Russkiy) - Russian
+  * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
+  * `zh-Hans.ini` : 简体中文（中国大陆） - Chinese Simplified (China; Mandarin)
 
 ## Building from the source 🏗️
 
