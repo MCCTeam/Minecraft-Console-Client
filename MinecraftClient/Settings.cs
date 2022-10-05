@@ -435,16 +435,16 @@ namespace MinecraftClient
                     [TomlInlineComment("$config.Main.Advanced.resolve_srv_records$")]
                     public ResolveSrvRecordType ResolveSrvRecords = ResolveSrvRecordType.fast;
 
-                    [TomlInlineComment("$config.Main.Advanced.account_list$")]
+                    [TomlPrecedingComment("$config.Main.Advanced.account_list$")]
                     public Dictionary<string, AccountInfoConfig> AccountList = new() {
-                        { "AccountNikename1", new AccountInfoConfig("login1", "pass1") },
-                        { "AccountNikename2", new AccountInfoConfig("login2", "pass2") },
+                        { "AccountNikename1", new AccountInfoConfig("playerone@email.com", "thepassword") },
+                        { "AccountNikename2", new AccountInfoConfig("TestBot", "-") },
                     };
 
-                    [TomlInlineComment("$config.Main.Advanced.server_list$")]
+                    [TomlPrecedingComment("$config.Main.Advanced.server_list$")]
                     public Dictionary<string, ServerInfoConfig> ServerList = new() {
-                        { "ServerNickname1", new ServerInfoConfig("test1.server.com") },
-                        { "ServerNickname2", new ServerInfoConfig("test2.server.com", 12345) },
+                        { "ServerAlias1", new ServerInfoConfig("mc.awesomeserver.com") },
+                        { "ServerAlias2", new ServerInfoConfig("192.168.1.27", 12345) },
                     };
 
                     [TomlInlineComment("$config.Main.Advanced.player_head_icon$")]

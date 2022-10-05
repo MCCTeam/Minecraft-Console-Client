@@ -59,8 +59,11 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
-            new Thread(() =>
+            Task.Run(() =>
             {
+                // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
+                _ = "a".ToLower();
+
                 //Take advantage of Windows 10 / Mac / Linux UTF-8 console
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -76,10 +79,7 @@ namespace MinecraftClient
 
                 // Fix issue #2119
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-                // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
-                _ = "a".ToLower();
-            }).Start();
+            });
 
             //Setup ConsoleIO
             ConsoleIO.LogPrefix = "§8[MCC] ";

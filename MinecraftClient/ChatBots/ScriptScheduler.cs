@@ -25,7 +25,24 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            public TaskConfig[] TaskList = new TaskConfig[] { new() };
+            public TaskConfig[] TaskList = new TaskConfig[] {
+                new TaskConfig(
+                    Task_Name: "Task Name 1",
+                    Trigger_On_First_Login: false,
+                    Trigger_On_Login: false,
+                    Trigger_On_Times: new(true, new TimeSpan[] { new(14, 00, 00) }),
+                    Trigger_On_Interval: new(true, 10, 20),
+                    Action: "send /hello"
+                ),
+                new TaskConfig(
+                    Task_Name: "Task Name 2",
+                    Trigger_On_First_Login: false,
+                    Trigger_On_Login: true,
+                    Trigger_On_Times: new(false, Array.Empty<TimeSpan>() ),
+                    Trigger_On_Interval: new(false, 1, 10),
+                    Action: "send /login pass"
+                ),
+            };
 
             public void OnSettingUpdate()
             {
@@ -84,6 +101,18 @@ namespace MinecraftClient.ChatBots
 
                 [NonSerialized]
                 public int Trigger_On_Interval_Countdown = 0;
+
+                public TaskConfig() { }
+
+                public TaskConfig(string Task_Name, bool Trigger_On_First_Login, bool Trigger_On_Login, TriggerOnTimeConfig Trigger_On_Times, TriggerOnIntervalConfig Trigger_On_Interval, string Action)
+                {
+                    this.Task_Name = Task_Name;
+                    this.Trigger_On_First_Login = Trigger_On_First_Login;
+                    this.Trigger_On_Login = Trigger_On_Login;
+                    this.Trigger_On_Times = Trigger_On_Times;
+                    this.Trigger_On_Interval = Trigger_On_Interval;
+                    this.Action = Action;
+                }
 
                 public struct TriggerOnTimeConfig
                 {
