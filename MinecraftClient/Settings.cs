@@ -126,6 +126,7 @@ namespace MinecraftClient
             try
             {
                 document = TomlParser.ParseFile(filepath);
+                Config = TomletMain.To<GlobalConfig>(document);
             }
             catch (Exception ex)
             {
@@ -148,9 +149,6 @@ namespace MinecraftClient
                 ConsoleIO.WriteLine(Translations.GetOrNull("mcc.run_with_default_settings") ?? "\nMCC is running with default settings.");
                 return false;
             }
-
-            Config = TomletMain.To<GlobalConfig>(document);
-
             return false;
         }
 
