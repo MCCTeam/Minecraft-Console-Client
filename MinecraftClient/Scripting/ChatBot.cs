@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient
 {
@@ -521,9 +522,9 @@ namespace MinecraftClient
             text = GetVerbatim(text);
 
             //User-defined regex for private chat messages
-            if (Settings.ChatFormat_Private != null)
+            if (Config.ChatFormat.Private != null)
             {
-                Match regexMatch = Settings.ChatFormat_Private.Match(text);
+                Match regexMatch = new Regex(Config.ChatFormat.Private).Match(text);
                 if (regexMatch.Success && regexMatch.Groups.Count >= 3)
                 {
                     sender = regexMatch.Groups[1].Value;
@@ -533,7 +534,7 @@ namespace MinecraftClient
             }
 
             //Built-in detection routine for private messages
-            if (Settings.ChatFormat_Builtins)
+            if (Config.ChatFormat.Builtins)
             {
                 string[] tmp = text.Split(' ');
                 try
@@ -632,9 +633,9 @@ namespace MinecraftClient
             text = GetVerbatim(text);
 
             //User-defined regex for public chat messages
-            if (Settings.ChatFormat_Public != null)
+            if (Config.ChatFormat.Public != null)
             {
-                Match regexMatch = Settings.ChatFormat_Public.Match(text);
+                Match regexMatch = new Regex(Config.ChatFormat.Public).Match(text);
                 if (regexMatch.Success && regexMatch.Groups.Count >= 3)
                 {
                     sender = regexMatch.Groups[1].Value;
@@ -644,7 +645,7 @@ namespace MinecraftClient
             }
 
             //Built-in detection routine for public messages
-            if (Settings.ChatFormat_Builtins)
+            if (Config.ChatFormat.Builtins)
             {
                 string[] tmp = text.Split(' ');
 
@@ -735,9 +736,9 @@ namespace MinecraftClient
             text = GetVerbatim(text);
 
             //User-defined regex for teleport requests
-            if (Settings.ChatFormat_TeleportRequest != null)
+            if (Config.ChatFormat.TeleportRequest != null)
             {
-                Match regexMatch = Settings.ChatFormat_TeleportRequest.Match(text);
+                Match regexMatch = new Regex(Config.ChatFormat.TeleportRequest).Match(text);
                 if (regexMatch.Success && regexMatch.Groups.Count >= 2)
                 {
                     sender = regexMatch.Groups[1].Value;
@@ -746,7 +747,7 @@ namespace MinecraftClient
             }
 
             //Built-in detection routine for teleport requests
-            if (Settings.ChatFormat_Builtins)
+            if (Config.ChatFormat.Builtins)
             {
                 string[] tmp = text.Split(' ');
 
@@ -786,7 +787,26 @@ namespace MinecraftClient
                 ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", GetType().Name, text));
             else
                 Handler.Log.Info(String.Format("[{0}] {1}", GetType().Name, text));
-            string logfile = Settings.ExpandVars(Settings.chatbotLogFile);
+            string logfile = Settings.Config.AppVar.ExpandVars(Config.Main.Advanced.ChatbotLogFile);
+
+            if (!String.IsNullOrEmpty(logfile))
+            {
+                if (!File.Exists(logfile))
+                {
+                    try { Directory.CreateDirectory(Path.GetDirectoryName(logfile)!); }
+                    catch { return; /* Invalid path or access denied */ }
+                    try { File.WriteAllText(logfile, ""); }
+                    catch { return; /* Invalid file name or access denied */ }
+                }
+
+                File.AppendAllLines(logfile, new string[] { GetTimestamp() + ' ' + text });
+            }
+        }
+
+        protected static void LogToConsole(string botName, object? text)
+        {
+            ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", botName, text));
+            string logfile = Settings.Config.AppVar.ExpandVars(Config.Main.Advanced.ChatbotLogFile);
 
             if (!String.IsNullOrEmpty(logfile))
             {
@@ -808,7 +828,7 @@ namespace MinecraftClient
         /// <param name="text">Debug log text to write</param>
         protected void LogDebugToConsole(object text)
         {
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
                 LogToConsole(text);
         }
 
@@ -840,7 +860,7 @@ namespace MinecraftClient
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
         protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0)
         {
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
                 ConsoleIO.WriteLogLine(Translations.Get("chatbot.reconnect", GetType().Name));
             McClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart(delaySeconds);
@@ -873,7 +893,7 @@ namespace MinecraftClient
         /// <param name="message">Message</param>
         protected void SendPrivateMessage(string player, string message)
         {
-            SendText(String.Format("/{0} {1} {2}", Settings.PrivateMsgsCmdName, player, message));
+            SendText(String.Format("/{0} {1} {2}", Config.Main.Advanced.PrivateMsgsCmdName, player, message));
         }
 
         /// <summary>

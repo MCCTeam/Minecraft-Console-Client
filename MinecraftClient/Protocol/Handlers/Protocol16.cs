@@ -13,6 +13,7 @@ using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -494,7 +495,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                 if (serverID == "-")
                     Translations.WriteLineFormatted("mcc.server_offline");
-                else if (Settings.DebugMessages)
+                else if (Settings.Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted(Translations.Get("mcc.handshake", serverID));
 
                 return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey, session);
@@ -511,7 +512,7 @@ namespace MinecraftClient.Protocol.Handlers
             RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
                 Translations.WriteLineFormatted("debug.crypto");
 
             if (serverIDhash != "-")
@@ -534,7 +535,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
-                        SessionCache.Store(Settings.Login.ToLower(), session);
+                        SessionCache.Store(Config.Main.General.Account.Login.ToLower(), session);
                     }
                     else
                     {
@@ -862,7 +863,7 @@ namespace MinecraftClient.Protocol.Handlers
                     Protocol16Handler ComTmp = new(tcp);
                     string result = ComTmp.ReadNextString();
 
-                    if (Settings.DebugMessages)
+                    if (Settings.Config.Logging.DebugMessages)
                     {
                         // May contain formatting codes, cannot use WriteLineFormatted
                         Console.ForegroundColor = ConsoleColor.DarkGray;

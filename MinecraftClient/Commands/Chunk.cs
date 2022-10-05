@@ -138,7 +138,7 @@ namespace MinecraftClient.Commands
 
 
                         // \ud83d\udd33: 🔳, \ud83d\udfe8: 🟨, \ud83d\udfe9: 🟩, \u25A1: □, \u25A3: ▣, \u25A0: ■
-                        string[] chunkStatusStr = Settings.EnableEmoji ?
+                        string[] chunkStatusStr = Settings.Config.Main.Advanced.EnableEmoji ?
                             new string[] { "\ud83d\udd33", "\ud83d\udfe8", "\ud83d\udfe9" } : new string[] { "\u25A1", "\u25A3", "\u25A0" };
 
                         // Output

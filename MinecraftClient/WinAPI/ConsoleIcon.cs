@@ -67,6 +67,16 @@ namespace MinecraftClient.WinAPI
                         imageStream.Dispose();
                         httpWebRequest.Dispose();
                     }
+                    catch (AggregateException ae)
+                    {
+                        foreach (var ex in ae.InnerExceptions)
+                        {
+                            if (ex is HttpRequestException) //Skin not found? Reset to default icon
+                                RevertToMCCIcon();
+                            else
+                                throw ex;
+                        }
+                    }
                     catch (HttpRequestException) //Skin not found? Reset to default icon
                     {
                         RevertToMCCIcon();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -8,9 +9,85 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class Alerts : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "Alerts";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.Alerts.Beep_Enabled$")]
+            public bool Beep_Enabled = true;
+
+            [TomlInlineComment("$config.ChatBot.Alerts.Trigger_By_Words$")]
+            public bool Trigger_By_Words = false;
+
+            [TomlInlineComment("$config.ChatBot.Alerts.Trigger_By_Rain$")]
+            public bool Trigger_By_Rain = false;
+
+            [TomlInlineComment("$config.ChatBot.Alerts.Trigger_By_Thunderstorm$")]
+            public bool Trigger_By_Thunderstorm = false;
+
+            [TomlInlineComment("$config.ChatBot.Alerts.Matches_File$")]
+            public string Matches_File = @"alerts.txt";
+
+            [TomlInlineComment("$config.ChatBot.Alerts.Excludes_File$")]
+            public string Excludes_File = @"alerts-exclude.txt";
+
+            [TomlInlineComment("$config.ChatBot.Alerts.Log_To_File$")]
+            public bool Log_To_File = false;
+
+            [TomlInlineComment("$config.ChatBot.Alerts.Log_File$")]
+            public string Log_File = @"alerts-log.txt";
+
+            public void OnSettingUpdate()
+            {
+                if (!Enabled) return;
+
+                bool checkSuccessed = true;
+
+                if (Trigger_By_Words)
+                {
+                    if (!System.IO.File.Exists(Matches_File))
+                    {
+                        checkSuccessed = false;
+                        LogToConsole(BotName, "File not found: " + System.IO.Path.GetFullPath(Matches_File));
+                    }
+
+                    if (!System.IO.File.Exists(Excludes_File))
+                    {
+                        checkSuccessed = false;
+                        LogToConsole(BotName, "File not found: " + System.IO.Path.GetFullPath(Excludes_File));
+                    }
+
+                    if (Log_To_File)
+                    {
+                        try
+                        {
+                            System.IO.File.AppendAllText(Log_File, string.Empty);
+                        }
+                        catch
+                        {
+                            checkSuccessed = false;
+                            LogToConsole(BotName, "Can't write logs to " + System.IO.Path.GetFullPath(Excludes_File));
+                        }
+                    }
+                }
+
+                if (!checkSuccessed)
+                {
+                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    Enabled = false;
+                }
+            }
+        }
+
         private string[] dictionary = Array.Empty<string>();
         private string[] excludelist = Array.Empty<string>();
-        private bool logToFile = false;
+
         float curRainLevel = 0;
         float curThunderLevel = 0;
         const float threshold = 0.2f;
@@ -20,11 +97,10 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void Initialize()
         {
-            if (Settings.Alerts_Trigger_By_Words)
+            if (Config.Trigger_By_Words)
             {
-                dictionary = LoadDistinctEntriesFromFile(Settings.Alerts_MatchesFile);
-                excludelist = LoadDistinctEntriesFromFile(Settings.Alerts_ExcludesFile);
-                logToFile = Settings.Alerts_File_Logging;
+                dictionary = LoadDistinctEntriesFromFile(Config.Matches_File);
+                excludelist = LoadDistinctEntriesFromFile(Config.Excludes_File);
             }
         }
 
@@ -34,7 +110,7 @@ namespace MinecraftClient.ChatBots
         /// <param name="text">Received text</param>
         public override void GetText(string text)
         {
-            if (Settings.Alerts_Trigger_By_Words)
+            if (Config.Trigger_By_Words)
             {
                 //Remove color codes and convert to lowercase
                 text = GetVerbatim(text).ToLower();
@@ -45,16 +121,16 @@ namespace MinecraftClient.ChatBots
                     //Show an alert for each alert item found in text, if any
                     foreach (string alert in dictionary.Where(alert => text.Contains(alert)))
                     {
-                        if (Settings.Alerts_Beep_Enabled)
+                        if (Config.Beep_Enabled)
                             Console.Beep(); //Text found !
 
                         ConsoleIO.WriteLine(text.Replace(alert, "§c" + alert + "§r"));
 
-                        if (logToFile && Settings.Alerts_LogFile.Length > 0)
+                        if (Config.Log_To_File && Config.Log_File.Length > 0)
                         {
                             DateTime now = DateTime.Now;
                             string TimeStamp = "[" + now.Year + '/' + now.Month + '/' + now.Day + ' ' + now.Hour + ':' + now.Minute + ']';
-                            System.IO.File.AppendAllText(Settings.Alerts_LogFile, TimeStamp + " " + GetVerbatim(text) + "\n");
+                            System.IO.File.AppendAllText(Config.Log_File, TimeStamp + " " + GetVerbatim(text) + "\n");
                         }
                     }
                 }
@@ -65,9 +141,9 @@ namespace MinecraftClient.ChatBots
         {
             if (curRainLevel < threshold && level >= threshold)
             {
-                if (Settings.Alerts_Trigger_By_Rain)
+                if (Config.Trigger_By_Rain)
                 {
-                    if (Settings.Alerts_Beep_Enabled)
+                    if (Config.Beep_Enabled)
                     {
                         Console.Beep();
                         Console.Beep();
@@ -77,9 +153,9 @@ namespace MinecraftClient.ChatBots
             }
             else if (curRainLevel >= threshold && level < threshold)
             {
-                if (Settings.Alerts_Trigger_By_Rain)
+                if (Config.Trigger_By_Rain)
                 {
-                    if (Settings.Alerts_Beep_Enabled)
+                    if (Config.Beep_Enabled)
                     {
                         Console.Beep();
                     }
@@ -93,9 +169,9 @@ namespace MinecraftClient.ChatBots
         {
             if (curThunderLevel < threshold && level >= threshold)
             {
-                if (Settings.Alerts_Trigger_By_Thunderstorm)
+                if (Config.Trigger_By_Thunderstorm)
                 {
-                    if (Settings.Alerts_Beep_Enabled)
+                    if (Config.Beep_Enabled)
                     {
                         Console.Beep();
                         Console.Beep();
@@ -105,9 +181,9 @@ namespace MinecraftClient.ChatBots
             }
             else if (curThunderLevel >= threshold && level < threshold)
             {
-                if (Settings.Alerts_Trigger_By_Thunderstorm)
+                if (Config.Trigger_By_Thunderstorm)
                 {
-                    if (Settings.Alerts_Beep_Enabled)
+                    if (Config.Beep_Enabled)
                     {
                         Console.Beep();
                     }
