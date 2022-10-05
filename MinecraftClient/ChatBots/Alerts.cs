@@ -45,6 +45,10 @@ namespace MinecraftClient.ChatBots
 
             public void OnSettingUpdate()
             {
+                Matches_File ??= string.Empty;
+                Excludes_File ??= string.Empty;
+                Log_File ??= string.Empty;
+
                 if (!Enabled) return;
 
                 bool checkSuccessed = true;

@@ -26,7 +26,11 @@ namespace MinecraftClient.ChatBots
 
             public string FileWords_FR = "hangman-fr.txt";
 
-            public void OnSettingUpdate() { }
+            public void OnSettingUpdate()
+            {
+                FileWords_EN ??= string.Empty;
+                FileWords_FR ??= string.Empty;
+            }
         }
 
         private int vie = 0;

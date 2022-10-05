@@ -22,7 +22,10 @@ namespace MinecraftClient.ChatBots
 
             public string configFile = @"autocraft\config.ini";
 
-            public void OnSettingUpdate() { }
+            public void OnSettingUpdate()
+            {
+                configFile ??= string.Empty;
+            }
         }
 
         private bool waitingForMaterials = false;

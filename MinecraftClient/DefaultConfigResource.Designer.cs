@@ -22,7 +22,7 @@ namespace MinecraftClient {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class DefaultConfigResource {
+    internal class DefaultConfigResource {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace MinecraftClient {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
+        internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MinecraftClient.DefaultConfigResource", typeof(DefaultConfigResource).Assembly);
@@ -51,7 +51,7 @@ namespace MinecraftClient {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
+        internal static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -75,7 +75,7 @@ namespace MinecraftClient {
         ///║║ 5 ║ 6 ║ 7 ║ 8 ║ 9 ║10 ║11 ║12 ║13 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string ContainerType_BrewingStand {
+        internal static string ContainerType_BrewingStand {
             get {
                 return ResourceManager.GetString("ContainerType_BrewingStand", resourceCulture);
             }
@@ -96,7 +96,7 @@ namespace MinecraftClient {
         ///║║10 ║11 ║12 ║13 ║14 ║15 ║16 ║17 ║18 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string ContainerType_Crafting {
+        internal static string ContainerType_Crafting {
             get {
                 return ResourceManager.GetString("ContainerType_Crafting", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace MinecraftClient {
         ///║╔═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╗║
         ///║║ 3 ║ 4 ║ 5 ║ 6 ║ 7 [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string ContainerType_Furnace {
+        internal static string ContainerType_Furnace {
             get {
                 return ResourceManager.GetString("ContainerType_Furnace", resourceCulture);
             }
@@ -138,7 +138,7 @@ namespace MinecraftClient {
         ///║║ 9 ║10 ║11 ║12 ║13 ║14 ║15 ║16 ║17 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string ContainerType_Generic_3x3 {
+        internal static string ContainerType_Generic_3x3 {
             get {
                 return ResourceManager.GetString("ContainerType_Generic_3x3", resourceCulture);
             }
@@ -159,7 +159,7 @@ namespace MinecraftClient {
         ///║║27 ║28 ║29 ║30 ║31 ║32 ║33 ║34 ║35 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string ContainerType_Generic_9x3 {
+        internal static string ContainerType_Generic_9x3 {
             get {
                 return ResourceManager.GetString("ContainerType_Generic_9x3", resourceCulture);
             }
@@ -180,7 +180,7 @@ namespace MinecraftClient {
         ///║║36 ║37 ║38 ║39 ║40 ║41 ║42 ║43 ║44 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string ContainerType_Generic_9x6 {
+        internal static string ContainerType_Generic_9x6 {
             get {
                 return ResourceManager.GetString("ContainerType_Generic_9x6", resourceCulture);
             }
@@ -201,7 +201,7 @@ namespace MinecraftClient {
         ///║  ╚══╝         ╚══╝                  ║
         ///║                    [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string ContainerType_Grindstone {
+        internal static string ContainerType_Grindstone {
             get {
                 return ResourceManager.GetString("ContainerType_Grindstone", resourceCulture);
             }
@@ -222,7 +222,7 @@ namespace MinecraftClient {
         ///║║23 ║24 ║25 ║26 ║27 ║28 ║29 ║30 ║31 ║║
         ///║╚═══╩═══╩═══╩═══╩══ [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string ContainerType_Hopper {
+        internal static string ContainerType_Hopper {
             get {
                 return ResourceManager.GetString("ContainerType_Hopper", resourceCulture);
             }
@@ -243,29 +243,9 @@ namespace MinecraftClient {
         ///║║ 9 ║10 ║11 ║12 ║13 ║14 ║15 ║16 ║17 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string ContainerType_PlayerInventory {
+        internal static string ContainerType_PlayerInventory {
             get {
                 return ResourceManager.GetString("ContainerType_PlayerInventory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to # Startup Config File
-        ///
-        ///# New to Minecraft Console Client? See README and sample configuration files here:
-        ///# https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config
-        ///
-        ///# Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download
-        ///# Some settings missing here after an upgrade? Try to delete this file and relaunch MCC to generate a new one
-        ///
-        ///[Main]
-        ///# General settings
-        ///# Leave blank to prompt user on startup
-        ///# Use &quot;-&quot; as password fo [rest of string was truncated]&quot;;.
-        /// </summary>
-        public static string MinecraftClient {
-            get {
-                return ResourceManager.GetString("MinecraftClient", resourceCulture);
             }
         }
         
@@ -284,7 +264,7 @@ namespace MinecraftClient {
         ///mcc.ip=Server-IP : 
         ///mcc.use_version=§8B [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string Translation_de {
+        internal static string Translation_de {
             get {
                 return ResourceManager.GetString("Translation_de", resourceCulture);
             }
@@ -303,7 +283,7 @@ namespace MinecraftClient {
         ///mcc.password_hidden=Password : {0}
         ///mcc.offline=§8You chose [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string Translation_en {
+        internal static string Translation_en {
             get {
                 return ResourceManager.GetString("Translation_en", resourceCulture);
             }
@@ -323,7 +303,7 @@ namespace MinecraftClient {
         ///mcc.connecting=Connexion à {0}...
         /// [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string Translation_fr {
+        internal static string Translation_fr {
             get {
                 return ResourceManager.GetString("Translation_fr", resourceCulture);
             }
@@ -344,7 +324,7 @@ namespace MinecraftClient {
         ///mcc.ip=IP сервера: 
         ///mc [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string Translation_ru {
+        internal static string Translation_ru {
             get {
                 return ResourceManager.GetString("Translation_ru", resourceCulture);
             }
@@ -365,7 +345,7 @@ namespace MinecraftClient {
         ///mcc.ip=Địa chỉ máy chủ: 
         ///mcc.use_version=§8Sử dụng Minecraft phiên bản  [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string Translation_vi {
+        internal static string Translation_vi {
             get {
                 return ResourceManager.GetString("Translation_vi", resourceCulture);
             }
@@ -388,7 +368,7 @@ namespace MinecraftClient {
         ///mcc.profile_key_invalid=§8缓存的聊天签名密钥需要刷新。
         ///mcc.profile_key_valid=§8{0}的聊天 [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string Translation_zh_Hans {
+        internal static string Translation_zh_Hans {
             get {
                 return ResourceManager.GetString("Translation_zh_Hans", resourceCulture);
             }
