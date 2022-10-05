@@ -45,11 +45,15 @@
 
 ## 翻译 Minecraft 控制台客户端 (MCC) 🌍
 
-如果你想将 Minecraft 控制台客户端 (MCC) 翻译成其他语言，请从 [lang 文件夹](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang)下载翻译文件或直接 fork 仓库。一旦你完成了翻译工作，请提交一个 Pull Request。如果你不熟悉 Git 的话，你也可以通过 [Issue](https://github.com/MCCTeam/Minecraft-Console-Client/issues) 将文件发送给我们。
+请查看：[如何为MCC添加或更新翻译](https://mccteam.github.io/guide/contibuting.html#translations)。
 
-要使用翻译后的语言文件，请将其放在 `lang/mcc/` 文件夹下，并在 `.ini` 配置文件中设置语言。如果该目录不存在，你可以创建它。
-
-对于翻译文件的名称，请参阅[此评论](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715)。
+MCC 现在支持这些语言（按字母顺序排列）：
+  * `de.ini` : Deutsch - German
+  * `en.ini` : English - English
+  * `fr.ini` : Français (France) - 	French
+  * `ru.ini` : Русский (Russkiy) - Russian
+  * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
+  * `zh-Hans.ini` : 简体中文（中国大陆） - Chinese Simplified (China; Mandarin)
 
 ## 从源码构建 🏗️
 
