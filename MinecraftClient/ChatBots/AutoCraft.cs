@@ -31,13 +31,13 @@ namespace MinecraftClient.ChatBots
             public RecipeConfig[] Recipes = new RecipeConfig[]
             {
                 new RecipeConfig(
-                    Name: "Recipe Name 1",
+                    Name: "Recipe-Name-1",
                     Type: CraftTypeConfig.player,
                     Result: ItemType.StoneBricks,
                     Slots: new ItemType[4] { ItemType.Stone, ItemType.Stone, ItemType.Stone, ItemType.Stone }
                 ),
                 new RecipeConfig(
-                    Name: "Recipe Name 2",
+                    Name: "Recipe-Name-2",
                     Type: CraftTypeConfig.table,
                     Result: ItemType.StoneBricks,
                     Slots: new ItemType[9] { 
