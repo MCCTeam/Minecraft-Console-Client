@@ -44,8 +44,8 @@ jobs:
     - name: VersionInfo
       run: |
         COMMIT=$(echo ${{ github.sha }} | cut -c 1-7)
-        echo '' >> ${{ env.project-path }}\Properties\AssemblyInfo.cs
-        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}\Properties\AssemblyInfo.cs
+        echo '' >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
+        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
             
     - name: Build for Windows
       run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x64 ${{ env.compile-flags }}
