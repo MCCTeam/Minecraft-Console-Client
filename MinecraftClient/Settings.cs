@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using MinecraftClient.Protocol;
 using MinecraftClient.Proxy;
 using Tomlet;
@@ -16,6 +14,7 @@ using Tomlet.Models;
 using static MinecraftClient.Settings.AppVarConfigHelper;
 using static MinecraftClient.Settings.ChatBotConfigHealper;
 using static MinecraftClient.Settings.ChatFormatConfigHelper;
+using static MinecraftClient.Settings.HeadCommentHealper;
 using static MinecraftClient.Settings.LoggingConfigHealper;
 using static MinecraftClient.Settings.MainConfigHealper;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
@@ -27,11 +26,16 @@ namespace MinecraftClient
     public static class Settings
     {
         private const int CommentsAlignPosition = 45;
+        private readonly static Regex CommentRegex = new(@"^(.*)\s?#\s\$([\w\.]+)\$\s*$$", RegexOptions.Compiled);
 
         //Other Settings
         public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\48\482e0dae05abfa35ab5cb076e41fda77b4fb9a08"; //MC 1.19 en_GB.lang
         public static string TranslationsFile_Website_Index = "https://piston-meta.mojang.com/v1/packages/b5c7548ddb9e584e84a5f762da5b78211c715a63/1.19.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
+
+        public const string TranslationDocUrl = "https://mccteam.github.io/guide/contibuting.html#translations";
+        public const string GithubReleaseUrl = "https://github.com/MCCTeam/Minecraft-Console-Client/releases";
+        public const string GithubLatestReleaseUrl = GithubReleaseUrl + "/latest";
 
         public static GlobalConfig Config = new();
 
@@ -54,7 +58,12 @@ namespace MinecraftClient
 
         public class GlobalConfig
         {
-            public HeadComment Head = new();
+            [TomlPrecedingComment("$config.Head$")]
+            public HeadComment Head
+            {
+                get { return HeadCommentHealper.Config; }
+                set { HeadCommentHealper.Config = value; HeadCommentHealper.Config.OnSettingUpdate(); }
+            }
 
             public MainConfig Main
             {
@@ -110,13 +119,6 @@ namespace MinecraftClient
                 set { ChatBotConfigHealper.Config = value; }
             }
 
-            [TomlDoNotInlineObject]
-            public class HeadComment
-            {
-                [TomlPrecedingComment("$config.Head$")]
-                [TomlProperty("Current Version (Do not edit this)")]
-                public string Version { get; set; } = Program.BuildInfo ?? Program.MCHighestVersion;
-            }
         }
 
         public static bool LoadFromFile(string filepath)
@@ -159,10 +161,10 @@ namespace MinecraftClient
             StringBuilder newConfig = new();
             foreach (string line in tomlList)
             {
-                Match match = Regex.Match(line, @"^(.*)\s?#\s\$(.+)\$\s*$");
-                if (match.Success && match.Groups.Count == 3)
+                Match matchComment = CommentRegex.Match(line);
+                if (matchComment.Success && matchComment.Groups.Count == 3)
                 {
-                    string config = match.Groups[1].Value, comment = match.Groups[2].Value;
+                    string config = matchComment.Groups[1].Value, comment = matchComment.Groups[2].Value;
                     if (config.Length > 0)
                         newConfig.Append(config).Append(' ', Math.Max(1, CommentsAlignPosition - config.Length) - 1);
                     newConfig.Append("# ").AppendLine(Translations.TryGet(comment).ReplaceLineEndings());
@@ -188,9 +190,28 @@ namespace MinecraftClient
 
             if (needUpdate)
             {
+                bool backupSuccessed = true;
                 if (backupOldFile && File.Exists(filepath))
-                    File.Copy(filepath, Path.ChangeExtension(filepath, ".backup.ini"), true);
-                File.WriteAllText(filepath, newConfigStr);
+                {
+                    string backupFilePath = Path.ChangeExtension(filepath, ".backup.ini");
+                    try { File.Copy(filepath, backupFilePath, true); }
+                    catch (Exception ex)
+                    {
+                        backupSuccessed = false;
+                        ConsoleIO.WriteLineFormatted(Translations.TryGet("config.backup.fail", backupFilePath));
+                        ConsoleIO.WriteLine(ex.Message);
+                    }
+                }
+
+                if (backupSuccessed)
+                {
+                    try { File.WriteAllText(filepath, newConfigStr); }
+                    catch (Exception ex)
+                    {
+                        ConsoleIO.WriteLineFormatted(Translations.TryGet("config.write.fail", filepath));
+                        ConsoleIO.WriteLine(ex.Message);
+                    }
+                }
             }
         }
 
@@ -239,6 +260,27 @@ namespace MinecraftClient
             }
         }
 
+        public static class HeadCommentHealper
+        {
+            public static HeadComment Config = new();
+
+            [TomlDoNotInlineObject]
+            public class HeadComment
+            {
+                [TomlProperty("Current Version")]
+                public string CurrentVersion { get; set; } = Program.BuildInfo ?? Program.MCHighestVersion;
+                
+                [TomlProperty("Latest Version")]
+                public string LatestVersion { get; set; } = "Unknown";
+
+                public void OnSettingUpdate()
+                {
+                    CurrentVersion = Program.BuildInfo ?? Program.MCHighestVersion;
+                    LatestVersion ??= "Unknown";
+                }
+            }
+        }
+
         public static class MainConfigHealper
         {
             public static MainConfig Config = new();
@@ -273,7 +315,7 @@ namespace MinecraftClient
                 /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
                 public bool SetServerIP(ServerInfoConfig serverInfo, bool checkAlias)
                 {
-                    string serverStr = serverInfo.Host.ToLower();
+                    string serverStr = ToLowerIfNeed(serverInfo.Host);
                     string[] sip = serverStr.Split(new[] { ":", "：" }, StringSplitOptions.None);
                     string host = sip[0];
                     ushort port = 25565;
@@ -1068,6 +1110,61 @@ namespace MinecraftClient
             {
                 return str;
             }
+        }
+
+        public static bool CheckUpdate(string? current, string? latest)
+        {
+            if (current == null || latest == null)
+                return false;
+            Regex reg = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s(\d{4})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{2}).*");
+            Regex reg2 = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s\w+\s(\d{2})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{4}).*");
+
+            DateTime? curTime = null, latestTime = null;
+
+            Match curMatch = reg.Match(current);
+            if (curMatch.Success && curMatch.Groups.Count == 5)
+            {
+                try { curTime = new(int.Parse(curMatch.Groups[2].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[4].Value)); }
+                catch { curTime = null; }
+            }
+            if (curTime == null)
+            {
+                curMatch = reg2.Match(current);
+                try { curTime = new(int.Parse(curMatch.Groups[4].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[2].Value)); }
+                catch { curTime = null; }
+            }
+            if (curTime == null)
+                return false;
+
+            Match latestMatch = reg.Match(latest);
+            if (latestMatch.Success && latestMatch.Groups.Count == 5)
+            {
+                try { latestTime = new(int.Parse(latestMatch.Groups[2].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[4].Value)); }
+                catch { latestTime = null; }
+            }
+            if (latestTime == null)
+            {
+                latestMatch = reg2.Match(latest);
+                try { latestTime = new(int.Parse(latestMatch.Groups[4].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[2].Value)); }
+                catch { latestTime = null; }
+            }
+            if (latestTime == null)
+                return false;
+
+            int curBuildId, latestBuildId;
+            try
+            {
+                curBuildId = int.Parse(curMatch.Groups[1].Value);
+                latestBuildId = int.Parse(latestMatch.Groups[1].Value);
+            }
+            catch { return false; }
+
+            if (latestTime > curTime)
+                return true;
+            else if (latestTime >= curTime && latestBuildId > curBuildId)
+                return true;
+            else
+                return false;
         }
     }
 

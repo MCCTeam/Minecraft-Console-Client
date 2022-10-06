@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -18,11 +19,9 @@ using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.WinAPI;
 using Tomlet;
-using Tomlet.Models;
 using static MinecraftClient.Settings;
-using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
-using static System.Net.Mime.MediaTypeNames;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient
 {
@@ -49,11 +48,10 @@ namespace MinecraftClient
         public const string MCLowestVersion = "1.4.6";
         public const string MCHighestVersion = "1.19.2";
         public static readonly string? BuildInfo = null;
-        private const string TranslationUrl = "https://mccteam.github.io/guide/contibuting.html#translations";
 
         private static Tuple<Thread, CancellationTokenSource>? offlinePrompt = null;
         private static bool useMcVersionOnce = false;
-        private static string? settingsIniPath = null;
+        private static string settingsIniPath = "MinecraftClient.ini";
 
         /// <summary>
         /// The main entry point of Minecraft Console Client
@@ -114,7 +112,6 @@ namespace MinecraftClient
 
             //Process ini configuration file
             bool needWriteDefaultSetting, newlyGenerated = false;
-            settingsIniPath = "MinecraftClient.ini";
             if (args.Length >= 1 && File.Exists(args[0]) && Settings.ToLowerIfNeed(Path.GetExtension(args[0])) == ".ini")
             {
                 needWriteDefaultSetting = Settings.LoadFromFile(args[0]);
@@ -140,7 +137,7 @@ namespace MinecraftClient
                 (string gameLanguage, string[] langList) = Translations.GetTranslationPriority();
                 Translations.LoadTranslationFile(langList);
                 Config.Main.Advanced.Language = gameLanguage;
-                Settings.WriteToFile("MinecraftClient.ini", false);
+                WriteBackSettings(false);
                 if (newlyGenerated)
                     ConsoleIO.WriteLineFormatted(Translations.TryGet("mcc.settings_generated"));
                 ConsoleIO.WriteLine(Translations.TryGet("mcc.run_with_default_settings"));
@@ -150,8 +147,15 @@ namespace MinecraftClient
                 //Load external translation file. Should be called AFTER settings loaded
                 Translations.LoadTranslationFile(Translations.GetTranslationPriority(Config.Main.Advanced.Language));
                 if (!Config.Main.Advanced.Language.StartsWith("en"))
-                    ConsoleIO.WriteLine(Translations.TryGet("mcc.help_us_translate", TranslationUrl));
-                Settings.WriteToFile("MinecraftClient.ini", true); // format
+                    ConsoleIO.WriteLine(Translations.TryGet("mcc.help_us_translate", Settings.TranslationDocUrl));
+                WriteBackSettings(true); // format
+            }
+
+            bool needPromptUpdate = true;
+            if (Settings.CheckUpdate(Config.Head.CurrentVersion, Config.Head.LatestVersion))
+            {
+                needPromptUpdate = false;
+                ConsoleIO.WriteLineFormatted(Translations.TryGet("mcc.has_update", Settings.GithubLatestReleaseUrl));
             }
 
             //Other command-line arguments
@@ -255,6 +259,41 @@ namespace MinecraftClient
                     return;
                 }
             }
+
+            // Check for updates
+            Task.Run(() =>
+            {
+                HttpClientHandler httpClientHandler = new() { AllowAutoRedirect = false };
+                HttpClient httpClient = new(httpClientHandler);
+                Task<HttpResponseMessage>? httpWebRequest = null;
+                try
+                {
+                    httpWebRequest = httpClient.GetAsync(Settings.GithubLatestReleaseUrl, HttpCompletionOption.ResponseHeadersRead);
+                    httpWebRequest.Wait();
+                    HttpResponseMessage res = httpWebRequest.Result;
+                    if (res.Headers.Location != null)
+                    {
+                        Match match = Regex.Match(res.Headers.Location.ToString(), Settings.GithubReleaseUrl + @"/tag/(\d{4})(\d{2})(\d{2})-(\d+)");
+                        if (match.Success && match.Groups.Count == 5)
+                        {
+                            string year = match.Groups[1].Value, month = match.Groups[2].Value, day = match.Groups[3].Value, run = match.Groups[4].Value;
+                            string latestVersion = string.Format("GitHub build {0}, built on {1}-{2}-{3}", run, year, month, day);
+                            if (needPromptUpdate)
+                                if (Settings.CheckUpdate(Config.Head.CurrentVersion, Config.Head.LatestVersion))
+                                    ConsoleIO.WriteLineFormatted(Translations.TryGet("mcc.has_update", Settings.GithubLatestReleaseUrl));
+                            if (latestVersion != Config.Head.LatestVersion)
+                            {
+                                Config.Head.LatestVersion = latestVersion;
+                                WriteBackSettings(false);
+                            }
+                        }
+                    }
+                }
+                catch (Exception) { }
+                finally { httpWebRequest?.Dispose(); }
+                httpClient.Dispose();
+                httpClientHandler.Dispose();
+            });
 
             if (Config.Main.Advanced.ConsoleTitle != "")
             {
@@ -573,9 +612,16 @@ namespace MinecraftClient
         /// </summary>
         public static void ReloadSettings()
         {
-            if (settingsIniPath != null)
-                if(Settings.LoadFromFile(settingsIniPath))
-                    ConsoleIO.WriteLine(Translations.TryGet("config.loading", settingsIniPath));
+            if(Settings.LoadFromFile(settingsIniPath))
+                ConsoleIO.WriteLine(Translations.TryGet("config.loading", settingsIniPath));
+        }
+
+        /// <summary>
+        /// Write-back settings
+        /// </summary>
+        public static void WriteBackSettings(bool enableBackup = true)
+        {
+            Settings.WriteToFile(settingsIniPath, enableBackup);
         }
 
         /// <summary>
@@ -602,11 +648,9 @@ namespace MinecraftClient
 
         public static void DoExit(int exitcode = 0)
         {
-            if (settingsIniPath != null)
-            {
-                Settings.WriteToFile(settingsIniPath, true);
-                ConsoleIO.WriteLineFormatted(Translations.TryGet("config.saving", settingsIniPath));
-            }
+            WriteBackSettings(true);
+            ConsoleIO.WriteLineFormatted(Translations.TryGet("config.saving", settingsIniPath));
+
             if (client != null) { client.Disconnect(); ConsoleIO.Reset(); }
             if (offlinePrompt != null) { offlinePrompt.Item2.Cancel(); offlinePrompt.Item1.Join(); offlinePrompt = null; ConsoleIO.Reset(); }
             if (Config.Main.Advanced.PlayerHeadAsIcon) { ConsoleIcon.RevertToMCCIcon(); }

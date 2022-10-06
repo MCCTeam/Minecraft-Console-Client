@@ -273,15 +273,16 @@ namespace MinecraftClient {
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
-        ///mcc.help_us_translate=Help us translate MCC: https://mccteam.github.io/guide/translation.html
+        ///mcc.help_us_translate=Help us translate MCC: {0}
         ///mcc.run_with_default_settings=\nMCC is running with default settings.
         ///mcc.settings_generated=§cSettings file MinecraftClient.ini has been generated.
+        ///mcc.has_update=§eNew version of MCC available: {0}
         ///mcc.login=Login :
         ///mcc.login_basic_io=Please type the username or email of your choice.
         ///mcc.password=Password : 
         ///mcc.password_basic_io=Please type the password for {0}.
         ///mcc.password_hidden=Password : {0}
-        ///mcc.offline=§8You chose [rest of string was truncated]&quot;;.
+        ///mcc.offline=§8Yo [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Translation_en {
             get {
@@ -354,10 +355,11 @@ namespace MinecraftClient {
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
-        ///mcc.help_us_translate=帮助我们翻译MCC：https://mccteam.github.io/guide/translation.html
+        ///mcc.help_us_translate=帮助我们翻译MCC：{0}
         ///mcc.run_with_default_settings=\nMCC正在使用默认配置运行。
         ///mcc.settings_generated=§c配置文件 MinecraftClient.ini 已经生成。
-        ///mcc.login=登录：
+        ///mcc.has_update=§e新版本的MCC已经推出：{0}
+        ///mcc.login=账户名：
         ///mcc.login_basic_io=请输入用户名或邮箱。
         ///mcc.password=密码：
         ///mcc.password_basic_io=请输入{0}的密码。
@@ -366,7 +368,7 @@ namespace MinecraftClient {
         ///mcc.session_invalid=§8缓存无效或已过期。
         ///mcc.session_valid=§8{0}的缓存仍然有效。
         ///mcc.profile_key_invalid=§8缓存的聊天签名密钥需要刷新。
-        ///mcc.profile_key_valid=§8{0}的聊天 [rest of string was truncated]&quot;;.
+        ///mcc.profile_key_valid=§8{0}的聊天签名密钥缓存仍然有效 [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Translation_zh_Hans {
             get {
