@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using MinecraftClient.Mapping;
 using Tomlet.Attributes;
 

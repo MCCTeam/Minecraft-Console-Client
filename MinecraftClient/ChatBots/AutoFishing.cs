@@ -3,7 +3,6 @@ using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using Tomlet.Attributes;
 using static MinecraftClient.ChatBots.AutoFishing.Configs;
-using static MinecraftClient.ChatBots.AutoFishing.Configs.LocationConfig;
 
 namespace MinecraftClient.ChatBots
 {
