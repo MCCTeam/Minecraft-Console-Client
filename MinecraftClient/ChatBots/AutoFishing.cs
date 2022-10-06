@@ -61,8 +61,8 @@ namespace MinecraftClient.ChatBots
             [TomlPrecedingComment("$config.ChatBot.AutoFishing.Movements$")]
             public LocationConfig[] Movements = new LocationConfig[]
             {
-                new LocationConfig(12.34f, -23.45f),
-                new LocationConfig(123.45, 64, -654.32, -25.14f, 36.25f),
+                new LocationConfig(12.34, -23.45),
+                new LocationConfig(123.45, 64, -654.32, -25.14, 36.25),
                 new LocationConfig(-1245.63, 63.5, 1.2),
             };
 
@@ -94,7 +94,7 @@ namespace MinecraftClient.ChatBots
                 public Coordination? XYZ;
                 public Facing? facing;
 
-                public LocationConfig(float yaw, float pitch)
+                public LocationConfig(double yaw, double pitch)
                 {
                     this.XYZ = null;
                     this.facing = new(yaw, pitch);
@@ -106,7 +106,7 @@ namespace MinecraftClient.ChatBots
                     this.facing = null;
                 }
 
-                public LocationConfig(double x, double y, double z, float yaw, float pitch)
+                public LocationConfig(double x, double y, double z, double yaw, double pitch)
                 {
                     this.XYZ = new(x, y, z);
                     this.facing = new(yaw, pitch);
@@ -124,9 +124,9 @@ namespace MinecraftClient.ChatBots
 
                 public struct Facing
                 {
-                    public float yaw, pitch;
+                    public double yaw, pitch;
 
-                    public Facing(float yaw, float pitch)
+                    public Facing(double yaw, double pitch)
                     {
                         this.yaw = yaw; this.pitch = pitch;
                     }
@@ -437,7 +437,7 @@ namespace MinecraftClient.ChatBots
             LocationConfig curConfig = locationList[curLocationIdx];
 
             if (curConfig.facing != null)
-                (nextYaw, nextPitch) = (curConfig.facing.Value.yaw, curConfig.facing.Value.pitch);
+                (nextYaw, nextPitch) = ((float)curConfig.facing.Value.yaw, (float)curConfig.facing.Value.pitch);
             else
                 (nextYaw, nextPitch) = (GetYaw(), GetPitch());
 

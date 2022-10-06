@@ -522,7 +522,7 @@ namespace MinecraftClient
             text = GetVerbatim(text);
 
             //User-defined regex for private chat messages
-            if (Config.ChatFormat.Private != null)
+            if (Config.ChatFormat.UserDefined && !string.IsNullOrWhiteSpace(Config.ChatFormat.Private))
             {
                 Match regexMatch = new Regex(Config.ChatFormat.Private).Match(text);
                 if (regexMatch.Success && regexMatch.Groups.Count >= 3)
@@ -633,7 +633,7 @@ namespace MinecraftClient
             text = GetVerbatim(text);
 
             //User-defined regex for public chat messages
-            if (Config.ChatFormat.Public != null)
+            if (Config.ChatFormat.UserDefined && !string.IsNullOrWhiteSpace(Config.ChatFormat.Public))
             {
                 Match regexMatch = new Regex(Config.ChatFormat.Public).Match(text);
                 if (regexMatch.Success && regexMatch.Groups.Count >= 3)
@@ -736,7 +736,7 @@ namespace MinecraftClient
             text = GetVerbatim(text);
 
             //User-defined regex for teleport requests
-            if (Config.ChatFormat.TeleportRequest != null)
+            if (Config.ChatFormat.UserDefined && !string.IsNullOrWhiteSpace(Config.ChatFormat.TeleportRequest))
             {
                 Match regexMatch = new Regex(Config.ChatFormat.TeleportRequest).Match(text);
                 if (regexMatch.Success && regexMatch.Groups.Count >= 2)

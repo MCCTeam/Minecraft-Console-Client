@@ -18,7 +18,7 @@ namespace MinecraftClient.ChatBots
             public bool Enabled = false;
 
             [TomlInlineComment("$config.ChatBot.FollowPlayer.Update_Limit$")]
-            public int Update_Limit = 10;
+            public double Update_Limit = 1;
 
             [TomlInlineComment("$config.ChatBot.FollowPlayer.Stop_At_Distance$")]
             public double Stop_At_Distance = 3.0;
@@ -113,7 +113,7 @@ namespace MinecraftClient.ChatBots
         public override void OnEntityMove(Entity entity)
         {
 
-            if (_updateCounter < Config.Update_Limit)
+            if (_updateCounter < (int)(Config.Update_Limit * 10))
                 return;
 
             _updateCounter = 0;
