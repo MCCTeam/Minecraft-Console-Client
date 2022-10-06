@@ -22,7 +22,7 @@ namespace MinecraftClient
         /// <param name="handler">Callback for file changes</param>
         public FileMonitor(string folder, string filename, FileSystemEventHandler handler)
         {
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 string callerClass = new System.Diagnostics.StackFrame(1).GetMethod()!.DeclaringType!.Name;
                 ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.init", callerClass, Path.Combine(folder, filename)));
@@ -40,7 +40,7 @@ namespace MinecraftClient
             }
             catch
             {
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     string callerClass = new System.Diagnostics.StackFrame(1).GetMethod()!.DeclaringType!.Name;
                     ConsoleIO.WriteLineFormatted(Translations.Get("filemonitor.fail", callerClass));

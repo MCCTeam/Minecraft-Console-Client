@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Text;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -8,11 +8,71 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class AutoRelog : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "AutoRelog";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.AutoRelog.Delay$")]
+            public Range Delay = new(3);
+
+            [TomlInlineComment("$config.ChatBot.AutoRelog.Retries$")]
+            public int Retries = 3;
+
+            [TomlInlineComment("$config.ChatBot.AutoRelog.Ignore_Kick_Message$")]
+            public bool Ignore_Kick_Message = false;
+
+            [TomlPrecedingComment("$config.ChatBot.AutoRelog.Kick_Messages$")]
+            public string[] Kick_Messages = new string[] { "Connection has been lost", "Server is restarting", "Server is full", "Too Many people" };
+
+            [NonSerialized]
+            public int _DelayMin, _DelayMax;
+
+            public void OnSettingUpdate()
+            {
+                Delay.min = Math.Max(0.1, Delay.min);
+                Delay.max = Math.Max(0.1, Delay.max);
+
+                Delay.min = Math.Min(int.MaxValue / 10, Delay.min);
+                Delay.max = Math.Min(int.MaxValue / 10, Delay.max);
+
+                if (Delay.min > Delay.max)
+                    (Delay.min, Delay.max) = (Delay.max, Delay.min);
+
+                _DelayMin = (int)Math.Round(Delay.min * 10);
+                _DelayMax = (int)Math.Round(Delay.max * 10);
+                
+                if (Retries == -1)
+                    Retries = int.MaxValue;
+
+                if (Enabled)
+                    for (int i = 0; i < Kick_Messages.Length; i++)
+                        Kick_Messages[i] = Kick_Messages[i].ToLower();
+            }
+
+            public struct Range
+            {
+                public double min, max;
+
+                public Range(int value)
+                {
+                    min = max = value;
+                }
+
+                public Range(int min, int max)
+                {
+                    this.min = min;
+                    this.max = max;
+                }
+            }
+        }
+
         private static readonly Random random = new();
-        private string[] dictionary = Array.Empty<string>();
-        private readonly int attempts;
-        private readonly int delayMin;
-        private readonly int delayMax;
 
         /// <summary>
         /// This bot automatically re-join the server if kick message contains predefined string
@@ -20,47 +80,17 @@ namespace MinecraftClient.ChatBots
         /// <param name="DelayBeforeRelogMin">Minimum delay before re-joining the server (in seconds)</param>
         /// <param name="DelayBeforeRelogMax">Maximum delay before re-joining the server (in seconds)</param>
         /// <param name="retries">Number of retries if connection fails (-1 = infinite)</param>
-        public AutoRelog(int DelayBeforeRelogMin, int DelayBeforeRelogMax, int retries)
+        public AutoRelog()
         {
-            attempts = retries;
-            if (attempts == -1) { attempts = int.MaxValue; }
-            McClient.ReconnectionAttemptsLeft = attempts;
-            delayMin = DelayBeforeRelogMin;
-            delayMax = DelayBeforeRelogMax;
-            if (delayMin < 1)
-                delayMin = 1;
-            if (delayMax < delayMin)
-                delayMax = delayMin;
-            LogDebugToConsoleTranslated("bot.autoRelog.launch", attempts);
+            LogDebugToConsoleTranslated("bot.autoRelog.launch", Config.Retries);
         }
 
         public override void Initialize()
         {
-            McClient.ReconnectionAttemptsLeft = attempts;
-            if (Settings.AutoRelog_IgnoreKickMessage)
+            McClient.ReconnectionAttemptsLeft = Config.Retries;
+            if (Config.Ignore_Kick_Message)
             {
                 LogDebugToConsoleTranslated("bot.autoRelog.no_kick_msg");
-            }
-            else
-            {
-                if (System.IO.File.Exists(Settings.AutoRelog_KickMessagesFile))
-                {
-                    LogDebugToConsoleTranslated("bot.autoRelog.loading", System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
-
-                    dictionary = System.IO.File.ReadAllLines(Settings.AutoRelog_KickMessagesFile, Encoding.UTF8);
-
-                    for (int i = 0; i < dictionary.Length; i++)
-                    {
-                        LogDebugToConsoleTranslated("bot.autoRelog.loaded", dictionary[i]);
-                        dictionary[i] = dictionary[i].ToLower();
-                    }
-                }
-                else
-                {
-                    LogToConsoleTranslated("bot.autoRelog.not_found", System.IO.Path.GetFullPath(Settings.AutoRelog_KickMessagesFile));
-
-                    LogDebugToConsoleTranslated("bot.autoRelog.curr_dir", System.IO.Directory.GetCurrentDirectory());
-                }
             }
         }
 
@@ -77,13 +107,13 @@ namespace MinecraftClient.ChatBots
 
                 LogDebugToConsoleTranslated("bot.autoRelog.disconnect_msg", message);
 
-                if (Settings.AutoRelog_IgnoreKickMessage)
+                if (Config.Ignore_Kick_Message)
                 {
                     LaunchDelayedReconnection(null);
                     return true;
                 }
 
-                foreach (string msg in dictionary)
+                foreach (string msg in Config.Kick_Messages)
                 {
                     if (comp.Contains(msg))
                     {
@@ -100,7 +130,7 @@ namespace MinecraftClient.ChatBots
 
         private void LaunchDelayedReconnection(string? msg)
         {
-            int delay = random.Next(delayMin, delayMax);
+            int delay = random.Next(Config._DelayMin, Config._DelayMax);
             LogDebugToConsoleTranslated(String.IsNullOrEmpty(msg) ? "bot.autoRelog.reconnect_always" : "bot.autoRelog.reconnect", msg);
             LogToConsoleTranslated("bot.autoRelog.wait", delay);
             System.Threading.Thread.Sleep(delay * 1000);
@@ -109,9 +139,9 @@ namespace MinecraftClient.ChatBots
 
         public static bool OnDisconnectStatic(DisconnectReason reason, string message)
         {
-            if (Settings.AutoRelog_Enabled)
+            if (Config.Enabled)
             {
-                AutoRelog bot = new(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries);
+                AutoRelog bot = new();
                 bot.Initialize();
                 return bot.OnDisconnect(reason, message);
             }

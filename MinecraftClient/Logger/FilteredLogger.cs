@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Logger
 {
@@ -8,19 +9,38 @@ namespace MinecraftClient.Logger
 
         protected bool ShouldDisplay(FilterChannel channel, string msg)
         {
+            if (Config.Logging.FilterMode == LoggingConfigHealper.LoggingConfig.FilterModeEnum.disable)
+                return true;
+
             Regex? regexToUse = null;
             // Convert to bool for XOR later. Whitelist = 0, Blacklist = 1
-            bool filterMode = Settings.FilterMode == Settings.FilterModeEnum.Blacklist;
             switch (channel)
             {
-                case FilterChannel.Chat: regexToUse = Settings.ChatFilter; break;
-                case FilterChannel.Debug: regexToUse = Settings.DebugFilter; break;
+                case FilterChannel.Chat:
+                    string chat = Config.Logging.ChatFilterRegex;
+                    if (string.IsNullOrEmpty(chat))
+                        regexToUse = null;
+                    else
+                        regexToUse = new(chat);
+                    break;
+                case FilterChannel.Debug:
+                    string debug = Config.Logging.DebugFilterRegex;
+                    if (string.IsNullOrEmpty(debug))
+                        regexToUse = null;
+                    else
+                        regexToUse = new(debug);
+                    break;
             }
             if (regexToUse != null)
             {
                 // IsMatch and white/blacklist result can be represented using XOR
                 // e.g.  matched(true) ^ blacklist(true) => shouldn't log(false)
-                return regexToUse.IsMatch(msg) ^ filterMode;
+                if (Config.Logging.FilterMode == LoggingConfigHealper.LoggingConfig.FilterModeEnum.blacklist)
+                    return !regexToUse.IsMatch(msg);
+                else if (Config.Logging.FilterMode == LoggingConfigHealper.LoggingConfig.FilterModeEnum.whitelist)
+                    return regexToUse.IsMatch(msg);
+                else
+                    return true;
             }
             else return true;
         }

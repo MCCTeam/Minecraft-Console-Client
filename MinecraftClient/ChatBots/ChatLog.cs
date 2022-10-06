@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -9,13 +10,44 @@ namespace MinecraftClient.ChatBots
 
     public class ChatLog : ChatBot
     {
-        public enum MessageFilter { AllText, AllMessages, OnlyChat, OnlyWhispers, OnlyInternalCommands };
-        private readonly bool dateandtime;
-        private readonly bool saveOther = true;
-        private readonly bool saveChat = true;
-        private readonly bool savePrivate = true;
-        private readonly bool saveInternal = true;
-        private readonly string logfile;
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "ChatLog";
+
+            public bool Enabled = false;
+
+            public bool Add_DateTime = true;
+
+            public string Log_File = @"chatlog-%username%-%serverip%.txt";
+
+            public MessageFilter Filter = MessageFilter.messages;
+
+            public void OnSettingUpdate()
+            {
+                Log_File ??= string.Empty;
+
+                if (!Enabled) return;
+
+                string Log_File_Full = Settings.Config.AppVar.ExpandVars(Log_File);
+                if (String.IsNullOrEmpty(Log_File_Full) || Log_File_Full.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+                {
+                    LogToConsole(BotName, Translations.TryGet("bot.chatLog.invalid_file", Log_File_Full));
+                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    Enabled = false;
+                }
+            }
+
+            public enum MessageFilter { all, messages, chat, private_chat, internal_msg };
+        }
+
+        private bool saveOther = true;
+        private bool saveChat = true;
+        private bool savePrivate = true;
+        private bool saveInternal = true;
         private readonly object logfileLock = new();
 
         /// <summary>
@@ -25,59 +57,42 @@ namespace MinecraftClient.ChatBots
         /// <param name="filter">The kind of messages to save</param>
         /// <param name="AddDateAndTime">Add a date and time before each message</param>
 
-        public ChatLog(string file, MessageFilter filter, bool AddDateAndTime)
+        public ChatLog()
         {
-            dateandtime = AddDateAndTime;
-            logfile = file;
+            UpdateFilter(Config.Filter);
+        }
+
+        public void UpdateFilter(Configs.MessageFilter filter)
+        {
             switch (filter)
             {
-                case MessageFilter.AllText:
+                case Configs.MessageFilter.all:
                     saveOther = true;
                     savePrivate = true;
                     saveChat = true;
                     break;
-                case MessageFilter.AllMessages:
+                case Configs.MessageFilter.messages:
                     saveOther = false;
                     savePrivate = true;
                     saveChat = true;
                     break;
-                case MessageFilter.OnlyChat:
+                case Configs.MessageFilter.chat:
                     saveOther = false;
                     savePrivate = false;
                     saveChat = true;
                     break;
-                case MessageFilter.OnlyWhispers:
+                case Configs.MessageFilter.private_chat:
                     saveOther = false;
                     savePrivate = true;
                     saveChat = false;
                     break;
-                case MessageFilter.OnlyInternalCommands:
+                case Configs.MessageFilter.internal_msg:
                     saveOther = false;
                     savePrivate = false;
                     saveChat = false;
                     saveInternal = true;
                     break;
             }
-            if (String.IsNullOrEmpty(file) || file.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
-            {
-                LogToConsoleTranslated("bot.chatLog.invalid_file", file);
-                UnloadBot();
-            }
-        }
-
-        public static MessageFilter str2filter(string filtername)
-        {
-            return Settings.ToLowerIfNeed(filtername) switch
-            {
-#pragma warning disable format // @formatter:off
-                "all"       =>  MessageFilter.AllText,
-                "messages"  =>  MessageFilter.AllMessages,
-                "chat"      =>  MessageFilter.OnlyChat,
-                "private"   =>  MessageFilter.OnlyWhispers,
-                "internal"  =>  MessageFilter.OnlyInternalCommands,
-                _           =>  MessageFilter.AllText,
-#pragma warning restore format // @formatter:on
-            };
         }
 
         public override void GetText(string text)
@@ -110,14 +125,15 @@ namespace MinecraftClient.ChatBots
 
         private void Save(string tosave)
         {
-            if (dateandtime)
+            if (Config.Add_DateTime)
                 tosave = GetTimestamp() + ' ' + tosave;
+            string Log_File_Full = Settings.Config.AppVar.ExpandVars(Config.Log_File);
             lock (logfileLock)
             {
-                string? directory = Path.GetDirectoryName(logfile);
+                string? directory = Path.GetDirectoryName(Log_File_Full);
                 if (!String.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
-                FileStream stream = new(logfile, FileMode.OpenOrCreate);
+                FileStream stream = new(Log_File_Full, FileMode.OpenOrCreate);
                 StreamWriter writer = new(stream);
                 stream.Seek(0, SeekOrigin.End);
                 writer.WriteLine(tosave);

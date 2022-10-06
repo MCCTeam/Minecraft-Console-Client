@@ -36,7 +36,7 @@ namespace MinecraftClient.Commands
                     var interpreter = new Interpreter();
                     interpreter.SetVariable("MCC", handler);
 
-                    foreach (KeyValuePair<string, object> entry in Settings.GetVariables())
+                    foreach (KeyValuePair<string, object> entry in Settings.Config.AppVar.GetVariables())
                         interpreter.SetVariable(entry.Key, entry.Value);
 
                     var result = interpreter.Eval<bool>(expressionText);

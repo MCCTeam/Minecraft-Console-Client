@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Timers;
-using MinecraftClient.Protocol.Session;
+using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
 
 namespace MinecraftClient.Protocol.Keys
 {
@@ -46,11 +47,11 @@ namespace MinecraftClient.Protocol.Keys
                 keys.Add(login, playerKeyPair);
             }
 
-            if (Settings.ProfileKeyCaching == CacheType.Disk && updatetimer.Enabled == true)
+            if (Config.Main.Advanced.ProfileKeyCache == CacheType.disk && updatetimer.Enabled == true)
             {
                 pendingadds.Add(new KeyValuePair<string, PlayerKeyPair>(login, playerKeyPair));
             }
-            else if (Settings.ProfileKeyCaching == CacheType.Disk)
+            else if (Config.Main.Advanced.ProfileKeyCache == CacheType.disk)
             {
                 SaveToDisk();
             }
@@ -114,7 +115,7 @@ namespace MinecraftClient.Protocol.Keys
             //User-editable keys cache file in text format
             if (File.Exists(KeysCacheFilePlaintext))
             {
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                     ConsoleIO.WriteLineFormatted(Translations.Get("cache.loading_keys", KeysCacheFilePlaintext));
 
                 try
@@ -133,27 +134,27 @@ namespace MinecraftClient.Protocol.Keys
                                 {
                                     PlayerKeyPair playerKeyPair = PlayerKeyPair.FromString(value);
                                     keys[login] = playerKeyPair;
-                                    if (Settings.DebugMessages)
+                                    if (Settings.Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded_keys", playerKeyPair.ExpiresAt.ToString()));
                                 }
                                 catch (InvalidDataException e)
                                 {
-                                    if (Settings.DebugMessages)
+                                    if (Settings.Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string_keys", value, e.Message));
                                 }
                                 catch (FormatException e)
                                 {
-                                    if (Settings.DebugMessages)
+                                    if (Settings.Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string_keys", value, e.Message));
                                 }
                                 catch (ArgumentNullException e)
                                 {
-                                    if (Settings.DebugMessages)
+                                    if (Settings.Config.Logging.DebugMessages)
                                         ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string_keys", value, e.Message));
 
                                 }
                             }
-                            else if (Settings.DebugMessages)
+                            else if (Settings.Config.Logging.DebugMessages)
                             {
                                 ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_line_keys", line));
                             }
@@ -174,7 +175,7 @@ namespace MinecraftClient.Protocol.Keys
         /// </summary>
         private static void SaveToDisk()
         {
-            if (Settings.DebugMessages)
+            if (Config.Logging.DebugMessages)
                 Translations.WriteLineFormatted("cache.saving_keys");
 
             List<string> KeysCacheLines = new()

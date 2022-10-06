@@ -1,22 +1,41 @@
 ﻿using System;
 using System.Linq;
 using MinecraftClient.Mapping;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
     public class FollowPlayer : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "FollowPlayer";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.FollowPlayer.Update_Limit$")]
+            public double Update_Limit = 1;
+
+            [TomlInlineComment("$config.ChatBot.FollowPlayer.Stop_At_Distance$")]
+            public double Stop_At_Distance = 3.0;
+
+            public void OnSettingUpdate()
+            {
+                if (Update_Limit < 0)
+                    Update_Limit = 0;
+
+                if (Stop_At_Distance < 0)
+                    Stop_At_Distance = 0;
+            }
+        }
+
         private string? _playerToFollow = null;
         private int _updateCounter = 0;
-        private readonly int _updateLimit;
-        private readonly int _stopAtDistance;
         private bool _unsafeEnabled = false;
-
-        public FollowPlayer(int updateLimit = 15, int stopAtDistance = 3)
-        {
-            _updateLimit = updateLimit;
-            _stopAtDistance = stopAtDistance;
-        }
 
         public override void Initialize()
         {
@@ -94,7 +113,7 @@ namespace MinecraftClient.ChatBots
         public override void OnEntityMove(Entity entity)
         {
 
-            if (_updateCounter < _updateLimit)
+            if (_updateCounter < (int)(Config.Update_Limit * 10))
                 return;
 
             _updateCounter = 0;
@@ -114,7 +133,7 @@ namespace MinecraftClient.ChatBots
             // Stop at specified distance from plater (prevents pushing player around)
             double distance = entity.Location.Distance(GetCurrentLocation());
 
-            if (distance < _stopAtDistance)
+            if (distance < Config.Stop_At_Distance)
                 return;
 
             MoveToLocation(entity.Location, _unsafeEnabled);

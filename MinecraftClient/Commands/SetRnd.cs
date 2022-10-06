@@ -40,9 +40,9 @@ namespace MinecraftClient.Commands
                             (num2, num1) = (num1, num2);
 
                         // create a variable or set it to num1 <= varlue < num2
-                        if (Settings.SetVar(args[0], rand.Next(num1, num2)))
+                        if (Settings.Config.AppVar.SetVar(args[0], rand.Next(num1, num2)))
                         {
-                            return string.Format("Set %{0}% to {1}.", args[0], Settings.GetVar(args[0])); //Success
+                            return string.Format("Set %{0}% to {1}.", args[0], Settings.Config.AppVar.GetVar(args[0])); //Success
                         }
                         else return Translations.Get("cmd.setrndnum.format");
                     }
@@ -55,9 +55,9 @@ namespace MinecraftClient.Commands
                         List<string> values = ParseCommandLine(argString);
 
                         // create a variable or set it to one of the values
-                        if (values.Count > 0 && Settings.SetVar(args[0], values[rand.Next(0, values.Count)]))
+                        if (values.Count > 0 && Settings.Config.AppVar.SetVar(args[0], values[rand.Next(0, values.Count)]))
                         {
-                            return string.Format("Set %{0}% to {1}.", args[0], Settings.GetVar(args[0])); //Success
+                            return string.Format("Set %{0}% to {1}.", args[0], Settings.Config.AppVar.GetVar(args[0])); //Success
                         }
                         else return Translations.Get("cmd.setrndstr.format");
                     }
