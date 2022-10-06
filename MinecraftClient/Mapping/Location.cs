@@ -295,15 +295,6 @@ namespace MinecraftClient.Mapping
             return loc1.Equals(loc2);
         }
 
-        public static bool operator ==(Location? loc1, Location? loc2)
-        {
-            if (loc1 == null && loc2 == null)
-                return true;
-            if (loc1 == null || loc2 == null)
-                return false;
-            return loc1.Equals(loc2);
-        }
-
         /// <summary>
         /// Compare two locations. Locations are not equals if the integer part of their coordinates are not equals.
         /// </summary>
@@ -312,15 +303,6 @@ namespace MinecraftClient.Mapping
         /// <returns>TRUE if the locations are equals</returns>
         public static bool operator !=(Location loc1, Location loc2)
         {
-            return !loc1.Equals(loc2);
-        }
-
-        public static bool operator !=(Location? loc1, Location? loc2)
-        {
-            if (loc1 == null && loc2 == null)
-                return false;
-            if (loc1 == null || loc2 == null)
-                return true;
             return !loc1.Equals(loc2);
         }
 

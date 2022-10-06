@@ -172,6 +172,12 @@ namespace MinecraftClient
                     return;
                 }
 
+                if (args.Contains("--trim-translation"))
+                {
+                    Translations.TrimAllTranslations();
+                    return;
+                }
+
                 if (args.Contains("--generate"))
                 {
                     string dataGenerator = "";
