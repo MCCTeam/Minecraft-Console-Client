@@ -53,9 +53,24 @@ namespace MinecraftClient.ChatBots
             public void OnSettingUpdate()
             {
                 _Table_Location = new Location(CraftingTable.X, CraftingTable.Y, CraftingTable.Z).ToFloor();
+
+                List<string> nameList = new();
                 foreach (RecipeConfig recipe in Recipes)
                 {
-                    recipe.Name ??= string.Empty;
+                    if (string.IsNullOrWhiteSpace(recipe.Name))
+                    {
+                        recipe.Name = new Random().NextInt64().ToString();
+                        LogToConsole(BotName, Translations.TryGet("bot.autoCraft.exception.name_miss"));
+                    }
+                    if (nameList.Contains(recipe.Name))
+                    {
+                        LogToConsole(BotName, Translations.TryGet("bot.autoCraft.exception.duplicate", recipe.Name));
+                        do
+                        {
+                            recipe.Name = new Random().NextInt64().ToString();
+                        } while (nameList.Contains(recipe.Name));
+                    }
+                    nameList.Add(recipe.Name);
 
                     int fixLength = -1;
                     if (recipe.Type == CraftTypeConfig.player && recipe.Slots.Length != 4)

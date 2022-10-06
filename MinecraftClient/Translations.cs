@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -632,19 +633,14 @@ namespace MinecraftClient
             foreach (string lineRaw in content)
             {
                 string line = lineRaw.Trim();
-                if (line.Length <= 0)
+                if (line.Length < 3)
                     continue;
-                if (line.StartsWith("#")) // ignore comment line started with #
-                    continue;
-                if (line[0] == '[' && line[^1] == ']') // ignore section
+                if (!char.IsLetterOrDigit(line[0])) // ignore comment line started with #
                     continue;
 
-                string translationName = line.Split('=')[0];
-                if (line.Length > (translationName.Length + 1))
-                {
-                    string translationValue = line[(translationName.Length + 1)..].Replace("\\n", "\n");
-                    translations[translationName] = translationValue;
-                }
+                int index = line.IndexOf('=');
+                if (line.Length > (index + 1))
+                    translations[line[..index]] = line[(index + 1)..].Replace("\\n", "\n");
             }
             return translations;
         }
@@ -657,10 +653,52 @@ namespace MinecraftClient
             string defaultPath = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar + defaultTranslation;
 
             if (!Directory.Exists(translationFilePath))
-            {
                 Directory.CreateDirectory(translationFilePath);
-            }
             File.WriteAllText(defaultPath, DefaultConfigResource.Translation_en, Encoding.UTF8);
+        }
+
+        public static void TrimAllTranslations()
+        {
+            string[] transEn = DefaultConfigResource.ResourceManager.GetString("Translation_en")!
+                .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+
+            foreach (string lang in new string[] { "de", "fr", "ru", "vi", "zh_Hans" })
+            {
+                Dictionary<string, string> trans = ParseTranslationContent(
+                    DefaultConfigResource.ResourceManager.GetString("Translation_" + lang)!
+                        .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None)
+                );
+                using FileStream file = File.OpenWrite(AppDomain.CurrentDomain.BaseDirectory + 
+                    Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar + lang + ".ini");
+                int total = 0, translated = 0;
+                for (int i = 0; i < transEn.Length; ++i)
+                {
+                    string line = transEn[i].Trim();
+                    int index = transEn[i].IndexOf('=');
+                    if (line.Length < 3 || !char.IsLetterOrDigit(line[0]) || index == -1 || line.Length <= (index + 1))
+                    {
+                        file.Write(Encoding.UTF8.GetBytes(line));
+                    }
+                    else
+                    {
+                        string key = line[..index];
+                        file.Write(Encoding.UTF8.GetBytes(key));
+                        file.Write(Encoding.UTF8.GetBytes("="));
+                        if (trans.TryGetValue(key, out string? value))
+                        {
+                            file.Write(Encoding.UTF8.GetBytes(value.Replace("\n", "\\n")));
+                            ++total;
+                            ++translated;
+                        }
+                        else
+                        {
+                            ++total;
+                        }
+                    }
+                    file.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
+                }
+                ConsoleIO.WriteLine(string.Format("Language {0}: Translated {1} of {2}, {3:0.00}%", lang, translated, total, 100.0 * (double)translated / total));
+            }
         }
 
         #region Console writing method wrapper
