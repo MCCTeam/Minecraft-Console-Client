@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using DynamicRun.Builder;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient
 {
@@ -43,7 +44,7 @@ namespace MinecraftClient
             lock (CompileCache)
             {
                 ///Process and compile script only if not already compiled
-                if (!Settings.CacheScripts || !CompileCache.ContainsKey(scriptHash))
+                if (!Config.Main.Advanced.CacheScript || !CompileCache.ContainsKey(scriptHash))
                 {
                     //Process different sections of the script file
                     bool scriptMain = true;
@@ -111,10 +112,10 @@ namespace MinecraftClient
 
                     //Retrieve compiled assembly
                     assembly = result.Assembly;
-                    if (Settings.CacheScripts)
+                    if (Config.Main.Advanced.CacheScript)
                         CompileCache[scriptHash] = assembly!;
                 }
-                else if (Settings.CacheScripts)
+                else if (Config.Main.Advanced.CacheScript)
                     assembly = CompileCache[scriptHash];
             }
 
@@ -293,7 +294,7 @@ namespace MinecraftClient
             if (localVars != null && localVars.ContainsKey(varName))
                 return localVars[varName];
             else
-                return Settings.GetVar(varName);
+                return Settings.Config.AppVar.GetVar(varName);
         }
 
         /// <summary>
@@ -305,7 +306,7 @@ namespace MinecraftClient
         {
             if (localVars != null && localVars.ContainsKey(varName))
                 localVars.Remove(varName);
-            return Settings.SetVar(varName, varValue);
+            return Settings.Config.AppVar.SetVar(varName, varValue);
         }
 
         /// <summary>
@@ -347,7 +348,7 @@ namespace MinecraftClient
         /// <returns>True if the account was found and loaded</returns>
         public bool SetAccount(string accountAlias, bool andReconnect = false)
         {
-            bool result = Settings.SetAccount(accountAlias);
+            bool result = Settings.Config.Main.Advanced.SetAccount(accountAlias);
             if (result && andReconnect)
                 ReconnectToTheServer();
             return result;
@@ -360,7 +361,7 @@ namespace MinecraftClient
         /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
         public bool SetServer(string server, bool andReconnect = false)
         {
-            bool result = Settings.SetServerIP(server);
+            bool result = Settings.Config.Main.SetServerIP(new MainConfigHealper.MainConfig.ServerInfoConfig(server), true);
             if (result && andReconnect)
                 ReconnectToTheServer();
             return result;

@@ -398,7 +398,7 @@ namespace MinecraftClient.Protocol
 
         private static void WriteDebugLog(string t)
         {
-            if (Settings.DebugMessages && logOutput)
+            if (Settings.Config.Logging.DebugMessages && logOutput)
                 WriteLog(t);
         }
 

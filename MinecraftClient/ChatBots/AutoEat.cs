@@ -1,18 +1,35 @@
-﻿using MinecraftClient.Inventory;
+﻿using System;
+using MinecraftClient.Inventory;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
-    class AutoEat : ChatBot
+    public class AutoEat : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "AutoEat";
+
+            public bool Enabled = false;
+
+            public int Threshold = 6;
+
+            public void OnSettingUpdate()
+            {
+                if (Threshold > 20)
+                    Threshold = 20;
+                else if (Threshold < 0)
+                    Threshold = 0;
+            }
+        }
+
         byte LastSlot = 0;
         public static bool Eating = false;
-        private readonly int HungerThreshold = 6;
         private int DelayCounter = 0;
-
-        public AutoEat(int Threshold)
-        {
-            HungerThreshold = Threshold;
-        }
 
         public override void Update()
         {
@@ -31,7 +48,7 @@ namespace MinecraftClient.ChatBots
         public override void OnHealthUpdate(float health, int food)
         {
             if (health <= 0) return; // player dead
-            if (((food <= HungerThreshold) || (food < 20 && health < 20)) && !Eating)
+            if (((food <= Config.Threshold) || (food < 20 && health < 20)) && !Eating)
             {
                 Eating = FindFoodAndEat();
                 if (!Eating)

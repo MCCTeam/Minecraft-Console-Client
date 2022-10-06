@@ -109,7 +109,7 @@ namespace MinecraftClient.Protocol
                 requestMessage.Add(body);
             }
             else requestMessage.Add(""); // <CR><LF>
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 foreach (string l in requestMessage)
                 {

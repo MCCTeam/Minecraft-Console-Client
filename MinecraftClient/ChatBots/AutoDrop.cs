@@ -2,50 +2,41 @@
 using System.Collections.Generic;
 using System.Linq;
 using MinecraftClient.Inventory;
+using Tomlet.Attributes;
+using static MinecraftClient.ChatBots.AutoDrop.Configs;
 
 namespace MinecraftClient.ChatBots
 {
-    class AutoDrop : ChatBot
+    public class AutoDrop : ChatBot
     {
-        private enum Mode
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
         {
-            Include,    // Items in list will be dropped
-            Exclude,    // Items in list will be kept
-            Everything  // Everything will be dropped
+            [NonSerialized]
+            private const string BotName = "AutoDrop";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.AutoDrop.Mode$")]
+            public DropMode Mode = DropMode.include;
+
+            public List<ItemType> Items = new() { ItemType.Cobblestone, ItemType.Dirt };
+
+            public void OnSettingUpdate() { }
+
+            public enum DropMode
+            {
+                include,    // Items in list will be dropped
+                exclude,    // Items in list will be kept
+                everything  // Everything will be dropped
+            }
         }
-        private Mode dropMode = Mode.Include;
-        private bool enable = true;
 
         private int updateDebounce = 0;
         private readonly int updateDebounceValue = 2;
         private int inventoryUpdated = -1;
-
-        private readonly List<ItemType> itemList = new();
-
-        public AutoDrop(string mode, string itemList)
-        {
-            if (!Enum.TryParse(mode, true, out dropMode))
-            {
-                LogToConsoleTranslated("bot.autoDrop.no_mode");
-            }
-            if (dropMode != Mode.Everything)
-                this.itemList = ItemListParser(itemList).ToList();
-        }
-
-        /// <summary>
-        /// Convert an item type string to item type array
-        /// </summary>
-        /// <param name="itemList">String to convert</param>
-        /// <returns>Item type array</returns>
-        private ItemType[] ItemListParser(string itemList)
-        {
-            string trimed = new(itemList.Where(c => !char.IsWhiteSpace(c)).ToArray());
-            List<ItemType> result = new();
-            foreach (string t in trimed.Split(','))
-                if (Enum.TryParse(t, true, out ItemType item))
-                    result.Add(item);
-            return result.ToArray();
-        }
 
         public string CommandHandler(string cmd, string[] args)
         {
@@ -54,19 +45,19 @@ namespace MinecraftClient.ChatBots
                 switch (args[0].ToLower())
                 {
                     case "on":
-                        enable = true;
+                        Config.Enabled = true;
                         inventoryUpdated = 0;
                         OnUpdateFinish();
                         return Translations.Get("bot.autoDrop.on");
                     case "off":
-                        enable = false;
+                        Config.Enabled = false;
                         return Translations.Get("bot.autoDrop.off");
                     case "add":
                         if (args.Length >= 2)
                         {
                             if (Enum.TryParse(args[1], true, out ItemType item))
                             {
-                                itemList.Add(item);
+                                Config.Items.Add(item);
                                 return Translations.Get("bot.autoDrop.added", item.ToString());
                             }
                             else
@@ -83,9 +74,9 @@ namespace MinecraftClient.ChatBots
                         {
                             if (Enum.TryParse(args[1], true, out ItemType item))
                             {
-                                if (itemList.Contains(item))
+                                if (Config.Items.Contains(item))
                                 {
-                                    itemList.Remove(item);
+                                    Config.Items.Remove(item);
                                     return Translations.Get("bot.autoDrop.removed", item.ToString());
                                 }
                                 else
@@ -103,9 +94,9 @@ namespace MinecraftClient.ChatBots
                             return Translations.Get("cmd.inventory.help.usage") + ": remove <item name>";
                         }
                     case "list":
-                        if (itemList.Count > 0)
+                        if (Config.Items.Count > 0)
                         {
-                            return Translations.Get("bot.autoDrop.list", itemList.Count, string.Join("\n", itemList));
+                            return Translations.Get("bot.autoDrop.list", Config.Items.Count, string.Join("\n", Config.Items));
                         }
                         else
                         {
@@ -117,20 +108,20 @@ namespace MinecraftClient.ChatBots
                             switch (args[1].ToLower())
                             {
                                 case "include":
-                                    dropMode = Mode.Include;
+                                    Config.Mode = DropMode.include;
                                     break;
                                 case "exclude":
-                                    dropMode = Mode.Exclude;
+                                    Config.Mode = DropMode.exclude;
                                     break;
                                 case "everything":
-                                    dropMode = Mode.Everything;
+                                    Config.Mode = DropMode.everything;
                                     break;
                                 default:
                                     return Translations.Get("bot.autoDrop.unknown_mode"); // Unknwon mode. Available modes: Include, Exclude, Everything
                             }
                             inventoryUpdated = 0;
                             OnUpdateFinish();
-                            return Translations.Get("bot.autoDrop.switched", dropMode.ToString()); // Switched to {0} mode.
+                            return Translations.Get("bot.autoDrop.switched", Config.Mode.ToString()); // Switched to {0} mode.
                         }
                         else
                         {
@@ -178,7 +169,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnInventoryUpdate(int inventoryId)
         {
-            if (enable)
+            if (Config.Enabled)
             {
                 updateDebounce = updateDebounceValue;
                 // Always interact container if available (larger ID) because they included player inventory (ID 0)
@@ -199,28 +190,28 @@ namespace MinecraftClient.ChatBots
                 }
                 var inventory = GetInventories()[inventoryUpdated];
                 var items = inventory.Items.ToDictionary(entry => entry.Key, entry => entry.Value);
-                if (dropMode == Mode.Include)
+                if (Config.Mode == DropMode.include)
                 {
                     foreach (var item in items)
                     {
                         // Ingore crafting result slot
                         if (item.Key == 0)
                             continue;
-                        if (itemList.Contains(item.Value.Type))
+                        if (Config.Items.Contains(item.Value.Type))
                         {
                             // Drop it !!
                             WindowAction(inventoryUpdated, item.Key, WindowActionType.DropItemStack);
                         }
                     }
                 }
-                else if (dropMode == Mode.Exclude)
+                else if (Config.Mode == DropMode.exclude)
                 {
                     foreach (var item in items)
                     {
                         // Ingore crafting result slot
                         if (item.Key == 0)
                             continue;
-                        if (!itemList.Contains(item.Value.Type))
+                        if (!Config.Items.Contains(item.Value.Type))
                         {
                             // Drop it !!
                             WindowAction(inventoryUpdated, item.Key, WindowActionType.DropItemStack);

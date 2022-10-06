@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using Starksoft.Aspen.Proxy;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.Proxy
 {
@@ -11,7 +12,45 @@ namespace MinecraftClient.Proxy
 
     public static class ProxyHandler
     {
-        public enum Type { HTTP, SOCKS4, SOCKS4a, SOCKS5 };
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [TomlInlineComment("$config.Proxy.Enabled_Login$")]
+            public bool Enabled_Login = false;
+
+            [TomlInlineComment("$config.Proxy.Enabled_Ingame$")]
+            public bool Enabled_Ingame = false;
+
+            [TomlInlineComment("$config.Proxy.Server$")]
+            public ProxyInfoConfig Server = new("0.0.0.0", 8080);
+
+            [TomlInlineComment("$config.Proxy.Proxy_Type$")]
+            public ProxyType Proxy_Type = ProxyType.HTTP;
+
+            [TomlInlineComment("$config.Proxy.Username$")]
+            public string Username = "";
+
+            [TomlInlineComment("$config.Proxy.Password$")]
+            public string Password = "";
+
+            public void OnSettingUpdate() { }
+
+            public struct ProxyInfoConfig
+            {
+                public string Host;
+                public ushort Port;
+
+                public ProxyInfoConfig(string host, ushort port)
+                {
+                    Host = host;
+                    Port = port;
+                }
+            }
+
+            public enum ProxyType { HTTP, SOCKS4, SOCKS4a, SOCKS5 };
+        }
 
         private static readonly ProxyClientFactory factory = new();
         private static IProxyClient? proxy;
@@ -28,27 +67,26 @@ namespace MinecraftClient.Proxy
         {
             try
             {
-                if (login ? Settings.ProxyEnabledLogin : Settings.ProxyEnabledIngame)
+                if (login ? Config.Enabled_Login : Config.Enabled_Ingame)
                 {
                     ProxyType innerProxytype = ProxyType.Http;
 
-                    switch (Settings.proxyType)
+                    switch (Config.Proxy_Type)
                     {
-                        case Type.HTTP: innerProxytype = ProxyType.Http; break;
-                        case Type.SOCKS4: innerProxytype = ProxyType.Socks4; break;
-                        case Type.SOCKS4a: innerProxytype = ProxyType.Socks4a; break;
-                        case Type.SOCKS5: innerProxytype = ProxyType.Socks5; break;
+                        case Configs.ProxyType.HTTP: innerProxytype = ProxyType.Http; break;
+                        case Configs.ProxyType.SOCKS4: innerProxytype = ProxyType.Socks4; break;
+                        case Configs.ProxyType.SOCKS4a: innerProxytype = ProxyType.Socks4a; break;
+                        case Configs.ProxyType.SOCKS5: innerProxytype = ProxyType.Socks5; break;
                     }
 
-                    if (Settings.ProxyUsername != "" && Settings.ProxyPassword != "")
-                    {
-                        proxy = factory.CreateProxyClient(innerProxytype, Settings.ProxyHost, Settings.ProxyPort, Settings.ProxyUsername, Settings.ProxyPassword);
-                    }
-                    else proxy = factory.CreateProxyClient(innerProxytype, Settings.ProxyHost, Settings.ProxyPort);
+                    if (Config.Username != "" && Config.Password != "")
+                        proxy = factory.CreateProxyClient(innerProxytype, Config.Server.Host, Config.Server.Port, Config.Username, Config.Password);
+                    else
+                        proxy = factory.CreateProxyClient(innerProxytype, Config.Server.Host, Config.Server.Port);
 
                     if (!proxy_ok)
                     {
-                        ConsoleIO.WriteLineFormatted(Translations.Get("proxy.connected", Settings.ProxyHost, Settings.ProxyPort));
+                        ConsoleIO.WriteLineFormatted(Translations.Get("proxy.connected", Config.Server.Host, Config.Server.Port));
                         proxy_ok = true;
                     }
 

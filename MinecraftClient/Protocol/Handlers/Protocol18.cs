@@ -22,6 +22,7 @@ using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -461,8 +462,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 {
                                     //Hide system messages or xp bar messages?
                                     messageType = dataTypes.ReadNextByte(packetData);
-                                    if ((messageType == 1 && !Settings.DisplaySystemMessages)
-                                        || (messageType == 2 && !Settings.DisplayXPBarMessages))
+                                    if ((messageType == 1 && !Config.Main.Advanced.ShowSystemMessages)
+                                        || (messageType == 2 && !Config.Main.Advanced.ShowSystemMessages))
                                         break;
 
                                     if (protocolVersion >= MC_1_16_5_Version)
@@ -482,8 +483,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 string? unsignedChatContent = hasUnsignedChatContent ? dataTypes.ReadNextString(packetData) : null;
 
                                 messageType = dataTypes.ReadNextVarInt(packetData);
-                                if ((messageType == 1 && !Settings.DisplaySystemMessages)
-                                        || (messageType == 2 && !Settings.DisplayXPBarMessages))
+                                if ((messageType == 1 && !Config.Main.Advanced.ShowSystemMessages)
+                                        || (messageType == 2 && !Config.Main.Advanced.ShowXPBarMessages))
                                     break;
 
                                 Guid senderUUID = dataTypes.ReadNextUUID(packetData);
@@ -1603,7 +1604,7 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.SystemChat:
                             string systemMessage = dataTypes.ReadNextString(packetData);
                             int msgType = dataTypes.ReadNextVarInt(packetData);
-                            if ((msgType == 1 && !Settings.DisplaySystemMessages))
+                            if ((msgType == 1 && !Config.Main.Advanced.ShowSystemMessages))
                                 break;
                             handler.OnTextReceived(new(systemMessage, true, msgType, Guid.Empty, true));
                             break;
@@ -1925,7 +1926,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
-                        SessionCache.Store(Settings.Login.ToLower(), session);
+                        SessionCache.Store(Config.Main.General.Account.Login.ToLower(), session);
                     }
                     else
                     {
@@ -2119,7 +2120,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     string result = dataTypes.ReadNextString(packetData); //Get the Json data
 
-                    if (Settings.DebugMessages)
+                    if (Config.Logging.DebugMessages)
                     {
                         // May contain formatting codes, cannot use WriteLineFormatted
                         Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -2230,7 +2231,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns> List< Argument Name, Argument Value > </returns>
         private List<Tuple<string, string>>? CollectCommandArguments(string command)
         {
-            if (!isOnlineMode || !Settings.SignMessageInCommand)
+            if (!isOnlineMode || !Config.Signature.SignMessageInCommand)
                 return null;
 
             List<Tuple<string, string>> needSigned = new();
@@ -2371,7 +2372,7 @@ namespace MinecraftClient.Protocol.Handlers
                     DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                     fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                    if (!isOnlineMode || playerKeyPair == null || !Settings.SignChat)
+                    if (!isOnlineMode || playerKeyPair == null || !Config.Signature.SignChat)
                     {
                         fields.AddRange(dataTypes.GetLong(0));   // Salt: Long
                         fields.AddRange(dataTypes.GetVarInt(0)); // Signature Length: VarInt

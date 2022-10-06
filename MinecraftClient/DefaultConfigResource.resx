@@ -145,10 +145,22 @@
   <data name="ContainerType_PlayerInventory" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\containers\ContainerType.PlayerInventory.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="MinecraftClient" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\config\MinecraftClient.ini;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  <data name="Translation_de" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>resources\lang\de.ini;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="TranslationEnglish" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="Translation_en" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\lang\en.ini;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="Translation_fr" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>resources\lang\fr.ini;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="Translation_ru" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>resources\lang\ru.ini;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="Translation_vi" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>resources\lang\vi.ini;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="Translation_zh_Hans" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>resources\lang\zh-hans.ini;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>

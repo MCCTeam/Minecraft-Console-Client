@@ -79,9 +79,10 @@ namespace MinecraftClient.WinAPI
         }
 
         [DllImport("Kernel32")]
-        private static extern bool SetConsoleCtrlHandler(ConsoleCtrlHandler handler, bool add);
-        private delegate bool ConsoleCtrlHandler(CtrlType sig);
-        private static readonly ConsoleCtrlHandler? _handler;
+        private static extern bool SetConsoleCtrlHandler(EventHandler handler, bool add);
+
+        private delegate bool EventHandler(CtrlType sig);
+        static EventHandler? _handler;
 
         enum CtrlType
         {

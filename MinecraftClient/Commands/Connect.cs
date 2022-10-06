@@ -15,13 +15,13 @@ namespace MinecraftClient.Commands
                 string[] args = GetArgs(command);
                 if (args.Length > 1)
                 {
-                    if (!Settings.SetAccount(args[1]))
+                    if (!Settings.Config.Main.Advanced.SetAccount(args[1]))
                     {
                         return Translations.Get("cmd.connect.unknown", args[1]);
                     }
                 }
 
-                if (Settings.SetServerIP(args[0]))
+                if (Settings.Config.Main.SetServerIP(new Settings.MainConfigHealper.MainConfig.ServerInfoConfig(args[0]), true))
                 {
                     Program.Restart();
                     return "";
