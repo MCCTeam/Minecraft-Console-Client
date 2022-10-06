@@ -9,9 +9,11 @@ namespace MinecraftClient.Logger
 
         protected bool ShouldDisplay(FilterChannel channel, string msg)
         {
+            if (Config.Logging.FilterMode == LoggingConfigHealper.LoggingConfig.FilterModeEnum.disable)
+                return true;
+
             Regex? regexToUse = null;
             // Convert to bool for XOR later. Whitelist = 0, Blacklist = 1
-            bool filterMode = Config.Logging.FilterMode == LoggingConfigHealper.LoggingConfig.FilterModeEnum.blacklist;
             switch (channel)
             {
                 case FilterChannel.Chat:
@@ -33,7 +35,12 @@ namespace MinecraftClient.Logger
             {
                 // IsMatch and white/blacklist result can be represented using XOR
                 // e.g.  matched(true) ^ blacklist(true) => shouldn't log(false)
-                return regexToUse.IsMatch(msg) ^ filterMode;
+                if (Config.Logging.FilterMode == LoggingConfigHealper.LoggingConfig.FilterModeEnum.blacklist)
+                    return !regexToUse.IsMatch(msg);
+                else if (Config.Logging.FilterMode == LoggingConfigHealper.LoggingConfig.FilterModeEnum.whitelist)
+                    return regexToUse.IsMatch(msg);
+                else
+                    return true;
             }
             else return true;
         }

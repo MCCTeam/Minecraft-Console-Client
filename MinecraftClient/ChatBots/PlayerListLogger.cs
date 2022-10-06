@@ -23,14 +23,14 @@ namespace MinecraftClient.ChatBots
             public string File = "playerlog.txt";
 
             [TomlInlineComment("$config.ChatBot.PlayerListLogger.Delay$")]
-            public int Delay = 600;
+            public double Delay = 60;
 
             public void OnSettingUpdate()
             {
                 File ??= string.Empty;
 
-                if (Delay < 10)
-                    Delay = 10;
+                if (Delay < 1.0)
+                    Delay = 1.0;
             }
         }
 
@@ -39,7 +39,7 @@ namespace MinecraftClient.ChatBots
         public override void Update()
         {
             count++;
-            if (count == Config.Delay)
+            if (count == (int)(Config.Delay * 10))
             {
                 DateTime now = DateTime.Now;
 

@@ -21,7 +21,7 @@ namespace MinecraftClient.ChatBots
             public bool Enabled = false;
 
             [TomlInlineComment("$config.ChatBot.AntiAfk.Delay$")]
-            public Range Delay = new(600);
+            public Range Delay = new(60);
 
             [TomlInlineComment("$config.ChatBot.AntiAfk.Command$")]
             public string Command = "/ping";
@@ -35,6 +35,9 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.AntiAfk.Walk_Retries$")]
             public int Walk_Retries = 20;
 
+            [NonSerialized]
+            public int _DelayMin, _DelayMax;
+
             public void OnSettingUpdate()
             {
                 if (Walk_Range <= 0)
@@ -43,8 +46,11 @@ namespace MinecraftClient.ChatBots
                     LogToConsole(BotName, Translations.TryGet("bot.antiafk.invalid_walk_range"));
                 }
 
-                Delay.min = Math.Max(10, Delay.min);
-                Delay.max = Math.Max(10, Delay.max);
+                Delay.min = Math.Max(1.0, Delay.min);
+                Delay.max = Math.Max(1.0, Delay.max);
+
+                Delay.min = Math.Min(int.MaxValue / 10, Delay.min);
+                Delay.max = Math.Min(int.MaxValue / 10, Delay.max);
 
                 if (Delay.min > Delay.max)
                 {
@@ -52,12 +58,15 @@ namespace MinecraftClient.ChatBots
                     LogToConsole(BotName, Translations.TryGet("bot.antiafk.swapping"));
                 }
 
+                _DelayMin = (int)Math.Round(Delay.min * 10);
+                _DelayMax = (int)Math.Round(Delay.max * 10);
+
                 Command ??= string.Empty;
             }
 
             public struct Range
             {
-                public int min, max;
+                public double min, max;
 
                 public Range(int value)
                 {
@@ -99,7 +108,7 @@ namespace MinecraftClient.ChatBots
         {
             count++;
 
-            if (count == random.Next(Config.Delay.min, Config.Delay.max))
+            if (count == random.Next(Config._DelayMin, Config._DelayMax))
             {
                 DoAntiAfkStuff();
                 count = 0;

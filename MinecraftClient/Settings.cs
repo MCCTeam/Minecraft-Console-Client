@@ -176,14 +176,14 @@ namespace MinecraftClient
             }
 
             bool needUpdate = true;
-            string newConfigStr = newConfig.ToString();
+            byte[] newConfigByte = Encoding.UTF8.GetBytes(newConfig.ToString());
             if (File.Exists(filepath))
             {
                 try
                 {
-                    string oldConfigStr = File.ReadAllText(filepath);
-                    if (oldConfigStr == newConfigStr)
-                        needUpdate = false;
+                    if (new FileInfo(filepath).Length == newConfigByte.Length)
+                        if (File.ReadAllBytes(filepath).SequenceEqual(newConfigByte))
+                            needUpdate = false;
                 }
                 catch { }
             }
@@ -205,7 +205,7 @@ namespace MinecraftClient
 
                 if (backupSuccessed)
                 {
-                    try { File.WriteAllText(filepath, newConfigStr); }
+                    try { File.WriteAllBytes(filepath, newConfigByte); }
                     catch (Exception ex)
                     {
                         ConsoleIO.WriteLineFormatted(Translations.TryGet("config.write.fail", filepath));
@@ -268,14 +268,14 @@ namespace MinecraftClient
             public class HeadComment
             {
                 [TomlProperty("Current Version")]
-                public string CurrentVersion { get; set; } = Program.BuildInfo ?? Program.MCHighestVersion;
+                public string CurrentVersion { get; set; } = Program.BuildInfo ?? "Development Build";
                 
                 [TomlProperty("Latest Version")]
                 public string LatestVersion { get; set; } = "Unknown";
 
                 public void OnSettingUpdate()
                 {
-                    CurrentVersion = Program.BuildInfo ?? Program.MCHighestVersion;
+                    CurrentVersion = Program.BuildInfo ?? "Development Build";
                     LatestVersion ??= "Unknown";
                 }
             }
@@ -373,10 +373,11 @@ namespace MinecraftClient
                         Advanced.MovementSpeed = 1;
 
                     Advanced.Language = Regex.Replace(Advanced.Language, @"[^-^_^\w^*\d]", string.Empty).Replace('-', '_');
+                    Advanced.Language = ToLowerIfNeed(Advanced.Language);
                     if (!AvailableLang.Contains(Advanced.Language))
                     {
                         Advanced.Language = Translations.GetTranslationPriority().Item1;
-                        ConsoleIO.WriteLogLine("[Settings] " + Translations.GetOrNull("config.Main.Advanced.language.invaild") ?? "The language code is invalid.");
+                        ConsoleIO.WriteLogLine("[Settings] " + (Translations.GetOrNull("config.Main.Advanced.language.invaild") ?? "The language code is invalid."));
                     }
 
                     if (!string.IsNullOrWhiteSpace(General.Server.Host))
@@ -418,7 +419,7 @@ namespace MinecraftClient
                 public class AdvancedConfig
                 {
                     [TomlInlineComment("$config.Main.Advanced.language$")]
-                    public string Language = "en_GB";
+                    public string Language = "en_gb";
 
                     // [TomlInlineComment("$config.Main.Advanced.console_title$")]
                     public string ConsoleTitle = "%username%@%serverip% - Minecraft Console Client";
@@ -427,7 +428,7 @@ namespace MinecraftClient
                     public InternalCmdCharType InternalCmdChar = InternalCmdCharType.slash;
 
                     [TomlInlineComment("$config.Main.Advanced.message_cooldown$")]
-                    public int MessageCooldown = 2;
+                    public double MessageCooldown = 1.0;
 
                     [TomlInlineComment("$config.Main.Advanced.bot_owners$")]
                     public List<string> BotOwners = new() { "Player1", "Player2" };
@@ -657,7 +658,7 @@ namespace MinecraftClient
                 public string DebugFilterRegex = @".*";
 
                 [TomlInlineComment("$config.Logging.FilterMode$")]
-                public FilterModeEnum FilterMode = FilterModeEnum.whitelist;
+                public FilterModeEnum FilterMode = FilterModeEnum.disable;
 
                 [TomlInlineComment("$config.Logging.LogToFile$")]
                 public bool LogToFile = false;
@@ -673,7 +674,7 @@ namespace MinecraftClient
 
                 public void OnSettingUpdate() { }
 
-                public enum FilterModeEnum { blacklist, whitelist }
+                public enum FilterModeEnum { disable, blacklist, whitelist }
             }
         }
 
@@ -937,6 +938,9 @@ namespace MinecraftClient
                 [TomlInlineComment("$config.ChatFormat.Builtins$")]
                 public bool Builtins = true;
 
+                [TomlInlineComment("$config.ChatFormat.UserDefined$")]
+                public bool UserDefined = false;
+
                 public string Public = @"^<([a-zA-Z0-9_]+)> (.+)$";
 
                 public string Private = @"^([a-zA-Z0-9_]+) whispers to you: (.+)$";
@@ -961,7 +965,7 @@ namespace MinecraftClient
                     set { ChatBots.Alerts.Config = value; ChatBots.Alerts.Config.OnSettingUpdate(); }
                 }
 
-                [TomlPrecedingComment("$config.ChatBot.AntiAFK$")]
+                [TomlPrecedingComment("$config.ChatBot.AntiAfk$")]
                 public ChatBots.AntiAFK.Configs AntiAFK
                 {
                     get { return ChatBots.AntiAFK.Config; }
