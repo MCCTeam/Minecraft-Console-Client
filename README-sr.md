@@ -73,4 +73,5 @@ Ako желите да преведете пројекат на други јез
 
 
 Више информација http://qstuff.blogspot.fr/2007/04/why-cddl.html
+
 Цела лиценца http://opensource.org/licenses/CDDL-1.0
