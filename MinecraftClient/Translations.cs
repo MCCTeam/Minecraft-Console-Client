@@ -662,7 +662,7 @@ namespace MinecraftClient
             string[] transEn = DefaultConfigResource.ResourceManager.GetString("Translation_en")!
                 .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
-            foreach (string lang in new string[] { "de", "fr", "ru", "vi", "zh_Hans" })
+            foreach (string lang in new string[] { "de", "fr", "ru", "vi", "zh_Hans", "zh_Hant" })
             {
                 Dictionary<string, string> trans = ParseTranslationContent(
                     DefaultConfigResource.ResourceManager.GetString("Translation_" + lang)!
