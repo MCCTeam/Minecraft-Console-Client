@@ -639,7 +639,7 @@ namespace MinecraftClient
                     continue;
 
                 int index = line.IndexOf('=');
-                if (line.Length > (index + 1))
+                if (index != -1 && line.Length > (index + 1))
                     translations[line[..index]] = line[(index + 1)..].Replace("\\n", "\n");
             }
             return translations;
@@ -668,8 +668,19 @@ namespace MinecraftClient
                     DefaultConfigResource.ResourceManager.GetString("Translation_" + lang)!
                         .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None)
                 );
-                using FileStream file = File.OpenWrite(AppDomain.CurrentDomain.BaseDirectory + 
-                    Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar + lang + ".ini");
+                string fileName = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar + lang + ".ini";
+                if (File.Exists(fileName))
+                {
+                    string backupFilePath = Path.ChangeExtension(fileName, ".backup.ini");
+                    try { File.Copy(fileName, backupFilePath, true); }
+                    catch (Exception ex)
+                    {
+                        ConsoleIO.WriteLineFormatted(Translations.TryGet("config.backup.fail", backupFilePath));
+                        ConsoleIO.WriteLine(ex.Message);
+                        return;
+                    }
+                }
+                using FileStream file = File.OpenWrite(fileName);
                 int total = 0, translated = 0;
                 for (int i = 0; i < transEn.Length; ++i)
                 {

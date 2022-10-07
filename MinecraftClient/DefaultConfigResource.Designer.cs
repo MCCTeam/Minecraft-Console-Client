@@ -252,17 +252,18 @@ namespace MinecraftClient {
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
+        ///mcc.help_us_translate=
+        ///mcc.run_with_default_settings=
+        ///mcc.settings_generated=
+        ///mcc.has_update=
         ///mcc.login=Login :
         ///mcc.login_basic_io=Bitte gib einen Nutzernamen oder eine E-Mail deiner Wahl ein.
-        ///mcc.password=Passwort : 
+        ///mcc.password=Passwort :
         ///mcc.password_basic_io=Bitte gib das Passwort für {0} ein.
         ///mcc.password_hidden=Passwort : {0}
         ///mcc.offline=§8Das Programm läuft im Offline-Modus.
         ///mcc.session_invalid=§8Gespeicherte Session ungültig oder abgelaufen.
-        ///mcc.session_valid=§8Gespeicherte Session gültig für {0}.
-        ///mcc.connecting=Verbinde zu {0}...
-        ///mcc.ip=Server-IP : 
-        ///mcc.use_version=§8B [rest of string was truncated]&quot;;.
+        ///mcc.session_valid=§8Gespeicherte Ses [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Translation_de {
             get {
@@ -279,10 +280,10 @@ namespace MinecraftClient {
         ///mcc.has_update=§eNew version of MCC available: {0}
         ///mcc.login=Login :
         ///mcc.login_basic_io=Please type the username or email of your choice.
-        ///mcc.password=Password : 
+        ///mcc.password=Password: 
         ///mcc.password_basic_io=Please type the password for {0}.
-        ///mcc.password_hidden=Password : {0}
-        ///mcc.offline=§8Yo [rest of string was truncated]&quot;;.
+        ///mcc.password_hidden=Password(invisible): {0}
+        ///mcc.off [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Translation_en {
             get {
@@ -293,16 +294,18 @@ namespace MinecraftClient {
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
+        ///mcc.help_us_translate=
+        ///mcc.run_with_default_settings=
+        ///mcc.settings_generated=
+        ///mcc.has_update=
         ///mcc.login=Connexion :
         ///mcc.login_basic_io=Veuillez saisir un nom d&apos;utilisateur ou une adresse email.
-        ///mcc.password=Mot de passe : 
+        ///mcc.password=Mot de passe :
         ///mcc.password_basic_io=Saisissez le mot de passe pour {0}.
         ///mcc.password_hidden=Mot de passe : {0}
         ///mcc.offline=§8Vous avez choisi d&apos;utiliser le mode hors ligne.
         ///mcc.session_invalid=§8Le cache de la session est invalide ou a expiré.
-        ///mcc.session_valid=§8Le cache de la session est encore valable pendant {0}.
-        ///mcc.connecting=Connexion à {0}...
-        /// [rest of string was truncated]&quot;;.
+        ///mcc.session_va [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Translation_fr {
             get {
@@ -313,17 +316,18 @@ namespace MinecraftClient {
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
+        ///mcc.help_us_translate=
+        ///mcc.run_with_default_settings=
+        ///mcc.settings_generated=
+        ///mcc.has_update=
         ///mcc.login=Логин :
         ///mcc.login_basic_io=Пожалуйста, введите имя пользователя или email по вашему выбору.
-        ///mcc.password=Пароль: 
+        ///mcc.password=Пароль:
         ///mcc.password_basic_io=Пожалуйста, введите пароль для {0}.
         ///mcc.password_hidden=Пароль: {0}
         ///mcc.offline=§8Вы выбрали запуск в автономном режиме.
         ///mcc.session_invalid=§8Кэшированная сессия недействительна или истекла.
-        ///mcc.session_valid=§8Кэшированная сессия все еще действительна для {0}.
-        ///mcc.connecting=Подключение к {0}...
-        ///mcc.ip=IP сервера: 
-        ///mc [rest of string was truncated]&quot;;.
+        ///mcc.session_valid=§8Кэшированная се [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Translation_ru {
             get {
@@ -334,6 +338,10 @@ namespace MinecraftClient {
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
+        ///mcc.help_us_translate=
+        ///mcc.run_with_default_settings=
+        ///mcc.settings_generated=
+        ///mcc.has_update=
         ///mcc.login=Đăng nhập:
         ///mcc.login_basic_io=Hãy nhập địa chỉ email hoặc tên tài khoản của bạn:
         ///mcc.password=Mật khẩu:
@@ -342,9 +350,7 @@ namespace MinecraftClient {
         ///mcc.offline=§8Bạn chọn sử dụng chế độ ngoại tuyến.
         ///mcc.session_invalid=§8Phiên không hợp lệ hoặc đã hết hạn.
         ///mcc.session_valid=§8Phiên vẫn còn hợp lệ cho {0}.
-        ///mcc.connecting=Đang kết nối tới {0}...
-        ///mcc.ip=Địa chỉ máy chủ: 
-        ///mcc.use_version=§8Sử dụng Minecraft phiên bản  [rest of string was truncated]&quot;;.
+        ///mcc.profile_ke [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Translation_vi {
             get {
@@ -362,13 +368,13 @@ namespace MinecraftClient {
         ///mcc.login=账户名：
         ///mcc.login_basic_io=请输入用户名或邮箱。
         ///mcc.password=密码：
-        ///mcc.password_basic_io=请输入{0}的密码。
-        ///mcc.password_hidden=密码：{0}
+        ///mcc.password_basic_io=请输入用户 {0} 的密码。
+        ///mcc.password_hidden=密码(不会显示)：{0}
         ///mcc.offline=§8您正在使用离线模式。
-        ///mcc.session_invalid=§8缓存无效或已过期。
-        ///mcc.session_valid=§8{0}的缓存仍然有效。
+        ///mcc.session_invalid=§8会话缓存无效或已过期。
+        ///mcc.session_valid=§8{0}的会话缓存仍然有效。
         ///mcc.profile_key_invalid=§8缓存的聊天签名密钥需要刷新。
-        ///mcc.profile_key_valid=§8{0}的聊天签名密钥缓存仍然有效 [rest of string was truncated]&quot;;.
+        ///mcc.profile_key_valid=§8{0 [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Translation_zh_Hans {
             get {
