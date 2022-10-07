@@ -37,10 +37,10 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.Alerts.Log_File$")]
             public string Log_File = @"alerts-log.txt";
 
-            [TomlPrecedingComment("$config.ChatBot.Alerts.Matches_File$")]
+            [TomlPrecedingComment("$config.ChatBot.Alerts.Matches$")]
             public string[] Matches = new string[] { "Yourname", " whispers ", "-> me", "admin", ".com" };
 
-            [TomlPrecedingComment("$config.ChatBot.Alerts.Excludes_File$")]
+            [TomlPrecedingComment("$config.ChatBot.Alerts.Excludes$")]
             public string[] Excludes = new string[] { "myserver.com", "Yourname>:", "Player Yourname", "Yourname joined", "Yourname left", "[Lockette] (Admin)", " Yourname:", "Yourname is" };
 
             public void OnSettingUpdate()
