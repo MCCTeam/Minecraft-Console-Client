@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -18,7 +17,6 @@ namespace MinecraftClient
     {
         private static readonly Dictionary<string, string> translations = new();
         private static readonly string translationFilePath = "lang" + Path.DirectorySeparatorChar + "mcc";
-        private static readonly string defaultTranslation = "en.ini";
         private static readonly Regex translationKeyRegex = new(@"\(\[(.*?)\]\)", RegexOptions.Compiled); // Extract string inside ([ ])
 
         /// <summary>
@@ -643,18 +641,6 @@ namespace MinecraftClient
                     translations[line[..index]] = line[(index + 1)..].Replace("\\n", "\n");
             }
             return translations;
-        }
-
-        /// <summary>
-        /// Write the default translation file (English) to the disk.
-        /// </summary>
-        private static void WriteDefaultTranslation()
-        {
-            string defaultPath = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar + defaultTranslation;
-
-            if (!Directory.Exists(translationFilePath))
-                Directory.CreateDirectory(translationFilePath);
-            File.WriteAllText(defaultPath, DefaultConfigResource.Translation_en, Encoding.UTF8);
         }
 
         public static void TrimAllTranslations()

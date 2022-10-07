@@ -64,10 +64,10 @@ namespace MinecraftClient
                 _ = "a".ToLower();
 
                 //Take advantage of Windows 10 / Mac / Linux UTF-8 console
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (OperatingSystem.IsWindows())
                 {
                     // If we're on windows, check if our version is Win10 or greater.
-                    if (WindowsVersion.WinMajorVersion >= 10)
+                    if (OperatingSystem.IsWindowsVersionAtLeast(10))
                         Console.OutputEncoding = Console.InputEncoding = Encoding.UTF8;
                 }
                 else
@@ -429,43 +429,13 @@ namespace MinecraftClient
 
             if (result == ProtocolHandler.LoginResult.Success)
             {
-                if (Config.Main.General.AccountType == LoginType.microsoft && InternalConfig.Password != "-" && Config.Signature.LoginWithSecureProfile)
-                {
-                    // Load cached profile key from disk if necessary
-                    if (Config.Main.Advanced.ProfileKeyCache == CacheType.disk)
-                    {
-                        bool cacheKeyLoaded = KeysCache.InitializeDiskCache();
-                        if (Config.Logging.DebugMessages)
-                            Translations.WriteLineFormatted(cacheKeyLoaded ? "debug.keys_cache_ok" : "debug.keys_cache_fail");
-                    }
-
-                    if (Config.Main.Advanced.ProfileKeyCache != CacheType.none && KeysCache.Contains(loginLower))
-                    {
-                        playerKeyPair = KeysCache.Get(loginLower);
-                        if (playerKeyPair.NeedRefresh())
-                            Translations.WriteLineFormatted("mcc.profile_key_invalid");
-                        else
-                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.profile_key_valid", session.PlayerName));
-                    }
-
-                    if (playerKeyPair == null || playerKeyPair.NeedRefresh())
-                    {
-                        Translations.WriteLineFormatted("mcc.fetching_key");
-                        playerKeyPair = KeyUtils.GetNewProfileKeys(session.ID);
-                        if (Config.Main.Advanced.ProfileKeyCache != CacheType.none && playerKeyPair != null)
-                        {
-                            KeysCache.Store(loginLower, playerKeyPair);
-                        }
-                    }
-                }
-
                 InternalConfig.Username = session.PlayerName;
                 bool isRealms = false;
 
                 if (Config.Main.Advanced.ConsoleTitle != "")
                     Console.Title = Config.AppVar.ExpandVars(Config.Main.Advanced.ConsoleTitle);
 
-                if (Config.Main.Advanced.PlayerHeadAsIcon)
+                if (Config.Main.Advanced.PlayerHeadAsIcon && OperatingSystem.IsWindows())
                     ConsoleIcon.SetPlayerIconAsync(InternalConfig.Username);
 
                 if (Config.Logging.DebugMessages)
@@ -552,6 +522,37 @@ namespace MinecraftClient
                     {
                         HandleFailure(Translations.Get("error.ping"), true, ChatBots.AutoRelog.DisconnectReason.ConnectionLost);
                         return;
+                    }
+                }
+
+                if (Config.Main.General.AccountType == LoginType.microsoft && InternalConfig.Password != "-" && 
+                    Config.Signature.LoginWithSecureProfile && protocolversion >= 759 /* 1.19 and above */)
+                {
+                    // Load cached profile key from disk if necessary
+                    if (Config.Main.Advanced.ProfileKeyCache == CacheType.disk)
+                    {
+                        bool cacheKeyLoaded = KeysCache.InitializeDiskCache();
+                        if (Config.Logging.DebugMessages)
+                            Translations.WriteLineFormatted(cacheKeyLoaded ? "debug.keys_cache_ok" : "debug.keys_cache_fail");
+                    }
+
+                    if (Config.Main.Advanced.ProfileKeyCache != CacheType.none && KeysCache.Contains(loginLower))
+                    {
+                        playerKeyPair = KeysCache.Get(loginLower);
+                        if (playerKeyPair.NeedRefresh())
+                            Translations.WriteLineFormatted("mcc.profile_key_invalid");
+                        else
+                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.profile_key_valid", session.PlayerName));
+                    }
+
+                    if (playerKeyPair == null || playerKeyPair.NeedRefresh())
+                    {
+                        Translations.WriteLineFormatted("mcc.fetching_key");
+                        playerKeyPair = KeyUtils.GetNewProfileKeys(session.ID);
+                        if (Config.Main.Advanced.ProfileKeyCache != CacheType.none && playerKeyPair != null)
+                        {
+                            KeysCache.Store(loginLower, playerKeyPair);
+                        }
                     }
                 }
 
