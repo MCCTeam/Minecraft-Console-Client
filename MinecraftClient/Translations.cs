@@ -15,7 +15,7 @@ namespace MinecraftClient
     /// </remarks>
     public static class Translations
     {
-        private static readonly Dictionary<string, string> translations = new();
+        private static Dictionary<string, string> translations;
         private static readonly string translationFilePath = "lang" + Path.DirectorySeparatorChar + "mcc";
         private static readonly Regex translationKeyRegex = new(@"\(\[(.*?)\]\)", RegexOptions.Compiled); // Extract string inside ([ ])
 
@@ -87,6 +87,16 @@ namespace MinecraftClient
         private static string ReplaceKey(Match m)
         {
             return Get(m.Groups[1].Value);
+        }
+
+        /// <summary>
+        /// Initialize translations depending on system language.
+        /// English is the default for all unknown system languages.
+        /// </summary>
+        static Translations()
+        {
+            string[] engLang = DefaultConfigResource.Translation_en.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None); // use embedded translations
+            translations = ParseTranslationContent(engLang);
         }
 
         public static Tuple<string, string[]> GetTranslationPriority()
@@ -579,6 +589,8 @@ namespace MinecraftClient
         /// </summary>
         public static void LoadTranslationFile(string[] languageList)
         {
+            translations = new();
+
             /*
              * External translation files
              * These files are loaded from the installation directory as:

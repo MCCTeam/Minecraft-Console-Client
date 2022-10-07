@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using Tomlet.Attributes;
@@ -298,8 +299,10 @@ namespace MinecraftClient.ChatBots
                 switch (args[0])
                 {
                     case "list":
-                        string names = string.Join(", ", Config.Recipes.ToList());
-                        return Translations.Get("bot.autoCraft.cmd.list", Config.Recipes.Length, names);
+                        StringBuilder nameList = new();
+                        foreach (RecipeConfig recipe in Config.Recipes)
+                            nameList.Append(recipe.Name).Append(", ");
+                        return Translations.Get("bot.autoCraft.cmd.list", Config.Recipes.Length, nameList.ToString());
                     case "start":
                         if (args.Length >= 2)
                         {
@@ -435,7 +438,7 @@ namespace MinecraftClient.ChatBots
             Dictionary<int, ItemType> materials = new();
             for (int i = 0; i < recipeConfig.Slots.Length; ++i)
                 if (recipeConfig.Slots[i] != ItemType.Null)
-                    materials[i] = recipeConfig.Slots[i];
+                    materials[i + 1] = recipeConfig.Slots[i];
 
             ItemType ResultItem = recipeConfig.Result;
 

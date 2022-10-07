@@ -39,7 +39,7 @@ namespace MinecraftClient.ChatBots
             public bool Attack_Passive = false;
 
             [TomlInlineComment("$config.ChatBot.AutoAttack.List_Mode$")]
-            public ListType List_Mode = ListType.blacklist;
+            public ListType List_Mode = ListType.whitelist;
 
             [TomlInlineComment("$config.ChatBot.AutoAttack.Entites_List$")]
             public List<EntityType> Entites_List = new() { EntityType.Zombie, EntityType.Cow };

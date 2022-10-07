@@ -243,6 +243,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (ObjectDisposedException) { }
             catch (OperationCanceledException) { }
+            catch (NullReferenceException) { }
 
             if (cancelToken.IsCancellationRequested)
                 return;

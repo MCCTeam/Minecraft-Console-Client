@@ -31,7 +31,7 @@ namespace MinecraftClient.ChatBots
             public string[] Kick_Messages = new string[] { "Connection has been lost", "Server is restarting", "Server is full", "Too Many people" };
 
             [NonSerialized]
-            public int _DelayMin, _DelayMax;
+            public static int _BotRecoAttempts = 0;
 
             public void OnSettingUpdate()
             {
@@ -43,9 +43,6 @@ namespace MinecraftClient.ChatBots
 
                 if (Delay.min > Delay.max)
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);
-
-                _DelayMin = (int)Math.Round(Delay.min * 10);
-                _DelayMax = (int)Math.Round(Delay.max * 10);
                 
                 if (Retries == -1)
                     Retries = int.MaxValue;
@@ -100,7 +97,7 @@ namespace MinecraftClient.ChatBots
             {
                 LogDebugToConsoleTranslated("bot.autoRelog.ignore_user_logout");
             }
-            else
+            else if (Config.Retries < 0 || Configs._BotRecoAttempts < Config.Retries)
             {
                 message = GetVerbatim(message);
                 string comp = message.ToLower();
@@ -109,6 +106,7 @@ namespace MinecraftClient.ChatBots
 
                 if (Config.Ignore_Kick_Message)
                 {
+                    Configs._BotRecoAttempts++;
                     LaunchDelayedReconnection(null);
                     return true;
                 }
@@ -117,6 +115,7 @@ namespace MinecraftClient.ChatBots
                 {
                     if (comp.Contains(msg))
                     {
+                        Configs._BotRecoAttempts++;
                         LaunchDelayedReconnection(msg);
                         return true;
                     }
@@ -130,7 +129,7 @@ namespace MinecraftClient.ChatBots
 
         private void LaunchDelayedReconnection(string? msg)
         {
-            int delay = random.Next(Config._DelayMin, Config._DelayMax);
+            int delay = random.Next((int)Config.Delay.min, (int)Config.Delay.max);
             LogDebugToConsoleTranslated(String.IsNullOrEmpty(msg) ? "bot.autoRelog.reconnect_always" : "bot.autoRelog.reconnect", msg);
             LogToConsoleTranslated("bot.autoRelog.wait", delay);
             System.Threading.Thread.Sleep(delay * 1000);
