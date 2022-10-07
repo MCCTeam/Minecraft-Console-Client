@@ -55,7 +55,8 @@ MCC now supports the following languages (Alphabetical order) :
   * `fr.ini` (57.69% translated) : Français (France) - French
   * `ru.ini` (56.77% translated) : Русский (Russkiy) - Russian
   * `vi.ini` (56.77% translated) : Tiếng Việt (Việt Nam) - Vietnamese
-  * `zh-Hans.ini` (100.00% translated) : 简体中文（中国大陆） - Chinese Simplified (China; Mandarin)
+  * `zh-Hans.ini` (100.00% translated) : 简体中文 - Chinese Simplified
+  * `zh-Hant.ini` (100.00% translated) : 繁體中文 - Chinese Traditional
 
 ## Building from the source 🏗️
 

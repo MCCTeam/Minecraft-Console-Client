@@ -381,5 +381,29 @@ namespace MinecraftClient {
                 return ResourceManager.GetString("Translation_zh_Hans", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [mcc]
+        ///# Messages from MCC itself
+        ///mcc.help_us_translate=幫助我們翻譯MCC：{0}
+        ///mcc.run_with_default_settings=\nMCC正在使用預設配置執行。
+        ///mcc.settings_generated=§c配置檔案 MinecraftClient.ini 已經生成。
+        ///mcc.has_update=§e新版本的MCC已經推出：{0}
+        ///mcc.login=賬戶名：
+        ///mcc.login_basic_io=請輸入使用者名稱或郵箱。
+        ///mcc.password=密碼：
+        ///mcc.password_basic_io=請輸入使用者 {0} 的密碼。
+        ///mcc.password_hidden=密碼(不會顯示)：{0}
+        ///mcc.offline=§8您正在使用離線模式。
+        ///mcc.session_invalid=§8會話快取無效或已過期。
+        ///mcc.session_valid=§8{0}的會話快取仍然有效。
+        ///mcc.profile_key_invalid=§8快取的聊天簽名金鑰需要重新整理。
+        ///mcc.profile_key_valid [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Translation_zh_Hant {
+            get {
+                return ResourceManager.GetString("Translation_zh_Hant", resourceCulture);
+            }
+        }
     }
 }
