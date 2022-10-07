@@ -26,6 +26,9 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.AntiAfk.Command$")]
             public string Command = "/ping";
 
+            [TomlInlineComment("$config.ChatBot.AntiAfk.Use_Sneak$")]
+            public bool Use_Sneak = false;
+
             [TomlInlineComment("$config.ChatBot.AntiAfk.Use_Terrain_Handling$")]
             public bool Use_Terrain_Handling = false;
 
@@ -81,7 +84,7 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private int count;
+        private int count, nextrun = 50;
         private bool previousSneakState = false;
         private readonly Random random = new();
 
@@ -108,10 +111,11 @@ namespace MinecraftClient.ChatBots
         {
             count++;
 
-            if (count == random.Next(Config._DelayMin, Config._DelayMax))
+            if (count >= nextrun)
             {
                 DoAntiAfkStuff();
                 count = 0;
+                nextrun = random.Next(Config._DelayMin, Config._DelayMax);
             }
 
         }
@@ -149,22 +153,27 @@ namespace MinecraftClient.ChatBots
                         useAlternativeMethod = true;
                         break;
                     }
-                    else moved = MoveToLocation(goal, allowUnsafe: false, allowDirectTeleport: false);
+                    else
+                    {
+                        moved = MoveToLocation(goal, allowUnsafe: false, allowDirectTeleport: false);
+                    }
                 }
 
-                if (!useAlternativeMethod)
+                if (!useAlternativeMethod && Config.Use_Sneak)
                 {
                     // Solve the case when the bot was closed in 1x2, was sneaking, but then he was freed, this will make him not sneak anymore
                     previousSneakState = false;
                     Sneak(false);
-
                     return;
                 }
             }
 
             SendText(Config.Command);
-            Sneak(previousSneakState);
-            previousSneakState = !previousSneakState;
+            if (Config.Use_Sneak)
+            {
+                Sneak(previousSneakState);
+                previousSneakState = !previousSneakState;
+            }
             count = 0;
         }
 
