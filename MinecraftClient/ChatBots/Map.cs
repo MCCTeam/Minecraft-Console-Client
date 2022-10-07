@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Handlers;
 using Tomlet.Attributes;
@@ -94,15 +96,22 @@ namespace MinecraftClient.ChatBots
                         if (!cachedMaps.ContainsKey(mapId))
                             return Translations.TryGet("bot.map.cmd.not_found", mapId);
 
-                        try
+                        if (OperatingSystem.IsWindows())
                         {
-                            McMap map = cachedMaps[mapId];
-                            GenerateMapImage(map);
+                            try
+                            {
+                                McMap map = cachedMaps[mapId];
+                                GenerateMapImage(map);
+                            }
+                            catch (Exception e)
+                            {
+                                LogDebugToConsole(e.StackTrace!);
+                                return Translations.TryGet("bot.map.failed_to_render", mapId);
+                            }
                         }
-                        catch (Exception e)
+                        else
                         {
-                            LogDebugToConsole(e.StackTrace!);
-                            return Translations.TryGet("bot.map.failed_to_render", mapId);
+                            LogToConsoleTranslated("bot.map.windows_only");
                         }
 
                         return "";
@@ -152,9 +161,15 @@ namespace MinecraftClient.ChatBots
             }
 
             if (Config.Auto_Render_On_Update)
-                GenerateMapImage(map);
+            {
+                if (OperatingSystem.IsWindows())
+                    GenerateMapImage(map);
+                else
+                    LogToConsoleTranslated("bot.map.windows_only");
+            }
         }
 
+        [SupportedOSPlatform("windows")]
         private void GenerateMapImage(McMap map)
         {
             string fileName = baseDirectory + "/Map_" + map.MapId + ".jpg";
@@ -162,6 +177,8 @@ namespace MinecraftClient.ChatBots
             if (File.Exists(fileName))
                 File.Delete(fileName);
 
+            /** Warning CA1416: Bitmap is only support Windows **/
+            /* https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/system-drawing-common-windows-only */
             Bitmap image = new(map.Width, map.Height);
 
             for (int x = 0; x < map.Width; ++x)
@@ -189,6 +206,8 @@ namespace MinecraftClient.ChatBots
             image.Save(fileName);
             LogToConsole(Translations.TryGet("bot.map.rendered", map.MapId, fileName));
         }
+
+        [SupportedOSPlatform("windows")]
         private Bitmap ResizeBitmap(Bitmap sourceBMP, int width, int height)
         {
             Bitmap result = new(width, height);
