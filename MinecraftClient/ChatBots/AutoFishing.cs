@@ -184,7 +184,7 @@ namespace MinecraftClient.ChatBots
                 LogToConsole(Translations.Get("bot.autoFish.start", delay));
                 lock (stateLock)
                 {
-                    counter = (int)(delay * 10);
+                    counter = Settings.DoubleToTick(delay);
                     state = FishingState.StartMove;
                 }
             }
@@ -224,7 +224,7 @@ namespace MinecraftClient.ChatBots
                         break;
                     case FishingState.WaitingToCast:
                         if (AutoEat.Eating)
-                            counter = (int)(Config.Cast_Delay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                         else if (--counter < 0)
                             state = FishingState.CastingRod;
                         break;
@@ -240,16 +240,16 @@ namespace MinecraftClient.ChatBots
                                 castTimeout *= 2; // Exponential backoff
                             LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.cast_timeout", castTimeout / 10.0));
 
-                            counter = (int)(Config.Cast_Delay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
                         }
                         break;
                     case FishingState.WaitingFishToBite:
-                        if (++counter > (int)(Config.Fishing_Timeout * 10))
+                        if (++counter > Settings.DoubleToTick(Config.Fishing_Timeout))
                         {
                             LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.fishing_timeout"));
 
-                            counter = (int)(Config.Cast_Delay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
                         }
                         break;
@@ -271,7 +271,7 @@ namespace MinecraftClient.ChatBots
                             }
                             else
                             {
-                                counter = (int)(Config.Cast_Delay * 10);
+                                counter = Settings.DoubleToTick(Config.Cast_Delay);
                                 state = FishingState.DurabilityCheck;
                                 goto case FishingState.DurabilityCheck;
                             }
@@ -290,7 +290,7 @@ namespace MinecraftClient.ChatBots
                     case FishingState.DurabilityCheck:
                         if (DurabilityCheck())
                         {
-                            counter = (int)(Config.Cast_Delay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
                         }
                         break;
@@ -338,7 +338,7 @@ namespace MinecraftClient.ChatBots
 
                         lock (stateLock)
                         {
-                            counter = (int)(Config.Cast_Delay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
                         }
                     }

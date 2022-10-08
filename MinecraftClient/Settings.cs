@@ -986,6 +986,13 @@ namespace MinecraftClient
                     set { ChatBots.AutoCraft.Config = value; ChatBots.AutoCraft.Config.OnSettingUpdate(); }
                 }
 
+                [TomlPrecedingComment("$config.ChatBot.AutoDig$")]
+                public ChatBots.AutoDig.Configs AutoDig
+                {
+                    get { return ChatBots.AutoDig.Config; }
+                    set { ChatBots.AutoDig.Config = value; ChatBots.AutoDig.Config.OnSettingUpdate(); }
+                }
+
                 [TomlPrecedingComment("$config.ChatBot.AutoDrop$")]
                 public ChatBots.AutoDrop.Configs AutoDrop
                 {
@@ -1169,6 +1176,12 @@ namespace MinecraftClient
                 return true;
             else
                 return false;
+        }
+
+        public static int DoubleToTick(double time)
+        {
+            time = Math.Min(int.MaxValue / 10, time);
+            return (int)Math.Round(time * 10);
         }
     }
 

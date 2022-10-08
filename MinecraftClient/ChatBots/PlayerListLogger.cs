@@ -39,7 +39,7 @@ namespace MinecraftClient.ChatBots
         public override void Update()
         {
             count++;
-            if (count == (int)(Config.Delay * 10))
+            if (count >= Settings.DoubleToTick(Config.Delay))
             {
                 DateTime now = DateTime.Now;
 

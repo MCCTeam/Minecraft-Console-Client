@@ -69,11 +69,14 @@ namespace MinecraftClient.WinAPI
                 }
                 catch (AggregateException ae)
                 {
+                    bool needRevert = false;
                     foreach (var ex in ae.InnerExceptions)
                     {
-                        if (ex is HttpRequestException) //Skin not found? Reset to default icon
-                            RevertToMCCIcon();
+                        if (ex is HttpRequestException || ex is TaskCanceledException) //Skin not found? Reset to default icon
+                            needRevert = true;
                     }
+                    if (needRevert)
+                        RevertToMCCIcon();
                 }
                 catch (HttpRequestException) //Skin not found? Reset to default icon
                 {
