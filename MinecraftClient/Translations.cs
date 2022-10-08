@@ -104,9 +104,9 @@ namespace MinecraftClient
             string gameLanguage = "en_gb";
             List<string> name = new();
 
-            string systemLanguage = string.IsNullOrWhiteSpace(CultureInfo.CurrentCulture.Name)
-                    ? CultureInfo.CurrentCulture.Parent.Name
-                    : CultureInfo.CurrentCulture.Name;
+            string systemLanguage = string.IsNullOrWhiteSpace(Program.ActualCulture.Name)
+                    ? Program.ActualCulture.Parent.Name
+                    : Program.ActualCulture.Name;
 
             switch (systemLanguage)
             {

@@ -42,6 +42,7 @@ namespace MinecraftClient
     {
         private static McClient? client;
         public static string[]? startupargs;
+        public static readonly CultureInfo ActualCulture = CultureInfo.CurrentCulture;
 
         public const string Version = MCHighestVersion;
         public const string MCLowestVersion = "1.4.6";
@@ -57,6 +58,8 @@ namespace MinecraftClient
         /// </summary>
         static void Main(string[] args)
         {
+            InitCulture();
+
             Task.Run(() =>
             {
                 // "ToLower" require "CultureInfo" to be initialized on first run, which can take a lot of time.
@@ -110,10 +113,10 @@ namespace MinecraftClient
             }
 
             //Process ini configuration file
-            bool needWriteDefaultSetting, newlyGenerated = false;
+            bool loadSucceed, needWriteDefaultSetting, newlyGenerated = false;
             if (args.Length >= 1 && File.Exists(args[0]) && Settings.ToLowerIfNeed(Path.GetExtension(args[0])) == ".ini")
             {
-                needWriteDefaultSetting = Settings.LoadFromFile(args[0]);
+                (loadSucceed, needWriteDefaultSetting) = Settings.LoadFromFile(args[0]);
                 settingsIniPath = args[0];
 
                 //remove ini configuration file from arguments array
@@ -123,19 +126,59 @@ namespace MinecraftClient
             }
             else if (File.Exists("MinecraftClient.ini"))
             {
-                needWriteDefaultSetting = Settings.LoadFromFile("MinecraftClient.ini");
+                (loadSucceed, needWriteDefaultSetting) = Settings.LoadFromFile("MinecraftClient.ini");
             }
             else
             {
+                loadSucceed = true;
                 needWriteDefaultSetting = true;
                 newlyGenerated = true;
             }
 
-            if (needWriteDefaultSetting)
+            if (!loadSucceed)
+            {
+                ConsoleInteractive.ConsoleReader.StopReadThread();
+                string command = " ";
+                while (command.Length > 0)
+                {
+                    ConsoleIO.WriteLine(string.Empty);
+                    ConsoleIO.WriteLineFormatted(Translations.Get("mcc.invaild_config", Config.Main.Advanced.InternalCmdChar.ToLogString()));
+                    Translations.WriteLineFormatted("mcc.press_exit");
+                    command = ConsoleInteractive.ConsoleReader.RequestImmediateInput().Trim();
+                    if (command.Length > 0)
+                    {
+                        if (Config.Main.Advanced.InternalCmdChar.ToChar() != ' '
+                            && command[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
+                            command = command[1..];
+
+                        if (command.StartsWith("exit") || command.StartsWith("quit"))
+                        {
+                            return;
+                        }
+                        else if (command.StartsWith("new"))
+                        {
+                            (string gameLanguage, string[] langList) = Translations.GetTranslationPriority();
+                            Config.Main.Advanced.Language = gameLanguage;
+                            Translations.LoadTranslationFile(langList);
+
+                            WriteBackSettings(true);
+                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.gen_new_config", settingsIniPath));
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                return;
+            }
+            else if (needWriteDefaultSetting)
             {
                 (string gameLanguage, string[] langList) = Translations.GetTranslationPriority();
                 Translations.LoadTranslationFile(langList);
                 Config.Main.Advanced.Language = gameLanguage;
+
                 WriteBackSettings(false);
                 if (newlyGenerated)
                     ConsoleIO.WriteLineFormatted(Translations.TryGet("mcc.settings_generated"));
@@ -618,7 +661,7 @@ namespace MinecraftClient
         /// </summary>
         public static void ReloadSettings()
         {
-            if(Settings.LoadFromFile(settingsIniPath))
+            if(Settings.LoadFromFile(settingsIniPath).Item1)
                 ConsoleIO.WriteLine(Translations.TryGet("config.loading", settingsIniPath));
         }
 
@@ -816,6 +859,15 @@ namespace MinecraftClient
         {
             if (assembly == null) { assembly = Assembly.GetExecutingAssembly(); }
             return assembly.GetTypes().Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal)).ToArray();
+        }
+
+        public static void InitCulture()
+        {
+            CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
+            Thread.CurrentThread.CurrentCulture = culture;
+            Thread.CurrentThread.CurrentUICulture = culture;
         }
 
         /// <summary>

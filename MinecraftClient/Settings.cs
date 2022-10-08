@@ -121,7 +121,7 @@ namespace MinecraftClient
 
         }
 
-        public static bool LoadFromFile(string filepath)
+        public static Tuple<bool, bool> LoadFromFile(string filepath)
         {
             TomlDocument document;
             try
@@ -141,16 +141,16 @@ namespace MinecraftClient
                         File.Copy(filepath, newFilePath, true);
                         ConsoleIO.WriteLineFormatted("§cPlease use the newly generated MinecraftClient.ini");
                         ConsoleIO.WriteLineFormatted("§cThe old MinecraftClient.ini has been backed up as " + newFilePath);
-                        return true;
+                        ConsoleIO.WriteLine(Translations.GetOrNull("mcc.run_with_default_settings") ?? "\nMCC is running with default settings.");
+                        return new(false, true);
                     }
                 }
                 catch { }
                 ConsoleIO.WriteLineFormatted(Translations.GetOrNull("config.load.fail") ?? "§cFailed to load settings:§r");
-                ConsoleIO.WriteLine(ex.Message);
-                ConsoleIO.WriteLine(Translations.GetOrNull("mcc.run_with_default_settings") ?? "\nMCC is running with default settings.");
-                return false;
+                ConsoleIO.WriteLine(ex.GetFullMessage());
+                return new(false, false);
             }
-            return false;
+            return new(true, false);
         }
 
         public static void WriteToFile(string filepath, bool backupOldFile)
@@ -1208,6 +1208,16 @@ namespace MinecraftClient
                 BrandInfoType.empty => null,
                 _ => null,
             };
+        }
+    }
+
+    public static class ExceptionExtensions
+    {
+        public static string GetFullMessage(this Exception ex)
+        {
+            return ex.InnerException == null
+                 ? ex.Message
+                 : ex.Message + "\n --> " + ex.InnerException.GetFullMessage();
         }
     }
 }
