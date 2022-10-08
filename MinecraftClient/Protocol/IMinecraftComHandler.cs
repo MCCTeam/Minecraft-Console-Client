@@ -432,5 +432,12 @@ namespace MinecraftClient.Protocol
         /// <param name="reason">Event type</param>
         /// <param name="value">Depends on Reason</param>
         public void OnGameEvent(byte reason, float value);
+
+        /// <summary>
+        /// Called when a block is changed.
+        /// </summary>
+        /// <param name="location">The location of the block.</param>
+        /// <param name="block">The block</param>
+        public void OnBlockChange(Location location, Block block);
     }
 }

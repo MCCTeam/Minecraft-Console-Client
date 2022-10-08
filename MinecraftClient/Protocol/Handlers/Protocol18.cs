@@ -976,18 +976,20 @@ namespace MinecraftClient.Protocol.Handlers
                                     int blocksSize = dataTypes.ReadNextVarInt(packetData);
                                     for (int i = 0; i < blocksSize; i++)
                                     {
-                                        ulong block = (ulong)dataTypes.ReadNextVarLong(packetData);
-                                        int blockId = (int)(block >> 12);
-                                        int localX = (int)((block >> 8) & 0x0F);
-                                        int localZ = (int)((block >> 4) & 0x0F);
-                                        int localY = (int)(block & 0x0F);
+                                        ulong chunkSectionPosition = (ulong)dataTypes.ReadNextVarLong(packetData);
+                                        int blockId = (int)(chunkSectionPosition >> 12);
+                                        int localX = (int)((chunkSectionPosition >> 8) & 0x0F);
+                                        int localZ = (int)((chunkSectionPosition >> 4) & 0x0F);
+                                        int localY = (int)(chunkSectionPosition & 0x0F);
 
-                                        Block b = new((ushort)blockId);
+                                        Block block = new((ushort)blockId);
                                         int blockX = (sectionX * 16) + localX;
                                         int blockY = (sectionY * 16) + localY;
                                         int blockZ = (sectionZ * 16) + localZ;
-                                        var l = new Location(blockX, blockY, blockZ);
-                                        handler.GetWorld().SetBlock(l, b);
+
+                                        Location location = new(blockX, blockY, blockZ);
+
+                                        handler.OnBlockChange(location, block);
                                     }
                                 }
                                 else
@@ -1019,8 +1021,10 @@ namespace MinecraftClient.Protocol.Handlers
 
                                         int blockX = locationXZ >> 4;
                                         int blockZ = locationXZ & 0x0F;
+
+                                        Location location = new(chunkX, chunkZ, blockX, blockY, blockZ);
                                         Block block = new(blockIdMeta);
-                                        handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
+                                        handler.OnBlockChange(location, block);
                                     }
                                 }
                             }
@@ -1050,11 +1054,16 @@ namespace MinecraftClient.Protocol.Handlers
                                     int blockZ = dataTypes.ReadNextInt(packetData);
                                     short blockId = (short)dataTypes.ReadNextVarInt(packetData);
                                     byte blockMeta = dataTypes.ReadNextByte(packetData);
-                                    handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
+
+                                    Location location = new(blockX, blockY, blockZ);
+                                    Block block = new(blockId, blockMeta);
+                                    handler.OnBlockChange(location, block);
                                 }
                                 else
                                 {
-                                    handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                                    Location location = dataTypes.ReadNextLocation(packetData);
+                                    Block block = new((ushort)dataTypes.ReadNextVarInt(packetData));
+                                    handler.OnBlockChange(location, block);
                                 }
                             }
                             break;

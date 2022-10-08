@@ -252,25 +252,25 @@ namespace MinecraftClient
         /// </summary>
         private void RegisterBots(bool reload = false)
         {
-            if (Config.ChatBot.AntiAFK.Enabled) { BotLoad(new AntiAFK()); }
-            if (Config.ChatBot.HangmanGame.Enabled) { BotLoad(new HangmanGame()); }
             if (Config.ChatBot.Alerts.Enabled) { BotLoad(new Alerts()); }
-            if (Config.ChatBot.ChatLog.Enabled) { BotLoad(new ChatLog()); }
-            if (Config.ChatBot.PlayerListLogger.Enabled) { BotLoad(new PlayerListLogger()); }
-            if (Config.ChatBot.AutoRelog.Enabled) { BotLoad(new AutoRelog()); }
-            if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
-            if (Config.ChatBot.RemoteControl.Enabled) { BotLoad(new RemoteControl()); }
-            if (Config.ChatBot.AutoRespond.Enabled) { BotLoad(new AutoRespond()); }
+            if (Config.ChatBot.AntiAFK.Enabled) { BotLoad(new AntiAFK()); }
             if (Config.ChatBot.AutoAttack.Enabled) { BotLoad(new AutoAttack()); }
-            if (Config.ChatBot.AutoFishing.Enabled) { BotLoad(new AutoFishing()); }
-            if (Config.ChatBot.AutoEat.Enabled) { BotLoad(new AutoEat()); }
-            if (Config.ChatBot.Mailer.Enabled) { BotLoad(new Mailer()); }
             if (Config.ChatBot.AutoCraft.Enabled) { BotLoad(new AutoCraft()); }
+            if (Config.ChatBot.AutoDig.Enabled) { BotLoad(new AutoDig()); }
             if (Config.ChatBot.AutoDrop.Enabled) { BotLoad(new AutoDrop()); }
-            if (Config.ChatBot.ReplayCapture.Enabled && reload) { BotLoad(new ReplayCapture()); }
+            if (Config.ChatBot.AutoEat.Enabled) { BotLoad(new AutoEat()); }
+            if (Config.ChatBot.AutoFishing.Enabled) { BotLoad(new AutoFishing()); }
+            if (Config.ChatBot.AutoRelog.Enabled) { BotLoad(new AutoRelog()); }
+            if (Config.ChatBot.AutoRespond.Enabled) { BotLoad(new AutoRespond()); }
+            if (Config.ChatBot.ChatLog.Enabled) { BotLoad(new ChatLog()); }
             if (Config.ChatBot.FollowPlayer.Enabled) { BotLoad(new FollowPlayer()); }
+            if (Config.ChatBot.HangmanGame.Enabled) { BotLoad(new HangmanGame()); }
+            if (Config.ChatBot.Mailer.Enabled) { BotLoad(new Mailer()); }
             if (Config.ChatBot.Map.Enabled) { BotLoad(new Map()); }
-
+            if (Config.ChatBot.PlayerListLogger.Enabled) { BotLoad(new PlayerListLogger()); }
+            if (Config.ChatBot.RemoteControl.Enabled) { BotLoad(new RemoteControl()); }
+            if (Config.ChatBot.ReplayCapture.Enabled && reload) { BotLoad(new ReplayCapture()); }
+            if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
         }
@@ -3291,6 +3291,17 @@ namespace MinecraftClient
                     DispatchBotEvent(bot => bot.OnThunderLevelChange(value));
                     break;
             }
+        }
+
+        /// <summary>
+        /// Called when a block is changed.
+        /// </summary>
+        /// <param name="location">The location of the block.</param>
+        /// <param name="block">The block</param>
+        public void OnBlockChange(Location location, Block block)
+        {
+            world.SetBlock(location, block);
+            DispatchBotEvent(bot => bot.OnBlockChange(location, block));
         }
 
         #endregion

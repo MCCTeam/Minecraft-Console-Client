@@ -113,7 +113,7 @@ namespace MinecraftClient.ChatBots
         public override void OnEntityMove(Entity entity)
         {
 
-            if (_updateCounter < (int)(Config.Update_Limit * 10))
+            if (_updateCounter < Settings.DoubleToTick(Config.Update_Limit))
                 return;
 
             _updateCounter = 0;

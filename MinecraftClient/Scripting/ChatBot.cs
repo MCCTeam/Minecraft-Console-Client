@@ -426,6 +426,14 @@ namespace MinecraftClient
         /// <param name="level"></param>
         public virtual void OnThunderLevelChange(float level) { }
 
+
+        /// <summary>
+        /// Called when a block is changed.
+        /// </summary>
+        /// <param name="location">The location of the block.</param>
+        /// <param name="block">The block</param>
+        public virtual void OnBlockChange(Location location, Block block) { }
+
         /* =================================================================== */
         /*  ToolBox - Methods below might be useful while creating your bot.   */
         /*  You should not need to interact with other classes of the program. */

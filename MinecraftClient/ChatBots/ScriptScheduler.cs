@@ -26,7 +26,7 @@ namespace MinecraftClient.ChatBots
                     Trigger_On_First_Login: false,
                     Trigger_On_Login: false,
                     Trigger_On_Times: new(true, new TimeSpan[] { new(14, 00, 00) }),
-                    Trigger_On_Interval: new(true, 10, 20),
+                    Trigger_On_Interval: new(true, 3.6, 4.8),
                     Action: "send /hello"
                 ),
                 new TaskConfig(
@@ -43,8 +43,8 @@ namespace MinecraftClient.ChatBots
             {
                 foreach (TaskConfig task in TaskList)
                 {
-                    task.Trigger_On_Interval.MinTime = Math.Max(1, task.Trigger_On_Interval.MinTime);
-                    task.Trigger_On_Interval.MaxTime = Math.Max(1, task.Trigger_On_Interval.MaxTime);
+                    task.Trigger_On_Interval.MinTime = Math.Max(0.1, task.Trigger_On_Interval.MinTime);
+                    task.Trigger_On_Interval.MaxTime = Math.Max(0.1, task.Trigger_On_Interval.MaxTime);
                     if (task.Trigger_On_Interval.MinTime > task.Trigger_On_Interval.MaxTime)
                         (task.Trigger_On_Interval.MinTime, task.Trigger_On_Interval.MaxTime) = (task.Trigger_On_Interval.MaxTime, task.Trigger_On_Interval.MinTime);
 
@@ -59,7 +59,7 @@ namespace MinecraftClient.ChatBots
                         {
                             if (Settings.Config.Logging.DebugMessages)
                                 LogToConsole(BotName, Translations.TryGet("bot.scriptScheduler.loaded_task", Task2String(task)));
-                            task.Trigger_On_Interval_Countdown = task.Trigger_On_Interval.MinTime; //Init countdown for interval
+                            task.Trigger_On_Interval_Countdown = Settings.DoubleToTick(task.Trigger_On_Interval.MinTime); //Init countdown for interval
                         }
                         else
                         {
@@ -130,27 +130,27 @@ namespace MinecraftClient.ChatBots
                 public struct TriggerOnIntervalConfig
                 {
                     public bool Enable = false;
-                    public int MinTime, MaxTime;
+                    public double MinTime, MaxTime;
 
-                    public TriggerOnIntervalConfig(int value)
+                    public TriggerOnIntervalConfig(double value)
                     {
                         this.Enable = true;
                         MinTime = MaxTime = value;
                     }
 
-                    public TriggerOnIntervalConfig(bool Enable, int value)
+                    public TriggerOnIntervalConfig(bool Enable, double value)
                     {
                         this.Enable = Enable;
                         MinTime = MaxTime = value;
                     }
 
-                    public TriggerOnIntervalConfig(int min, int max)
+                    public TriggerOnIntervalConfig(double min, double max)
                     {
                         this.MinTime = min;
                         this.MaxTime = max;
                     }
 
-                    public TriggerOnIntervalConfig(bool Enable, int min, int max)
+                    public TriggerOnIntervalConfig(bool Enable, double min, double max)
                     {
                         this.Enable = Enable;
                         this.MinTime = min;
@@ -199,16 +199,6 @@ namespace MinecraftClient.ChatBots
                                 task.Trigger_On_Time_Already_Triggered = false;
                         }
 
-                        if (task.Trigger_On_Interval.Enable)
-                        {
-                            if (task.Trigger_On_Interval_Countdown == 0)
-                            {
-                                task.Trigger_On_Interval_Countdown = random.Next(task.Trigger_On_Interval.MinTime, task.Trigger_On_Interval.MaxTime);
-                                LogDebugToConsoleTranslated("bot.scriptScheduler.running_inverval", task.Action);
-                                PerformInternalCommand(task.Action);
-                            }
-                            else task.Trigger_On_Interval_Countdown--;
-                        }
                     }
                 }
                 else
@@ -227,6 +217,22 @@ namespace MinecraftClient.ChatBots
                 }
             }
             else verifytasks_timeleft--;
+
+            foreach (TaskConfig task in Config.TaskList)
+            {
+                if (task.Trigger_On_Interval.Enable)
+                {
+                    if (task.Trigger_On_Interval_Countdown == 0)
+                    {
+                        task.Trigger_On_Interval_Countdown = random.Next(
+                            Settings.DoubleToTick(task.Trigger_On_Interval.MinTime), Settings.DoubleToTick(task.Trigger_On_Interval.MaxTime)
+                        );
+                        LogDebugToConsoleTranslated("bot.scriptScheduler.running_inverval", task.Action);
+                        PerformInternalCommand(task.Action);
+                    }
+                    else task.Trigger_On_Interval_Countdown--;
+                }
+            }
         }
 
         public override bool OnDisconnect(DisconnectReason reason, string message)

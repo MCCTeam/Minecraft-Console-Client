@@ -38,9 +38,6 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.AntiAfk.Walk_Retries$")]
             public int Walk_Retries = 20;
 
-            [NonSerialized]
-            public int _DelayMin, _DelayMax;
-
             public void OnSettingUpdate()
             {
                 if (Walk_Range <= 0)
@@ -60,9 +57,6 @@ namespace MinecraftClient.ChatBots
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);
                     LogToConsole(BotName, Translations.TryGet("bot.antiafk.swapping"));
                 }
-
-                _DelayMin = (int)Math.Round(Delay.min * 10);
-                _DelayMax = (int)Math.Round(Delay.max * 10);
 
                 Command ??= string.Empty;
             }
@@ -115,7 +109,7 @@ namespace MinecraftClient.ChatBots
             {
                 DoAntiAfkStuff();
                 count = 0;
-                nextrun = random.Next(Config._DelayMin, Config._DelayMax);
+                nextrun = random.Next(Settings.DoubleToTick(Config.Delay.min), Settings.DoubleToTick(Config.Delay.max));
             }
 
         }
