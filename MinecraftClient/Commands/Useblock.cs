@@ -18,7 +18,7 @@ namespace MinecraftClient.Commands
                 string[] args = GetArgs(command);
                 if (args.Length >= 3)
                 {
-                    Location block = Location.Parse(handler.GetCurrentLocation(), args[0], args[1], args[2]).ToFloor();
+                    Location block = Location.Parse(handler.GetCurrentLocation().ToFloor(), args[0], args[1], args[2]).ToFloor();
                     Location blockCenter = block.ToCenter();
                     bool res = handler.PlaceBlock(block, Direction.Down);
                     return Translations.Get("cmd.useblock.use", blockCenter.X, blockCenter.Y, blockCenter.Z, res ? "succeeded" : "failed");

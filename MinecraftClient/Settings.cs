@@ -393,6 +393,9 @@ namespace MinecraftClient
                     }
 
                     SetServerIP(General.Server, true);
+
+                    for (int i = 0; i < Advanced.BotOwners.Count; ++i)
+                        Advanced.BotOwners[i] = ToLowerIfNeed(Advanced.BotOwners[i]);
                 }
 
                 [TomlDoNotInlineObject]
