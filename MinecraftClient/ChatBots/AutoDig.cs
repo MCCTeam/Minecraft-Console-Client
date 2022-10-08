@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
-using MinecraftClient.Mapping.BlockPalettes;
 using Tomlet.Attributes;
-using static MinecraftClient.ChatBots.AutoCraft.Configs;
 
 namespace MinecraftClient.ChatBots
 {
@@ -41,6 +35,9 @@ namespace MinecraftClient.ChatBots
 
             [TomlInlineComment("$config.ChatBot.AutoDig.Locations$")]
             public Coordination[] Locations = new Coordination[] { new(123.5, 64, 234.5), new(124.5, 63, 235.5) };
+
+            [TomlInlineComment("$config.ChatBot.AutoDig.Location_Order$")]
+            public OrderType Location_Order = OrderType.distance;
 
             [TomlInlineComment("$config.ChatBot.AutoDig.Auto_Start_Delay$")]
             public double Auto_Start_Delay = 3.0;
@@ -75,6 +72,8 @@ namespace MinecraftClient.ChatBots
             public enum ModeType { lookat, fixedpos, both };
 
             public enum ListType { blacklist, whitelist };
+
+            public enum OrderType { distance, index };
 
             public struct Coordination
             {
@@ -145,7 +144,6 @@ namespace MinecraftClient.ChatBots
             }
             else return GetHelp();
         }
-
 
         private void StartDigging()
         {
@@ -280,7 +278,7 @@ namespace MinecraftClient.ChatBots
                     return false;
                 }
             }
-            else if (Config.Mode == Configs.ModeType.fixedpos)
+            else if (Config.Mode == Configs.ModeType.fixedpos && Config.Location_Order == Configs.OrderType.distance)
             {
                 Location current = GetCurrentLocation();
 
@@ -329,6 +327,39 @@ namespace MinecraftClient.ChatBots
                     }
                     return false;
                 }
+            }
+            else if (Config.Mode == Configs.ModeType.fixedpos && Config.Location_Order == Configs.OrderType.index)
+            {
+                for (int i = 0; i < Config._Locations.Length; ++i)
+                {
+                    Location blockLoc = Config._Locations[i];
+                    Block block = GetWorld().GetBlock(blockLoc);
+                    if (block.Type != Material.Air &&
+                        ((Config.List_Type == Configs.ListType.whitelist && Config.Blocks.Contains(block.Type)) ||
+                        (Config.List_Type == Configs.ListType.blacklist && !Config.Blocks.Contains(block.Type))))
+                    {
+                        if (DigBlock(blockLoc, lookAtBlock: true))
+                        {
+                            currentDig = blockLoc;
+                            if (Config.Log_Block_Dig)
+                                LogToConsole(Translations.Get("cmd.dig.dig", blockLoc.X, blockLoc.Y, blockLoc.Z, block.Type));
+                            return true;
+                        }
+                        else
+                        {
+                            LogToConsole(Translations.Get("cmd.dig.fail"));
+                            return false;
+                        }
+                    }
+                }
+
+                if (!AlreadyWaitting)
+                {
+                    AlreadyWaitting = true;
+                    if (Config.Log_Block_Dig)
+                        LogToConsole(Translations.Get("cmd.dig.no_block"));
+                }
+                return false;
             }
             return false;
         }
