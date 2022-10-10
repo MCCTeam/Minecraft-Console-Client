@@ -54,11 +54,6 @@ namespace MinecraftClient.WinAPI
                     Task<Stream> httpWebRequest = httpClient.GetStreamAsync("https://minotar.net/helm/" + playerName + "/100.png");
                     httpWebRequest.Wait();
                     Stream imageStream = httpWebRequest.Result;
-                try
-                {
-                    Task<Stream> httpWebRequest = httpClient.GetStreamAsync("https://minotar.net/helm/" + playerName + "/100.png");
-                    httpWebRequest.Wait();
-                    Stream imageStream = httpWebRequest.Result;
                     try
                     {
                         Bitmap skin = new(Image.FromStream(imageStream)); //Read skin from network

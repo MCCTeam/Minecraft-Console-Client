@@ -40,7 +40,10 @@ namespace MinecraftClient.Commands
                     if (block.Type == Material.Air)
                         return Translations.Get("cmd.dig.no_block");
                     else if (handler.DigBlock(blockToBreak))
+                    {
+                        blockToBreak = blockToBreak.ToCenter();
                         return Translations.Get("cmd.dig.dig", blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.Type);
+                    }
                     else
                         return Translations.Get("cmd.dig.fail");
                 }
