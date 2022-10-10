@@ -11,6 +11,8 @@ using MinecraftClient.Protocol.Handlers;
 using MinecraftClient.Protocol.Handlers.Forge;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol
 {
@@ -64,7 +66,7 @@ namespace MinecraftClient.Protocol
                     {
                         ConsoleIO.WriteLineFormatted(Translations.Get("mcc.not_found", domainVal, e.GetType().FullName, e.Message));
                     }
-                }, TimeSpan.FromSeconds(Settings.ResolveSrvRecordsShortTimeout ? 10 : 30));
+                }, TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30));
             }
 
             domain = domainVal;
@@ -99,7 +101,7 @@ namespace MinecraftClient.Protocol
                 {
                     ConsoleIO.WriteLineFormatted(String.Format("§8{0}: {1}", e.GetType().FullName, e.Message));
                 }
-            }, TimeSpan.FromSeconds(Settings.ResolveSrvRecordsShortTimeout ? 10 : 30)))
+            }, TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30)))
             {
                 if (protocolversion != 0 && protocolversion != protocolversionTmp)
                     Translations.WriteLineFormatted("error.version_different");
@@ -420,16 +422,16 @@ namespace MinecraftClient.Protocol
         /// <param name="pass">Password</param>
         /// <param name="session">In case of successful login, will contain session information for multiplayer</param>
         /// <returns>Returns the status of the login (Success, Failure, etc.)</returns>
-        public static LoginResult GetLogin(string user, string pass, AccountType type, out SessionToken session)
+        public static LoginResult GetLogin(string user, string pass, LoginType type, out SessionToken session)
         {
-            if (type == AccountType.Microsoft)
+            if (type == LoginType.microsoft)
             {
-                if (Settings.LoginMethod == "mcc")
+                if (Config.Main.General.Method == LoginMethod.mcc)
                     return MicrosoftMCCLogin(user, pass, out session);
                 else
                     return MicrosoftBrowserLogin(out session, user);
             }
-            else if (type == AccountType.Mojang)
+            else if (type == LoginType.mojang)
             {
                 return MojangLogin(user, pass, out session);
             }
@@ -494,7 +496,7 @@ namespace MinecraftClient.Protocol
             }
             catch (System.Security.Authentication.AuthenticationException e)
             {
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
@@ -502,7 +504,7 @@ namespace MinecraftClient.Protocol
             }
             catch (System.IO.IOException e)
             {
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
@@ -514,7 +516,7 @@ namespace MinecraftClient.Protocol
             }
             catch (Exception e)
             {
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.ToString());
                 }
@@ -543,7 +545,7 @@ namespace MinecraftClient.Protocol
             {
                 session = new SessionToken() { ClientID = Guid.NewGuid().ToString().Replace("-", "") };
                 ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }
@@ -601,7 +603,7 @@ namespace MinecraftClient.Protocol
                     session.PlayerID = profile.UUID;
                     session.ID = accessToken;
                     session.RefreshToken = msaResponse.RefreshToken;
-                    Settings.Login = msaResponse.Email;
+                    Config.Main.General.Account.Login = msaResponse.Email;
                     return LoginResult.Success;
                 }
                 else
@@ -612,7 +614,7 @@ namespace MinecraftClient.Protocol
             catch (Exception e)
             {
                 ConsoleIO.WriteLineFormatted("§cMicrosoft authenticate failed: " + e.Message);
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }
@@ -632,7 +634,7 @@ namespace MinecraftClient.Protocol
             var expTimestamp = long.Parse(json.Properties["exp"].StringValue, NumberStyles.Any, CultureInfo.CurrentCulture);
             var now = DateTime.Now;
             var tokenExp = UnixTimeStampToDateTime(expTimestamp);
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine("Access token expiration time is " + tokenExp.ToString());
             }
@@ -772,7 +774,7 @@ namespace MinecraftClient.Protocol
             catch (Exception e)
             {
                 ConsoleIO.WriteLineFormatted("§8" + e.GetType().ToString() + ": " + e.Message);
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.StackTrace);
                 }
@@ -815,7 +817,7 @@ namespace MinecraftClient.Protocol
             catch (Exception e)
             {
                 ConsoleIO.WriteLineFormatted("§8" + e.GetType().ToString() + ": " + e.Message);
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§8" + e.StackTrace);
                 }
@@ -890,14 +892,14 @@ namespace MinecraftClient.Protocol
             {
                 try
                 {
-                    if (Settings.DebugMessages)
+                    if (Settings.Config.Logging.DebugMessages)
                         ConsoleIO.WriteLineFormatted(Translations.Get("debug.request", host));
 
                     TcpClient client = ProxyHandler.NewTcpClient(host, 443, true);
                     SslStream stream = new(client.GetStream());
                     stream.AuthenticateAsClient(host, null, SslProtocols.Tls12, true); // Enable TLS 1.2. Hotfix for #1780
 
-                    if (Settings.DebugMessages)
+                    if (Settings.Config.Logging.DebugMessages)
                         foreach (string line in headers)
                             ConsoleIO.WriteLineFormatted("§8> " + line);
 
@@ -905,7 +907,7 @@ namespace MinecraftClient.Protocol
                     System.IO.StreamReader sr = new(stream);
                     string raw_result = sr.ReadToEnd();
 
-                    if (Settings.DebugMessages)
+                    if (Settings.Config.Logging.DebugMessages)
                     {
                         ConsoleIO.WriteLine("");
                         foreach (string line in raw_result.Split('\n'))
@@ -915,7 +917,7 @@ namespace MinecraftClient.Protocol
                     if (raw_result.StartsWith("HTTP/1.1"))
                     {
                         postResult = raw_result[(raw_result.IndexOf("\r\n\r\n") + 4)..];
-                        statusCode = Settings.str2int(raw_result.Split(' ')[1]);
+                        statusCode = int.Parse(raw_result.Split(' ')[1], NumberStyles.Any, CultureInfo.CurrentCulture);
                     }
                     else statusCode = 520; //Web server is returning an unknown error
                 }

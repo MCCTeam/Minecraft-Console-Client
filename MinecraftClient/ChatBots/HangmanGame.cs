@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -9,26 +10,37 @@ namespace MinecraftClient.ChatBots
 
     public class HangmanGame : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "HangmanGame";
+
+            public bool Enabled = false;
+
+            public bool English = true;
+
+            public string FileWords_EN = "hangman-en.txt";
+
+            public string FileWords_FR = "hangman-fr.txt";
+
+            public void OnSettingUpdate()
+            {
+                FileWords_EN ??= string.Empty;
+                FileWords_FR ??= string.Empty;
+            }
+        }
+
         private int vie = 0;
         private readonly int vie_param = 10;
         private int compteur = 0;
         private readonly int compteur_param = 3000; //5 minutes
         private bool running = false;
-        private bool[] discovered;
+        private bool[] discovered = Array.Empty<bool>();
         private string word = "";
         private string letters = "";
-        private readonly bool English;
-
-        /// <summary>
-        /// Le jeu du Pendu / Hangman Game
-        /// </summary>
-        /// <param name="english">if true, the game will be in english. If false, the game will be in french.</param>
-
-        public HangmanGame(bool english)
-        {
-            English = english;
-            discovered = Array.Empty<bool>();
-        }
 
         public override void Update()
         {
@@ -40,8 +52,8 @@ namespace MinecraftClient.ChatBots
                 }
                 else
                 {
-                    SendText(English ? "You took too long to try a letter." : "Temps imparti écoulé !");
-                    SendText(English ? "Game canceled." : "Partie annulée.");
+                    SendText(Config.English ? "You took too long to try a letter." : "Temps imparti écoulé !");
+                    SendText(Config.English ? "Game canceled." : "Partie annulée.");
                     running = false;
                 }
             }
@@ -55,7 +67,7 @@ namespace MinecraftClient.ChatBots
 
             if (IsPrivateMessage(text, ref message, ref username))
             {
-                if (Settings.Bots_Owners.Contains(username.ToLower()))
+                if (Settings.Config.Main.Advanced.BotOwners.Contains(username.ToLower()))
                 {
                     switch (message)
                     {
@@ -81,7 +93,7 @@ namespace MinecraftClient.ChatBots
                         {
                             if (letters.Contains(letter))
                             {
-                                SendText(English ? ("Letter " + letter + " has already been tried.") : ("Le " + letter + " a déjà été proposé."));
+                                SendText(Config.English ? ("Letter " + letter + " has already been tried.") : ("Le " + letter + " a déjà été proposé."));
                             }
                             else
                             {
@@ -91,29 +103,29 @@ namespace MinecraftClient.ChatBots
                                 if (word.Contains(letter))
                                 {
                                     for (int i = 0; i < word.Length; i++) { if (word[i] == letter) { discovered[i] = true; } }
-                                    SendText(English ? ("Yes, the word contains a " + letter + '!') : ("Le " + letter + " figurait bien dans le mot :)"));
+                                    SendText(Config.English ? ("Yes, the word contains a " + letter + '!') : ("Le " + letter + " figurait bien dans le mot :)"));
                                 }
                                 else
                                 {
                                     vie--;
                                     if (vie == 0)
                                     {
-                                        SendText(English ? "Game Over! :]" : "Perdu ! Partie terminée :]");
-                                        SendText(English ? ("The word was: " + word) : ("Le mot était : " + word));
+                                        SendText(Config.English ? "Game Over! :]" : "Perdu ! Partie terminée :]");
+                                        SendText(Config.English ? ("The word was: " + word) : ("Le mot était : " + word));
                                         running = false;
                                     }
-                                    else SendText(English ? ("The " + letter + "? No.") : ("Le " + letter + " ? Non."));
+                                    else SendText(Config.English ? ("The " + letter + "? No.") : ("Le " + letter + " ? Non."));
                                 }
 
                                 if (running)
                                 {
-                                    SendText(English ? ("Mysterious word: " + WordCached + " (lives : " + vie + ")")
+                                    SendText(Config.English ? ("Mysterious word: " + WordCached + " (lives : " + vie + ")")
                                     : ("Mot mystère : " + WordCached + " (vie : " + vie + ")"));
                                 }
 
                                 if (Winner)
                                 {
-                                    SendText(English ? ("Congrats, " + username + '!') : ("Félicitations, " + username + " !"));
+                                    SendText(Config.English ? ("Congrats, " + username + '!') : ("Félicitations, " + username + " !"));
                                     running = false;
                                 }
                             }
@@ -132,23 +144,23 @@ namespace MinecraftClient.ChatBots
             compteur = compteur_param;
             discovered = new bool[word.Length];
 
-            SendText(English ? "Hangman v1.0 - By ORelio" : "Pendu v1.0 - Par ORelio");
-            SendText(English ? ("Mysterious word: " + WordCached + " (lives : " + vie + ")")
+            SendText(Config.English ? "Hangman v1.0 - By ORelio" : "Pendu v1.0 - Par ORelio");
+            SendText(Config.English ? ("Mysterious word: " + WordCached + " (lives : " + vie + ")")
             : ("Mot mystère : " + WordCached + " (vie : " + vie + ")"));
-            SendText(English ? ("Try some letters ... :)") : ("Proposez une lettre ... :)"));
+            SendText(Config.English ? ("Try some letters ... :)") : ("Proposez une lettre ... :)"));
         }
 
         private string Chooseword()
         {
-            if (System.IO.File.Exists(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR))
+            if (System.IO.File.Exists(Config.English ? Config.FileWords_EN : Config.FileWords_FR))
             {
-                string[] dico = System.IO.File.ReadAllLines(English ? Settings.Hangman_FileWords_EN : Settings.Hangman_FileWords_FR, Encoding.UTF8);
+                string[] dico = System.IO.File.ReadAllLines(Config.English ? Config.FileWords_EN : Config.FileWords_FR, Encoding.UTF8);
                 return dico[new Random().Next(dico.Length)];
             }
             else
             {
-                LogToConsole(English ? "File not found: " + Settings.Hangman_FileWords_EN : "Fichier introuvable : " + Settings.Hangman_FileWords_FR);
-                return English ? "WORDSAREMISSING" : "DICOMANQUANT";
+                LogToConsole(Config.English ? "File not found: " + Config.FileWords_EN : "Fichier introuvable : " + Config.FileWords_FR);
+                return Config.English ? "WORDSAREMISSING" : "DICOMANQUANT";
             }
         }
 

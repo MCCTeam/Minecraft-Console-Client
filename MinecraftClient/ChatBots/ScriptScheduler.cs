@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
+using Tomlet.Attributes;
+using static MinecraftClient.ChatBots.ScriptScheduler.Configs;
 
 namespace MinecraftClient.ChatBots
 {
@@ -11,142 +10,163 @@ namespace MinecraftClient.ChatBots
 
     public class ScriptScheduler : ChatBot
     {
-        private class TaskDesc
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
         {
-            public string? action = null;
-            public bool triggerOnFirstLogin = false;
-            public bool triggerOnLogin = false;
-            public bool triggerOnTime = false;
-            public bool triggerOnInterval = false;
-            public int triggerOnInterval_Interval = 0;
-            public int triggerOnInterval_Interval_Max = 0;
-            public int triggerOnInterval_Interval_Countdown = 0;
-            public List<DateTime> triggerOnTime_Times = new();
-            public bool triggerOnTime_alreadyTriggered = false;
-        }
+            [NonSerialized]
+            private const string BotName = "ScriptScheduler";
 
-        private static bool firstlogin_done = false;
+            public bool Enabled = false;
 
-        private readonly string tasksfile;
-        private bool serverlogin_done;
-        private readonly List<TaskDesc> tasks = new();
-        private int verifytasks_timeleft = 10;
-        private readonly int verifytasks_delay = 10;
+            public TaskConfig[] TaskList = new TaskConfig[] {
+                new TaskConfig(
+                    Task_Name: "Task Name 1",
+                    Trigger_On_First_Login: false,
+                    Trigger_On_Login: false,
+                    Trigger_On_Times: new(true, new TimeSpan[] { new(14, 00, 00) }),
+                    Trigger_On_Interval: new(true, 3.6, 4.8),
+                    Action: "send /hello"
+                ),
+                new TaskConfig(
+                    Task_Name: "Task Name 2",
+                    Trigger_On_First_Login: false,
+                    Trigger_On_Login: true,
+                    Trigger_On_Times: new(false, Array.Empty<TimeSpan>() ),
+                    Trigger_On_Interval: new(false, 1, 10),
+                    Action: "send /login pass"
+                ),
+            };
 
-        public ScriptScheduler(string tasksfile)
-        {
-            this.tasksfile = tasksfile;
-            serverlogin_done = false;
-        }
-
-        public override void Initialize()
-        {
-            //Load the given file from the startup parameters
-            if (System.IO.File.Exists(tasksfile))
+            public void OnSettingUpdate()
             {
-                LogDebugToConsoleTranslated("bot.scriptScheduler.loading", System.IO.Path.GetFullPath(tasksfile));
-                TaskDesc? current_task = null;
-                string[] lines = System.IO.File.ReadAllLines(tasksfile, Encoding.UTF8);
-                foreach (string lineRAW in lines)
+                foreach (TaskConfig task in TaskList)
                 {
-                    string line = lineRAW.Split('#')[0].Trim();
-                    if (line.Length > 0)
+                    task.Trigger_On_Interval.MinTime = Math.Max(0.1, task.Trigger_On_Interval.MinTime);
+                    task.Trigger_On_Interval.MaxTime = Math.Max(0.1, task.Trigger_On_Interval.MaxTime);
+                    if (task.Trigger_On_Interval.MinTime > task.Trigger_On_Interval.MaxTime)
+                        (task.Trigger_On_Interval.MinTime, task.Trigger_On_Interval.MaxTime) = (task.Trigger_On_Interval.MaxTime, task.Trigger_On_Interval.MinTime);
+
+                    //Look for a valid action
+                    if (!String.IsNullOrWhiteSpace(task.Action))
                     {
-                        if (line[0] == '[' && line[^1] == ']')
+                        //Look for a valid trigger
+                        if (task.Trigger_On_Login
+                            || task.Trigger_On_First_Login
+                            || (task.Trigger_On_Times.Enable && task.Trigger_On_Times.Times.Length > 0)
+                            || (task.Trigger_On_Interval.Enable && task.Trigger_On_Interval.MinTime > 0))
                         {
-                            switch (line[1..^1].ToLower())
-                            {
-                                case "task":
-                                    CheckAddTask(current_task);
-                                    current_task = new TaskDesc(); //Create a blank task
-                                    break;
-                            }
+                            if (Settings.Config.Logging.DebugMessages)
+                                LogToConsole(BotName, Translations.TryGet("bot.scriptScheduler.loaded_task", Task2String(task)));
+                            task.Trigger_On_Interval_Countdown = Settings.DoubleToTick(task.Trigger_On_Interval.MinTime); //Init countdown for interval
                         }
-                        else if (current_task != null)
+                        else
                         {
-                            string argName = line.Split('=')[0];
-                            if (line.Length > (argName.Length + 1))
-                            {
-                                string argValue = line[(argName.Length + 1)..];
-                                switch (argName.ToLower())
-                                {
-                                    case "triggeronfirstlogin": current_task.triggerOnFirstLogin = Settings.str2bool(argValue); break;
-                                    case "triggeronlogin": current_task.triggerOnLogin = Settings.str2bool(argValue); break;
-                                    case "triggerontime": current_task.triggerOnTime = Settings.str2bool(argValue); break;
-                                    case "triggeroninterval": current_task.triggerOnInterval = Settings.str2bool(argValue); break;
-                                    case "timevalue": try { current_task.triggerOnTime_Times.Add(DateTime.ParseExact(argValue, "HH:mm", CultureInfo.InvariantCulture)); } catch { } break;
-                                    case "timeinterval":
-                                        int interval;
-                                        int intervalMax = 0;
-
-                                        if (argValue.Contains('-'))
-                                        {
-                                            string[] parts = argValue.Split("-");
-                                            if (parts.Length == 2)
-                                            {
-                                                interval = int.Parse(parts[0].Trim(), NumberStyles.Any, CultureInfo.CurrentCulture);
-                                                intervalMax = int.Parse(parts[1].Trim(), NumberStyles.Any, CultureInfo.CurrentCulture);
-                                            }
-                                            else
-                                            {
-                                                interval = 1;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            interval = int.Parse(argValue, NumberStyles.Any, CultureInfo.CurrentCulture);
-                                        }
-
-                                        current_task.triggerOnInterval_Interval = interval;
-                                        current_task.triggerOnInterval_Interval_Max = intervalMax;
-
-                                        break;
-                                    case "script": current_task.action = "script " + argValue; break; //backward compatibility with older tasks.ini
-                                    case "action": current_task.action = argValue; break;
-                                }
-                            }
+                            if (Settings.Config.Logging.DebugMessages)
+                                LogToConsole(BotName, Translations.TryGet("bot.scriptScheduler.no_trigger", Task2String(task)));
                         }
-                    }
-                }
-                CheckAddTask(current_task);
-            }
-            else
-            {
-                LogToConsoleTranslated("bot.scriptScheduler.not_found", System.IO.Path.GetFullPath(tasksfile));
-                UnloadBot(); //No need to keep the bot active
-            }
-        }
-
-        private void CheckAddTask(TaskDesc? current_task)
-        {
-            //Check if we built a valid task before adding it
-            if (current_task != null)
-            {
-                //Look for a valid action
-                if (!String.IsNullOrWhiteSpace(current_task.action))
-                {
-                    //Look for a valid trigger
-                    if (current_task.triggerOnLogin
-                        || current_task.triggerOnFirstLogin
-                        || (current_task.triggerOnTime && current_task.triggerOnTime_Times.Count > 0)
-                        || (current_task.triggerOnInterval && current_task.triggerOnInterval_Interval > 0))
-                    {
-
-                        LogDebugToConsoleTranslated("bot.scriptScheduler.loaded_task", Task2String(current_task));
-                        current_task.triggerOnInterval_Interval_Countdown = current_task.triggerOnInterval_Interval; //Init countdown for interval
-                        tasks.Add(current_task);
                     }
                     else
                     {
-                        LogDebugToConsoleTranslated("bot.scriptScheduler.no_trigger", Task2String(current_task));
+                        task.Action ??= string.Empty;
+                        if (Settings.Config.Logging.DebugMessages)
+                            LogToConsole(BotName, Translations.TryGet("bot.scriptScheduler.no_action", Task2String(task)));
                     }
                 }
-                else
+
+                if (Enabled && TaskList.Length == 0)
                 {
-                    LogDebugToConsoleTranslated("bot.scriptScheduler.no_action", Task2String(current_task));
+                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    Enabled = false;
+                }
+            }
+
+            public class TaskConfig
+            {
+                public string Task_Name = "Task Name (Can be empty)";
+                public bool Trigger_On_First_Login = false;
+                public bool Trigger_On_Login = false;
+                public TriggerOnTimeConfig Trigger_On_Times = new(false, new TimeSpan[] { new(23, 59, 59) });
+                public TriggerOnIntervalConfig Trigger_On_Interval = new(false, 1, 10);
+                public string Action = "send /hello";
+
+                [NonSerialized]
+                public bool Trigger_On_Time_Already_Triggered = false;
+
+                [NonSerialized]
+                public int Trigger_On_Interval_Countdown = 0;
+
+                public TaskConfig() { }
+
+                public TaskConfig(string Task_Name, bool Trigger_On_First_Login, bool Trigger_On_Login, TriggerOnTimeConfig Trigger_On_Times, TriggerOnIntervalConfig Trigger_On_Interval, string Action)
+                {
+                    this.Task_Name = Task_Name;
+                    this.Trigger_On_First_Login = Trigger_On_First_Login;
+                    this.Trigger_On_Login = Trigger_On_Login;
+                    this.Trigger_On_Times = Trigger_On_Times;
+                    this.Trigger_On_Interval = Trigger_On_Interval;
+                    this.Action = Action;
+                }
+
+                public struct TriggerOnTimeConfig
+                {
+                    public bool Enable = false;
+                    public TimeSpan[] Times;
+
+                    public TriggerOnTimeConfig(bool Enable, TimeSpan[] Time)
+                    {
+                        this.Enable = Enable;
+                        this.Times = Time;
+                    }
+
+                    public TriggerOnTimeConfig(TimeSpan[] Time)
+                    {
+                        this.Enable = true;
+                        this.Times = Time;
+                    }
+                }
+
+                public struct TriggerOnIntervalConfig
+                {
+                    public bool Enable = false;
+                    public double MinTime, MaxTime;
+
+                    public TriggerOnIntervalConfig(double value)
+                    {
+                        this.Enable = true;
+                        MinTime = MaxTime = value;
+                    }
+
+                    public TriggerOnIntervalConfig(bool Enable, double value)
+                    {
+                        this.Enable = Enable;
+                        MinTime = MaxTime = value;
+                    }
+
+                    public TriggerOnIntervalConfig(double min, double max)
+                    {
+                        this.MinTime = min;
+                        this.MaxTime = max;
+                    }
+
+                    public TriggerOnIntervalConfig(bool Enable, double min, double max)
+                    {
+                        this.Enable = Enable;
+                        this.MinTime = min;
+                        this.MaxTime = max;
+                    }
                 }
             }
         }
+
+        private Random random = new();
+
+        private static bool firstlogin_done = false;
+
+        private bool serverlogin_done = false;
+        private int verifytasks_timeleft = 10;
+        private readonly int verifytasks_delay = 10;
 
         public override void Update()
         {
@@ -155,55 +175,40 @@ namespace MinecraftClient.ChatBots
                 verifytasks_timeleft = verifytasks_delay;
                 if (serverlogin_done)
                 {
-                    foreach (TaskDesc task in tasks)
+                    foreach (TaskConfig task in Config.TaskList)
                     {
-                        if (task.triggerOnTime)
+                        if (task.Trigger_On_Times.Enable)
                         {
                             bool matching_time_found = false;
 
-                            foreach (DateTime time in task.triggerOnTime_Times)
+                            foreach (TimeSpan time in task.Trigger_On_Times.Times)
                             {
-                                if (time.Hour == DateTime.Now.Hour && time.Minute == DateTime.Now.Minute)
+                                if (time.Hours == DateTime.Now.Hour && time.Minutes == DateTime.Now.Minute)
                                 {
                                     matching_time_found = true;
-                                    if (!task.triggerOnTime_alreadyTriggered)
+                                    if (!task.Trigger_On_Time_Already_Triggered)
                                     {
-                                        task.triggerOnTime_alreadyTriggered = true;
-                                        LogDebugToConsoleTranslated("bot.scriptScheduler.running_time", task.action);
-                                        PerformInternalCommand(task.action!);
+                                        task.Trigger_On_Time_Already_Triggered = true;
+                                        LogDebugToConsoleTranslated("bot.scriptScheduler.running_time", task.Action);
+                                        PerformInternalCommand(task.Action);
                                     }
                                 }
                             }
 
                             if (!matching_time_found)
-                                task.triggerOnTime_alreadyTriggered = false;
+                                task.Trigger_On_Time_Already_Triggered = false;
                         }
 
-                        if (task.triggerOnInterval)
-                        {
-                            if (task.triggerOnInterval_Interval_Countdown == 0)
-                            {
-                                int time = task.triggerOnInterval_Interval;
-
-                                if (task.triggerOnInterval_Interval_Max != 0)
-                                    time = new Random().Next(task.triggerOnInterval_Interval, task.triggerOnInterval_Interval_Max);
-
-                                task.triggerOnInterval_Interval_Countdown = time;
-                                LogDebugToConsoleTranslated("bot.scriptScheduler.running_inverval", task.action);
-                                PerformInternalCommand(task.action!);
-                            }
-                            else task.triggerOnInterval_Interval_Countdown--;
-                        }
                     }
                 }
                 else
                 {
-                    foreach (TaskDesc task in tasks)
+                    foreach (TaskConfig task in Config.TaskList)
                     {
-                        if (task.triggerOnLogin || (firstlogin_done == false && task.triggerOnFirstLogin))
+                        if (task.Trigger_On_Login || (firstlogin_done == false && task.Trigger_On_First_Login))
                         {
-                            LogDebugToConsoleTranslated("bot.scriptScheduler.running_login", task.action);
-                            PerformInternalCommand(task.action!);
+                            LogDebugToConsoleTranslated("bot.scriptScheduler.running_login", task.Action);
+                            PerformInternalCommand(task.Action);
                         }
                     }
 
@@ -212,6 +217,22 @@ namespace MinecraftClient.ChatBots
                 }
             }
             else verifytasks_timeleft--;
+
+            foreach (TaskConfig task in Config.TaskList)
+            {
+                if (task.Trigger_On_Interval.Enable)
+                {
+                    if (task.Trigger_On_Interval_Countdown == 0)
+                    {
+                        task.Trigger_On_Interval_Countdown = random.Next(
+                            Settings.DoubleToTick(task.Trigger_On_Interval.MinTime), Settings.DoubleToTick(task.Trigger_On_Interval.MaxTime)
+                        );
+                        LogDebugToConsoleTranslated("bot.scriptScheduler.running_inverval", task.Action);
+                        PerformInternalCommand(task.Action);
+                    }
+                    else task.Trigger_On_Interval_Countdown--;
+                }
+            }
         }
 
         public override bool OnDisconnect(DisconnectReason reason, string message)
@@ -220,17 +241,17 @@ namespace MinecraftClient.ChatBots
             return false;
         }
 
-        private static string Task2String(TaskDesc task)
+        private static string Task2String(TaskConfig task)
         {
             return Translations.Get(
                 "bot.scriptScheduler.task",
-                task.triggerOnFirstLogin,
-                task.triggerOnLogin,
-                task.triggerOnTime,
-                task.triggerOnInterval,
-                String.Join(", ", task.triggerOnTime_Times),
-                task.triggerOnInterval_Interval,
-                task.action
+                task.Trigger_On_First_Login,
+                task.Trigger_On_Login,
+                task.Trigger_On_Times.Enable,
+                task.Trigger_On_Interval.Enable,
+                task.Trigger_On_Times.Times,
+                task.Trigger_On_Interval.MinTime + '-' + task.Trigger_On_Interval.MaxTime,
+                task.Action
             );
         }
     }

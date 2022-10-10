@@ -6,6 +6,8 @@
 
 [Documentation](https://mccteam.github.io/) | [Download](#download) | [Installation](https://mccteam.github.io/guide/installation.html) | [Configuration](https://mccteam.github.io/guide/configuration.html) | [Usage](https://mccteam.github.io/guide/usage.html)
 
+[English](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README.md) | [Nederlands](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README-nl.md) | [Српски](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README-sr.md) | [Türkçe](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README-tr.md) | [Tiếng Việt](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README-vi-vn.md) | [简体中文](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README-zh-Hans.md)
+
 [![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 
 </div>
@@ -45,11 +47,16 @@ If you'd like to contribute to Minecraft Console Client, great, just fork the re
 
 ## Translating Minecraft Console Client 🌍
 
-If you would like to translate Minecraft Console Client to a different language, please download the translation file from [the lang folder](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) or just fork the repository. Once you finished the translation work, submit a pull request or send us the file through an [Issue](https://github.com/MCCTeam/Minecraft-Console-Client/issues) in case you are not familiar with Git.
+Check out: [How to update or add translations for MCC](https://mccteam.github.io/guide/contibuting.html#translations).
 
-To use the translated language file, place it under `lang/mcc/` folder and set your language in `.ini` config. You may create the directory if it does not exist.
-
-For the names of the translation file, please see [this comment](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715).
+MCC now supports the following languages (Alphabetical order) :
+  * `de.ini` (57.12% translated) : Deutsch - German
+  * `en.ini` : English - English
+  * `fr.ini` (57.12% translated) : Français (France) - French
+  * `ru.ini` (56.18% translated) : Русский (Russkiy) - Russian
+  * `vi.ini` (56.18% translated) : Tiếng Việt (Việt Nam) - Vietnamese
+  * `zh-Hans.ini` (100.00% translated) : 简体中文 - Chinese Simplified
+  * `zh-Hant.ini` (100.00% translated) : 繁體中文 - Chinese Traditional
 
 ## Building from the source 🏗️
 

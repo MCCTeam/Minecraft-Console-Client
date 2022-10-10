@@ -1,30 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using Tomlet.Attributes;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient.ChatBots
 {
     /// <summary>
     /// This bot automatically runs actions when a user sends a message matching a specified rule
     /// </summary>
-    class AutoRespond : ChatBot
+    public class AutoRespond : ChatBot
     {
-        private readonly string matchesFile;
-        private readonly bool matchColors;
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "AutoRespond";
+
+            public bool Enabled = false;
+
+            public string Matches_File = @"matches.ini";
+
+            [TomlInlineComment("$config.ChatBot.AutoRespond.Match_Colors$")]
+            public bool Match_Colors = false;
+
+            public void OnSettingUpdate()
+            {
+                Matches_File ??= string.Empty;
+
+                if (!Enabled) return;
+
+                if (!File.Exists(Matches_File))
+                {
+                    LogToConsole(BotName, Translations.TryGet("bot.autoRespond.file_not_found", Path.GetFullPath(Matches_File)));
+                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    Enabled = false;
+                }
+            }
+        }
+
         private List<RespondRule>? respondRules;
         private enum MessageType { Public, Private, Other };
-
-        /// <summary>
-        /// Create a new AutoRespond bot
-        /// </summary>
-        /// <param name="matchesFile">INI File to load matches from</param>
-        public AutoRespond(string matchesFile, bool matchColors)
-        {
-            this.matchesFile = matchesFile;
-            this.matchColors = matchColors;
-        }
 
         /// <summary>
         /// Describe a respond rule based on a simple match or a regex
@@ -96,7 +117,7 @@ namespace MinecraftClient.ChatBots
 
                 string? toSend = null;
 
-                if (ownersOnly && (String.IsNullOrEmpty(username) || !Settings.Bots_Owners.Contains(username.ToLower())))
+                if (ownersOnly && (String.IsNullOrEmpty(username) || !Settings.Config.Main.Advanced.BotOwners.Contains(username.ToLower())))
                     return null;
 
                 switch (msgType)
@@ -164,7 +185,7 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void Initialize()
         {
-            if (File.Exists(matchesFile))
+            if (File.Exists(Config.Matches_File))
             {
                 Regex? matchRegex = null;
                 string? matchString = null;
@@ -175,9 +196,9 @@ namespace MinecraftClient.ChatBots
                 TimeSpan cooldown = TimeSpan.Zero;
                 respondRules = new List<RespondRule>();
 
-                LogDebugToConsoleTranslated("bot.autoRespond.loading", System.IO.Path.GetFullPath(matchesFile));
+                LogDebugToConsoleTranslated("bot.autoRespond.loading", System.IO.Path.GetFullPath(Config.Matches_File));
 
-                foreach (string lineRAW in File.ReadAllLines(matchesFile, Encoding.UTF8))
+                foreach (string lineRAW in File.ReadAllLines(Config.Matches_File, Encoding.UTF8))
                 {
                     string line = lineRAW.Split('#')[0].Trim();
                     if (line.Length > 0)
@@ -211,8 +232,8 @@ namespace MinecraftClient.ChatBots
                                     case "action": matchAction = argValue; break;
                                     case "actionprivate": matchActionPrivate = argValue; break;
                                     case "actionother": matchActionOther = argValue; break;
-                                    case "ownersonly": ownersOnly = Settings.str2bool(argValue); break;
-                                    case "cooldown": cooldown = TimeSpan.FromSeconds(Settings.str2int(argValue)); break;
+                                    case "ownersonly": ownersOnly = bool.Parse(argValue); break;
+                                    case "cooldown": cooldown = TimeSpan.FromSeconds(int.Parse(argValue, NumberStyles.Any, CultureInfo.CurrentCulture)); break;
                                 }
                             }
                         }
@@ -222,7 +243,7 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                LogToConsoleTranslated("bot.autoRespond.file_not_found", System.IO.Path.GetFullPath(matchesFile));
+                LogToConsoleTranslated("bot.autoRespond.file_not_found", System.IO.Path.GetFullPath(Config.Matches_File));
                 UnloadBot(); //No need to keep the bot active
             }
         }
@@ -264,7 +285,7 @@ namespace MinecraftClient.ChatBots
         public override void GetText(string text)
         {
             //Remove colour codes
-            if (!matchColors)
+            if (!Config.Match_Colors)
                 text = GetVerbatim(text);
 
             //Get Message type
@@ -277,7 +298,7 @@ namespace MinecraftClient.ChatBots
             else message = text;
 
             //Do not process messages sent by the bot itself
-            if (msgType == MessageType.Other || sender != Settings.Username)
+            if (msgType == MessageType.Other || sender != InternalConfig.Username)
             {
                 foreach (RespondRule rule in respondRules!)
                 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -8,11 +9,28 @@ namespace MinecraftClient.ChatBots
 
     public class RemoteControl : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "RemoteControl";
+
+            public bool Enabled = false;
+
+            public bool AutoTpaccept = true;
+
+            public bool AutoTpaccept_Everyone = false;
+
+            public void OnSettingUpdate() { }
+        }
+
         public override void GetText(string text)
         {
             text = GetVerbatim(text).Trim();
             string command = "", sender = "";
-            if (IsPrivateMessage(text, ref command, ref sender) && Settings.Bots_Owners.Contains(sender.ToLower().Trim()))
+            if (IsPrivateMessage(text, ref command, ref sender) && Settings.Config.Main.Advanced.BotOwners.Contains(sender.ToLower().Trim()))
             {
                 string? response = "";
                 PerformInternalCommand(command, ref response);
@@ -26,9 +44,9 @@ namespace MinecraftClient.ChatBots
                     SendPrivateMessage(sender, response);
                 }
             }
-            else if (Settings.RemoteCtrl_AutoTpaccept
+            else if (Config.AutoTpaccept
                 && IsTeleportRequest(text, ref sender)
-                && (Settings.RemoteCtrl_AutoTpaccept_Everyone || Settings.Bots_Owners.Contains(sender.ToLower().Trim())))
+                && (Config.AutoTpaccept_Everyone || Settings.Config.Main.Advanced.BotOwners.Contains(sender.ToLower().Trim())))
             {
                 SendText("/tpaccept");
             }

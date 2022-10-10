@@ -5,13 +5,13 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using MinecraftClient.Protocol.Message;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol
 {
     /// <summary>
     /// This class parses JSON chat data from MC 1.6+ and returns the appropriate string to be printed.
     /// </summary>
-
     static class ChatParser
     {
         public enum MessageType
@@ -47,7 +47,7 @@ namespace MinecraftClient.Protocol
         /// <returns>Returns the translated text</returns>
         public static string ParseSignedChat(ChatMessage message, List<string>? links = null)
         {
-            string chatContent = Settings.ShowModifiedChat && message.unsignedContent != null ? message.unsignedContent : message.content;
+            string chatContent = Config.Signature.ShowModifiedChat && message.unsignedContent != null ? message.unsignedContent : message.content;
             string content = message.isJson ? ParseText(chatContent, links) : chatContent;
             string sender = message.displayName!;
 
@@ -107,27 +107,27 @@ namespace MinecraftClient.Protocol
             string color = string.Empty;
             if (message.isSystemChat)
             {
-                if (Settings.MarkSystemMessage)
+                if (Config.Signature.MarkSystemMessage)
                     color = "§z §r ";     // Custom color code §z : Background Gray
             }
             else
             {
                 if ((bool)message.isSignatureLegal!)
                 {
-                    if (Settings.ShowModifiedChat && message.unsignedContent != null)
+                    if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
                     {
-                        if (Settings.MarkModifiedMsg)
+                        if (Config.Signature.MarkModifiedMsg)
                             color = "§x §r "; // Custom color code §x : Background Yellow
                     }
                     else
                     {
-                        if (Settings.MarkLegallySignedMsg)
+                        if (Config.Signature.MarkLegallySignedMsg)
                             color = "§y §r "; // Custom color code §y : Background Green
                     }
                 }
                 else
                 {
-                    if (Settings.MarkIllegallySignedMsg)
+                    if (Config.Signature.MarkIllegallySignedMsg)
                         color = "§w §r "; // Custom color code §w : Background Red
                 }
             }
@@ -203,12 +203,12 @@ namespace MinecraftClient.Protocol
             if (!Directory.Exists("lang"))
                 Directory.CreateDirectory("lang");
 
-            string Language_File = "lang" + Path.DirectorySeparatorChar + Settings.Language + ".lang";
+            string Language_File = "lang" + Path.DirectorySeparatorChar + Config.Main.Advanced.Language + ".lang";
 
             //File not found? Try downloading language file from Mojang's servers?
             if (!File.Exists(Language_File))
             {
-                ConsoleIO.WriteLineFormatted(Translations.Get("chat.download", Settings.Language));
+                ConsoleIO.WriteLineFormatted(Translations.Get("chat.download", Config.Main.Advanced.Language));
                 HttpClient httpClient = new();
                 try
                 {
@@ -217,11 +217,11 @@ namespace MinecraftClient.Protocol
                     string assets_index = fetch_index.Result;
                     fetch_index.Dispose();
 
-                    string[] tmp = assets_index.Split(new string[] { "minecraft/lang/" + Settings.Language.ToLower() + ".json" }, StringSplitOptions.None);
+                    string[] tmp = assets_index.Split(new string[] { "minecraft/lang/" + Config.Main.Advanced.Language.ToLower() + ".json" }, StringSplitOptions.None);
                     tmp = tmp[1].Split(new string[] { "hash\": \"" }, StringSplitOptions.None);
                     string hash = tmp[1].Split('"')[0]; //Translations file identifier on Mojang's servers
                     string translation_file_location = Settings.TranslationsFile_Website_Download + '/' + hash[..2] + '/' + hash;
-                    if (Settings.DebugMessages)
+                    if (Settings.Config.Logging.DebugMessages)
                         ConsoleIO.WriteLineFormatted(Translations.Get("chat.request", translation_file_location));
 
                     Task<string> fetch_file = httpClient.GetStringAsync(translation_file_location);
@@ -266,7 +266,7 @@ namespace MinecraftClient.Protocol
                     }
                 }
 
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                     Translations.WriteLineFormatted("chat.loaded");
             }
             else //No external dictionnary found.

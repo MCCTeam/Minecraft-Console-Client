@@ -15,15 +15,16 @@ namespace MinecraftClient.Commands
                 string[] temp = GetArg(command).Split('=');
                 if (temp.Length > 1)
                 {
-                    if (Settings.SetVar(temp[0], GetArg(command).Substring(temp[0].Length + 1)))
-                    {
+                    if (Settings.Config.AppVar.SetVar(temp[0], GetArg(command).Substring(temp[0].Length + 1)))
                         return ""; //Success
-                    }
-                    else return Translations.Get("cmd.set.format");
+                    else 
+                        return Translations.Get("cmd.set.format");
                 }
-                else return GetCmdDescTranslated();
+                else
+                    return GetCmdDescTranslated();
             }
-            else return GetCmdDescTranslated();
+            else
+                return GetCmdDescTranslated();
         }
     }
 }

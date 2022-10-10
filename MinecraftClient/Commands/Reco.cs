@@ -13,7 +13,7 @@ namespace MinecraftClient.Commands
             string[] args = GetArgs(command);
             if (args.Length > 0)
             {
-                if (!Settings.SetAccount(args[0]))
+                if (!Settings.Config.Main.Advanced.SetAccount(args[0]))
                 {
                     return Translations.Get("cmd.connect.unknown", args[0]);
                 }

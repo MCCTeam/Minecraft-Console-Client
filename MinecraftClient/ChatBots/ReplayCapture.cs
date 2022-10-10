@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MinecraftClient.Protocol;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -9,24 +10,35 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class ReplayCapture : ChatBot
     {
-        private ReplayHandler? replay;
-        private readonly int backupInterval = 3000; // Unit: second * 10
-        private int backupCounter = -1;
+        public static Configs Config = new();
 
-        public ReplayCapture(int backupInterval)
+        [TomlDoNotInlineObject]
+        public class Configs
         {
-            if (backupInterval != -1)
-                this.backupInterval = backupInterval * 10;
-            else
-                this.backupInterval = -1;
+            [NonSerialized]
+            private const string BotName = "ReplayCapture";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.ReplayCapture.Backup_Interval$")]
+            public int Backup_Interval = 3000;
+
+            public void OnSettingUpdate()
+            {
+                if (Backup_Interval < -1)
+                    Backup_Interval = -1;
+            }
         }
+
+        private ReplayHandler? replay;
+        private int backupCounter = -1;
 
         public override void Initialize()
         {
             SetNetworkPacketEventEnabled(true);
             replay = new ReplayHandler(GetProtocolVersion());
             replay.MetaData.serverName = GetServerHost() + GetServerPort();
-            backupCounter = backupInterval;
+            backupCounter = Config.Backup_Interval * 10;
 
             RegisterChatBotCommand("replay", Translations.Get("bot.replayCapture.cmd"), "replay <save|stop>", Command);
         }
@@ -38,12 +50,12 @@ namespace MinecraftClient.ChatBots
 
         public override void Update()
         {
-            if (backupInterval > 0 && replay!.RecordRunning)
+            if (Config.Backup_Interval > 0 && replay!.RecordRunning)
             {
                 if (backupCounter <= 0)
                 {
                     replay.CreateBackupReplay(@"recording_cache\REPLAY_BACKUP.mcpr");
-                    backupCounter = backupInterval;
+                    backupCounter = Config.Backup_Interval * 10;
                 }
                 else backupCounter--;
             }

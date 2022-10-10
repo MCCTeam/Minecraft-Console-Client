@@ -33,14 +33,17 @@ namespace MinecraftClient.Commands
                 try
                 {
                     Location current = handler.GetCurrentLocation();
-                    Location blockToBreak = Location.Parse(current, args[0], args[1], args[2]);
+                    Location blockToBreak = Location.Parse(current.ToFloor(), args[0], args[1], args[2]);
                     if (blockToBreak.DistanceSquared(current.EyesLocation()) > 25)
                         return Translations.Get("cmd.dig.too_far");
                     Block block = handler.GetWorld().GetBlock(blockToBreak);
                     if (block.Type == Material.Air)
                         return Translations.Get("cmd.dig.no_block");
                     else if (handler.DigBlock(blockToBreak))
+                    {
+                        blockToBreak = blockToBreak.ToCenter();
                         return Translations.Get("cmd.dig.dig", blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.Type);
+                    }
                     else
                         return Translations.Get("cmd.dig.fail");
                 }

@@ -3,43 +3,62 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Runtime.Versioning;
 using MinecraftClient.Mapping;
 using MinecraftClient.Protocol.Handlers;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
-    class Map : ChatBot
+    public class Map : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "Map";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.Map.Should_Resize$")]
+            public bool Should_Resize = false;
+
+            [TomlInlineComment("$config.ChatBot.Map.Resize_To$")]
+            public int Resize_To = 256;
+
+            [TomlInlineComment("$config.ChatBot.Map.Auto_Render_On_Update$")]
+            public bool Auto_Render_On_Update = false;
+
+            [TomlInlineComment("$config.ChatBot.Map.Delete_All_On_Unload$")]
+            public bool Delete_All_On_Unload = true;
+
+            [TomlInlineComment("$config.ChatBot.Map.Notify_On_First_Update$")]
+            public bool Notify_On_First_Update = true;
+
+            public void OnSettingUpdate()
+            {
+                if (Resize_To < 128)
+                    Resize_To = 128;
+            }
+        }
+
         private readonly string baseDirectory = @"Rendered_Maps";
 
         private readonly Dictionary<int, McMap> cachedMaps = new();
-        private bool shouldResize = true;
-        private int resizeTo = 256;
-        private bool autoRenderOnUpdate = true;
-        private bool deleteAllOnExit = true;
-        private bool notifyOnFirstUpdate = true;
 
         public override void Initialize()
         {
             if (!Directory.Exists(baseDirectory))
                 Directory.CreateDirectory(baseDirectory);
 
-            shouldResize = Settings.Map_Should_Resize;
-            resizeTo = Settings.Map_Resize_To;
-
-            if (resizeTo < 128)
-                resizeTo = 128;
-
-            autoRenderOnUpdate = Settings.Map_Auto_Render_On_Update;
-            deleteAllOnExit = Settings.Map_Delete_All_On_Unload;
-            notifyOnFirstUpdate = Settings.Map_Notify_On_First_Update;
-
             RegisterChatBotCommand("maps", "bot.map.cmd.desc", "maps list|render <id> or maps l|r <id>", OnMapCommand);
         }
 
         public override void OnUnload()
         {
-            if (deleteAllOnExit)
+            if (Config.Delete_All_On_Unload)
             {
                 DirectoryInfo di = new(baseDirectory);
                 FileInfo[] files = di.GetFiles();
@@ -76,15 +95,22 @@ namespace MinecraftClient.ChatBots
                         if (!cachedMaps.ContainsKey(mapId))
                             return Translations.TryGet("bot.map.cmd.not_found", mapId);
 
-                        try
+                        if (OperatingSystem.IsWindows())
                         {
-                            McMap map = cachedMaps[mapId];
-                            GenerateMapImage(map);
+                            try
+                            {
+                                McMap map = cachedMaps[mapId];
+                                GenerateMapImage(map);
+                            }
+                            catch (Exception e)
+                            {
+                                LogDebugToConsole(e.StackTrace!);
+                                return Translations.TryGet("bot.map.failed_to_render", mapId);
+                            }
                         }
-                        catch (Exception e)
+                        else
                         {
-                            LogDebugToConsole(e.StackTrace!);
-                            return Translations.TryGet("bot.map.failed_to_render", mapId);
+                            LogToConsoleTranslated("bot.map.windows_only");
                         }
 
                         return "";
@@ -124,7 +150,7 @@ namespace MinecraftClient.ChatBots
             {
                 cachedMaps.Add(mapid, map);
 
-                if (notifyOnFirstUpdate)
+                if (Config.Notify_On_First_Update)
                     LogToConsoleTranslated("bot.map.received_map", map.MapId);
             }
             else
@@ -133,10 +159,16 @@ namespace MinecraftClient.ChatBots
                 cachedMaps.Add(mapid, map);
             }
 
-            if (autoRenderOnUpdate)
-                GenerateMapImage(map);
+            if (Config.Auto_Render_On_Update)
+            {
+                if (OperatingSystem.IsWindows())
+                    GenerateMapImage(map);
+                else
+                    LogToConsoleTranslated("bot.map.windows_only");
+            }
         }
 
+        [SupportedOSPlatform("windows")]
         private void GenerateMapImage(McMap map)
         {
             string fileName = baseDirectory + "/Map_" + map.MapId + ".jpg";
@@ -144,6 +176,8 @@ namespace MinecraftClient.ChatBots
             if (File.Exists(fileName))
                 File.Delete(fileName);
 
+            /** Warning CA1416: Bitmap is only support Windows **/
+            /* https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/system-drawing-common-windows-only */
             Bitmap image = new(map.Width, map.Height);
 
             for (int x = 0; x < map.Width; ++x)
@@ -165,12 +199,14 @@ namespace MinecraftClient.ChatBots
 
             // Resize, double the image
 
-            if (shouldResize)
-                image = ResizeBitmap(image, resizeTo, resizeTo);
+            if (Config.Should_Resize)
+                image = ResizeBitmap(image, Config.Resize_To, Config.Resize_To);
 
             image.Save(fileName);
             LogToConsole(Translations.TryGet("bot.map.rendered", map.MapId, fileName));
         }
+
+        [SupportedOSPlatform("windows")]
         private Bitmap ResizeBitmap(Bitmap sourceBMP, int width, int height)
         {
             Bitmap result = new(width, height);

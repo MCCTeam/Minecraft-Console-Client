@@ -45,8 +45,8 @@ namespace MinecraftClient.Commands
             else if (args[0] == "gravity")
             {
                 if (args.Count >= 2)
-                    Settings.GravityEnabled = (args[1] == "on");
-                if (Settings.GravityEnabled)
+                    Settings.InternalConfig.GravityEnabled = (args[1] == "on");
+                if (Settings.InternalConfig.GravityEnabled)
                     return Translations.Get("cmd.move.gravity.enabled");
                 else return Translations.Get("cmd.move.gravity.disabled");
             }

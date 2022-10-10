@@ -107,7 +107,7 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 string caller = "Script";
                 try
@@ -195,7 +195,7 @@ namespace MinecraftClient.ChatBots
                         {
                             if (instruction_line[0] != '#' && instruction_line[0] != '/' && instruction_line[1] != '/')
                             {
-                                instruction_line = Settings.ExpandVars(instruction_line, localVars);
+                                instruction_line = Settings.Config.AppVar.ExpandVars(instruction_line, localVars);
                                 string instruction_name = instruction_line.Split(' ')[0];
                                 switch (instruction_name.ToLower())
                                 {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 using System.Globalization;
+using System.Linq;
+using System.Text;
 
 namespace MinecraftClient.Inventory
 {

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Globalization;
 using MinecraftClient.Mapping;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -10,104 +10,113 @@ namespace MinecraftClient.ChatBots
 
     public class AntiAFK : ChatBot
     {
-        private int count;
-        private readonly string pingparam;
-        private int timeping = 600;
-        private int timepingMax = -1;
-        private bool useTerrainHandling = false;
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "AntiAFK";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.AntiAfk.Delay$")]
+            public Range Delay = new(60);
+
+            [TomlInlineComment("$config.ChatBot.AntiAfk.Command$")]
+            public string Command = "/ping";
+
+            [TomlInlineComment("$config.ChatBot.AntiAfk.Use_Sneak$")]
+            public bool Use_Sneak = false;
+
+            [TomlInlineComment("$config.ChatBot.AntiAfk.Use_Terrain_Handling$")]
+            public bool Use_Terrain_Handling = false;
+
+            [TomlInlineComment("$config.ChatBot.AntiAfk.Walk_Range$")]
+            public int Walk_Range = 5;
+
+            [TomlInlineComment("$config.ChatBot.AntiAfk.Walk_Retries$")]
+            public int Walk_Retries = 20;
+
+            public void OnSettingUpdate()
+            {
+                if (Walk_Range <= 0)
+                {
+                    Walk_Range = 5;
+                    LogToConsole(BotName, Translations.TryGet("bot.antiafk.invalid_walk_range"));
+                }
+
+                Delay.min = Math.Max(1.0, Delay.min);
+                Delay.max = Math.Max(1.0, Delay.max);
+
+                Delay.min = Math.Min(int.MaxValue / 10, Delay.min);
+                Delay.max = Math.Min(int.MaxValue / 10, Delay.max);
+
+                if (Delay.min > Delay.max)
+                {
+                    (Delay.min, Delay.max) = (Delay.max, Delay.min);
+                    LogToConsole(BotName, Translations.TryGet("bot.antiafk.swapping"));
+                }
+
+                Command ??= string.Empty;
+            }
+
+            public struct Range
+            {
+                public double min, max;
+
+                public Range(int value)
+                {
+                    min = max = value;
+                }
+
+                public Range(int min, int max)
+                {
+                    this.min = min;
+                    this.max = max;
+                }
+            }
+        }
+
+        private int count, nextrun = 50;
         private bool previousSneakState = false;
-        private int walkRange = 5;
-        private readonly int walkRetries = 10;
         private readonly Random random = new();
 
         /// <summary>
         /// This bot sends a /ping command every X seconds in order to stay non-afk.
         /// </summary>
-        /// <param name="pingparam">Time amount between each ping (10 = 1s, 600 = 1 minute, etc.) Can be a range of numbers eg. 10-600</param>
-
-        public AntiAFK(string pingparam, bool useTerrainHandling, int walkRange, int walkRetries)
+        public AntiAFK()
         {
             count = 0;
-            this.pingparam = pingparam;
-            this.useTerrainHandling = useTerrainHandling;
-            this.walkRange = walkRange;
-            this.walkRetries = walkRetries;
         }
 
         public override void Initialize()
         {
-            if (useTerrainHandling)
+            if (Config.Use_Terrain_Handling)
             {
                 if (!GetTerrainEnabled())
                 {
-                    useTerrainHandling = false;
                     LogToConsole(Translations.TryGet("bot.antiafk.not_using_terrain_handling"));
                 }
-                else
-                {
-                    if (walkRange <= 0)
-                    {
-                        walkRange = 5;
-                        LogToConsole(Translations.TryGet("bot.antiafk.invalid_walk_range"));
-                    }
-                }
             }
-
-            if (string.IsNullOrEmpty(pingparam))
-                LogToConsole(Translations.TryGet("bot.antiafk.invalid_time"));
-            else
-            {
-                // Handle the random range
-                if (pingparam.Contains('-'))
-                {
-                    string[] parts = pingparam.Split("-");
-
-                    if (parts.Length == 2)
-                    {
-                        if (int.TryParse(parts[0].Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out int firstTime))
-                        {
-                            timeping = firstTime;
-
-                            if (int.TryParse(parts[1].Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out int secondTime))
-                                timepingMax = secondTime;
-                            else LogToConsole(Translations.TryGet("bot.antiafk.invalid_range_partial", timeping));
-                        }
-                        else LogToConsole(Translations.TryGet("bot.antiafk.invalid_range"));
-                    }
-                    else LogToConsole(Translations.TryGet("bot.antiafk.invalid_range"));
-                }
-                else
-                {
-                    if (int.TryParse(pingparam.Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out int value))
-                        timeping = value;
-                    else LogToConsole(Translations.TryGet("bot.antiafk.invalid_value"));
-                }
-            }
-
-            if (timepingMax != -1 && timeping > timepingMax)
-            {
-                (timeping, timepingMax) = (timepingMax, timeping);
-                LogToConsole(Translations.TryGet("bot.antiafk.swapping"));
-            }
-
-            if (timeping < 10) { timeping = 10; } //To avoid flooding
         }
 
         public override void Update()
         {
             count++;
 
-            if ((timepingMax != -1 && count == random.Next(timeping, timepingMax)) || count == timeping)
+            if (count >= nextrun)
             {
                 DoAntiAfkStuff();
                 count = 0;
+                nextrun = random.Next(Settings.DoubleToTick(Config.Delay.min), Settings.DoubleToTick(Config.Delay.max));
             }
 
         }
 
         private void DoAntiAfkStuff()
         {
-            if (useTerrainHandling)
+            if (Config.Use_Terrain_Handling && GetTerrainEnabled())
             {
                 Location currentLocation = GetCurrentLocation();
                 Location goal;
@@ -118,19 +127,19 @@ namespace MinecraftClient.ChatBots
 
                 while (!moved)
                 {
-                    if (triesCounter++ >= walkRetries)
+                    if (triesCounter++ >= Config.Walk_Retries)
                     {
                         useAlternativeMethod = true;
                         break;
                     }
 
-                    goal = GetRandomLocationWithinRangeXZ(currentLocation, walkRange);
+                    goal = GetRandomLocationWithinRangeXZ(currentLocation, Config.Walk_Range);
 
                     // Prevent getting the same location
                     while ((currentLocation.X == goal.X) && (currentLocation.Y == goal.Y) && (currentLocation.Z == goal.Z))
                     {
                         LogToConsole("Same location!, generating new one");
-                        goal = GetRandomLocationWithinRangeXZ(currentLocation, walkRange);
+                        goal = GetRandomLocationWithinRangeXZ(currentLocation, Config.Walk_Range);
                     }
 
                     if (!Movement.CheckChunkLoading(GetWorld(), currentLocation, goal))
@@ -138,22 +147,27 @@ namespace MinecraftClient.ChatBots
                         useAlternativeMethod = true;
                         break;
                     }
-                    else moved = MoveToLocation(goal, allowUnsafe: false, allowDirectTeleport: false);
+                    else
+                    {
+                        moved = MoveToLocation(goal, allowUnsafe: false, allowDirectTeleport: false);
+                    }
                 }
 
-                if (!useAlternativeMethod)
+                if (!useAlternativeMethod && Config.Use_Sneak)
                 {
                     // Solve the case when the bot was closed in 1x2, was sneaking, but then he was freed, this will make him not sneak anymore
                     previousSneakState = false;
                     Sneak(false);
-
                     return;
                 }
             }
 
-            SendText(Settings.AntiAFK_Command);
-            Sneak(previousSneakState);
-            previousSneakState = !previousSneakState;
+            SendText(Config.Command);
+            if (Config.Use_Sneak)
+            {
+                Sneak(previousSneakState);
+                previousSneakState = !previousSneakState;
+            }
             count = 0;
         }
 

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,56 +43,55 @@ namespace MinecraftClient.WinAPI
         /// <summary>
         /// Asynchronously download the player's skin and set the head as console icon
         /// </summary>
+        [SupportedOSPlatform("windows")]
         public static void SetPlayerIconAsync(string playerName)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Thread t = new(new ThreadStart(delegate
             {
-                Thread t = new(new ThreadStart(delegate
+                HttpClient httpClient = new();
+                try
                 {
-                    HttpClient httpClient = new();
+                    Task<Stream> httpWebRequest = httpClient.GetStreamAsync("https://minotar.net/helm/" + playerName + "/100.png");
+                    httpWebRequest.Wait();
+                    Stream imageStream = httpWebRequest.Result;
                     try
                     {
-                        Task<Stream> httpWebRequest = httpClient.GetStreamAsync("https://minotar.net/helm/" + playerName + "/100.png");
-                        httpWebRequest.Wait();
-                        Stream imageStream = httpWebRequest.Result;
-                        try
-                        {
-                            Bitmap skin = new(Image.FromStream(imageStream)); //Read skin from network
-                            SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
-                            SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
-                        }
-                        catch (ArgumentException)
-                        {
-                            /* Invalid image in HTTP response */
-                        }
-                        imageStream.Dispose();
-                        httpWebRequest.Dispose();
+                        Bitmap skin = new(Image.FromStream(imageStream)); //Read skin from network
+                        SetWindowIcon(Icon.FromHandle(skin.GetHicon())); // Windows 10+ (New console)
+                        SetConsoleIcon(skin.GetHicon()); // Windows 8 and lower (Older console)
                     }
-                    catch (AggregateException ae)
+                    catch (ArgumentException)
                     {
-                        foreach (var ex in ae.InnerExceptions)
-                        {
-                            if (ex is HttpRequestException) //Skin not found? Reset to default icon
-                                RevertToMCCIcon();
-                            else
-                                throw ex;
-                        }
+                        /* Invalid image in HTTP response */
                     }
-                    catch (HttpRequestException) //Skin not found? Reset to default icon
-                    {
-                        RevertToMCCIcon();
-                    }
-                    finally
-                    {
-                        httpClient.Dispose();
-                    }
+                    imageStream.Dispose();
+                    httpWebRequest.Dispose();
                 }
-                ))
+                catch (AggregateException ae)
                 {
-                    Name = "Player skin icon setter"
-                };
-                t.Start();
+                    bool needRevert = false;
+                    foreach (var ex in ae.InnerExceptions)
+                    {
+                        if (ex is HttpRequestException || ex is TaskCanceledException) //Skin not found? Reset to default icon
+                            needRevert = true;
+                    }
+                    if (needRevert)
+                        RevertToMCCIcon();
+                }
+                catch (HttpRequestException) //Skin not found? Reset to default icon
+                {
+                    RevertToMCCIcon();
+                }
+                finally
+                {
+                    httpClient.Dispose();
+                }
             }
+            ))
+            {
+                Name = "Player skin icon setter"
+            };
+            t.Start();
         }
 
         /// <summary>

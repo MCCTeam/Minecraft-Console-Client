@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -11,6 +12,63 @@ namespace MinecraftClient.ChatBots
     /// </summary>
     public class Mailer : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "Mailer";
+
+            public bool Enabled = false;
+
+            public string DatabaseFile = "MailerDatabase.ini";
+
+            public string IgnoreListFile = "MailerIgnoreList.ini";
+
+            public bool PublicInteractions = false;
+
+            public int MaxMailsPerPlayer = 10;
+
+            public int MaxDatabaseSize = 10000;
+
+            public int MailRetentionDays = 30;
+
+            public void OnSettingUpdate()
+            {
+                DatabaseFile ??= string.Empty;
+                IgnoreListFile ??= string.Empty;
+
+                if (!Enabled) return;
+
+                bool checkSuccessed = true;
+
+                if (Config.MaxDatabaseSize <= 0)
+                {
+                    LogToConsole(BotName, Translations.TryGet("bot.mailer.init_fail.db_size"));
+                    checkSuccessed = false;
+                }
+
+                if (Config.MaxMailsPerPlayer <= 0)
+                {
+                    LogToConsole(BotName, Translations.TryGet("bot.mailer.init_fail.max_mails"));
+                    checkSuccessed = false;
+                }
+
+                if (Config.MailRetentionDays <= 0)
+                {
+                    LogToConsole(BotName, Translations.TryGet("bot.mailer.init_fail.mail_retention"));
+                    checkSuccessed = false;
+                }
+
+                if (!checkSuccessed)
+                {
+                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    Enabled = false;
+                }
+            }
+        }
+
         /// <summary>
         /// Holds the list of ignored players
         /// </summary>
@@ -161,58 +219,37 @@ namespace MinecraftClient.ChatBots
         public override void Initialize()
         {
             LogDebugToConsoleTranslated("bot.mailer.init");
-            LogDebugToConsoleTranslated("bot.mailer.init.db" + Settings.Mailer_DatabaseFile);
-            LogDebugToConsoleTranslated("bot.mailer.init.ignore" + Settings.Mailer_IgnoreListFile);
-            LogDebugToConsoleTranslated("bot.mailer.init.public" + Settings.Mailer_PublicInteractions);
-            LogDebugToConsoleTranslated("bot.mailer.init.max_mails" + Settings.Mailer_MaxMailsPerPlayer);
-            LogDebugToConsoleTranslated("bot.mailer.init.db_size" + Settings.Mailer_MaxDatabaseSize);
-            LogDebugToConsoleTranslated("bot.mailer.init.mail_retention" + Settings.Mailer_MailRetentionDays + " days");
+            LogDebugToConsoleTranslated("bot.mailer.init.db" + Config.DatabaseFile);
+            LogDebugToConsoleTranslated("bot.mailer.init.ignore" + Config.IgnoreListFile);
+            LogDebugToConsoleTranslated("bot.mailer.init.public" + Config.PublicInteractions);
+            LogDebugToConsoleTranslated("bot.mailer.init.max_mails" + Config.MaxMailsPerPlayer);
+            LogDebugToConsoleTranslated("bot.mailer.init.db_size" + Config.MaxDatabaseSize);
+            LogDebugToConsoleTranslated("bot.mailer.init.mail_retention" + Config.MailRetentionDays + " days");
 
-            if (Settings.Mailer_MaxDatabaseSize <= 0)
+            if (!File.Exists(Config.DatabaseFile))
             {
-                LogToConsoleTranslated("bot.mailer.init_fail.db_size");
-                UnloadBot();
-                return;
+                LogToConsoleTranslated("bot.mailer.create.db", Path.GetFullPath(Config.DatabaseFile));
+                new MailDatabase().SaveToFile(Config.DatabaseFile);
             }
 
-            if (Settings.Mailer_MaxMailsPerPlayer <= 0)
+            if (!File.Exists(Config.IgnoreListFile))
             {
-                LogToConsoleTranslated("bot.mailer.init_fail.max_mails");
-                UnloadBot();
-                return;
-            }
-
-            if (Settings.Mailer_MailRetentionDays <= 0)
-            {
-                LogToConsoleTranslated("bot.mailer.init_fail.mail_retention");
-                UnloadBot();
-                return;
-            }
-
-            if (!File.Exists(Settings.Mailer_DatabaseFile))
-            {
-                LogToConsoleTranslated("bot.mailer.create.db", Path.GetFullPath(Settings.Mailer_DatabaseFile));
-                new MailDatabase().SaveToFile(Settings.Mailer_DatabaseFile);
-            }
-
-            if (!File.Exists(Settings.Mailer_IgnoreListFile))
-            {
-                LogToConsoleTranslated("bot.mailer.create.ignore", Path.GetFullPath(Settings.Mailer_IgnoreListFile));
-                new IgnoreList().SaveToFile(Settings.Mailer_IgnoreListFile);
+                LogToConsoleTranslated("bot.mailer.create.ignore", Path.GetFullPath(Config.IgnoreListFile));
+                new IgnoreList().SaveToFile(Config.IgnoreListFile);
             }
 
             lock (readWriteLock)
             {
-                LogDebugToConsoleTranslated("bot.mailer.load.db", Path.GetFullPath(Settings.Mailer_DatabaseFile));
-                mailDatabase = MailDatabase.FromFile(Settings.Mailer_DatabaseFile);
+                LogDebugToConsoleTranslated("bot.mailer.load.db", Path.GetFullPath(Config.DatabaseFile));
+                mailDatabase = MailDatabase.FromFile(Config.DatabaseFile);
 
-                LogDebugToConsoleTranslated("bot.mailer.load.ignore", Path.GetFullPath(Settings.Mailer_IgnoreListFile));
-                ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
+                LogDebugToConsoleTranslated("bot.mailer.load.ignore", Path.GetFullPath(Config.IgnoreListFile));
+                ignoreList = IgnoreList.FromFile(Config.IgnoreListFile);
             }
 
             //Initialize file monitors. In case the bot needs to unload for some reason in the future, do not forget to .Dispose() them
-            mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_DatabaseFile)!, Path.GetFileName(Settings.Mailer_DatabaseFile), FileMonitorCallback);
-            ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Settings.Mailer_IgnoreListFile)!, Path.GetFileName(Settings.Mailer_IgnoreListFile), FileMonitorCallback);
+            mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Config.DatabaseFile)!, Path.GetFileName(Config.DatabaseFile), FileMonitorCallback);
+            ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Config.IgnoreListFile)!, Path.GetFileName(Config.IgnoreListFile), FileMonitorCallback);
 
             RegisterChatBotCommand("mailer", Translations.Get("bot.mailer.cmd"), "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
         }
@@ -224,7 +261,7 @@ namespace MinecraftClient.ChatBots
         {
             maxMessageLength = GetMaxChatMessageLength()
                 - 44 // Deduct length of "/ 16CharPlayerName 16CharPlayerName mailed: "
-                - Settings.PrivateMsgsCmdName.Length; // Deduct length of "tell" command
+                - Settings.Config.Main.Advanced.PrivateMsgsCmdName.Length; // Deduct length of "tell" command
         }
 
         /// <summary>
@@ -236,7 +273,7 @@ namespace MinecraftClient.ChatBots
             string username = "";
             text = GetVerbatim(text);
 
-            if (IsPrivateMessage(text, ref message, ref username) || (Settings.Mailer_PublicInteractions && IsChatMessage(text, ref message, ref username)))
+            if (IsPrivateMessage(text, ref message, ref username) || (Config.PublicInteractions && IsChatMessage(text, ref message, ref username)))
             {
                 string usernameLower = username.ToLower();
                 if (!ignoreList.Contains(usernameLower))
@@ -247,8 +284,8 @@ namespace MinecraftClient.ChatBots
                         case "mail":
                         case "tellonym":
                             if (usernameLower != GetUsername().ToLower()
-                                && mailDatabase.Count < Settings.Mailer_MaxDatabaseSize
-                                && mailDatabase.Where(mail => mail.SenderLowercase == usernameLower).Count() < Settings.Mailer_MaxMailsPerPlayer)
+                                && mailDatabase.Count < Config.MaxDatabaseSize
+                                && mailDatabase.Where(mail => mail.SenderLowercase == usernameLower).Count() < Config.MaxMailsPerPlayer)
                             {
                                 Queue<string> args = new(Command.GetArgs(message));
                                 if (args.Count >= 2)
@@ -266,7 +303,7 @@ namespace MinecraftClient.ChatBots
                                             lock (readWriteLock)
                                             {
                                                 mailDatabase.Add(mail);
-                                                mailDatabase.SaveToFile(Settings.Mailer_DatabaseFile);
+                                                mailDatabase.SaveToFile(Config.DatabaseFile);
                                             }
                                             SendPrivateMessage(username, "Message saved!");
                                         }
@@ -307,8 +344,8 @@ namespace MinecraftClient.ChatBots
                 lock (readWriteLock)
                 {
                     mailDatabase.RemoveAll(mail => mail.Delivered);
-                    mailDatabase.RemoveAll(mail => mail.DateSent.AddDays(Settings.Mailer_MailRetentionDays) < DateTime.Now);
-                    mailDatabase.SaveToFile(Settings.Mailer_DatabaseFile);
+                    mailDatabase.RemoveAll(mail => mail.DateSent.AddDays(Config.MailRetentionDays) < DateTime.Now);
+                    mailDatabase.SaveToFile(Config.DatabaseFile);
                 }
 
                 nextMailSend = dateNow.AddSeconds(10);
@@ -324,8 +361,8 @@ namespace MinecraftClient.ChatBots
         {
             lock (readWriteLock)
             {
-                mailDatabase = MailDatabase.FromFile(Settings.Mailer_DatabaseFile);
-                ignoreList = IgnoreList.FromFile(Settings.Mailer_IgnoreListFile);
+                mailDatabase = MailDatabase.FromFile(Config.DatabaseFile);
+                ignoreList = IgnoreList.FromFile(Config.IgnoreListFile);
             }
         }
 
@@ -357,7 +394,7 @@ namespace MinecraftClient.ChatBots
                                     if (!ignoreList.Contains(username))
                                     {
                                         ignoreList.Add(username);
-                                        ignoreList.SaveToFile(Settings.Mailer_IgnoreListFile);
+                                        ignoreList.SaveToFile(Config.IgnoreListFile);
                                     }
                                 }
                                 return Translations.Get("bot.mailer.cmd.ignore.added", args[1]);
@@ -369,7 +406,7 @@ namespace MinecraftClient.ChatBots
                                     if (ignoreList.Contains(username))
                                     {
                                         ignoreList.Remove(username);
-                                        ignoreList.SaveToFile(Settings.Mailer_IgnoreListFile);
+                                        ignoreList.SaveToFile(Config.IgnoreListFile);
                                     }
                                 }
                                 return Translations.Get("bot.mailer.cmd.ignore.removed", args[1]);

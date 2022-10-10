@@ -26,7 +26,7 @@ namespace MinecraftClient.Logger
         {
             try
             {
-                if (!Settings.SaveColorCodes)
+                if (!Settings.Config.Logging.SaveColorCodes)
                     msg = ChatBot.GetVerbatim(msg);
                 if (prependTimestamp)
                     msg = GetTimestamp() + ' ' + msg;
