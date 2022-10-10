@@ -50,11 +50,11 @@ If you'd like to contribute to Minecraft Console Client, great, just fork the re
 Check out: [How to update or add translations for MCC](https://mccteam.github.io/guide/contibuting.html#translations).
 
 MCC now supports the following languages (Alphabetical order) :
-  * `de.ini` (57.12% translated) : Deutsch - German
+  * `de.ini` (54.64% translated) : Deutsch - German
   * `en.ini` : English - English
-  * `fr.ini` (57.12% translated) : Français (France) - French
-  * `ru.ini` (56.18% translated) : Русский (Russkiy) - Russian
-  * `vi.ini` (56.18% translated) : Tiếng Việt (Việt Nam) - Vietnamese
+  * `fr.ini` (54.64% translated) : Français (France) - French
+  * `ru.ini` (53.74% translated) : Русский (Russkiy) - Russian
+  * `vi.ini` (53.74% translated) : Tiếng Việt (Việt Nam) - Vietnamese
   * `zh-Hans.ini` (100.00% translated) : 简体中文 - Chinese Simplified
   * `zh-Hant.ini` (100.00% translated) : 繁體中文 - Chinese Traditional
 

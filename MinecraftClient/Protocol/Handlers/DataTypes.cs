@@ -938,7 +938,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             List<byte> bytes = new()
             {
-                (byte)Convert.ToByte(paramBool)
+                Convert.ToByte(paramBool)
             };
             return bytes.ToArray();
         }
