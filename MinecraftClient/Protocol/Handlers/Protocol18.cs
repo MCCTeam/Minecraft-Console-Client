@@ -353,8 +353,7 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnServerKeepAlive();
                             break;
                         case PacketTypesIn.Ping:
-                            int ID = dataTypes.ReadNextInt(packetData);
-                            SendPacket(PacketTypesOut.Pong, dataTypes.GetInt(ID));
+                            SendPacket(PacketTypesOut.Pong, packetData);
                             break;
                         case PacketTypesIn.JoinGame:
                             handler.OnGameJoined();
@@ -1383,10 +1382,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte windowID = dataTypes.ReadNextByte(packetData);
                                 short actionID = dataTypes.ReadNextShort(packetData);
                                 bool accepted = dataTypes.ReadNextBool(packetData);
-                                if (!accepted)
-                                {
+                                if (!accepted && actionID > 0)
                                     SendWindowConfirmation(windowID, actionID, accepted);
-                                }
                             }
                             break;
                         case PacketTypesIn.ResourcePackSend:
