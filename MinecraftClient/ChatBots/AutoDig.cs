@@ -43,7 +43,7 @@ namespace MinecraftClient.ChatBots
             public double Auto_Start_Delay = 3.0;
 
             [TomlInlineComment("$config.ChatBot.AutoDig.Dig_Timeout$")]
-            public double Dig_Timeout = 30.0;
+            public double Dig_Timeout = 60.0;
 
             [TomlInlineComment("$config.ChatBot.AutoDig.Log_Block_Dig$")]
             public bool Log_Block_Dig = true;
