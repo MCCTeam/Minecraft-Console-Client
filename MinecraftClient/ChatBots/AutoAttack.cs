@@ -1,15 +1,89 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using MinecraftClient.Mapping;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
     /// <summary>
     /// The AutoAttack bot will automatically attack any hostile mob close to the player
     /// </summary>
-    class AutoAttack : ChatBot
+    public class AutoAttack : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "AutoAttack";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.AutoAttack.Mode$")]
+            public AttackMode Mode = AttackMode.single;
+
+            [TomlInlineComment("$config.ChatBot.AutoAttack.Priority$")]
+            public PriorityType Priority = PriorityType.distance;
+
+            [TomlInlineComment("$config.ChatBot.AutoAttack.Cooldown_Time$")]
+            public CooldownConfig Cooldown_Time = new(false, 1.0);
+
+            [TomlInlineComment("$config.ChatBot.AutoAttack.Interaction$")]
+            public InteractType Interaction = InteractType.Attack;
+
+            [TomlInlineComment("$config.ChatBot.AutoAttack.Attack_Hostile$")]
+            public bool Attack_Hostile = true;
+
+            [TomlInlineComment("$config.ChatBot.AutoAttack.Attack_Passive$")]
+            public bool Attack_Passive = false;
+
+            [TomlInlineComment("$config.ChatBot.AutoAttack.List_Mode$")]
+            public ListType List_Mode = ListType.whitelist;
+
+            [TomlInlineComment("$config.ChatBot.AutoAttack.Entites_List$")]
+            public List<EntityType> Entites_List = new() { EntityType.Zombie, EntityType.Cow };
+
+            public void OnSettingUpdate()
+            {
+                if (Cooldown_Time.Custom && Cooldown_Time.value <= 0)
+                {
+                    LogToConsole(BotName, Translations.TryGet("bot.autoAttack.invalidcooldown"));
+                    Cooldown_Time.value = 1.0;
+                }
+            }
+
+            public enum AttackMode { single, multi };
+
+            public enum PriorityType { distance, health };
+
+            public enum ListType { blacklist, whitelist };
+
+            public struct CooldownConfig
+            {
+                public bool Custom;
+                public double value;
+
+                public CooldownConfig()
+                {
+                    Custom = false;
+                    value = 0;
+                }
+
+                public CooldownConfig(double value)
+                {
+                    Custom = true;
+                    this.value = value;
+                }
+
+                public CooldownConfig(bool Override, double value)
+                {
+                    this.Custom = Override;
+                    this.value = value;
+                }
+            }
+        }
+
         private readonly Dictionary<int, Entity> entitiesToAttack = new(); // mobs within attack range
         private int attackCooldown = 6;
         private int attackCooldownCounter = 6;
@@ -19,73 +93,20 @@ namespace MinecraftClient.ChatBots
         private readonly int attackRange = 4;
         private Double serverTPS;
         private float health = 100;
-        private readonly bool singleMode = true;
-        private readonly bool priorityDistance = true;
-        private readonly InteractType interactMode;
         private readonly bool attackHostile = true;
         private readonly bool attackPassive = false;
-        private readonly string listMode = "blacklist";
-        private readonly List<EntityType> listedEntites = new();
 
-        public AutoAttack(
-            string mode, string priority, bool overrideAttackSpeed = false, double cooldownSeconds = 1, InteractType interaction = InteractType.Attack)
+        public AutoAttack()
         {
-            if (mode == "single")
-                singleMode = true;
-            else if (mode == "multi")
-                singleMode = false;
-            else LogToConsoleTranslated("bot.autoAttack.mode", mode);
-
-            if (priority == "distance")
-                priorityDistance = true;
-            else if (priority == "health")
-                priorityDistance = false;
-            else LogToConsoleTranslated("bot.autoAttack.priority", priority);
-
-            interactMode = interaction;
-
-            if (overrideAttackSpeed)
+            overrideAttackSpeed = Config.Cooldown_Time.Custom;
+            if (Config.Cooldown_Time.Custom)
             {
-                if (cooldownSeconds <= 0)
-                {
-                    LogToConsoleTranslated("bot.autoAttack.invalidcooldown");
-                }
-                else
-                {
-                    this.overrideAttackSpeed = overrideAttackSpeed;
-                    attackCooldownSeconds = cooldownSeconds;
-                    attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
-                }
+                attackCooldownSeconds = Config.Cooldown_Time.value;
+                attackCooldown = Convert.ToInt32(Math.Truncate(attackCooldownSeconds / 0.1) + 1);
             }
 
-            attackHostile = Settings.AutoAttack_Attack_Hostile;
-            attackPassive = Settings.AutoAttack_Attack_Passive;
-
-            if (Settings.AutoAttack_ListMode.Length > 0)
-            {
-                listMode = Settings.AutoAttack_ListMode.ToLower();
-
-                if (!(listMode.Equals("whitelist", StringComparison.OrdinalIgnoreCase) || listMode.Equals("blacklist", StringComparison.OrdinalIgnoreCase)))
-                {
-                    LogToConsole(Translations.TryGet("bot.autoAttack.invalidlist"));
-                    listMode = "blacklist";
-                }
-            }
-            else LogToConsole(Translations.TryGet("bot.autoAttack.invalidlist"));
-
-            if (File.Exists(Settings.AutoAttack_ListFile))
-            {
-                string[] entityList = LoadDistinctEntriesFromFile(Settings.AutoAttack_ListFile);
-
-                if (entityList.Length > 0)
-                {
-                    foreach (var item in entityList)
-                    {
-                        if (Enum.TryParse(item, true, out EntityType resultingType))
-                            listedEntites.Add(resultingType);
-                    }
-                }
-            }
+            attackHostile = Config.Attack_Hostile;
+            attackPassive = Config.Attack_Passive;
         }
 
         public override void Initialize()
@@ -108,10 +129,10 @@ namespace MinecraftClient.ChatBots
                 attackCooldownCounter = attackCooldown;
                 if (entitiesToAttack.Count > 0)
                 {
-                    if (singleMode)
+                    if (Config.Mode == Configs.AttackMode.single)
                     {
                         int priorityEntity = 0;
-                        if (priorityDistance) // closest distance priority
+                        if (Config.Priority == Configs.PriorityType.distance) // closest distance priority
                         {
                             double distance = 5;
                             foreach (var entity in entitiesToAttack)
@@ -142,7 +163,7 @@ namespace MinecraftClient.ChatBots
                             // check entity distance and health again
                             if (ShouldAttackEntity(entitiesToAttack[priorityEntity]))
                             {
-                                InteractEntity(priorityEntity, interactMode); // hit the entity!
+                                InteractEntity(priorityEntity, Config.Interaction); // hit the entity!
                                 SendAnimation(Inventory.Hand.MainHand); // Arm animation
                             }
                         }
@@ -154,7 +175,7 @@ namespace MinecraftClient.ChatBots
                             // check that we are in range once again.
                             if (ShouldAttackEntity(entity.Value))
                             {
-                                InteractEntity(entity.Key, interactMode); // hit the entity!
+                                InteractEntity(entity.Key, Config.Interaction); // hit the entity!
                             }
                         }
                         SendAnimation(Inventory.Hand.MainHand); // Arm animation
@@ -206,10 +227,13 @@ namespace MinecraftClient.ChatBots
             if (attackPassive && entity.Type.IsPassive())
                 result = true;
 
-            if (listedEntites.Count > 0)
+            if (Config.Entites_List.Count > 0)
             {
-                bool inList = listedEntites.Contains(entity.Type);
-                result = listMode.Equals("blacklist") ? (!inList && result) : (inList);
+                bool inList = Config.Entites_List.Contains(entity.Type);
+                if (Config.List_Mode == Configs.ListType.blacklist)
+                    result = !inList && result;
+                else
+                    result = inList;
             }
 
             return result;

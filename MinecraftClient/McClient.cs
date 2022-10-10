@@ -14,6 +14,7 @@ using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient
 {
@@ -142,12 +143,11 @@ namespace MinecraftClient
         /// <param name="port">The server port to use</param>
         /// <param name="protocolversion">Minecraft protocol version to use</param>
         /// <param name="forgeInfo">ForgeInfo item stating that Forge is enabled</param>
-        /// <param name="command">The text or command to send. Will only be sent if singlecommand is set to true.</param>
-        public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo, string? command)
+        public McClient(SessionToken session, PlayerKeyPair? playerKeyPair, string server_ip, ushort port, int protocolversion, ForgeInfo? forgeInfo)
         {
-            terrainAndMovementsEnabled = Settings.TerrainAndMovements;
-            inventoryHandlingEnabled = Settings.InventoryHandling;
-            entityHandlingEnabled = Settings.EntityHandling;
+            terrainAndMovementsEnabled = Config.Main.Advanced.TerrainAndMovements;
+            inventoryHandlingEnabled = Config.Main.Advanced.InventoryHandling;
+            entityHandlingEnabled = Config.Main.Advanced.EntityHandling;
 
             sessionid = session.ID;
             if (!Guid.TryParse(session.PlayerID, out uuid))
@@ -159,64 +159,47 @@ namespace MinecraftClient
             this.protocolversion = protocolversion;
             this.playerKeyPair = playerKeyPair;
 
-            Log = Settings.LogToFile
-                ? new FileLogLogger(Settings.ExpandVars(Settings.LogFile), Settings.PrependTimestamp)
+            Log = Settings.Config.Logging.LogToFile
+                ? new FileLogLogger(Config.AppVar.ExpandVars(Settings.Config.Logging.LogFile), Settings.Config.Logging.PrependTimestamp)
                 : new FilteredLogger();
-            Log.DebugEnabled = Settings.DebugMessages;
-            Log.InfoEnabled = Settings.InfoMessages;
-            Log.ChatEnabled = Settings.ChatMessages;
-            Log.WarnEnabled = Settings.WarningMessages;
-            Log.ErrorEnabled = Settings.ErrorMessages;
+            Log.DebugEnabled = Config.Logging.DebugMessages;
+            Log.InfoEnabled = Config.Logging.InfoMessages;
+            Log.ChatEnabled = Config.Logging.ChatMessages;
+            Log.WarnEnabled = Config.Logging.WarningMessages;
+            Log.ErrorEnabled = Config.Logging.ErrorMessages;
 
-            if (command == null)
-            {
-                /* Load commands from Commands namespace */
-                LoadCommands();
+            /* Load commands from Commands namespace */
+            LoadCommands();
 
-                if (botsOnHold.Count == 0)
-                    RegisterBots();
-            }
+            if (botsOnHold.Count == 0)
+                RegisterBots();
 
             try
             {
                 client = ProxyHandler.NewTcpClient(host, port);
                 client.ReceiveBufferSize = 1024 * 1024;
-                client.ReceiveTimeout = Settings.Timeout * 1000; // Default: 30 seconds
+                client.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000; // Default: 30 seconds
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
                 Log.Info(Translations.Get("mcc.version_supported"));
 
-                if (command == null)
-                {
-                    timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
-                    timeoutdetector.Item1.Name = "MCC Connection timeout detector";
-                    timeoutdetector.Item1.Start(timeoutdetector.Item2.Token);
-                }
+                timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
+                timeoutdetector.Item1.Name = "MCC Connection timeout detector";
+                timeoutdetector.Item1.Start(timeoutdetector.Item2.Token);
 
                 try
                 {
                     if (handler.Login(this.playerKeyPair, session))
                     {
-                        if (command != null)
-                        {
-                            handler.SendChatMessage(command, playerKeyPair);
-                            Log.Info(Translations.Get("mcc.single_cmd", command));
-                            Thread.Sleep(5000);
-                            handler.Disconnect();
-                            Thread.Sleep(1000);
-                        }
-                        else
-                        {
-                            foreach (ChatBot bot in botsOnHold)
-                                BotLoad(bot, false);
-                            botsOnHold.Clear();
+                        foreach (ChatBot bot in botsOnHold)
+                            BotLoad(bot, false);
+                        botsOnHold.Clear();
 
-                            Log.Info(Translations.Get("mcc.joined", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
+                        Log.Info(Translations.Get("mcc.joined", Config.Main.Advanced.InternalCmdChar.ToLogString()));
 
-                            cmdprompt = new CancellationTokenSource();
-                            ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt);
-                            ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
-                            ConsoleInteractive.ConsoleReader.OnKeyInput += ConsoleIO.AutocompleteHandler;
-                        }
+                        cmdprompt = new CancellationTokenSource();
+                        ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt);
+                        ConsoleInteractive.ConsoleReader.MessageReceived += ConsoleReaderOnMessageReceived;
+                        ConsoleInteractive.ConsoleReader.OnKeyInput += ConsoleIO.AutocompleteHandler;
                     }
                     else
                     {
@@ -253,7 +236,7 @@ namespace MinecraftClient
                 ReconnectionAttemptsLeft--;
                 Program.Restart();
             }
-            else if (command == null && Settings.interactiveMode)
+            else if (InternalConfig.InteractiveMode)
             {
                 ConsoleInteractive.ConsoleReader.StopReadThread();
                 ConsoleInteractive.ConsoleReader.MessageReceived -= ConsoleReaderOnMessageReceived;
@@ -269,25 +252,25 @@ namespace MinecraftClient
         /// </summary>
         private void RegisterBots(bool reload = false)
         {
-            if (Settings.AntiAFK_Enabled) { BotLoad(new AntiAFK(Settings.AntiAFK_Delay, Settings.AntiAFK_UseTerrain_Handling, Settings.AntiAFK_Walk_Range, Settings.AntiAFK_Walk_Retries)); }
-            if (Settings.Hangman_Enabled) { BotLoad(new HangmanGame(Settings.Hangman_English)); }
-            if (Settings.Alerts_Enabled) { BotLoad(new Alerts()); }
-            if (Settings.ChatLog_Enabled) { BotLoad(new ChatLog(Settings.ExpandVars(Settings.ChatLog_File), Settings.ChatLog_Filter, Settings.ChatLog_DateTime)); }
-            if (Settings.PlayerLog_Enabled) { BotLoad(new PlayerListLogger(Settings.PlayerLog_Delay, Settings.ExpandVars(Settings.PlayerLog_File))); }
-            if (Settings.AutoRelog_Enabled) { BotLoad(new AutoRelog(Settings.AutoRelog_Delay_Min, Settings.AutoRelog_Delay_Max, Settings.AutoRelog_Retries)); }
-            if (Settings.ScriptScheduler_Enabled) { BotLoad(new ScriptScheduler(Settings.ExpandVars(Settings.ScriptScheduler_TasksFile))); }
-            if (Settings.RemoteCtrl_Enabled) { BotLoad(new RemoteControl()); }
-            if (Settings.AutoRespond_Enabled) { BotLoad(new AutoRespond(Settings.AutoRespond_Matches, Settings.AutoRespond_MatchColors)); }
-            if (Settings.AutoAttack_Enabled) { BotLoad(new AutoAttack(Settings.AutoAttack_Mode, Settings.AutoAttack_Priority, Settings.AutoAttack_OverrideAttackSpeed, Settings.AutoAttack_CooldownSeconds, Settings.AutoAttack_Interaction)); }
-            if (Settings.AutoFishing_Enabled) { BotLoad(new AutoFishing()); }
-            if (Settings.AutoEat_Enabled) { BotLoad(new AutoEat(Settings.AutoEat_hungerThreshold)); }
-            if (Settings.Mailer_Enabled) { BotLoad(new Mailer()); }
-            if (Settings.AutoCraft_Enabled) { BotLoad(new AutoCraft(Settings.AutoCraft_configFile)); }
-            if (Settings.AutoDrop_Enabled) { BotLoad(new AutoDrop(Settings.AutoDrop_Mode, Settings.AutoDrop_items)); }
-            if (Settings.ReplayMod_Enabled && reload) { BotLoad(new ReplayCapture(Settings.ReplayMod_BackupInterval)); }
-            if (Settings.FollowPlayer_Enabled) { BotLoad(new FollowPlayer(Settings.FollowPlayer_UpdateLimit, Settings.FollowPlayer_UpdateLimit)); }
-            if (Settings.Map_Enabled) { BotLoad(new Map()); }
-
+            if (Config.ChatBot.Alerts.Enabled) { BotLoad(new Alerts()); }
+            if (Config.ChatBot.AntiAFK.Enabled) { BotLoad(new AntiAFK()); }
+            if (Config.ChatBot.AutoAttack.Enabled) { BotLoad(new AutoAttack()); }
+            if (Config.ChatBot.AutoCraft.Enabled) { BotLoad(new AutoCraft()); }
+            if (Config.ChatBot.AutoDig.Enabled) { BotLoad(new AutoDig()); }
+            if (Config.ChatBot.AutoDrop.Enabled) { BotLoad(new AutoDrop()); }
+            if (Config.ChatBot.AutoEat.Enabled) { BotLoad(new AutoEat()); }
+            if (Config.ChatBot.AutoFishing.Enabled) { BotLoad(new AutoFishing()); }
+            if (Config.ChatBot.AutoRelog.Enabled) { BotLoad(new AutoRelog()); }
+            if (Config.ChatBot.AutoRespond.Enabled) { BotLoad(new AutoRespond()); }
+            if (Config.ChatBot.ChatLog.Enabled) { BotLoad(new ChatLog()); }
+            if (Config.ChatBot.FollowPlayer.Enabled) { BotLoad(new FollowPlayer()); }
+            if (Config.ChatBot.HangmanGame.Enabled) { BotLoad(new HangmanGame()); }
+            if (Config.ChatBot.Mailer.Enabled) { BotLoad(new Mailer()); }
+            if (Config.ChatBot.Map.Enabled) { BotLoad(new Map()); }
+            if (Config.ChatBot.PlayerListLogger.Enabled) { BotLoad(new PlayerListLogger()); }
+            if (Config.ChatBot.RemoteControl.Enabled) { BotLoad(new RemoteControl()); }
+            if (Config.ChatBot.ReplayCapture.Enabled && reload) { BotLoad(new ReplayCapture()); }
+            if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
         }
@@ -302,7 +285,7 @@ namespace MinecraftClient
             {
                 string text = chatQueue.Dequeue();
                 handler.SendChatMessage(text, playerKeyPair);
-                nextMessageSendTime = DateTime.Now + Settings.messageCooldown;
+                nextMessageSendTime = DateTime.Now + TimeSpan.FromSeconds(Config.Main.Advanced.MessageCooldown);
             }
         }
 
@@ -336,7 +319,7 @@ namespace MinecraftClient
             {
                 lock (locationLock)
                 {
-                    for (int i = 0; i < Settings.MovementSpeed; i++) //Needs to run at 20 tps; MCC runs at 10 tps
+                    for (int i = 0; i < Config.Main.Advanced.MovementSpeed; i++) //Needs to run at 20 tps; MCC runs at 10 tps
                     {
                         if (_yaw == null || _pitch == null)
                         {
@@ -349,10 +332,8 @@ namespace MinecraftClient
                                 Location next = path.Dequeue();
                                 steps = Movement.Move2Steps(location, next, ref motionY);
 
-                                if (Settings.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
-                                {
+                                if (Config.Main.Advanced.MoveHeadWhileWalking) // Disable head movements to avoid anti-cheat triggers
                                     UpdateLocation(location, next + new Location(0, 1, 0)); // Update yaw and pitch to look at next step
-                                }
                             }
                             else
                             {
@@ -370,7 +351,7 @@ namespace MinecraftClient
                 }
             }
 
-            if (Settings.AutoRespawn && respawnTicks > 0)
+            if (Config.Main.Advanced.AutoRespawn && respawnTicks > 0)
             {
                 respawnTicks--;
                 if (respawnTicks == 0)
@@ -404,7 +385,7 @@ namespace MinecraftClient
 
                 lock (lastKeepAliveLock)
                 {
-                    if (lastKeepAlive.AddSeconds(Settings.Timeout) < DateTime.Now)
+                    if (lastKeepAlive.AddSeconds(Config.Main.Advanced.TcpTimeout) < DateTime.Now)
                     {
                         if (((CancellationToken)o!).IsCancellationRequested)
                             return;
@@ -471,7 +452,7 @@ namespace MinecraftClient
 
             if (timeoutdetector != null)
             {
-                if (Thread.CurrentThread != timeoutdetector.Item1)
+                if (timeoutdetector != null && Thread.CurrentThread != timeoutdetector.Item1)
                     timeoutdetector.Item2.Cancel();
                 timeoutdetector = null;
             }
@@ -572,11 +553,11 @@ namespace MinecraftClient
                 text = text.Trim();
                 if (text.Length > 0)
                 {
-                    if (Settings.internalCmdChar == ' ' || text[0] == Settings.internalCmdChar)
+                    if (Config.Main.Advanced.InternalCmdChar.ToChar() == ' ' || text[0] == Config.Main.Advanced.InternalCmdChar.ToChar())
                     {
                         string? response_msg = "";
-                        string command = Settings.internalCmdChar == ' ' ? text : text[1..];
-                        if (!PerformInternalCommand(Settings.ExpandVars(command), ref response_msg, Settings.GetVariables()) && Settings.internalCmdChar == '/')
+                        string command = Config.Main.Advanced.InternalCmdChar.ToChar() == ' ' ? text : text[1..];
+                        if (!PerformInternalCommand(Config.AppVar.ExpandVars(command), ref response_msg, Settings.Config.AppVar.GetVariables()) && Config.Main.Advanced.InternalCmdChar.ToChar() == '/')
                         {
                             SendText(text);
                         }
@@ -659,7 +640,7 @@ namespace MinecraftClient
                     }
                     else response_msg = Translations.Get("icmd.unknown", command_name);
                 }
-                else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Settings.internalCmdChar);
+                else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Config.Main.Advanced.InternalCmdChar.ToChar());
             }
             else if (cmds.ContainsKey(command_name))
             {
@@ -845,7 +826,6 @@ namespace MinecraftClient
                 DispatchBotEvent(bot => bot.Initialize(), new ChatBot[] { b });
             if (handler != null)
                 DispatchBotEvent(bot => bot.AfterGameJoined(), new ChatBot[] { b });
-            Settings.SingleCommand = "";
         }
 
         /// <summary>
@@ -2395,18 +2375,19 @@ namespace MinecraftClient
         /// </summary>
         public void OnGameJoined()
         {
-            if (!String.IsNullOrWhiteSpace(Settings.BrandInfo))
-                handler.SendBrandInfo(Settings.BrandInfo.Trim());
+            string? bandString = Config.Main.Advanced.BrandInfo.ToBrandString();
+            if (!String.IsNullOrWhiteSpace(bandString))
+                handler.SendBrandInfo(bandString.Trim());
 
-            if (Settings.MCSettings_Enabled)
+            if (Config.MCSettings.Enabled)
                 handler.SendClientSettings(
-                    Settings.MCSettings_Locale,
-                    Settings.MCSettings_RenderDistance,
-                    Settings.MCSettings_Difficulty,
-                    Settings.MCSettings_ChatMode,
-                    Settings.MCSettings_ChatColors,
-                    Settings.MCSettings_Skin_All,
-                    Settings.MCSettings_MainHand);
+                    Config.MCSettings.Locale,
+                    Config.MCSettings.RenderDistance,
+                    (byte)Config.MCSettings.Difficulty,
+                    (byte)Config.MCSettings.ChatMode,
+                    Config.MCSettings.ChatColors,
+                    Config.MCSettings.Skin.GetByte(),
+                    (byte)Config.MCSettings.MainHand);
 
 
             if (inventoryHandlingRequested)
@@ -2484,15 +2465,15 @@ namespace MinecraftClient
             {
                 case MovementType.Sneak:
                     // https://minecraft.fandom.com/wiki/Sneaking#Effects - Sneaking  1.31m/s
-                    Settings.MovementSpeed = 2;
+                    Config.Main.Advanced.MovementSpeed = 2;
                     break;
                 case MovementType.Walk:
                     // https://minecraft.fandom.com/wiki/Walking#Usage - Walking 4.317 m/s
-                    Settings.MovementSpeed = 4;
+                    Config.Main.Advanced.MovementSpeed = 4;
                     break;
                 case MovementType.Sprint:
                     // https://minecraft.fandom.com/wiki/Sprinting#Usage - Sprinting 5.612 m/s
-                    Settings.MovementSpeed = 5;
+                    Config.Main.Advanced.MovementSpeed = 5;
                     break;
             }
         }
@@ -2601,7 +2582,7 @@ namespace MinecraftClient
 
             if (message.isSignedChat)
             {
-                if (!Settings.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
+                if (!Config.Signature.ShowIllegalSignedChat && !message.isSystemChat && !(bool)message.isSignatureLegal!)
                     return;
                 messageText = ChatParser.ParseSignedChat(message, links);
             }
@@ -2615,7 +2596,7 @@ namespace MinecraftClient
 
             Log.Chat(messageText);
 
-            if (Settings.DisplayChatLinks)
+            if (Config.Main.Advanced.ShowChatLinks)
                 foreach (string link in links)
                     Log.Chat(Translations.Get("mcc.link", link));
 
@@ -3024,14 +3005,14 @@ namespace MinecraftClient
 
             if (health <= 0)
             {
-                if (Settings.AutoRespawn)
+                if (Config.Main.Advanced.AutoRespawn)
                 {
                     Log.Info(Translations.Get("mcc.player_dead_respawn"));
                     respawnTicks = 10;
                 }
                 else
                 {
-                    Log.Info(Translations.Get("mcc.player_dead", (Settings.internalCmdChar == ' ' ? "" : "" + Settings.internalCmdChar)));
+                    Log.Info(Translations.Get("mcc.player_dead", Config.Main.Advanced.InternalCmdChar.ToLogString()));
                 }
                 DispatchBotEvent(bot => bot.OnDeath());
             }
@@ -3310,6 +3291,17 @@ namespace MinecraftClient
                     DispatchBotEvent(bot => bot.OnThunderLevelChange(value));
                     break;
             }
+        }
+
+        /// <summary>
+        /// Called when a block is changed.
+        /// </summary>
+        /// <param name="location">The location of the block.</param>
+        /// <param name="block">The block</param>
+        public void OnBlockChange(Location location, Block block)
+        {
+            world.SetBlock(location, block);
+            DispatchBotEvent(bot => bot.OnBlockChange(location, block));
         }
 
         #endregion

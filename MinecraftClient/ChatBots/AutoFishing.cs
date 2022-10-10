@@ -1,6 +1,8 @@
 ﻿using System;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using Tomlet.Attributes;
+using static MinecraftClient.ChatBots.AutoFishing.Configs;
 
 namespace MinecraftClient.ChatBots
 {
@@ -8,8 +10,130 @@ namespace MinecraftClient.ChatBots
     /// The AutoFishing bot semi-automates fishing.
     /// The player needs to have a fishing rod in hand, then manually send it using the UseItem command.
     /// </summary>
-    class AutoFishing : ChatBot
+    public class AutoFishing : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "AutoFishing";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Antidespawn$")]
+            public bool Antidespawn = false;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Mainhand$")]
+            public bool Mainhand = true;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Auto_Start$")]
+            public bool Auto_Start = true;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Cast_Delay$")]
+            public double Cast_Delay = 0.4;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Fishing_Delay$")]
+            public double Fishing_Delay = 3.0;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Fishing_Timeout$")]
+            public double Fishing_Timeout = 300.0;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Durability_Limit$")]
+            public double Durability_Limit = 2;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Auto_Rod_Switch$")]
+            public bool Auto_Rod_Switch = true;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Stationary_Threshold$")]
+            public double Stationary_Threshold = 0.001;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Hook_Threshold$")]
+            public double Hook_Threshold = 0.2;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Log_Fish_Bobber$")]
+            public bool Log_Fish_Bobber = false;
+
+            [TomlInlineComment("$config.ChatBot.AutoFishing.Enable_Move$")]
+            public bool Enable_Move = false;
+
+            [TomlPrecedingComment("$config.ChatBot.AutoFishing.Movements$")]
+            public LocationConfig[] Movements = new LocationConfig[]
+            {
+                new LocationConfig(12.34, -23.45),
+                new LocationConfig(123.45, 64, -654.32, -25.14, 36.25),
+                new LocationConfig(-1245.63, 63.5, 1.2),
+            };
+
+            public void OnSettingUpdate()
+            {
+                if (Cast_Delay < 0)
+                    Cast_Delay = 0;
+
+                if (Fishing_Delay < 0)
+                    Fishing_Delay = 0;
+
+                if (Fishing_Timeout < 0)
+                    Fishing_Timeout = 0;
+
+                if (Durability_Limit < 0)
+                    Durability_Limit = 0;
+                else if (Durability_Limit > 64)
+                    Durability_Limit = 64;
+
+                if (Stationary_Threshold < 0)
+                    Stationary_Threshold = -Stationary_Threshold;
+
+                if (Hook_Threshold < 0)
+                    Hook_Threshold = -Hook_Threshold;
+            }
+
+            public struct LocationConfig
+            {
+                public Coordination? XYZ;
+                public Facing? facing;
+
+                public LocationConfig(double yaw, double pitch)
+                {
+                    this.XYZ = null;
+                    this.facing = new(yaw, pitch);
+                }
+
+                public LocationConfig(double x, double y, double z)
+                {
+                    this.XYZ = new(x, y, z);
+                    this.facing = null;
+                }
+
+                public LocationConfig(double x, double y, double z, double yaw, double pitch)
+                {
+                    this.XYZ = new(x, y, z);
+                    this.facing = new(yaw, pitch);
+                }
+
+                public struct Coordination
+                {
+                    public double x, y, z;
+
+                    public Coordination(double x, double y, double z)
+                    {
+                        this.x = x; this.y = y; this.z = z;
+                    }
+                }
+
+                public struct Facing
+                {
+                    public double yaw, pitch;
+
+                    public Facing(double yaw, double pitch)
+                    {
+                        this.yaw = yaw; this.pitch = pitch;
+                    }
+                }
+            }
+        }
+
         private int fishCount = 0;
         private bool inventoryEnabled;
         private int castTimeout = 12;
@@ -54,13 +178,13 @@ namespace MinecraftClient.ChatBots
         private void StartFishing()
         {
             isFishing = false;
-            if (Settings.AutoFishing_AutoStart)
+            if (Config.Auto_Start)
             {
-                double delay = Settings.AutoFishing_FishingDelay;
+                double delay = Config.Fishing_Delay;
                 LogToConsole(Translations.Get("bot.autoFish.start", delay));
                 lock (stateLock)
                 {
-                    counter = (int)(delay * 10);
+                    counter = Settings.DoubleToTick(delay);
                     state = FishingState.StartMove;
                 }
             }
@@ -84,7 +208,7 @@ namespace MinecraftClient.ChatBots
 
         private void UseFishRod()
         {
-            if (Settings.AutoFishing_Mainhand)
+            if (Config.Mainhand)
                 UseItemInHand();
             else
                 UseItemInLeftHand();
@@ -100,7 +224,7 @@ namespace MinecraftClient.ChatBots
                         break;
                     case FishingState.WaitingToCast:
                         if (AutoEat.Eating)
-                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                         else if (--counter < 0)
                             state = FishingState.CastingRod;
                         break;
@@ -116,28 +240,27 @@ namespace MinecraftClient.ChatBots
                                 castTimeout *= 2; // Exponential backoff
                             LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.cast_timeout", castTimeout / 10.0));
 
-                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
                         }
                         break;
                     case FishingState.WaitingFishToBite:
-                        if (++counter > (int)(Settings.AutoFishing_FishingTimeout * 10))
+                        if (++counter > Settings.DoubleToTick(Config.Fishing_Timeout))
                         {
                             LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.fishing_timeout"));
 
-                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
                         }
                         break;
                     case FishingState.StartMove:
                         if (--counter < 0)
                         {
-                            double[,]? locationList = Settings.AutoFishing_Location;
-                            if (locationList != null)
+                            if (Config.Enable_Move && Config.Movements.Length > 0)
                             {
                                 if (GetTerrainEnabled())
                                 {
-                                    UpdateLocation(locationList);
+                                    UpdateLocation(Config.Movements);
                                     state = FishingState.WaitingMovement;
                                 }
                                 else
@@ -148,7 +271,7 @@ namespace MinecraftClient.ChatBots
                             }
                             else
                             {
-                                counter = (int)(Settings.AutoFishing_CastDelay * 10);
+                                counter = Settings.DoubleToTick(Config.Cast_Delay);
                                 state = FishingState.DurabilityCheck;
                                 goto case FishingState.DurabilityCheck;
                             }
@@ -167,7 +290,7 @@ namespace MinecraftClient.ChatBots
                     case FishingState.DurabilityCheck:
                         if (DurabilityCheck())
                         {
-                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
                         }
                         break;
@@ -181,7 +304,7 @@ namespace MinecraftClient.ChatBots
         {
             if (entity.Type == EntityType.FishingBobber && entity.ObjectData == GetPlayerEntityID())
             {
-                if (Settings.AutoFishing_LogFishingBobber)
+                if (Config.Log_Fish_Bobber)
                     LogToConsole(string.Format("FishingBobber spawn at {0}, distance = {1:0.00}", entity.Location, GetCurrentLocation().Distance(entity.Location)));
 
                 LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.throw"));
@@ -202,20 +325,20 @@ namespace MinecraftClient.ChatBots
         {
             if (entity != null && entity.Type == EntityType.FishingBobber && entity.ID == fishingBobber!.ID)
             {
-                if (Settings.AutoFishing_LogFishingBobber)
+                if (Config.Log_Fish_Bobber)
                     LogToConsole(string.Format("FishingBobber despawn at {0}", entity.Location));
 
                 if (isFishing)
                 {
                     isFishing = false;
 
-                    if (Settings.AutoFishing_Antidespawn)
+                    if (Config.Antidespawn)
                     {
                         LogToConsoleTranslated("bot.autoFish.despawn");
 
                         lock (stateLock)
                         {
-                            counter = (int)(Settings.AutoFishing_CastDelay * 10);
+                            counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
                         }
                     }
@@ -233,12 +356,12 @@ namespace MinecraftClient.ChatBots
                 double Dz = LastPos.Z - Pos.Z;
                 LastPos = Pos;
 
-                if (Settings.AutoFishing_LogFishingBobber)
+                if (Config.Log_Fish_Bobber)
                     LogToConsole(string.Format("FishingBobber {0}  Dx={1:0.000000} Dy={2:0.000000} Dz={3:0.000000}", Pos, Dx, Math.Abs(Dy), Dz));
 
-                if (Math.Abs(Dx) < Math.Abs(Settings.AutoFishing_StationaryThreshold) &&
-                    Math.Abs(Dz) < Math.Abs(Settings.AutoFishing_StationaryThreshold) &&
-                    Math.Abs(Dy) > Math.Abs(Settings.AutoFishing_HookThreshold))
+                if (Math.Abs(Dx) < Math.Abs(Config.Stationary_Threshold) &&
+                    Math.Abs(Dz) < Math.Abs(Config.Stationary_Threshold) &&
+                    Math.Abs(Dy) > Math.Abs(Config.Hook_Threshold))
                 {
                     // prevent triggering multiple time
                     if ((DateTime.Now - CaughtTime).TotalSeconds > 1)
@@ -283,7 +406,7 @@ namespace MinecraftClient.ChatBots
         public void OnCaughtFish()
         {
             ++fishCount;
-            if (Settings.AutoFishing_Location != null)
+            if (Config.Enable_Move && Config.Movements.Length > 0)
                 LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.caught_at",
                     fishingBobber!.Location.X, fishingBobber!.Location.Y, fishingBobber!.Location.Z, fishCount));
             else
@@ -298,47 +421,36 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        private void UpdateLocation(double[,] locationList)
+        private void UpdateLocation(LocationConfig[] locationList)
         {
-            if (curLocationIdx >= locationList.GetLength(0))
+            if (curLocationIdx >= locationList.Length)
             {
-                curLocationIdx = Math.Max(0, locationList.GetLength(0) - 2);
+                curLocationIdx = Math.Max(0, locationList.Length - 2);
                 moveDir = -1;
             }
             else if (curLocationIdx < 0)
             {
-                curLocationIdx = Math.Min(locationList.GetLength(0) - 1, 1);
+                curLocationIdx = Math.Min(locationList.Length - 1, 1);
                 moveDir = 1;
             }
 
-            int locationType = locationList.GetLength(1);
+            LocationConfig curConfig = locationList[curLocationIdx];
 
-            if (locationType == 2)
-            {
-                nextYaw = (float)locationList[curLocationIdx, 0];
-                nextPitch = (float)locationList[curLocationIdx, 1];
-            }
-            else if (locationType == 3)
-            {
-                nextYaw = GetYaw();
-                nextPitch = GetPitch();
-            }
-            else if (locationType == 5)
-            {
-                nextYaw = (float)locationList[curLocationIdx, 3];
-                nextPitch = (float)locationList[curLocationIdx, 4];
-            }
+            if (curConfig.facing != null)
+                (nextYaw, nextPitch) = ((float)curConfig.facing.Value.yaw, (float)curConfig.facing.Value.pitch);
+            else
+                (nextYaw, nextPitch) = (GetYaw(), GetPitch());
 
-            if (locationType == 3 || locationType == 5)
+            if (curConfig.XYZ != null)
             {
                 Location current = GetCurrentLocation();
-                Location goal = new(locationList[curLocationIdx, 0], locationList[curLocationIdx, 1], locationList[curLocationIdx, 2]);
+                Location goal = new(curConfig.XYZ.Value.x, curConfig.XYZ.Value.y, curConfig.XYZ.Value.z);
 
                 bool isMoveSuccessed;
                 if (!Movement.CheckChunkLoading(GetWorld(), current, goal))
                 {
-                    LogToConsole(Translations.Get("cmd.move.chunk_not_loaded", goal.X, goal.Y, goal.Z));
                     isMoveSuccessed = false;
+                    LogToConsole(Translations.Get("cmd.move.chunk_not_loaded", goal.X, goal.Y, goal.Z));
                 }
                 else
                 {
@@ -347,8 +459,7 @@ namespace MinecraftClient.ChatBots
 
                 if (!isMoveSuccessed)
                 {
-                    nextYaw = GetYaw();
-                    nextPitch = GetPitch();
+                    (nextYaw, nextPitch) = (GetYaw(), GetPitch());
                     LogToConsole(Translations.Get("cmd.move.fail", goal));
                 }
                 else
@@ -365,13 +476,13 @@ namespace MinecraftClient.ChatBots
             if (!inventoryEnabled)
                 return true;
 
-            bool useMainHand = Settings.AutoFishing_Mainhand;
+            bool useMainHand = Config.Mainhand;
             Container container = GetPlayerInventory();
 
             int itemSolt = useMainHand ? GetCurrentSlot() + 36 : 45;
 
             if (container.Items.TryGetValue(itemSolt, out Item? handItem) &&
-                handItem.Type == ItemType.FishingRod && (64 - handItem.Damage) >= Settings.AutoFishing_DurabilityLimit)
+                handItem.Type == ItemType.FishingRod && (64 - handItem.Damage) >= Config.Durability_Limit)
             {
                 isWaitingRod = false;
                 return true;
@@ -381,11 +492,11 @@ namespace MinecraftClient.ChatBots
                 if (!isWaitingRod)
                     LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.no_rod"));
 
-                if (Settings.AutoFishing_AutoRodSwitch)
+                if (Config.Auto_Rod_Switch)
                 {
                     foreach ((int slot, Item item) in container.Items)
                     {
-                        if (item.Type == ItemType.FishingRod && (64 - item.Damage) >= Settings.AutoFishing_DurabilityLimit)
+                        if (item.Type == ItemType.FishingRod && (64 - item.Damage) >= Config.Durability_Limit)
                         {
                             WindowAction(0, slot, WindowActionType.LeftClick);
                             WindowAction(0, itemSolt, WindowActionType.LeftClick);

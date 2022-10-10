@@ -185,7 +185,7 @@ namespace MinecraftClient.Commands
                         response.AppendLine(String.Format(" #{0} - {1}§8", inventoryId, inventory.Title));
 
                         string? asciiArt = inventory.Type.GetAsciiArt();
-                        if (asciiArt != null && Settings.DisplayInventoryLayout)
+                        if (asciiArt != null && Settings.Config.Main.Advanced.ShowInventoryLayout)
                             response.AppendLine(asciiArt);
 
                         int selectedHotbar = handler.GetCurrentSlot() + 1;

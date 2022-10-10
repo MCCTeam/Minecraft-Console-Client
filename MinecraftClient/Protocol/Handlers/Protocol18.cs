@@ -22,6 +22,7 @@ using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
 using MinecraftClient.Protocol.Session;
 using MinecraftClient.Proxy;
+using static MinecraftClient.Settings;
 
 namespace MinecraftClient.Protocol.Handlers
 {
@@ -242,6 +243,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             catch (ObjectDisposedException) { }
             catch (OperationCanceledException) { }
+            catch (NullReferenceException) { }
 
             if (cancelToken.IsCancellationRequested)
                 return;
@@ -461,8 +463,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 {
                                     //Hide system messages or xp bar messages?
                                     messageType = dataTypes.ReadNextByte(packetData);
-                                    if ((messageType == 1 && !Settings.DisplaySystemMessages)
-                                        || (messageType == 2 && !Settings.DisplayXPBarMessages))
+                                    if ((messageType == 1 && !Config.Main.Advanced.ShowSystemMessages)
+                                        || (messageType == 2 && !Config.Main.Advanced.ShowSystemMessages))
                                         break;
 
                                     if (protocolVersion >= MC_1_16_5_Version)
@@ -482,8 +484,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 string? unsignedChatContent = hasUnsignedChatContent ? dataTypes.ReadNextString(packetData) : null;
 
                                 messageType = dataTypes.ReadNextVarInt(packetData);
-                                if ((messageType == 1 && !Settings.DisplaySystemMessages)
-                                        || (messageType == 2 && !Settings.DisplayXPBarMessages))
+                                if ((messageType == 1 && !Config.Main.Advanced.ShowSystemMessages)
+                                        || (messageType == 2 && !Config.Main.Advanced.ShowXPBarMessages))
                                     break;
 
                                 Guid senderUUID = dataTypes.ReadNextUUID(packetData);
@@ -974,18 +976,20 @@ namespace MinecraftClient.Protocol.Handlers
                                     int blocksSize = dataTypes.ReadNextVarInt(packetData);
                                     for (int i = 0; i < blocksSize; i++)
                                     {
-                                        ulong block = (ulong)dataTypes.ReadNextVarLong(packetData);
-                                        int blockId = (int)(block >> 12);
-                                        int localX = (int)((block >> 8) & 0x0F);
-                                        int localZ = (int)((block >> 4) & 0x0F);
-                                        int localY = (int)(block & 0x0F);
+                                        ulong chunkSectionPosition = (ulong)dataTypes.ReadNextVarLong(packetData);
+                                        int blockId = (int)(chunkSectionPosition >> 12);
+                                        int localX = (int)((chunkSectionPosition >> 8) & 0x0F);
+                                        int localZ = (int)((chunkSectionPosition >> 4) & 0x0F);
+                                        int localY = (int)(chunkSectionPosition & 0x0F);
 
-                                        Block b = new((ushort)blockId);
+                                        Block block = new((ushort)blockId);
                                         int blockX = (sectionX * 16) + localX;
                                         int blockY = (sectionY * 16) + localY;
                                         int blockZ = (sectionZ * 16) + localZ;
-                                        var l = new Location(blockX, blockY, blockZ);
-                                        handler.GetWorld().SetBlock(l, b);
+
+                                        Location location = new(blockX, blockY, blockZ);
+
+                                        handler.OnBlockChange(location, block);
                                     }
                                 }
                                 else
@@ -1017,8 +1021,10 @@ namespace MinecraftClient.Protocol.Handlers
 
                                         int blockX = locationXZ >> 4;
                                         int blockZ = locationXZ & 0x0F;
+
+                                        Location location = new(chunkX, chunkZ, blockX, blockY, blockZ);
                                         Block block = new(blockIdMeta);
-                                        handler.GetWorld().SetBlock(new Location(chunkX, chunkZ, blockX, blockY, blockZ), block);
+                                        handler.OnBlockChange(location, block);
                                     }
                                 }
                             }
@@ -1048,11 +1054,16 @@ namespace MinecraftClient.Protocol.Handlers
                                     int blockZ = dataTypes.ReadNextInt(packetData);
                                     short blockId = (short)dataTypes.ReadNextVarInt(packetData);
                                     byte blockMeta = dataTypes.ReadNextByte(packetData);
-                                    handler.GetWorld().SetBlock(new Location(blockX, blockY, blockZ), new Block(blockId, blockMeta));
+
+                                    Location location = new(blockX, blockY, blockZ);
+                                    Block block = new(blockId, blockMeta);
+                                    handler.OnBlockChange(location, block);
                                 }
                                 else
                                 {
-                                    handler.GetWorld().SetBlock(dataTypes.ReadNextLocation(packetData), new Block((ushort)dataTypes.ReadNextVarInt(packetData)));
+                                    Location location = dataTypes.ReadNextLocation(packetData);
+                                    Block block = new((ushort)dataTypes.ReadNextVarInt(packetData));
+                                    handler.OnBlockChange(location, block);
                                 }
                             }
                             break;
@@ -1603,7 +1614,7 @@ namespace MinecraftClient.Protocol.Handlers
                         case PacketTypesIn.SystemChat:
                             string systemMessage = dataTypes.ReadNextString(packetData);
                             int msgType = dataTypes.ReadNextVarInt(packetData);
-                            if ((msgType == 1 && !Settings.DisplaySystemMessages))
+                            if ((msgType == 1 && !Config.Main.Advanced.ShowSystemMessages))
                                 break;
                             handler.OnTextReceived(new(systemMessage, true, msgType, Guid.Empty, true));
                             break;
@@ -1925,7 +1936,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
-                        SessionCache.Store(Settings.Login.ToLower(), session);
+                        SessionCache.Store(Config.Main.General.Account.Login.ToLower(), session);
                     }
                     else
                     {
@@ -2119,7 +2130,7 @@ namespace MinecraftClient.Protocol.Handlers
                 {
                     string result = dataTypes.ReadNextString(packetData); //Get the Json data
 
-                    if (Settings.DebugMessages)
+                    if (Config.Logging.DebugMessages)
                     {
                         // May contain formatting codes, cannot use WriteLineFormatted
                         Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -2230,7 +2241,7 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns> List< Argument Name, Argument Value > </returns>
         private List<Tuple<string, string>>? CollectCommandArguments(string command)
         {
-            if (!isOnlineMode || !Settings.SignMessageInCommand)
+            if (!isOnlineMode || !Config.Signature.SignMessageInCommand)
                 return null;
 
             List<Tuple<string, string>> needSigned = new();
@@ -2371,7 +2382,7 @@ namespace MinecraftClient.Protocol.Handlers
                     DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                     fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                    if (!isOnlineMode || playerKeyPair == null || !Settings.SignChat)
+                    if (!isOnlineMode || playerKeyPair == null || !Config.Signature.SignChat)
                     {
                         fields.AddRange(dataTypes.GetLong(0));   // Salt: Long
                         fields.AddRange(dataTypes.GetVarInt(0)); // Signature Length: VarInt

@@ -25,7 +25,7 @@ namespace MinecraftClient.Protocol.Keys
 
                 response = request.Post("application/json", "");
 
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLine(response.Body.ToString());
                 }
@@ -47,7 +47,7 @@ namespace MinecraftClient.Protocol.Keys
             {
                 int code = (response == null) ? 0 : response.StatusCode;
                 ConsoleIO.WriteLineFormatted("§cFetch profile key failed: HttpCode = " + code + ", Error = " + e.Message);
-                if (Settings.DebugMessages)
+                if (Settings.Config.Logging.DebugMessages)
                 {
                     ConsoleIO.WriteLineFormatted("§c" + e.StackTrace);
                 }

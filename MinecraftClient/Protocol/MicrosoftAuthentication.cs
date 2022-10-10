@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using static MinecraftClient.Settings;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.GeneralConfig;
 
 namespace MinecraftClient.Protocol
 {
@@ -204,7 +206,7 @@ namespace MinecraftClient.Protocol
 
             var response = request.Post("application/x-www-form-urlencoded", postData);
 
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine(response.ToString());
             }
@@ -271,7 +273,7 @@ namespace MinecraftClient.Protocol
             request.Headers.Add("x-xbl-contract-version", "0");
 
             var accessToken = loginResponse.AccessToken;
-            if (Settings.LoginMethod == "browser")
+            if (Config.Main.General.Method == LoginMethod.browser)
             {
                 // Our own client ID must have d= in front of the token or HTTP status 400
                 // "Stolen" client ID must not have d= in front of the token or HTTP status 400
@@ -288,7 +290,7 @@ namespace MinecraftClient.Protocol
                 + "\"TokenType\": \"JWT\""
                 + "}";
             var response = request.Post("application/json", payload);
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine(response.ToString());
             }
@@ -338,7 +340,7 @@ namespace MinecraftClient.Protocol
                 + "\"TokenType\": \"JWT\""
                 + "}";
             var response = request.Post("application/json", payload);
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine(response.ToString());
             }
@@ -418,7 +420,7 @@ namespace MinecraftClient.Protocol
             string payload = "{\"identityToken\": \"XBL3.0 x=" + userHash + ";" + xstsToken + "\"}";
             var response = request.Post("application/json", payload);
 
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine(response.ToString());
             }
@@ -440,7 +442,7 @@ namespace MinecraftClient.Protocol
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
             var response = request.Get();
 
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine(response.ToString());
             }
@@ -456,7 +458,7 @@ namespace MinecraftClient.Protocol
             request.Headers.Add("Authorization", string.Format("Bearer {0}", accessToken));
             var response = request.Get();
 
-            if (Settings.DebugMessages)
+            if (Settings.Config.Logging.DebugMessages)
             {
                 ConsoleIO.WriteLine(response.ToString());
             }

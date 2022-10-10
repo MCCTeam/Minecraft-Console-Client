@@ -1,330 +1,217 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using MinecraftClient.Mapping;
 using MinecraftClient.Protocol;
-using MinecraftClient.Protocol.Session;
+using MinecraftClient.Proxy;
+using Tomlet;
+using Tomlet.Attributes;
+using Tomlet.Models;
+using static MinecraftClient.Settings.AppVarConfigHelper;
+using static MinecraftClient.Settings.ChatBotConfigHealper;
+using static MinecraftClient.Settings.ChatFormatConfigHelper;
+using static MinecraftClient.Settings.HeadCommentHealper;
+using static MinecraftClient.Settings.LoggingConfigHealper;
+using static MinecraftClient.Settings.MainConfigHealper;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
+using static MinecraftClient.Settings.MCSettingsConfigHealper;
+using static MinecraftClient.Settings.SignatureConfigHelper;
 
 namespace MinecraftClient
 {
-    /// <summary>
-    /// Contains main settings for Minecraft Console Client
-    /// Allows settings loading from an INI file
-    /// </summary>
-
     public static class Settings
     {
-        //Minecraft Console Client client information used for BrandInfo setting
-        private const string MCCBrandInfo = "Minecraft-Console-Client/" + Program.Version;
-
-        //Main Settings.
-        //Login: Username or email adress used as login for Minecraft/Mojang account
-        //Username: The actual username of the user, obtained after login to the account
-        public static string Login = "";
-        public static string Username = "";
-        public static string Password = "";
-        public static ProtocolHandler.AccountType AccountType = ProtocolHandler.AccountType.Mojang;
-        public static string LoginMethod = "mcc";
-        public static string ServerIP = "";
-        public static ushort ServerPort = 25565;
-        public static string ServerVersion = "";
-        public static bool ServerForceForge = false;
-        public static bool ServerAutodetectForge = true;
-        public static string SingleCommand = "";
-        public static string ConsoleTitle = "";
-
-        //Proxy Settings
-        public static bool ProxyEnabledLogin = false;
-        public static bool ProxyEnabledIngame = false;
-        public static string ProxyHost = "";
-        public static int ProxyPort = 0;
-        public static Proxy.ProxyHandler.Type proxyType = Proxy.ProxyHandler.Type.HTTP;
-        public static string ProxyUsername = "";
-        public static string ProxyPassword = "";
-
-        //Minecraft Settings
-        public static bool MCSettings_Enabled = true;
-        public static string MCSettings_Locale = "en_US";
-        public static byte MCSettings_Difficulty = 0;
-        public static byte MCSettings_RenderDistance = 8;
-        public static byte MCSettings_ChatMode = 0;
-        public static bool MCSettings_ChatColors = true;
-        public static byte MCSettings_MainHand = 0;
-        public static bool MCSettings_Skin_Hat = true;
-        public static bool MCSettings_Skin_Cape = true;
-        public static bool MCSettings_Skin_Jacket = false;
-        public static bool MCSettings_Skin_Sleeve_Left = false;
-        public static bool MCSettings_Skin_Sleeve_Right = false;
-        public static bool MCSettings_Skin_Pants_Left = false;
-        public static bool MCSettings_Skin_Pants_Right = false;
-        public static byte MCSettings_Skin_All
-        {
-            get
-            {
-                return (byte)(
-                      ((MCSettings_Skin_Cape ? 1 : 0) << 0)
-                    | ((MCSettings_Skin_Jacket ? 1 : 0) << 1)
-                    | ((MCSettings_Skin_Sleeve_Left ? 1 : 0) << 2)
-                    | ((MCSettings_Skin_Sleeve_Right ? 1 : 0) << 3)
-                    | ((MCSettings_Skin_Pants_Left ? 1 : 0) << 4)
-                    | ((MCSettings_Skin_Pants_Right ? 1 : 0) << 5)
-                    | ((MCSettings_Skin_Hat ? 1 : 0) << 6)
-                );
-            }
-        }
+        private const int CommentsAlignPosition = 45;
+        private readonly static Regex CommentRegex = new(@"^(.*)\s?#\s\$([\w\.]+)\$\s*$$", RegexOptions.Compiled);
 
         //Other Settings
-        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\8b\8bf1298bd44b0e5b21d747394a8acd2c218e09ed"; //MC 1.17 en_GB.lang
-        public static string TranslationsFile_Website_Index = "https://launchermeta.mojang.com/v1/packages/e5af543d9b3ce1c063a97842c38e50e29f961f00/1.17.json";
+        public static string TranslationsFile_FromMCDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\.minecraft\assets\objects\48\482e0dae05abfa35ab5cb076e41fda77b4fb9a08"; //MC 1.19 en_GB.lang
+        public static string TranslationsFile_Website_Index = "https://piston-meta.mojang.com/v1/packages/b5c7548ddb9e584e84a5f762da5b78211c715a63/1.19.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
-        public static TimeSpan messageCooldown = TimeSpan.FromSeconds(2);
-        public static List<string> Bots_Owners = new();
-        public static string Language = "en_GB";
-        public static bool interactiveMode = true;
-        public static char internalCmdChar = '/';
-        public static bool playerHeadAsIcon = false;
-        public static string chatbotLogFile = "";
-        public static bool CacheScripts = true;
-        public static string? BrandInfo = MCCBrandInfo;
-        public static bool DisplaySystemMessages = true;
-        public static bool DisplayXPBarMessages = true;
-        public static bool DisplayChatLinks = true;
-        public static bool DisplayInventoryLayout = true;
-        public static bool TerrainAndMovements = false;
-        public static bool GravityEnabled = true;
-        public static bool InventoryHandling = false;
-        public static string PrivateMsgsCmdName = "tell";
-        public static CacheType SessionCaching = CacheType.Disk;
-        public static CacheType ProfileKeyCaching = CacheType.Disk;
-        public static bool ResolveSrvRecords = true;
-        public static bool ResolveSrvRecordsShortTimeout = true;
-        public static bool EntityHandling = false;
-        public static bool AutoRespawn = false;
-        public static bool MinecraftRealmsEnabled = true;
-        public static bool MoveHeadWhileWalking = true;
-        public static int Timeout = 30;
-        public static bool EnableEmoji = true;
-        public static int MovementSpeed = 2;
 
-        // Signature
-        public static bool LoginWithSecureProfile = true;
-        public static bool SignChat = true;
-        public static bool SignMessageInCommand = true;
-        public static bool MarkLegallySignedMsg = false;
-        public static bool MarkModifiedMsg = true;
-        public static bool MarkIllegallySignedMsg = true;
-        public static bool MarkSystemMessage = false;
-        public static bool ShowModifiedChat = true;
-        public static bool ShowIllegalSignedChat = true;
+        public const string TranslationDocUrl = "https://mccteam.github.io/guide/contibuting.html#translations";
+        public const string GithubReleaseUrl = "https://github.com/MCCTeam/Minecraft-Console-Client/releases";
+        public const string GithubLatestReleaseUrl = GithubReleaseUrl + "/latest";
 
-        // Logging
-        public enum FilterModeEnum { Blacklist, Whitelist }
-        public static bool DebugMessages = false;
-        public static bool ChatMessages = true;
-        public static bool InfoMessages = true;
-        public static bool WarningMessages = true;
-        public static bool ErrorMessages = true;
-        public static Regex? ChatFilter = null;
-        public static Regex? DebugFilter = null;
-        public static FilterModeEnum FilterMode = FilterModeEnum.Blacklist;
-        public static bool LogToFile = false;
-        public static string LogFile = "console-log.txt";
-        public static bool PrependTimestamp = false;
-        public static bool SaveColorCodes = false;
+        public static GlobalConfig Config = new();
 
-        //AntiAFK Settings
-        public static bool AntiAFK_Enabled = false;
-        public static string AntiAFK_Delay = "600";
-        public static string AntiAFK_Command = "/ping";
-        public static bool AntiAFK_UseTerrain_Handling = false;
-        public static int AntiAFK_Walk_Range = 5;
-        public static int AntiAFK_Walk_Retries = 20;
-
-        //Hangman Settings
-        public static bool Hangman_Enabled = false;
-        public static bool Hangman_English = true;
-        public static string Hangman_FileWords_EN = "hangman-en.txt";
-        public static string Hangman_FileWords_FR = "hangman-fr.txt";
-
-        //Alerts Settings
-        public static bool Alerts_Enabled = false;
-        public static bool Alerts_Trigger_By_Words = false;
-        public static bool Alerts_Trigger_By_Rain = false;
-        public static bool Alerts_Trigger_By_Thunderstorm = false;
-        public static bool Alerts_Beep_Enabled = true;
-        public static bool Alerts_File_Logging = false;
-        public static string Alerts_MatchesFile = "alerts.txt";
-        public static string Alerts_ExcludesFile = "alerts-exclude.txt";
-        public static string Alerts_LogFile = "alerts-log.txt";
-
-        //ChatLog Settings
-        public static bool ChatLog_Enabled = false;
-        public static bool ChatLog_DateTime = true;
-        public static string ChatLog_File = "chatlog.txt";
-        public static ChatBots.ChatLog.MessageFilter ChatLog_Filter = ChatBots.ChatLog.MessageFilter.AllMessages;
-
-        //PlayerListLog Settings
-        public static bool PlayerLog_Enabled = false;
-        public static string PlayerLog_File = "playerlog.txt";
-        public static int PlayerLog_Delay = 600;
-
-        //AutoRelog Settings
-        public static bool AutoRelog_Enabled = false;
-        public static int AutoRelog_Delay_Min = 10;
-        public static int AutoRelog_Delay_Max = 10;
-        public static int AutoRelog_Retries = 3;
-        public static bool AutoRelog_IgnoreKickMessage = false;
-        public static string AutoRelog_KickMessagesFile = "kickmessages.txt";
-
-        //Script Scheduler Settings
-        public static bool ScriptScheduler_Enabled = false;
-        public static string ScriptScheduler_TasksFile = "tasks.ini";
-
-        //Remote Control
-        public static bool RemoteCtrl_Enabled = false;
-        public static bool RemoteCtrl_AutoTpaccept = true;
-        public static bool RemoteCtrl_AutoTpaccept_Everyone = false;
-
-        //Chat Message Parsing
-        public static bool ChatFormat_Builtins = true;
-        public static Regex? ChatFormat_Public = null;
-        public static Regex? ChatFormat_Private = null;
-        public static Regex? ChatFormat_TeleportRequest = null;
-
-        //Auto Respond
-        public static bool AutoRespond_Enabled = false;
-        public static string AutoRespond_Matches = "matches.ini";
-        public static bool AutoRespond_MatchColors = false;
-
-        //Auto Attack
-        public static bool AutoAttack_Enabled = false;
-        public static string AutoAttack_Mode = "single";
-        public static string AutoAttack_Priority = "distance";
-        public static bool AutoAttack_OverrideAttackSpeed = false;
-        public static double AutoAttack_CooldownSeconds = 1;
-        public static InteractType AutoAttack_Interaction = InteractType.Attack;
-        public static bool AutoAttack_Attack_Hostile = true;
-        public static bool AutoAttack_Attack_Passive = false;
-        public static string AutoAttack_ListMode = "blacklist";
-        public static string AutoAttack_ListFile = "autoattack-list.txt";
-
-        //Auto Fishing
-        public static bool AutoFishing_Enabled = false;
-        public static bool AutoFishing_Antidespawn = false;
-        public static bool AutoFishing_Mainhand = true;
-        public static bool AutoFishing_AutoStart = true;
-        public static double AutoFishing_CastDelay = 0.4;
-        public static double AutoFishing_FishingDelay = 3.0;
-        public static double AutoFishing_FishingTimeout = 300.0;
-        public static double AutoFishing_DurabilityLimit = 2;
-        public static bool AutoFishing_AutoRodSwitch = true;
-        public static double AutoFishing_StationaryThreshold = 0.001;
-        public static double AutoFishing_HookThreshold = 0.2;
-        public static bool AutoFishing_LogFishingBobber = false;
-        public static double[,]? AutoFishing_Location = null;
-
-        //Auto Eating
-        public static bool AutoEat_Enabled = false;
-        public static int AutoEat_hungerThreshold = 6;
-
-        //AutoCraft
-        public static bool AutoCraft_Enabled = false;
-        public static string AutoCraft_configFile = @"autocraft\config.ini";
-
-        //Mailer
-        public static bool Mailer_Enabled = false;
-        public static string Mailer_DatabaseFile = "MailerDatabase.ini";
-        public static string Mailer_IgnoreListFile = "MailerIgnoreList.ini";
-        public static bool Mailer_PublicInteractions = false;
-        public static int Mailer_MaxMailsPerPlayer = 10;
-        public static int Mailer_MaxDatabaseSize = 10000;
-        public static int Mailer_MailRetentionDays = 30;
-
-        //AutoDrop
-        public static bool AutoDrop_Enabled = false;
-        public static string AutoDrop_Mode = "include";
-        public static string AutoDrop_items = "";
-
-        // Replay Mod
-        public static bool ReplayMod_Enabled = false;
-        public static int ReplayMod_BackupInterval = 3000;
-
-        // Follow Player
-        public static bool FollowPlayer_Enabled = false;
-        public static int FollowPlayer_UpdateLimit = 10;
-        public static int FollowPlayer_StopAtDistance = 3;
-
-        // Map
-        public static bool Map_Enabled = false;
-        public static bool Map_Should_Resize = false;
-        public static int Map_Resize_To = 256;
-        public static bool Map_Auto_Render_On_Update = false;
-        public static bool Map_Delete_All_On_Unload = true;
-        public static bool Map_Notify_On_First_Update = true;
-
-        //Custom app variables and Minecraft accounts
-        private static readonly Dictionary<string, object> AppVars = new();
-        private static readonly Dictionary<string, KeyValuePair<string, string>> Accounts = new();
-        private static readonly Dictionary<string, KeyValuePair<string, ushort>> Servers = new();
-
-        //Temporary Server Alias storage when server list is not loaded yet
-        private static string? ServerAliasTemp = null;
-
-        //Mapping for settings sections in the INI file
-        private enum Section { Default, Main, AppVars, Proxy, MCSettings, AntiAFK, Hangman, Alerts, ChatLog, AutoRelog, ScriptScheduler, RemoteControl, ChatFormat, AutoRespond, AutoAttack, AutoFishing, AutoEat, AutoCraft, AutoDrop, Mailer, ReplayMod, FollowPlayer, PlayerListLogger, Map, Logging, Signature };
-
-        /// <summary>
-        /// Get settings section from name
-        /// </summary>
-        /// <param name="name">Section name</param>
-        /// <returns>Section enum</returns>
-        private static Section GetSection(string name)
+        public static class InternalConfig
         {
-            if (Enum.TryParse(name, true, out Section pMode))
-                return pMode;
-            return Section.Default;
+            public static string ServerIP = String.Empty;
+
+            public static ushort ServerPort = 25565;
+
+            public static string Username = string.Empty;
+
+            public static string Password = string.Empty;
+
+            public static string MinecraftVersion = string.Empty;
+
+            public static bool InteractiveMode = true;
+
+            public static bool GravityEnabled = true;
         }
 
-        /// <summary>
-        /// Load settings from the given INI file
-        /// </summary>
-        /// <param name="file">File to load</param>
-        public static void LoadFile(string file)
+        public class GlobalConfig
         {
-            Task.Factory.StartNew(() => ConsoleIO.WriteLogLine("[Settings] Loading Settings from " + Path.GetFullPath(file)));
-            if (File.Exists(file))
+            [TomlPrecedingComment("$config.Head$")]
+            public HeadComment Head
+            {
+                get { return HeadCommentHealper.Config; }
+                set { HeadCommentHealper.Config = value; HeadCommentHealper.Config.OnSettingUpdate(); }
+            }
+
+            public MainConfig Main
+            {
+                get { return MainConfigHealper.Config; }
+                set { MainConfigHealper.Config = value; MainConfigHealper.Config.OnSettingUpdate(); }
+            }
+
+            [TomlPrecedingComment("$config.Signature$")]
+            public SignatureConfig Signature
+            {
+                get { return SignatureConfigHelper.Config; }
+                set { SignatureConfigHelper.Config = value; SignatureConfigHelper.Config.OnSettingUpdate(); }
+            }
+
+            [TomlPrecedingComment("$config.Logging$")]
+            public LoggingConfig Logging
+            {
+                get { return LoggingConfigHealper.Config; }
+                set { LoggingConfigHealper.Config = value; LoggingConfigHealper.Config.OnSettingUpdate(); }
+            }
+
+            public AppVarConfig AppVar
+            {
+                get { return AppVarConfigHelper.Config; }
+                set { AppVarConfigHelper.Config = value; AppVarConfigHelper.Config.OnSettingUpdate(); }
+            }
+
+            [TomlPrecedingComment("$config.Proxy$")]
+            public ProxyHandler.Configs Proxy
+            {
+                get { return ProxyHandler.Config; }
+                set { ProxyHandler.Config = value; ProxyHandler.Config.OnSettingUpdate(); }
+            }
+
+            [TomlPrecedingComment("$config.MCSettings$")]
+            public MCSettingsConfig MCSettings
+            {
+                get { return MCSettingsConfigHealper.Config; }
+                set { MCSettingsConfigHealper.Config = value; MCSettingsConfigHealper.Config.OnSettingUpdate(); }
+            }
+
+            [TomlPrecedingComment("$config.ChatFormat$")]
+            public ChatFormatConfig ChatFormat
+            {
+                get { return ChatFormatConfigHelper.Config; }
+                set { ChatFormatConfigHelper.Config = value; ChatFormatConfigHelper.Config.OnSettingUpdate(); }
+            }
+
+            [TomlPrecedingComment("$config.ChatBot$")]
+            public ChatBotConfig ChatBot
+            {
+                get { return ChatBotConfigHealper.Config; }
+                set { ChatBotConfigHealper.Config = value; }
+            }
+
+        }
+
+        public static Tuple<bool, bool> LoadFromFile(string filepath)
+        {
+            TomlDocument document;
+            try
+            {
+                document = TomlParser.ParseFile(filepath);
+                Config = TomletMain.To<GlobalConfig>(document);
+            }
+            catch (Exception ex)
             {
                 try
                 {
-                    Section section = Section.Default;
-                    foreach (var lineRAW in File.ReadLines(file))
+                    // The old configuration file has been backed up as A.
+                    string configString = File.ReadAllText(filepath);
+                    if (configString.Contains("Some settings missing here after an upgrade?"))
                     {
-                        string line = lineRAW.Split('#')[0].Trim();
-                        if (line.Length > 1)
-                        {
-                            if (line.Length > 2 && line[0] == '[' && line[^1] == ']')
-                                section = GetSection(line[1..^1]);
-                            else
-                            {
-                                string argName = line.Split('=')[0];
-                                if (section == Section.Main && argName == "password")
-                                    line = lineRAW.Trim(); //Do not strip # in passwords
-                                if (line.Length > (argName.Length + 1))
-                                {
-                                    string argValue = line[(argName.Length + 1)..];
-                                    LoadSingleSetting(section, argName, argValue);
-                                }
-                            }
-                        }
+                        string newFilePath = Path.ChangeExtension(filepath, ".backup.ini");
+                        File.Copy(filepath, newFilePath, true);
+                        ConsoleIO.WriteLineFormatted("§cPlease use the newly generated MinecraftClient.ini");
+                        ConsoleIO.WriteLineFormatted("§cThe old MinecraftClient.ini has been backed up as " + newFilePath);
+                        ConsoleIO.WriteLine(Translations.GetOrNull("mcc.run_with_default_settings") ?? "\nMCC is running with default settings.");
+                        return new(false, true);
                     }
                 }
-                catch (IOException) { }
+                catch { }
+                ConsoleIO.WriteLineFormatted(Translations.GetOrNull("config.load.fail") ?? "§cFailed to load settings:§r");
+                ConsoleIO.WriteLine(ex.GetFullMessage());
+                return new(false, false);
+            }
+            return new(true, false);
+        }
+
+        public static void WriteToFile(string filepath, bool backupOldFile)
+        {
+            string tomlString = TomletMain.TomlStringFrom(Config);
+
+            string[] tomlList = tomlString.Split('\n');
+            StringBuilder newConfig = new();
+            foreach (string line in tomlList)
+            {
+                Match matchComment = CommentRegex.Match(line);
+                if (matchComment.Success && matchComment.Groups.Count == 3)
+                {
+                    string config = matchComment.Groups[1].Value, comment = matchComment.Groups[2].Value;
+                    if (config.Length > 0)
+                        newConfig.Append(config).Append(' ', Math.Max(1, CommentsAlignPosition - config.Length) - 1);
+                    newConfig.Append("# ").AppendLine(Translations.TryGet(comment).ReplaceLineEndings());
+                }
+                else
+                {
+                    newConfig.AppendLine(line);
+                }
+            }
+
+            bool needUpdate = true;
+            byte[] newConfigByte = Encoding.UTF8.GetBytes(newConfig.ToString());
+            if (File.Exists(filepath))
+            {
+                try
+                {
+                    if (new FileInfo(filepath).Length == newConfigByte.Length)
+                        if (File.ReadAllBytes(filepath).SequenceEqual(newConfigByte))
+                            needUpdate = false;
+                }
+                catch { }
+            }
+
+            if (needUpdate)
+            {
+                bool backupSuccessed = true;
+                if (backupOldFile && File.Exists(filepath))
+                {
+                    string backupFilePath = Path.ChangeExtension(filepath, ".backup.ini");
+                    try { File.Copy(filepath, backupFilePath, true); }
+                    catch (Exception ex)
+                    {
+                        backupSuccessed = false;
+                        ConsoleIO.WriteLineFormatted(Translations.TryGet("config.backup.fail", backupFilePath));
+                        ConsoleIO.WriteLine(ex.Message);
+                    }
+                }
+
+                if (backupSuccessed)
+                {
+                    try { File.WriteAllBytes(filepath, newConfigByte); }
+                    catch (Exception ex)
+                    {
+                        ConsoleIO.WriteLineFormatted(Translations.TryGet("config.write.fail", filepath));
+                        ConsoleIO.WriteLine(ex.Message);
+                    }
+                }
             }
         }
 
@@ -344,19 +231,7 @@ namespace MinecraftClient
                     //Load settings as --setting=value and --section.setting=value
                     if (!argument.Contains('='))
                         throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
-                    Section section = Section.Main;
-                    string argName = argument[2..].Split('=')[0];
-                    string argValue = argument[(argName.Length + 3)..];
-                    if (argName.Contains('.'))
-                    {
-                        string sectionName = argName.Split('.')[0];
-                        section = GetSection(sectionName);
-                        if (section == Section.Default)
-                            throw new ArgumentException(Translations.Get("error.setting.unknown_section", argument, sectionName));
-                        argName = argName.Split('.')[1];
-                    }
-                    if (!LoadSingleSetting(section, argName, argValue))
-                        throw new ArgumentException(Translations.Get("error.setting.unknown_or_invalid", argument));
+                    throw new NotImplementedException();
                 }
                 else if (argument.StartsWith("-") && argument.Length > 1)
                 {
@@ -367,679 +242,865 @@ namespace MinecraftClient
                 {
                     switch (positionalIndex)
                     {
-                        case 0: Login = argument; break;
-                        case 1: Password = argument; break;
-                        case 2: if (!SetServerIP(argument)) ServerAliasTemp = argument; break;
-                        case 3: SingleCommand = argument; break;
+                        case 0: 
+                            Config.Main.General.Account.Login = argument;
+                            break;
+                        case 1: 
+                            InternalConfig.Password = argument; 
+                            break;
+                        case 2: 
+                            Config.Main.SetServerIP(new MainConfig.ServerInfoConfig(argument), true); 
+                            break;
+                        case 3: 
+                            // SingleCommand = argument; 
+                            break;
                     }
                     positionalIndex++;
                 }
             }
         }
 
-        /// <summary>
-        /// Load a single setting from INI file or command-line argument
-        /// </summary>
-        /// <param name="section">Settings section</param>
-        /// <param name="argName">Setting name</param>
-        /// <param name="argValue">Setting value</param>
-        /// <returns>TRUE if setting was valid</returns>
-        private static bool LoadSingleSetting(Section section, string argName, string argValue)
+        public static class HeadCommentHealper
         {
-            switch (section)
+            public static HeadComment Config = new();
+
+            [TomlDoNotInlineObject]
+            public class HeadComment
             {
-                case Section.Main:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "login": Login = argValue; return true;
-                        case "password": Password = argValue; return true;
-                        case "type":
-                            AccountType = argValue == "mojang"
-                                ? ProtocolHandler.AccountType.Mojang
-                                : ProtocolHandler.AccountType.Microsoft; return true;
-                        case "method":
-                            argValue = ToLowerIfNeed(argValue);
-                            LoginMethod = argValue == "browser" ? "browser" : "mcc"; return true;
-                        case "serverip": if (!SetServerIP(argValue)) ServerAliasTemp = argValue; return true;
-                        case "singlecommand": SingleCommand = argValue; return true;
-                        case "language": Language = argValue; return true;
-                        case "consoletitle": ConsoleTitle = argValue; return true;
-                        case "timestamps": ConsoleIO.EnableTimestamps = str2bool(argValue); return true;
-                        case "exitonfailure": interactiveMode = !str2bool(argValue); return true;
-                        case "playerheadicon": playerHeadAsIcon = str2bool(argValue); return true;
-                        case "chatbotlogfile": chatbotLogFile = argValue; return true;
-                        case "mcversion": ServerVersion = argValue; return true;
-                        case "messagecooldown": messageCooldown = TimeSpan.FromSeconds(str2int(argValue)); return true;
-                        case "scriptcache": CacheScripts = str2bool(argValue); return true;
-                        case "showsystemmessages": DisplaySystemMessages = str2bool(argValue); return true;
-                        case "showxpbarmessages": DisplayXPBarMessages = str2bool(argValue); return true;
-                        case "showchatlinks": DisplayChatLinks = str2bool(argValue); return true;
-                        case "showinventorylayout": DisplayInventoryLayout = str2bool(argValue); return true;
-                        case "terrainandmovements": TerrainAndMovements = str2bool(argValue); return true;
-                        case "entityhandling": EntityHandling = str2bool(argValue); return true;
-                        case "enableentityhandling": EntityHandling = str2bool(argValue); return true;
-                        case "inventoryhandling": InventoryHandling = str2bool(argValue); return true;
-                        case "privatemsgscmdname": PrivateMsgsCmdName = ToLowerIfNeed(argValue).Trim(); return true;
-                        case "autorespawn": AutoRespawn = str2bool(argValue); return true;
-                        // Backward compatible so people can still enable debug with old config format
-                        case "debugmessages": DebugMessages = str2bool(argValue); return true;
-                        case "minecraftrealms": MinecraftRealmsEnabled = str2bool(argValue); return true;
-                        case "moveheadwhilewalking": MoveHeadWhileWalking = str2bool(argValue); return true;
-                        case "timeout": Timeout = str2int(argValue); return true;
-                        case "enableemoji": EnableEmoji = str2bool(argValue); return true;
-                        case "movementspwwd": MovementSpeed = str2int(argValue); return true;
+                [TomlProperty("Current Version")]
+                public string CurrentVersion { get; set; } = Program.BuildInfo ?? "Development Build";
+                
+                [TomlProperty("Latest Version")]
+                public string LatestVersion { get; set; } = "Unknown";
 
-                        case "botowners":
-                            Bots_Owners.Clear();
-                            string lowerArgValue = ToLowerIfNeed(argValue);
-                            string[] names = lowerArgValue.Split(',');
-                            if (!argValue.Contains(',') && lowerArgValue.EndsWith(".txt") && File.Exists(argValue))
-                                names = File.ReadAllLines(argValue);
-                            foreach (string name in names)
-                                if (!String.IsNullOrWhiteSpace(name))
-                                    Bots_Owners.Add(name.Trim());
-                            return true;
-
-                        case "internalcmdchar":
-                            argValue = ToLowerIfNeed(argValue);
-                            switch (argValue)
-                            {
-                                case "none": internalCmdChar = ' '; break;
-                                case "slash": internalCmdChar = '/'; break;
-                                case "backslash": internalCmdChar = '\\'; break;
-                            }
-                            return true;
-
-                        case "sessioncache":
-                            if (argValue == "none") { SessionCaching = CacheType.None; }
-                            else if (argValue == "memory") { SessionCaching = CacheType.Memory; }
-                            else if (argValue == "disk") { SessionCaching = CacheType.Disk; }
-                            return true;
-
-                        case "profilekeycache":
-                            if (argValue == "none") { ProfileKeyCaching = CacheType.None; }
-                            else if (argValue == "memory") { ProfileKeyCaching = CacheType.Memory; }
-                            else if (argValue == "disk") { ProfileKeyCaching = CacheType.Disk; }
-                            return true;
-
-                        case "accountlist":
-                            if (File.Exists(argValue))
-                            {
-                                foreach (string account_line in File.ReadAllLines(argValue))
-                                {
-                                    //Each line contains account data: 'Alias,Login,Password'
-                                    string[] account_data = account_line.Split('#')[0].Trim().Split(',');
-                                    if (account_data.Length == 3)
-                                        Accounts[ToLowerIfNeed(account_data[0])]
-                                            = new KeyValuePair<string, string>(account_data[1], account_data[2]);
-                                }
-
-                                //Try user value against aliases after load
-                                SetAccount(Login);
-                            }
-                            return true;
-
-                        case "serverlist":
-                            if (File.Exists(argValue))
-                            {
-                                //Backup current server info
-                                string server_host_temp = ServerIP;
-                                ushort server_port_temp = ServerPort;
-
-                                foreach (string server_line in File.ReadAllLines(argValue))
-                                {
-                                    //Each line contains server data: 'Alias,Host:Port'
-                                    string[] server_data = server_line.Split('#')[0].Trim().Split(',');
-                                    server_data[0] = ToLowerIfNeed(server_data[0]);
-                                    if (server_data.Length == 2
-                                        && server_data[0] != "localhost"
-                                        && !server_data[0].Contains('.')
-                                        && SetServerIP(server_data[1]))
-                                        Servers[server_data[0]]
-                                            = new KeyValuePair<string, ushort>(ServerIP, ServerPort);
-                                }
-
-                                //Restore current server info
-                                ServerIP = server_host_temp;
-                                ServerPort = server_port_temp;
-
-                                //Try server value against aliases after load
-                                if (!String.IsNullOrEmpty(ServerAliasTemp))
-                                {
-                                    SetServerIP(ServerAliasTemp);
-                                    ServerAliasTemp = null;
-                                }
-                            }
-                            return true;
-
-                        case "brandinfo":
-                            BrandInfo = ToLowerIfNeed(argValue.Trim()) switch
-                            {
-                                "mcc" => MCCBrandInfo,
-                                "vanilla" => "vanilla",
-                                _ => null,
-                            };
-                            return true;
-
-                        case "resolvesrvrecords":
-                            if (ToLowerIfNeed(argValue.Trim()) == "fast")
-                            {
-                                ResolveSrvRecords = true;
-                                ResolveSrvRecordsShortTimeout = true;
-                            }
-                            else
-                            {
-                                ResolveSrvRecords = str2bool(argValue);
-                                ResolveSrvRecordsShortTimeout = false;
-                            }
-                            return true;
-
-                        case "mcforge":
-                            if (ToLowerIfNeed(argValue) == "auto")
-                            {
-                                ServerAutodetectForge = true;
-                                ServerForceForge = false;
-                            }
-                            else
-                            {
-                                ServerAutodetectForge = false;
-                                ServerForceForge = str2bool(argValue);
-                            }
-                            return true;
-                    }
-                    break;
-
-                case Section.Signature:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "login_with_secure_profile": LoginWithSecureProfile = str2bool(argValue); return true;
-                        case "sign_chat": SignChat = str2bool(argValue); return true;
-                        case "sign_message_in_command": SignMessageInCommand = str2bool(argValue); return true;
-                        case "mark_legally_signed_msg": MarkLegallySignedMsg = str2bool(argValue); return true;
-                        case "mark_modified_msg": MarkModifiedMsg = str2bool(argValue); return true;
-                        case "mark_illegally_signed_msg": MarkIllegallySignedMsg = str2bool(argValue); return true;
-                        case "mark_system_message": MarkSystemMessage = str2bool(argValue); return true;
-                        case "show_modified_chat": ShowModifiedChat = str2bool(argValue); return true;
-                        case "show_illegal_signed_chat": ShowIllegalSignedChat = str2bool(argValue); return true;
-                    }
-                    break;
-
-                case Section.Logging:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "debugmessages": DebugMessages = str2bool(argValue); return true;
-                        case "chatmessages": ChatMessages = str2bool(argValue); return true;
-                        case "warningmessages": WarningMessages = str2bool(argValue); return true;
-                        case "errormessages": ErrorMessages = str2bool(argValue); return true;
-                        case "infomessages": InfoMessages = str2bool(argValue); return true;
-                        case "chatfilter": ChatFilter = new Regex(argValue); return true;
-                        case "debugfilter": DebugFilter = new Regex(argValue); return true;
-                        case "filtermode":
-                            if (ToLowerIfNeed(argValue).StartsWith("white"))
-                                FilterMode = FilterModeEnum.Whitelist;
-                            else
-                                FilterMode = FilterModeEnum.Blacklist;
-                            return true;
-                        case "logtofile": LogToFile = str2bool(argValue); return true;
-                        case "logfile": LogFile = argValue; return true;
-                        case "prependtimestamp": PrependTimestamp = str2bool(argValue); return true;
-                        case "savecolorcodes": SaveColorCodes = str2bool(argValue); return true;
-                    }
-                    break;
-
-                case Section.Alerts:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": Alerts_Enabled = str2bool(argValue); return true;
-                        case "trigger_by_words": Alerts_Trigger_By_Words = str2bool(argValue); return true;
-                        case "trigger_by_rain": Alerts_Trigger_By_Rain = str2bool(argValue); return true;
-                        case "trigger_by_thunderstorm": Alerts_Trigger_By_Thunderstorm = str2bool(argValue); return true;
-                        case "alertsfile": Alerts_MatchesFile = argValue; return true;
-                        case "excludesfile": Alerts_ExcludesFile = argValue; return true;
-                        case "beeponalert": Alerts_Beep_Enabled = str2bool(argValue); return true;
-                        case "logtofile": Alerts_File_Logging = str2bool(argValue); return true;
-                        case "logfile": Alerts_LogFile = argValue; return true;
-                    }
-                    break;
-
-                case Section.AntiAFK:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": AntiAFK_Enabled = str2bool(argValue); return true;
-                        case "delay": AntiAFK_Delay = argValue; return true;
-                        case "command": AntiAFK_Command = argValue == "" ? "/ping" : argValue; return true;
-                        case "use_terrain_handling": AntiAFK_UseTerrain_Handling = str2bool(argValue); return true;
-                        case "walk_range": AntiAFK_Walk_Range = str2int(argValue); return true;
-                        case "walk_retries": AntiAFK_Walk_Retries = str2int(argValue); return true;
-                    }
-                    break;
-
-                case Section.AutoRelog:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": AutoRelog_Enabled = str2bool(argValue); return true;
-                        case "retries": AutoRelog_Retries = str2int(argValue); return true;
-                        case "ignorekickmessage": AutoRelog_IgnoreKickMessage = str2bool(argValue); return true;
-                        case "kickmessagesfile": AutoRelog_KickMessagesFile = argValue; return true;
-
-                        case "delay":
-                            string[] delayParts = argValue.Split('-');
-                            if (delayParts.Length == 1)
-                            {
-                                AutoRelog_Delay_Min = str2int(delayParts[0]);
-                                AutoRelog_Delay_Max = AutoRelog_Delay_Min;
-                            }
-                            else
-                            {
-                                AutoRelog_Delay_Min = str2int(delayParts[0]);
-                                AutoRelog_Delay_Max = str2int(delayParts[1]);
-                            }
-                            return true;
-                    }
-                    break;
-
-                case Section.ChatLog:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": ChatLog_Enabled = str2bool(argValue); return true;
-                        case "timestamps": ChatLog_DateTime = str2bool(argValue); return true;
-                        case "filter": ChatLog_Filter = ChatBots.ChatLog.str2filter(argValue); return true;
-                        case "logfile": ChatLog_File = argValue; return true;
-                    }
-                    break;
-
-                case Section.Hangman:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": Hangman_Enabled = str2bool(argValue); return true;
-                        case "english": Hangman_English = str2bool(argValue); return true;
-                        case "wordsfile": Hangman_FileWords_EN = argValue; return true;
-                        case "fichiermots": Hangman_FileWords_FR = argValue; return true;
-                    }
-                    break;
-
-                case Section.ScriptScheduler:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": ScriptScheduler_Enabled = str2bool(argValue); return true;
-                        case "tasksfile": ScriptScheduler_TasksFile = argValue; return true;
-                    }
-                    break;
-
-                case Section.RemoteControl:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": RemoteCtrl_Enabled = str2bool(argValue); return true;
-                        case "autotpaccept": RemoteCtrl_AutoTpaccept = str2bool(argValue); return true;
-                        case "tpaccepteveryone": RemoteCtrl_AutoTpaccept_Everyone = str2bool(argValue); return true;
-                    }
-                    break;
-
-                case Section.ChatFormat:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "builtins": ChatFormat_Builtins = str2bool(argValue); return true;
-                        case "public": ChatFormat_Public = new Regex(argValue); return true;
-                        case "private": ChatFormat_Private = new Regex(argValue); return true;
-                        case "tprequest": ChatFormat_TeleportRequest = new Regex(argValue); return true;
-                    }
-                    break;
-
-                case Section.Proxy:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled":
-                            ProxyEnabledLogin = ProxyEnabledIngame = str2bool(argValue);
-                            if (ToLowerIfNeed(argValue.Trim()) == "login")
-                                ProxyEnabledLogin = true;
-                            return true;
-                        case "type":
-                            argValue = ToLowerIfNeed(argValue);
-                            if (argValue == "http") { proxyType = Proxy.ProxyHandler.Type.HTTP; }
-                            else if (argValue == "socks4") { proxyType = Proxy.ProxyHandler.Type.SOCKS4; }
-                            else if (argValue == "socks4a") { proxyType = Proxy.ProxyHandler.Type.SOCKS4a; }
-                            else if (argValue == "socks5") { proxyType = Proxy.ProxyHandler.Type.SOCKS5; }
-                            return true;
-                        case "server":
-                            string[] host_splitted = argValue.Split(':');
-                            if (host_splitted.Length == 1)
-                            {
-                                ProxyHost = host_splitted[0];
-                                ProxyPort = 80;
-                            }
-                            else if (host_splitted.Length == 2)
-                            {
-                                ProxyHost = host_splitted[0];
-                                ProxyPort = str2int(host_splitted[1]);
-                            }
-                            return true;
-                        case "username": ProxyUsername = argValue; return true;
-                        case "password": ProxyPassword = argValue; return true;
-                    }
-                    break;
-
-                case Section.AppVars:
-                    SetVar(argName, argValue);
-                    return true;
-
-                case Section.AutoRespond:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": AutoRespond_Enabled = str2bool(argValue); return true;
-                        case "matchesfile": AutoRespond_Matches = argValue; return true;
-                        case "matchcolors": AutoRespond_MatchColors = str2bool(argValue); return true;
-                    }
-                    break;
-
-                case Section.AutoAttack:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": AutoAttack_Enabled = str2bool(argValue); return true;
-                        case "mode": AutoAttack_Mode = ToLowerIfNeed(argValue); return true;
-                        case "priority": AutoAttack_Priority = ToLowerIfNeed(argValue); return true;
-                        case "cooldownseconds":
-                            if (ToLowerIfNeed(argValue) == "auto")
-                            {
-                                AutoAttack_OverrideAttackSpeed = false;
-                            }
-                            else
-                            {
-                                AutoAttack_OverrideAttackSpeed = true;
-                                AutoAttack_CooldownSeconds = str2float(argValue);
-                            }
-                            return true;
-                        case "interaction":
-                            return Enum.TryParse(argValue, true, out AutoAttack_Interaction);
-                        case "attackhostile":
-                            AutoAttack_Attack_Hostile = str2bool(argValue); return true;
-                        case "attackpassive":
-                            AutoAttack_Attack_Passive = str2bool(argValue); return true;
-                        case "listmode":
-                            AutoAttack_ListMode = argValue; return true;
-                        case "listfile":
-                            AutoAttack_ListFile = argValue; return true;
-                    }
-                    break;
-
-                case Section.AutoFishing:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": AutoFishing_Enabled = str2bool(argValue); return true;
-                        case "antidespawn": AutoFishing_Antidespawn = str2bool(argValue); return true;
-                        case "main_hand": AutoFishing_Mainhand = str2bool(argValue); return true;
-                        case "auto_start": AutoFishing_AutoStart = str2bool(argValue); return true;
-                        case "cast_delay": AutoFishing_CastDelay = str2double(argValue); return true;
-                        case "fishing_delay": AutoFishing_FishingDelay = str2double(argValue); return true;
-                        case "fishing_timeout": AutoFishing_FishingTimeout = str2double(argValue); return true;
-                        case "durability_limit": AutoFishing_DurabilityLimit = str2int(argValue); return true;
-                        case "auto_rod_switch": AutoFishing_AutoRodSwitch = str2bool(argValue); return true;
-                        case "stationary_threshold": AutoFishing_StationaryThreshold = str2double(argValue); return true;
-                        case "hook_threshold": AutoFishing_HookThreshold = str2double(argValue); return true;
-                        case "log_fishing_bobber": AutoFishing_LogFishingBobber = str2bool(argValue); return true;
-                        case "location": AutoFishing_Location = str2locationList(argValue); return true;
-                    }
-                    break;
-
-                case Section.AutoEat:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": AutoEat_Enabled = str2bool(argValue); return true;
-                        case "threshold": AutoEat_hungerThreshold = str2int(argValue); return true;
-                    }
-                    break;
-
-                case Section.AutoCraft:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": AutoCraft_Enabled = str2bool(argValue); return true;
-                        case "configfile": AutoCraft_configFile = argValue; return true;
-                    }
-                    break;
-
-                case Section.AutoDrop:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": AutoDrop_Enabled = str2bool(argValue); return true;
-                        case "mode": AutoDrop_Mode = argValue; return true;
-                        case "items": AutoDrop_items = argValue; return true;
-                    }
-                    break;
-
-                case Section.MCSettings:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": MCSettings_Enabled = str2bool(argValue); return true;
-                        case "locale": MCSettings_Locale = argValue; return true;
-                        case "difficulty":
-                            switch (ToLowerIfNeed(argValue))
-                            {
-                                case "peaceful": MCSettings_Difficulty = 0; break;
-                                case "easy": MCSettings_Difficulty = 1; break;
-                                case "normal": MCSettings_Difficulty = 2; break;
-                                case "difficult": MCSettings_Difficulty = 3; break;
-                            }
-                            return true;
-                        case "renderdistance":
-                            MCSettings_RenderDistance = 2;
-                            if (argValue.All(Char.IsDigit))
-                            {
-                                MCSettings_RenderDistance = (byte)str2int(argValue);
-                            }
-                            else
-                            {
-                                switch (ToLowerIfNeed(argValue))
-                                {
-                                    case "tiny": MCSettings_RenderDistance = 2; break;
-                                    case "short": MCSettings_RenderDistance = 4; break;
-                                    case "medium": MCSettings_RenderDistance = 8; break;
-                                    case "far": MCSettings_RenderDistance = 16; break;
-                                }
-                            }
-                            return true;
-                        case "chatmode":
-                            switch (ToLowerIfNeed(argValue))
-                            {
-                                case "enabled": MCSettings_ChatMode = 0; break;
-                                case "commands": MCSettings_ChatMode = 1; break;
-                                case "disabled": MCSettings_ChatMode = 2; break;
-                            }
-                            return true;
-                        case "chatcolors": MCSettings_ChatColors = str2bool(argValue); return true;
-                        case "skin_cape": MCSettings_Skin_Cape = str2bool(argValue); return true;
-                        case "skin_jacket": MCSettings_Skin_Jacket = str2bool(argValue); return true;
-                        case "skin_sleeve_left": MCSettings_Skin_Sleeve_Left = str2bool(argValue); return true;
-                        case "skin_sleeve_right": MCSettings_Skin_Sleeve_Right = str2bool(argValue); return true;
-                        case "skin_pants_left": MCSettings_Skin_Pants_Left = str2bool(argValue); return true;
-                        case "skin_pants_right": MCSettings_Skin_Pants_Right = str2bool(argValue); return true;
-                        case "skin_hat": MCSettings_Skin_Hat = str2bool(argValue); return true;
-                        case "main_hand":
-                            switch (ToLowerIfNeed(argValue))
-                            {
-                                case "left": MCSettings_MainHand = 0; break;
-                                case "right": MCSettings_MainHand = 1; break;
-                            }
-                            return true;
-                    }
-                    break;
-
-                case Section.Mailer:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": Mailer_Enabled = str2bool(argValue); return true;
-                        case "database": Mailer_DatabaseFile = argValue; return true;
-                        case "ignorelist": Mailer_IgnoreListFile = argValue; return true;
-                        case "publicinteractions": Mailer_PublicInteractions = str2bool(argValue); return true;
-                        case "maxmailsperplayer": Mailer_MaxMailsPerPlayer = str2int(argValue); return true;
-                        case "maxdatabasesize": Mailer_MaxDatabaseSize = str2int(argValue); return true;
-                        case "retentiondays": Mailer_MailRetentionDays = str2int(argValue); return true;
-                    }
-                    break;
-
-                case Section.ReplayMod:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": ReplayMod_Enabled = str2bool(argValue); return true;
-                        case "backupinterval": ReplayMod_BackupInterval = str2int(argValue); return true;
-                    }
-                    break;
-
-                case Section.FollowPlayer:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": FollowPlayer_Enabled = str2bool(argValue); return true;
-                        case "update_limit": FollowPlayer_UpdateLimit = str2int(argValue); return true;
-                        case "stop_at_distance": FollowPlayer_StopAtDistance = str2int(argValue); return true;
-                    }
-                    break;
-                case Section.PlayerListLogger:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": PlayerLog_Enabled = str2bool(argValue); return true;
-                        case "log_file": PlayerLog_File = argValue; return true;
-                        case "log_delay": PlayerLog_Delay = str2int(argValue); return true;
-                    }
-                    break;
-                case Section.Map:
-                    switch (ToLowerIfNeed(argName))
-                    {
-                        case "enabled": Map_Enabled = str2bool(argValue); return true;
-                        case "resize_map": Map_Should_Resize = str2bool(argValue); return true;
-                        case "resize_to": Map_Resize_To = str2int(argValue); return true;
-                        case "auto_render_on_update": Map_Auto_Render_On_Update = str2bool(argValue); return true;
-                        case "delete_rendered_on_unload": Map_Delete_All_On_Unload = str2bool(argValue); return true;
-                        case "notify_on_first_update": Map_Notify_On_First_Update = str2bool(argValue); return true;
-                    }
-                    break;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Write an INI file with default settings
-        /// </summary>
-        /// <param name="settingsfile">File to (over)write</param>
-        public static void WriteDefaultSettings(string settingsfile)
-        {
-            // Load embedded default config and adjust line break for the current operating system
-            string settingsContents = String.Join(Environment.NewLine,
-                DefaultConfigResource.MinecraftClient.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
-
-            // Write configuration file with current version number
-            File.WriteAllText(settingsfile,
-                "# Minecraft Console Client v"
-                + Program.Version
-                + Environment.NewLine
-                + settingsContents, Encoding.UTF8);
-        }
-
-        /// <summary>
-        /// Convert the specified string to an integer, defaulting to zero if invalid argument
-        /// </summary>
-        /// <param name="str">String to parse as an integer</param>
-        /// <returns>Integer value</returns>
-        public static int str2int(string str)
-        {
-            try
-            {
-                return Convert.ToInt32(str.Trim());
-            }
-            catch
-            {
-                ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// Convert the specified string to a float number, defaulting to zero if invalid argument
-        /// </summary>
-        /// <param name="str">String to parse as a float number</param>
-        /// <returns>Float number</returns>
-        public static float str2float(string str)
-        {
-            if (float.TryParse(str.Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out float num))
-                return num;
-            else
-            {
-                ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2int", str));
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// Convert the specified string to a double number, defaulting to zero if invalid argument
-        /// </summary>
-        /// <param name="str">String to parse as a float number</param>
-        /// <returns>Double number</returns>
-        public static double str2double(string str)
-        {
-            if (double.TryParse(str.Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, out double num))
-                return num;
-            else
-            {
-                ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2double", str));
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// Convert the specified string to a boolean value, defaulting to false if invalid argument
-        /// </summary>
-        /// <param name="str">String to parse as a boolean</param>
-        /// <returns>Boolean value</returns>
-        public static bool str2bool(string str)
-        {
-            if (String.IsNullOrEmpty(str))
-                return false;
-            str = str.Trim().ToLowerInvariant();
-            return str == "true" || str == "1";
-        }
-
-        /// <summary>
-        /// Convert the specified string to a list of location, returning null if invalid argument
-        /// </summary>
-        /// <param name="str">String to parse as a location list</param>
-        /// <returns>Location list (null or double[*,5] or double[*,3] or double[*,2])</returns>
-        public static double[,]? str2locationList(string str)
-        {
-            string[] locationStrList = str.Split(';', StringSplitOptions.RemoveEmptyEntries);
-            double[,]? res = null;
-            int codLen = 0;
-            for (int i = 0; i < locationStrList.Length; ++i)
-            {
-                string[] coordinates_str_list = locationStrList[i].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                int curCodLen = coordinates_str_list.Length;
-                if ((curCodLen == 2 || curCodLen == 3 || curCodLen == 5) && (i == 0 || curCodLen == codLen))
+                public void OnSettingUpdate()
                 {
-                    if (i == 0)
-                    {
-                        res = new double[locationStrList.Length, curCodLen];
-                        codLen = curCodLen;
-                    }
+                    CurrentVersion = Program.BuildInfo ?? "Development Build";
+                    LatestVersion ??= "Unknown";
+                }
+            }
+        }
 
-                    for (int j = 0; j < curCodLen; ++j)
+        public static class MainConfigHealper
+        {
+            public static MainConfig Config = new();
+
+            [TomlDoNotInlineObject]
+            public class MainConfig
+            {
+                public GeneralConfig General = new();
+
+                [TomlPrecedingComment("$config.Main.Advanced$")]
+                public AdvancedConfig Advanced = new();
+
+
+                [NonSerialized]
+                public static readonly string[] AvailableLang =
+                {
+                    "af_za", "ar_sa", "ast_es", "az_az", "ba_ru", "bar", "be_by", "bg_bg", "br_fr", "brb", "bs_ba", "ca_es", 
+                    "cs_cz", "cy_gb", "da_dk", "de_at", "de_ch", "de_de", "el_gr", "en_au", "en_ca", "en_gb", "en_nz", "eo_uy", 
+                    "es_ar", "es_cl", "es_ec", "es_es", "es_mx", "es_uy", "es_ve", "esan", "et_ee", "eu_es", "fa_ir", "fi_fi", 
+                    "fil_ph", "fo_fo", "fr_ca", "fr_fr", "fra_de", "fur_it", "fy_nl", "ga_ie", "gd_gb", "gl_es", "haw_us", "he_il", 
+                    "hi_in", "hr_hr", "hu_hu", "hy_am", "id_id", "ig_ng", "io_en", "is_is", "isv", "it_it", "ja_jp", "jbo_en", 
+                    "ka_ge", "kk_kz", "kn_in", "ko_kr", "ksh", "kw_gb", "la_la", "lb_lu", "li_li", "lmo", "lt_lt", "lv_lv", "lzh", 
+                    "mk_mk", "mn_mn", "ms_my", "mt_mt", "nds_de", "nl_be", "nl_nl", "nn_no", "oc_fr", "ovd", "pl_pl", "pt_br", 
+                    "pt_pt", "qya_aa", "ro_ro", "rpr", "ru_ru", "se_no", "sk_sk", "sl_si", "so_so", "sq_al", "sr_sp", "sv_se", 
+                    "sxu", "szl", "ta_in", "th_th", "tl_ph", "tlh_aa", "tok", "tr_tr", "tt_ru", "uk_ua", "val_es", "vec_it", 
+                    "vi_vn", "yi_de", "yo_ng", "zh_cn", "zh_hk", "zh_tw", "zlm_arab"
+                };
+
+                /// <summary>
+                /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
+                /// </summary>
+                /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
+                public bool SetServerIP(ServerInfoConfig serverInfo, bool checkAlias)
+                {
+                    string serverStr = ToLowerIfNeed(serverInfo.Host);
+                    string[] sip = serverStr.Split(new[] { ":", "：" }, StringSplitOptions.None);
+                    string host = sip[0];
+                    ushort port = 25565;
+
+                    if (sip.Length > 1)
                     {
-                        if (!double.TryParse(coordinates_str_list[j], NumberStyles.Any, CultureInfo.CurrentCulture, out res![i, j]))
+                        if (serverInfo.Port != null)
                         {
-                            ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2locationList.convert_fail", coordinates_str_list[j]));
-                            return null;
+                            port = (ushort)serverInfo.Port;
+                        }
+                        else
+                        {
+                            try { port = Convert.ToUInt16(sip[1]); }
+                            catch (FormatException) { return false; }
                         }
                     }
+
+                    if (host == "localhost" || host.Contains('.'))
+                    {
+                        //Server IP (IP or domain names contains at least a dot)
+                        if (sip.Length == 1 && serverInfo.Port == null && host.Contains('.') && host.Any(c => char.IsLetter(c)) &&
+                            Settings.Config.Main.Advanced.ResolveSrvRecords != MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.no)
+                            //Domain name without port may need Minecraft SRV Record lookup
+                            ProtocolHandler.MinecraftServiceLookup(ref host, ref port);
+                        InternalConfig.ServerIP = host;
+                        InternalConfig.ServerPort = port;
+                        return true;
+                    }
+                    else if (checkAlias && Advanced.ServerList.TryGetValue(serverStr, out ServerInfoConfig serverStr2))
+                    {
+                        return SetServerIP(serverStr2, false);
+                    }
+
+                    return false;
                 }
-                else
+
+                public void OnSettingUpdate()
                 {
-                    ConsoleIO.WriteLogLine(Translations.Get("error.setting.str2locationList.format_err", locationStrList[i]));
-                    return null;
+                    ConsoleIO.EnableTimestamps = Advanced.Timestamps;
+
+                    InternalConfig.InteractiveMode = !Advanced.ExitOnFailure;
+
+                    General.Account.Login ??= string.Empty;
+                    General.Account.Password ??= string.Empty;
+
+                    General.Server.Host ??= string.Empty;
+
+                    if (Advanced.MessageCooldown < 0)
+                        Advanced.MessageCooldown = 0;
+
+                    if (Advanced.TcpTimeout < 1)
+                        Advanced.TcpTimeout = 1;
+
+                    if (Advanced.MovementSpeed < 1)
+                        Advanced.MovementSpeed = 1;
+
+                    Advanced.Language = Regex.Replace(Advanced.Language, @"[^-^_^\w^*\d]", string.Empty).Replace('-', '_');
+                    Advanced.Language = ToLowerIfNeed(Advanced.Language);
+                    if (!AvailableLang.Contains(Advanced.Language))
+                    {
+                        Advanced.Language = Translations.GetTranslationPriority().Item1;
+                        ConsoleIO.WriteLogLine("[Settings] " + (Translations.GetOrNull("config.Main.Advanced.language.invaild") ?? "The language code is invalid."));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(General.Server.Host))
+                    {
+                        string[] sip = General.Server.Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
+                        General.Server.Host = sip[0];
+
+                        if (sip.Length > 1)
+                        {
+                            try { General.Server.Port = Convert.ToUInt16(sip[1]); }
+                            catch (FormatException) { }
+                        }
+                    }
+
+                    SetServerIP(General.Server, true);
+
+                    for (int i = 0; i < Advanced.BotOwners.Count; ++i)
+                        Advanced.BotOwners[i] = ToLowerIfNeed(Advanced.BotOwners[i]);
+                }
+
+                [TomlDoNotInlineObject]
+                public class GeneralConfig
+                {
+                    [TomlInlineComment("$config.Main.General.account$")]
+                    public AccountInfoConfig Account = new(string.Empty, string.Empty);
+
+                    [TomlInlineComment("$config.Main.General.login$")]
+                    public ServerInfoConfig Server = new(string.Empty);
+
+                    [TomlInlineComment("$config.Main.General.server_info$")]
+                    public LoginType AccountType = LoginType.microsoft;
+
+                    [TomlInlineComment("$config.Main.General.method$")]
+                    public LoginMethod Method = LoginMethod.mcc;
+
+                    public enum LoginType { mojang, microsoft };
+
+                    public enum LoginMethod { mcc, browser };
+                }
+
+                [TomlDoNotInlineObject]
+                public class AdvancedConfig
+                {
+                    [TomlInlineComment("$config.Main.Advanced.language$")]
+                    public string Language = "en_gb";
+
+                    // [TomlInlineComment("$config.Main.Advanced.console_title$")]
+                    public string ConsoleTitle = "%username%@%serverip% - Minecraft Console Client";
+
+                    [TomlInlineComment("$config.Main.Advanced.internal_cmd_char$")]
+                    public InternalCmdCharType InternalCmdChar = InternalCmdCharType.slash;
+
+                    [TomlInlineComment("$config.Main.Advanced.message_cooldown$")]
+                    public double MessageCooldown = 1.0;
+
+                    [TomlInlineComment("$config.Main.Advanced.bot_owners$")]
+                    public List<string> BotOwners = new() { "Player1", "Player2" };
+
+                    [TomlInlineComment("$config.Main.Advanced.mc_version$")]
+                    public string MinecraftVersion = "auto";
+
+                    [TomlInlineComment("$config.Main.Advanced.mc_forge$")]
+                    public ForgeConfigType EnableForge = ForgeConfigType.auto;
+
+                    [TomlInlineComment("$config.Main.Advanced.brand_info$")]
+                    public BrandInfoType BrandInfo = BrandInfoType.mcc;
+
+                    [TomlInlineComment("$config.Main.Advanced.chatbot_log_file$")]
+                    public string ChatbotLogFile = "";
+
+                    [TomlInlineComment("$config.Main.Advanced.private_msgs_cmd_name$")]
+                    public string PrivateMsgsCmdName = "tell";
+
+                    [TomlInlineComment("$config.Main.Advanced.show_system_messages$")]
+                    public bool ShowSystemMessages = true;
+
+                    [TomlInlineComment("$config.Main.Advanced.show_xpbar_messages$")]
+                    public bool ShowXPBarMessages = true;
+
+                    [TomlInlineComment("$config.Main.Advanced.show_chat_links$")]
+                    public bool ShowChatLinks = true;
+
+                    [TomlInlineComment("$config.Main.Advanced.show_inventory_layout$")]
+                    public bool ShowInventoryLayout = true;
+
+                    [TomlInlineComment("$config.Main.Advanced.terrain_and_movements$")]
+                    public bool TerrainAndMovements = false;
+
+                    [TomlInlineComment("$config.Main.Advanced.inventory_handling$")]
+                    public bool InventoryHandling = false;
+
+                    [TomlInlineComment("$config.Main.Advanced.entity_handling$")]
+                    public bool EntityHandling = false;
+
+                    [TomlInlineComment("$config.Main.Advanced.session_cache$")]
+                    public CacheType SessionCache = CacheType.disk;
+
+                    [TomlInlineComment("$config.Main.Advanced.profilekey_cache$")]
+                    public CacheType ProfileKeyCache = CacheType.disk;
+
+                    [TomlInlineComment("$config.Main.Advanced.resolve_srv_records$")]
+                    public ResolveSrvRecordType ResolveSrvRecords = ResolveSrvRecordType.fast;
+
+                    [TomlPrecedingComment("$config.Main.Advanced.account_list$")]
+                    public Dictionary<string, AccountInfoConfig> AccountList = new() {
+                        { "AccountNikename1", new AccountInfoConfig("playerone@email.com", "thepassword") },
+                        { "AccountNikename2", new AccountInfoConfig("TestBot", "-") },
+                    };
+
+                    [TomlPrecedingComment("$config.Main.Advanced.server_list$")]
+                    public Dictionary<string, ServerInfoConfig> ServerList = new() {
+                        { "ServerAlias1", new ServerInfoConfig("mc.awesomeserver.com") },
+                        { "ServerAlias2", new ServerInfoConfig("192.168.1.27", 12345) },
+                    };
+
+                    [TomlInlineComment("$config.Main.Advanced.player_head_icon$")]
+                    public bool PlayerHeadAsIcon = true;
+
+                    [TomlInlineComment("$config.Main.Advanced.exit_on_failure$")]
+                    public bool ExitOnFailure = false;
+
+                    [TomlInlineComment("$config.Main.Advanced.script_cache$")]
+                    public bool CacheScript = true;
+
+                    [TomlInlineComment("$config.Main.Advanced.timestamps$")]
+                    public bool Timestamps = false;
+
+                    [TomlInlineComment("$config.Main.Advanced.auto_respawn$")]
+                    public bool AutoRespawn = false;
+
+                    [TomlInlineComment("$config.Main.Advanced.minecraft_realms$")]
+                    public bool MinecraftRealms = false;
+
+                    [TomlInlineComment("$config.Main.Advanced.move_head_while_walking$")]
+                    public bool MoveHeadWhileWalking = true;
+
+                    [TomlInlineComment("$config.Main.Advanced.timeout$")]
+                    public int TcpTimeout = 30;
+
+                    [TomlInlineComment("$config.Main.Advanced.enable_emoji$")]
+                    public bool EnableEmoji = true;
+
+                    [TomlInlineComment("$config.Main.Advanced.movement_speed$")]
+                    public int MovementSpeed = 2;
+
+                    /// <summary>
+                    /// Load login/password using an account alias
+                    /// </summary>
+                    /// <returns>True if the account was found and loaded</returns>
+                    public bool SetAccount(string accountAlias)
+                    {
+                        if (AccountList.TryGetValue(accountAlias, out AccountInfoConfig accountInfo))
+                        {
+                            Settings.Config.Main.General.Account = accountInfo;
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+
+                    public enum InternalCmdCharType { none, slash, backslash };
+
+                    public enum BrandInfoType { mcc, vanilla, empty };
+
+                    public enum CacheType { none, memory, disk };
+
+                    public enum ResolveSrvRecordType { no, fast, yes };
+
+                    public enum ForgeConfigType { no, auto, force };
+                }
+
+                public struct AccountInfoConfig
+                {
+                    public string Login = string.Empty, Password = string.Empty;
+
+                    public AccountInfoConfig(string Login)
+                    {
+                        this.Login = Login;
+                        this.Password = "-";
+                    }
+
+                    public AccountInfoConfig(string Login, string Password)
+                    {
+                        this.Login = Login;
+                        this.Password = Password;
+                    }
+                }
+
+                public struct ServerInfoConfig
+                {
+                    public string Host = string.Empty;
+                    public ushort? Port = null;
+
+                    public ServerInfoConfig(string Host)
+                    {
+                        string[] sip = Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
+                        this.Host = sip[0];
+
+                        if (sip.Length > 1)
+                        {
+                            try { this.Port = Convert.ToUInt16(sip[1]); }
+                            catch (FormatException) { }
+                        }
+                    }
+
+                    public ServerInfoConfig(string Host, ushort Port)
+                    {
+                        this.Host = Host.Split(new[] { ":", "：" }, StringSplitOptions.None)[0];
+                        this.Port = Port;
+                    }
                 }
             }
-            return res;
         }
+
+        public static class SignatureConfigHelper
+        {
+            public static SignatureConfig Config = new();
+
+            [TomlDoNotInlineObject]
+            public class SignatureConfig
+            {
+                [TomlInlineComment("$config.Signature.LoginWithSecureProfile$")]
+                public bool LoginWithSecureProfile = true;
+
+                [TomlInlineComment("$config.Signature.SignChat$")]
+                public bool SignChat = true;
+
+                [TomlInlineComment("$config.Signature.SignMessageInCommand$")]
+                public bool SignMessageInCommand = true;
+
+                [TomlInlineComment("$config.Signature.MarkLegallySignedMsg$")]
+                public bool MarkLegallySignedMsg = false;
+
+                [TomlInlineComment("$config.Signature.MarkModifiedMsg$")]
+                public bool MarkModifiedMsg = true;
+
+                [TomlInlineComment("$config.Signature.MarkIllegallySignedMsg$")]
+                public bool MarkIllegallySignedMsg = true;
+
+                [TomlInlineComment("$config.Signature.MarkSystemMessage$")]
+                public bool MarkSystemMessage = false;
+
+                [TomlInlineComment("$config.Signature.ShowModifiedChat$")]
+                public bool ShowModifiedChat = true;
+
+                [TomlInlineComment("$config.Signature.ShowIllegalSignedChat$")]
+                public bool ShowIllegalSignedChat = true;
+
+                public void OnSettingUpdate() { }
+            }
+        }
+
+        public static class LoggingConfigHealper
+        {
+            public static LoggingConfig Config = new();
+
+            [TomlDoNotInlineObject]
+            public class LoggingConfig
+            {
+                [TomlInlineComment("$config.Logging.DebugMessages$")]
+                public bool DebugMessages = false;
+
+                [TomlInlineComment("$config.Logging.ChatMessages$")]
+                public bool ChatMessages = true;
+
+                [TomlInlineComment("$config.Logging.InfoMessages$")]
+                public bool InfoMessages = true;
+
+                [TomlInlineComment("$config.Logging.WarningMessages$")]
+                public bool WarningMessages = true;
+
+                [TomlInlineComment("$config.Logging.ErrorMessages$")]
+                public bool ErrorMessages = true;
+
+                [TomlInlineComment("$config.Logging.ChatFilter$")]
+                public string ChatFilterRegex = @".*";
+
+                [TomlInlineComment("$config.Logging.DebugFilter$")]
+                public string DebugFilterRegex = @".*";
+
+                [TomlInlineComment("$config.Logging.FilterMode$")]
+                public FilterModeEnum FilterMode = FilterModeEnum.disable;
+
+                [TomlInlineComment("$config.Logging.LogToFile$")]
+                public bool LogToFile = false;
+
+                [TomlInlineComment("$config.Logging.LogFile$")]
+                public string LogFile = @"console-log.txt";
+
+                [TomlInlineComment("$config.Logging.PrependTimestamp$")]
+                public bool PrependTimestamp = false;
+
+                [TomlInlineComment("$config.Logging.SaveColorCodes$")]
+                public bool SaveColorCodes = false;
+
+                public void OnSettingUpdate() { }
+
+                public enum FilterModeEnum { disable, blacklist, whitelist }
+            }
+        }
+
+        public static class AppVarConfigHelper
+        {
+            public static AppVarConfig Config = new();
+
+            [TomlDoNotInlineObject]
+            public class AppVarConfig
+            {
+                [TomlPrecedingComment("$config.AppVars.Variables$")]
+                private readonly Dictionary<string, string> VarStirng = new() {
+                    { "your_var", "your_value" },
+                    { "your var 2", "your value 2" },
+                };
+
+                public void OnSettingUpdate() { }
+
+
+                [NonSerialized]
+                private readonly Dictionary<string, object> VarObject = new();
+
+                [NonSerialized]
+                readonly object varLock = new();
+
+                /// <summary>
+                /// Set a custom %variable% which will be available through expandVars()
+                /// </summary>
+                /// <param name="varName">Name of the variable</param>
+                /// <param name="varData">Value of the variable</param>
+                /// <returns>True if the parameters were valid</returns>
+                public bool SetVar(string varName, object varData)
+                {
+                    varName = Settings.ToLowerIfNeed(new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()));
+                    if (varName.Length > 0)
+                    {
+                        bool isString = varData.GetType() == typeof(string);
+                        lock (varLock)
+                        {
+                            if (isString)
+                            {
+                                if (VarObject.ContainsKey(varName))
+                                    VarObject.Remove(varName);
+                                VarStirng[varName] = (string)varData;
+                            }
+                            else
+                            {
+                                if (VarStirng.ContainsKey(varName))
+                                    VarStirng.Remove(varName);
+                                VarObject[varName] = varData;
+                            }
+                        }
+                        return true;
+                    }
+                    else
+                    {
+                        return false;  
+                    }
+                }
+
+                /// <summary>
+                /// Get a custom %variable% or null if the variable does not exist
+                /// </summary>
+                /// <param name="varName">Variable name</param>
+                /// <returns>The value or null if the variable does not exists</returns>
+                public object? GetVar(string varName)
+                {
+                    if (VarStirng.TryGetValue(varName, out string? valueString))
+                        return valueString;
+                    else if (VarObject.TryGetValue(varName, out object? valueObject))
+                        return valueObject;
+                    else
+                        return null;
+                }
+
+                /// <summary>
+                /// Get a custom %variable% or null if the variable does not exist
+                /// </summary>
+                /// <param name="varName">Variable name</param>
+                /// <returns>The value or null if the variable does not exists</returns>
+                public bool TryGetVar(string varName, [NotNullWhen(true)] out object? varData)
+                {
+                    if (VarStirng.TryGetValue(varName, out string? valueString))
+                    {
+                        varData = valueString;
+                        return true;
+                    }
+                    else if (VarObject.TryGetValue(varName, out object? valueObject))
+                    {
+                        varData = valueObject;
+                        return true;
+                    }
+                    else
+                    {
+                        varData = null;
+                        return false;
+                    }
+                }
+
+                /// <summary>
+                /// Get a dictionary containing variables (names and value)
+                /// </summary>
+                /// <returns>A IDictionary<string, object> containing a name and a vlaue key pairs of variables</returns>
+                public Dictionary<string, object> GetVariables()
+                {
+                    Dictionary<string, object> res =  new(VarObject);
+                    foreach ((string varName, string varData) in VarStirng)
+                        res.Add(varName, varData);
+                    return res;
+                }
+
+                /// <summary>
+                /// Replace %variables% with their value from global AppVars
+                /// </summary>
+                /// <param name="str">String to parse</param>
+                /// <param name="localContext">Optional local variables overriding global variables</param>
+                /// <returns>Modifier string</returns>
+                public string ExpandVars(string str, Dictionary<string, object>? localVars = null)
+                {
+                    StringBuilder result = new();
+                    for (int i = 0; i < str.Length; i++)
+                    {
+                        if (str[i] == '%')
+                        {
+                            bool varname_ok = false;
+                            StringBuilder var_name = new();
+
+                            for (int j = i + 1; j < str.Length; j++)
+                            {
+                                if (!char.IsLetterOrDigit(str[j]) && str[j] != '_')
+                                {
+                                    if (str[j] == '%')
+                                        varname_ok = var_name.Length > 0;
+                                    break;
+                                }
+                                else var_name.Append(str[j]);
+                            }
+
+                            if (varname_ok)
+                            {
+                                string varname = var_name.ToString();
+                                string varname_lower = Settings.ToLowerIfNeed(varname);
+                                i = i + varname.Length + 1;
+
+                                switch (varname_lower)
+                                {
+                                    case "username": result.Append(InternalConfig.Username); break;
+                                    case "login": result.Append(Settings.Config.Main.General.Account.Login); break;
+                                    case "serverip": result.Append(InternalConfig.ServerIP); break;
+                                    case "serverport": result.Append(InternalConfig.ServerPort); break;
+                                    case "datetime":
+                                        DateTime time = DateTime.Now;
+                                        result.Append(String.Format("{0}-{1}-{2} {3}:{4}:{5}",
+                                            time.Year.ToString("0000"),
+                                            time.Month.ToString("00"),
+                                            time.Day.ToString("00"),
+                                            time.Hour.ToString("00"),
+                                            time.Minute.ToString("00"),
+                                            time.Second.ToString("00")));
+
+                                        break;
+                                    default:
+                                        if (localVars != null && localVars.ContainsKey(varname_lower))
+                                            result.Append(localVars[varname_lower].ToString());
+                                        else if (TryGetVar(varname_lower, out object? var_value))
+                                            result.Append(var_value.ToString());
+                                        else
+                                            result.Append("%" + varname + '%');
+                                        break;
+                                }
+                            }
+                            else result.Append(str[i]);
+                        }
+                        else result.Append(str[i]);
+                    }
+                    return result.ToString();
+                }
+            }
+        }
+
+        public static class MCSettingsConfigHealper
+        {
+            public static MCSettingsConfig Config = new();
+
+            [TomlDoNotInlineObject]
+            public class MCSettingsConfig
+            {
+                [TomlInlineComment("$config.MCSettings.Enabled$")]
+                public bool Enabled = true;
+
+                [TomlInlineComment("$config.MCSettings.Locale$")]
+                public string Locale = "en_US";
+
+                [TomlInlineComment("$config.MCSettings.RenderDistance$")]
+                public byte RenderDistance = 8;
+
+                [TomlInlineComment("$config.MCSettings.Difficulty$")]
+                public DifficultyType Difficulty = DifficultyType.peaceful;
+
+                [TomlInlineComment("$config.MCSettings.ChatMode$")]
+                public ChatModeType ChatMode = ChatModeType.enabled;
+
+                [TomlInlineComment("$config.MCSettings.ChatColors$")]
+                public bool ChatColors = true;
+
+                [TomlInlineComment("$config.MCSettings.MainHand$")]
+                public MainHandType MainHand = MainHandType.left;
+
+                public SkinInfo Skin = new();
+
+                public void OnSettingUpdate() { }
+
+                public enum DifficultyType { peaceful, easy, normal, difficult };
+
+                public enum ChatModeType { enabled, commands, disabled };
+
+                public enum MainHandType { left, right };
+
+                public struct SkinInfo
+                {
+                    public bool Cape = true, Hat = true, Jacket = false;
+                    public bool Sleeve_Left = false, Sleeve_Right = false;
+                    public bool Pants_Left = false, Pants_Right = false;
+
+                    public SkinInfo() { }
+
+                    public SkinInfo(bool Cape, bool Hat, bool Jacket, bool Sleeve_Left, bool Sleeve_Right, bool Pants_Left, bool Pants_Right)
+                    {
+                        this.Cape = Cape;
+                        this.Hat = Hat;
+                        this.Jacket = Jacket;
+                        this.Sleeve_Left = Sleeve_Left;
+                        this.Sleeve_Right = Sleeve_Right;
+                        this.Pants_Left = Pants_Left;
+                        this.Pants_Right = Pants_Right;
+                    }
+
+                    public byte GetByte()
+                    {
+                        return (byte)(
+                              ((Cape ? 1 : 0) << 0)
+                            | ((Jacket ? 1 : 0) << 1)
+                            | ((Sleeve_Left ? 1 : 0) << 2)
+                            | ((Sleeve_Right ? 1 : 0) << 3)
+                            | ((Pants_Left ? 1 : 0) << 4)
+                            | ((Pants_Right ? 1 : 0) << 5)
+                            | ((Hat ? 1 : 0) << 6)
+                        );
+                    }
+                }
+            }
+        }
+
+        public static class ChatFormatConfigHelper
+        {
+            public static ChatFormatConfig Config = new();
+
+            [TomlDoNotInlineObject]
+            public class ChatFormatConfig
+            {
+                [TomlInlineComment("$config.ChatFormat.Builtins$")]
+                public bool Builtins = true;
+
+                [TomlInlineComment("$config.ChatFormat.UserDefined$")]
+                public bool UserDefined = false;
+
+                public string Public = @"^<([a-zA-Z0-9_]+)> (.+)$";
+
+                public string Private = @"^([a-zA-Z0-9_]+) whispers to you: (.+)$";
+
+                public string TeleportRequest = @"^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\.$";
+
+                public void OnSettingUpdate() { }
+            }
+        }
+
+        public static class ChatBotConfigHealper
+        {
+            public static ChatBotConfig Config = new();
+
+            [TomlDoNotInlineObject]
+            public class ChatBotConfig
+            {
+                [TomlPrecedingComment("$config.ChatBot.Alerts$")]
+                public ChatBots.Alerts.Configs Alerts
+                {
+                    get { return ChatBots.Alerts.Config; }
+                    set { ChatBots.Alerts.Config = value; ChatBots.Alerts.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.AntiAfk$")]
+                public ChatBots.AntiAFK.Configs AntiAFK
+                {
+                    get { return ChatBots.AntiAFK.Config; }
+                    set { ChatBots.AntiAFK.Config = value; ChatBots.AntiAFK.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.AutoAttack$")]
+                public ChatBots.AutoAttack.Configs AutoAttack
+                {
+                    get { return ChatBots.AutoAttack.Config; }
+                    set { ChatBots.AutoAttack.Config = value; ChatBots.AutoAttack.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.AutoCraft$")]
+                public ChatBots.AutoCraft.Configs AutoCraft
+                {
+                    get { return ChatBots.AutoCraft.Config; }
+                    set { ChatBots.AutoCraft.Config = value; ChatBots.AutoCraft.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.AutoDig$")]
+                public ChatBots.AutoDig.Configs AutoDig
+                {
+                    get { return ChatBots.AutoDig.Config; }
+                    set { ChatBots.AutoDig.Config = value; ChatBots.AutoDig.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.AutoDrop$")]
+                public ChatBots.AutoDrop.Configs AutoDrop
+                {
+                    get { return ChatBots.AutoDrop.Config; }
+                    set { ChatBots.AutoDrop.Config = value; ChatBots.AutoDrop.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.AutoEat$")]
+                public ChatBots.AutoEat.Configs AutoEat
+                {
+                    get { return ChatBots.AutoEat.Config; }
+                    set { ChatBots.AutoEat.Config = value; ChatBots.AutoEat.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.AutoFishing$")]
+                public ChatBots.AutoFishing.Configs AutoFishing
+                {
+                    get { return ChatBots.AutoFishing.Config; }
+                    set { ChatBots.AutoFishing.Config = value; ChatBots.AutoFishing.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.AutoRelog$")]
+                public ChatBots.AutoRelog.Configs AutoRelog
+                {
+                    get { return ChatBots.AutoRelog.Config; }
+                    set { ChatBots.AutoRelog.Config = value; ChatBots.AutoRelog.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.AutoRespond$")]
+                public ChatBots.AutoRespond.Configs AutoRespond
+                {
+                    get { return ChatBots.AutoRespond.Config; }
+                    set { ChatBots.AutoRespond.Config = value; ChatBots.AutoRespond.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.ChatLog$")]
+                public ChatBots.ChatLog.Configs ChatLog
+                {
+                    get { return ChatBots.ChatLog.Config; }
+                    set { ChatBots.ChatLog.Config = value; ChatBots.ChatLog.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.FollowPlayer$")]
+                public ChatBots.FollowPlayer.Configs FollowPlayer
+                {
+                    get { return ChatBots.FollowPlayer.Config; }
+                    set { ChatBots.FollowPlayer.Config = value; ChatBots.FollowPlayer.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.HangmanGame$")]
+                public ChatBots.HangmanGame.Configs HangmanGame
+                {
+                    get { return ChatBots.HangmanGame.Config; }
+                    set { ChatBots.HangmanGame.Config = value; ChatBots.HangmanGame.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.Mailer$")]
+                public ChatBots.Mailer.Configs Mailer
+                {
+                    get { return ChatBots.Mailer.Config; }
+                    set { ChatBots.Mailer.Config = value; ChatBots.Mailer.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.Map$")]
+                public ChatBots.Map.Configs Map
+                {
+                    get { return ChatBots.Map.Config; }
+                    set { ChatBots.Map.Config = value; ChatBots.Map.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.PlayerListLogger$")]
+                public ChatBots.PlayerListLogger.Configs PlayerListLogger
+                {
+                    get { return ChatBots.PlayerListLogger.Config; }
+                    set { ChatBots.PlayerListLogger.Config = value; ChatBots.PlayerListLogger.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.RemoteControl$")]
+                public ChatBots.RemoteControl.Configs RemoteControl
+                {
+                    get { return ChatBots.RemoteControl.Config; }
+                    set { ChatBots.RemoteControl.Config = value; ChatBots.RemoteControl.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.ReplayCapture$")]
+                public ChatBots.ReplayCapture.Configs ReplayCapture
+                {
+                    get { return ChatBots.ReplayCapture.Config; }
+                    set { ChatBots.ReplayCapture.Config = value; ChatBots.ReplayCapture.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.ScriptScheduler$")]
+                public ChatBots.ScriptScheduler.Configs ScriptScheduler
+                {
+                    get { return ChatBots.ScriptScheduler.Config; }
+                    set { ChatBots.ScriptScheduler.Config = value; ChatBots.ScriptScheduler.Config.OnSettingUpdate(); }
+                }
+            }
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static string ToLowerIfNeed(string str)
         {
-            const string lookupStringL =
-"---------------------------------!-#$%&-()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[-]^_`abcdefghijklmnopqrstuvwxyz{|}~-";
+            const string lookupStringL = "---------------------------------!-#$%&-()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[-]^_`abcdefghijklmnopqrstuvwxyz{|}~-";
 
             bool needLower = false;
             foreach (Char c in str)
@@ -1065,172 +1126,114 @@ namespace MinecraftClient
             }
         }
 
-        /// <summary>
-        /// Load login/password using an account alias
-        /// </summary>
-        /// <returns>True if the account was found and loaded</returns>
-        public static bool SetAccount(string accountAlias)
+        public static bool CheckUpdate(string? current, string? latest)
         {
-            accountAlias = Settings.ToLowerIfNeed(accountAlias);
-            if (Accounts.ContainsKey(accountAlias))
+            if (current == null || latest == null)
+                return false;
+            Regex reg = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s(\d{4})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{2}).*");
+            Regex reg2 = new(@"\w+\sbuild\s(\d+),\sbuilt\son\s\w+\s(\d{2})[-\/\.\s]?(\d{2})[-\/\.\s]?(\d{4}).*");
+
+            DateTime? curTime = null, latestTime = null;
+
+            Match curMatch = reg.Match(current);
+            if (curMatch.Success && curMatch.Groups.Count == 5)
             {
-                Settings.Login = Accounts[accountAlias].Key;
-                Settings.Password = Accounts[accountAlias].Value;
+                try { curTime = new(int.Parse(curMatch.Groups[2].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[4].Value)); }
+                catch { curTime = null; }
+            }
+            if (curTime == null)
+            {
+                curMatch = reg2.Match(current);
+                try { curTime = new(int.Parse(curMatch.Groups[4].Value), int.Parse(curMatch.Groups[3].Value), int.Parse(curMatch.Groups[2].Value)); }
+                catch { curTime = null; }
+            }
+            if (curTime == null)
+                return false;
+
+            Match latestMatch = reg.Match(latest);
+            if (latestMatch.Success && latestMatch.Groups.Count == 5)
+            {
+                try { latestTime = new(int.Parse(latestMatch.Groups[2].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[4].Value)); }
+                catch { latestTime = null; }
+            }
+            if (latestTime == null)
+            {
+                latestMatch = reg2.Match(latest);
+                try { latestTime = new(int.Parse(latestMatch.Groups[4].Value), int.Parse(latestMatch.Groups[3].Value), int.Parse(latestMatch.Groups[2].Value)); }
+                catch { latestTime = null; }
+            }
+            if (latestTime == null)
+                return false;
+
+            int curBuildId, latestBuildId;
+            try
+            {
+                curBuildId = int.Parse(curMatch.Groups[1].Value);
+                latestBuildId = int.Parse(latestMatch.Groups[1].Value);
+            }
+            catch { return false; }
+
+            if (latestTime > curTime)
                 return true;
-            }
-            else return false;
-        }
-
-        /// <summary>
-        /// Load server information in ServerIP and ServerPort variables from a "serverip:port" couple or server alias
-        /// </summary>
-        /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
-        public static bool SetServerIP(string server)
-        {
-            server = ToLowerIfNeed(server);
-            string[] sip = server.Split(':');
-            string host = sip[0];
-            ushort port = 25565;
-
-            if (sip.Length > 1)
-            {
-                try
-                {
-                    port = Convert.ToUInt16(sip[1]);
-                }
-                catch (FormatException) { return false; }
-            }
-
-            if (host == "localhost" || host.Contains('.'))
-            {
-                //Server IP (IP or domain names contains at least a dot)
-                if (sip.Length == 1 && host.Contains('.') && host.Any(c => char.IsLetter(c)) && ResolveSrvRecords)
-                    //Domain name without port may need Minecraft SRV Record lookup
-                    ProtocolHandler.MinecraftServiceLookup(ref host, ref port);
-                ServerIP = host;
-                ServerPort = port;
+            else if (latestTime >= curTime && latestBuildId > curBuildId)
                 return true;
-            }
-            else if (Servers.ContainsKey(server))
+            else
+                return false;
+        }
+
+        public static int DoubleToTick(double time)
+        {
+            time = Math.Min(int.MaxValue / 10, time);
+            return (int)Math.Round(time * 10);
+        }
+    }
+
+    public static class InternalCmdCharTypeExtensions
+    {
+        public static char ToChar(this InternalCmdCharType type)
+        {
+            return type switch
             {
-                //Server Alias (if no dot then treat the server as an alias)
-                ServerIP = Servers[server].Key;
-                ServerPort = Servers[server].Value;
-                return true;
-            }
-
-            return false;
+                InternalCmdCharType.none => ' ',
+                InternalCmdCharType.slash => '/',
+                InternalCmdCharType.backslash => '\\',
+                _ => '/',
+            };
         }
 
-        /// <summary>
-        /// Set a custom %variable% which will be available through expandVars()
-        /// </summary>
-        /// <param name="varName">Name of the variable</param>
-        /// <param name="varData">Value of the variable</param>
-        /// <returns>True if the parameters were valid</returns>
-        public static bool SetVar(string varName, object varData)
+        public static string ToLogString(this InternalCmdCharType type)
         {
-            lock (AppVars)
+            return type switch
             {
-                varName = Settings.ToLowerIfNeed(new string(varName.TakeWhile(char.IsLetterOrDigit).ToArray()));
-                if (varName.Length > 0)
-                {
-                    AppVars[varName] = varData;
-                    return true;
-                }
-                else return false;
-            }
+                InternalCmdCharType.none => string.Empty,
+                InternalCmdCharType.slash => @"/",
+                InternalCmdCharType.backslash => @"\",
+                _ => @"/",
+            };
         }
-
-        /// <summary>
-        /// Get a custom %variable% or null if the variable does not exist
-        /// </summary>
-        /// <param name="varName">Variable name</param>
-        /// <returns>The value or null if the variable does not exists</returns>
-        public static object? GetVar(string varName)
+    }
+    
+    public static class BrandInfoTypeExtensions
+    {
+        public static string? ToBrandString(this BrandInfoType info)
         {
-            if (AppVars.ContainsKey(varName))
-                return AppVars[varName];
-            return null;
-        }
-
-        /// <summary>
-        /// Get a dictionary containing variables (names and value)
-        /// </summary>
-        /// <returns>A IDictionary<string, object> containing a name and a vlaue key pairs of variables</returns>
-        public static Dictionary<string, object> GetVariables()
-        {
-            return AppVars;
-        }
-
-        /// <summary>
-        /// Replace %variables% with their value from global AppVars
-        /// </summary>
-        /// <param name="str">String to parse</param>
-        /// <param name="localContext">Optional local variables overriding global variables</param>
-        /// <returns>Modifier string</returns>
-        public static string ExpandVars(string str, Dictionary<string, object>? localVars = null)
-        {
-            StringBuilder result = new();
-            for (int i = 0; i < str.Length; i++)
+            return info switch
             {
-                if (str[i] == '%')
-                {
-                    bool varname_ok = false;
-                    StringBuilder var_name = new();
+                BrandInfoType.mcc => "Minecraft-Console-Client/" + Program.Version,
+                BrandInfoType.vanilla => "vanilla",
+                BrandInfoType.empty => null,
+                _ => null,
+            };
+        }
+    }
 
-                    for (int j = i + 1; j < str.Length; j++)
-                    {
-                        if (!char.IsLetterOrDigit(str[j]) && str[j] != '_')
-                        {
-                            if (str[j] == '%')
-                                varname_ok = var_name.Length > 0;
-                            break;
-                        }
-                        else var_name.Append(str[j]);
-                    }
-
-                    if (varname_ok)
-                    {
-                        string varname = var_name.ToString();
-                        string varname_lower = Settings.ToLowerIfNeed(varname);
-                        i = i + varname.Length + 1;
-
-                        switch (varname_lower)
-                        {
-                            case "username": result.Append(Username); break;
-                            case "login": result.Append(Login); break;
-                            case "serverip": result.Append(ServerIP); break;
-                            case "serverport": result.Append(ServerPort); break;
-                            case "datetime":
-                                DateTime time = DateTime.Now;
-                                result.Append(String.Format("{0}-{1}-{2} {3}:{4}:{5}",
-                                    time.Year.ToString("0000"),
-                                    time.Month.ToString("00"),
-                                    time.Day.ToString("00"),
-                                    time.Hour.ToString("00"),
-                                    time.Minute.ToString("00"),
-                                    time.Second.ToString("00")));
-
-                                break;
-                            default:
-                                if (localVars != null && localVars.ContainsKey(varname_lower))
-                                {
-                                    result.Append(localVars[varname_lower].ToString());
-                                }
-                                else if (AppVars.ContainsKey(varname_lower))
-                                {
-                                    result.Append(AppVars[varname_lower].ToString());
-                                }
-                                else result.Append("%" + varname + '%');
-                                break;
-                        }
-                    }
-                    else result.Append(str[i]);
-                }
-                else result.Append(str[i]);
-            }
-            return result.ToString();
+    public static class ExceptionExtensions
+    {
+        public static string GetFullMessage(this Exception ex)
+        {
+            return ex.InnerException == null
+                 ? ex.Message
+                 : ex.Message + "\n --> " + ex.InnerException.GetFullMessage();
         }
     }
 }

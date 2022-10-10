@@ -1,14 +1,142 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Text;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
+using Tomlet.Attributes;
+using static MinecraftClient.ChatBots.AutoCraft.Configs;
 
 namespace MinecraftClient.ChatBots
 {
-    class AutoCraft : ChatBot
+    public class AutoCraft : ChatBot
     {
+        public static Configs Config = new();
+
+        [TomlDoNotInlineObject]
+        public class Configs
+        {
+            [NonSerialized]
+            private const string BotName = "AutoCraft";
+
+            public bool Enabled = false;
+
+            [TomlInlineComment("$config.ChatBot.AutoCraft.CraftingTable$")]
+            public LocationConfig CraftingTable = new(123, 65, 456);
+
+            [TomlInlineComment("$config.ChatBot.AutoCraft.OnFailure$")]
+            public OnFailConfig OnFailure = OnFailConfig.abort;
+
+            [TomlPrecedingComment("$config.ChatBot.AutoCraft.Recipes$")]
+            public RecipeConfig[] Recipes = new RecipeConfig[]
+            {
+                new RecipeConfig(
+                    Name: "Recipe-Name-1",
+                    Type: CraftTypeConfig.player,
+                    Result: ItemType.StoneBricks,
+                    Slots: new ItemType[4] { ItemType.Stone, ItemType.Stone, ItemType.Stone, ItemType.Stone }
+                ),
+                new RecipeConfig(
+                    Name: "Recipe-Name-2",
+                    Type: CraftTypeConfig.table,
+                    Result: ItemType.StoneBricks,
+                    Slots: new ItemType[9] { 
+                        ItemType.Stone, ItemType.Stone, ItemType.Null,
+                        ItemType.Stone, ItemType.Stone, ItemType.Null,
+                        ItemType.Null, ItemType.Null, ItemType.Null,
+                    }
+                ),
+            };
+
+            [NonSerialized]
+            public Location _Table_Location = Location.Zero;
+
+            public void OnSettingUpdate()
+            {
+                _Table_Location = new Location(CraftingTable.X, CraftingTable.Y, CraftingTable.Z).ToFloor();
+
+                List<string> nameList = new();
+                foreach (RecipeConfig recipe in Recipes)
+                {
+                    if (string.IsNullOrWhiteSpace(recipe.Name))
+                    {
+                        recipe.Name = new Random().NextInt64().ToString();
+                        LogToConsole(BotName, Translations.TryGet("bot.autoCraft.exception.name_miss"));
+                    }
+                    if (nameList.Contains(recipe.Name))
+                    {
+                        LogToConsole(BotName, Translations.TryGet("bot.autoCraft.exception.duplicate", recipe.Name));
+                        do
+                        {
+                            recipe.Name = new Random().NextInt64().ToString();
+                        } while (nameList.Contains(recipe.Name));
+                    }
+                    nameList.Add(recipe.Name);
+
+                    int fixLength = -1;
+                    if (recipe.Type == CraftTypeConfig.player && recipe.Slots.Length != 4)
+                        fixLength = 4;
+                    else if (recipe.Type == CraftTypeConfig.table && recipe.Slots.Length != 9)
+                        fixLength = 9;
+
+                    if (fixLength > 0)
+                    {
+                        ItemType[] Slots = new ItemType[fixLength];
+                        for (int i = 0; i < fixLength; ++i)
+                            Slots[i] = (i < recipe.Slots.Length) ? recipe.Slots[i] : ItemType.Null;
+                        recipe.Slots = Slots;
+                        LogToConsole(BotName, Translations.TryGet("bot.autocraft.invaild_slots"));
+                    }
+
+                    if (recipe.Result == ItemType.Air || recipe.Result == ItemType.Null)
+                    {
+                        LogToConsole(BotName, Translations.TryGet("bot.autocraft.invaild_result"));
+                    }
+                }
+            }
+
+            public struct LocationConfig
+            {
+                public double X, Y, Z;
+
+                public LocationConfig(double X, double Y, double Z)
+                {
+                    this.X = X;
+                    this.Y = Y;
+                    this.Z = Z;
+                }
+            }
+
+            public enum OnFailConfig { abort, wait }
+
+            public class RecipeConfig
+            {
+                public string Name = "Recipe Name";
+
+                public CraftTypeConfig Type = CraftTypeConfig.player;
+
+                public ItemType Result = ItemType.Air;
+
+                public ItemType[] Slots = new ItemType[9] { 
+                    ItemType.Null, ItemType.Null, ItemType.Null,
+                    ItemType.Null, ItemType.Null, ItemType.Null,
+                    ItemType.Null, ItemType.Null, ItemType.Null,
+                };
+
+                public RecipeConfig() { }
+
+                public RecipeConfig(string Name, CraftTypeConfig Type, ItemType Result, ItemType[] Slots)
+                {
+                    this.Name = Name;
+                    this.Type = Type;
+                    this.Result = Result;
+                    this.Slots = Slots;
+                }
+            }
+
+            public enum CraftTypeConfig { player, table }
+        }
+
         private bool waitingForMaterials = false;
         private bool waitingForUpdate = false;
         private bool waitingForTable = false;
@@ -18,18 +146,11 @@ namespace MinecraftClient.ChatBots
         private Recipe? recipeInUse;
         private readonly List<ActionStep> actionSteps = new();
 
-        private Location tableLocation = new();
-        private bool abortOnFailure = true;
         private int updateDebounceValue = 2;
         private int updateDebounce = 0;
         private readonly int updateTimeoutValue = 10;
         private int updateTimeout = 0;
         private string timeoutAction = "unspecified";
-
-        private readonly string configPath = @"autocraft\config.ini";
-        private string lastRecipe = ""; // Used in parsing recipe config
-
-        private readonly Dictionary<string, Recipe> recipes = new();
 
         private void ResetVar()
         {
@@ -158,11 +279,6 @@ namespace MinecraftClient.ChatBots
             }
         }
 
-        public AutoCraft(string configPath = @"autocraft\config.ini")
-        {
-            this.configPath = configPath;
-        }
-
         public override void Initialize()
         {
             if (!GetInventoryEnabled())
@@ -174,7 +290,6 @@ namespace MinecraftClient.ChatBots
             }
             RegisterChatBotCommand("autocraft", Translations.Get("bot.autoCraft.cmd"), GetHelp(), CommandHandler);
             RegisterChatBotCommand("ac", Translations.Get("bot.autoCraft.alias"), GetHelp(), CommandHandler);
-            LoadConfig();
         }
 
         public string CommandHandler(string cmd, string[] args)
@@ -183,32 +298,39 @@ namespace MinecraftClient.ChatBots
             {
                 switch (args[0])
                 {
-                    case "load":
-                        LoadConfig();
-                        return "";
                     case "list":
-                        string names = string.Join(", ", recipes.Keys.ToList());
-                        return Translations.Get("bot.autoCraft.cmd.list", recipes.Count, names);
-                    case "reload":
-                        recipes.Clear();
-                        LoadConfig();
-                        return "";
-                    case "resetcfg":
-                        WriteDefaultConfig();
-                        return Translations.Get("bot.autoCraft.cmd.resetcfg");
+                        StringBuilder nameList = new();
+                        foreach (RecipeConfig recipe in Config.Recipes)
+                            nameList.Append(recipe.Name).Append(", ");
+                        return Translations.Get("bot.autoCraft.cmd.list", Config.Recipes.Length, nameList.ToString());
                     case "start":
                         if (args.Length >= 2)
                         {
                             string name = args[1];
-                            if (recipes.ContainsKey(name))
+
+                            bool hasRecipe = false;
+                            RecipeConfig? recipe = null;
+                            foreach (RecipeConfig recipeConfig in Config.Recipes)
+                            {
+                                if (recipeConfig.Name == name)
+                                {
+                                    hasRecipe = true;
+                                    recipe = recipeConfig;
+                                    break;
+                                }
+                            }
+
+                            if (hasRecipe)
                             {
                                 ResetVar();
-                                PrepareCrafting(recipes[name]);
+                                PrepareCrafting(recipe!);
                                 return "";
                             }
-                            else return Translations.Get("bot.autoCraft.recipe_not_exist");
+                            else
+                                return Translations.Get("bot.autoCraft.recipe_not_exist");
                         }
-                        else return Translations.Get("bot.autoCraft.no_recipe_name");
+                        else
+                            return Translations.Get("bot.autoCraft.no_recipe_name");
                     case "stop":
                         StopCrafting();
                         return Translations.Get("bot.autoCraft.stop");
@@ -242,220 +364,6 @@ namespace MinecraftClient.ChatBots
 #pragma warning restore format // @formatter:on
             };
         }
-
-        #region Config handling
-
-        public void LoadConfig()
-        {
-            if (!File.Exists(configPath))
-            {
-                if (!Directory.Exists(configPath))
-                {
-                    Directory.CreateDirectory(@"autocraft");
-                }
-                WriteDefaultConfig();
-                LogDebugToConsoleTranslated("bot.autoCraft.debug.no_config");
-            }
-            try
-            {
-                ParseConfig();
-                LogToConsoleTranslated("bot.autoCraft.loaded");
-            }
-            catch (Exception e)
-            {
-                LogToConsoleTranslated("bot.autoCraft.error.config", "\n" + e.Message);
-            }
-        }
-
-        private void WriteDefaultConfig()
-        {
-            string[] content =
-            {
-                "[AutoCraft]",
-                "# A valid autocraft config must begin with [AutoCraft]",
-                "",
-                "tablelocation=0,65,0   # Location of the crafting table if you intended to use it. Terrain and movements must be enabled. Format: x,y,z",
-                "onfailure=abort        # What to do on crafting failure, abort or wait",
-                "",
-                "# You can define multiple recipes in a single config file",
-                "# This is an example of how to define a recipe",
-                "[Recipe]",
-                "name=whatever          # name could be whatever you like. This field must be defined first",
-                "type=player            # crafting table type: player or table",
-                "result=StoneButton     # the resulting item",
-                "",
-                "# define slots with their deserved item",
-                "slot1=Stone            # slot start with 1, count from left to right, top to bottom",
-                "# For the naming of the items, please see",
-                "# https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs"
-            };
-            File.WriteAllLines(configPath, content);
-        }
-
-        private void ParseConfig()
-        {
-            string[] content = File.ReadAllLines(configPath);
-            if (content.Length <= 0)
-            {
-                throw new Exception(Translations.Get("bot.autoCraft.exception.empty", configPath));
-            }
-            if (content[0].ToLower() != "[autocraft]")
-            {
-                throw new Exception(Translations.Get("bot.autoCraft.exception.invalid", configPath));
-            }
-
-            // local variable for use in parsing config
-            string section = "";
-            Dictionary<string, Recipe> recipes = new();
-
-            foreach (string l in content)
-            {
-                // ignore comment start with #
-                if (l.StartsWith("#"))
-                    continue;
-                string line = l.Split('#')[0].Trim();
-                if (line.Length <= 0)
-                    continue;
-
-                if (line[0] == '[' && line[^1] == ']')
-                {
-                    section = line[1..^1].ToLower();
-                    continue;
-                }
-
-                string key = line.Split('=')[0].ToLower();
-                if (!(line.Length > (key.Length + 1)))
-                    continue;
-                string value = line[(key.Length + 1)..];
-                switch (section)
-                {
-                    case "recipe": ParseRecipe(key, value); break;
-                    case "autocraft": ParseMain(key, value); break;
-                }
-            }
-
-            // check and save recipe
-            foreach (var pair in recipes)
-            {
-                if ((pair.Value.CraftingAreaType == ContainerType.PlayerInventory
-                    || pair.Value.CraftingAreaType == ContainerType.Crafting)
-                    && (pair.Value.Materials != null
-                    && pair.Value.Materials.Count > 0)
-                    && pair.Value.ResultItem != ItemType.Air)
-                {
-                    // checking pass
-                    this.recipes.Add(pair.Key, pair.Value);
-                }
-                else
-                {
-                    throw new Exception(Translations.Get("bot.autoCraft.exception.item_miss", pair.Key));
-                }
-            }
-
-
-        }
-
-        #region Method for parsing different section of config
-
-        private void ParseMain(string key, string value)
-        {
-            switch (key)
-            {
-                case "tablelocation":
-                    string[] values = value.Split(',');
-                    if (values.Length == 3)
-                    {
-                        tableLocation.X = Convert.ToInt32(values[0]);
-                        tableLocation.Y = Convert.ToInt32(values[1]);
-                        tableLocation.Z = Convert.ToInt32(values[2]);
-                    }
-                    else throw new Exception(Translations.Get("bot.autoCraft.exception.invalid_table", key));
-                    break;
-                case "onfailure":
-                    abortOnFailure = value.ToLower() == "abort";
-                    break;
-                case "updatedebounce":
-                    updateDebounceValue = Convert.ToInt32(value);
-                    break;
-            }
-        }
-
-        private void ParseRecipe(string key, string value)
-        {
-            if (key.StartsWith("slot"))
-            {
-                int slot = Convert.ToInt32(key[^1].ToString());
-                if (slot > 0 && slot < 10)
-                {
-                    if (recipes.ContainsKey(lastRecipe))
-                    {
-                        if (Enum.TryParse(value, true, out ItemType itemType))
-                        {
-                            Dictionary<int, ItemType>? materials = recipes[lastRecipe].Materials;
-                            if (materials != null && materials.Count > 0)
-                            {
-                                materials.Add(slot, itemType);
-                            }
-                            else
-                            {
-                                recipes[lastRecipe].Materials = new Dictionary<int, ItemType>()
-                                    {
-                                        { slot, itemType }
-                                    };
-                            }
-                            return;
-                        }
-                        else
-                        {
-                            throw new Exception(Translations.Get("bot.autoCraft.exception.item_name", lastRecipe, key));
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception(Translations.Get("bot.autoCraft.exception.name_miss"));
-                    }
-                }
-                else
-                {
-                    throw new Exception(Translations.Get("bot.autoCraft.exception.slot", key));
-                }
-            }
-            else
-            {
-                switch (key)
-                {
-                    case "name":
-                        if (!recipes.ContainsKey(value))
-                        {
-                            recipes.Add(value, new Recipe());
-                            lastRecipe = value;
-                        }
-                        else
-                        {
-                            throw new Exception(Translations.Get("bot.autoCraft.exception.duplicate", value));
-                        }
-                        break;
-                    case "type":
-                        if (recipes.ContainsKey(lastRecipe))
-                        {
-                            recipes[lastRecipe].CraftingAreaType = value.ToLower() == "player" ? ContainerType.PlayerInventory : ContainerType.Crafting;
-                        }
-                        break;
-                    case "result":
-                        if (recipes.ContainsKey(lastRecipe))
-                        {
-                            if (Enum.TryParse(value, true, out ItemType itemType))
-                            {
-                                recipes[lastRecipe].ResultItem = itemType;
-                            }
-                        }
-                        break;
-                }
-            }
-        }
-        #endregion
-
-        #endregion
 
         #region Core part of auto-crafting
 
@@ -525,9 +433,19 @@ namespace MinecraftClient.ChatBots
         /// Prepare the crafting action steps by the given recipe name and start crafting
         /// </summary>
         /// <param name="recipe">Name of the recipe to craft</param>
-        private void PrepareCrafting(string name)
+        private void PrepareCrafting(RecipeConfig recipeConfig)
         {
-            PrepareCrafting(recipes[name]);
+            Dictionary<int, ItemType> materials = new();
+            for (int i = 0; i < recipeConfig.Slots.Length; ++i)
+                if (recipeConfig.Slots[i] != ItemType.Null)
+                    materials[i + 1] = recipeConfig.Slots[i];
+
+            ItemType ResultItem = recipeConfig.Result;
+
+            ContainerType CraftingAreaType = 
+                (recipeConfig.Type == CraftTypeConfig.player) ? ContainerType.PlayerInventory : ContainerType.Crafting;
+
+            PrepareCrafting(new Recipe(materials, ResultItem, CraftingAreaType));
         }
 
         /// <summary>
@@ -548,7 +466,7 @@ namespace MinecraftClient.ChatBots
                 if (inventoryInUse == -2)
                 {
                     // table required but not found. Try to open one
-                    OpenTable(tableLocation);
+                    OpenTable(Config._Table_Location);
                     waitingForTable = true;
                     SetTimeout(Translations.Get("bot.autoCraft.table_not_found"));
                     return;
@@ -698,7 +616,7 @@ namespace MinecraftClient.ChatBots
                     // Inform user the missing meterial name
                     LogToConsoleTranslated("bot.autoCraft.missing_material", actionSteps[index - 1].ItemType.ToString());
                 }
-                if (abortOnFailure)
+                if (Config.OnFailure == OnFailConfig.abort)
                 {
                     StopCrafting();
                     LogToConsoleTranslated("bot.autoCraft.aborted");
