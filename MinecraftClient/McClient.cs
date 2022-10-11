@@ -223,7 +223,7 @@ namespace MinecraftClient
 
             return;
 
-        Retry:
+            Retry:
             if (timeoutdetector != null)
             {
                 timeoutdetector.Item2.Cancel();
@@ -263,6 +263,7 @@ namespace MinecraftClient
             if (Config.ChatBot.AutoRelog.Enabled) { BotLoad(new AutoRelog()); }
             if (Config.ChatBot.AutoRespond.Enabled) { BotLoad(new AutoRespond()); }
             if (Config.ChatBot.ChatLog.Enabled) { BotLoad(new ChatLog()); }
+            if (Config.ChatBot.Farmer.Enabled) { BotLoad(new Farmer()); }
             if (Config.ChatBot.FollowPlayer.Enabled) { BotLoad(new FollowPlayer()); }
             if (Config.ChatBot.HangmanGame.Enabled) { BotLoad(new HangmanGame()); }
             if (Config.ChatBot.Mailer.Enabled) { BotLoad(new Mailer()); }
