@@ -33,6 +33,13 @@ namespace MinecraftClient.Inventory
         public Dictionary<int, Item> Items;
 
         /// <summary>
+        /// Container Properties
+        /// Used for Frunaces, Enchanting Table, Beacon, Brewing stand, Stone cutter, Loom and Lectern
+        /// More info about: https://wiki.vg/Protocol#Set_Container_Property
+        /// </summary>
+        public Dictionary<int, short> Properties;
+
+        /// <summary>
         /// Create an empty container with ID, Type and Title
         /// </summary>
         /// <param name="id">Container ID</param>
@@ -44,6 +51,7 @@ namespace MinecraftClient.Inventory
             Type = type;
             Title = title;
             Items = new Dictionary<int, Item>();
+            Properties = new Dictionary<int, short>();
         }
 
         /// <summary>
@@ -59,6 +67,7 @@ namespace MinecraftClient.Inventory
             Type = type;
             Title = title;
             Items = items;
+            Properties = new Dictionary<int, short>();
         }
 
         /// <summary>
@@ -73,6 +82,7 @@ namespace MinecraftClient.Inventory
             Title = title;
             Type = ConvertType.ToNew(type);
             Items = new Dictionary<int, Item>();
+            Properties = new Dictionary<int, short>();
         }
 
         /// <summary>
@@ -87,6 +97,7 @@ namespace MinecraftClient.Inventory
             Type = GetContainerType(typeID);
             Title = title;
             Items = new Dictionary<int, Item>();
+            Properties = new Dictionary<int, short>();
         }
 
         /// <summary>
@@ -99,6 +110,7 @@ namespace MinecraftClient.Inventory
             Type = type;
             Title = null;
             Items = new Dictionary<int, Item>();
+            Properties = new Dictionary<int, short>();
         }
 
         /// <summary>
@@ -112,6 +124,7 @@ namespace MinecraftClient.Inventory
             Type = type;
             Title = null;
             Items = items;
+            Properties = new Dictionary<int, short>();
         }
 
         /// <summary>

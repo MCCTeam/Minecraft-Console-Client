@@ -1,0 +1,45 @@
+﻿namespace MinecraftClient.Inventory
+{
+    // Not implemented for 1.14
+    public enum Enchantment : short
+    {
+        Protection = 0,
+        FireProtection,
+        FeatherFalling,
+        BlastProtection,
+        ProjectileProtection,
+        Respiration,
+        AquaAffinity,
+        Thorns,
+        DepthStrieder,
+        FrostWalker,
+        BindingCurse,
+        SoulSpeed,
+        Sharpness,
+        Smite,
+        BaneOfArthropods,
+        Knockback,
+        FireAspect,
+        Looting,
+        Sweeping,
+        Efficency,
+        SilkTouch,
+        Unbreaking,
+        Fortune,
+        Power,
+        Punch,
+        Flame,
+        Infinity,
+        LuckOfTheSea,
+        Lure,
+        Loyality,
+        Impaling,
+        Riptide,
+        Channeling,
+        Multishot,
+        QuickCharge,
+        Piercing,
+        Mending,
+        VanishingCurse
+    }
+}

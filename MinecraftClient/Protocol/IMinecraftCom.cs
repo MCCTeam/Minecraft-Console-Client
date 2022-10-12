@@ -180,6 +180,16 @@ namespace MinecraftClient.Protocol
         bool SendCreativeInventoryAction(int slot, ItemType itemType, int count, Dictionary<string, object>? nbt);
 
         /// <summary>
+        /// Send a click container button packet to the server.
+        /// Used for Enchanting table, Lectern, stone cutter and loom
+        /// </summary>
+        /// <param name="windowId">Id of the window being clicked</param>
+        /// <param name="buttonId">Id of the clicked button</param>
+        /// <returns>True if packet was successfully sent</returns>
+
+        bool ClickContainerButton(int windowId, int buttonId);
+
+        /// <summary>
         /// Plays animation
         /// </summary>
         /// <param name="animation">0 for left arm, 1 for right arm</param>
