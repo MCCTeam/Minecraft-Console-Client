@@ -261,9 +261,22 @@ namespace MinecraftClient.ChatBots
                             continue;
                         }
 
+                        int i = 0;
                         foreach (Location location in farmlandToPlantOn)
                         {
                             if (!running) break;
+
+                            // Check only every second iteration, minor optimization xD
+                            if (i % 2 == 0)
+                            {
+                                if (!HasItemOfTypeInInventory(cropTypeToPlant))
+                                {
+                                    LogDebug("Ran out of seeds, looking for crops to break...");
+                                    state = State.SearchingForCropsToBreak;
+                                    Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                                    continue;
+                                }
+                            }
 
                             double yValue = Math.Floor(location.Y) + 1;
 
@@ -292,6 +305,8 @@ namespace MinecraftClient.ChatBots
                                 Thread.Sleep(300);
                             }
                             else LogDebug("Can't move to: " + location2);
+
+                            i++;
                         }
 
                         LogDebug("Finished planting crops!");
@@ -376,9 +391,22 @@ namespace MinecraftClient.ChatBots
                             continue;
                         }
 
+                        int i2 = 0;
                         foreach (Location location in cropsToBonemeal)
                         {
                             if (!running) break;
+
+                            // Check only every second iteration, minor optimization xD
+                            if (i2 % 2 == 0)
+                            {
+                                if (!HasItemOfTypeInInventory(ItemType.BoneMeal))
+                                {
+                                    LogDebug("Ran out of Bone Meal, looking for farmland to plant on...");
+                                    state = State.SearchingForFarmlandToPlant;
+                                    Thread.Sleep(Config.Delay_Between_Tasks * 1000);
+                                    continue;
+                                }
+                            }
 
                             if (WaitForMoveToLocation(location))
                             {
@@ -402,6 +430,8 @@ namespace MinecraftClient.ChatBots
 
                                 Thread.Sleep(100);
                             }
+
+                            i2++;
                         }
 
                         LogDebug("Finished bonemealing crops!");
@@ -782,6 +812,10 @@ namespace MinecraftClient.ChatBots
             return false;
         }
 
+        private bool HasItemOfTypeInInventory(ItemType itemType)
+        {
+            return GetPlayerInventory().SearchItem(itemType).Length > 0;
+        }
         private void LogDebug(object text)
         {
             if (debugEnabled)
