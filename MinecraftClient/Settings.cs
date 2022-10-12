@@ -1038,6 +1038,7 @@ namespace MinecraftClient
                     set { ChatBots.ChatLog.Config = value; ChatBots.ChatLog.Config.OnSettingUpdate(); }
                 }
 
+                [TomlPrecedingComment("$config.ChatBot.Farmer$")]
                 public ChatBots.Farmer.Configs Farmer
                 {
                     get { return ChatBots.Farmer.Config; }
