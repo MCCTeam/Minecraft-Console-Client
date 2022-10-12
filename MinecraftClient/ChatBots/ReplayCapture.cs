@@ -21,7 +21,7 @@ namespace MinecraftClient.ChatBots
             public bool Enabled = false;
 
             [TomlInlineComment("$config.ChatBot.ReplayCapture.Backup_Interval$")]
-            public int Backup_Interval = 3000;
+            public double Backup_Interval = 300.0;
 
             public void OnSettingUpdate()
             {
@@ -38,7 +38,7 @@ namespace MinecraftClient.ChatBots
             SetNetworkPacketEventEnabled(true);
             replay = new ReplayHandler(GetProtocolVersion());
             replay.MetaData.serverName = GetServerHost() + GetServerPort();
-            backupCounter = Config.Backup_Interval * 10;
+            backupCounter = Settings.DoubleToTick(Config.Backup_Interval);
 
             RegisterChatBotCommand("replay", Translations.Get("bot.replayCapture.cmd"), "replay <save|stop>", Command);
         }
@@ -55,7 +55,7 @@ namespace MinecraftClient.ChatBots
                 if (backupCounter <= 0)
                 {
                     replay.CreateBackupReplay(@"recording_cache\REPLAY_BACKUP.mcpr");
-                    backupCounter = Config.Backup_Interval * 10;
+                    backupCounter = Settings.DoubleToTick(Config.Backup_Interval);
                 }
                 else backupCounter--;
             }
