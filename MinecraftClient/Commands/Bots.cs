@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MinecraftClient.Commands
 {
-    class BotsCommand : Command
+    class Bots : Command
     {
         public override string CmdName { get { return "bots"; } }
         public override string CmdUsage { get { return "bots [list|unload <bot name|all>]"; } }
