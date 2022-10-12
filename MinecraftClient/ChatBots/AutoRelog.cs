@@ -129,10 +129,10 @@ namespace MinecraftClient.ChatBots
 
         private void LaunchDelayedReconnection(string? msg)
         {
-            int delay = random.Next(Settings.DoubleToTick(Config.Delay.min), Settings.DoubleToTick(Config.Delay.max));
-            LogDebugToConsoleTranslated(String.IsNullOrEmpty(msg) ? "bot.autoRelog.reconnect_always" : "bot.autoRelog.reconnect", msg);
+            double delay = random.NextDouble() * (Config.Delay.max - Config.Delay.min) + Config.Delay.min;
+            LogDebugToConsoleTranslated(string.IsNullOrEmpty(msg) ? "bot.autoRelog.reconnect_always" : "bot.autoRelog.reconnect", msg);
             LogToConsoleTranslated("bot.autoRelog.wait", delay);
-            System.Threading.Thread.Sleep(delay * 1000);
+            System.Threading.Thread.Sleep((int)Math.Floor(delay * 1000));
             ReconnectToTheServer();
         }
 
