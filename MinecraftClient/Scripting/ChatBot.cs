@@ -359,6 +359,16 @@ namespace MinecraftClient
         public virtual void OnInventoryClose(int inventoryId) { }
 
         /// <summary>
+        /// When received inventory/container/window properties from the server.
+        /// Used for Frunaces, Enchanting Table, Beacon, Brewing stand, Stone cutter, Loom and Lectern
+        /// More info about: https://wiki.vg/Protocol#Set_Container_Property
+        /// </summary>
+        /// <param name="inventoryID">Inventory ID</param>
+        /// <param name="propertyId">Property ID</param>
+        /// <param name="propertyValue">Property Value</param>
+        public virtual void OnInventoryProperties(byte inventoryID, short propertyId, short propertyValue) { }
+
+        /// <summary>
         /// Called when a player joined the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
