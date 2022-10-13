@@ -18,7 +18,7 @@ namespace MinecraftClient.ChatBots
             public bool Enabled = false;
 
             [TomlInlineComment("$config.ChatBot.FollowPlayer.Update_Limit$")]
-            public double Update_Limit = 1;
+            public double Update_Limit = 1.5;
 
             [TomlInlineComment("$config.ChatBot.FollowPlayer.Stop_At_Distance$")]
             public double Stop_At_Distance = 3.0;
