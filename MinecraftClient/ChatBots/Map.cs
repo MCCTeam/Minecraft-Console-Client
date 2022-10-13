@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Runtime.Versioning;
+using System.Text;
 using MinecraftClient.Mapping;
-using MinecraftClient.Protocol.Handlers;
 using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
@@ -22,11 +20,11 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
-            [TomlInlineComment("$config.ChatBot.Map.Should_Resize$")]
-            public bool Should_Resize = false;
+            [TomlInlineComment("$config.ChatBot.Map.Render_In_Console$")]
+            public bool Render_In_Console = true;
 
-            [TomlInlineComment("$config.ChatBot.Map.Resize_To$")]
-            public int Resize_To = 256;
+            [TomlInlineComment("$config.ChatBot.Map.Save_To_File$")]
+            public bool Save_To_File = false;
 
             [TomlInlineComment("$config.ChatBot.Map.Auto_Render_On_Update$")]
             public bool Auto_Render_On_Update = false;
@@ -37,11 +35,7 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.Map.Notify_On_First_Update$")]
             public bool Notify_On_First_Update = true;
 
-            public void OnSettingUpdate()
-            {
-                if (Resize_To < 128)
-                    Resize_To = 128;
-            }
+            public void OnSettingUpdate() { }
         }
 
         private readonly string baseDirectory = @"Rendered_Maps";
@@ -95,31 +89,26 @@ namespace MinecraftClient.ChatBots
                         if (!cachedMaps.ContainsKey(mapId))
                             return Translations.TryGet("bot.map.cmd.not_found", mapId);
 
-                        if (OperatingSystem.IsWindows())
+                        try
                         {
-                            try
-                            {
-                                McMap map = cachedMaps[mapId];
-                                GenerateMapImage(map);
-                            }
-                            catch (Exception e)
-                            {
-                                LogDebugToConsole(e.StackTrace!);
-                                return Translations.TryGet("bot.map.failed_to_render", mapId);
-                            }
-                        }
-                        else
-                        {
-                            LogToConsoleTranslated("bot.map.windows_only");
-                        }
+                            McMap map = cachedMaps[mapId];
+                            if (Config.Save_To_File)
+                                SaveToFile(map);
 
-                        return "";
+                            if (Config.Render_In_Console)
+                                RenderInConsole(map);
+
+                            return "";
+                        }
+                        catch (Exception e)
+                        {
+                            LogDebugToConsole(e.StackTrace!);
+                            return Translations.TryGet("bot.map.failed_to_render", mapId);
+                        }
                     }
-
                     return Translations.TryGet("bot.map.cmd.invalid_id");
                 }
             }
-
             return "";
         }
 
@@ -138,8 +127,8 @@ namespace MinecraftClient.ChatBots
                 TrackingPosition = trackingPosition,
                 Locked = locked,
                 MapIcons = icons,
-                Width = rowsUpdated,
-                Height = columnsUpdated,
+                Width = columnsUpdated,
+                Height = rowsUpdated,
                 X = mapCoulmnX,
                 Z = mapRowZ,
                 Colors = colors,
@@ -155,64 +144,132 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                cachedMaps.Remove(mapid);
-                cachedMaps.Add(mapid, map);
+                McMap old_map = cachedMaps[mapid];
+                lock (old_map)
+                {
+                    for (int x = 0; x < map.Width; ++x)
+                        for (int y = 0; y < map.Height; ++y)
+                            old_map.Colors![(map.X + x) + (map.Z + y) * old_map.Width] = map.Colors![x + y * map.Width];
+                }
+                map = old_map;
             }
 
             if (Config.Auto_Render_On_Update)
             {
-                if (OperatingSystem.IsWindows())
-                    GenerateMapImage(map);
-                else
-                    LogToConsoleTranslated("bot.map.windows_only");
+                if (Config.Save_To_File)
+                    SaveToFile(map);
+
+                if (Config.Render_In_Console)
+                    RenderInConsole(map);
             }
         }
 
-        [SupportedOSPlatform("windows")]
-        private void GenerateMapImage(McMap map)
+        private void SaveToFile(McMap map)
         {
-            string fileName = baseDirectory + "/Map_" + map.MapId + ".jpg";
+            string fileName = baseDirectory + Path.DirectorySeparatorChar + "Map_" + map.MapId.ToString().PadLeft(5, '0') + ".bmp";
 
             if (File.Exists(fileName))
                 File.Delete(fileName);
 
-            /** Warning CA1416: Bitmap is only support Windows **/
-            /* https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/system-drawing-common-windows-only */
-            Bitmap image = new(map.Width, map.Height);
-
-            for (int x = 0; x < map.Width; ++x)
+            using FileStream file = File.OpenWrite(fileName);
+            file.Write(BitConverter.GetBytes((ushort)0x4d42)); // WORD File Header bfType: "BM"
+            file.Write(BitConverter.GetBytes((uint)(14 + 40 + 3 * map.Width * map.Height))); // DWORD File Header bfSize
+            file.Write(BitConverter.GetBytes((ushort)0)); // WORD File Header bfReserved1
+            file.Write(BitConverter.GetBytes((ushort)0)); // WORD File Header bfReserved2
+            file.Write(BitConverter.GetBytes((uint)54)); // DWORD File Header bfOffBits
+            file.Write(BitConverter.GetBytes((uint)40)); //  DWORD Info Header biSize
+            file.Write(BitConverter.GetBytes((uint)map.Width)); // LONG Info Header biWidth
+            file.Write(BitConverter.GetBytes((uint)map.Height)); // LONG Info Header biHeight
+            file.Write(BitConverter.GetBytes((ushort)1)); // WORD Info Header biPlanes
+            file.Write(BitConverter.GetBytes((ushort)24)); // WORD Info Header biBitCount
+            file.Write(BitConverter.GetBytes((uint)0x00)); // DWORD Info Header biCompression: BI_RGB
+            file.Write(BitConverter.GetBytes((uint)0)); // DWORD Info Header biSizeImage
+            file.Write(BitConverter.GetBytes((uint)0)); // LONG Info Header biXPelsPerMeter
+            file.Write(BitConverter.GetBytes((uint)0)); // LONG Info Header biYPelsPerMeter
+            file.Write(BitConverter.GetBytes((uint)0)); // DWORD Info Header biClrUsed
+            file.Write(BitConverter.GetBytes((uint)0)); // DWORD Info Header biClrImportant
+            Span<byte> pixel = stackalloc byte[3];
+            for (int y = map.Height - 1; y >= 0; --y)
             {
-                for (int y = 0; y < map.Height; ++y)
+                for (int x = 0; x < map.Width; ++x)
                 {
-                    byte inputColor = map.Colors![x + y * map.Width];
-                    ColorRGBA color = MapColors.ColorByteToRGBA(inputColor);
-
-                    if (color.Unknown)
-                    {
-                        string hexCode = new DataTypes(GetProtocolVersion()).ByteArrayToString(new byte[] { inputColor });
-                        LogDebugToConsole("Unknown color encountered: " + inputColor + " (Hex: " + hexCode + "), using: RGB(248, 0, 248)");
-                    }
-
-                    image.SetPixel(x, y, Color.FromArgb(color.A, color.R, color.G, color.B));
+                    ColorRGBA color = MapColors.ColorByteToRGBA(map.Colors![x + y * map.Width]);
+                    pixel[0] = color.B; pixel[1] = color.G; pixel[2] = color.R;
+                    file.Write(pixel);
                 }
             }
-
-            // Resize, double the image
-
-            if (Config.Should_Resize)
-                image = ResizeBitmap(image, Config.Resize_To, Config.Resize_To);
-
-            image.Save(fileName);
+            file.Close();
             LogToConsole(Translations.TryGet("bot.map.rendered", map.MapId, fileName));
         }
 
-        [SupportedOSPlatform("windows")]
-        private Bitmap ResizeBitmap(Bitmap sourceBMP, int width, int height)
+        private void RenderInConsole(McMap map)
         {
-            Bitmap result = new(width, height);
-            using (Graphics g = Graphics.FromImage(result))
-                g.DrawImage(sourceBMP, 0, 0, width, height);
-            return result;
+            StringBuilder sb = new();
+
+            int consoleWidth = Math.Max(Console.BufferWidth, Settings.Config.Main.Advanced.MinTerminalWidth) / 2;
+            int consoleHeight = Math.Max(Console.BufferHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 1;
+
+            int scaleX = (map.Width + consoleWidth - 1) / consoleWidth;
+            int scaleY = (map.Height + consoleHeight - 1) / consoleHeight;
+            int scale = Math.Max(scaleX, scaleY);
+            if (scale > 1)
+                sb.AppendLine(Translations.Get("bot.map.scale", map.Width, map.Height, map.Width / scale, map.Height / scale));
+
+            for (int base_y = 0; base_y < map.Height; base_y += scale)
+            {
+                int last_R = -1, last_G = -1, last_B = -1;
+                for (int base_x = 0; base_x < map.Width; base_x += scale)
+                {
+                    int RL = 0, GL = 0, BL = 0, RR = 0, GR = 0, BR = 0;
+                    double mid_dx = (double)(scale - 1) / 2;
+                    for (int dy = 0; dy < scale; ++dy)
+                    {
+                        for (int dx = 0; dx < scale; ++dx)
+                        {
+                            int x = Math.Min(base_x + dx, map.Width - 1);
+                            int y = Math.Min(base_y + dy, map.Height - 1);
+                            ColorRGBA color = MapColors.ColorByteToRGBA(map.Colors![x + y * map.Width]);
+                            if (dx <= mid_dx)
+                            {
+                                RL += color.R; GL += color.G; BL += color.B;
+                            }
+                            if (dx >= mid_dx)
+                            {
+                                RR += color.R; GR += color.G; BR += color.B;
+                            }
+                        }
+                    }
+
+                    int pixel_cnt = ((scale + 1) / 2) * scale;
+                    RL = (int)Math.Round((double)RL / pixel_cnt);
+                    GL = (int)Math.Round((double)GL / pixel_cnt);
+                    BL = (int)Math.Round((double)BL / pixel_cnt);
+                    RR = (int)Math.Round((double)RR / pixel_cnt);
+                    GR = (int)Math.Round((double)GR / pixel_cnt);
+                    BR = (int)Math.Round((double)BR / pixel_cnt);
+
+                    if (RL == last_R && GL == last_G && BL == last_B)
+                        sb.Append(' ');
+                    else
+                    {
+                        sb.Append(ColorHelper.GetColorEscapeCode((byte)RL, (byte)GL, (byte)BL, false)).Append(' ');
+                        last_R = RL; last_G = GL; last_B = BL;
+                    }
+
+                    if (RR == last_R && GR == last_G && BR == last_B)
+                        sb.Append(' ');
+                    else
+                    {
+                        sb.Append(ColorHelper.GetColorEscapeCode((byte)RR, (byte)GR, (byte)BR, false)).Append(' ');
+                        last_R = RR; last_G = GR; last_B = BR;
+                    }
+                }
+                if (base_y >= map.Height - scale)
+                    sb.Append(ColorHelper.GetResetEscapeCode());
+                else
+                    sb.AppendLine(ColorHelper.GetResetEscapeCode());
+            }
+            ConsoleIO.WriteLine(sb.ToString());
         }
     }
 
@@ -229,15 +286,6 @@ namespace MinecraftClient.ChatBots
         public byte Z { get; set; }
         public byte[]? Colors;
         public DateTime LastUpdated { get; set; }
-    }
-
-    class ColorRGBA
-    {
-        public byte R { get; set; }
-        public byte G { get; set; }
-        public byte B { get; set; }
-        public byte A { get; set; }
-        public bool Unknown { get; set; } = false;
     }
 
     class MapColors
@@ -318,7 +366,7 @@ namespace MinecraftClient.ChatBots
 
             // Any new colors that we haven't added will be purple like in the missing CS: Source Texture
             if (!Colors.ContainsKey(baseColorId))
-                return new ColorRGBA { R = 248, G = 0, B = 248, A = 255, Unknown = true };
+                return new(248, 0, 248, 255, true);
 
             byte shadeId = (byte)(receivedColorId % 4);
             byte shadeMultiplier = 255;
@@ -339,13 +387,12 @@ namespace MinecraftClient.ChatBots
                     break;
             }
 
-            return new ColorRGBA
-            {
-                R = (byte)((Colors[baseColorId][0] * shadeMultiplier) / 255),
-                G = (byte)((Colors[baseColorId][1] * shadeMultiplier) / 255),
-                B = (byte)((Colors[baseColorId][2] * shadeMultiplier) / 255),
-                A = 255
-            };
+            return new(
+                r: (byte)((Colors[baseColorId][0] * shadeMultiplier) / 255),
+                g: (byte)((Colors[baseColorId][1] * shadeMultiplier) / 255), 
+                b: (byte)((Colors[baseColorId][2] * shadeMultiplier) / 255), 
+                a: 255
+            );
         }
     }
 }
