@@ -352,7 +352,36 @@ namespace MinecraftClient
             //Test line to troubleshoot invisible colors
             if (Config.Logging.DebugMessages)
             {
-                ConsoleIO.WriteLineFormatted(Translations.Get("debug.color_test", "[0123456789ABCDEF]: [§00§11§22§33§44§55§66§77§88§99§aA§bB§cC§dD§eE§fF§r]"));
+                ConsoleIO.WriteLineFormatted(Translations.Get("debug.color_test", "[0123456789ABCDEF]: (4bit)[§00§11§22§33§44§55§66§77§88§99§aA§bB§cC§dD§eE§fF§r]"));
+                Random random = new();
+                { // Test 8 bit color
+                    StringBuilder sb = new();
+                    sb.Append("[0123456789]: (8bit)[");
+                    for (int i = 0; i < 10; ++i)
+                    {
+                        sb.Append(ColorHelper.GetColorEscapeCode((byte)random.Next(255),
+                                                                 (byte)random.Next(255),
+                                                                 (byte)random.Next(255),
+                                                                 true,
+                                                                 TerminalColorDepthType.bit_8)).Append(i);
+                    }
+                    sb.Append(ColorHelper.GetResetEscapeCode()).Append(']');
+                    ConsoleIO.WriteLine(Translations.Get("debug.color_test", sb.ToString()));
+                }
+                { // Test 24 bit color
+                    StringBuilder sb = new();
+                    sb.Append("[0123456789]: (24bit)[");
+                    for (int i = 0; i < 10; ++i)
+                    {
+                        sb.Append(ColorHelper.GetColorEscapeCode((byte)random.Next(255),
+                                                                 (byte)random.Next(255),
+                                                                 (byte)random.Next(255),
+                                                                 true,
+                                                                 TerminalColorDepthType.bit_24)).Append(i);
+                    }
+                    sb.Append(ColorHelper.GetResetEscapeCode()).Append(']');
+                    ConsoleIO.WriteLine(Translations.Get("debug.color_test", sb.ToString()));
+                }
             }
 
             //Load cached sessions from disk if necessary
