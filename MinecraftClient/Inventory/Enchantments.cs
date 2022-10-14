@@ -15,6 +15,7 @@
         FrostWalker,
         BindingCurse,
         SoulSpeed,
+        SwiftSneak,
         Sharpness,
         Smite,
         BaneOfArthropods,

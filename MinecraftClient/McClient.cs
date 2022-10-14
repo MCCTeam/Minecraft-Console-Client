@@ -2671,8 +2671,6 @@ namespace MinecraftClient
 
             inventory.Properties.Add(propertyId, propertyValue);
 
-            Log.Info("Got a property " + propertyId + " with value: " + propertyValue);
-
             DispatchBotEvent(bot => bot.OnInventoryProperties(inventoryID, propertyId, propertyValue));
 
             if (inventory.Type == ContainerType.Enchantment)
