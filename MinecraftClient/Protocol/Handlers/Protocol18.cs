@@ -553,6 +553,19 @@ namespace MinecraftClient.Protocol.Handlers
                                     (messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_INCOMING || messageTypeEnum == ChatParser.MessageType.TEAM_MSG_COMMAND_OUTGOING))
                                     senderTeamName = Json.ParseJson(targetName).Properties["with"].DataArray[0].Properties["text"].StringValue;
 
+                                if (string.IsNullOrWhiteSpace(senderDisplayName))
+                                {
+                                    PlayerInfo? player = handler.GetPlayerInfo(senderUUID);
+                                    if (player != null && (player.DisplayName != null || player.Name != null) && string.IsNullOrWhiteSpace(senderDisplayName))
+                                    {
+                                        senderDisplayName = ChatParser.ParseText(player.DisplayName ?? player.Name);
+                                        if (string.IsNullOrWhiteSpace(senderDisplayName))
+                                            senderDisplayName = player.DisplayName ?? player.Name;
+                                        else
+                                            senderDisplayName += "§r";
+                                    }
+                                }
+
                                 bool verifyResult;
                                 if (!isOnlineMode)
                                     verifyResult = false;
@@ -1382,8 +1395,8 @@ namespace MinecraftClient.Protocol.Handlers
                                 byte windowID = dataTypes.ReadNextByte(packetData);
                                 short actionID = dataTypes.ReadNextShort(packetData);
                                 bool accepted = dataTypes.ReadNextBool(packetData);
-                                if (!accepted && actionID > 0)
-                                    SendWindowConfirmation(windowID, actionID, accepted);
+                                if (!accepted)
+                                    SendWindowConfirmation(windowID, actionID, true);
                             }
                             break;
                         case PacketTypesIn.ResourcePackSend:
