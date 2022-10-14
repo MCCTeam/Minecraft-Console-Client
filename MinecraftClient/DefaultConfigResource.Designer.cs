@@ -8,10 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MinecraftClient {
+namespace MinecraftClient
+{
     using System;
-    
-    
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -22,44 +23,52 @@ namespace MinecraftClient {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class DefaultConfigResource {
-        
+    internal class DefaultConfigResource
+    {
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal DefaultConfigResource() {
+        internal DefaultConfigResource()
+        {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
-            get {
-                if (object.ReferenceEquals(resourceMan, null)) {
+        internal static global::System.Resources.ResourceManager ResourceManager
+        {
+            get
+            {
+                if (object.ReferenceEquals(resourceMan, null))
+                {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MinecraftClient.DefaultConfigResource", typeof(DefaultConfigResource).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
-            get {
+        internal static global::System.Globalization.CultureInfo Culture
+        {
+            get
+            {
                 return resourceCulture;
             }
-            set {
+            set
+            {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ╔═════════════════════════════════════╗
         ///║            Brewing Stand            ║
@@ -75,12 +84,14 @@ namespace MinecraftClient {
         ///║║ 5 ║ 6 ║ 7 ║ 8 ║ 9 ║10 ║11 ║12 ║13 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_BrewingStand {
-            get {
+        internal static string ContainerType_BrewingStand
+        {
+            get
+            {
                 return ResourceManager.GetString("ContainerType_BrewingStand", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ╔═════════════════════════════════════╗
         ///║        Crafting                     ║
@@ -96,12 +107,21 @@ namespace MinecraftClient {
         ///║║10 ║11 ║12 ║13 ║14 ║15 ║16 ║17 ║18 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Crafting {
-            get {
+        internal static string ContainerType_Crafting
+        {
+            get
+            {
                 return ResourceManager.GetString("ContainerType_Crafting", resourceCulture);
             }
         }
-        
+        internal static string ContainerType_EnchantingTable
+        {
+            get
+            {
+                return ResourceManager.GetString("ContainerType_EnchantingTable", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to ╔═════════════════════════════════════╗
         ///║              Container              ║
@@ -117,12 +137,14 @@ namespace MinecraftClient {
         ///║╔═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╗║
         ///║║ 3 ║ 4 ║ 5 ║ 6 ║ 7 [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Furnace {
-            get {
+        internal static string ContainerType_Furnace
+        {
+            get
+            {
                 return ResourceManager.GetString("ContainerType_Furnace", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ╔═════════════════════════════════════╗
         ///║             Container               ║
@@ -138,12 +160,14 @@ namespace MinecraftClient {
         ///║║ 9 ║10 ║11 ║12 ║13 ║14 ║15 ║16 ║17 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Generic_3x3 {
-            get {
+        internal static string ContainerType_Generic_3x3
+        {
+            get
+            {
                 return ResourceManager.GetString("ContainerType_Generic_3x3", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ╔═════════════════════════════════════╗
         ///║ Container                           ║
@@ -159,12 +183,14 @@ namespace MinecraftClient {
         ///║║27 ║28 ║29 ║30 ║31 ║32 ║33 ║34 ║35 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Generic_9x3 {
-            get {
+        internal static string ContainerType_Generic_9x3
+        {
+            get
+            {
                 return ResourceManager.GetString("ContainerType_Generic_9x3", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ╔═════════════════════════════════════╗
         ///║ Container                           ║
@@ -180,12 +206,14 @@ namespace MinecraftClient {
         ///║║36 ║37 ║38 ║39 ║40 ║41 ║42 ║43 ║44 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Generic_9x6 {
-            get {
+        internal static string ContainerType_Generic_9x6
+        {
+            get
+            {
                 return ResourceManager.GetString("ContainerType_Generic_9x6", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ╔═════════════════════════════════════╗
         ///║ Repair &amp; Disenchant                 ║
@@ -201,12 +229,14 @@ namespace MinecraftClient {
         ///║  ╚══╝         ╚══╝                  ║
         ///║                    [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Grindstone {
-            get {
+        internal static string ContainerType_Grindstone
+        {
+            get
+            {
                 return ResourceManager.GetString("ContainerType_Grindstone", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ╔═════════════════════════════════════╗
         ///║ Container                           ║
@@ -222,12 +252,14 @@ namespace MinecraftClient {
         ///║║23 ║24 ║25 ║26 ║27 ║28 ║29 ║30 ║31 ║║
         ///║╚═══╩═══╩═══╩═══╩══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Hopper {
-            get {
+        internal static string ContainerType_Hopper
+        {
+            get
+            {
                 return ResourceManager.GetString("ContainerType_Hopper", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ╔═════════════════════════════════════╗
         ///║╔═══╦═══════════╗                    ║
@@ -243,12 +275,14 @@ namespace MinecraftClient {
         ///║║ 9 ║10 ║11 ║12 ║13 ║14 ║15 ║16 ║17 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_PlayerInventory {
-            get {
+        internal static string ContainerType_PlayerInventory
+        {
+            get
+            {
                 return ResourceManager.GetString("ContainerType_PlayerInventory", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
@@ -265,12 +299,14 @@ namespace MinecraftClient {
         ///mcc.session_invalid=§8Gespeicherte Session ungültig oder abgelaufen.
         ///mcc.session_valid=§8Gespeicherte Ses [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string Translation_de {
-            get {
+        internal static string Translation_de
+        {
+            get
+            {
                 return ResourceManager.GetString("Translation_de", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
@@ -285,12 +321,14 @@ namespace MinecraftClient {
         ///mcc.password_hidden=Password(invisible): {0}
         ///mcc.off [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string Translation_en {
-            get {
+        internal static string Translation_en
+        {
+            get
+            {
                 return ResourceManager.GetString("Translation_en", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
@@ -307,12 +345,14 @@ namespace MinecraftClient {
         ///mcc.session_invalid=§8Le cache de la session est invalide ou a expiré.
         ///mcc.session_va [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string Translation_fr {
-            get {
+        internal static string Translation_fr
+        {
+            get
+            {
                 return ResourceManager.GetString("Translation_fr", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
@@ -329,12 +369,14 @@ namespace MinecraftClient {
         ///mcc.session_invalid=§8Кэшированная сессия недействительна или истекла.
         ///mcc.session_valid=§8Кэшированная се [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string Translation_ru {
-            get {
+        internal static string Translation_ru
+        {
+            get
+            {
                 return ResourceManager.GetString("Translation_ru", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
@@ -352,12 +394,14 @@ namespace MinecraftClient {
         ///mcc.session_valid=§8Phiên vẫn còn hợp lệ cho {0}.
         ///mcc.profile_ke [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string Translation_vi {
-            get {
+        internal static string Translation_vi
+        {
+            get
+            {
                 return ResourceManager.GetString("Translation_vi", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
@@ -376,12 +420,14 @@ namespace MinecraftClient {
         ///mcc.profile_key_invalid=§8缓存的聊天签名密钥需要刷新。
         ///mcc.profile_key_valid=§8{0 [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string Translation_zh_Hans {
-            get {
+        internal static string Translation_zh_Hans
+        {
+            get
+            {
                 return ResourceManager.GetString("Translation_zh_Hans", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to [mcc]
         ///# Messages from MCC itself
@@ -400,8 +446,10 @@ namespace MinecraftClient {
         ///mcc.profile_key_invalid=§8快取的聊天簽名金鑰需要重新整理。
         ///mcc.profile_key_valid [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string Translation_zh_Hant {
-            get {
+        internal static string Translation_zh_Hant
+        {
+            get
+            {
                 return ResourceManager.GetString("Translation_zh_Hant", resourceCulture);
             }
         }

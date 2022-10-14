@@ -770,6 +770,11 @@ namespace MinecraftClient.Protocol.Handlers
             return false; //Currently not implemented
         }
 
+        public bool ClickContainerButton(int windowId, int buttonId)
+        {
+            return false; //Currently not implemented
+        }
+
         public bool SendCloseWindow(int windowId)
         {
             return false; //Currently not implemented

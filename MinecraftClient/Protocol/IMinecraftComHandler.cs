@@ -281,6 +281,15 @@ namespace MinecraftClient.Protocol
         void OnTimeUpdate(long worldAge, long timeOfDay);
 
         /// <summary>
+        /// When received window properties from server.
+        /// 
+        /// </summary>
+        /// <param name="inventoryID">Inventory ID</param>
+        /// <param name="propertyId">Property ID</param>
+        /// <param name="propertyValue">Property Value</param>
+        public void OnWindowProperties(byte inventoryID, short propertyId, short propertyValue);
+
+        /// <summary>
         /// Called when inventory items have been received
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
@@ -439,5 +448,15 @@ namespace MinecraftClient.Protocol
         /// <param name="location">The location of the block.</param>
         /// <param name="block">The block</param>
         public void OnBlockChange(Location location, Block block);
+
+        /// <summary>
+        /// Send a click container button packet to the server.
+        /// Used for Enchanting table, Lectern, stone cutter and loom
+        /// </summary>
+        /// <param name="windowId">Id of the window being clicked</param>
+        /// <param name="buttonId">Id of the clicked button</param>
+        /// <returns>True if packet was successfully sent</returns>
+
+        bool ClickContainerButton(int windowId, int buttonId);
     }
 }

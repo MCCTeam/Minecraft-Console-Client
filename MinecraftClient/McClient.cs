@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Transactions;
 using MinecraftClient.ChatBots;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
@@ -2652,6 +2653,93 @@ namespace MinecraftClient
         }
 
         /// <summary>
+        /// When received window properties from server.
+        /// Used for Frunaces, Enchanting Table, Beacon, Brewing stand, Stone cutter, Loom and Lectern
+        /// More info about: https://wiki.vg/Protocol#Set_Container_Property
+        /// </summary>
+        /// <param name="inventoryID">Inventory ID</param>
+        /// <param name="propertyId">Property ID</param>
+        /// <param name="propertyValue">Property Value</param>
+        public void OnWindowProperties(byte inventoryID, short propertyId, short propertyValue)
+        {
+            if (!inventories.ContainsKey(inventoryID))
+                return;
+
+            Container inventory = inventories[inventoryID];
+
+            if (inventory.Properties.ContainsKey(propertyId))
+                inventory.Properties.Remove(propertyId);
+
+            inventory.Properties.Add(propertyId, propertyValue);
+
+            DispatchBotEvent(bot => bot.OnInventoryProperties(inventoryID, propertyId, propertyValue));
+
+            if (inventory.Type == ContainerType.Enchantment)
+            {
+                // We got the last property for enchantment
+                if (propertyId == 9 && propertyValue != -1)
+                {
+                    short topEnchantmentLevelRequirement = inventory.Properties[0];
+                    short middleEnchantmentLevelRequirement = inventory.Properties[1];
+                    short bottomEnchantmentLevelRequirement = inventory.Properties[2];
+
+                    Enchantment topEnchantment = EnchantmentMapping.GetEnchantmentById(
+                        GetProtocolVersion(),
+                        inventory.Properties[4]);
+
+                    Enchantment middleEnchantment = EnchantmentMapping.GetEnchantmentById(
+                        GetProtocolVersion(),
+                        inventory.Properties[5]);
+
+                    Enchantment bottomEnchantment = EnchantmentMapping.GetEnchantmentById(
+                        GetProtocolVersion(),
+                        inventory.Properties[6]);
+
+                    short topEnchantmentLevel = inventory.Properties[7];
+                    short middleEnchantmentLevel = inventory.Properties[8];
+                    short bottomEnchantmentLevel = inventory.Properties[9];
+
+                    StringBuilder sb = new();
+
+                    sb.AppendLine(Translations.TryGet("Enchantment.enchantments_available") + ":");
+
+                    sb.AppendLine(Translations.TryGet("Enchantment.tops_slot") + ":\t"
+                        + EnchantmentMapping.GetEnchantmentName(topEnchantment) + " "
+                        + EnchantmentMapping.ConvertLevelToRomanNumbers(topEnchantmentLevel) + " ("
+                        + topEnchantmentLevelRequirement + " " + Translations.TryGet("Enchantment.levels") + ")");
+
+                    sb.AppendLine(Translations.TryGet("Enchantment.middle_slot") + ":\t"
+                        + EnchantmentMapping.GetEnchantmentName(middleEnchantment) + " "
+                        + EnchantmentMapping.ConvertLevelToRomanNumbers(middleEnchantmentLevel) + " ("
+                        + middleEnchantmentLevelRequirement + " " + Translations.TryGet("Enchantment.levels") + ")");
+
+                    sb.AppendLine(Translations.TryGet("Enchantment.bottom_slot") + ":\t"
+                        + EnchantmentMapping.GetEnchantmentName(bottomEnchantment) + " "
+                        + EnchantmentMapping.ConvertLevelToRomanNumbers(bottomEnchantmentLevel) + " ("
+                        + bottomEnchantmentLevelRequirement + " " + Translations.TryGet("Enchantment.levels") + ")");
+
+                    Log.Info(sb.ToString());
+
+                    DispatchBotEvent(bot => bot.OnEnchantments(
+                        // Enchantments
+                        topEnchantment,
+                        middleEnchantment,
+                        bottomEnchantment,
+
+                        // Enchantment levels
+                        topEnchantmentLevel,
+                        middleEnchantmentLevel,
+                        bottomEnchantmentLevel,
+
+                        // Required levels for enchanting
+                        topEnchantmentLevelRequirement,
+                        middleEnchantmentLevelRequirement,
+                        bottomEnchantmentLevelRequirement));
+                }
+            }
+        }
+
+        /// <summary>
         /// When received window items from server.
         /// </summary>
         /// <param name="inventoryID">Inventory ID</param>
@@ -3303,6 +3391,19 @@ namespace MinecraftClient
         {
             world.SetBlock(location, block);
             DispatchBotEvent(bot => bot.OnBlockChange(location, block));
+        }
+
+        /// <summary>
+        /// Send a click container button packet to the server.
+        /// Used for Enchanting table, Lectern, stone cutter and loom
+        /// </summary>
+        /// <param name="windowId">Id of the window being clicked</param>
+        /// <param name="buttonId">Id of the clicked button</param>
+        /// <returns>True if packet was successfully sent</returns>
+
+        public bool ClickContainerButton(int windowId, int buttonId)
+        {
+            return handler.ClickContainerButton(windowId, buttonId);
         }
 
         #endregion
