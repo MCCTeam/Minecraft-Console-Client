@@ -10,6 +10,7 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -22,7 +23,7 @@ namespace DynamicRun.Builder
     {
         public CompileResult Compile(string filepath, string fileName)
         {
-            ConsoleIO.WriteLogLine($"Starting compilation of: '{fileName}'");
+            ConsoleIO.WriteLogLine($"Starting compilation...");
 
             using var peStream = new MemoryStream();
             var result = GenerateCode(filepath, fileName).Emit(peStream);
@@ -62,26 +63,21 @@ namespace DynamicRun.Builder
 
             var mods = Assembly.GetEntryAssembly()!.GetModules();
 
-#pragma warning disable IL3000
-            // System.Private.CoreLib
-            var A = typeof(object).Assembly.Location;
-            // System.Console
-            var B = typeof(Console).Assembly.Location;
-            // The path to MinecraftClient.dll
-            var C = typeof(Program).Assembly.Location;
 
-            var references = new List<MetadataReference>
-            {
-                MetadataReference.CreateFromFile(A),
-                MetadataReference.CreateFromFile(B)
-            };
+#pragma warning disable IL3000 // We determine if we are in a self-contained binary by checking specifically if the Assembly file path is null.
 
-            // We're on a Single File Application, so we need to extract the executable to get the assembly.
-            if (string.IsNullOrEmpty(C))
+            var SystemPrivateCoreLib = typeof(object).Assembly.Location;    // System.Private.CoreLib
+            var SystemConsole = typeof(Console).Assembly.Location;          // System.Console
+            var MinecraftClientDll = typeof(Program).Assembly.Location;     // The path to MinecraftClient.dll
+
+            var references = new List<MetadataReference>();
+
+            // We're on a self-contained binary, so we need to extract the executable to get the assemblies.
+            if (string.IsNullOrEmpty(MinecraftClientDll))
             {
                 // Create a temporary file to copy the executable to.
-                var executableDir = System.AppContext.BaseDirectory;
-                var executablePath = Path.Combine(executableDir, "MinecraftClient.exe");
+                var executableDir = AppContext.BaseDirectory;
+                var executablePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Path.Combine(executableDir, "MinecraftClient.exe") : Path.Combine(executableDir, "MinecraftClient");
                 var tempFileName = Path.GetTempFileName();
                 if (File.Exists(executablePath))
                 {
@@ -99,6 +95,7 @@ namespace DynamicRun.Builder
 
                     var assemblyrefs = Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList()!;
                     assemblyrefs.Add(new("MinecraftClient"));
+                    assemblyrefs.Add(new("System.Private.CoreLib"));
 
                     foreach (var refs in assemblyrefs)
                     {
@@ -133,10 +130,13 @@ namespace DynamicRun.Builder
             }
             else
             {
-                references.Add(MetadataReference.CreateFromFile(C));
+                references.Add(MetadataReference.CreateFromFile(SystemPrivateCoreLib));
+                references.Add(MetadataReference.CreateFromFile(SystemConsole));
+                references.Add(MetadataReference.CreateFromFile(MinecraftClientDll));
                 Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
             }
 #pragma warning restore IL3000
+
             return CSharpCompilation.Create($"{fileName}.dll",
                 new[] { parsedSyntaxTree },
                 references: references,
