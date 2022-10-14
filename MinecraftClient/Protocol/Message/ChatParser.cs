@@ -47,9 +47,20 @@ namespace MinecraftClient.Protocol
         /// <returns>Returns the translated text</returns>
         public static string ParseSignedChat(ChatMessage message, List<string>? links = null)
         {
-            string chatContent = Config.Signature.ShowModifiedChat && message.unsignedContent != null ? message.unsignedContent : message.content;
-            string content = message.isJson ? ParseText(chatContent, links) : chatContent;
             string sender = message.displayName!;
+            string content;
+            if (Config.Signature.ShowModifiedChat && message.unsignedContent != null)
+            {
+                content = ParseText(message.unsignedContent!);
+                if (string.IsNullOrEmpty(content))
+                    content = message.unsignedContent!;
+            }
+            else
+            {
+                content = message.isJson ? ParseText(message.content) : message.content;
+                if (string.IsNullOrEmpty(content))
+                    content = message.content!;
+            }
 
             string text;
             List<string> usingData = new();
