@@ -1382,6 +1382,13 @@ namespace MinecraftClient.Protocol.Handlers
                                 handler.OnWindowItems(windowId, inventorySlots, stateId);
                             }
                             break;
+                        case PacketTypesIn.WindowProperty:
+                            byte containerId = dataTypes.ReadNextByte(packetData);
+                            short propertyId = dataTypes.ReadNextShort(packetData);
+                            short propertyValue = dataTypes.ReadNextShort(packetData);
+
+                            handler.OnWindowProperties(containerId, propertyId, propertyValue);
+                            break;
                         case PacketTypesIn.SetSlot:
                             if (handler.GetInventoryEnabled())
                             {
@@ -2828,6 +2835,21 @@ namespace MinecraftClient.Protocol.Handlers
                 packet.AddRange(dataTypes.GetShort((short)slot));
                 packet.AddRange(dataTypes.GetItemSlot(new Item(itemType, count, nbt), itemPalette));
                 SendPacket(PacketTypesOut.CreativeInventoryAction, packet);
+                return true;
+            }
+            catch (SocketException) { return false; }
+            catch (System.IO.IOException) { return false; }
+            catch (ObjectDisposedException) { return false; }
+        }
+
+        public bool ClickContainerButton(int windowId, int buttonId)
+        {
+            try
+            {
+                List<byte> packet = new();
+                packet.Add((byte)windowId);
+                packet.Add((byte)buttonId);
+                SendPacket(PacketTypesOut.ClickWindowButton, packet);
                 return true;
             }
             catch (SocketException) { return false; }
