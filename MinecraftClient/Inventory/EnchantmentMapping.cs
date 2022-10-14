@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using MinecraftClient.Commands;
 using MinecraftClient.Protocol.Handlers;
 
 namespace MinecraftClient.Inventory
 {
     public class EnchantmentMapping
     {
+        #pragma warning disable format // @formatter:off
         // 1.14 - 1.15.2
         private static Dictionary<short, Enchantment> enchantmentMappings114 = new Dictionary<short, Enchantment>()
         {
@@ -92,7 +95,7 @@ namespace MinecraftClient.Inventory
         private static Dictionary<Enchantment, string> enchantmentNames = new Dictionary<Enchantment, string>()
         {
             //type          
-            { Enchantment.Protection,           "Enchantment.Protection"           } ,
+            { Enchantment.Protection,           "Enchantment.Protection"           },
             { Enchantment.FireProtection,       "Enchantment.FireProtection"       },
             { Enchantment.FeatherFalling,       "Enchantment.FeatherFalling"       },
             { Enchantment.BlastProtection,      "Enchantment.BlastProtection"      },
@@ -131,6 +134,7 @@ namespace MinecraftClient.Inventory
             { Enchantment.Mending,              "Enchantment.Mending"              },
             { Enchantment.VanishingCurse,       "Enchantment.VanishingCurse"       }
         };
+#pragma warning restore format // @formatter:on
 
         public static Enchantment GetEnchantmentById(int protocolVersion, short id)
         {
@@ -151,9 +155,38 @@ namespace MinecraftClient.Inventory
         public static string GetEnchantmentName(Enchantment enchantment)
         {
             if (!enchantmentNames.ContainsKey(enchantment))
-                return "Unknown Enchantment with ID: " + ((int)enchantment) + " (Probably not named in the code yet)";
+                return "Unknown Enchantment with ID: " + ((short)enchantment) + " (Probably not named in the code yet)";
 
             return Translations.TryGet(enchantmentNames[enchantment]);
+        }
+
+        public static string ConvertLevelToRomanNumbers(int num)
+        {
+            string result = string.Empty;
+            Dictionary<string, int> romanNumbers = new Dictionary<string, int>
+            {
+                {"M", 1000 },
+                {"CM", 900},
+                {"D", 500},
+                {"CD", 400},
+                {"C", 100},
+                {"XC", 90},
+                {"L", 50},
+                {"XL", 40},
+                {"X", 10},
+                {"IX", 9},
+                {"V", 5},
+                {"IV", 4},
+                {"I", 1}
+            };
+
+            foreach (var pair in romanNumbers)
+            {
+                result += string.Join(string.Empty, Enumerable.Repeat(pair.Key, num / pair.Value));
+                num %= pair.Value;
+            }
+
+            return result;
         }
     }
 }

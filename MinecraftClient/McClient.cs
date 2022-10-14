@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Transactions;
 using MinecraftClient.ChatBots;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
@@ -2665,45 +2666,76 @@ namespace MinecraftClient
 
             Container inventory = inventories[inventoryID];
 
-            //Log.Info("Got a property " + propertyId + " with value: " + propertyValue);
-
             if (inventory.Properties.ContainsKey(propertyId))
                 inventory.Properties.Remove(propertyId);
 
             inventory.Properties.Add(propertyId, propertyValue);
+
+            Log.Info("Got a property " + propertyId + " with value: " + propertyValue);
 
             DispatchBotEvent(bot => bot.OnInventoryProperties(inventoryID, propertyId, propertyValue));
 
             if (inventory.Type == ContainerType.Enchantment)
             {
                 // We got the last property for enchantment
-                if ((int)propertyId == (int)EnchantmentPropertyInfo.BottomEnchantmentLevel && propertyValue != -1)
+                if (propertyId == 9 && propertyValue != -1)
                 {
-                    short topEnchantmentLevelRequirement = inventory.Properties[(int)EnchantmentPropertyInfo.TopEnchantmentLevelRequirement];
-                    short middleEnchantmentLevelRequirement = inventory.Properties[(int)EnchantmentPropertyInfo.MiddleEnchantmentLevelRequirement];
-                    short bottomEnchantmentLevelRequirement = inventory.Properties[(int)EnchantmentPropertyInfo.BottomEnchantmentLevelRequirement];
-
-                    short enchantmentSeed = inventory.Properties[(int)EnchantmentPropertyInfo.EnchantmentSeed];
+                    short topEnchantmentLevelRequirement = inventory.Properties[0];
+                    short middleEnchantmentLevelRequirement = inventory.Properties[1];
+                    short bottomEnchantmentLevelRequirement = inventory.Properties[2];
 
                     Enchantment topEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
-                        inventory.Properties[(int)EnchantmentPropertyInfo.TopEnchantmentId]);
+                        inventory.Properties[4]);
 
                     Enchantment middleEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
-                        inventory.Properties[(int)EnchantmentPropertyInfo.MiddleEnchantmentId]);
+                        inventory.Properties[5]);
 
                     Enchantment bottomEnchantment = EnchantmentMapping.GetEnchantmentById(
                         GetProtocolVersion(),
-                        inventory.Properties[(int)EnchantmentPropertyInfo.BottomEnchantmentId]);
+                        inventory.Properties[6]);
 
-                    short topEnchantmentLevel = inventory.Properties[(int)EnchantmentPropertyInfo.TopEnchantmentId];
-                    short middleEnchantmentLevel = inventory.Properties[(int)EnchantmentPropertyInfo.MiddleEnchantmentId];
-                    short bottomEnchantmentLevel = inventory.Properties[(int)EnchantmentPropertyInfo.BottomEnchantmentId];
+                    short topEnchantmentLevel = inventory.Properties[7];
+                    short middleEnchantmentLevel = inventory.Properties[8];
+                    short bottomEnchantmentLevel = inventory.Properties[9];
 
-                    Log.Info(EnchantmentMapping.GetEnchantmentName(topEnchantment) + " " + topEnchantmentLevel + " > " + topEnchantmentLevelRequirement + " Levels");
-                    Log.Info(EnchantmentMapping.GetEnchantmentName(middleEnchantment) + " " + middleEnchantmentLevel + " > " + middleEnchantmentLevelRequirement + " Levels");
-                    Log.Info(EnchantmentMapping.GetEnchantmentName(bottomEnchantment) + " " + bottomEnchantmentLevel + " > " + bottomEnchantmentLevelRequirement + " Levels");
+                    StringBuilder sb = new();
+
+                    sb.AppendLine(Translations.TryGet("Enchantment.enchantments_available") + ":");
+
+                    sb.AppendLine(Translations.TryGet("Enchantment.tops_slot") + ":\t"
+                        + EnchantmentMapping.GetEnchantmentName(topEnchantment) + " "
+                        + EnchantmentMapping.ConvertLevelToRomanNumbers(topEnchantmentLevel) + " ("
+                        + topEnchantmentLevelRequirement + " " + Translations.TryGet("Enchantment.levels") + ")");
+
+                    sb.AppendLine(Translations.TryGet("Enchantment.middle_slot") + ":\t"
+                        + EnchantmentMapping.GetEnchantmentName(middleEnchantment) + " "
+                        + EnchantmentMapping.ConvertLevelToRomanNumbers(middleEnchantmentLevel) + " ("
+                        + middleEnchantmentLevelRequirement + " " + Translations.TryGet("Enchantment.levels") + ")");
+
+                    sb.AppendLine(Translations.TryGet("Enchantment.bottom_slot") + ":\t"
+                        + EnchantmentMapping.GetEnchantmentName(bottomEnchantment) + " "
+                        + EnchantmentMapping.ConvertLevelToRomanNumbers(bottomEnchantmentLevel) + " ("
+                        + bottomEnchantmentLevelRequirement + " " + Translations.TryGet("Enchantment.levels") + ")");
+
+                    Log.Info(sb.ToString());
+
+                    DispatchBotEvent(bot => bot.OnEnchantments(
+                        // Enchantments
+                        topEnchantment,
+                        middleEnchantment,
+                        bottomEnchantment,
+
+                        // Enchantment levels
+                        topEnchantmentLevel,
+                        middleEnchantmentLevel,
+                        bottomEnchantmentLevel,
+
+                        // Required levels for enchanting
+                        topEnchantmentLevelRequirement,
+                        middleEnchantmentLevelRequirement,
+                        bottomEnchantmentLevelRequirement));
                 }
             }
         }
