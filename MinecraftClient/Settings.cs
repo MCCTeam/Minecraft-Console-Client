@@ -396,6 +396,11 @@ namespace MinecraftClient
 
                     for (int i = 0; i < Advanced.BotOwners.Count; ++i)
                         Advanced.BotOwners[i] = ToLowerIfNeed(Advanced.BotOwners[i]);
+
+                    if (Advanced.MinTerminalWidth < 1)
+                        Advanced.MinTerminalWidth = 1;
+                    if (Advanced.MinTerminalHeight < 1)
+                        Advanced.MinTerminalHeight = 1;
                 }
 
                 [TomlDoNotInlineObject]
@@ -466,6 +471,12 @@ namespace MinecraftClient
                     [TomlInlineComment("$config.Main.Advanced.terrain_and_movements$")]
                     public bool TerrainAndMovements = false;
 
+                    [TomlInlineComment("$config.Main.Advanced.move_head_while_walking$")]
+                    public bool MoveHeadWhileWalking = true;
+
+                    [TomlInlineComment("$config.Main.Advanced.movement_speed$")]
+                    public int MovementSpeed = 2;
+
                     [TomlInlineComment("$config.Main.Advanced.inventory_handling$")]
                     public bool InventoryHandling = false;
 
@@ -511,17 +522,20 @@ namespace MinecraftClient
                     [TomlInlineComment("$config.Main.Advanced.minecraft_realms$")]
                     public bool MinecraftRealms = false;
 
-                    [TomlInlineComment("$config.Main.Advanced.move_head_while_walking$")]
-                    public bool MoveHeadWhileWalking = true;
-
                     [TomlInlineComment("$config.Main.Advanced.timeout$")]
                     public int TcpTimeout = 30;
 
                     [TomlInlineComment("$config.Main.Advanced.enable_emoji$")]
                     public bool EnableEmoji = true;
 
-                    [TomlInlineComment("$config.Main.Advanced.movement_speed$")]
-                    public int MovementSpeed = 2;
+                    [TomlInlineComment("$config.Main.Advanced.TerminalColorDepth$")]
+                    public TerminalColorDepthType TerminalColorDepth = TerminalColorDepthType.bit_24;
+
+                    [TomlInlineComment("$config.Main.Advanced.MinTerminalWidth$")]
+                    public int MinTerminalWidth = 16;
+
+                    [TomlInlineComment("$config.Main.Advanced.MinTerminalHeight$")]
+                    public int MinTerminalHeight = 10;
 
                     /// <summary>
                     /// Load login/password using an account alias
@@ -549,6 +563,8 @@ namespace MinecraftClient
                     public enum ResolveSrvRecordType { no, fast, yes };
 
                     public enum ForgeConfigType { no, auto, force };
+
+                    public enum TerminalColorDepthType { bit_4, bit_8, bit_24};
                 }
 
                 public struct AccountInfoConfig
@@ -1231,9 +1247,10 @@ namespace MinecraftClient
     {
         public static string GetFullMessage(this Exception ex)
         {
+            string msg = ex.Message.Replace("+", "->");
             return ex.InnerException == null
-                 ? ex.Message
-                 : ex.Message + "\n --> " + ex.InnerException.GetFullMessage();
+                 ? msg
+                 : msg + "\n --> " + ex.InnerException.GetFullMessage();
         }
     }
 }

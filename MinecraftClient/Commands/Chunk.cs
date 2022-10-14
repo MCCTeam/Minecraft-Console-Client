@@ -44,11 +44,11 @@ namespace MinecraftClient.Commands
                             sb.AppendLine(Translations.Get("cmd.chunk.chunk_pos", markChunkX, markChunkZ));;
                         }
 
-                        int consoleHeight = Math.Max(Console.BufferHeight - 2, 25);
+                        int consoleHeight = Math.Max(Math.Max(Console.BufferHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 2, 25);
                         if (consoleHeight % 2 == 0)
                             --consoleHeight;
 
-                        int consoleWidth = Math.Max(Console.BufferWidth / 2, 17);
+                        int consoleWidth = Math.Max(Math.Max(Console.BufferWidth, Settings.Config.Main.Advanced.MinTerminalWidth) / 2, 17);
                         if (consoleWidth % 2 == 0)
                             --consoleWidth;
 
