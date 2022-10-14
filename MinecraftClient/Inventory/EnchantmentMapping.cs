@@ -49,7 +49,8 @@ namespace MinecraftClient.Inventory
             { 33,   Enchantment.VanishingCurse }
         };
 
-        private static Dictionary<short, Enchantment> enchantmentMappings116Plus = new Dictionary<short, Enchantment>()
+        // 1.16 - 1.18
+        private static Dictionary<short, Enchantment> enchantmentMappings116 = new Dictionary<short, Enchantment>()
         {
             //id    type 
             { 0,    Enchantment.Protection },
@@ -92,6 +93,51 @@ namespace MinecraftClient.Inventory
             { 37,   Enchantment.VanishingCurse }
         };
 
+        // 1.19+
+        private static Dictionary<short, Enchantment> enchantmentMappings = new Dictionary<short, Enchantment>()
+        {
+            //id    type 
+            { 0,    Enchantment.Protection },
+            { 1,    Enchantment.FireProtection },
+            { 2,    Enchantment.FeatherFalling },
+            { 3,    Enchantment.BlastProtection },
+            { 4,    Enchantment.ProjectileProtection },
+            { 5,    Enchantment.Respiration },
+            { 6,    Enchantment.AquaAffinity },
+            { 7,    Enchantment.Thorns },
+            { 8,    Enchantment.DepthStrieder },
+            { 9,    Enchantment.FrostWalker },
+            { 10,   Enchantment.BindingCurse },
+            { 11,   Enchantment.SoulSpeed },
+            { 12,   Enchantment.SwiftSneak },
+            { 13,   Enchantment.Sharpness },
+            { 14,   Enchantment.Smite },
+            { 15,   Enchantment.BaneOfArthropods },
+            { 16,   Enchantment.Knockback },
+            { 17,   Enchantment.FireAspect },
+            { 18,   Enchantment.Looting },
+            { 19,   Enchantment.Sweeping },
+            { 20,   Enchantment.Efficency },
+            { 21,   Enchantment.SilkTouch },
+            { 22,   Enchantment.Unbreaking },
+            { 23,   Enchantment.Fortune },
+            { 24,   Enchantment.Power },
+            { 25,   Enchantment.Punch },
+            { 26,   Enchantment.Flame },
+            { 27,   Enchantment.Infinity },
+            { 28,   Enchantment.LuckOfTheSea },
+            { 29,   Enchantment.Lure },
+            { 30,   Enchantment.Loyality },
+            { 31,   Enchantment.Impaling },
+            { 32,   Enchantment.Riptide },
+            { 33,   Enchantment.Channeling },
+            { 34,   Enchantment.Multishot },
+            { 35,   Enchantment.QuickCharge },
+            { 36,   Enchantment.Piercing },
+            { 37,   Enchantment.Mending },
+            { 38,   Enchantment.VanishingCurse }
+        };
+
         private static Dictionary<Enchantment, string> enchantmentNames = new Dictionary<Enchantment, string>()
         {
             //type          
@@ -107,6 +153,7 @@ namespace MinecraftClient.Inventory
             { Enchantment.FrostWalker,          "Enchantment.FrostWalker"          },
             { Enchantment.BindingCurse,         "Enchantment.BindingCurse"         },
             { Enchantment.SoulSpeed,            "Enchantment.SoulSpeed"            },
+            { Enchantment.SwiftSneak,           "Enchantment.SwiftSneak"           },
             { Enchantment.Sharpness,            "Enchantment.Sharpness"            },
             { Enchantment.Smite,                "Enchantment.Smite"                },
             { Enchantment.BaneOfArthropods,     "Enchantment.BaneOfArthropods"     },
@@ -141,10 +188,12 @@ namespace MinecraftClient.Inventory
             if (protocolVersion < Protocol18Handler.MC_1_14_Version)
                 throw new Exception("Enchantments mappings are not implemented bellow 1.14");
 
-            Dictionary<short, Enchantment> map = enchantmentMappings116Plus;
+            Dictionary<short, Enchantment> map = enchantmentMappings;
 
             if (protocolVersion >= Protocol18Handler.MC_1_14_Version && protocolVersion < Protocol18Handler.MC_1_16_Version)
                 map = enchantmentMappings114;
+            else if (protocolVersion >= Protocol18Handler.MC_1_16_Version && protocolVersion < Protocol18Handler.MC_1_19_Version)
+                map = enchantmentMappings116;
 
             if (!map.ContainsKey(id))
                 throw new Exception("Got an Unknown Enchantment ID '" + id + "', please update the Mappings!");
