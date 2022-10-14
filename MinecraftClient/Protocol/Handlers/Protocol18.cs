@@ -17,6 +17,7 @@ using MinecraftClient.Mapping;
 using MinecraftClient.Mapping.BlockPalettes;
 using MinecraftClient.Mapping.EntityPalettes;
 using MinecraftClient.Protocol.Handlers.Forge;
+using MinecraftClient.Protocol.Handlers.packet.s2c;
 using MinecraftClient.Protocol.Handlers.PacketPalettes;
 using MinecraftClient.Protocol.Keys;
 using MinecraftClient.Protocol.Message;
@@ -449,6 +450,10 @@ namespace MinecraftClient.Protocol.Handlers
                                     dataTypes.ReadNextLocation(packetData); // Death location
                                 }
                             }
+                            break;
+                        case PacketTypesIn.DeclareCommands:
+                            if (protocolVersion >= MC_1_19_Version)
+                                DeclareCommands.Read(dataTypes, packetData);
                             break;
                         case PacketTypesIn.ChatMessage:
                             int messageType = 0;
@@ -2240,57 +2245,6 @@ namespace MinecraftClient.Protocol.Handlers
         }
 
         /// <summary>
-        /// The signable argument names and their values from command
-        /// Signature will used in Vanilla's say, me, msg, teammsg, ban, banip, and kick commands.
-        /// https://gist.github.com/kennytv/ed783dd244ca0321bbd882c347892874#signed-command-arguments
-        /// You can find all the commands that need to be signed by searching for "MessageArgumentType.getSignedMessage" in the source code.
-        /// Don't forget to handle the redirected commands, e.g. /tm, /w
-        /// 
-        /// </summary>
-        /// <param name="command">Command</param>
-        /// <returns> List< Argument Name, Argument Value > </returns>
-        private List<Tuple<string, string>>? CollectCommandArguments(string command)
-        {
-            if (!isOnlineMode || !Config.Signature.SignMessageInCommand)
-                return null;
-
-            List<Tuple<string, string>> needSigned = new();
-
-            string[] argStage1 = command.Split(' ', 2, StringSplitOptions.None);
-            if (argStage1.Length == 2)
-            {
-                /* /me      <action>
-                   /say     <message>
-                   /teammsg <message>
-                   /tm      <message> */
-                if (argStage1[0] == "me")
-                    needSigned.Add(new("action", argStage1[1]));
-                else if (argStage1[0] == "say" || argStage1[0] == "teammsg" || argStage1[0] == "tm")
-                    needSigned.Add(new("message", argStage1[1]));
-                else if (argStage1[0] == "msg" || argStage1[0] == "tell" || argStage1[0] == "w" ||
-                    argStage1[0] == "ban" || argStage1[0] == "ban-ip" || argStage1[0] == "kick")
-                {
-                    /* /msg    <targets> <message>
-                       /tell   <targets> <message>
-                       /w      <targets> <message>
-                       /ban    <target>  [<reason>]
-                       /ban-ip <target>  [<reason>]
-                       /kick   <target>  [<reason>] */
-                    string[] argStage2 = argStage1[1].Split(' ', 2, StringSplitOptions.None);
-                    if (argStage2.Length == 2)
-                    {
-                        if (argStage1[0] == "msg" || argStage1[0] == "tell" || argStage1[0] == "w")
-                            needSigned.Add(new("message", argStage2[1]));
-                        else if (argStage1[0] == "ban" || argStage1[0] == "ban-ip" || argStage1[0] == "kick")
-                            needSigned.Add(new("reason", argStage2[1]));
-                    }
-                }
-            }
-
-            return needSigned;
-        }
-
-        /// <summary>
         /// Send a chat command to the server - 1.19 and above
         /// </summary>
         /// <param name="command">Command</param>
@@ -2320,8 +2274,10 @@ namespace MinecraftClient.Protocol.Handlers
                 DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                 fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                List<Tuple<string, string>>? needSigned =
-                    playerKeyPair != null ? CollectCommandArguments(command) : null; // List< Argument Name, Argument Value >
+                List<Tuple<string, string>>? needSigned = null;               // List< Argument Name, Argument Value >
+                if (playerKeyPair != null && isOnlineMode && Config.Signature.SignMessageInCommand && protocolVersion >= MC_1_19_Version)
+                    needSigned = DeclareCommands.CollectSignArguments(command);
+
                 if (needSigned == null || needSigned!.Count == 0)
                 {
                     fields.AddRange(dataTypes.GetLong(0));                    // Salt: Long
@@ -2333,12 +2289,12 @@ namespace MinecraftClient.Protocol.Handlers
                     byte[] salt = GenerateSalt();
                     fields.AddRange(salt);                                    // Salt: Long
                     fields.AddRange(dataTypes.GetVarInt(needSigned.Count));   // Signature Length: VarInt
-                    foreach (var argument in needSigned)
+                    foreach ((string argName, string message) in needSigned)
                     {
-                        fields.AddRange(dataTypes.GetString(argument.Item1)); // Argument name: String
+                        fields.AddRange(dataTypes.GetString(argName));        // Argument name: String
                         byte[] sign = (protocolVersion >= MC_1_19_2_Version) ?
-                            playerKeyPair!.PrivateKey.SignMessage(argument.Item2, uuid, timeNow, ref salt, acknowledgment!.lastSeen) :
-                            playerKeyPair!.PrivateKey.SignMessage(argument.Item2, uuid, timeNow, ref salt);
+                            playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt, acknowledgment!.lastSeen) :
+                            playerKeyPair!.PrivateKey.SignMessage(message, uuid, timeNow, ref salt);
                         fields.AddRange(dataTypes.GetVarInt(sign.Length));    // Signature length: VarInt
                         fields.AddRange(sign);                                // Signature: Byte Array
                     }
