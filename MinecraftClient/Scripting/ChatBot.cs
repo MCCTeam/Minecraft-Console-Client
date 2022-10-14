@@ -369,6 +369,32 @@ namespace MinecraftClient
         public virtual void OnInventoryProperties(byte inventoryID, short propertyId, short propertyValue) { }
 
         /// <summary>
+        /// When received enchantments from the server this method is called
+        /// Enchantment levels are the levels of enchantment (eg. I, II, III, IV, V) (eg. Smite IV, Power III, Knockback II ..)
+        /// Enchantment level requirements are the levels that player needs to have in order to enchant the item
+        /// </summary>
+        /// <param name="topEnchantment">Enchantment in the top most slot</param>
+        /// <param name="middleEnchantment">Enchantment in the middle slot</param>
+        /// <param name="bottomEnchantment">Enchantment in the bottom slot</param>
+        /// <param name="topEnchantmentLevel">Enchantment level for the enchantment in the top most slot</param>
+        /// <param name="middleEnchantmentLevel">Enchantment level for the enchantment in the middle slot</param>
+        /// <param name="bottomEnchantmentLevel">Enchantment level for the enchantment in the bottom slot</param>
+        /// <param name="topEnchantmentLevelRequirement">Levels required by player for the enchantment in the top most slot</param>
+        /// <param name="middleEnchantmentLevelRequirement">Levels required by player for the enchantment in the middle slot</param>
+        /// <param name="bottomEnchantmentLevelRequirement">Levels required by player for the enchantment in the bottom slot</param>
+        public virtual void OnEnchantments(
+            Enchantment topEnchantment,
+            Enchantment middleEnchantment,
+            Enchantment bottomEnchantment,
+            short topEnchantmentLevel,
+            short middleEnchantmentLevel,
+            short bottomEnchantmentLevel,
+            short topEnchantmentLevelRequirement,
+            short middleEnchantmentLevelRequirement,
+            short bottomEnchantmentLevelRequirement)
+        { }
+
+        /// <summary>
         /// Called when a player joined the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>

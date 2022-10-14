@@ -124,6 +124,9 @@
   <data name="ContainerType_Crafting" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\containers\ContainerType.Crafting.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="ContainerType_EnchantingTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\containers\ContainerType.EnchantingTable.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
   <data name="ContainerType_Furnace" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\containers\ContainerType.Furnace.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>

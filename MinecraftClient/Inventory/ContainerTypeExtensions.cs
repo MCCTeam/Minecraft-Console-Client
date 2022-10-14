@@ -56,7 +56,7 @@
                 ContainerType.BlastFurnace     =>  DefaultConfigResource.ContainerType_Furnace,
                 ContainerType.Furnace          =>  DefaultConfigResource.ContainerType_Furnace,
                 ContainerType.Smoker           =>  DefaultConfigResource.ContainerType_Furnace,
-                ContainerType.Enchantment      =>  null,
+                ContainerType.Enchantment      =>  DefaultConfigResource.ContainerType_EnchantingTable,
                 ContainerType.BrewingStand     =>  DefaultConfigResource.ContainerType_BrewingStand,
                 ContainerType.Merchant         =>  null,
                 ContainerType.Beacon           =>  null,

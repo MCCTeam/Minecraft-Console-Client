@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Commands
@@ -27,21 +28,37 @@ namespace MinecraftClient.Commands
                 if (slotId == -1)
                     return Translations.TryGet("cmd.enchant.invalid_slot");
 
-                int containerId = -1;
+                Container? enchantingTable = null;
 
                 foreach (var (id, container) in handler.GetInventories())
                 {
                     if (container.Type == ContainerType.Enchantment)
                     {
-                        containerId = id;
+                        enchantingTable = container;
                         break;
                     }
                 }
 
-                if (containerId == -1)
+                if (enchantingTable == null)
                     return Translations.TryGet("cmd.enchant.enchanting_table_not_opened");
 
-                return handler.ClickContainerButton(containerId, slotId) ? Translations.TryGet("cmd.enchant.clicked") : Translations.TryGet("cmd.enchant.not_clicked");
+                int[] emptySlots = enchantingTable.GetEmpytSlots();
+
+                if (emptySlots.Contains(0))
+                    return Translations.TryGet("cmd.enchant.enchanting_no_item");
+
+                if (emptySlots.Contains(1))
+                    return Translations.TryGet("cmd.enchant.enchanting_no_lapis");
+
+                Item lapisSlot = enchantingTable.Items[1];
+
+                if (lapisSlot.Type != ItemType.LapisLazuli)
+                    return Translations.TryGet("cmd.enchant.enchanting_no_lapis");
+
+                if (lapisSlot.Count < 3)
+                    return Translations.TryGet("cmd.enchant.enchanting_no_lapis");
+
+                return handler.ClickContainerButton(enchantingTable.ID, slotId) ? Translations.TryGet("cmd.enchant.clicked") : Translations.TryGet("cmd.enchant.not_clicked");
             }
 
             return GetCmdDescTranslated();
