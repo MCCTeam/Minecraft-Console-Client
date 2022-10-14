@@ -43,7 +43,7 @@ namespace MinecraftClient
         private readonly List<string> registeredCommands = new();
         private readonly object delayTasksLock = new();
         private readonly List<TaskWithDelay> delayedTasks = new();
-        private McClient Handler
+        protected McClient Handler
         {
             get
             {
