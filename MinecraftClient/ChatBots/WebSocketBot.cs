@@ -692,7 +692,7 @@ namespace MinecraftClient.ChatBots
                             Direction blockFacingDirection = (Direction)Convert.ToInt32(cmd.Parameters[3]);
                             Hand handToUse = Hand.MainHand;
 
-                            if (cmd.Parameters.Length == 5)
+                            if (cmd.Parameters.Length == 4)
                                 handToUse = (Hand)Convert.ToInt32(cmd.Parameters[2]);
 
                             responder.SendSuccessResponse(JsonConvert.SerializeObject(SendPlaceBlock(blockLocation, blockFacingDirection, handToUse)));
@@ -1095,27 +1095,17 @@ namespace MinecraftClient.ChatBots
         private void SendSessionEvent(WsServer.WsBehavior session, string type, string data, bool overrideAuth = false)
         {
             if (session != null && (overrideAuth || session.IsAuthenticated()))
+            {
                 session.SendToClient("{\"event\": \"" + type + "\", \"data\": " + (data.IsNullOrEmpty() ? "null" : "\"" + Json.EscapeString(data) + "\"") + "}");
+
+                if (!(type.Contains("Entity") || type.Equals("OnEntityMove") || type.Equals("OnTimeUpdate") || type.Equals("OnServerTpsUpdate")))
+                    LogToConsole("\n\n\tSending:\n\n\t{\"event\": \"" + type + "\", \"data\": " + (data.IsNullOrEmpty() ? "null" : "\"" + Json.EscapeString(data) + "\"") + "}");
+            }
         }
 
         public void SendCommandResponse(WsServer.WsBehavior session, bool success, string requestId, string command, string result, bool overrideAuth = false)
         {
             SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": " + success.ToString().ToLower() + ", \"requestId\": \"" + requestId + "\", \"command\": \"" + command + "\", \"result\": " + (string.IsNullOrEmpty(result) ? "null" : result) + "}", overrideAuth);
-        }
-
-        private string EntityToJson(Entity entity)
-        {
-            return JsonConvert.SerializeObject(entity);
-        }
-
-        private string ItemToJson(Item item)
-        {
-            return JsonConvert.SerializeObject(item);
-        }
-
-        private string LocationToJson(Location location)
-        {
-            return JsonConvert.SerializeObject(location);
         }
 
         public string GameModeString(int gameMode)
