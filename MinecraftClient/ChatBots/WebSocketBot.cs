@@ -693,7 +693,7 @@ namespace MinecraftClient.ChatBots
                             Hand handToUse = Hand.MainHand;
 
                             if (cmd.Parameters.Length == 4)
-                                handToUse = (Hand)Convert.ToInt32(cmd.Parameters[2]);
+                                handToUse = (Hand)Convert.ToInt32(cmd.Parameters[4]);
 
                             responder.SendSuccessResponse(JsonConvert.SerializeObject(SendPlaceBlock(blockLocation, blockFacingDirection, handToUse)));
                             break;
