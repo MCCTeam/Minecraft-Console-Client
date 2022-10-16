@@ -681,7 +681,7 @@ namespace MinecraftClient.ChatBots
                             break;
 
                         case "SendPlaceBlock":
-                            if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length < 4 || cmd.Parameters.Length > 5)
+                            if (cmd.Parameters == null || cmd.Parameters.Length == 0 || cmd.Parameters.Length < 4 || cmd.Parameters.Length > 4)
                             {
                                 responder.SendErrorResponse(responder.Quote("Invalid number of parameters, expecting at least 4 and at most 5 parameters (x, y, z, blockFace, hand?)!"));
                                 return false;
