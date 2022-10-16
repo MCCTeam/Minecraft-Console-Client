@@ -603,7 +603,7 @@ namespace MinecraftClient.Protocol
                     session.PlayerID = profile.UUID;
                     session.ID = accessToken;
                     session.RefreshToken = msaResponse.RefreshToken;
-                    Config.Main.General.Account.Login = msaResponse.Email;
+                    InternalConfig.Login = msaResponse.Email;
                     return LoginResult.Success;
                 }
                 else

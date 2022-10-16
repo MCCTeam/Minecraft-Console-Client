@@ -48,12 +48,13 @@
 请查看：[如何为MCC添加或更新翻译](https://mccteam.github.io/guide/contibuting.html#translations)。
 
 MCC 现在支持这些语言（按字母顺序排列）：
-  * `de.ini` : Deutsch - German
-  * `en.ini` : English - English
-  * `fr.ini` : Français (France) - 	French
-  * `ru.ini` : Русский (Russkiy) - Russian
-  * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
-  * `zh-Hans.ini` : 简体中文（中国大陆） - Chinese Simplified (China; Mandarin)
+  * `de.ini`: Deutsch - German
+  * `en.ini`: English - English
+  * `fr.ini`: Français (France) - French
+  * `ru.ini`: Русский (Russkiy) - Russian
+  * `vi.ini`: Tiếng Việt (Việt Nam) - Vietnamese
+  * `zh-Hans.ini`: 简体中文 - Chinese Simplified
+  * `zh-Hant.ini`: 繁體中文 - Chinese Traditional
 
 ## 从源码构建 🏗️
 

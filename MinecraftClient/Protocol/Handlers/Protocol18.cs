@@ -1974,7 +1974,7 @@ namespace MinecraftClient.Protocol.Handlers
                     {
                         session.ServerIDhash = serverIDhash;
                         session.ServerPublicKey = serverPublicKey;
-                        SessionCache.Store(Config.Main.General.Account.Login.ToLower(), session);
+                        SessionCache.Store(InternalConfig.Login.ToLower(), session);
                     }
                     else
                     {
