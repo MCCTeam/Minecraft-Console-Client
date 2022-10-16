@@ -397,19 +397,19 @@ namespace MinecraftClient
 
             //Asking the user to type in missing data such as Username and Password
             bool useBrowser = Config.Main.General.AccountType == LoginType.microsoft && Config.Main.General.Method == LoginMethod.browser;
-            if (string.IsNullOrEmpty(Config.Main.General.Account.Login) && !useBrowser)
+            if (string.IsNullOrEmpty(InternalConfig.Login) && !useBrowser)
             {
                 ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.Get("mcc.login_basic_io") : Translations.Get("mcc.login"));
-                Config.Main.General.Account.Login = ConsoleIO.ReadLine().Trim();
-                if (string.IsNullOrEmpty(Config.Main.General.Account.Login))
+                InternalConfig.Login = ConsoleIO.ReadLine().Trim();
+                if (string.IsNullOrEmpty(InternalConfig.Login))
                 {
                     HandleFailure(Translations.Get("error.login.blocked"), false, ChatBot.DisconnectReason.LoginRejected);
                     return;
                 }
             }
-            InternalConfig.Username = Config.Main.General.Account.Login;
+            InternalConfig.Username = InternalConfig.Login;
             if (string.IsNullOrEmpty(Config.Main.General.Account.Password) && !useBrowser &&
-                (Config.Main.Advanced.SessionCache == CacheType.none || !SessionCache.Contains(Settings.ToLowerIfNeed(Config.Main.General.Account.Login))))
+                (Config.Main.Advanced.SessionCache == CacheType.none || !SessionCache.Contains(Settings.ToLowerIfNeed(InternalConfig.Login))))
             {
                 RequestPassword();
             }
@@ -427,7 +427,7 @@ namespace MinecraftClient
         /// </summary>
         private static void RequestPassword()
         {
-            ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", Config.Main.General.Account.Login) + "\n" : Translations.Get("mcc.password"));
+            ConsoleIO.WriteLine(ConsoleIO.BasicIO ? Translations.Get("mcc.password_basic_io", InternalConfig.Login) + "\n" : Translations.Get("mcc.password"));
             string? password = ConsoleIO.BasicIO ? Console.ReadLine() : ConsoleIO.ReadPassword();
             if (password == null || password == string.Empty) { password = "-"; }
             InternalConfig.Password = password;
@@ -445,7 +445,7 @@ namespace MinecraftClient
 
             ProtocolHandler.LoginResult result = ProtocolHandler.LoginResult.LoginRequired;
 
-            string loginLower = Settings.ToLowerIfNeed(Config.Main.General.Account.Login);
+            string loginLower = Settings.ToLowerIfNeed(InternalConfig.Login);
             if (InternalConfig.Password == "-")
             {
                 Translations.WriteLineFormatted("mcc.offline");
@@ -488,7 +488,7 @@ namespace MinecraftClient
                 if (result != ProtocolHandler.LoginResult.Success)
                 {
                     Translations.WriteLine("mcc.connecting", Config.Main.General.AccountType == LoginType.mojang ? "Minecraft.net" : "Microsoft");
-                    result = ProtocolHandler.GetLogin(Config.Main.General.Account.Login, InternalConfig.Password, Config.Main.General.AccountType, out session);
+                    result = ProtocolHandler.GetLogin(InternalConfig.Login, InternalConfig.Password, Config.Main.General.AccountType, out session);
                 }
 
                 if (result == ProtocolHandler.LoginResult.Success && Config.Main.Advanced.SessionCache != CacheType.none)

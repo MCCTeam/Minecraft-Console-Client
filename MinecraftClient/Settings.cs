@@ -45,6 +45,8 @@ namespace MinecraftClient
 
             public static ushort ServerPort = 25565;
 
+            public static string Login = string.Empty;
+
             public static string Username = string.Empty;
 
             public static string Password = string.Empty;
@@ -243,7 +245,7 @@ namespace MinecraftClient
                     switch (positionalIndex)
                     {
                         case 0:
-                            Config.Main.General.Account.Login = argument;
+                            InternalConfig.Login = argument;
                             break;
                         case 1:
                             InternalConfig.Password = argument;
@@ -360,6 +362,7 @@ namespace MinecraftClient
 
                     General.Account.Login ??= string.Empty;
                     General.Account.Password ??= string.Empty;
+                    InternalConfig.Login = General.Account.Login;
 
                     General.Server.Host ??= string.Empty;
 
@@ -841,7 +844,7 @@ namespace MinecraftClient
                                 switch (varname_lower)
                                 {
                                     case "username": result.Append(InternalConfig.Username); break;
-                                    case "login": result.Append(Settings.Config.Main.General.Account.Login); break;
+                                    case "login": result.Append(InternalConfig.Login); break;
                                     case "serverip": result.Append(InternalConfig.ServerIP); break;
                                     case "serverport": result.Append(InternalConfig.ServerPort); break;
                                     case "datetime":

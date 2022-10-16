@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Transactions;
 using MinecraftClient.ChatBots;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;

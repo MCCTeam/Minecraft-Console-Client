@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;

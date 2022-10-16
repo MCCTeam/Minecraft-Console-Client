@@ -446,9 +446,9 @@ namespace MinecraftClient.Protocol.Handlers
             else
                 entityType = entityPalette.FromId(ReadNextByte(cache), living);
 
-            Double entityX = ReadNextDouble(cache);
-            Double entityY = ReadNextDouble(cache);
-            Double entityZ = ReadNextDouble(cache);
+            double entityX = ReadNextDouble(cache);
+            double entityY = ReadNextDouble(cache);
+            double entityZ = ReadNextDouble(cache);
             byte entityPitch = ReadNextByte(cache);
             byte entityYaw = ReadNextByte(cache);
 

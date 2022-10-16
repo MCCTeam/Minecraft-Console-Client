@@ -659,17 +659,21 @@ namespace MinecraftClient
             string[] transEn = DefaultConfigResource.ResourceManager.GetString("Translation_en")!
                 .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
-            foreach (string lang in new string[] { "de", "fr", "ru", "vi", "zh_Hans", "zh_Hant" })
+            foreach (string lang in new string[] { "de", "fr", "ru", "vi", "zh-Hans", "zh-Hant" })
             {
                 Dictionary<string, string> trans = ParseTranslationContent(
-                    DefaultConfigResource.ResourceManager.GetString("Translation_" + lang)!
+                    DefaultConfigResource.ResourceManager.GetString("Translation_" + lang.Replace('-', '_'), System.Globalization.CultureInfo.InvariantCulture)!
                         .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None)
                 );
                 string fileName = AppDomain.CurrentDomain.BaseDirectory + Path.DirectorySeparatorChar + translationFilePath + Path.DirectorySeparatorChar + lang + ".ini";
                 if (File.Exists(fileName))
                 {
                     string backupFilePath = Path.ChangeExtension(fileName, ".backup.ini");
-                    try { File.Copy(fileName, backupFilePath, true); }
+                    try 
+                    {
+                        File.Copy(fileName, backupFilePath, true);
+                        File.Delete(fileName);
+                    }
                     catch (Exception ex)
                     {
                         ConsoleIO.WriteLineFormatted(Translations.TryGet("config.backup.fail", backupFilePath));
@@ -677,7 +681,7 @@ namespace MinecraftClient
                         return;
                     }
                 }
-                using FileStream file = File.OpenWrite(fileName);
+                StringBuilder sb = new();
                 int total = 0, translated = 0;
                 for (int i = 0; i < transEn.Length; ++i)
                 {
@@ -685,16 +689,15 @@ namespace MinecraftClient
                     int index = transEn[i].IndexOf('=');
                     if (line.Length < 3 || !char.IsLetterOrDigit(line[0]) || index == -1 || line.Length <= (index + 1))
                     {
-                        file.Write(Encoding.UTF8.GetBytes(line));
+                        sb.Append(line);
                     }
                     else
                     {
                         string key = line[..index];
-                        file.Write(Encoding.UTF8.GetBytes(key));
-                        file.Write(Encoding.UTF8.GetBytes("="));
+                        sb.Append(key).Append('=');
                         if (trans.TryGetValue(key, out string? value))
                         {
-                            file.Write(Encoding.UTF8.GetBytes(value.Replace("\n", "\\n")));
+                            sb.Append(value.Replace("\n", "\\n"));
                             ++total;
                             ++translated;
                         }
@@ -703,8 +706,9 @@ namespace MinecraftClient
                             ++total;
                         }
                     }
-                    file.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
+                    sb.AppendLine();
                 }
+                File.WriteAllText(fileName, sb.ToString(), Encoding.Unicode);
                 ConsoleIO.WriteLine(string.Format("Language {0}: Translated {1} of {2}, {3:0.00}%", lang, translated, total, 100.0 * (double)translated / total));
             }
         }

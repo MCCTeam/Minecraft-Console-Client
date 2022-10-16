@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml.Linq;
 using Tomlet.Attributes;
 using static MinecraftClient.ChatBots.ScriptScheduler.Configs;
 
@@ -249,7 +250,7 @@ namespace MinecraftClient.ChatBots
                 task.Trigger_On_Login,
                 task.Trigger_On_Times.Enable,
                 task.Trigger_On_Interval.Enable,
-                task.Trigger_On_Times.Times,
+                string.Join(", ", Array.ConvertAll(task.Trigger_On_Times.Times, time => time.ToString())),
                 task.Trigger_On_Interval.MinTime + '-' + task.Trigger_On_Interval.MaxTime,
                 task.Action
             );
