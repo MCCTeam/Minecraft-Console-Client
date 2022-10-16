@@ -43,6 +43,8 @@
 
 如果你希望为 Minecraft 控制台客户端做出贡献，很好，只需 fork 仓库并向 _Master_ 分支上提交一个 Pull Request 即可。如果你希望为网站 / 在线文档做出贡献，请参阅[网站的 git 仓库](https://github.com/MCCTeam/MCCTeam.github.io)。
 
+![Alt](https://repobeats.axiom.co/api/embed/c8a6c7c47fde8fcbe3727a21eab46e6b39dff60d.svg "Repobeats analytics image")
+
 ## 翻译 Minecraft 控制台客户端 (MCC) 🌍
 
 请查看：[如何为MCC添加或更新翻译](https://mccteam.github.io/guide/contibuting.html#translations)。
