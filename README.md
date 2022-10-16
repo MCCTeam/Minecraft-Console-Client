@@ -45,6 +45,8 @@ We are a small community so we need help to implement upgrades for new Minecraft
 
 If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the _Master_ branch. To contribute to the website / online documentation see also the [Website repository](https://github.com/MCCTeam/MCCTeam.github.io).
 
+![Alt](https://repobeats.axiom.co/api/embed/c8a6c7c47fde8fcbe3727a21eab46e6b39dff60d.svg "Repobeats analytics image")
+
 ## Translating Minecraft Console Client 🌍
 
 Check out: [How to update or add translations for MCC](https://mccteam.github.io/guide/contibuting.html#translations).
