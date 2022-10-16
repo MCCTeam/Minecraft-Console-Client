@@ -73,6 +73,7 @@ namespace MinecraftClient.Protocol.Handlers
         private int currentDimension;
         private bool isOnlineMode = false;
         private readonly BlockingCollection<Tuple<int, Queue<byte>>> packetQueue = new();
+        private float LastYaw, LastPitch;
 
         private int pendingAcknowledgments = 0;
         private readonly LastSeenMessagesCollector lastSeenMessagesCollector = new(5);
@@ -688,37 +689,52 @@ namespace MinecraftClient.Protocol.Handlers
                             handler.OnRespawn();
                             break;
                         case PacketTypesIn.PlayerPositionAndLook:
-                            // These always need to be read, since we need the field after them for teleport confirm
-                            double x = dataTypes.ReadNextDouble(packetData);
-                            double y = dataTypes.ReadNextDouble(packetData);
-                            double z = dataTypes.ReadNextDouble(packetData);
-                            float yaw = dataTypes.ReadNextFloat(packetData);
-                            float pitch = dataTypes.ReadNextFloat(packetData);
-                            byte locMask = dataTypes.ReadNextByte(packetData);
-
-                            // entity handling require player pos for distance calculating
-                            if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
                             {
-                                if (protocolVersion >= MC_1_8_Version)
+                                // These always need to be read, since we need the field after them for teleport confirm
+                                double x = dataTypes.ReadNextDouble(packetData);
+                                double y = dataTypes.ReadNextDouble(packetData);
+                                double z = dataTypes.ReadNextDouble(packetData);
+                                Location location = new(x, y, z);
+                                float yaw = dataTypes.ReadNextFloat(packetData);
+                                float pitch = dataTypes.ReadNextFloat(packetData);
+                                byte locMask = dataTypes.ReadNextByte(packetData);
+
+                                // entity handling require player pos for distance calculating
+                                if (handler.GetTerrainEnabled() || handler.GetEntityHandlingEnabled())
                                 {
-                                    Location location = handler.GetCurrentLocation();
-                                    location.X = (locMask & 1 << 0) != 0 ? location.X + x : x;
-                                    location.Y = (locMask & 1 << 1) != 0 ? location.Y + y : y;
-                                    location.Z = (locMask & 1 << 2) != 0 ? location.Z + z : z;
-                                    handler.UpdateLocation(location, yaw, pitch);
+                                    if (protocolVersion >= MC_1_8_Version)
+                                    {
+                                        Location current = handler.GetCurrentLocation();
+                                        location.X = (locMask & 1 << 0) != 0 ? current.X + x : x;
+                                        location.Y = (locMask & 1 << 1) != 0 ? current.Y + y : y;
+                                        location.Z = (locMask & 1 << 2) != 0 ? current.Z + z : z;
+                                    }
                                 }
-                                else handler.UpdateLocation(new Location(x, y, z), yaw, pitch);
-                            }
 
-                            if (protocolVersion >= MC_1_9_Version)
-                            {
-                                int teleportID = dataTypes.ReadNextVarInt(packetData);
-                                // Teleport confirm packet
-                                SendPacket(PacketTypesOut.TeleportConfirm, dataTypes.GetVarInt(teleportID));
-                            }
+                                if (protocolVersion >= MC_1_9_Version)
+                                {
+                                    int teleportID = dataTypes.ReadNextVarInt(packetData);
 
-                            if (protocolVersion >= MC_1_17_Version)
-                                dataTypes.ReadNextBool(packetData); // Dismount Vehicle    - 1.17 and above
+                                    if (teleportID < 0) { yaw = LastYaw; pitch = LastPitch; }
+                                    else { LastYaw = yaw; LastPitch = pitch; }
+
+                                    handler.UpdateLocation(location, yaw, pitch);
+
+                                    // Teleport confirm packet
+                                    SendPacket(PacketTypesOut.TeleportConfirm, dataTypes.GetVarInt(teleportID));
+                                    SendLocationUpdate(location, true, yaw, pitch, true);
+                                    if (teleportID == 1)
+                                        SendLocationUpdate(location, true, yaw, pitch, true);
+                                }
+                                else
+                                {
+                                    handler.UpdateLocation(location, yaw, pitch);
+                                    LastYaw = yaw; LastPitch = pitch;
+                                }
+
+                                if (protocolVersion >= MC_1_17_Version)
+                                    dataTypes.ReadNextBool(packetData); // Dismount Vehicle    - 1.17 and above
+                            }
                             break;
                         case PacketTypesIn.ChunkData:
                             if (handler.GetTerrainEnabled())
@@ -2488,6 +2504,7 @@ namespace MinecraftClient.Protocol.Handlers
             return false;
         }
 
+
         /// <summary>
         /// Send a location update to the server
         /// </summary>
@@ -2496,17 +2513,24 @@ namespace MinecraftClient.Protocol.Handlers
         /// <param name="yaw">Optional new yaw for updating player look</param>
         /// <param name="pitch">Optional new pitch for updating player look</param>
         /// <returns>True if the location update was successfully sent</returns>
-        public bool SendLocationUpdate(Location location, bool onGround, float? yaw = null, float? pitch = null)
+        public bool SendLocationUpdate(Location location, bool onGround, float? yaw, float? pitch)
+        {
+            return SendLocationUpdate(location, onGround, yaw, pitch, false);
+        }
+
+        public bool SendLocationUpdate(Location location, bool onGround, float? yaw = null, float? pitch = null, bool forceUpdate = false)
         {
             if (handler.GetTerrainEnabled())
             {
                 byte[] yawpitch = Array.Empty<byte>();
                 PacketTypesOut packetType = PacketTypesOut.PlayerPosition;
 
-                if (yaw.HasValue && pitch.HasValue)
+                if (yaw.HasValue && pitch.HasValue && (forceUpdate || yaw.Value != LastYaw || pitch.Value != LastPitch))
                 {
                     yawpitch = dataTypes.ConcatBytes(dataTypes.GetFloat(yaw.Value), dataTypes.GetFloat(pitch.Value));
                     packetType = PacketTypesOut.PlayerPositionAndRotation;
+
+                    LastYaw = yaw.Value; LastPitch = pitch.Value;
                 }
 
                 try
