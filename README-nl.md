@@ -26,6 +26,8 @@ We zijn een kleine community, dus we hebben hulp nodig bij het implementeren van
 
 Als je graag mee wilt helpen aan Minecraft Console Client, geweldig! Fork de repository en dien een pull request in op de *Master* branch. MCC gebruikt de *master* branch voor de stabiel versies (dus we gebruiken de *Indev* branch niet meer).
 
+![Alt](https://repobeats.axiom.co/api/embed/c8a6c7c47fde8fcbe3727a21eab46e6b39dff60d.svg "Repobeats analytics image")
+
 ## Minecraft Console Client Vertalen 🌍
 
 Als je de Minecraft Console Client wilt vertalen naar een andere taal, download dan het vertalings bestand via [de talen folder](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) of fork de repository. Nadat je klaar bent met de vertaling dien je de vertaling in of stuur je ons het bestand door d.m.v. een [probleem](https://github.com/MCCTeam/Minecraft-Console-Client/issues) (voorals je nieuw bent met Git(Hub)).
@@ -36,29 +38,8 @@ Voor de namen van het vertaalbestand, zie [dit bericht](https://github.com/MCCTe
 
 ## Eigen versie bouwen 🏗️
 
-_De aanbevolen ontwikkelomgeving is [Visual Studio](https://visualstudio.microsoft.com/). Mocht je het project willen bouwen zonder een ontwikkelomgeving te installeren, dan kun je de volgende instructies volgen:_
-
-Download allereerst de .NET 6.0 SDK [here](https://dotnet.microsoft.com/en-us/download) en volg de installatie-instructies.
-
-Download de [zip met alle code](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip), pak deze uit en navigeer naar de `MinecraftClient` map.
-
-### Op Windows 🪟
-
-1. Open een Commandprompt / Opdrachtprompt.
-2. Typ in `dotnet publish --no-self-contained -r win-x64 -c Release`.
-3. Als de build slaagt, kunt je deze als `MinecraftClient.exe` in de folder pad `MinecraftClient\bin\Release\net6.0\win-x64\publish\`.
-
-### Op Linux 🐧
-
-1. Open een Commandprompt / Opdrachtprompt.
-2. Typ in `dotnet publish --no-self-contained -r linux-x64 -c Release`.
-3. Als de build slaagt, kunt je deze als `MinecraftClient` in de folder pad `MinecraftClient\bin\Release\net6.0\linux-x64\publish\`.
-
-### Op Mac 🍎
-
-1. Open een Commandprompt / Opdrachtprompt.
-2. Typ in `dotnet publish --no-self-contained -r osx-x64 -c Release`.
-3. Als de build slaagt, kunt je deze als `MinecraftClient` in de folder pad `MinecraftClient\bin\Release\net6.0\osx-x64\publish\`.
+Dit gedeelte is verplaatst naar onze nieuwe documentatiewebsite.
+[Klik hier](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
 
 ## Licentie ⚖️
 

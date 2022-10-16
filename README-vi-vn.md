@@ -1,5 +1,4 @@
-Minecraft Console Client
-========================
+# Minecraft Console Client
 
 [![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest)
 
@@ -24,7 +23,9 @@ Chúng tôi là một cộng đồng nhỏ nên chúng tôi cần giúp đỡ đ
 
 ## Làm thế nào để đóng góp? 📝
 
-Nếu bạn cảm thấy thích đóng góp cho Minecraft Console Client, tuyệt vời, chỉ cần fork repository này và nộp 1 cái pull request trên nhánh *Master*. MCC đang được phân phối bằng những phiên bản development (thường là ổn định) và chúng tôi không còn sử dụng nhánh *Indev*.
+Nếu bạn cảm thấy thích đóng góp cho Minecraft Console Client, tuyệt vời, chỉ cần fork repository này và nộp 1 cái pull request trên nhánh _Master_. MCC đang được phân phối bằng những phiên bản development (thường là ổn định) và chúng tôi không còn sử dụng nhánh _Indev_.
+
+![Alt](https://repobeats.axiom.co/api/embed/c8a6c7c47fde8fcbe3727a21eab46e6b39dff60d.svg "Repobeats analytics image")
 
 ## Dịch Minecraft Console Client 🌍
 
@@ -36,36 +37,17 @@ Nếu bạn muốn dịch Minecraft Console Client bằng một ngôn ngữ khá
 
 ## Xây từ gốc 🏗️
 
-_The recommended development environment is [Visual Studio](https://visualstudio.microsoft.com/). If you want to build the project without installing a development environment, you may also follow these instructions:_
-
-First of all, get a [zip of source code](https://github.com/MCCTeam/Minecraft-Console-Client/archive/master.zip), extract it and navigate to the `MinecraftClient` folder.
-
-Edit `MinecraftClient.csproj` to set the Build target to `Release` on [line 4](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/MinecraftClient.csproj#L4):
-
-```xml
-<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-```
-
-### On Windows 🪟
-
-1. Locate `MSBuild.exe` for .NET 4 inside `C:\Windows\Microsoft.NET\Framework\v4.X.XXXXX`
-2. Drag and drop `MinecraftClient.csproj` over `MSBuild.exe` to launch the build
-3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
-
-### On Mac and Linux 🐧
-
-1. Install the [Mono Framework](https://www.mono-project.com/download/stable/#download-lin) if not already installed
-2. Run `msbuild MinecraftClient.csproj` in a terminal
-3. If the build succeeds, you can find `MinecraftClient.exe` under `MinecraftClient\bin\Release`
+Phần này đã được chuyển đến trang web tài liệu mới của chúng tôi.
+[Bấm vào đây](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
 
 ## License ⚖️
 
 Unless specifically stated, the code is from the MCC Team or Contributors, and available under CDDL-1.0. Else, the license and original author are mentioned in source file headers.
 The main terms of the CDDL-1.0 license are basically the following:
 
-- You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial.
-- However, in all cases, any modifications, improvements, or additions to the CDDL code (any code that is referenced in direct modifications to the CDDL code is considered an addition to the CDDL code, and so is bound by this requirement; e.g. a modification of a math function to use a fast lookup table makes that table itself an addition to the CDDL code, regardless of whether it's in a source code file of its own) must be made publicly and freely available in source, under the CDDL license itself.
-- In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
+-   You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial.
+-   However, in all cases, any modifications, improvements, or additions to the CDDL code (any code that is referenced in direct modifications to the CDDL code is considered an addition to the CDDL code, and so is bound by this requirement; e.g. a modification of a math function to use a fast lookup table makes that table itself an addition to the CDDL code, regardless of whether it's in a source code file of its own) must be made publicly and freely available in source, under the CDDL license itself.
+-   In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
 
 More info at http://qstuff.blogspot.fr/2007/04/why-cddl.html
 Full license at http://opensource.org/licenses/CDDL-1.0
