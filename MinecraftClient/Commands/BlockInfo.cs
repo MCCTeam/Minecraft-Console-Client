@@ -24,12 +24,12 @@ namespace MinecraftClient.Commands
 
             Block block = handler.GetWorld().GetBlock(targetBlockLocation);
 
-            handler.Log.Info("Block Type: " + block.Type);
+            handler.Log.Info(Translations.TryGet("cmd.blockinfo.BlockType") + ": " + block.Type);
 
             if (reportSurrounding)
             {
                 StringBuilder sb = new();
-                sb.AppendLine("Blocks around:");
+                sb.AppendLine(Translations.TryGet("cmd.blockinfo.BlocksAround") + ":");
 
                 Block blockXPositive = handler.GetWorld().GetBlock(new Location(targetBlockLocation.X + 1, targetBlockLocation.Y, targetBlockLocation.Z));
                 Block blockXNegative = handler.GetWorld().GetBlock(new Location(targetBlockLocation.X - 1, targetBlockLocation.Y, targetBlockLocation.Z));
@@ -38,14 +38,14 @@ namespace MinecraftClient.Commands
                 Block blockZPositive = handler.GetWorld().GetBlock(new Location(targetBlockLocation.X, targetBlockLocation.Y, targetBlockLocation.Z + 1));
                 Block blockZNegative = handler.GetWorld().GetBlock(new Location(targetBlockLocation.X, targetBlockLocation.Y, targetBlockLocation.Z - 1));
 
-                sb.AppendLine("\t[X Positive] Block Type: " + blockXPositive.Type);
-                sb.AppendLine("\t[X Negative] Block Type: " + blockXNegative.Type);
+                sb.AppendLine("[X " + Translations.TryGet("cmd.blockinfo.Positive") + "] " + Translations.TryGet("cmd.blockinfo.BlockType") + ": " + blockXPositive.Type);
+                sb.AppendLine("[X " + Translations.TryGet("cmd.blockinfo.Negative") + "] " + Translations.TryGet("cmd.blockinfo.BlockType") + ": " + blockXNegative.Type);
                 sb.AppendLine(" ");
-                sb.AppendLine("\t[Y Positive] Block Type: " + blockYPositive.Type);
-                sb.AppendLine("\t[Y Negative] Block Type: " + blockYNegative.Type);
+                sb.AppendLine("[Y " + Translations.TryGet("cmd.blockinfo.Positive") + "] " + Translations.TryGet("cmd.blockinfo.BlockType") + ": " + blockYPositive.Type);
+                sb.AppendLine("[Y " + Translations.TryGet("cmd.blockinfo.Negative") + "] " + Translations.TryGet("cmd.blockinfo.BlockType") + ": " + blockYNegative.Type);
                 sb.AppendLine(" ");
-                sb.AppendLine("\t[Z Positive] Block Type: " + blockZPositive.Type);
-                sb.AppendLine("\t[Z Negative] Block Type: " + blockZNegative.Type);
+                sb.AppendLine("[Z " + Translations.TryGet("cmd.blockinfo.Positive") + "] " + Translations.TryGet("cmd.blockinfo.BlockType") + ": " + blockZPositive.Type);
+                sb.AppendLine("[Z " + Translations.TryGet("cmd.blockinfo.Negative") + "] " + Translations.TryGet("cmd.blockinfo.BlockType") + ": " + blockZNegative.Type);
 
                 handler.Log.Info(sb.ToString());
             }
