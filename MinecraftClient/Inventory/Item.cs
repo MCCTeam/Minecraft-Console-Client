@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
+using Microsoft.VisualBasic;
+using MinecraftClient.Protocol;
 
 namespace MinecraftClient.Inventory
 {
@@ -113,11 +117,48 @@ namespace MinecraftClient.Inventory
             }
         }
 
+        private string GetTranslatedType(ItemType itemType)
+        {
+            string type = itemType.ToString();
+            string type_renamed = string.Concat(type.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
+            string? res1 = ChatParser.TranslateString("item.minecraft." + type_renamed);
+            if (!string.IsNullOrEmpty(res1))
+                return res1;
+            string? res2 = ChatParser.TranslateString("block.minecraft." + type_renamed);
+            if (!string.IsNullOrEmpty(res2))
+                return res2;
+            return type;
+        }
+
+        public string ToFullString()
+        {
+            StringBuilder sb = new();
+            sb.Append(ToString());
+
+            try
+            {
+                if (NBT != null && (NBT.TryGetValue("Enchantments", out object? enchantments) || NBT.TryGetValue("StoredEnchantments", out enchantments)))
+                {
+                    foreach (Dictionary<string, object> enchantment in (object[])enchantments)
+                    {
+                        short level = (short)enchantment["lvl"];
+                        string id = ((string)enchantment["id"]).Replace(':', '.');
+                        sb.AppendFormat(" | {0} {1}",
+                                        ChatParser.TranslateString("enchantment." + id) ?? id,
+                                        ChatParser.TranslateString("enchantment.level." + level) ?? level.ToString());
+                    }
+                }
+            }
+            catch (Exception) { }
+
+            return sb.ToString();
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new();
 
-            sb.AppendFormat("x{0,-2} {1}", Count, Type.ToString());
+            sb.AppendFormat("x{0,-2} {1}", Count, GetTranslatedType(Type));
 
             string? displayName = DisplayName;
             if (!String.IsNullOrEmpty(displayName))

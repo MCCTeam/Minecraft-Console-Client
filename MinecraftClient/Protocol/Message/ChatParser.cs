@@ -286,6 +286,14 @@ namespace MinecraftClient.Protocol
             }
         }
 
+        public static string? TranslateString(string rulename)
+        {
+            if (TranslationRules.TryGetValue(rulename, out string? result))
+                return result;
+            else
+                return null;
+        }
+
         /// <summary>
         /// Format text using a specific formatting rule.
         /// Example : * %s %s + ["ORelio", "is doing something"] = * ORelio is doing something
