@@ -24,7 +24,7 @@ namespace MinecraftClient.Commands
                 else if (block.Type == Material.Air)
                     return Translations.Get("cmd.dig.no_block");
                 else if (handler.DigBlock(blockLoc, lookAtBlock: false))
-                    return Translations.Get("cmd.dig.dig", blockLoc.X, blockLoc.Y, blockLoc.Z, block.Type);
+                    return Translations.Get("cmd.dig.dig", blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString());
                 else
                     return Translations.Get("cmd.dig.fail");
             }
@@ -42,7 +42,7 @@ namespace MinecraftClient.Commands
                     else if (handler.DigBlock(blockToBreak))
                     {
                         blockToBreak = blockToBreak.ToCenter();
-                        return Translations.Get("cmd.dig.dig", blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.Type);
+                        return Translations.Get("cmd.dig.dig", blockToBreak.X, blockToBreak.Y, blockToBreak.Z, block.GetTypeString());
                     }
                     else
                         return Translations.Get("cmd.dig.fail");

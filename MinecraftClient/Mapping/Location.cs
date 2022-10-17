@@ -64,7 +64,7 @@ namespace MinecraftClient.Mapping
 
         /// <summary>
         /// Parse location from the string.
-        /// return NULL if the parsing fails.
+        /// throw FormatException if the parsing fails.
         /// </summary>
         /// <param name="x">The string representation of the X-axis coordinate.</param>
         /// <param name="y">The string representation of the Y-axis coordinate.</param>
@@ -99,7 +99,7 @@ namespace MinecraftClient.Mapping
 
         /// <summary>
         /// Parse location from the string (relative coordinate representation is supported).
-        /// return NULL if the parsing fails.
+        /// throw FormatException if the parsing fails.
         /// </summary>
         /// <param name="current">Relative position base point.</param>
         /// <param name="x">The string representation of the X-axis coordinate.</param>

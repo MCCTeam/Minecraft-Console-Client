@@ -112,6 +112,13 @@ namespace MinecraftClient.Mapping
             blockIdAndMeta = typeAndMeta;
         }
 
+        public string GetTypeString()
+        {
+            string typeStr = Type.ToString();
+            string? trans = Protocol.ChatParser.TranslateString("block.minecraft." + typeStr.ToUnderscoreCase());
+            return string.IsNullOrEmpty(trans) ? typeStr : trans;
+        }
+
         /// <summary>
         /// String representation of the block
         /// </summary>

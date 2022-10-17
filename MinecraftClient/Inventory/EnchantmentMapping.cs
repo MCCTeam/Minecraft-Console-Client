@@ -136,50 +136,6 @@ namespace MinecraftClient.Inventory
             { 37,   Enchantment.Mending },
             { 38,   Enchantment.VanishingCurse }
         };
-
-        private static Dictionary<Enchantment, string> enchantmentNames = new Dictionary<Enchantment, string>()
-        {
-            //type          
-            { Enchantment.Protection,           "Enchantment.Protection"           },
-            { Enchantment.FireProtection,       "Enchantment.FireProtection"       },
-            { Enchantment.FeatherFalling,       "Enchantment.FeatherFalling"       },
-            { Enchantment.BlastProtection,      "Enchantment.BlastProtection"      },
-            { Enchantment.ProjectileProtection, "Enchantment.ProjectileProtection" },
-            { Enchantment.Respiration,          "Enchantment.Respiration"          },
-            { Enchantment.AquaAffinity,         "Enchantment.AquaAffinity"         },
-            { Enchantment.Thorns,               "Enchantment.Thorns"               },
-            { Enchantment.DepthStrieder,        "Enchantment.DepthStrieder"        },
-            { Enchantment.FrostWalker,          "Enchantment.FrostWalker"          },
-            { Enchantment.BindingCurse,         "Enchantment.BindingCurse"         },
-            { Enchantment.SoulSpeed,            "Enchantment.SoulSpeed"            },
-            { Enchantment.SwiftSneak,           "Enchantment.SwiftSneak"           },
-            { Enchantment.Sharpness,            "Enchantment.Sharpness"            },
-            { Enchantment.Smite,                "Enchantment.Smite"                },
-            { Enchantment.BaneOfArthropods,     "Enchantment.BaneOfArthropods"     },
-            { Enchantment.Knockback,            "Enchantment.Knockback"            },
-            { Enchantment.FireAspect,           "Enchantment.FireAspect"           },
-            { Enchantment.Looting,              "Enchantment.Looting"              },
-            { Enchantment.Sweeping,             "Enchantment.Sweeping"             },
-            { Enchantment.Efficency,            "Enchantment.Efficency"            },
-            { Enchantment.SilkTouch,            "Enchantment.SilkTouch"            },
-            { Enchantment.Unbreaking,           "Enchantment.Unbreaking"           },
-            { Enchantment.Fortune,              "Enchantment.Fortune"              },
-            { Enchantment.Power,                "Enchantment.Power"                },
-            { Enchantment.Punch,                "Enchantment.Punch"                },
-            { Enchantment.Flame,                "Enchantment.Flame"                },
-            { Enchantment.Infinity,             "Enchantment.Infinity"             },
-            { Enchantment.LuckOfTheSea,         "Enchantment.LuckOfTheSea"         },
-            { Enchantment.Lure,                 "Enchantment.Lure"                 },
-            { Enchantment.Loyality,             "Enchantment.Loyality"             },
-            { Enchantment.Impaling,             "Enchantment.Impaling"             },
-            { Enchantment.Riptide,              "Enchantment.Riptide"              },
-            { Enchantment.Channeling,           "Enchantment.Channeling"           },
-            { Enchantment.Multishot,            "Enchantment.Multishot"            },
-            { Enchantment.QuickCharge,          "Enchantment.QuickCharge"          },
-            { Enchantment.Piercing,             "Enchantment.Piercing"             },
-            { Enchantment.Mending,              "Enchantment.Mending"              },
-            { Enchantment.VanishingCurse,       "Enchantment.VanishingCurse"       }
-        };
 #pragma warning restore format // @formatter:on
 
         public static Enchantment GetEnchantmentById(int protocolVersion, short id)
@@ -202,10 +158,11 @@ namespace MinecraftClient.Inventory
 
         public static string GetEnchantmentName(Enchantment enchantment)
         {
-            if (!enchantmentNames.ContainsKey(enchantment))
+            string? trans = Protocol.ChatParser.TranslateString("enchantment.minecraft." + enchantment.ToString().ToUnderscoreCase());
+            if (string.IsNullOrEmpty(trans))
                 return "Unknown Enchantment with ID: " + ((short)enchantment) + " (Probably not named in the code yet)";
-
-            return Translations.TryGet(enchantmentNames[enchantment]);
+            else
+                return trans;
         }
 
         public static string ConvertLevelToRomanNumbers(int num)

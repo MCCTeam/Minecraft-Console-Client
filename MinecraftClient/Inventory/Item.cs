@@ -113,11 +113,48 @@ namespace MinecraftClient.Inventory
             }
         }
 
+        public string GetTypeString()
+        {
+            string type = Type.ToString();
+            string type_renamed = type.ToUnderscoreCase();
+            string? res1 = Protocol.ChatParser.TranslateString("item.minecraft." + type_renamed);
+            if (!string.IsNullOrEmpty(res1))
+                return res1;
+            string? res2 = Protocol.ChatParser.TranslateString("block.minecraft." + type_renamed);
+            if (!string.IsNullOrEmpty(res2))
+                return res2;
+            return type;
+        }
+
+        public string ToFullString()
+        {
+            StringBuilder sb = new();
+            sb.Append(ToString());
+
+            try
+            {
+                if (NBT != null && (NBT.TryGetValue("Enchantments", out object? enchantments) || NBT.TryGetValue("StoredEnchantments", out enchantments)))
+                {
+                    foreach (Dictionary<string, object> enchantment in (object[])enchantments)
+                    {
+                        short level = (short)enchantment["lvl"];
+                        string id = ((string)enchantment["id"]).Replace(':', '.');
+                        sb.AppendFormat(" | {0} {1}",
+                                        Protocol.ChatParser.TranslateString("enchantment." + id) ?? id,
+                                        Protocol.ChatParser.TranslateString("enchantment.level." + level) ?? level.ToString());
+                    }
+                }
+            }
+            catch (Exception) { }
+
+            return sb.ToString();
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new();
 
-            sb.AppendFormat("x{0,-2} {1}", Count, Type.ToString());
+            sb.AppendFormat("x{0,-2} {1}", Count, GetTypeString());
 
             string? displayName = DisplayName;
             if (!String.IsNullOrEmpty(displayName))

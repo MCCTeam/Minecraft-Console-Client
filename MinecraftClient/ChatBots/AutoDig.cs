@@ -247,7 +247,7 @@ namespace MinecraftClient.ChatBots
                         {
                             currentDig = blockLoc;
                             if (Config.Log_Block_Dig)
-                                LogToConsole(Translations.Get("cmd.dig.dig", blockLoc.X, blockLoc.Y, blockLoc.Z, block.Type));
+                                LogToConsole(Translations.Get("cmd.dig.dig", blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString()));
                             return true;
                         }
                         else
@@ -308,7 +308,7 @@ namespace MinecraftClient.ChatBots
                     {
                         currentDig = target;
                         if (Config.Log_Block_Dig)
-                            LogToConsole(Translations.Get("cmd.dig.dig", target.X, target.Y, target.Z, targetBlock.Type));
+                            LogToConsole(Translations.Get("cmd.dig.dig", target.X, target.Y, target.Z, targetBlock.GetTypeString()));
                         return true;
                     }
                     else
@@ -342,7 +342,7 @@ namespace MinecraftClient.ChatBots
                         {
                             currentDig = blockLoc;
                             if (Config.Log_Block_Dig)
-                                LogToConsole(Translations.Get("cmd.dig.dig", blockLoc.X, blockLoc.Y, blockLoc.Z, block.Type));
+                                LogToConsole(Translations.Get("cmd.dig.dig", blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString()));
                             return true;
                         }
                         else

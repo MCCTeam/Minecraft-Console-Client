@@ -154,5 +154,12 @@ namespace MinecraftClient.Mapping
             Yaw = yaw * (1 / 256) * 360; // to angle in 360 degree
             Pitch = pitch * (1 / 256) * 360;
         }
+
+        public string GetTypeString()
+        {
+            string typeStr = Type.ToString();
+            string? trans = Protocol.ChatParser.TranslateString("entity.minecraft." + typeStr.ToUnderscoreCase());
+            return string.IsNullOrEmpty(trans) ? typeStr : trans;
+        }
     }
 }

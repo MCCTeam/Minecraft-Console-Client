@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using Tomlet.Attributes;
@@ -142,6 +143,8 @@ namespace MinecraftClient.ChatBots
         private Entity? fishingBobber;
         private Location LastPos = Location.Zero;
         private DateTime CaughtTime = DateTime.Now;
+        private int fishItemCounter = 10;
+        private Entity fishItem = new(-1, EntityType.Item, Location.Zero);
 
         private int counter = 0;
         private readonly object stateLock = new();
@@ -173,6 +176,43 @@ namespace MinecraftClient.ChatBots
             inventoryEnabled = GetInventoryEnabled();
             if (!inventoryEnabled)
                 LogToConsoleTranslated("bot.autoFish.no_inv_handle");
+
+            RegisterChatBotCommand("fish", Translations.Get("bot.autoFish.cmd"), GetHelp(), CommandHandler);
+        }
+
+        public string CommandHandler(string cmd, string[] args)
+        {
+            if (args.Length > 0)
+            {
+                switch (args[0])
+                {
+                    case "start":
+                        isFishing = false;
+                        lock (stateLock)
+                        {
+                            isFishing = false;
+                            counter = 0;
+                            state = FishingState.StartMove;
+                        }
+                        return Translations.Get("bot.autoFish.start");
+                    case "stop":
+                        isFishing = false;
+                        lock (stateLock)
+                        {
+                            isFishing = false;
+                            if (state == FishingState.WaitingFishToBite)
+                                UseFishRod();
+                            state = FishingState.Stopping;
+                        }
+                        StopFishing();
+                        return Translations.Get("bot.autoFish.stop");
+                    case "help":
+                        return GetCommandHelp(args.Length >= 2 ? args[1] : "");
+                    default:
+                        return GetHelp();
+                }
+            }
+            else return GetHelp();
         }
 
         private void StartFishing()
@@ -181,9 +221,10 @@ namespace MinecraftClient.ChatBots
             if (Config.Auto_Start)
             {
                 double delay = Config.Fishing_Delay;
-                LogToConsole(Translations.Get("bot.autoFish.start", delay));
+                LogToConsole(Translations.Get("bot.autoFish.start_at", delay));
                 lock (stateLock)
                 {
+                    isFishing = false;
                     counter = Settings.DoubleToTick(delay);
                     state = FishingState.StartMove;
                 }
@@ -202,8 +243,10 @@ namespace MinecraftClient.ChatBots
             isFishing = false;
             lock (stateLock)
             {
+                isFishing = false;
                 state = FishingState.Stopping;
             }
+            fishItemCounter = 10;
         }
 
         private void UseFishRod()
@@ -216,6 +259,8 @@ namespace MinecraftClient.ChatBots
 
         public override void Update()
         {
+            if (fishItemCounter < 10)
+                ++fishItemCounter;
             lock (stateLock)
             {
                 switch (state)
@@ -302,10 +347,19 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntitySpawn(Entity entity)
         {
-            if (entity.Type == EntityType.FishingBobber && entity.ObjectData == GetPlayerEntityID())
+            if (fishItemCounter < 10 && entity.Type == EntityType.Item && Math.Abs(entity.Location.Y - LastPos.Y) < 2.0 &&
+                Math.Abs(entity.Location.X - LastPos.X) < 0.1  && Math.Abs(entity.Location.Z - LastPos.Z) < 0.1)
+            {
+                if (Config.Log_Fish_Bobber)
+                    LogToConsole(string.Format("Item ({0}) spawn at {1}, distance = {2:0.00}", entity.ID, entity.Location, entity.Location.Distance(LastPos)));
+                fishItem = entity;
+            }
+            else if (entity.Type == EntityType.FishingBobber && entity.ObjectData == GetPlayerEntityID())
             {
                 if (Config.Log_Fish_Bobber)
                     LogToConsole(string.Format("FishingBobber spawn at {0}, distance = {1:0.00}", entity.Location, GetCurrentLocation().Distance(entity.Location)));
+
+                fishItemCounter = 10;
 
                 LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.throw"));
                 lock (stateLock)
@@ -348,7 +402,8 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMove(Entity entity)
         {
-            if (isFishing && entity != null && fishingBobber!.ID == entity.ID)
+            if (isFishing && entity != null && fishingBobber!.ID == entity.ID && 
+                (state == FishingState.WaitingFishToBite || state == FishingState.WaitingFishingBobber))
             {
                 Location Pos = entity.Location;
                 double Dx = LastPos.X - Pos.X;
@@ -371,6 +426,15 @@ namespace MinecraftClient.ChatBots
                         OnCaughtFish();
                     }
                 }
+            }
+        }
+
+        public override void OnEntityMetadata(Entity entity, Dictionary<int, object?> metadata)
+        {
+            if (fishItemCounter < 10 && entity.ID == fishItem.ID && metadata.TryGetValue(8, out object? item))
+            {
+                LogToConsole(Translations.Get("bot.autoFish.got", ((Item)item!).ToFullString()));
+                fishItemCounter = 10;
             }
         }
 
@@ -414,10 +478,11 @@ namespace MinecraftClient.ChatBots
 
             lock (stateLock)
             {
-                UseFishRod();
-
                 counter = 0;
                 state = FishingState.StartMove;
+
+                fishItemCounter = 0;
+                UseFishRod();
             }
         }
 
@@ -511,6 +576,24 @@ namespace MinecraftClient.ChatBots
                 isWaitingRod = true;
                 return false;
             }
+        }
+
+        private static string GetHelp()
+        {
+            return Translations.Get("bot.autoFish.available_cmd", "start, stop, help");
+        }
+
+        private string GetCommandHelp(string cmd)
+        {
+            return cmd.ToLower() switch
+            {
+#pragma warning disable format // @formatter:off
+                "start"     =>   Translations.Get("bot.autoFish.help.start"),
+                "stop"      =>   Translations.Get("bot.autoFish.help.stop"),
+                "help"      =>   Translations.Get("bot.autoFish.help.help"),
+                _           =>    GetHelp(),
+#pragma warning restore format // @formatter:on
+            };
         }
     }
 }
