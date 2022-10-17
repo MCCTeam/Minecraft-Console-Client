@@ -59,7 +59,7 @@ namespace MinecraftClient.ChatBots
         private bool allowTeleport = false;
         private bool debugEnabled = false;
 
-        private const string commandDescription = "farmer <start <crop type> [radius:<radius = 30>|unsafe:<true/false>|teleport:<true/false>|debug:<true/false>]|stop>";
+        private const string commandDescription = "farmer <start <crop type> [radius:<radius = 30>] [unsafe:<true/false>] [teleport:<true/false>] [debug:<true/false>]|stop>";
 
         public override void Initialize()
         {
@@ -71,13 +71,13 @@ namespace MinecraftClient.ChatBots
 
             if (!GetTerrainEnabled())
             {
-                LogToConsole("Terrain handling needed!");
+                LogToConsole(Translations.TryGet("bot.farmer.needs_terrain"));
                 return;
             }
 
             if (!GetInventoryEnabled())
             {
-                LogToConsole("Inventory handling needed!");
+                LogToConsole(Translations.TryGet("bot.farmer.needs_inventory"));
                 return;
             }
 
