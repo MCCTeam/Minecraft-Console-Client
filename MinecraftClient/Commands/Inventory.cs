@@ -148,7 +148,7 @@ namespace MinecraftClient.Commands
                                 response.AppendLine(String.Format("{0} (#{1}):", inventories[invId].Title, invId));
 
                                 foreach (Item item in itemsList)
-                                    response.AppendLine(String.Format("\t- {0}", item.ToString()));
+                                    response.AppendLine(String.Format("\t- {0}", item.ToFullString()));
 
                                 response.AppendLine(" ");
                             }
@@ -195,7 +195,7 @@ namespace MinecraftClient.Commands
                             string hotbarString = isHotbar ? (hotbar + 1).ToString() : " ";
                             if ((hotbar + 1) == selectedHotbar)
                                 hotbarString = ">" + hotbarString;
-                            response.AppendLine(String.Format("{0,2} | #{1,-2}: {2}", hotbarString, itemId, item.ToString()));
+                            response.AppendLine(String.Format("{0,2} | #{1,-2}: {2}", hotbarString, itemId, item.ToFullString()));
                         }
 
                         if (inventoryId == 0)

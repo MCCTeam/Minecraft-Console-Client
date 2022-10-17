@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Web;
-using Microsoft.VisualBasic;
-using MinecraftClient.Protocol;
 
 namespace MinecraftClient.Inventory
 {
@@ -117,14 +113,14 @@ namespace MinecraftClient.Inventory
             }
         }
 
-        private string GetTranslatedType(ItemType itemType)
+        public string GetTypeString()
         {
-            string type = itemType.ToString();
-            string type_renamed = string.Concat(type.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString())).ToLower();
-            string? res1 = ChatParser.TranslateString("item.minecraft." + type_renamed);
+            string type = Type.ToString();
+            string type_renamed = type.ToUnderscoreCase();
+            string? res1 = Protocol.ChatParser.TranslateString("item.minecraft." + type_renamed);
             if (!string.IsNullOrEmpty(res1))
                 return res1;
-            string? res2 = ChatParser.TranslateString("block.minecraft." + type_renamed);
+            string? res2 = Protocol.ChatParser.TranslateString("block.minecraft." + type_renamed);
             if (!string.IsNullOrEmpty(res2))
                 return res2;
             return type;
@@ -144,8 +140,8 @@ namespace MinecraftClient.Inventory
                         short level = (short)enchantment["lvl"];
                         string id = ((string)enchantment["id"]).Replace(':', '.');
                         sb.AppendFormat(" | {0} {1}",
-                                        ChatParser.TranslateString("enchantment." + id) ?? id,
-                                        ChatParser.TranslateString("enchantment.level." + level) ?? level.ToString());
+                                        Protocol.ChatParser.TranslateString("enchantment." + id) ?? id,
+                                        Protocol.ChatParser.TranslateString("enchantment.level." + level) ?? level.ToString());
                     }
                 }
             }
@@ -158,7 +154,7 @@ namespace MinecraftClient.Inventory
         {
             StringBuilder sb = new();
 
-            sb.AppendFormat("x{0,-2} {1}", Count, GetTranslatedType(Type));
+            sb.AppendFormat("x{0,-2} {1}", Count, GetTypeString());
 
             string? displayName = DisplayName;
             if (!String.IsNullOrEmpty(displayName))
