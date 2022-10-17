@@ -197,7 +197,7 @@ namespace MinecraftClient
             if (Settings.CheckUpdate(Config.Head.CurrentVersion, Config.Head.LatestVersion))
             {
                 needPromptUpdate = false;
-                ConsoleIO.WriteLineFormatted(Translations.TryGet("mcc.has_update", Settings.GithubLatestReleaseUrl));
+                ConsoleIO.WriteLineFormatted(Translations.TryGet("mcc.has_update", Settings.GithubReleaseUrl));
             }
 
             //Other command-line arguments
@@ -328,7 +328,7 @@ namespace MinecraftClient
                             string latestVersion = string.Format("GitHub build {0}, built on {1}-{2}-{3}", run, year, month, day);
                             if (needPromptUpdate)
                                 if (Settings.CheckUpdate(Config.Head.CurrentVersion, Config.Head.LatestVersion))
-                                    ConsoleIO.WriteLineFormatted(Translations.TryGet("mcc.has_update", Settings.GithubLatestReleaseUrl));
+                                    ConsoleIO.WriteLineFormatted(Translations.TryGet("mcc.has_update", Settings.GithubReleaseUrl));
                             if (latestVersion != Config.Head.LatestVersion)
                             {
                                 Config.Head.LatestVersion = latestVersion;
