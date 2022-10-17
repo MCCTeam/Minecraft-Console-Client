@@ -77,6 +77,7 @@ namespace MinecraftClient
         private int respawnTicks = 0;
         private int gamemode = 0;
         private bool isSupportPreviewsChat;
+        private EnchantmentData? lastEnchantment = null;
 
         private int playerEntityID;
 
@@ -1019,6 +1020,15 @@ namespace MinecraftClient
         public Dictionary<int, Container> GetInventories()
         {
             return inventories;
+        }
+
+        /// <summary>
+        /// Get all Entities
+        /// </summary>
+        /// <returns>Ladt Enchantments</returns>
+        public EnchantmentData? GetLastEnchantments()
+        {
+            return lastEnchantment;
         }
 
         /// <summary>
@@ -2719,6 +2729,22 @@ namespace MinecraftClient
 
                     Log.Info(sb.ToString());
 
+                    lastEnchantment = new();
+                    lastEnchantment.TopEnchantment = topEnchantment;
+                    lastEnchantment.MiddleEnchantment = middleEnchantment;
+                    lastEnchantment.BottomEnchantment = bottomEnchantment;
+
+                    lastEnchantment.Seed = inventory.Properties[3];
+
+                    lastEnchantment.TopEnchantmentLevel = topEnchantmentLevel;
+                    lastEnchantment.MiddleEnchantmentLevel = middleEnchantmentLevel;
+                    lastEnchantment.BottomEnchantmentLevel = bottomEnchantmentLevel;
+
+                    lastEnchantment.TopEnchantmentLevelRequirement = topEnchantmentLevelRequirement;
+                    lastEnchantment.MiddleEnchantmentLevelRequirement = middleEnchantmentLevelRequirement;
+                    lastEnchantment.BottomEnchantmentLevelRequirement = bottomEnchantmentLevelRequirement;
+
+
                     DispatchBotEvent(bot => bot.OnEnchantments(
                         // Enchantments
                         topEnchantment,
@@ -2734,6 +2760,8 @@ namespace MinecraftClient
                         topEnchantmentLevelRequirement,
                         middleEnchantmentLevelRequirement,
                         bottomEnchantmentLevelRequirement));
+
+                    DispatchBotEvent(bot => bot.OnEnchantments(lastEnchantment));
                 }
             }
         }
