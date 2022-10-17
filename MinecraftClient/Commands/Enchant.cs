@@ -12,6 +12,9 @@ namespace MinecraftClient.Commands
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
+            if (!handler.GetInventoryEnabled())
+                return Translations.TryGet("error.inventoryhandling_not_enabled");
+
             if (HasArg(command))
             {
                 string slot = GetArg(command).ToLower().Trim();
@@ -56,6 +59,22 @@ namespace MinecraftClient.Commands
 
                 if (lapisSlot.Count < 3)
                     return Translations.TryGet("cmd.enchant.enchanting_no_lapis");
+
+                EnchantmentData? enchantment = handler.GetLastEnchantments();
+
+                if (enchantment == null)
+                    return Translations.TryGet("cmd.enchant.no_enchantments");
+
+                short requiredLevel = slotId switch
+                {
+                    0 => enchantment.TopEnchantmentLevelRequirement,
+                    1 => enchantment.MiddleEnchantmentLevelRequirement,
+                    2 => enchantment.BottomEnchantmentLevelRequirement,
+                    _ => 9999
+                };
+
+                if (handler.GetLevel() < requiredLevel)
+                    return Translations.TryGet("cmd.enchant.no_levels", handler.GetLevel(), requiredLevel);
 
                 return handler.ClickContainerButton(enchantingTable.ID, slotId) ? Translations.TryGet("cmd.enchant.clicked") : Translations.TryGet("cmd.enchant.not_clicked");
             }

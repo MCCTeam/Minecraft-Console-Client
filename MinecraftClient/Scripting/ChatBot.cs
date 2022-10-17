@@ -395,6 +395,14 @@ namespace MinecraftClient
         { }
 
         /// <summary>
+        /// When received enchantments from the server this method is called
+        /// Enchantment levels are the levels of enchantment (eg. I, II, III, IV, V) (eg. Smite IV, Power III, Knockback II ..)
+        /// Enchantment level requirements are the levels that player needs to have in order to enchant the item
+        /// </summary>
+        /// <param name="enchantment">Enchantment data/info</param>
+        public virtual void OnEnchantments(EnchantmentData enchantment) { }
+
+        /// <summary>
         /// Called when a player joined the game
         /// </summary>
         /// <param name="uuid">UUID of the player</param>
