@@ -568,7 +568,7 @@ namespace MinecraftClient
             //User-defined regex for private chat messages
             if (Config.ChatFormat.UserDefined && !string.IsNullOrWhiteSpace(Config.ChatFormat.Private))
             {
-                Match regexMatch = new Regex(Config.ChatFormat.Private).Match(text);
+                Match regexMatch = Regex.Match(text, Config.ChatFormat.Private);
                 if (regexMatch.Success && regexMatch.Groups.Count >= 3)
                 {
                     sender = regexMatch.Groups[1].Value;
@@ -679,7 +679,7 @@ namespace MinecraftClient
             //User-defined regex for public chat messages
             if (Config.ChatFormat.UserDefined && !string.IsNullOrWhiteSpace(Config.ChatFormat.Public))
             {
-                Match regexMatch = new Regex(Config.ChatFormat.Public).Match(text);
+                Match regexMatch = Regex.Match(text, Config.ChatFormat.Public);
                 if (regexMatch.Success && regexMatch.Groups.Count >= 3)
                 {
                     sender = regexMatch.Groups[1].Value;
@@ -782,7 +782,7 @@ namespace MinecraftClient
             //User-defined regex for teleport requests
             if (Config.ChatFormat.UserDefined && !string.IsNullOrWhiteSpace(Config.ChatFormat.TeleportRequest))
             {
-                Match regexMatch = new Regex(Config.ChatFormat.TeleportRequest).Match(text);
+                Match regexMatch = Regex.Match(text, Config.ChatFormat.TeleportRequest);
                 if (regexMatch.Success && regexMatch.Groups.Count >= 2)
                 {
                     sender = regexMatch.Groups[1].Value;
