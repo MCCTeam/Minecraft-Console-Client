@@ -173,6 +173,43 @@ namespace MinecraftClient.ChatBots
             inventoryEnabled = GetInventoryEnabled();
             if (!inventoryEnabled)
                 LogToConsoleTranslated("bot.autoFish.no_inv_handle");
+
+            RegisterChatBotCommand("fish", Translations.Get("bot.autoFish.cmd"), GetHelp(), CommandHandler);
+        }
+
+        public string CommandHandler(string cmd, string[] args)
+        {
+            if (args.Length > 0)
+            {
+                switch (args[0])
+                {
+                    case "start":
+                        isFishing = false;
+                        lock (stateLock)
+                        {
+                            isFishing = false;
+                            counter = 0;
+                            state = FishingState.StartMove;
+                        }
+                        return Translations.Get("bot.autoFish.start");
+                    case "stop":
+                        isFishing = false;
+                        lock (stateLock)
+                        {
+                            isFishing = false;
+                            if (state == FishingState.WaitingFishToBite)
+                                UseFishRod();
+                            state = FishingState.Stopping;
+                        }
+                        StopFishing();
+                        return Translations.Get("bot.autoFish.stop");
+                    case "help":
+                        return GetCommandHelp(args.Length >= 2 ? args[1] : "");
+                    default:
+                        return GetHelp();
+                }
+            }
+            else return GetHelp();
         }
 
         private void StartFishing()
@@ -184,6 +221,7 @@ namespace MinecraftClient.ChatBots
                 LogToConsole(Translations.Get("bot.autoFish.start", delay));
                 lock (stateLock)
                 {
+                    isFishing = false;
                     counter = Settings.DoubleToTick(delay);
                     state = FishingState.StartMove;
                 }
@@ -202,6 +240,7 @@ namespace MinecraftClient.ChatBots
             isFishing = false;
             lock (stateLock)
             {
+                isFishing = false;
                 state = FishingState.Stopping;
             }
         }
@@ -511,6 +550,24 @@ namespace MinecraftClient.ChatBots
                 isWaitingRod = true;
                 return false;
             }
+        }
+
+        private static string GetHelp()
+        {
+            return Translations.Get("bot.autoFish.available_cmd", "start, stop, help");
+        }
+
+        private string GetCommandHelp(string cmd)
+        {
+            return cmd.ToLower() switch
+            {
+#pragma warning disable format // @formatter:off
+                "start"     =>   Translations.Get("bot.autoFish.help.start"),
+                "stop"      =>   Translations.Get("bot.autoFish.help.stop"),
+                "help"      =>   Translations.Get("bot.autoFish.help.help"),
+                _           =>    GetHelp(),
+#pragma warning restore format // @formatter:on
+            };
         }
     }
 }
