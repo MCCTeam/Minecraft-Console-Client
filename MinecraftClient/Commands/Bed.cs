@@ -29,6 +29,9 @@ namespace MinecraftClient.Commands
 
                 if (subcommand.Equals("sleep") || subcommand.Equals("s"))
                 {
+                    if (!handler.GetTerrainEnabled())
+                        return Translations.TryGet("error.terrain_not_enabled");
+
                     if (args.Length == 2)
                     {
                         if (!int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int radius))
