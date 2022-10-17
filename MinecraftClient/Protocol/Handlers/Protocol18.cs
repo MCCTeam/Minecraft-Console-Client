@@ -2236,7 +2236,7 @@ namespace MinecraftClient.Protocol.Handlers
         {
             try
             {
-                byte[] fields = dataTypes.GetAcknowledgment(acknowledgment, isOnlineMode);
+                byte[] fields = dataTypes.GetAcknowledgment(acknowledgment, isOnlineMode && Config.Signature.LoginWithSecureProfile);
 
                 SendPacket(PacketTypesOut.MessageAcknowledgment, fields);
 
@@ -2298,7 +2298,8 @@ namespace MinecraftClient.Protocol.Handlers
                 fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
                 List<Tuple<string, string>>? needSigned = null;               // List< Argument Name, Argument Value >
-                if (playerKeyPair != null && isOnlineMode && Config.Signature.SignMessageInCommand && protocolVersion >= MC_1_19_Version)
+                if (playerKeyPair != null && isOnlineMode && protocolVersion >= MC_1_19_Version
+                    && Config.Signature.LoginWithSecureProfile && Config.Signature.SignMessageInCommand)
                     needSigned = DeclareCommands.CollectSignArguments(command);
 
                 if (needSigned == null || needSigned!.Count == 0)
@@ -2329,7 +2330,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (protocolVersion >= MC_1_19_2_Version)
                 {
                     // Message Acknowledgment
-                    fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode));
+                    fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
                 }
 
                 SendPacket(PacketTypesOut.ChatCommand, fields);
@@ -2371,7 +2372,7 @@ namespace MinecraftClient.Protocol.Handlers
                     DateTimeOffset timeNow = DateTimeOffset.UtcNow;
                     fields.AddRange(dataTypes.GetLong(timeNow.ToUnixTimeMilliseconds()));
 
-                    if (!isOnlineMode || playerKeyPair == null || !Config.Signature.SignChat)
+                    if (!isOnlineMode || playerKeyPair == null || !Config.Signature.LoginWithSecureProfile || !Config.Signature.SignChat)
                     {
                         fields.AddRange(dataTypes.GetLong(0));   // Salt: Long
                         fields.AddRange(dataTypes.GetVarInt(0)); // Signature Length: VarInt
@@ -2397,7 +2398,7 @@ namespace MinecraftClient.Protocol.Handlers
                     if (protocolVersion >= MC_1_19_2_Version)
                     {
                         // Message Acknowledgment
-                        fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode));
+                        fields.AddRange(dataTypes.GetAcknowledgment(acknowledgment!, isOnlineMode && Config.Signature.LoginWithSecureProfile));
                     }
                 }
                 SendPacket(PacketTypesOut.ChatMessage, fields);

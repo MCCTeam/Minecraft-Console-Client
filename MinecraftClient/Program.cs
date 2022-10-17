@@ -408,12 +408,12 @@ namespace MinecraftClient
                 }
             }
             InternalConfig.Username = InternalConfig.Login;
-            if (string.IsNullOrEmpty(Config.Main.General.Account.Password) && !useBrowser &&
+            if (string.IsNullOrEmpty(Config.Main.General.Account.Password) && string.IsNullOrEmpty(InternalConfig.Password) && !useBrowser &&
                 (Config.Main.Advanced.SessionCache == CacheType.none || !SessionCache.Contains(Settings.ToLowerIfNeed(InternalConfig.Login))))
             {
                 RequestPassword();
             }
-            else
+            else if (string.IsNullOrEmpty(InternalConfig.Password))
             {
                 InternalConfig.Password = Config.Main.General.Account.Password;
             }

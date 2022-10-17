@@ -969,7 +969,40 @@ namespace MinecraftClient
 
                 public string TeleportRequest = @"^([a-zA-Z0-9_]+) has requested (?:to|that you) teleport to (?:you|them)\.$";
 
-                public void OnSettingUpdate() { }
+                public void OnSettingUpdate()
+                {
+                    if (UserDefined)
+                    {
+                        bool checkResult = true;
+
+                        try { _ = new Regex(Public); }
+                        catch (ArgumentException)
+                        {
+                            checkResult = false;
+                            ConsoleIO.WriteLineFormatted("§cIllegal regular expression: ChatFormat.Public = " + Public);
+                        }
+
+                        try { _ = new Regex(Private); }
+                        catch (ArgumentException)
+                        {
+                            checkResult = false;
+                            ConsoleIO.WriteLineFormatted("§cIllegal regular expression: ChatFormat.Private = " + Private);
+                        }
+
+                        try { _ = new Regex(TeleportRequest); }
+                        catch (ArgumentException)
+                        {
+                            checkResult = false;
+                            ConsoleIO.WriteLineFormatted("§cIllegal regular expression: ChatFormat.TeleportRequest = " + TeleportRequest);
+                        }
+
+                        if (!checkResult)
+                        {
+                            UserDefined = false;
+                            ConsoleIO.WriteLineFormatted("§cChatFormat: User-defined regular expressions are disabled.");
+                        }
+                    }
+                }
             }
         }
 
