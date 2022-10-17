@@ -144,7 +144,7 @@ namespace MinecraftClient.ChatBots
         private Location LastPos = Location.Zero;
         private DateTime CaughtTime = DateTime.Now;
         private int fishItemCounter = 10;
-        private Entity fish = new(-1, EntityType.Item, Location.Zero);
+        private Entity fishItem = new(-1, EntityType.Item, Location.Zero);
 
         private int counter = 0;
         private readonly object stateLock = new();
@@ -221,7 +221,7 @@ namespace MinecraftClient.ChatBots
             if (Config.Auto_Start)
             {
                 double delay = Config.Fishing_Delay;
-                LogToConsole(Translations.Get("bot.autoFish.start", delay));
+                LogToConsole(Translations.Get("bot.autoFish.start_at", delay));
                 lock (stateLock)
                 {
                     isFishing = false;
@@ -352,7 +352,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (Config.Log_Fish_Bobber)
                     LogToConsole(string.Format("Item ({0}) spawn at {1}, distance = {2:0.00}", entity.ID, entity.Location, entity.Location.Distance(LastPos)));
-                fish = entity;
+                fishItem = entity;
             }
             else if (entity.Type == EntityType.FishingBobber && entity.ObjectData == GetPlayerEntityID())
             {
@@ -431,7 +431,7 @@ namespace MinecraftClient.ChatBots
 
         public override void OnEntityMetadata(Entity entity, Dictionary<int, object?> metadata)
         {
-            if (fishItemCounter < 10 && entity.ID == fish.ID && metadata.TryGetValue(8, out object? item))
+            if (fishItemCounter < 10 && entity.ID == fishItem.ID && metadata.TryGetValue(8, out object? item))
             {
                 LogToConsole(Translations.Get("bot.autoFish.got", ((Item)item!).ToFullString()));
                 fishItemCounter = 10;
