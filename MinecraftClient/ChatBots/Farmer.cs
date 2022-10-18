@@ -420,7 +420,7 @@ namespace MinecraftClient.ChatBots
                                 LogDebug("Trying to bonemeal: " + location2);
 
                                 // Send like 4 bonemeal attempts, it should do the job with 2-3, but sometimes doesn't do
-                                for (int boneMealTimes = 0; boneMealTimes < 4; boneMealTimes++)
+                                for (int boneMealTimes = 0; boneMealTimes < (cropType == CropType.Beetroot ? 6 : 5); boneMealTimes++)
                                 {
                                     // TODO: Do a check if the carrot/potato is on the first growth stage
                                     // if so, use: new Location(location.X, (double)(location.Y - 1) + (double)0.93750, location.Z)
