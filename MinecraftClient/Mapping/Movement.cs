@@ -463,6 +463,8 @@ namespace MinecraftClient.Mapping
 
         /* ========= LOCATION PROPERTIES ========= */
 
+        // TODO: Find a way to remove this Hack for Vines here.
+
         /// <summary>
         /// Check if the specified location is on the ground
         /// </summary>
@@ -477,7 +479,12 @@ namespace MinecraftClient.Mapping
 
             Location down = Move(location, Direction.Down);
 
-            bool result = world.GetBlock(down).Type.IsSolid();
+            Material currentMaterial = world.GetBlock(down).Type;
+
+            bool result = currentMaterial.IsSolid()
+                || currentMaterial == Material.TwistingVines || currentMaterial == Material.TwistingVinesPlant
+                || currentMaterial == Material.WeepingVines || currentMaterial == Material.WeepingVinesPlant
+                || currentMaterial == Material.Vine;
 
             bool northCheck = 1 + Math.Floor(down.Z) - down.Z > 0.7;
             bool eastCheck = down.X - Math.Floor(down.X) > 0.7;
@@ -485,21 +492,95 @@ namespace MinecraftClient.Mapping
             bool westCheck = 1 + Math.Floor(down.X) - down.X > 0.7;
 
             if (!result && northCheck)
-                result |= world.GetBlock(Move(down, Direction.North)).Type.IsSolid();
+            {
+                Location locationDownNorth = Move(down, Direction.North);
+                result |= world.GetBlock(locationDownNorth).Type.IsSolid()
+                    || world.GetBlock(locationDownNorth).Type == Material.TwistingVines
+                    || world.GetBlock(locationDownNorth).Type == Material.TwistingVinesPlant
+                    || world.GetBlock(locationDownNorth).Type == Material.WeepingVines
+                    || world.GetBlock(locationDownNorth).Type == Material.WeepingVinesPlant
+                    || world.GetBlock(locationDownNorth).Type == Material.Vine;
+            }
+
             if (!result && northCheck && eastCheck)
-                result |= world.GetBlock(Move(down, Direction.NorthEast)).Type.IsSolid();
+            {
+                Location locationDownNorthEast = Move(down, Direction.NorthEast);
+                result |= world.GetBlock(locationDownNorthEast).Type.IsSolid()
+                    || world.GetBlock(locationDownNorthEast).Type == Material.TwistingVines
+                    || world.GetBlock(locationDownNorthEast).Type == Material.TwistingVinesPlant
+                    || world.GetBlock(locationDownNorthEast).Type == Material.WeepingVines
+                    || world.GetBlock(locationDownNorthEast).Type == Material.WeepingVinesPlant
+                    || world.GetBlock(locationDownNorthEast).Type == Material.Vine;
+            }
+
             if (!result && eastCheck)
-                result |= world.GetBlock(Move(down, Direction.East)).Type.IsSolid();
+            {
+                Location locationDownEast = Move(down, Direction.East);
+                result |= world.GetBlock(locationDownEast).Type.IsSolid()
+                    || world.GetBlock(locationDownEast).Type == Material.TwistingVines
+                    || world.GetBlock(locationDownEast).Type == Material.TwistingVinesPlant
+                    || world.GetBlock(locationDownEast).Type == Material.WeepingVines
+                    || world.GetBlock(locationDownEast).Type == Material.WeepingVinesPlant
+                    || world.GetBlock(locationDownEast).Type == Material.Vine;
+            }
+
             if (!result && eastCheck && southCheck)
-                result |= world.GetBlock(Move(down, Direction.SouthEast)).Type.IsSolid();
+            {
+                Location locationDownSouthEast = Move(down, Direction.SouthEast);
+                result |= world.GetBlock(locationDownSouthEast).Type.IsSolid()
+                    || world.GetBlock(locationDownSouthEast).Type == Material.TwistingVines
+                    || world.GetBlock(locationDownSouthEast).Type == Material.TwistingVinesPlant
+                    || world.GetBlock(locationDownSouthEast).Type == Material.WeepingVines
+                    || world.GetBlock(locationDownSouthEast).Type == Material.WeepingVinesPlant
+                    || world.GetBlock(locationDownSouthEast).Type == Material.Vine;
+            }
+
             if (!result && southCheck)
-                result |= world.GetBlock(Move(down, Direction.South)).Type.IsSolid();
+            {
+                Location locationDownSouth = Move(down, Direction.South);
+                result |= world.GetBlock(locationDownSouth).Type.IsSolid()
+                    || world.GetBlock(locationDownSouth).Type == Material.TwistingVines
+                    || world.GetBlock(locationDownSouth).Type == Material.TwistingVinesPlant
+                    || world.GetBlock(locationDownSouth).Type == Material.WeepingVines
+                    || world.GetBlock(locationDownSouth).Type == Material.WeepingVinesPlant
+                    || world.GetBlock(locationDownSouth).Type == Material.Vine;
+            }
+
             if (!result && southCheck && westCheck)
-                result |= world.GetBlock(Move(down, Direction.SouthWest)).Type.IsSolid();
+            {
+                Location locationDownSouthWest = Move(down, Direction.SouthWest);
+                result |= world.GetBlock(locationDownSouthWest).Type.IsSolid()
+                    || world.GetBlock(locationDownSouthWest).Type == Material.TwistingVines
+                    || world.GetBlock(locationDownSouthWest).Type == Material.TwistingVinesPlant
+                    || world.GetBlock(locationDownSouthWest).Type == Material.WeepingVines
+                    || world.GetBlock(locationDownSouthWest).Type == Material.WeepingVinesPlant
+                    || world.GetBlock(locationDownSouthWest).Type == Material.Vine;
+            }
+
+
             if (!result && westCheck)
-                result |= world.GetBlock(Move(down, Direction.West)).Type.IsSolid();
+            {
+                Location locationDownWest = Move(down, Direction.West);
+                result |= world.GetBlock(locationDownWest).Type.IsSolid()
+                    || world.GetBlock(locationDownWest).Type == Material.TwistingVines
+                    || world.GetBlock(locationDownWest).Type == Material.TwistingVinesPlant
+                    || world.GetBlock(locationDownWest).Type == Material.WeepingVines
+                    || world.GetBlock(locationDownWest).Type == Material.WeepingVinesPlant
+                    || world.GetBlock(locationDownWest).Type == Material.Vine;
+            }
+
+
             if (!result && westCheck && northCheck)
-                result |= world.GetBlock(Move(down, Direction.NorthWest)).Type.IsSolid();
+            {
+                Location locationDownNorthWest = Move(down, Direction.NorthWest);
+                result |= world.GetBlock(locationDownNorthWest).Type.IsSolid()
+                    || world.GetBlock(locationDownNorthWest).Type == Material.TwistingVines
+                    || world.GetBlock(locationDownNorthWest).Type == Material.TwistingVinesPlant
+                    || world.GetBlock(locationDownNorthWest).Type == Material.WeepingVines
+                    || world.GetBlock(locationDownNorthWest).Type == Material.WeepingVinesPlant
+                    || world.GetBlock(locationDownNorthWest).Type == Material.Vine;
+
+            }
 
             return result && (location.Y <= Math.Truncate(location.Y) + 0.0001);
         }
@@ -513,6 +594,17 @@ namespace MinecraftClient.Mapping
         public static bool IsSwimming(World world, Location location)
         {
             return world.GetBlock(location).Type.IsLiquid();
+        }
+
+        /// <summary>
+        /// Check if the specified location can be climbed on
+        /// </summary>
+        /// <param name="world">World for performing check</param>
+        /// <param name="location">Location to check</param>
+        /// <returns>True if the specified location can be climbed on</returns>
+        public static bool IsClimbing(World world, Location location)
+        {
+            return world.GetBlock(location).Type.CanBeClimbedOn();
         }
 
         /// <summary>
@@ -530,9 +622,9 @@ namespace MinecraftClient.Mapping
                 && !world.GetBlock(Move(location, Direction.Down)).Type.CanHarmPlayers()
 
                 //No fall from a too high place
-                && (world.GetBlock(Move(location, Direction.Down)).Type.IsSolid()
-                     || world.GetBlock(Move(location, Direction.Down, 2)).Type.IsSolid()
-                     || world.GetBlock(Move(location, Direction.Down, 3)).Type.IsSolid())
+                && (world.GetBlock(Move(location, Direction.Down)).Type.IsSolid() || IsClimbing(world, Move(location, Direction.Down))
+                     || world.GetBlock(Move(location, Direction.Down, 2)).Type.IsSolid() || IsClimbing(world, Move(location, Direction.Down, 2))
+                     || world.GetBlock(Move(location, Direction.Down, 3)).Type.IsSolid() || IsClimbing(world, Move(location, Direction.Down, 3)))
 
                 //Not an underwater location
                 && !(world.GetBlock(Move(location, Direction.Up)).Type.IsLiquid());
@@ -553,10 +645,16 @@ namespace MinecraftClient.Mapping
             {
                 // Move vertical
                 case Direction.Down:
-                    return !IsOnGround(world, location);
+                    return IsClimbing(world, Move(location, Direction.Down)) || !IsOnGround(world, location);
                 case Direction.Up:
-                    return (IsOnGround(world, location) || IsSwimming(world, location))
-                        && !world.GetBlock(Move(Move(location, Direction.Up), Direction.Up)).Type.IsSolid();
+                    bool nextTwoBlocks = !world.GetBlock(Move(Move(location, Direction.Up), Direction.Up)).Type.IsSolid();
+
+                    // Check if the current block can be climbed on
+                    if (IsClimbing(world, location))
+                        // Check if next block after the next one can be climbed uppon
+                        return IsClimbing(world, Move(location, Direction.Up)) || nextTwoBlocks;
+
+                    return (IsOnGround(world, location) || IsSwimming(world, location)) && nextTwoBlocks;
 
                 // Move horizontal
                 case Direction.East:
@@ -588,8 +686,8 @@ namespace MinecraftClient.Mapping
         /// <returns>True if a player is able to stand in this location</returns>
         public static bool PlayerFitsHere(World world, Location location)
         {
-            return !world.GetBlock(location).Type.IsSolid()
-                        && !world.GetBlock(Move(location, Direction.Up)).Type.IsSolid();
+            return (IsClimbing(world, location) && IsClimbing(world, Move(location, Direction.Up)))
+                 || !world.GetBlock(location).Type.IsSolid() && !world.GetBlock(Move(location, Direction.Up)).Type.IsSolid();
         }
 
         /// <summary>
