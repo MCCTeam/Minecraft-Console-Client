@@ -169,26 +169,16 @@ namespace MinecraftClient.Mapping
         /// <returns>Block matching the specified block type</returns>
         public List<Location> FindBlock(Location from, Material block, int radiusx, int radiusy, int radiusz)
         {
-            Location minPoint = new(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
-            Location maxPoint = new(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);
-            List<Location> list = new() { };
-            for (double x = minPoint.X; x <= maxPoint.X; x++)
-            {
-                for (double y = minPoint.Y; y <= maxPoint.Y; y++)
-                {
-                    for (double z = minPoint.Z; z <= maxPoint.Z; z++)
-                    {
-                        Location doneloc = new(x, y, z);
-                        Block doneblock = GetBlock(doneloc);
-                        Material blockType = doneblock.Type;
-                        if (blockType == block)
-                        {
-                            list.Add(doneloc);
-                        }
-                    }
-                }
-            }
-            return list;
+            Location minPoint = new Location(from.X - radiusx, from.Y - radiusy, from.Z - radiusz);
+            Location maxPoint = new Location(from.X + radiusx, from.Y + radiusy, from.Z + radiusz);
+
+            List<int> xRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.X)), Convert.ToInt32(Math.Floor(maxPoint.X - minPoint.X)) + 1).ToList();
+            List<int> yRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.Y)), Convert.ToInt32(Math.Floor(maxPoint.Y - minPoint.Y)) + 1).ToList();
+            List<int> zRange = Enumerable.Range(Convert.ToInt32(Math.Floor(minPoint.Z)), Convert.ToInt32(Math.Floor(maxPoint.Z - minPoint.Z)) + 1).ToList();
+
+            List<Location> listOfBlocks = xRange.SelectMany(x => yRange.SelectMany(y => zRange.Select(z => new Location(x, y, z)))).ToList();
+
+            return listOfBlocks.Where(loc => GetBlock(loc).Type == block).ToList();
         }
 
         /// <summary>
