@@ -242,7 +242,7 @@ namespace MinecraftClient.Protocol
 
                     StringBuilder stringBuilder = new();
                     foreach (KeyValuePair<string, Json.JSONData> entry in Json.ParseJson(translation_file).Properties)
-                        stringBuilder.Append(entry.Key).Append('=').Append(entry.Value.StringValue).Append(Environment.NewLine);
+                        stringBuilder.Append(entry.Key).Append('=').Append(entry.Value.StringValue.Replace("\n", "\\n").Replace("\r", String.Empty)).Append(Environment.NewLine);
                     File.WriteAllText(Language_File, stringBuilder.ToString());
 
                     ConsoleIO.WriteLineFormatted(Translations.Get("chat.done", Language_File));
