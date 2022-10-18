@@ -77,7 +77,7 @@ class MineCube : ChatBot
 					// Skip this block if it can not be mined.
 					if (Material2Tool.IsUnbreakable(mineLocationMaterial)) { continue; }
 
-					if (Settings.InventoryHandling && toolHandling)
+					if (GetInventoryEnabled() && toolHandling)
 					{
 						// Search this tool in hotbar and select the correct slot
 						SelectCorrectSlotInHotbar(
@@ -182,7 +182,7 @@ class MineCube : ChatBot
 									waitForMoveToLocation(mineLocation, maxOffset: 4, minOffset:3);
 
 							// Is inventoryhandling activated?
-							if (Settings.InventoryHandling && toolHandling)
+							if (GetInventoryEnabled() && toolHandling)
 							{
 								// Search this tool in hotbar and select the correct slot
 								SelectCorrectSlotInHotbar(
