@@ -767,6 +767,27 @@
         }
 
         /// <summary>
+        /// Check if the player can climb up this block
+        /// </summary>
+        /// <param name="m">Material to test</param>
+        /// <returns>True if the material can be climbed on</returns>
+        public static bool CanBeClimbedOn(this Material m)
+        {
+            switch (m)
+            {
+                case Material.Ladder:
+                case Material.Vine:
+                case Material.TwistingVines:
+                case Material.TwistingVinesPlant:
+                case Material.WeepingVines:
+                case Material.WeepingVinesPlant:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
         /// Check if the provided material is a bed
         /// </summary>
         /// <param name="m">Material to test</param>
