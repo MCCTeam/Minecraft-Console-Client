@@ -172,8 +172,6 @@ namespace MinecraftClient.ChatBots
         [TomlDoNotInlineObject]
         public class Configs
         {
-            public WebSocketBot? botInstance { get; set; }
-
             [NonSerialized]
             private const string BotName = "Websocket";
 
@@ -187,40 +185,10 @@ namespace MinecraftClient.ChatBots
 
             [TomlInlineComment("$config.ChatBot.WebSocketBot.Password$")]
             public string? Password = "wspass12345";
-
-            public void OnSettingsUpdated()
-            {
-                if (botInstance == null)
-                    return;
-
-                Match match = Regex.Match(Ip!, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
-
-                if (!match.Success)
-                {
-                    botInstance!.LogToConsole(Translations.TryGet("bot.WebSocketBot.failed_to_start.ip"));
-                    botInstance!.UnloadBot();
-                    return;
-                }
-
-                if (Port > 65535)
-                {
-                    botInstance!.LogToConsole(Translations.TryGet("bot.WebSocketBot.failed_to_start.port"));
-                    botInstance!.UnloadBot();
-                    return;
-                }
-
-                botInstance!._ip = Ip;
-                botInstance!._port = Port;
-                botInstance!._password = Password;
-
-                botInstance!.Initialize();
-            }
         }
 
         public WebSocketBot()
         {
-            Config.botInstance = this;
-
             Match match = Regex.Match(Config.Ip!, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
 
             if (!match.Success)
