@@ -26,7 +26,7 @@ namespace MinecraftClient
         /// <param name="run">Set to false to compile and cache the script without launching it</param>
         /// <exception cref="CSharpException">Thrown if an error occured</exception>
         /// <returns>Result of the execution, returned by the script</returns>
-        public static object? Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object>? localVars, bool run = true)
+        public static object? Run(ChatBot apiHandler, string[] lines, string[] args, Dictionary<string, object>? localVars, bool run = true, string scriptName = "Unknown Script")
         {
             //Script compatibility check for handling future versions differently
             if (lines.Length < 1 || lines[0] != "//MCCScript 1.0")
@@ -102,13 +102,24 @@ namespace MinecraftClient
                         "}}",
                     });
 
+                    ConsoleIO.WriteLogLine($"[Script] Starting compilation for {scriptName}...");
+
                     //Compile the C# class in memory using all the currently loaded assemblies
                     var result = compiler.Compile(code, Guid.NewGuid().ToString());
 
                     //Process compile warnings and errors
-                    if (result.Failures != null)
-                        throw new CSharpException(CSErrorType.LoadError,
-                            new InvalidOperationException(result.Failures[0].GetMessage()));
+                    if (result.Failures != null) {
+                        
+                        ConsoleIO.WriteLogLine("[Script] Compilation failed with error(s):");
+
+                        foreach (var failure in result.Failures) {
+                            ConsoleIO.WriteLogLine($"[Script] Error in {scriptName}, line:col{failure.Location.GetMappedLineSpan()}: [{failure.Id}] {failure.GetMessage()}");
+                        }
+
+                        throw new CSharpException(CSErrorType.InvalidScript, new InvalidProgramException("Compilation failed due to error."));
+                    }
+
+                    ConsoleIO.WriteLogLine("[Script] Compilation done with no errors.");
 
                     //Retrieve compiled assembly
                     assembly = result.Assembly;
@@ -385,7 +396,7 @@ namespace MinecraftClient
             {
                 throw new CSharpException(CSErrorType.FileReadError, e);
             }
-            return CSharpRunner.Run(this, lines, args, localVars);
+            return CSharpRunner.Run(this, lines, args, localVars, scriptName: script);
         }
     }
 }

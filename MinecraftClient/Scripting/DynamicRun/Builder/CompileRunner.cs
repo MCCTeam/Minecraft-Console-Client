@@ -24,7 +24,7 @@ namespace DynamicRun.Builder
                 GC.WaitForPendingFinalizers();
             }
 
-            ConsoleIO.WriteLogLine(assemblyLoadContextWeakRef.Item1.IsAlive ? "Script continues to run." : "Script finished!");
+            ConsoleIO.WriteLogLine(assemblyLoadContextWeakRef.Item1.IsAlive ? "[Script] Script continues to run." : "[Script] Script finished!");
             return assemblyLoadContextWeakRef.Item2;
         }
 
