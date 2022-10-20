@@ -567,7 +567,7 @@ namespace MinecraftClient
 
                     public enum ForgeConfigType { no, auto, force };
 
-                    public enum TerminalColorDepthType { bit_4, bit_8, bit_24};
+                    public enum TerminalColorDepthType { bit_4, bit_8, bit_24 };
                 }
 
                 public struct AccountInfoConfig
@@ -1151,6 +1151,13 @@ namespace MinecraftClient
                 {
                     get { return ChatBots.ScriptScheduler.Config; }
                     set { ChatBots.ScriptScheduler.Config = value; ChatBots.ScriptScheduler.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.WebSocketBot$")]
+                public ChatBots.WebSocketBot.Configs WebSocketBot
+                {
+                    get { return ChatBots.WebSocketBot.Config!; }
+                    set { ChatBots.WebSocketBot.Config = value; }
                 }
             }
         }
