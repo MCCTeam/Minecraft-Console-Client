@@ -105,7 +105,7 @@ namespace MinecraftClient
                     ConsoleIO.WriteLogLine($"[Script] Starting compilation for {scriptName}...");
 
                     //Compile the C# class in memory using all the currently loaded assemblies
-                    var result = compiler.Compile(code, Guid.NewGuid().ToString());
+                    var result = compiler.Compile(code, Guid.NewGuid().ToString(), dlls);
 
                     //Process compile warnings and errors
                     if (result.Failures != null) {

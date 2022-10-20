@@ -15,16 +15,17 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using MinecraftClient;
+using MinecraftClient.Scripting;
 using SingleFileExtractor.Core;
 
 namespace DynamicRun.Builder
 {
     internal class Compiler
     {
-        public CompileResult Compile(string filepath, string fileName)
+        public CompileResult Compile(string filepath, string fileName, List<string> additionalAssemblies)
         {
             using var peStream = new MemoryStream();
-            var result = GenerateCode(filepath, fileName).Emit(peStream);
+            var result = GenerateCode(filepath, fileName, additionalAssemblies).Emit(peStream);
 
             if (!result.Success)
             {
@@ -48,24 +49,37 @@ namespace DynamicRun.Builder
             };
         }
 
-        private static CSharpCompilation GenerateCode(string sourceCode, string fileName)
+        private static CSharpCompilation GenerateCode(string sourceCode, string fileName, List<string> additionalAssemblies)
         {
             var codeString = SourceText.From(sourceCode);
             var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp9);
 
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
+            
+            var references = new List<MetadataReference>();
 
-            var mods = Assembly.GetEntryAssembly()!.GetModules();
-
+            // Find if any additional assembly DLL exists in the base directory where the .exe exists.
+            foreach (var assembly in additionalAssemblies) 
+            {
+                var dllPath = Path.Combine(AppContext.BaseDirectory, assembly);
+                if (File.Exists(dllPath)) 
+                {
+                    references.Add(MetadataReference.CreateFromFile(dllPath));
+                    // Store the reference in our Assembly Resolver for future reference.
+                    AssemblyResolver.AddAssembly(Assembly.LoadFile(dllPath).FullName!, dllPath);
+                }
+                else 
+                {
+                    ConsoleIO.WriteLogLine($"[Script Error] {assembly} is defined in script, but cannot find DLL! Script may not run.");
+                }
+            }
 
 #pragma warning disable IL3000 // We determine if we are in a self-contained binary by checking specifically if the Assembly file path is null.
 
             var SystemPrivateCoreLib = typeof(object).Assembly.Location;    // System.Private.CoreLib
             var SystemConsole = typeof(Console).Assembly.Location;          // System.Console
             var MinecraftClientDll = typeof(Program).Assembly.Location;     // The path to MinecraftClient.dll
-
-            var references = new List<MetadataReference>();
-
+            
             // We're on a self-contained binary, so we need to extract the executable to get the assemblies.
             if (string.IsNullOrEmpty(MinecraftClientDll))
             {
