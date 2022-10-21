@@ -31,8 +31,6 @@ namespace MinecraftClient.ChatBots
             public ulong ChannelId = 1018565295654326364L;
 
             public ulong[]? OwnerIds = new[] { 978757810781323276UL };
-
-            public bool IgnoreMessagesSentByBots = true;
         }
 
         public override void Initialize()
@@ -98,9 +96,15 @@ namespace MinecraftClient.ChatBots
             if (teleportRequest)
             {
                 var messageBuilder = new DiscordMessageBuilder()
-                .WithContent(message)
-                .AddComponents(new DiscordButtonComponent(ButtonStyle.Success, "accept_teleport", "Accept"))
-                .AddComponents(new DiscordButtonComponent(ButtonStyle.Danger, "deny_teleport", "Deny"));
+                    .WithEmbed(new DiscordEmbedBuilder
+                    {
+                        Description = message,
+                        Color = new DiscordColor(0x3399FF)
+                    })
+                    .AddComponents(new DiscordComponent[]{
+                        new DiscordButtonComponent(ButtonStyle.Success, "accept_teleport", "Accept"),
+                        new DiscordButtonComponent(ButtonStyle.Danger, "deny_teleport", "Deny")
+                    });
 
                 _client.SendMessageAsync(_channel, messageBuilder).Wait();
                 return;
@@ -159,9 +163,6 @@ namespace MinecraftClient.ChatBots
 
                 _client.MessageCreated += async (source, e) =>
                 {
-                    if (Config.IgnoreMessagesSentByBots && e.Author.IsBot)
-                        return;
-
                     if (e.Guild.Id != Config.GuildId)
                         return;
 
@@ -177,9 +178,11 @@ namespace MinecraftClient.ChatBots
                     {
                         await e.Message.CreateReactionAsync(DiscordEmoji.FromName(_client, ":gear:"));
                         message = message[1..];
+
                         string? result = "";
                         PerformInternalCommand(message, ref result);
                         result = string.IsNullOrEmpty(result) ? "-" : result;
+
                         await e.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(_client, ":gear:"));
                         await e.Message.CreateReactionAsync(DiscordEmoji.FromName(_client, ":white_check_mark:"));
                         await e.Message.RespondAsync($"The command was executed with the result:\n```{result}```");
