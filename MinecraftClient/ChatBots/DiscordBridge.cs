@@ -14,6 +14,7 @@ namespace MinecraftClient.ChatBots
     public class DiscordBridge : ChatBot
     {
         private static DiscordBridge? instance = null;
+        public bool IsConnected { get; private set; }
 
         private DiscordClient? _client;
         private DiscordChannel? _channel;
@@ -80,6 +81,7 @@ namespace MinecraftClient.ChatBots
                     }).Wait();
 
                 _client.DisconnectAsync().Wait();
+                IsConnected = false;
             }
         }
 
@@ -280,6 +282,7 @@ namespace MinecraftClient.ChatBots
                     Color = new DiscordColor(0x00FF00)
                 });
 
+                IsConnected = true;
                 await Task.Delay(-1);
             }
             catch (Exception e)
