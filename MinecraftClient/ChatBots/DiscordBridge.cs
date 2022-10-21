@@ -141,7 +141,8 @@ namespace MinecraftClient.ChatBots
                     TokenType = TokenType.Bot,
                     AutoReconnect = true,
                     Intents = DiscordIntents.All,
-                    MinimumLogLevel = LogLevel.None
+                    MinimumLogLevel = Settings.Config.Logging.DebugMessages ?
+                        (LogLevel.Trace | LogLevel.Information | LogLevel.Debug | LogLevel.Critical | LogLevel.Error | LogLevel.Warning) : LogLevel.None
                 });
 
                 try
@@ -156,6 +157,9 @@ namespace MinecraftClient.ChatBots
                         UnloadBot();
                         return;
                     }
+
+                    LogDebugToConsole("Exception when trying to find the guild:");
+                    LogDebugToConsole(e);
                 }
 
                 try
@@ -170,6 +174,9 @@ namespace MinecraftClient.ChatBots
                         UnloadBot();
                         return;
                     }
+
+                    LogDebugToConsole("Exception when trying to find the channel:");
+                    LogDebugToConsole(e);
                 }
 
                 _client.MessageCreated += async (source, e) =>
