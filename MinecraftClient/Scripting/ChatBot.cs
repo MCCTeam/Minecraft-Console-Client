@@ -835,10 +835,11 @@ namespace MinecraftClient
         /// <param name="text">Log text to write</param>
         protected void LogToConsole(object? text)
         {
+            string botName = Translations.GetOrNull("botname." + GetType().Name) ?? GetType().Name;
             if (_handler == null || master == null)
-                ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", GetType().Name, text));
+                ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", botName, text));
             else
-                Handler.Log.Info(String.Format("[{0}] {1}", GetType().Name, text));
+                Handler.Log.Info(String.Format("[{0}] {1}", botName, text));
             string logfile = Settings.Config.AppVar.ExpandVars(Config.Main.Advanced.ChatbotLogFile);
 
             if (!String.IsNullOrEmpty(logfile))
@@ -913,7 +914,10 @@ namespace MinecraftClient
         protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0)
         {
             if (Settings.Config.Logging.DebugMessages)
-                ConsoleIO.WriteLogLine(Translations.Get("chatbot.reconnect", GetType().Name));
+            {
+                string botName = Translations.GetOrNull("botname." + GetType().Name) ?? GetType().Name;
+                ConsoleIO.WriteLogLine(Translations.Get("chatbot.reconnect", botName));
+            }
             McClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart(delaySeconds);
         }
@@ -1129,14 +1133,15 @@ namespace MinecraftClient
         /// </summary>
         protected static string GetTimestamp()
         {
-            DateTime time = DateTime.Now;
-            return String.Format("{0}-{1}-{2} {3}:{4}:{5}",
-                time.Year.ToString("0000"),
-                time.Month.ToString("00"),
-                time.Day.ToString("00"),
-                time.Hour.ToString("00"),
-                time.Minute.ToString("00"),
-                time.Second.ToString("00"));
+            return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        /// <summary>
+        /// Get a h:m:s timestamp representing the current system time
+        /// </summary>
+        protected static string GetShortTimestamp()
+        {
+            return DateTime.Now.ToString("HH:mm:ss");
         }
 
         /// <summary>
