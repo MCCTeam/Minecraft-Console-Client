@@ -24,13 +24,22 @@ namespace MinecraftClient.ChatBots
 
             public bool Enabled = false;
 
+            [TomlInlineComment("$config.ChatBot.DiscordBridge.Token$")]
             public string Token = "your bot token here";
 
+            [TomlInlineComment("$config.ChatBot.DiscordBridge.GuildId$")]
             public ulong GuildId = 1018553894831403028L;
 
+            [TomlInlineComment("$config.ChatBot.DiscordBridge.ChannelId$")]
             public ulong ChannelId = 1018565295654326364L;
 
-            public ulong[]? OwnerIds = new[] { 978757810781323276UL };
+            [TomlInlineComment("$config.ChatBot.DiscordBridge.OwnersIds$")]
+            public ulong[]? OwnersIds = new[] { 978757810781323276UL };
+
+            [TomlPrecedingComment("$config.ChatBot.DiscordBridge.Formats$")]
+            public string PrivateMessageFormat = "**[Private Message]** {username}: {message}";
+            public string PublicMessageFormat = "{username}: {message}";
+            public string TeleportRequestMessageFormat = "A new Teleport Request from **{username}**!";
         }
 
         public override void Initialize()
@@ -55,7 +64,7 @@ namespace MinecraftClient.ChatBots
                 if (_channel != null)
                     _client.SendMessageAsync(_channel, new DiscordEmbedBuilder
                     {
-                        Description = $"Disconnected from the MCC!",
+                        Description = Translations.TryGet("bot.DiscordBridge.disconnected"),
                         Color = new DiscordColor(0xFF0000)
                     }).Wait();
 
@@ -75,12 +84,12 @@ namespace MinecraftClient.ChatBots
             bool teleportRequest = false;
 
             if (IsPrivateMessage(text, ref message, ref username))
-                message = $"**[Private Message]** {username}: `{message}`";
+                message = Config.PrivateMessageFormat.Replace("{username}", username).Replace("{message}", message).Replace("{timestamp}", GetTimestamp()).Trim();
             else if (IsChatMessage(text, ref message, ref username))
-                message = $"{username}: `{message}`";
+                message = Config.PublicMessageFormat.Replace("{username}", username).Replace("{message}", message).Replace("{timestamp}", GetTimestamp()).Trim();
             else if (IsTeleportRequest(text, ref username))
             {
-                message = $"A new Teleport Request from **{username}**";
+                message = Config.TeleportRequestMessageFormat.Replace("{username}", username).Replace("{timestamp}", GetTimestamp()).Trim();
                 teleportRequest = true;
             }
             else message = text;
@@ -169,7 +178,7 @@ namespace MinecraftClient.ChatBots
                     if (e.Channel.Id != Config.ChannelId)
                         return;
 
-                    if (!Config.OwnerIds!.Contains(e.Author.Id))
+                    if (!Config.OwnersIds!.Contains(e.Author.Id))
                         return;
 
                     string message = e.Message.Content.Trim();
@@ -185,7 +194,7 @@ namespace MinecraftClient.ChatBots
 
                         await e.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(_client, ":gear:"));
                         await e.Message.CreateReactionAsync(DiscordEmoji.FromName(_client, ":white_check_mark:"));
-                        await e.Message.RespondAsync($"The command was executed with the result:\n```{result}```");
+                        await e.Message.RespondAsync($"{Translations.TryGet("bot.DiscordBridge.command_executed")}:\n```{result}```");
                     }
                     else SendText(message);
                 };
@@ -204,7 +213,7 @@ namespace MinecraftClient.ChatBots
 
                 await _client.SendMessageAsync(_channel, new DiscordEmbedBuilder
                 {
-                    Description = $"Succesfully connected with the MCC!",
+                    Description = Translations.TryGet("bot.DiscordBridge.connected"),
                     Color = new DiscordColor(0x00FF00)
                 });
 

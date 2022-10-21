@@ -1090,7 +1090,7 @@ namespace MinecraftClient
                     set { ChatBots.ChatLog.Config = value; ChatBots.ChatLog.Config.OnSettingUpdate(); }
                 }
 
-                //[TomlPrecedingComment("$config.ChatBot.DiscordBridge")]
+                [TomlPrecedingComment("$config.ChatBot.DiscordBridge$")]
                 public ChatBots.DiscordBridge.Configs DiscordBridge
                 {
                     get { return ChatBots.DiscordBridge.Config; }
