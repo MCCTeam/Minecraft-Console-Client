@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -11,6 +13,8 @@ namespace MinecraftClient.ChatBots
 {
     public class DiscordBridge : ChatBot
     {
+        private static DiscordBridge? instance = null;
+
         private DiscordClient? _client;
         private DiscordChannel? _channel;
 
@@ -44,6 +48,11 @@ namespace MinecraftClient.ChatBots
             public void OnSettingUpdate() { }
         }
 
+        public DiscordBridge()
+        {
+            instance = this;
+        }
+
         public override void Initialize()
         {
             Task.Run(async () => await MainAsync());
@@ -74,6 +83,11 @@ namespace MinecraftClient.ChatBots
             }
         }
 
+        public static DiscordBridge? GetInstance()
+        {
+            return instance;
+        }
+
         public override void GetText(string text)
         {
             if (_client == null || _channel == null)
@@ -96,14 +110,6 @@ namespace MinecraftClient.ChatBots
             }
             else message = text;
 
-            SendMessageToDiscord(message, teleportRequest);
-        }
-
-        private void SendMessageToDiscord(string message, bool teleportRequest = false)
-        {
-            if (_client == null || _channel == null)
-                return;
-
             if (teleportRequest)
             {
                 var messageBuilder = new DiscordMessageBuilder()
@@ -117,11 +123,59 @@ namespace MinecraftClient.ChatBots
                         new DiscordButtonComponent(ButtonStyle.Danger, "deny_teleport", "Deny")
                     });
 
-                _client.SendMessageAsync(_channel, messageBuilder).Wait();
+                SendMessage(messageBuilder);
                 return;
             }
+            else SendMessage(message);
+        }
+
+        public void SendMessage(string message)
+        {
+            if (_client == null || _channel == null)
+                return;
 
             _client.SendMessageAsync(_channel, message).Wait();
+        }
+
+        public void SendMessage(DiscordMessageBuilder builder)
+        {
+            if (_client == null || _channel == null)
+                return;
+
+            _client.SendMessageAsync(_channel, builder).Wait();
+        }
+
+        public void SendMessage(DiscordEmbedBuilder embedBuilder)
+        {
+            if (_client == null || _channel == null)
+                return;
+
+            _client.SendMessageAsync(_channel, embedBuilder).Wait();
+
+        }
+        public void SendImage(string filePath, string? text = null)
+        {
+            if (_client == null || _channel == null)
+                return;
+
+            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                filePath = filePath[(filePath.IndexOf(Path.DirectorySeparatorChar) + 1)..];
+                var messageBuilder = new DiscordMessageBuilder().WithContent(text);
+
+                messageBuilder.WithFiles(new Dictionary<string, Stream>() { { $"attachment://{filePath}", fs } });
+
+                _client.SendMessageAsync(_channel, messageBuilder).Wait();
+            }
+        }
+
+        public void SendFile(FileStream fileStream)
+        {
+            if (_client == null || _channel == null)
+                return;
+
+            var messageBuilder = new DiscordMessageBuilder().WithFile(fileStream);
+            SendMessage(messageBuilder);
         }
 
         async Task MainAsync()
