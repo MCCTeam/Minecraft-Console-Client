@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace MinecraftClient.Scripting; 
+namespace MinecraftClient.Scripting;
 
 public static class AssemblyResolver {
     private static Dictionary<string, string> ScriptAssemblies = new();

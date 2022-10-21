@@ -1,11 +1,11 @@
-﻿using DSharpPlus;
-using System.Threading.Tasks;
-using System;
-using Tomlet.Attributes;
+﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.Logging;
+using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
@@ -34,12 +34,14 @@ namespace MinecraftClient.ChatBots
             public ulong ChannelId = 1018565295654326364L;
 
             [TomlInlineComment("$config.ChatBot.DiscordBridge.OwnersIds$")]
-            public ulong[]? OwnersIds = new[] { 978757810781323276UL };
+            public ulong[] OwnersIds = new[] { 978757810781323276UL };
 
             [TomlPrecedingComment("$config.ChatBot.DiscordBridge.Formats$")]
             public string PrivateMessageFormat = "**[Private Message]** {username}: {message}";
             public string PublicMessageFormat = "{username}: {message}";
             public string TeleportRequestMessageFormat = "A new Teleport Request from **{username}**!";
+
+            public void OnSettingUpdate() { }
         }
 
         public override void Initialize()
@@ -178,7 +180,7 @@ namespace MinecraftClient.ChatBots
                     if (e.Channel.Id != Config.ChannelId)
                         return;
 
-                    if (!Config.OwnersIds!.Contains(e.Author.Id))
+                    if (!Config.OwnersIds.Contains(e.Author.Id))
                         return;
 
                     string message = e.Message.Content.Trim();
