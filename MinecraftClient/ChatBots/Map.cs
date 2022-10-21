@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using ImageMagick;
 using MinecraftClient.Mapping;
 using Tomlet.Attributes;
 
@@ -35,7 +36,20 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.Map.Notify_On_First_Update$")]
             public bool Notify_On_First_Update = true;
 
-            public void OnSettingUpdate() { }
+            [TomlInlineComment("$config.ChatBot.Map.Rasize_Rendered_Image$")]
+            public bool Rasize_Rendered_Image = false;
+
+            [TomlInlineComment("$config.ChatBot.Map.Resize_To$")]
+            public int Resize_To = 512;
+
+            [TomlPrecedingComment("$config.ChatBot.Map.Send_Rendered_To_Discord$")]
+            public bool Send_Rendered_To_Discord = false;
+
+            public void OnSettingUpdate()
+            {
+                if (Resize_To <= 0)
+                    Resize_To = 128;
+            }
         }
 
         private readonly string baseDirectory = @"Rendered_Maps";
@@ -47,10 +61,17 @@ namespace MinecraftClient.ChatBots
             if (!Directory.Exists(baseDirectory))
                 Directory.CreateDirectory(baseDirectory);
 
+            DeleteRenderedMaps();
+
             RegisterChatBotCommand("maps", "bot.map.cmd.desc", "maps list|render <id> or maps l|r <id>", OnMapCommand);
         }
 
         public override void OnUnload()
+        {
+            DeleteRenderedMaps();
+        }
+
+        private void DeleteRenderedMaps()
         {
             if (Config.Delete_All_On_Unload)
             {
@@ -199,7 +220,48 @@ namespace MinecraftClient.ChatBots
                 }
             }
             file.Close();
+
             LogToConsole(Translations.TryGet("bot.map.rendered", map.MapId, fileName));
+
+            if (Config.Rasize_Rendered_Image)
+            {
+                using (var image = new MagickImage(fileName))
+                {
+                    var size = new MagickGeometry(Config.Resize_To, Config.Resize_To);
+                    size.IgnoreAspectRatio = true;
+
+                    image.Resize(size);
+                    image.Write(fileName);
+                    LogToConsole(Translations.TryGet("bot.map.resized_rendered_image", map.MapId, Config.Resize_To));
+                }
+            }
+
+            if (Config.Send_Rendered_To_Discord)
+            {
+                if (DiscordBridge.Config.Enabled)
+                {
+                    DiscordBridge? discordBridge = DiscordBridge.GetInstance();
+
+                    if (discordBridge == null)
+                        return;
+
+                    // We must convert to a PNG in order to send to Discord, BMP does not work
+                    string newFileName = fileName.Replace(".bmp", ".png");
+                    using (var image = new MagickImage(fileName))
+                    {
+                        image.Write(newFileName);
+                        discordBridge.SendImage(newFileName, $"> A render of the map with an id: **{map.MapId}**");
+
+                        newFileName = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + newFileName;
+
+                        // Delete the temporary file
+                        if (File.Exists(newFileName))
+                            File.Delete(newFileName);
+
+                        LogToConsole(Translations.TryGet("bot.map.sent_to_discord", map.MapId));
+                    }
+                }
+            }
         }
 
         private void RenderInConsole(McMap map)
@@ -389,8 +451,8 @@ namespace MinecraftClient.ChatBots
 
             return new(
                 r: (byte)((Colors[baseColorId][0] * shadeMultiplier) / 255),
-                g: (byte)((Colors[baseColorId][1] * shadeMultiplier) / 255), 
-                b: (byte)((Colors[baseColorId][2] * shadeMultiplier) / 255), 
+                g: (byte)((Colors[baseColorId][1] * shadeMultiplier) / 255),
+                b: (byte)((Colors[baseColorId][2] * shadeMultiplier) / 255),
                 a: 255
             );
         }
