@@ -567,7 +567,7 @@ namespace MinecraftClient
 
                     public enum ForgeConfigType { no, auto, force };
 
-                    public enum TerminalColorDepthType { bit_4, bit_8, bit_24};
+                    public enum TerminalColorDepthType { bit_4, bit_8, bit_24 };
                 }
 
                 public struct AccountInfoConfig
@@ -1088,6 +1088,13 @@ namespace MinecraftClient
                 {
                     get { return ChatBots.ChatLog.Config; }
                     set { ChatBots.ChatLog.Config = value; ChatBots.ChatLog.Config.OnSettingUpdate(); }
+                }
+
+                [TomlPrecedingComment("$config.ChatBot.DiscordBridge$")]
+                public ChatBots.DiscordBridge.Configs DiscordBridge
+                {
+                    get { return ChatBots.DiscordBridge.Config; }
+                    set { ChatBots.DiscordBridge.Config = value; }
                 }
 
                 [TomlPrecedingComment("$config.ChatBot.Farmer$")]
