@@ -13,6 +13,12 @@ namespace MinecraftClient.ChatBots
     {
         public static Configs Config = new();
 
+        public struct DiscordMap
+        {
+            public string FileName;
+            public int MapId;
+        }
+
         [TomlDoNotInlineObject]
         public class Configs
         {
@@ -55,6 +61,8 @@ namespace MinecraftClient.ChatBots
         private readonly string baseDirectory = @"Rendered_Maps";
 
         private readonly Dictionary<int, McMap> cachedMaps = new();
+
+        private readonly Queue<DiscordMap> discordQueue = new();
 
         public override void Initialize()
         {
@@ -238,28 +246,43 @@ namespace MinecraftClient.ChatBots
 
             if (Config.Send_Rendered_To_Discord)
             {
+                // We need to queue up images because Discord Bridge is not ready immediatelly
                 if (DiscordBridge.Config.Enabled)
+                    discordQueue.Enqueue(new DiscordMap { FileName = fileName, MapId = map.MapId });
+            }
+        }
+
+        public override void Update()
+        {
+            if (!DiscordBridge.Config.Enabled)
+                return;
+
+            DiscordBridge? discordBridge = DiscordBridge.GetInstance();
+
+            if (discordBridge == null)
+                return;
+
+            if (!discordBridge.IsConnected)
+                return;
+
+            if (discordQueue.Count > 0)
+            {
+                DiscordMap discordMap = discordQueue.Dequeue();
+                string fileName = discordMap.FileName;
+
+                // We must convert to a PNG in order to send to Discord, BMP does not work
+                string newFileName = fileName.Replace(".bmp", ".png");
+                using (var image = new MagickImage(fileName))
                 {
-                    DiscordBridge? discordBridge = DiscordBridge.GetInstance();
+                    image.Write(newFileName);
+                    discordBridge.SendImage(newFileName, $"> A render of the map with an id: **{discordMap.MapId}**");
+                    newFileName = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + newFileName;
 
-                    if (discordBridge == null)
-                        return;
+                    // Delete the temporary file
+                    if (File.Exists(newFileName))
+                        File.Delete(newFileName);
 
-                    // We must convert to a PNG in order to send to Discord, BMP does not work
-                    string newFileName = fileName.Replace(".bmp", ".png");
-                    using (var image = new MagickImage(fileName))
-                    {
-                        image.Write(newFileName);
-                        discordBridge.SendImage(newFileName, $"> A render of the map with an id: **{map.MapId}**");
-
-                        newFileName = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + newFileName;
-
-                        // Delete the temporary file
-                        if (File.Exists(newFileName))
-                            File.Delete(newFileName);
-
-                        LogToConsole(Translations.TryGet("bot.map.sent_to_discord", map.MapId));
-                    }
+                    LogToConsole(Translations.TryGet("bot.map.sent_to_discord", discordMap.MapId));
                 }
             }
         }
