@@ -149,6 +149,10 @@ namespace MinecraftClient.ChatBots
 
             text = GetVerbatim(text).Trim();
 
+            // Stop the crash when an empty text is recived somehow
+            if (string.IsNullOrEmpty(text))
+                return;
+
             string message = "";
             string username = "";
             bool teleportRequest = false;
@@ -185,7 +189,7 @@ namespace MinecraftClient.ChatBots
 
         public void SendMessage(string message)
         {
-            if (!CanSendMessages())
+            if (!CanSendMessages() || string.IsNullOrEmpty(message))
                 return;
 
             _client!.SendMessageAsync(_channel, message).Wait();
@@ -215,7 +219,10 @@ namespace MinecraftClient.ChatBots
             using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
                 filePath = filePath[(filePath.IndexOf(Path.DirectorySeparatorChar) + 1)..];
-                var messageBuilder = new DiscordMessageBuilder().WithContent(text);
+                var messageBuilder = new DiscordMessageBuilder();
+
+                if (text != null)
+                    messageBuilder.WithContent(text);
 
                 messageBuilder.WithFiles(new Dictionary<string, Stream>() { { $"attachment://{filePath}", fs } });
 
@@ -304,6 +311,9 @@ namespace MinecraftClient.ChatBots
                         return;
 
                     string message = e.Message.Content.Trim();
+
+                    if (string.IsNullOrEmpty(message) || string.IsNullOrWhiteSpace(message))
+                        return;
 
                     if (bridgeDirection == BridgeDirection.Discord)
                     {
