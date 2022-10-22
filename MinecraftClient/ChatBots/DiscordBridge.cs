@@ -11,6 +11,13 @@ using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
+    internal enum BridgeDirection
+    {
+        Both = 0,
+        Minecraft,
+        Discord
+    }
+
     public class DiscordBridge : ChatBot
     {
         private static DiscordBridge? instance = null;
@@ -18,6 +25,7 @@ namespace MinecraftClient.ChatBots
 
         private DiscordClient? _client;
         private DiscordChannel? _channel;
+        private BridgeDirection bridgeDirection = BridgeDirection.Both;
 
         public static Configs Config = new();
 
@@ -56,6 +64,8 @@ namespace MinecraftClient.ChatBots
 
         public override void Initialize()
         {
+            RegisterChatBotCommand("dscbridge", "bot.DiscordBridge.desc", "dscbridge direction <both|mc|discord>", OnDscCommand);
+
             Task.Run(async () => await MainAsync());
         }
 
@@ -90,9 +100,51 @@ namespace MinecraftClient.ChatBots
             return instance;
         }
 
+        private string OnDscCommand(string cmd, string[] args)
+        {
+            if (args.Length == 2)
+            {
+                if (args[0].ToLower().Equals("direction"))
+                {
+                    string direction = args[1].ToLower().Trim();
+
+                    string? bridgeName = "";
+
+                    switch (direction)
+                    {
+                        case "b":
+                        case "both":
+                            bridgeName = "bot.DiscordBridge.direction.both";
+                            bridgeDirection = BridgeDirection.Both;
+                            break;
+
+                        case "mc":
+                        case "minecraft":
+                            bridgeName = "bot.DiscordBridge.direction.minecraft";
+                            bridgeDirection = BridgeDirection.Minecraft;
+                            break;
+
+                        case "d":
+                        case "dcs":
+                        case "discord":
+                            bridgeName = "bot.DiscordBridge.direction.discord";
+                            bridgeDirection = BridgeDirection.Discord;
+                            break;
+
+                        default:
+                            return Translations.TryGet("bot.DiscordBridge.invalid_direction");
+                    }
+
+                    return Translations.TryGet("bot.DiscordBridge.direction", Translations.TryGet(bridgeName));
+                };
+            }
+
+            return "dscbridge direction <both|mc|discord>";
+        }
+
         public override void GetText(string text)
         {
-            if (_client == null || _channel == null)
+            if (!CanSendMessages())
                 return;
 
             text = GetVerbatim(text).Trim();
@@ -133,31 +185,31 @@ namespace MinecraftClient.ChatBots
 
         public void SendMessage(string message)
         {
-            if (_client == null || _channel == null)
+            if (!CanSendMessages())
                 return;
 
-            _client.SendMessageAsync(_channel, message).Wait();
+            _client!.SendMessageAsync(_channel, message).Wait();
         }
 
         public void SendMessage(DiscordMessageBuilder builder)
         {
-            if (_client == null || _channel == null)
+            if (!CanSendMessages())
                 return;
 
-            _client.SendMessageAsync(_channel, builder).Wait();
+            _client!.SendMessageAsync(_channel, builder).Wait();
         }
 
         public void SendMessage(DiscordEmbedBuilder embedBuilder)
         {
-            if (_client == null || _channel == null)
+            if (!CanSendMessages())
                 return;
 
-            _client.SendMessageAsync(_channel, embedBuilder).Wait();
+            _client!.SendMessageAsync(_channel, embedBuilder).Wait();
 
         }
         public void SendImage(string filePath, string? text = null)
         {
-            if (_client == null || _channel == null)
+            if (!CanSendMessages())
                 return;
 
             using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
@@ -167,17 +219,22 @@ namespace MinecraftClient.ChatBots
 
                 messageBuilder.WithFiles(new Dictionary<string, Stream>() { { $"attachment://{filePath}", fs } });
 
-                _client.SendMessageAsync(_channel, messageBuilder).Wait();
+                _client!.SendMessageAsync(_channel, messageBuilder).Wait();
             }
         }
 
         public void SendFile(FileStream fileStream)
         {
-            if (_client == null || _channel == null)
+            if (!CanSendMessages())
                 return;
 
             var messageBuilder = new DiscordMessageBuilder().WithFile(fileStream);
             SendMessage(messageBuilder);
+        }
+
+        private bool CanSendMessages()
+        {
+            return _client == null || _channel == null || bridgeDirection == BridgeDirection.Minecraft ? false : true;
         }
 
         async Task MainAsync()
@@ -248,10 +305,16 @@ namespace MinecraftClient.ChatBots
 
                     string message = e.Message.Content.Trim();
 
+                    if (bridgeDirection == BridgeDirection.Discord)
+                    {
+                        if (!message.StartsWith(".dscbridge"))
+                            return;
+                    }
+
                     if (message.StartsWith("."))
                     {
-                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName(_client, ":gear:"));
                         message = message[1..];
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName(_client, ":gear:"));
 
                         string? result = "";
                         PerformInternalCommand(message, ref result);
