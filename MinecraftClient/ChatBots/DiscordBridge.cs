@@ -49,12 +49,18 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.DiscordBridge.OwnersIds$")]
             public ulong[] OwnersIds = new[] { 978757810781323276UL };
 
+            [TomlInlineComment("$config.ChatBot.DiscordBridge.MessageSendTimeout$")]
+            public int Message_Send_Timeout = 3;
+
             [TomlPrecedingComment("$config.ChatBot.DiscordBridge.Formats$")]
             public string PrivateMessageFormat = "**[Private Message]** {username}: {message}";
             public string PublicMessageFormat = "{username}: {message}";
             public string TeleportRequestMessageFormat = "A new Teleport Request from **{username}**!";
 
-            public void OnSettingUpdate() { }
+            public void OnSettingUpdate()
+            {
+                Message_Send_Timeout = Message_Send_Timeout <= 0 ? 3 : Message_Send_Timeout;
+            }
         }
 
         public DiscordBridge()
@@ -83,12 +89,20 @@ namespace MinecraftClient.ChatBots
         {
             if (_client != null)
             {
-                if (_channel != null)
-                    _client.SendMessageAsync(_channel, new DiscordEmbedBuilder
-                    {
-                        Description = Translations.TryGet("bot.DiscordBridge.disconnected"),
-                        Color = new DiscordColor(0xFF0000)
-                    }).Wait();
+                try
+                {
+                    if (_channel != null)
+                        _client.SendMessageAsync(_channel, new DiscordEmbedBuilder
+                        {
+                            Description = Translations.TryGet("bot.DiscordBridge.disconnected"),
+                            Color = new DiscordColor(0xFF0000)
+                        }).Wait(Config.Message_Send_Timeout * 1000);
+                }
+                catch (Exception e)
+                {
+                    LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                    LogDebugToConsole(e);
+                }
 
                 _client.DisconnectAsync().Wait();
                 IsConnected = false;
@@ -192,7 +206,15 @@ namespace MinecraftClient.ChatBots
             if (!CanSendMessages() || string.IsNullOrEmpty(message))
                 return;
 
-            _client!.SendMessageAsync(_channel, message).Wait();
+            try
+            {
+                _client!.SendMessageAsync(_channel, message).Wait(Config.Message_Send_Timeout * 1000);
+            }
+            catch (Exception e)
+            {
+                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                LogDebugToConsole(e);
+            }
         }
 
         public void SendMessage(DiscordMessageBuilder builder)
@@ -200,7 +222,15 @@ namespace MinecraftClient.ChatBots
             if (!CanSendMessages())
                 return;
 
-            _client!.SendMessageAsync(_channel, builder).Wait();
+            try
+            {
+                _client!.SendMessageAsync(_channel, builder).Wait(Config.Message_Send_Timeout * 1000);
+            }
+            catch (Exception e)
+            {
+                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                LogDebugToConsole(e);
+            }
         }
 
         public void SendMessage(DiscordEmbedBuilder embedBuilder)
@@ -208,25 +238,40 @@ namespace MinecraftClient.ChatBots
             if (!CanSendMessages())
                 return;
 
-            _client!.SendMessageAsync(_channel, embedBuilder).Wait();
-
+            try
+            {
+                _client!.SendMessageAsync(_channel, embedBuilder).Wait(Config.Message_Send_Timeout * 1000);
+            }
+            catch (Exception e)
+            {
+                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                LogDebugToConsole(e);
+            }
         }
         public void SendImage(string filePath, string? text = null)
         {
             if (!CanSendMessages())
                 return;
 
-            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            try
             {
-                filePath = filePath[(filePath.IndexOf(Path.DirectorySeparatorChar) + 1)..];
-                var messageBuilder = new DiscordMessageBuilder();
+                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    filePath = filePath[(filePath.IndexOf(Path.DirectorySeparatorChar) + 1)..];
+                    var messageBuilder = new DiscordMessageBuilder();
 
-                if (text != null)
-                    messageBuilder.WithContent(text);
+                    if (text != null)
+                        messageBuilder.WithContent(text);
 
-                messageBuilder.WithFiles(new Dictionary<string, Stream>() { { $"attachment://{filePath}", fs } });
+                    messageBuilder.WithFiles(new Dictionary<string, Stream>() { { $"attachment://{filePath}", fs } });
 
-                _client!.SendMessageAsync(_channel, messageBuilder).Wait();
+                    _client!.SendMessageAsync(_channel, messageBuilder).Wait(Config.Message_Send_Timeout * 1000);
+                }
+            }
+            catch (Exception e)
+            {
+                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                LogDebugToConsole(e);
             }
         }
 
@@ -235,8 +280,7 @@ namespace MinecraftClient.ChatBots
             if (!CanSendMessages())
                 return;
 
-            var messageBuilder = new DiscordMessageBuilder().WithFile(fileStream);
-            SendMessage(messageBuilder);
+            SendMessage(new DiscordMessageBuilder().WithFile(fileStream));
         }
 
         private bool CanSendMessages()
@@ -356,11 +400,12 @@ namespace MinecraftClient.ChatBots
                 });
 
                 IsConnected = true;
+                LogToConsole("§y§l§f" + Translations.TryGet("bot.DiscordBridge.connected"));
                 await Task.Delay(-1);
             }
             catch (Exception e)
             {
-                LogToConsole(Translations.TryGet("bot.DiscordBridge.unknown_error"));
+                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.unknown_error"));
                 LogToConsole(e);
                 return;
             }
