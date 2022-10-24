@@ -274,6 +274,7 @@ namespace MinecraftClient
             if (Config.ChatBot.RemoteControl.Enabled) { BotLoad(new RemoteControl()); }
             if (Config.ChatBot.ReplayCapture.Enabled && reload) { BotLoad(new ReplayCapture()); }
             if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
+            if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
         }
