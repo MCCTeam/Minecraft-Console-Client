@@ -11,20 +11,20 @@ using Tomlet.Attributes;
 
 namespace MinecraftClient.ChatBots
 {
-    internal enum BridgeDirection
-    {
-        Both = 0,
-        Minecraft,
-        Discord
-    }
-
     public class DiscordBridge : ChatBot
     {
+        private enum BridgeDirection
+        {
+            Both = 0,
+            Minecraft,
+            Discord
+        }
+
         private static DiscordBridge? instance = null;
         public bool IsConnected { get; private set; }
 
-        private DiscordClient? _client;
-        private DiscordChannel? _channel;
+        private DiscordClient? discordBotClient;
+        private DiscordChannel? discordChannel;
         private BridgeDirection bridgeDirection = BridgeDirection.Both;
 
         public static Configs Config = new();
@@ -87,12 +87,12 @@ namespace MinecraftClient.ChatBots
 
         private void Disconnect()
         {
-            if (_client != null)
+            if (discordBotClient != null)
             {
                 try
                 {
-                    if (_channel != null)
-                        _client.SendMessageAsync(_channel, new DiscordEmbedBuilder
+                    if (discordChannel != null)
+                        discordBotClient.SendMessageAsync(discordChannel, new DiscordEmbedBuilder
                         {
                             Description = Translations.TryGet("bot.DiscordBridge.disconnected"),
                             Color = new DiscordColor(0xFF0000)
@@ -104,7 +104,7 @@ namespace MinecraftClient.ChatBots
                     LogDebugToConsole(e);
                 }
 
-                _client.DisconnectAsync().Wait();
+                discordBotClient.DisconnectAsync().Wait();
                 IsConnected = false;
             }
         }
@@ -208,7 +208,7 @@ namespace MinecraftClient.ChatBots
 
             try
             {
-                _client!.SendMessageAsync(_channel, message).Wait(Config.Message_Send_Timeout * 1000);
+                discordBotClient!.SendMessageAsync(discordChannel, message).Wait(Config.Message_Send_Timeout * 1000);
             }
             catch (Exception e)
             {
@@ -224,7 +224,7 @@ namespace MinecraftClient.ChatBots
 
             try
             {
-                _client!.SendMessageAsync(_channel, builder).Wait(Config.Message_Send_Timeout * 1000);
+                discordBotClient!.SendMessageAsync(discordChannel, builder).Wait(Config.Message_Send_Timeout * 1000);
             }
             catch (Exception e)
             {
@@ -240,7 +240,7 @@ namespace MinecraftClient.ChatBots
 
             try
             {
-                _client!.SendMessageAsync(_channel, embedBuilder).Wait(Config.Message_Send_Timeout * 1000);
+                discordBotClient!.SendMessageAsync(discordChannel, embedBuilder).Wait(Config.Message_Send_Timeout * 1000);
             }
             catch (Exception e)
             {
@@ -265,7 +265,7 @@ namespace MinecraftClient.ChatBots
 
                     messageBuilder.WithFiles(new Dictionary<string, Stream>() { { $"attachment://{filePath}", fs } });
 
-                    _client!.SendMessageAsync(_channel, messageBuilder).Wait(Config.Message_Send_Timeout * 1000);
+                    discordBotClient!.SendMessageAsync(discordChannel, messageBuilder).Wait(Config.Message_Send_Timeout * 1000);
                 }
             }
             catch (Exception e)
@@ -285,7 +285,7 @@ namespace MinecraftClient.ChatBots
 
         private bool CanSendMessages()
         {
-            return _client == null || _channel == null || bridgeDirection == BridgeDirection.Minecraft ? false : true;
+            return discordBotClient == null || discordChannel == null || bridgeDirection == BridgeDirection.Minecraft ? false : true;
         }
 
         async Task MainAsync()
@@ -299,7 +299,7 @@ namespace MinecraftClient.ChatBots
                     return;
                 }
 
-                _client = new DiscordClient(new DiscordConfiguration()
+                discordBotClient = new DiscordClient(new DiscordConfiguration()
                 {
                     Token = Config.Token.Trim(),
                     TokenType = TokenType.Bot,
@@ -311,7 +311,7 @@ namespace MinecraftClient.ChatBots
 
                 try
                 {
-                    await _client.GetGuildAsync(Config.GuildId);
+                    await discordBotClient.GetGuildAsync(Config.GuildId);
                 }
                 catch (Exception e)
                 {
@@ -328,7 +328,7 @@ namespace MinecraftClient.ChatBots
 
                 try
                 {
-                    _channel = await _client.GetChannelAsync(Config.ChannelId);
+                    discordChannel = await discordBotClient.GetChannelAsync(Config.ChannelId);
                 }
                 catch (Exception e)
                 {
@@ -343,7 +343,7 @@ namespace MinecraftClient.ChatBots
                     LogDebugToConsole(e);
                 }
 
-                _client.MessageCreated += async (source, e) =>
+                discordBotClient.MessageCreated += async (source, e) =>
                 {
                     if (e.Guild.Id != Config.GuildId)
                         return;
@@ -368,20 +368,20 @@ namespace MinecraftClient.ChatBots
                     if (message.StartsWith("."))
                     {
                         message = message[1..];
-                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName(_client, ":gear:"));
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discordBotClient, ":gear:"));
 
                         string? result = "";
                         PerformInternalCommand(message, ref result);
                         result = string.IsNullOrEmpty(result) ? "-" : result;
 
-                        await e.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(_client, ":gear:"));
-                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName(_client, ":white_check_mark:"));
+                        await e.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(discordBotClient, ":gear:"));
+                        await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discordBotClient, ":white_check_mark:"));
                         await e.Message.RespondAsync($"{Translations.TryGet("bot.DiscordBridge.command_executed")}:\n```{result}```");
                     }
                     else SendText(message);
                 };
 
-                _client.ComponentInteractionCreated += async (s, e) =>
+                discordBotClient.ComponentInteractionCreated += async (s, e) =>
                 {
                     if (!(e.Id.Equals("accept_teleport") || e.Id.Equals("deny_teleport")))
                         return;
@@ -391,9 +391,9 @@ namespace MinecraftClient.ChatBots
                     await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent(result));
                 };
 
-                await _client.ConnectAsync();
+                await discordBotClient.ConnectAsync();
 
-                await _client.SendMessageAsync(_channel, new DiscordEmbedBuilder
+                await discordBotClient.SendMessageAsync(discordChannel, new DiscordEmbedBuilder
                 {
                     Description = Translations.TryGet("bot.DiscordBridge.connected"),
                     Color = new DiscordColor(0x00FF00)
