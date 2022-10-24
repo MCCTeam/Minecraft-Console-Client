@@ -859,9 +859,10 @@ namespace MinecraftClient.ChatBots
                         SendSessionEvent(session, "OnWsCommandResponse", "{\"success\": true, \"message\": \"Succesfully authenticated!\"}", true);
                         LogToConsole(Translations.TryGet("bot.WebSocketBot.session_authenticated", session.GetSessionId()));
                         session.SetAuthenticated(true);
-                        return true;
                     }
                 }
+
+                SendText(message);
             }
 
             return true;
