@@ -1163,6 +1163,13 @@ namespace MinecraftClient
                     get { return ChatBots.ScriptScheduler.Config; }
                     set { ChatBots.ScriptScheduler.Config = value; ChatBots.ScriptScheduler.Config.OnSettingUpdate(); }
                 }
+
+                [TomlPrecedingComment("$config.ChatBot.TelegramBridge$")]
+                public ChatBots.TelegramBridge.Configs TelegramBridge
+                {
+                    get { return ChatBots.TelegramBridge.Config; }
+                    set { ChatBots.TelegramBridge.Config = value; ChatBots.TelegramBridge.Config.OnSettingUpdate(); }
+                }
             }
         }
 

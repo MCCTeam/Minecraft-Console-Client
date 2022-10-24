@@ -47,6 +47,7 @@
 		<NoWarn>NU1701</NoWarn>
 	</PackageReference>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
+    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="config\ChatBots\AutoLook.cs" />
