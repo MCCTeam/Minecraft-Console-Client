@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using ImageMagick;
 using MinecraftClient.Mapping;
 using Tomlet.Attributes;
@@ -13,7 +15,7 @@ namespace MinecraftClient.ChatBots
     {
         public static Configs Config = new();
 
-        public struct DiscordMap
+        public struct QueuedMap
         {
             public string FileName;
             public int MapId;
@@ -48,8 +50,9 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.Map.Resize_To$")]
             public int Resize_To = 512;
 
-            [TomlPrecedingComment("$config.ChatBot.Map.Send_Rendered_To_Discord$")]
+            [TomlPrecedingComment("$config.ChatBot.Map.Send_Rendered_To_Bridges$")]
             public bool Send_Rendered_To_Discord = false;
+            public bool Send_Rendered_To_Telegram = false;
 
             public void OnSettingUpdate()
             {
@@ -62,7 +65,7 @@ namespace MinecraftClient.ChatBots
 
         private readonly Dictionary<int, McMap> cachedMaps = new();
 
-        private readonly Queue<DiscordMap> discordQueue = new();
+        private readonly Queue<QueuedMap> discordQueue = new();
 
         public override void Initialize()
         {
@@ -244,45 +247,75 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            if (Config.Send_Rendered_To_Discord)
+            if (Config.Send_Rendered_To_Discord || Config.Send_Rendered_To_Telegram)
             {
-                // We need to queue up images because Discord Bridge is not ready immediatelly
-                if (DiscordBridge.Config.Enabled)
-                    discordQueue.Enqueue(new DiscordMap { FileName = fileName, MapId = map.MapId });
+                // We need to queue up images because Discord/Telegram Bridge is not ready immediatelly
+                if (DiscordBridge.Config.Enabled || TelegramBridge.Config.Enabled)
+                    discordQueue.Enqueue(new QueuedMap { FileName = fileName, MapId = map.MapId });
             }
         }
 
         public override void Update()
         {
-            if (!DiscordBridge.Config.Enabled)
-                return;
-
             DiscordBridge? discordBridge = DiscordBridge.GetInstance();
+            TelegramBridge? telegramBridge = TelegramBridge.GetInstance();
 
-            if (discordBridge == null)
-                return;
+            if (Config.Send_Rendered_To_Discord)
+            {
+                if (discordBridge == null || (discordBridge != null && !discordBridge.IsConnected))
+                    return;
+            }
 
-            if (!discordBridge.IsConnected)
-                return;
+            if (Config.Send_Rendered_To_Telegram)
+            {
+                if (telegramBridge == null || (telegramBridge != null && !telegramBridge.IsConnected))
+                    return;
+            }
 
             if (discordQueue.Count > 0)
             {
-                DiscordMap discordMap = discordQueue.Dequeue();
-                string fileName = discordMap.FileName;
+                QueuedMap map = discordQueue.Dequeue();
+                string fileName = map.FileName;
 
                 // We must convert to a PNG in order to send to Discord, BMP does not work
                 string newFileName = fileName.Replace(".bmp", ".png");
                 using (var image = new MagickImage(fileName))
                 {
                     image.Write(newFileName);
-                    discordBridge.SendImage(newFileName, $"> A render of the map with an id: **{discordMap.MapId}**");
+
+                    if (Config.Send_Rendered_To_Discord)
+                        discordBridge!.SendImage(newFileName, $"> A render of the map with an id: **{map.MapId}**");
+
+                    if (Config.Send_Rendered_To_Telegram)
+                        telegramBridge!.SendImage(newFileName, $"A render of the map with an id: *{map.MapId}*");
+
                     newFileName = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + newFileName;
 
-                    // Delete the temporary file
-                    if (File.Exists(newFileName))
-                        File.Delete(newFileName);
+                    if (Config.Send_Rendered_To_Discord)
+                        LogToConsole(Translations.TryGet("bot.map.sent_to_discord", map.MapId));
 
-                    LogToConsole(Translations.TryGet("bot.map.sent_to_discord", discordMap.MapId));
+                    if (Config.Send_Rendered_To_Telegram)
+                        LogToConsole(Translations.TryGet("bot.map.sent_to_telegram", map.MapId));
+
+                    // Wait for 2 seconds and then try until file is free for deletion
+                    // 10 seconds timeout
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(2000);
+
+                        var time = Stopwatch.StartNew();
+
+                        while (time.ElapsedMilliseconds < 10000) // 10 seconds
+                        {
+                            try
+                            {
+                                // Delete the temporary file
+                                if (File.Exists(newFileName))
+                                    File.Delete(newFileName);
+                            }
+                            catch (IOException e) { }
+                        }
+                    });
                 }
             }
         }
