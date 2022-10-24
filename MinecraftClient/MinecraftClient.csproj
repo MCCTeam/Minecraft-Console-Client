@@ -41,6 +41,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Samboy063.Tomlet" Version="5.0.0" />
     <PackageReference Include="SingleFileExtractor.Core" Version="1.0.1" />
 	<PackageReference Include="starksoft.aspen" Version="1.1.8">
@@ -75,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive.csproj" />
+    <ProjectReference Include="..\websocket-sharp\websocket-sharp\websocket-sharp.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="DefaultConfigResource.resx">
