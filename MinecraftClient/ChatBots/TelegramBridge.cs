@@ -1,12 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DSharpPlus.Entities;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using Tomlet.Attributes;
+using File = System.IO.File;
 
 namespace MinecraftClient.ChatBots
 {
@@ -42,11 +48,14 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.TelegramBridge.ChannelId$")]
             public string ChannelId = "";
 
+            [TomlInlineComment("$config.ChatBot.TelegramBridge.Authorized_Chat_Ids$")]
+            public long[] Authorized_Chat_Ids = Array.Empty<long>();
+
             [TomlInlineComment("$config.ChatBot.TelegramBridge.MessageSendTimeout$")]
             public int Message_Send_Timeout = 3;
 
             [TomlPrecedingComment("$config.ChatBot.TelegramBridge.Formats$")]
-            public string PrivateMessageFormat = "**[Private Message]** {username}: {message}";
+            public string PrivateMessageFormat = "*(Private Message)* {username}: {message}";
             public string PublicMessageFormat = "{username}: {message}";
             public string TeleportRequestMessageFormat = "A new Teleport Request from **{username}**!";
 
@@ -178,7 +187,30 @@ namespace MinecraftClient.ChatBots
 
             try
             {
-                botClient!.SendTextMessageAsync(Config.ChannelId.Trim(), message).Wait(Config.Message_Send_Timeout);
+                botClient!.SendTextMessageAsync(Config.ChannelId.Trim(), message, ParseMode.Markdown).Wait(Config.Message_Send_Timeout);
+            }
+            catch (Exception e)
+            {
+                LogToConsole("§w§l§f" + Translations.TryGet("bot.TelegramBridge.canceled_sending"));
+                LogDebugToConsole(e);
+            }
+        }
+
+        public void SendImage(string filePath, string? text = null)
+        {
+            if (!CanSendMessages())
+                return;
+
+            try
+            {
+                string fileName = filePath[(filePath.IndexOf(Path.DirectorySeparatorChar) + 1)..];
+
+                Stream stream = File.OpenRead(filePath);
+                botClient!.SendDocumentAsync(
+                    Config.ChannelId.Trim(),
+                    document: new InputOnlineFile(content: stream, fileName),
+                    caption: text,
+                    parseMode: ParseMode.Markdown).Wait(Config.Message_Send_Timeout * 1000);
             }
             catch (Exception e)
             {
@@ -204,7 +236,7 @@ namespace MinecraftClient.ChatBots
                 }
 
                 if (string.IsNullOrEmpty(Config.ChannelId.Trim()))
-                    LogToConsole("§x§l§4" + Translations.TryGet("bot.TelegramBridge.missing_channel_id"));
+                    LogToConsole("§w§l§f" + Translations.TryGet("bot.TelegramBridge.missing_channel_id"));
 
                 botClient = new TelegramBotClient(Config.Token.Trim());
                 cancellationToken = new CancellationTokenSource();
@@ -220,11 +252,18 @@ namespace MinecraftClient.ChatBots
                     cancellationToken: cancellationToken.Token
                 );
 
-                var me = await botClient.GetMeAsync();
                 IsConnected = true;
 
-                SendMessage(Translations.TryGet("bot.TelegramBridge.connected"));
-                LogToConsole("§y§l§f" + Translations.TryGet("bot.TelegramBridge.connected", me.Username));
+                SendMessage("✅ " + Translations.TryGet("bot.TelegramBridge.connected"));
+                LogToConsole("§y§l§f" + Translations.TryGet("bot.TelegramBridge.connected"));
+
+                if (Config.Authorized_Chat_Ids.Length == 0)
+                {
+                    SendMessage("⚠️ *" + Translations.TryGet("bot.TelegramBridge.missing_authorized_channels") + "* ⚠️");
+                    LogToConsole("§w§l§f" + Translations.TryGet("bot.TelegramBridge.missing_authorized_channels"));
+                    return;
+                }
+
                 await Task.Delay(-1);
             }
             catch (Exception e)
@@ -254,7 +293,29 @@ namespace MinecraftClient.ChatBots
             if (text.ToLower().Contains("/start"))
                 return;
 
-            LogDebugToConsole($"Received a '{messageText}' message in chat {chatId}.");
+            if (text.ToLower().Contains(".chatid"))
+            {
+                await botClient.SendTextMessageAsync(chatId: chatId,
+                    replyToMessageId: message.MessageId,
+                    text: $"Chat ID: {chatId}",
+                    cancellationToken: _cancellationToken,
+                    parseMode: ParseMode.Markdown);
+                return;
+            }
+
+            if (Config.Authorized_Chat_Ids.Length > 0 && !Config.Authorized_Chat_Ids.Contains(chatId))
+            {
+                LogDebugToConsole($"Unauthorized message '{messageText}' received in a chat with with an ID: {chatId} !");
+                await botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    replyToMessageId: message.MessageId,
+                    text: Translations.TryGet("bot.TelegramBridge.unauthorized"),
+                    cancellationToken: _cancellationToken,
+                    parseMode: ParseMode.Markdown);
+                return;
+            }
+
+            LogDebugToConsole($"Received a '{messageText}' message in a chat with with an ID: {chatId} .");
 
             if (bridgeDirection == BridgeDirection.Telegram)
             {
@@ -270,7 +331,13 @@ namespace MinecraftClient.ChatBots
                 PerformInternalCommand(command, ref result);
                 result = string.IsNullOrEmpty(result) ? "-" : result;
 
-                await botClient.SendTextMessageAsync(chatId: chatId, replyToMessageId: message.MessageId, text: $"{Translations.TryGet("bot.TelegramBridge.command_executed")}:\n\n{result}", cancellationToken: _cancellationToken);
+                await botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    replyToMessageId:
+                    message.MessageId,
+                    text: $"{Translations.TryGet("bot.TelegramBridge.command_executed")}:\n\n{result}",
+                    cancellationToken: _cancellationToken,
+                    parseMode: ParseMode.Markdown);
             }
             else SendText(text);
         }
