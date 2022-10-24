@@ -185,6 +185,9 @@ namespace MinecraftClient.ChatBots
 
             [TomlInlineComment("$config.ChatBot.WebSocketBot.Password$")]
             public string? Password = "wspass12345";
+
+            [TomlInlineComment("$config.ChatBot.WebSocketBot.DebugMode$")]
+            public bool DebugMode = false;
         }
 
         public WebSocketBot()
@@ -266,7 +269,8 @@ namespace MinecraftClient.ChatBots
             {
                 try
                 {
-                    LogDebugToConsole("\n\n\tGot command\n\n\t" + message + "\n\n");
+                    if (Config.DebugMode)
+                        LogDebugToConsole("\n\n\tGot command\n\n\t" + message + "\n\n");
 
                     WsChatBotCommand cmd = JsonConvert.DeserializeObject<WsChatBotCommand>(message)!;
                     WsCommandResponder responder = new WsCommandResponder(this, session, cmd.Command, cmd.RequestId);
@@ -1119,7 +1123,7 @@ namespace MinecraftClient.ChatBots
             {
                 session.SendToClient("{\"event\": \"" + type + "\", \"data\": " + (data.IsNullOrEmpty() ? "null" : "\"" + Json.EscapeString(data) + "\"") + "}");
 
-                if (!(type.Contains("Entity") || type.Equals("OnTimeUpdate") || type.Equals("OnServerTpsUpdate")))
+                if (!(type.Contains("Entity") || type.Equals("OnTimeUpdate") || type.Equals("OnServerTpsUpdate")) && Config.DebugMode)
                     LogDebugToConsole(
                         "\n\n\tSending:\n\n\t{\"event\": \"" + type +
                         "\", \"data\": " + (data.IsNullOrEmpty() ? "null" : "\""
