@@ -158,7 +158,7 @@ namespace MinecraftClient.ChatBots
                     {
                         try
                         {
-                            CSharpRunner.Run(this, lines, args, localVars);
+                            CSharpRunner.Run(this, lines, args, localVars, scriptName: file!);
                         }
                         catch (CSharpException e)
                         {

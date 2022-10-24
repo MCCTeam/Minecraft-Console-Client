@@ -113,17 +113,22 @@ namespace MinecraftClient.Inventory
             }
         }
 
-        public string GetTypeString()
+        public static string GetTypeString(ItemType type)
         {
-            string type = Type.ToString();
-            string type_renamed = type.ToUnderscoreCase();
+            string type_str = type.ToString();
+            string type_renamed = type_str.ToUnderscoreCase();
             string? res1 = Protocol.ChatParser.TranslateString("item.minecraft." + type_renamed);
             if (!string.IsNullOrEmpty(res1))
                 return res1;
             string? res2 = Protocol.ChatParser.TranslateString("block.minecraft." + type_renamed);
             if (!string.IsNullOrEmpty(res2))
                 return res2;
-            return type;
+            return type_str;
+        }
+
+        public string GetTypeString()
+        {
+            return GetTypeString(Type);
         }
 
         public string ToFullString()

@@ -683,6 +683,7 @@ namespace MinecraftClient
                 }
                 StringBuilder sb = new();
                 int total = 0, translated = 0;
+                int total_char = 0, translated_char = 0;
                 for (int i = 0; i < transEn.Length; ++i)
                 {
                     string line = transEn[i].Trim();
@@ -693,23 +694,22 @@ namespace MinecraftClient
                     }
                     else
                     {
+                        int en_value_len = line.Length - index;
                         string key = line[..index];
                         sb.Append(key).Append('=');
                         if (trans.TryGetValue(key, out string? value))
                         {
                             sb.Append(value.Replace("\n", "\\n"));
-                            ++total;
                             ++translated;
+                            translated_char += en_value_len;
                         }
-                        else
-                        {
-                            ++total;
-                        }
+                        ++total;
+                        total_char += en_value_len;
                     }
                     sb.AppendLine();
                 }
                 File.WriteAllText(fileName, sb.ToString(), Encoding.Unicode);
-                ConsoleIO.WriteLine(string.Format("Language {0}: Translated {1} of {2}, {3:0.00}%", lang, translated, total, 100.0 * (double)translated / total));
+                ConsoleIO.WriteLine(string.Format("Language {0}: Translated {1} of {2}, {3:0.00}%", lang, translated, total, 100.0 * translated_char / total_char));
             }
         }
 
