@@ -35,7 +35,9 @@
   <ItemGroup>
     <PackageReference Include="DnsClient" Version="1.6.1" />
     <PackageReference Include="DotNetZip" Version="1.16.0" />
+    <PackageReference Include="DSharpPlus" Version="4.2.0" />
     <PackageReference Include="DynamicExpresso.Core" Version="2.13.0" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
@@ -46,6 +48,7 @@
 		<NoWarn>NU1701</NoWarn>
 	</PackageReference>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
+    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="config\ChatBots\AutoLook.cs" />

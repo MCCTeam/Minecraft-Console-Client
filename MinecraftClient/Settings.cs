@@ -387,6 +387,7 @@ namespace MinecraftClient
                     {
                         string[] sip = General.Server.Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
                         General.Server.Host = sip[0];
+                        InternalConfig.ServerIP = General.Server.Host;
 
                         if (sip.Length > 1)
                         {
@@ -395,7 +396,10 @@ namespace MinecraftClient
                         }
                     }
 
-                    SetServerIP(General.Server, true);
+                    if (General.Server.Port.HasValue)
+                        InternalConfig.ServerPort = General.Server.Port.Value;
+                    else
+                        SetServerIP(General.Server, true);
 
                     for (int i = 0; i < Advanced.BotOwners.Count; ++i)
                         Advanced.BotOwners[i] = ToLowerIfNeed(Advanced.BotOwners[i]);
@@ -1090,6 +1094,13 @@ namespace MinecraftClient
                     set { ChatBots.ChatLog.Config = value; ChatBots.ChatLog.Config.OnSettingUpdate(); }
                 }
 
+                [TomlPrecedingComment("$config.ChatBot.DiscordBridge$")]
+                public ChatBots.DiscordBridge.Configs DiscordBridge
+                {
+                    get { return ChatBots.DiscordBridge.Config; }
+                    set { ChatBots.DiscordBridge.Config = value; ChatBots.DiscordBridge.Config.OnSettingUpdate(); }
+                }
+
                 [TomlPrecedingComment("$config.ChatBot.Farmer$")]
                 public ChatBots.Farmer.Configs Farmer
                 {
@@ -1153,6 +1164,13 @@ namespace MinecraftClient
                     set { ChatBots.ScriptScheduler.Config = value; ChatBots.ScriptScheduler.Config.OnSettingUpdate(); }
                 }
 
+                [TomlPrecedingComment("$config.ChatBot.TelegramBridge$")]
+                public ChatBots.TelegramBridge.Configs TelegramBridge
+                {
+                    get { return ChatBots.TelegramBridge.Config; }
+                    set { ChatBots.TelegramBridge.Config = value; ChatBots.TelegramBridge.Config.OnSettingUpdate(); }
+                }
+                
                 [TomlPrecedingComment("$config.ChatBot.WebSocketBot$")]
                 public ChatBots.WebSocketBot.Configs WebSocketBot
                 {

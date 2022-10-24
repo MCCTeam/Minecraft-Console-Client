@@ -691,7 +691,7 @@ namespace MinecraftClient
         public static void ReloadSettings()
         {
             if(Settings.LoadFromFile(settingsIniPath).Item1)
-                ConsoleIO.WriteLine(Translations.TryGet("config.loading", settingsIniPath));
+                ConsoleIO.WriteLine(Translations.TryGet("config.load", settingsIniPath));
         }
 
         /// <summary>

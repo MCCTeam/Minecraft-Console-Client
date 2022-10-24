@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using ImageMagick;
 using MinecraftClient.Mapping;
 using Tomlet.Attributes;
 
@@ -11,6 +14,12 @@ namespace MinecraftClient.ChatBots
     public class Map : ChatBot
     {
         public static Configs Config = new();
+
+        public struct QueuedMap
+        {
+            public string FileName;
+            public int MapId;
+        }
 
         [TomlDoNotInlineObject]
         public class Configs
@@ -35,22 +44,45 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.Map.Notify_On_First_Update$")]
             public bool Notify_On_First_Update = true;
 
-            public void OnSettingUpdate() { }
+            [TomlInlineComment("$config.ChatBot.Map.Rasize_Rendered_Image$")]
+            public bool Rasize_Rendered_Image = false;
+
+            [TomlInlineComment("$config.ChatBot.Map.Resize_To$")]
+            public int Resize_To = 512;
+
+            [TomlPrecedingComment("$config.ChatBot.Map.Send_Rendered_To_Bridges$")]
+            public bool Send_Rendered_To_Discord = false;
+            public bool Send_Rendered_To_Telegram = false;
+
+            public void OnSettingUpdate()
+            {
+                if (Resize_To <= 0)
+                    Resize_To = 128;
+            }
         }
 
         private readonly string baseDirectory = @"Rendered_Maps";
 
         private readonly Dictionary<int, McMap> cachedMaps = new();
 
+        private readonly Queue<QueuedMap> discordQueue = new();
+
         public override void Initialize()
         {
             if (!Directory.Exists(baseDirectory))
                 Directory.CreateDirectory(baseDirectory);
 
+            DeleteRenderedMaps();
+
             RegisterChatBotCommand("maps", "bot.map.cmd.desc", "maps list|render <id> or maps l|r <id>", OnMapCommand);
         }
 
         public override void OnUnload()
+        {
+            DeleteRenderedMaps();
+        }
+
+        private void DeleteRenderedMaps()
         {
             if (Config.Delete_All_On_Unload)
             {
@@ -199,7 +231,93 @@ namespace MinecraftClient.ChatBots
                 }
             }
             file.Close();
+
             LogToConsole(Translations.TryGet("bot.map.rendered", map.MapId, fileName));
+
+            if (Config.Rasize_Rendered_Image)
+            {
+                using (var image = new MagickImage(fileName))
+                {
+                    var size = new MagickGeometry(Config.Resize_To, Config.Resize_To);
+                    size.IgnoreAspectRatio = true;
+
+                    image.Resize(size);
+                    image.Write(fileName);
+                    LogToConsole(Translations.TryGet("bot.map.resized_rendered_image", map.MapId, Config.Resize_To));
+                }
+            }
+
+            if (Config.Send_Rendered_To_Discord || Config.Send_Rendered_To_Telegram)
+            {
+                // We need to queue up images because Discord/Telegram Bridge is not ready immediatelly
+                if (DiscordBridge.Config.Enabled || TelegramBridge.Config.Enabled)
+                    discordQueue.Enqueue(new QueuedMap { FileName = fileName, MapId = map.MapId });
+            }
+        }
+
+        public override void Update()
+        {
+            DiscordBridge? discordBridge = DiscordBridge.GetInstance();
+            TelegramBridge? telegramBridge = TelegramBridge.GetInstance();
+
+            if (Config.Send_Rendered_To_Discord)
+            {
+                if (discordBridge == null || (discordBridge != null && !discordBridge.IsConnected))
+                    return;
+            }
+
+            if (Config.Send_Rendered_To_Telegram)
+            {
+                if (telegramBridge == null || (telegramBridge != null && !telegramBridge.IsConnected))
+                    return;
+            }
+
+            if (discordQueue.Count > 0)
+            {
+                QueuedMap map = discordQueue.Dequeue();
+                string fileName = map.FileName;
+
+                // We must convert to a PNG in order to send to Discord, BMP does not work
+                string newFileName = fileName.Replace(".bmp", ".png");
+                using (var image = new MagickImage(fileName))
+                {
+                    image.Write(newFileName);
+
+                    if (Config.Send_Rendered_To_Discord)
+                        discordBridge!.SendImage(newFileName, $"> A render of the map with an id: **{map.MapId}**");
+
+                    if (Config.Send_Rendered_To_Telegram)
+                        telegramBridge!.SendImage(newFileName, $"A render of the map with an id: *{map.MapId}*");
+
+                    newFileName = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + newFileName;
+
+                    if (Config.Send_Rendered_To_Discord)
+                        LogToConsole(Translations.TryGet("bot.map.sent_to_discord", map.MapId));
+
+                    if (Config.Send_Rendered_To_Telegram)
+                        LogToConsole(Translations.TryGet("bot.map.sent_to_telegram", map.MapId));
+
+                    // Wait for 2 seconds and then try until file is free for deletion
+                    // 10 seconds timeout
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(2000);
+
+                        var time = Stopwatch.StartNew();
+
+                        while (time.ElapsedMilliseconds < 10000) // 10 seconds
+                        {
+                            try
+                            {
+                                // Delete the temporary file
+                                if (File.Exists(newFileName))
+                                    File.Delete(newFileName);
+                            }
+                            catch (IOException e) { }
+                        }
+                    });
+                }
+            }
         }
 
         private void RenderInConsole(McMap map)
@@ -389,8 +507,8 @@ namespace MinecraftClient.ChatBots
 
             return new(
                 r: (byte)((Colors[baseColorId][0] * shadeMultiplier) / 255),
-                g: (byte)((Colors[baseColorId][1] * shadeMultiplier) / 255), 
-                b: (byte)((Colors[baseColorId][2] * shadeMultiplier) / 255), 
+                g: (byte)((Colors[baseColorId][1] * shadeMultiplier) / 255),
+                b: (byte)((Colors[baseColorId][2] * shadeMultiplier) / 255),
                 a: 255
             );
         }

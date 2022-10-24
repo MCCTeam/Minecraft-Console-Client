@@ -264,6 +264,7 @@ namespace MinecraftClient
             if (Config.ChatBot.AutoRelog.Enabled) { BotLoad(new AutoRelog()); }
             if (Config.ChatBot.AutoRespond.Enabled) { BotLoad(new AutoRespond()); }
             if (Config.ChatBot.ChatLog.Enabled) { BotLoad(new ChatLog()); }
+            if (Config.ChatBot.DiscordBridge.Enabled) { BotLoad(new DiscordBridge()); }
             if (Config.ChatBot.Farmer.Enabled) { BotLoad(new Farmer()); }
             if (Config.ChatBot.FollowPlayer.Enabled) { BotLoad(new FollowPlayer()); }
             if (Config.ChatBot.HangmanGame.Enabled) { BotLoad(new HangmanGame()); }
@@ -273,7 +274,9 @@ namespace MinecraftClient
             if (Config.ChatBot.RemoteControl.Enabled) { BotLoad(new RemoteControl()); }
             if (Config.ChatBot.ReplayCapture.Enabled && reload) { BotLoad(new ReplayCapture()); }
             if (Config.ChatBot.ScriptScheduler.Enabled) { BotLoad(new ScriptScheduler()); }
+            if (Config.ChatBot.TelegramBridge.Enabled) { BotLoad(new TelegramBridge()); }
             if (Config.ChatBot.WebSocketBot.Enabled) { BotLoad(new WebSocketBot()); }
+            
             //Add your ChatBot here by uncommenting and adapting
             //BotLoad(new ChatBots.YourBot());
         }
