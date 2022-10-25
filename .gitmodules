@@ -2,6 +2,3 @@
 	path = ConsoleInteractive
 	url = https://github.com/breadbyte/ConsoleInteractive
 	branch = main
-[submodule "websocket-sharp"]
-	path = websocket-sharp
-	url = https://github.com/sta/websocket-sharp.git
