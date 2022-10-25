@@ -304,7 +304,7 @@ namespace MinecraftClient {
         ///mcc.password=Password: 
         ///mcc.password_basic_io=Please type the password for {0}.
         ///mcc.password_hidden=Password(invisible): {0}
-        ///mcc.off [rest of string was truncated]&quot;;.
+        ///mcc.offline=§8You  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Translation_en {
             get {
@@ -353,6 +353,26 @@ namespace MinecraftClient {
         internal static string Translation_ru {
             get {
                 return ResourceManager.GetString("Translation_ru", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [mcc]
+        ///# Messages from MCC itself
+        ///mcc.help_us_translate=MCCyi çevirmemize yardımcı olun: {0}
+        ///mcc.run_with_default_settings=\nMCC varsayılan ayarlarla çalışıyor.
+        ///mcc.settings_generated=§cAyarlar dosyası MinecraftClient.ini oluşturuldu.
+        ///mcc.has_update=§eMCCnin yeni sürümü mevcut: {0}
+        ///mcc.login=Login :
+        ///mcc.login_basic_io=Lütfen tercih ettiğiniz kullanıcı adını veya e-posta adresini yazın.
+        ///mcc.password=Password :
+        ///mcc.password_basic_io=Lütfen {0} için şifreyi yazın.
+        ///mcc.password_hidden=Password : {0}
+        ///m [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Translation_tr {
+            get {
+                return ResourceManager.GetString("Translation_tr", resourceCulture);
             }
         }
         
