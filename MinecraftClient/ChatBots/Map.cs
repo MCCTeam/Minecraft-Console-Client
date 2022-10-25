@@ -313,7 +313,7 @@ namespace MinecraftClient.ChatBots
                                 if (File.Exists(newFileName))
                                     File.Delete(newFileName);
                             }
-                            catch (IOException) { }
+                            catch (IOException e) { }
                         }
                     });
                 }
