@@ -1170,13 +1170,6 @@ namespace MinecraftClient
                     get { return ChatBots.TelegramBridge.Config; }
                     set { ChatBots.TelegramBridge.Config = value; ChatBots.TelegramBridge.Config.OnSettingUpdate(); }
                 }
-                
-                [TomlPrecedingComment("$config.ChatBot.WebSocketBot$")]
-                public ChatBots.WebSocketBot.Configs WebSocketBot
-                {
-                    get { return ChatBots.WebSocketBot.Config!; }
-                    set { ChatBots.WebSocketBot.Config = value; }
-                }
             }
         }
 
