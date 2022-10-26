@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Brigadier.NET;
 using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Commands
@@ -9,6 +10,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "enchant"; } }
         public override string CmdUsage { get { return "enchant <top|middle|bottom>"; } }
         public override string CmdDesc { get { return "cmd.enchant.desc"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

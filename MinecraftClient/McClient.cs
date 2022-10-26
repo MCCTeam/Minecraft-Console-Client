@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Security.Cryptography.Pkcs;
 using System.Text;
 using System.Threading;
+using Brigadier.NET;
+using Brigadier.NET.Exceptions;
 using MinecraftClient.ChatBots;
+using MinecraftClient.Commands;
 using MinecraftClient.Inventory;
 using MinecraftClient.Logger;
 using MinecraftClient.Mapping;
@@ -25,8 +29,10 @@ namespace MinecraftClient
     {
         public static int ReconnectionAttemptsLeft = 0;
 
-        private static readonly List<string> cmd_names = new();
-        private static readonly Dictionary<string, Command> cmds = new();
+        public static readonly CommandSource cmd_source = new();
+        public static readonly CommandDispatcher<CommandSource> dispatcher = new();
+        //private static readonly List<string> cmd_names = new();
+        //private static readonly Dictionary<string, Command> cmds = new();
         private readonly Dictionary<Guid, PlayerInfo> onlinePlayers = new();
 
         private static bool commandsLoaded = false;
@@ -584,17 +590,18 @@ namespace MinecraftClient
         /// <returns>True if successfully registered</returns>
         public bool RegisterCommand(string cmdName, string cmdDesc, string cmdUsage, ChatBot.CommandRunner callback)
         {
-            if (cmds.ContainsKey(cmdName.ToLower()))
-            {
-                return false;
-            }
-            else
-            {
-                Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
-                cmds.Add(cmdName.ToLower(), cmd);
-                cmd_names.Add(cmdName.ToLower());
-                return true;
-            }
+            //    if (cmds.ContainsKey(cmdName.ToLower()))
+            //    {
+            //        return false;
+            //    }
+            //    else
+            //    {
+            //        Command cmd = new ChatBot.ChatBotCommand(cmdName, cmdDesc, cmdUsage, callback);
+            //        cmds.Add(cmdName.ToLower(), cmd);
+            //        cmd_names.Add(cmdName.ToLower());
+            //        return true;
+            //    }
+            return true;
         }
 
         /// <summary>
@@ -608,13 +615,14 @@ namespace MinecraftClient
         /// <returns></returns>
         public bool UnregisterCommand(string cmdName)
         {
-            if (cmds.ContainsKey(cmdName.ToLower()))
-            {
-                cmds.Remove(cmdName.ToLower());
-                cmd_names.Remove(cmdName.ToLower());
-                return true;
-            }
-            else return false;
+            //    if (cmds.ContainsKey(cmdName.ToLower()))
+            //    {
+            //        cmds.Remove(cmdName.ToLower());
+            //        cmd_names.Remove(cmdName.ToLower());
+            //        return true;
+            //    }
+            //    else return false;
+            return true;
         }
 
         /// <summary>
@@ -627,52 +635,79 @@ namespace MinecraftClient
         public bool PerformInternalCommand(string command, ref string? response_msg, Dictionary<string, object>? localVars = null)
         {
             /* Process the provided command */
-
-            string command_name = command.Split(' ')[0].ToLower();
-            if (command_name == "help")
+            ParseResults<CommandSource> parse;
+            try
             {
-                if (Command.HasArg(command))
-                {
-                    string help_cmdname = Command.GetArgs(command)[0].ToLower();
-                    if (help_cmdname == "help")
-                    {
-                        response_msg = Translations.Get("icmd.help");
-                    }
-                    else if (cmds.ContainsKey(help_cmdname))
-                    {
-                        response_msg = cmds[help_cmdname].GetCmdDescTranslated();
-                    }
-                    else response_msg = Translations.Get("icmd.unknown", command_name);
-                }
-                else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Config.Main.Advanced.InternalCmdChar.ToChar());
+               parse = dispatcher.Parse(command, cmd_source);
             }
-            else if (cmds.ContainsKey(command_name))
+            catch (Exception e)
             {
-                response_msg = cmds[command_name].Run(this, command, localVars);
-
-                foreach (ChatBot bot in bots.ToArray())
-                {
-                    try
-                    {
-                        bot.OnInternalCommand(command_name, string.Join(" ", Command.GetArgs(command)), response_msg);
-                    }
-                    catch (Exception e)
-                    {
-                        if (e is not ThreadAbortException)
-                        {
-                            Log.Warn(Translations.Get("icmd.error", bot.ToString() ?? string.Empty, e.ToString()));
-                        }
-                        else throw; //ThreadAbortException should not be caught
-                    }
-                }
-            }
-            else
-            {
-                response_msg = Translations.Get("icmd.unknown", command_name);
-                return false;
+                Log.Error(e.GetFullMessage());
+                return true;
             }
 
-            return true;
+            try
+            {
+                int res = dispatcher.Execute(parse);
+                Log.Info("res = " + res);
+                return true;
+            }
+            catch (CommandSyntaxException e)
+            {
+                Log.Warn(e.GetFullMessage());
+                return true;
+            }
+            catch (Exception e)
+            {
+                Log.Error(e.GetFullMessage());
+                return true;
+            }
+
+            //string command_name = command.Split(' ')[0].ToLower();
+            //if (command_name == "help")
+            //{
+            //    if (Command.HasArg(command))
+            //    {
+            //        string help_cmdname = Command.GetArgs(command)[0].ToLower();
+            //        if (help_cmdname == "help")
+            //        {
+            //            response_msg = Translations.Get("icmd.help");
+            //        }
+            //        else if (cmds.ContainsKey(help_cmdname))
+            //        {
+            //            response_msg = cmds[help_cmdname].GetCmdDescTranslated();
+            //        }
+            //        else response_msg = Translations.Get("icmd.unknown", command_name);
+            //    }
+            //    else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Config.Main.Advanced.InternalCmdChar.ToChar());
+            //}
+            //else if (cmds.ContainsKey(command_name))
+            //{
+            //    response_msg = cmds[command_name].Run(this, command, localVars);
+
+            //    foreach (ChatBot bot in bots.ToArray())
+            //    {
+            //        try
+            //        {
+            //            bot.OnInternalCommand(command_name, string.Join(" ", Command.GetArgs(command)), response_msg);
+            //        }
+            //        catch (Exception e)
+            //        {
+            //            if (e is not ThreadAbortException)
+            //            {
+            //                Log.Warn(Translations.Get("icmd.error", bot.ToString() ?? string.Empty, e.ToString()));
+            //            }
+            //            else throw; //ThreadAbortException should not be caught
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    response_msg = Translations.Get("icmd.unknown", command_name);
+            //    return false;
+            //}
+
+            //return true;
         }
 
         public void LoadCommands()
@@ -689,10 +724,11 @@ namespace MinecraftClient
                         try
                         {
                             Command cmd = (Command)Activator.CreateInstance(type)!;
-                            cmds[Settings.ToLowerIfNeed(cmd.CmdName)] = cmd;
-                            cmd_names.Add(Settings.ToLowerIfNeed(cmd.CmdName));
-                            foreach (string alias in cmd.GetCMDAliases())
-                                cmds[Settings.ToLowerIfNeed(alias)] = cmd;
+                            cmd.RegisterCommand(this, dispatcher);
+                            //        cmds[Settings.ToLowerIfNeed(cmd.CmdName)] = cmd;
+                            //        cmd_names.Add(Settings.ToLowerIfNeed(cmd.CmdName));
+                            //        foreach (string alias in cmd.GetCMDAliases())
+                            //            cmds[Settings.ToLowerIfNeed(alias)] = cmd;
                         }
                         catch (Exception e)
                         {

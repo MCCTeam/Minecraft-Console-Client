@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Brigadier.NET;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
@@ -12,6 +13,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "bed"; } }
         public override string CmdUsage { get { return "bed leave|sleep <x> <y> <z>|sleep <radius>"; } }
         public override string CmdDesc { get { return "cmd.bed.desc"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

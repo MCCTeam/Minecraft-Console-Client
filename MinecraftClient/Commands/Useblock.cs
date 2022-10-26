@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Brigadier.NET;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
@@ -8,6 +9,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "useblock"; } }
         public override string CmdUsage { get { return "useblock <x> <y> <z>"; } }
         public override string CmdDesc { get { return "cmd.useblock.desc"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

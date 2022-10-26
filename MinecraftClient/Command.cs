@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Brigadier.NET;
+using Microsoft.Extensions.Logging;
+using MinecraftClient.Commands;
 
 namespace MinecraftClient
 {
@@ -22,6 +25,8 @@ namespace MinecraftClient
         /// </summary>
         public abstract string CmdDesc { get; }
 
+        public abstract void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher);
+
         /// <summary>
         /// Get the translated version of command description.
         /// </summary>
@@ -30,6 +35,24 @@ namespace MinecraftClient
         {
             string s = string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc) ? "" : ": "; // If either one is empty, no colon :
             return CmdUsage + s + Translations.TryGet(CmdDesc);
+        }
+
+        public void LogUsage(Logger.ILogger logger)
+        {
+            logger.Info($"{Translations.Get("error.usage")}: {Settings.Config.Main.Advanced.InternalCmdChar.ToChar()}{CmdUsage}");
+        }
+
+
+        public static int LogExecuteResult(Logger.ILogger logger, bool result)
+        {
+            logger.Info(Translations.Get(result ? "general.done" : "general.fail"));
+            return result ? 1 : 0;
+        }
+
+        public static int LogExecuteResult(Logger.ILogger logger, int result)
+        {
+            logger.Info(Translations.Get(result > 0 ? "general.done" : "general.fail"));
+            return result;
         }
 
         /// <summary>

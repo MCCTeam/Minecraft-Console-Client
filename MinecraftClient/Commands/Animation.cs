@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Brigadier.NET;
+using Brigadier.NET.Builder;
 
 namespace MinecraftClient.Commands
 {
@@ -7,6 +10,48 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "animation"; } }
         public override string CmdUsage { get { return "animation <mainhand|offhand>"; } }
         public override string CmdDesc { get { return "cmd.animation.desc"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+            dispatcher.Register(l =>
+                l.Literal("help").Then(l =>
+                    l.Literal(CmdName).Executes(c => {
+                        LogUsage(handler.Log);
+                        return 1;
+                    })
+                )
+            );
+
+            dispatcher.Register(l =>
+                l.Literal(CmdName).Then(l =>
+                    l.Literal("mainhand")
+                        .Executes(c => {
+                            return LogExecuteResult(handler.Log, handler.DoAnimation(0));
+                        })
+                )
+            );
+            dispatcher.Register(l =>
+                l.Literal(CmdName).Then(l =>
+                    l.Literal("0") 
+                        .Redirect(dispatcher.GetRoot().GetChild(CmdName).GetChild("mainhand"))
+                )
+            );
+
+            dispatcher.Register(l =>
+                l.Literal(CmdName).Then(l =>
+                    l.Literal("offhand")
+                        .Executes(c => {
+                            return LogExecuteResult(handler.Log, handler.DoAnimation(1));
+                        })
+                )
+            );
+            dispatcher.Register(l =>
+                l.Literal(CmdName).Then(l =>
+                    l.Literal("1")
+                        .Redirect(dispatcher.GetRoot().GetChild(CmdName).GetChild("offhand"))
+                )
+            );
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

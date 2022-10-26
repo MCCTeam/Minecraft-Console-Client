@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Brigadier.NET;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
@@ -10,6 +11,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "move"; } }
         public override string CmdUsage { get { return "move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]"; } }
         public override string CmdDesc { get { return "walk or start walking. \"-f\": force unsafe movements like falling or touching fire"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

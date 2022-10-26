@@ -2082,6 +2082,13 @@ namespace MinecraftClient.Protocol.Handlers
         /// <returns>Completed text</returns>
         IEnumerable<string> IAutoComplete.AutoComplete(string BehindCursor)
         {
+            var sug = McClient.dispatcher.GetCompletionSuggestions(McClient.dispatcher.Parse(BehindCursor[1..], McClient.cmd_source));
+            sug.Wait();
+            foreach (var hint in sug.Result.List)
+            {
+                log.Info(hint);
+            }
+            //log.Info(McClient.dispatcher.GetSmartUsage(McClient.dispatcher.Parse(BehindCursor, McClient.cmd_source), McClient.cmd_source));
 
             if (String.IsNullOrEmpty(BehindCursor))
                 return Array.Empty<string>();
