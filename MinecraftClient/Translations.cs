@@ -484,6 +484,7 @@ namespace MinecraftClient
                 case "tr":
                 case "tr-TR":
                     gameLanguage = "tr_tr";
+                    name.Add("tr");
                     break;
                 case "tt":
                 case "tt-RU":
@@ -563,6 +564,9 @@ namespace MinecraftClient
                     break;
                 case "ru_ru":
                     name.Add("ru");
+                    break;
+                case "tr_tr":
+                    name.Add("tr");
                     break;
                 case "vi_vn":
                     name.Add("vi");
@@ -659,7 +663,7 @@ namespace MinecraftClient
             string[] transEn = DefaultConfigResource.ResourceManager.GetString("Translation_en")!
                 .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
-            foreach (string lang in new string[] { "de", "fr", "ru", "vi", "zh-Hans", "zh-Hant" })
+            foreach (string lang in new string[] { "de", "fr", "ru", "tr", "vi", "zh-Hans", "zh-Hant" })
             {
                 Dictionary<string, string> trans = ParseTranslationContent(
                     DefaultConfigResource.ResourceManager.GetString("Translation_" + lang.Replace('-', '_'), System.Globalization.CultureInfo.InvariantCulture)!
