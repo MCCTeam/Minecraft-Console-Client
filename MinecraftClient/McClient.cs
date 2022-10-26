@@ -2878,6 +2878,19 @@ namespace MinecraftClient
             DispatchBotEvent(bot => bot.OnPlayerLeave(uuid, username));
         }
 
+        // <summary>
+        /// This method is called when a player has been killed by another entity
+        /// </summary>
+        /// <param name="playerEntity">Victim's entity</param>
+        /// <param name="killerEntity">Killer's entity</param>
+        public void OnPlayerKilled(int killerEntityId, string chatMessage)
+        {
+            if (!entities.ContainsKey(killerEntityId))
+                return;
+
+            DispatchBotEvent(bot => bot.OnKilled(entities[killerEntityId], chatMessage));
+        }
+
         /// <summary>
         /// Called when a plugin channel message was sent from the server.
         /// </summary>

@@ -160,6 +160,13 @@ namespace MinecraftClient.Protocol
         void OnPlayerLeave(Guid uuid);
 
         /// <summary>
+        /// This method is called when a player has been killed by another entity
+        /// </summary>
+        /// <param name="killerEntityId">Killer's entity if</param>
+        /// <param name="chatMessage">message sent in chat when player is killed</param>
+        void OnPlayerKilled(int killerEntityId, string chatMessage);
+
+        /// <summary>
         /// Called when the server sets the new location for the player
         /// </summary>
         /// <param name="location">New location of the player</param>
