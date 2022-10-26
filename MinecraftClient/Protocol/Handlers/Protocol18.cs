@@ -597,6 +597,33 @@ namespace MinecraftClient.Protocol.Handlers
                                 handler.OnTextReceived(chat);
                             }
                             break;
+                        case PacketTypesIn.CombatEvent:
+                            // 1.8 - 1.16.5
+                            if (protocolVersion >= MC_1_8_Version && protocolVersion <= MC_1_16_5_Version)
+                            {
+                                CombatEventType eventType = (CombatEventType)dataTypes.ReadNextVarInt(packetData);
+
+                                if (eventType == CombatEventType.EntityDead)
+                                {
+                                    dataTypes.SkipNextVarInt(packetData);
+
+                                    handler.OnPlayerKilled(
+                                        dataTypes.ReadNextInt(packetData),
+                                        ChatParser.ParseText(dataTypes.ReadNextString(packetData))
+                                    );
+                                }
+                            }
+
+                            break;
+                        case PacketTypesIn.DeathCombatEvent:
+                            dataTypes.SkipNextVarInt(packetData);
+
+                            handler.OnPlayerKilled(
+                                dataTypes.ReadNextInt(packetData),
+                                ChatParser.ParseText(dataTypes.ReadNextString(packetData))
+                            );
+
+                            break;
                         case PacketTypesIn.MessageHeader:
                             if (protocolVersion >= MC_1_19_2_Version)
                             {
