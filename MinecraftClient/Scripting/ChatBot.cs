@@ -417,7 +417,15 @@ namespace MinecraftClient
         public virtual void OnPlayerLeave(Guid uuid, string? name) { }
 
         /// <summary>
-        /// Called when the player deaths
+        /// This method is called when a player has been killed by another entity
+        /// </summary>
+        /// <param name="killerEntity">Killer's entity</param>
+        /// <param name="chatMessage">message sent in chat when player is killed</param>
+        public virtual void OnKilled(Entity killerEntity, string chatMessage) { }
+
+        /// <summary>
+        /// Called when the player dies
+        /// For getting the info about the player/entity who killed the player use OnPlayerKilled
         /// </summary>
         public virtual void OnDeath() { }
 
