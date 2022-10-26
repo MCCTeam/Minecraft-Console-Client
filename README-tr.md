@@ -43,6 +43,8 @@ Biz küçük bir topluluğuz, bu nedenle yeni Minecraft sürümleri için yükse
 
 Minecraft Console Client için katkıda bulunmak istiyorsanız, harika, _Master_ bölümünü forklayın ve katkıda bulunduğunz yeri pull request ile gönderin. Web sitemize / çevrimiçi belgelere katkıda bulunmak için ayrıca [Website repository] kısmına bakın.
 
+![Alt](https://repobeats.axiom.co/api/embed/c8a6c7c47fde8fcbe3727a21eab46e6b39dff60d.svg "Repobeats analytics image")
+
 ## Minecraft Console Client  Çevirme 🌍
 
 Minecraft Console Client uygulamamızı farklı bir dile çevirmek istiyorsanız, lütfen çeviri dosyasını [lang klasöründen](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/Resources/lang) indirin veya forklayın. Çeviri işini bitirdikten sonra, bir pull request gönderin veya Github'a aşina değilseniz dosyayı bir [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) aracılığıyla bize gönderin.
@@ -52,14 +54,14 @@ Minecraft Console Client uygulamamızı farklı bir dile çevirmek istiyorsanız
 Çeviri dosyasının adları için lütfen [bu yoruma](https://github.com/MCCTeam/Minecraft-Console-Client/pull/1282#issuecomment-711150715) bakın.
 
 MCC artık aşağıdaki dilleri desteklemektedir (Alfabetik sıra) :
-  * `de.ini` (30.21% translated) : Deutsch - German
+  * `de.ini` : Deutsch - German
   * `en.ini` : English - English
-  * `fr.ini` (30.21% translated) : Français (France) - French
-  * `ru.ini` (29.65% translated) : Русский (Russkiy) - Russian
-  * `vi.ini` (29.65% translated) : Tiếng Việt (Việt Nam) - Vietnamese
-  * `zh-Hans.ini` (87.08% translated) : 简体中文 - Chinese Simplified
-  * `zh-Hant.ini` (87.08% translated) : 繁體中文 - Chinese Traditional
-  * `tr.ini : Türkçe - Turkish
+  * `fr.ini` : Français (France) - French
+  * `ru.ini` : Русский (Russkiy) - Russian
+  * `tr.ini` : Türkçe (Türkiye) - Turkish
+  * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
+  * `zh-Hans.ini` : 简体中文 - Chinese Simplified
+  * `zh-Hant.ini` : 繁體中文 - Chinese Traditional
 
 ## Kaynaktan Geliştirme 🏗️
 
