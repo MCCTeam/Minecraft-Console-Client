@@ -183,6 +183,7 @@ namespace MinecraftClient
                 return;
 
             var buffer = ConsoleInteractive.ConsoleReader.GetBufferContent();
+            ConsoleIO.WriteLine("AutoComplete " + buffer);
             autocomplete_engine.AutoComplete(buffer.Text[..buffer.CursorPosition]);
         }
     }

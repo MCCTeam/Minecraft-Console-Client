@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Brigadier.NET;
 
 namespace MinecraftClient.Commands
 {
@@ -9,6 +10,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "execmulti"; } }
         public override string CmdUsage { get { return "execmulti <command 1> -> <command2> -> <command 3> -> ..."; } }
         public override string CmdDesc { get { return "cmd.execmulti.desc"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

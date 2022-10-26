@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Brigadier.NET;
 
 namespace MinecraftClient.Commands
 {
@@ -8,6 +9,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "changeslot"; } }
         public override string CmdUsage { get { return "changeslot <1-9>"; } }
         public override string CmdDesc { get { return "cmd.changeSlot.desc"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

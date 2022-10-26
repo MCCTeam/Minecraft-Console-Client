@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Brigadier.NET;
 using DynamicExpresso;
 
 namespace MinecraftClient.Commands
@@ -10,6 +11,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "execif"; } }
         public override string CmdUsage { get { return "execif <condition/expression> ---> <command>"; } }
         public override string CmdDesc { get { return "cmd.execif.desc"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

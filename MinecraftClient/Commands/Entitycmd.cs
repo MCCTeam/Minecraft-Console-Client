@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Brigadier.NET;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 
@@ -12,6 +13,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "entity"; } }
         public override string CmdUsage { get { return "entity <id|entitytype> <attack|use>"; } }
         public override string CmdDesc { get { return ""; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

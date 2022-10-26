@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Brigadier.NET;
 using MinecraftClient.Inventory;
 
 namespace MinecraftClient.Commands
@@ -12,6 +13,10 @@ namespace MinecraftClient.Commands
         public override string CmdDesc { get { return "cmd.dropItem.desc"; } }
 
         public override string CmdUsage { get { return "/dropitem <itemtype>"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

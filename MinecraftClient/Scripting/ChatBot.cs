@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Brigadier.NET;
+using MinecraftClient.Commands;
 using MinecraftClient.Inventory;
 using MinecraftClient.Mapping;
 using static MinecraftClient.Settings;
@@ -1675,6 +1677,10 @@ namespace MinecraftClient
             public override string CmdName { get { return _cmdName; } }
             public override string CmdUsage { get { return _cmdUsage; } }
             public override string CmdDesc { get { return _cmdDesc; } }
+
+            public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+            {
+            }
 
             public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
             {

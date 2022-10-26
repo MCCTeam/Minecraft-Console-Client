@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Brigadier.NET;
 using MinecraftClient.Mapping;
 
 namespace MinecraftClient.Commands
@@ -10,6 +11,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "look"; } }
         public override string CmdUsage { get { return "look <x y z|yaw pitch|up|down|east|west|north|south>"; } }
         public override string CmdDesc { get { return "cmd.look.desc"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

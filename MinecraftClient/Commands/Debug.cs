@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Brigadier.NET;
 
 namespace MinecraftClient.Commands
 {
@@ -7,6 +8,10 @@ namespace MinecraftClient.Commands
         public override string CmdName { get { return "debug"; } }
         public override string CmdUsage { get { return "debug [on|off]"; } }
         public override string CmdDesc { get { return "cmd.debug.desc"; } }
+
+        public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
+        {
+        }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
