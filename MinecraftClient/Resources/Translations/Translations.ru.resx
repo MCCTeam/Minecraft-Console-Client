@@ -2188,7 +2188,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>§8Profile keys has been successfully loaded from disk.</value>
   </data>
   <data name="debug.request" xml:space="preserve">
-    <value>§8Выполнение запроса к {0}</value>
+    <value>§8Выполняем запрос к {0}</value>
   </data>
   <data name="debug.session_cache_fail" xml:space="preserve">
     <value>§8Ни одна сессия не могла быть загружена с диска</value>

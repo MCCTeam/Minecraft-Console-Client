@@ -2185,7 +2185,7 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
     <value>§8Profile keys has been successfully loaded from disk.</value>
   </data>
   <data name="debug.request" xml:space="preserve">
-    <value>§8Starte Anfrage zu {0}</value>
+    <value>§8Mache eine Anfrage zu {0}</value>
   </data>
   <data name="debug.session_cache_fail" xml:space="preserve">
     <value>§8Es konnten keine Sitzungsdaten vom Speicher geladen werden.</value>
