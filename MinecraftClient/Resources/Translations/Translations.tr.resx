@@ -1013,7 +1013,7 @@ Görüntü kafa karıştırıcıysa ayarlarda EnableEmoji=false öğesini deği�
     <value>belirtilen sunucuya bağlanın.</value>
   </data>
   <data name="cmd.connect.invalid_ip" xml:space="preserve">
-    <value>Geçersiz sunucu IPsi '{0}'.</value>
+    <value>Geçersiz sunucu adresi '{0}'.</value>
   </data>
   <data name="cmd.connect.unknown" xml:space="preserve">
     <value>Bilinmeyen hesap '{0}'.</value>
@@ -2527,7 +2527,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>Ayarlar dosyası ayrıştırılamadı, yeni bir yapılandırma oluşturmak için "{0}new" girin.</value>
   </data>
   <data name="mcc.ip" xml:space="preserve">
-    <value>Server IP :</value>
+    <value>Sunucu Adresi: </value>
   </data>
   <data name="mcc.joined" xml:space="preserve">
     <value>Sunucu başarıyla bağlandı.
@@ -2537,7 +2537,7 @@ Sunucudan çıkmak için '{0}quit' yazın.</value>
     <value>Link: {0}</value>
   </data>
   <data name="mcc.login" xml:space="preserve">
-    <value>Login :</value>
+    <value>Giriş :</value>
   </data>
   <data name="mcc.login_basic_io" xml:space="preserve">
     <value>Lütfen tercih ettiğiniz kullanıcı adını veya e-posta adresini yazın.</value>
@@ -2550,7 +2550,7 @@ Sunucudan çıkmak için '{0}quit' yazın.</value>
     <value>§8Çevrimdışı modda giriş yaptınız.</value>
   </data>
   <data name="mcc.password" xml:space="preserve">
-    <value>Password :</value>
+    <value>Şifre: </value>
   </data>
   <data name="mcc.password_basic_io" xml:space="preserve">
     <value>Lütfen {0} için şifreyi yazın.</value>
@@ -2605,7 +2605,7 @@ MCC varsayılan ayarlarla çalışıyor.</value>
     <value>§8Sunucu sürümü : {0} (protokol v{1})</value>
   </data>
   <data name="mcc.server_version" xml:space="preserve">
-    <value>Server version :</value>
+    <value>Sunucu sürümü: </value>
   </data>
   <data name="mcc.session" xml:space="preserve">
     <value>Oturum kontrol ediliyor...</value>
@@ -2620,7 +2620,7 @@ MCC varsayılan ayarlarla çalışıyor.</value>
     <value>§8Önbelleğe alınmış oturum, {0} için hala geçerlidir.</value>
   </data>
   <data name="mcc.settings_generated" xml:space="preserve">
-    <value>§cAyarlar dosyası MinecraftClient.ini oluşturuldu.</value>
+    <value>§cAyar dosyası MinecraftClient.ini oluşturuldu.</value>
   </data>
   <data name="mcc.single_cmd" xml:space="preserve">
     <value>§7Komut §8 {0} §7 gönderildi.</value>
