@@ -362,7 +362,7 @@
     <value>auto-fishing durdurur.</value>
   </data>
   <data name="bot.autoFish.switch" xml:space="preserve">
-    <value>{0} slotunda ki çubuğa geçin, dayanıklılık {1}/64.</value>
+    <value>{0} slotunda ki oltaya geçin, dayanıklılık {1}/64.</value>
   </data>
   <data name="bot.autoFish.throw" xml:space="preserve">
     <value>Başarılı bir şekilde döküm.</value>
@@ -458,7 +458,7 @@ cooldown: {6}</value>
     <value>Discord Bridge yönü '{0}' olarak değiştirildi!</value>
   </data>
   <data name="bot.DiscordBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>İkisi de</value>
   </data>
   <data name="bot.DiscordBridge.direction.discord" xml:space="preserve">
     <value>Discord</value>
@@ -712,7 +712,7 @@ cooldown: {6}</value>
     <value>Telegram Köprüsünün yönü '{0}' olarak değiştirildi!</value>
   </data>
   <data name="bot.TelegramBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>İkisi de</value>
   </data>
   <data name="bot.TelegramBridge.direction.minecraft" xml:space="preserve">
     <value>Minecraft</value>
@@ -1001,7 +1001,7 @@ Görüntü kafa karıştırıcıysa ayarlarda EnableEmoji=false öğesini deği�
     <value>§x§0Bu komut hata ayıklamak için kullanılır, ne yaptığınızı bildiğinizden emin olun.§r</value>
   </data>
   <data name="cmd.chunk.icon" xml:space="preserve">
-    <value>Player:{0}, MarkedChunk:{1}, NotReceived:{2}, Loading:{3}, Loaded:{4}</value>
+    <value>Oyuncu:{0}, Aktif Chunk:{1}, Alınamayan:{2}, Yükleniyor:{3}, Yüklenmiş:{4}</value>
   </data>
   <data name="cmd.chunk.marked" xml:space="preserve">
     <value>İşaretli konum:</value>
@@ -1675,7 +1675,7 @@ Botu manuel olarak kontrol etmek için "/fish" kullanabilirsiniz.
     <value>Başarılı bir balık avından sonra ne kadar sürede yeniden döküm yapılır.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Durability_Limit" xml:space="preserve">
-    <value>Bundan daha az dayanıklılığa sahip çubuklar kullanmaz (tam dayanıklılık 64tür). Bu özelliği devre dışı bırakmak için sıfıra ayarlayın.</value>
+    <value>Bundan daha az dayanıklılığa sahip oltalar kullanılmaz (tam dayanıklılık 64tür). Bu özelliği devre dışı bırakmak için sıfıra ayarlayın.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Enable_Move" xml:space="preserve">
     <value>Bu, oyuncunun yakalanan her balıktan sonra pozisyonunu/yüzünü değiştirmesini sağlar.</value>
@@ -2649,7 +2649,7 @@ Giriş yapılıyor...</value>
     <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
   </data>
   <data name="exception.palette.healthfield" xml:space="preserve">
-    <value>Please update health field handling for this Minecraft version.</value>
+    <value>Lütfen bu Minecraft sürümü için sağlık alanı işlemeyi güncelleyin.</value>
   </data>
   <data name="bot.DiscordBridge.disconnected" xml:space="preserve">
     <value>Successfully disconnected with MCC!</value>
