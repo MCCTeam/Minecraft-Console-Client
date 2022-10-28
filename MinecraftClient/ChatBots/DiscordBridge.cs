@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Resources;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -94,13 +95,13 @@ namespace MinecraftClient.ChatBots
                     if (discordChannel != null)
                         discordBotClient.SendMessageAsync(discordChannel, new DiscordEmbedBuilder
                         {
-                            Description = Translations.TryGet("bot.DiscordBridge.disconnected"),
+                            Description = Translations.bot_DiscordBridge_disconnected,
                             Color = new DiscordColor(0xFF0000)
                         }).Wait(Config.Message_Send_Timeout * 1000);
                 }
                 catch (Exception e)
                 {
-                    LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                    LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                     LogDebugToConsole(e);
                 }
 
@@ -122,34 +123,33 @@ namespace MinecraftClient.ChatBots
                 {
                     string direction = args[1].ToLower().Trim();
 
-                    string? bridgeName = "";
-
+                    string bridgeName;
                     switch (direction)
                     {
                         case "b":
                         case "both":
-                            bridgeName = "bot.DiscordBridge.direction.both";
+                            bridgeName = Translations.bot_DiscordBridge_direction_both;
                             bridgeDirection = BridgeDirection.Both;
                             break;
 
                         case "mc":
                         case "minecraft":
-                            bridgeName = "bot.DiscordBridge.direction.minecraft";
+                            bridgeName = Translations.bot_DiscordBridge_direction_minecraft;
                             bridgeDirection = BridgeDirection.Minecraft;
                             break;
 
                         case "d":
                         case "dcs":
                         case "discord":
-                            bridgeName = "bot.DiscordBridge.direction.discord";
+                            bridgeName = Translations.bot_DiscordBridge_direction_discord;
                             bridgeDirection = BridgeDirection.Discord;
                             break;
 
                         default:
-                            return Translations.TryGet("bot.DiscordBridge.invalid_direction");
+                            return Translations.bot_DiscordBridge_invalid_direction;
                     }
 
-                    return Translations.TryGet("bot.DiscordBridge.direction", Translations.TryGet(bridgeName));
+                    return string.Format(Translations.bot_DiscordBridge_direction, bridgeName);
                 };
             }
 
@@ -212,7 +212,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -228,7 +228,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -244,7 +244,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -270,7 +270,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.canceled_sending"));
+                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -294,7 +294,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (string.IsNullOrEmpty(Config.Token.Trim()))
                 {
-                    LogToConsole(Translations.TryGet("bot.DiscordBridge.missing_token"));
+                    LogToConsole(Translations.bot_DiscordBridge_missing_token);
                     UnloadBot();
                     return;
                 }
@@ -317,7 +317,7 @@ namespace MinecraftClient.ChatBots
                 {
                     if (e is NotFoundException)
                     {
-                        LogToConsole(Translations.TryGet("bot.DiscordBridge.guild_not_found", Config.GuildId));
+                        LogToConsole(string.Format(Translations.bot_DiscordBridge_guild_not_found, Config.GuildId));
                         UnloadBot();
                         return;
                     }
@@ -334,7 +334,7 @@ namespace MinecraftClient.ChatBots
                 {
                     if (e is NotFoundException)
                     {
-                        LogToConsole(Translations.TryGet("bot.DiscordBridge.channel_not_found", Config.ChannelId));
+                        LogToConsole(string.Format(Translations.bot_DiscordBridge_channel_not_found, Config.ChannelId));
                         UnloadBot();
                         return;
                     }
@@ -376,7 +376,7 @@ namespace MinecraftClient.ChatBots
 
                         await e.Message.DeleteOwnReactionAsync(DiscordEmoji.FromName(discordBotClient, ":gear:"));
                         await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discordBotClient, ":white_check_mark:"));
-                        await e.Message.RespondAsync($"{Translations.TryGet("bot.DiscordBridge.command_executed")}:\n```{result}```");
+                        await e.Message.RespondAsync($"{Translations.bot_DiscordBridge_command_executed}:\n```{result}```");
                     }
                     else SendText(message);
                 };
@@ -395,17 +395,17 @@ namespace MinecraftClient.ChatBots
 
                 await discordBotClient.SendMessageAsync(discordChannel, new DiscordEmbedBuilder
                 {
-                    Description = Translations.TryGet("bot.DiscordBridge.connected"),
+                    Description = Translations.bot_DiscordBridge_connected,
                     Color = new DiscordColor(0x00FF00)
                 });
 
                 IsConnected = true;
-                LogToConsole("§y§l§f" + Translations.TryGet("bot.DiscordBridge.connected"));
+                LogToConsole("§y§l§f" + Translations.bot_DiscordBridge_connected);
                 await Task.Delay(-1);
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.TryGet("bot.DiscordBridge.unknown_error"));
+                LogToConsole("§w§l§f" + Translations.bot_DiscordBridge_unknown_error);
                 LogToConsole(e);
                 return;
             }

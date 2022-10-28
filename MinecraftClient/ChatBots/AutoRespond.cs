@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
 using Tomlet.Attributes;
@@ -37,8 +38,8 @@ namespace MinecraftClient.ChatBots
 
                 if (!File.Exists(Matches_File))
                 {
-                    LogToConsole(BotName, Translations.TryGet("bot.autoRespond.file_not_found", Path.GetFullPath(Matches_File)));
-                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    LogToConsole(BotName, string.Format(Translations.bot_autoRespond_file_not_found, Path.GetFullPath(Matches_File)));
+                    LogToConsole(BotName, Translations.general_bot_unload);
                     Enabled = false;
                 }
             }
@@ -167,8 +168,8 @@ namespace MinecraftClient.ChatBots
             /// <returns></returns>
             public override string ToString()
             {
-                return Translations.Get(
-                    "bot.autoRespond.match",
+                return string.Format(
+                    Translations.bot_autoRespond_match,
                     match,
                     regex,
                     actionPublic,
@@ -196,7 +197,7 @@ namespace MinecraftClient.ChatBots
                 TimeSpan cooldown = TimeSpan.Zero;
                 respondRules = new List<RespondRule>();
 
-                LogDebugToConsoleTranslated("bot.autoRespond.loading", System.IO.Path.GetFullPath(Config.Matches_File));
+                LogDebugToConsole(string.Format(Translations.bot_autoRespond_loading, System.IO.Path.GetFullPath(Config.Matches_File)));
 
                 foreach (string lineRAW in File.ReadAllLines(Config.Matches_File, Encoding.UTF8))
                 {
@@ -243,7 +244,7 @@ namespace MinecraftClient.ChatBots
             }
             else
             {
-                LogToConsoleTranslated("bot.autoRespond.file_not_found", System.IO.Path.GetFullPath(Config.Matches_File));
+                LogToConsole(string.Format(Translations.bot_autoRespond_file_not_found, System.IO.Path.GetFullPath(Config.Matches_File)));
                 UnloadBot(); //No need to keep the bot active
             }
         }
@@ -270,11 +271,11 @@ namespace MinecraftClient.ChatBots
                     if (matchRegex != null || matchString != null)
                     {
                         respondRules!.Add(rule);
-                        LogDebugToConsoleTranslated("bot.autoRespond.loaded_match", rule);
+                        LogDebugToConsole(string.Format(Translations.bot_autoRespond_loaded_match, rule));
                     }
-                    else LogDebugToConsoleTranslated("bot.autoRespond.no_trigger", rule);
+                    else LogDebugToConsole(string.Format(Translations.bot_autoRespond_no_trigger, rule));
                 }
-                else LogDebugToConsoleTranslated("bot.autoRespond.no_action", rule);
+                else LogDebugToConsole(string.Format(Translations.bot_autoRespond_no_action, rule));
             }
         }
 
@@ -307,7 +308,7 @@ namespace MinecraftClient.ChatBots
                     if (!String.IsNullOrEmpty(toPerform))
                     {
                         string? response = null;
-                        LogToConsoleTranslated("bot.autoRespond.match_run", toPerform);
+                        LogToConsole(string.Format(Translations.bot_autoRespond_match_run, toPerform));
                         PerformInternalCommand(toPerform, ref response, localVars);
                         if (!String.IsNullOrEmpty(response))
                             LogToConsole(response);

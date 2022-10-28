@@ -43,19 +43,19 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (Handler.GetTerrainEnabled())
             {
-                Translations.WriteLineFormatted("extra.terrainandmovement_disabled");
+                ConsoleIO.WriteLineFormatted(Translations.extra_terrainandmovement_disabled, acceptnewlines: true);
                 Handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled())
             {
-                Translations.WriteLineFormatted("extra.inventory_disabled");
+                ConsoleIO.WriteLineFormatted(Translations.extra_inventory_disabled, acceptnewlines: true);
                 handler.SetInventoryEnabled(false);
             }
 
             if (handler.GetEntityHandlingEnabled())
             {
-                Translations.WriteLineFormatted("extra.entity_disabled");
+                ConsoleIO.WriteLineFormatted(Translations.extra_entity_disabled, acceptnewlines: true);
                 handler.SetEntityHandlingEnabled(false);
             }
         }
@@ -184,7 +184,7 @@ namespace MinecraftClient.Protocol.Handlers
                 case 0x84: ReadData(11); nbr = ReadNextShort(); if (nbr > 0) { ReadData(nbr); } break;
                 case 0x85: if (protocolversion >= 74) { ReadData(13); } break;
                 case 0xC8:
-                    if (ReadNextInt() == 2022) { Translations.WriteLogLine("mcc.player_dead"); }
+                    if (ReadNextInt() == 2022) { ConsoleIO.WriteLogLine(Translations.mcc_player_dead, acceptnewlines: true); }
                     if (protocolversion >= 72) { ReadData(4); } else ReadData(1);
                     break;
                 case 0xC9:
@@ -494,15 +494,15 @@ namespace MinecraftClient.Protocol.Handlers
                 byte[] token = ReadNextByteArray();
 
                 if (serverID == "-")
-                    Translations.WriteLineFormatted("mcc.server_offline");
+                    ConsoleIO.WriteLineFormatted(Translations.mcc_server_offline, acceptnewlines: true);
                 else if (Settings.Config.Logging.DebugMessages)
-                    ConsoleIO.WriteLineFormatted(Translations.Get("mcc.handshake", serverID));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_handshake, serverID));
 
                 return StartEncryption(uuid, username, sessionID, token, serverID, PublicServerkey, session);
             }
             else
             {
-                Translations.WriteLineFormatted("error.invalid_response");
+                ConsoleIO.WriteLineFormatted(Translations.error_invalid_response, acceptnewlines: true);
                 return false;
             }
         }
@@ -513,11 +513,11 @@ namespace MinecraftClient.Protocol.Handlers
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
             if (Settings.Config.Logging.DebugMessages)
-                Translations.WriteLineFormatted("debug.crypto");
+                ConsoleIO.WriteLineFormatted(Translations.debug_crypto, acceptnewlines: true);
 
             if (serverIDhash != "-")
             {
-                Translations.WriteLine("mcc.session");
+                ConsoleIO.WriteLine(Translations.mcc_session);
                 string serverHash = CryptoHandler.GetServerHash(serverIDhash, serverPublicKey, secretKey);
 
                 bool needCheckSession = true;
@@ -539,7 +539,7 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                     else
                     {
-                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.mcc_session_fail);
                         return false;
                     }
                 }
@@ -578,7 +578,7 @@ namespace MinecraftClient.Protocol.Handlers
             }
             else
             {
-                Translations.WriteLineFormatted("error.invalid_encrypt");
+                ConsoleIO.WriteLineFormatted(Translations.error_invalid_encrypt, acceptnewlines: true);
                 return false;
             }
         }
@@ -891,7 +891,7 @@ namespace MinecraftClient.Protocol.Handlers
                         version = "B1.8.1 - 1.3.2";
                     }
 
-                    ConsoleIO.WriteLineFormatted(Translations.Get("mcc.use_version", version, protocolversion));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_use_version, version, protocolversion));
 
                     return true;
                 }

@@ -79,7 +79,7 @@ namespace MinecraftClient.ChatBots
         /// <param name="retries">Number of retries if connection fails (-1 = infinite)</param>
         public AutoRelog()
         {
-            LogDebugToConsoleTranslated("bot.autoRelog.launch", Config.Retries);
+            LogDebugToConsole(string.Format(Translations.bot_autoRelog_launch, Config.Retries));
         }
 
         public override void Initialize()
@@ -87,7 +87,7 @@ namespace MinecraftClient.ChatBots
             McClient.ReconnectionAttemptsLeft = Config.Retries;
             if (Config.Ignore_Kick_Message)
             {
-                LogDebugToConsoleTranslated("bot.autoRelog.no_kick_msg");
+                LogDebugToConsole(Translations.bot_autoRelog_no_kick_msg);
             }
         }
 
@@ -95,14 +95,14 @@ namespace MinecraftClient.ChatBots
         {
             if (reason == DisconnectReason.UserLogout)
             {
-                LogDebugToConsoleTranslated("bot.autoRelog.ignore_user_logout");
+                LogDebugToConsole(Translations.bot_autoRelog_ignore_user_logout);
             }
             else if (Config.Retries < 0 || Configs._BotRecoAttempts < Config.Retries)
             {
                 message = GetVerbatim(message);
                 string comp = message.ToLower();
 
-                LogDebugToConsoleTranslated("bot.autoRelog.disconnect_msg", message);
+                LogDebugToConsole(string.Format(Translations.bot_autoRelog_disconnect_msg, message));
 
                 if (Config.Ignore_Kick_Message)
                 {
@@ -121,7 +121,7 @@ namespace MinecraftClient.ChatBots
                     }
                 }
 
-                LogDebugToConsoleTranslated("bot.autoRelog.reconnect_ignore");
+                LogDebugToConsole(Translations.bot_autoRelog_reconnect_ignore);
             }
 
             return false;
@@ -130,8 +130,8 @@ namespace MinecraftClient.ChatBots
         private void LaunchDelayedReconnection(string? msg)
         {
             double delay = random.NextDouble() * (Config.Delay.max - Config.Delay.min) + Config.Delay.min;
-            LogDebugToConsoleTranslated(string.IsNullOrEmpty(msg) ? "bot.autoRelog.reconnect_always" : "bot.autoRelog.reconnect", msg);
-            LogToConsoleTranslated("bot.autoRelog.wait", delay);
+            LogDebugToConsole(string.Format(string.IsNullOrEmpty(msg) ? Translations.bot_autoRelog_reconnect_always : Translations.bot_autoRelog_reconnect, msg));
+            LogToConsole(string.Format(Translations.bot_autoRelog_wait, delay));
             System.Threading.Thread.Sleep((int)Math.Floor(delay * 1000));
             ReconnectToTheServer();
         }

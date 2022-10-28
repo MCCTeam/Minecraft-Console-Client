@@ -44,7 +44,7 @@ namespace MinecraftClient.Protocol
                 {
                     try
                     {
-                        Translations.WriteLine("mcc.resolve", domainVal);
+                        ConsoleIO.WriteLine(string.Format(Translations.mcc_resolve, domainVal));
                         var lookupClient = new LookupClient();
                         var response = lookupClient.Query(new DnsQuestion($"_minecraft._tcp.{domainVal}", QueryType.SRV));
                         if (response.HasError != true && response.Answers.SrvRecords().Any())
@@ -56,7 +56,7 @@ namespace MinecraftClient.Protocol
                                 .ThenBy(record => Guid.NewGuid())
                                 .First();
                             string target = result.Target.Value.Trim('.');
-                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.found", target, result.Port, domainVal));
+                            ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_found, target, result.Port, domainVal));
                             domainVal = target;
                             portVal = result.Port;
                             foundService = true;
@@ -64,7 +64,7 @@ namespace MinecraftClient.Protocol
                     }
                     catch (Exception e)
                     {
-                        ConsoleIO.WriteLineFormatted(Translations.Get("mcc.not_found", domainVal, e.GetType().FullName, e.Message));
+                        ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_not_found, domainVal, e.GetType().FullName, e.Message));
                     }
                 }, TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30));
             }
@@ -95,7 +95,8 @@ namespace MinecraftClient.Protocol
                     {
                         success = true;
                     }
-                    else Translations.WriteLineFormatted("error.unexpect_response");
+                    else
+                        ConsoleIO.WriteLineFormatted(Translations.error_unexpect_response, acceptnewlines: true);
                 }
                 catch (Exception e)
                 {
@@ -104,9 +105,9 @@ namespace MinecraftClient.Protocol
             }, TimeSpan.FromSeconds(Config.Main.Advanced.ResolveSrvRecords == MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.fast ? 10 : 30)))
             {
                 if (protocolversion != 0 && protocolversion != protocolversionTmp)
-                    Translations.WriteLineFormatted("error.version_different");
+                    ConsoleIO.WriteLineFormatted(Translations.error_version_different, acceptnewlines: true);
                 if (protocolversion == 0 && protocolversionTmp <= 1)
-                    Translations.WriteLineFormatted("error.no_version_report");
+                    ConsoleIO.WriteLineFormatted(Translations.error_no_version_report, acceptnewlines: true);
                 if (protocolversion == 0)
                     protocolversion = protocolversionTmp;
                 forgeInfo = forgeInfoTmp;
@@ -114,7 +115,7 @@ namespace MinecraftClient.Protocol
             }
             else
             {
-                Translations.WriteLineFormatted("error.connection_timeout");
+                ConsoleIO.WriteLineFormatted(Translations.error_connection_timeout, acceptnewlines: true);
                 return false;
             }
         }
@@ -138,7 +139,7 @@ namespace MinecraftClient.Protocol
             if (Array.IndexOf(supportedVersions_Protocol18, ProtocolVersion) > -1)
                 return new Protocol18Handler(Client, ProtocolVersion, Handler, forgeInfo);
 
-            throw new NotSupportedException(Translations.Get("exception.version_unsupport", ProtocolVersion));
+            throw new NotSupportedException(string.Format(Translations.exception_version_unsupport, ProtocolVersion));
         }
 
         /// <summary>
@@ -490,7 +491,7 @@ namespace MinecraftClient.Protocol
                 }
                 else
                 {
-                    ConsoleIO.WriteLineFormatted(Translations.Get("error.http_code", code));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.error_http_code, code));
                     return LoginResult.OtherError;
                 }
             }
@@ -692,7 +693,7 @@ namespace MinecraftClient.Protocol
                 }
                 else
                 {
-                    ConsoleIO.WriteLineFormatted(Translations.Get("error.auth", code));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.error_auth, code));
                     return LoginResult.OtherError;
                 }
             }
@@ -763,10 +764,10 @@ namespace MinecraftClient.Protocol
                     }
                     if (availableWorlds.Count > 0)
                     {
-                        Translations.WriteLine("mcc.realms_available");
+                        ConsoleIO.WriteLine(Translations.mcc_realms_available);
                         foreach (var world in availableWorlds)
                             ConsoleIO.WriteLine(world);
-                        Translations.WriteLine("mcc.realms_join");
+                        ConsoleIO.WriteLine(Translations.mcc_realms_join);
                     }
                 }
 
@@ -804,13 +805,13 @@ namespace MinecraftClient.Protocol
                         return serverAddress.Properties["address"].StringValue;
                     else
                     {
-                        Translations.WriteLine("error.realms.ip_error");
+                        ConsoleIO.WriteLine(Translations.error_realms_ip_error);
                         return "";
                     }
                 }
                 else
                 {
-                    Translations.WriteLine("error.realms.access_denied");
+                    ConsoleIO.WriteLine(Translations.error_realms_access_denied);
                     return "";
                 }
             }
@@ -893,7 +894,7 @@ namespace MinecraftClient.Protocol
                 try
                 {
                     if (Settings.Config.Logging.DebugMessages)
-                        ConsoleIO.WriteLineFormatted(Translations.Get("debug.request", host));
+                        ConsoleIO.WriteLineFormatted(string.Format(Translations.debug_request, host));
 
                     TcpClient client = ProxyHandler.NewTcpClient(host, 443, true);
                     SslStream stream = new(client.GetStream());

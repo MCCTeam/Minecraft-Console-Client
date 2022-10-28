@@ -167,7 +167,7 @@ namespace MinecraftClient.Inventory
 
             int damage = Damage;
             if (damage != 0)
-                sb.AppendFormat(" | {0}: {1}", Translations.Get("cmd.inventory.damage"), damage);
+                sb.AppendFormat(" | {0}: {1}", Translations.cmd_inventory_damage, damage);
 
             return sb.ToString();
         }

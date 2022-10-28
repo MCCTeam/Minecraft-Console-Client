@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using MinecraftClient.Protocol;
 using MinecraftClient.Proxy;
 using Tomlet;
@@ -33,7 +35,7 @@ namespace MinecraftClient
         public static string TranslationsFile_Website_Index = "https://piston-meta.mojang.com/v1/packages/b5c7548ddb9e584e84a5f762da5b78211c715a63/1.19.json";
         public static string TranslationsFile_Website_Download = "http://resources.download.minecraft.net";
 
-        public const string TranslationDocUrl = "https://mccteam.github.io/guide/contibuting.html#translations";
+        public const string TranslationProjectUrl = "https://crwd.in/minecraft-console-client";
         public const string GithubReleaseUrl = "https://github.com/MCCTeam/Minecraft-Console-Client/releases";
         public const string GithubLatestReleaseUrl = GithubReleaseUrl + "/latest";
 
@@ -125,14 +127,18 @@ namespace MinecraftClient
 
         public static Tuple<bool, bool> LoadFromFile(string filepath)
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             TomlDocument document;
             try
             {
                 document = TomlParser.ParseFile(filepath);
+                Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
+
                 Config = TomletMain.To<GlobalConfig>(document);
             }
             catch (Exception ex)
             {
+                Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
                 try
                 {
                     // The old configuration file has been backed up as A.
@@ -143,12 +149,12 @@ namespace MinecraftClient
                         File.Copy(filepath, newFilePath, true);
                         ConsoleIO.WriteLineFormatted("§cPlease use the newly generated MinecraftClient.ini");
                         ConsoleIO.WriteLineFormatted("§cThe old MinecraftClient.ini has been backed up as " + newFilePath);
-                        ConsoleIO.WriteLine(Translations.GetOrNull("mcc.run_with_default_settings") ?? "\nMCC is running with default settings.");
+                        ConsoleIO.WriteLine(Translations.mcc_run_with_default_settings);
                         return new(false, true);
                     }
                 }
                 catch { }
-                ConsoleIO.WriteLineFormatted(Translations.GetOrNull("config.load.fail") ?? "§cFailed to load settings:§r");
+                ConsoleIO.WriteLineFormatted(Translations.config_load_fail);
                 ConsoleIO.WriteLine(ex.GetFullMessage());
                 return new(false, false);
             }
@@ -157,7 +163,9 @@ namespace MinecraftClient
 
         public static void WriteToFile(string filepath, bool backupOldFile)
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             string tomlString = TomletMain.TomlStringFrom(Config);
+            Thread.CurrentThread.CurrentCulture = Program.ActualCulture;
 
             string[] tomlList = tomlString.Split('\n');
             StringBuilder newConfig = new();
@@ -169,7 +177,11 @@ namespace MinecraftClient
                     string config = matchComment.Groups[1].Value, comment = matchComment.Groups[2].Value;
                     if (config.Length > 0)
                         newConfig.Append(config).Append(' ', Math.Max(1, CommentsAlignPosition - config.Length) - 1);
-                    newConfig.Append("# ").AppendLine(Translations.TryGet(comment).ReplaceLineEndings());
+                    string? comment_trans = Translations.ResourceManager.GetString(comment);
+                    if (string.IsNullOrEmpty(comment_trans))
+                        newConfig.Append("# ").AppendLine(comment.ReplaceLineEndings());
+                    else
+                        newConfig.Append("# ").AppendLine(comment_trans.Replace("\n", "\n# ").ReplaceLineEndings());
                 }
                 else
                 {
@@ -200,7 +212,7 @@ namespace MinecraftClient
                     catch (Exception ex)
                     {
                         backupSuccessed = false;
-                        ConsoleIO.WriteLineFormatted(Translations.TryGet("config.backup.fail", backupFilePath));
+                        ConsoleIO.WriteLineFormatted(string.Format(Translations.config_backup_fail, backupFilePath));
                         ConsoleIO.WriteLine(ex.Message);
                     }
                 }
@@ -210,7 +222,7 @@ namespace MinecraftClient
                     try { File.WriteAllBytes(filepath, newConfigByte); }
                     catch (Exception ex)
                     {
-                        ConsoleIO.WriteLineFormatted(Translations.TryGet("config.write.fail", filepath));
+                        ConsoleIO.WriteLineFormatted(string.Format(Translations.config_write_fail, filepath));
                         ConsoleIO.WriteLine(ex.Message);
                     }
                 }
@@ -232,13 +244,13 @@ namespace MinecraftClient
                 {
                     //Load settings as --setting=value and --section.setting=value
                     if (!argument.Contains('='))
-                        throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
+                        throw new ArgumentException(string.Format(Translations.error_setting_argument_syntax, argument));
                     throw new NotImplementedException();
                 }
                 else if (argument.StartsWith("-") && argument.Length > 1)
                 {
                     //Keep single dash arguments as unsupported for now (future use)
-                    throw new ArgumentException(Translations.Get("error.setting.argument_syntax", argument));
+                    throw new ArgumentException(string.Format(Translations.error_setting_argument_syntax, argument));
                 }
                 else
                 {
@@ -375,12 +387,22 @@ namespace MinecraftClient
                     if (Advanced.MovementSpeed < 1)
                         Advanced.MovementSpeed = 1;
 
+                    if (!Advanced.LoadMccTranslation)
+                    {
+                        CultureInfo culture = CultureInfo.CreateSpecificCulture("en_gb");
+                        CultureInfo.DefaultThreadCurrentCulture = culture;
+                        CultureInfo.DefaultThreadCurrentUICulture = culture;
+                        Program.ActualCulture = culture;
+                        Thread.CurrentThread.CurrentCulture = culture;
+                        Thread.CurrentThread.CurrentUICulture = culture;
+                    }
+
                     Advanced.Language = Regex.Replace(Advanced.Language, @"[^-^_^\w^*\d]", string.Empty).Replace('-', '_');
                     Advanced.Language = ToLowerIfNeed(Advanced.Language);
                     if (!AvailableLang.Contains(Advanced.Language))
                     {
-                        Advanced.Language = Translations.GetTranslationPriority().Item1;
-                        ConsoleIO.WriteLogLine("[Settings] " + (Translations.GetOrNull("config.Main.Advanced.language.invaild") ?? "The language code is invalid."));
+                        Advanced.Language = GetDefaultGameLanguage();
+                        ConsoleIO.WriteLogLine("[Settings] " + Translations.config_Main_Advanced_language_invaild);
                     }
 
                     if (!string.IsNullOrWhiteSpace(General.Server.Host))
@@ -435,6 +457,9 @@ namespace MinecraftClient
                 {
                     [TomlInlineComment("$config.Main.Advanced.language$")]
                     public string Language = "en_gb";
+
+                    [TomlInlineComment("$config.Main.Advanced.LoadMccTrans$")]
+                    public bool LoadMccTranslation = true;
 
                     // [TomlInlineComment("$config.Main.Advanced.console_title$")]
                     public string ConsoleTitle = "%username%@%serverip% - Minecraft Console Client";
@@ -1173,6 +1198,426 @@ namespace MinecraftClient
             }
         }
 
+        public static string GetDefaultGameLanguage()
+        {
+            string gameLanguage = "en_gb";
+            string systemLanguage = string.IsNullOrWhiteSpace(Program.ActualCulture.Name)
+                    ? Program.ActualCulture.Parent.Name
+                    : Program.ActualCulture.Name;
+            switch (systemLanguage)
+            {
+                case "af":
+                case "af-ZA":
+                    gameLanguage = "af_za";
+                    break;
+                case "ar":
+                case "ar-AE":
+                case "ar-BH":
+                case "ar-DZ":
+                case "ar-EG":
+                case "ar-IQ":
+                case "ar-JO":
+                case "ar-KW":
+                case "ar-LB":
+                case "ar-LY":
+                case "ar-MA":
+                case "ar-OM":
+                case "ar-QA":
+                case "ar-SA":
+                case "ar-SY":
+                case "ar-TN":
+                case "ar-YE":
+                    gameLanguage = "ar_sa";
+                    break;
+                case "az":
+                case "az-Cyrl-AZ":
+                case "az-Latn-AZ":
+                    gameLanguage = "az_az";
+                    break;
+                case "be":
+                case "be-BY":
+                    gameLanguage = "be_by";
+                    break;
+                case "bg":
+                case "bg-BG":
+                    gameLanguage = "bg_bg";
+                    break;
+                case "bs-Latn-BA":
+                    gameLanguage = "bs_ba";
+                    break;
+                case "ca":
+                case "ca-ES":
+                    gameLanguage = "ca_es";
+                    break;
+                case "cs":
+                case "cs-CZ":
+                    gameLanguage = "cs_cz";
+                    break;
+                case "cy-GB":
+                    gameLanguage = "cy_gb";
+                    break;
+                case "da":
+                case "da-DK":
+                    gameLanguage = "da_dk";
+                    break;
+                case "de":
+                case "de-DE":
+                case "de-LI":
+                case "de-LU":
+                    gameLanguage = "de_de";
+                    break;
+                case "de-AT":
+                    gameLanguage = "de_at";
+                    break;
+                case "de-CH":
+                    gameLanguage = "de_ch";
+                    break;
+                case "dv":
+                case "dv-MV":
+                    break;
+                case "el":
+                case "el-GR":
+                    gameLanguage = "el_gr";
+                    break;
+                case "en":
+                case "en-029":
+                case "en-BZ":
+                case "en-IE":
+                case "en-JM":
+                case "en-PH":
+                case "en-TT":
+                case "en-ZA":
+                case "en-ZW":
+                case "en-GB":
+                    gameLanguage = "en_gb";
+                    break;
+                case "en-AU":
+                    gameLanguage = "en_au";
+                    break;
+                case "en-CA":
+                    gameLanguage = "en_ca";
+                    break;
+                case "en-US":
+                    gameLanguage = "en_us";
+                    break;
+                case "en-NZ":
+                    gameLanguage = "en_nz";
+                    break;
+                case "es":
+                case "es-BO":
+                case "es-CO":
+                case "es-CR":
+                case "es-DO":
+                case "es-ES":
+                case "es-GT":
+                case "es-HN":
+                case "es-NI":
+                case "es-PA":
+                case "es-PE":
+                case "es-PR":
+                case "es-PY":
+                case "es-SV":
+                    gameLanguage = "es_es";
+                    break;
+                case "es-AR":
+                    gameLanguage = "es_ar";
+                    break;
+                case "es-CL":
+                    gameLanguage = "es_cl";
+                    break;
+                case "es-EC":
+                    gameLanguage = "es_ec";
+                    break;
+                case "es-MX":
+                    gameLanguage = "es_mx";
+                    break;
+                case "es-UY":
+                    gameLanguage = "es_uy";
+                    break;
+                case "es-VE":
+                    gameLanguage = "es_ve";
+                    break;
+                case "et":
+                case "et-EE":
+                    gameLanguage = "et_ee";
+                    break;
+                case "eu":
+                case "eu-ES":
+                    gameLanguage = "eu_es";
+                    break;
+                case "fa":
+                case "fa-IR":
+                    gameLanguage = "fa_ir";
+                    break;
+                case "fi":
+                case "fi-FI":
+                    gameLanguage = "fi_fi";
+                    break;
+                case "fo":
+                case "fo-FO":
+                    gameLanguage = "fo_fo";
+                    break;
+                case "fr":
+                case "fr-BE":
+                case "fr-FR":
+                case "fr-CH":
+                case "fr-LU":
+                case "fr-MC":
+                    gameLanguage = "fr_fr";
+                    break;
+                case "fr-CA":
+                    gameLanguage = "fr_ca";
+                    break;
+                case "gl":
+                case "gl-ES":
+                    gameLanguage = "gl_es";
+                    break;
+                case "gu":
+                case "gu-IN":
+                    break;
+                case "he":
+                case "he-IL":
+                    gameLanguage = "he_il";
+                    break;
+                case "hi":
+                case "hi-IN":
+                    gameLanguage = "hi_in";
+                    break;
+                case "hr":
+                case "hr-BA":
+                case "hr-HR":
+                    gameLanguage = "hr_hr";
+                    break;
+                case "hu":
+                case "hu-HU":
+                    gameLanguage = "hu_hu";
+                    break;
+                case "hy":
+                case "hy-AM":
+                    gameLanguage = "hy_am";
+                    break;
+                case "id":
+                case "id-ID":
+                    gameLanguage = "id_id";
+                    break;
+                case "is":
+                case "is-IS":
+                    gameLanguage = "is_is";
+                    break;
+                case "it":
+                case "it-CH":
+                case "it-IT":
+                    gameLanguage = "it_it";
+                    break;
+                case "ja":
+                case "ja-JP":
+                    gameLanguage = "ja_jp";
+                    break;
+                case "ka":
+                case "ka-GE":
+                    gameLanguage = "ka_ge";
+                    break;
+                case "kk":
+                case "kk-KZ":
+                    gameLanguage = "kk_kz";
+                    break;
+                case "kn":
+                case "kn-IN":
+                    gameLanguage = "kn_in";
+                    break;
+                case "kok":
+                case "kok-IN":
+                    break;
+                case "ko":
+                case "ko-KR":
+                    gameLanguage = "ko_kr";
+                    break;
+                case "ky":
+                case "ky-KG":
+                    break;
+                case "lt":
+                case "lt-LT":
+                    gameLanguage = "lt_lt";
+                    break;
+                case "lv":
+                case "lv-LV":
+                    gameLanguage = "lv_lv";
+                    break;
+                case "mi-NZ":
+                    break;
+                case "mk":
+                case "mk-MK":
+                    gameLanguage = "mk_mk";
+                    break;
+                case "mn":
+                case "mn-MN":
+                    gameLanguage = "mn_mn";
+                    break;
+                case "mr":
+                case "mr-IN":
+                    break;
+                case "ms":
+                case "ms-BN":
+                case "ms-MY":
+                    gameLanguage = "ms_my";
+                    break;
+                case "mt-MT":
+                    gameLanguage = "mt_mt";
+                    break;
+                case "nb-NO":
+                    break;
+                case "nl":
+                case "nl-NL":
+                    gameLanguage = "nl_nl";
+                    break;
+                case "nl-BE":
+                    gameLanguage = "nl_be";
+                    break;
+                case "nn-NO":
+                    gameLanguage = "nn_no";
+                    break;
+                case "no":
+                    gameLanguage = "no_no‌";
+                    break;
+                case "ns-ZA":
+                    break;
+                case "pa":
+                case "pa-IN":
+                    break;
+                case "pl":
+                case "pl-PL":
+                    gameLanguage = "pl_pl‌";
+                    break;
+                case "pt":
+                case "pt-PT":
+                    gameLanguage = "pt_pt‌";
+                    break;
+                case "pt-BR":
+                    gameLanguage = "pt_br‌";
+                    break;
+                case "quz-BO":
+                    break;
+                case "quz-EC":
+                    break;
+                case "quz-PE":
+                    break;
+                case "ro":
+                case "ro-RO":
+                    gameLanguage = "ro_ro‌";
+                    break;
+                case "ru":
+                case "ru-RU":
+                    gameLanguage = "ru_ru";
+                    break;
+                case "sa":
+                case "sa-IN":
+                    break;
+                case "se-FI":
+                case "se-NO":
+                case "se-SE":
+                    gameLanguage = "se_no";
+                    break;
+                case "sk":
+                case "sk-SK":
+                    gameLanguage = "sk_sk";
+                    break;
+                case "sl":
+                case "sl-SI":
+                    gameLanguage = "sl_si";
+                    break;
+                case "sma-NO":
+                    break;
+                case "sma-SE":
+                    break;
+                case "smj-NO":
+                    break;
+                case "smj-SE":
+                    break;
+                case "smn-FI":
+                    break;
+                case "sms-FI":
+                    break;
+                case "sq":
+                case "sq-AL":
+                    gameLanguage = "sq_al";
+                    break;
+                case "sr":
+                case "sr-Cyrl-BA":
+                case "sr-Cyrl-CS":
+                case "sr-Latn-BA":
+                case "sr-Latn-CS":
+                    gameLanguage = "sr_sp";
+                    break;
+                case "sv":
+                case "sv-FI":
+                case "sv-SE":
+                    gameLanguage = "sv_se";
+                    break;
+                case "sw":
+                case "sw-KE":
+                    break;
+                case "syr":
+                case "syr-SY":
+                    break;
+                case "ta":
+                case "ta-IN":
+                    gameLanguage = "ta_in";
+                    break;
+                case "te":
+                case "te-IN":
+                    break;
+                case "th":
+                case "th-TH":
+                    gameLanguage = "th_th";
+                    break;
+                case "tn-ZA":
+                    break;
+                case "tr":
+                case "tr-TR":
+                    gameLanguage = "tr_tr";
+                    break;
+                case "tt":
+                case "tt-RU":
+                    gameLanguage = "tt_ru";
+                    break;
+                case "uk":
+                case "uk-UA":
+                    gameLanguage = "uk_ua";
+                    break;
+                case "ur":
+                case "ur-PK":
+                    break;
+                case "uz":
+                case "uz-Cyrl-UZ":
+                case "uz-Latn-UZ":
+                    break;
+                case "vi":
+                case "vi-VN":
+                    gameLanguage = "vi_vn";
+                    break;
+                case "xh-ZA":
+                    break;
+                case "zh-Hans": /* CurrentCulture.Parent.Name */
+                case "zh":
+                case "zh-CN":
+                case "zh-CHS":
+                case "zh-SG":
+                    gameLanguage = "zh_cn";
+                    break;
+                case "zh-Hant": /* CurrentCulture.Parent.Name */
+                case "zh-HK":
+                case "zh-CHT":
+                case "zh-MO":
+                    gameLanguage = "zh_hk";
+                    break;
+                case "zh-TW":
+                    gameLanguage = "zh_tw";
+                    break;
+                case "zu-ZA":
+                    break;
+            }
+            return gameLanguage;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static string ToLowerIfNeed(string str)

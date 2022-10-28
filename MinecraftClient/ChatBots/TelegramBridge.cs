@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
@@ -93,13 +94,13 @@ namespace MinecraftClient.ChatBots
             {
                 try
                 {
-                    SendMessage(Translations.TryGet("bot.TelegramBridge.disconnected"));
+                    SendMessage(Translations.bot_TelegramBridge_disconnected);
                     cancellationToken?.Cancel();
                     botClient = null;
                 }
                 catch (Exception e)
                 {
-                    LogToConsole("§w§l§f" + Translations.TryGet("bot.TelegramBridge.canceled_sending"));
+                    LogToConsole("§w§l§f" + Translations.bot_TelegramBridge_canceled_sending);
                     LogDebugToConsole(e);
                 }
 
@@ -120,34 +121,33 @@ namespace MinecraftClient.ChatBots
                 {
                     string direction = args[1].ToLower().Trim();
 
-                    string? bridgeName = "";
-
+                    string bridgeName;
                     switch (direction)
                     {
                         case "b":
                         case "both":
-                            bridgeName = "bot.TelegramBridge.direction.both";
+                            bridgeName = Translations.bot_TelegramBridge_direction_both;
                             bridgeDirection = BridgeDirection.Both;
                             break;
 
                         case "mc":
                         case "minecraft":
-                            bridgeName = "bot.TelegramBridge.direction.minecraft";
+                            bridgeName = Translations.bot_TelegramBridge_direction_minecraft;
                             bridgeDirection = BridgeDirection.Minecraft;
                             break;
 
                         case "t":
                         case "tg":
                         case "telegram":
-                            bridgeName = "bot.TelegramBridge.direction.discord";
+                            bridgeName = Translations.bot_TelegramBridge_direction_Telegram;
                             bridgeDirection = BridgeDirection.Telegram;
                             break;
 
                         default:
-                            return Translations.TryGet("bot.TelegramBridge.invalid_direction");
+                            return Translations.bot_TelegramBridge_invalid_direction;
                     }
 
-                    return Translations.TryGet("bot.TelegramBridge.direction", Translations.TryGet(bridgeName));
+                    return string.Format(Translations.bot_TelegramBridge_direction, bridgeName);
                 };
             }
 
@@ -191,7 +191,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.TryGet("bot.TelegramBridge.canceled_sending"));
+                LogToConsole("§w§l§f" + Translations.bot_TelegramBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -214,7 +214,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.TryGet("bot.TelegramBridge.canceled_sending"));
+                LogToConsole("§w§l§f" + Translations.bot_TelegramBridge_canceled_sending);
                 LogDebugToConsole(e);
             }
         }
@@ -230,13 +230,13 @@ namespace MinecraftClient.ChatBots
             {
                 if (string.IsNullOrEmpty(Config.Token.Trim()))
                 {
-                    LogToConsole(Translations.TryGet("bot.TelegramBridge.missing_token"));
+                    LogToConsole(Translations.bot_TelegramBridge_missing_token);
                     UnloadBot();
                     return;
                 }
 
                 if (string.IsNullOrEmpty(Config.ChannelId.Trim()))
-                    LogToConsole("§w§l§f" + Translations.TryGet("bot.TelegramBridge.missing_channel_id"));
+                    LogToConsole("§w§l§f" + Translations.bot_TelegramBridge_missing_channel_id);
 
                 botClient = new TelegramBotClient(Config.Token.Trim());
                 cancellationToken = new CancellationTokenSource();
@@ -254,13 +254,13 @@ namespace MinecraftClient.ChatBots
 
                 IsConnected = true;
 
-                SendMessage("✅ " + Translations.TryGet("bot.TelegramBridge.connected"));
-                LogToConsole("§y§l§f" + Translations.TryGet("bot.TelegramBridge.connected"));
+                SendMessage($"✅ {Translations.bot_TelegramBridge_connected}");
+                LogToConsole($"§y§l§f{Translations.bot_TelegramBridge_connected}");
 
                 if (Config.Authorized_Chat_Ids.Length == 0)
                 {
-                    SendMessage("⚠️ *" + Translations.TryGet("bot.TelegramBridge.missing_authorized_channels") + "* ⚠️");
-                    LogToConsole("§w§l§f" + Translations.TryGet("bot.TelegramBridge.missing_authorized_channels"));
+                    SendMessage($"⚠️ *{Translations.bot_TelegramBridge_missing_authorized_channels}* ⚠️");
+                    LogToConsole($"§w§l§f{Translations.bot_TelegramBridge_missing_authorized_channels}");
                     return;
                 }
 
@@ -268,7 +268,7 @@ namespace MinecraftClient.ChatBots
             }
             catch (Exception e)
             {
-                LogToConsole("§w§l§f" + Translations.TryGet("bot.TelegramBridge.unknown_error"));
+                LogToConsole($"§w§l§f{Translations.bot_TelegramBridge_unknown_error}");
                 LogToConsole(e);
                 return;
             }
@@ -309,7 +309,7 @@ namespace MinecraftClient.ChatBots
                 await botClient.SendTextMessageAsync(
                     chatId: chatId,
                     replyToMessageId: message.MessageId,
-                    text: Translations.TryGet("bot.TelegramBridge.unauthorized"),
+                    text: Translations.bot_TelegramBridge_unauthorized,
                     cancellationToken: _cancellationToken,
                     parseMode: ParseMode.Markdown);
                 return;
@@ -335,7 +335,7 @@ namespace MinecraftClient.ChatBots
                     chatId: chatId,
                     replyToMessageId:
                     message.MessageId,
-                    text: $"{Translations.TryGet("bot.TelegramBridge.command_executed")}:\n\n{result}",
+                    text: $"{Translations.bot_TelegramBridge_command_executed}:\n\n{result}",
                     cancellationToken: _cancellationToken,
                     parseMode: ParseMode.Markdown);
             }

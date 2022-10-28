@@ -31,7 +31,7 @@ namespace MinecraftClient
             //Script compatibility check for handling future versions differently
             if (lines.Length < 1 || lines[0] != "//MCCScript 1.0")
                 throw new CSharpException(CSErrorType.InvalidScript,
-                    new InvalidDataException(Translations.Get("exception.csrunner.invalid_head")));
+                    new InvalidDataException(Translations.exception_csrunner_invalid_head));
 
             //Script hash for determining if it was previously compiled
             ulong scriptHash = QuickHash(lines);
