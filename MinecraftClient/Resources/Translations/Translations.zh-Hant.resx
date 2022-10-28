@@ -1724,23 +1724,23 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>將聊天資訊寫入到日誌檔案中。</value>
   </data>
   <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
-    <value>This bot allows you to send and recieve messages and commands via a Discord channel.
-For Setup you can either use the documentation or read here (Documentation has images).
-Documentation: https://mccteam.github.io/guide/chat-bots.html#discord-bridge
-Setup:
-First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
-/!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
-When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
-Copy the "Application ID" and go to: https://bit.ly/2Spn2Q3 .
-Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
-This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
-Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
-Exit the settings and right click on a server you have invited the bot to in the server list, then click "Copy ID", and paste the id here in "GuildId".
-Then right click on a channel where you want to interact with the bot and again right click -&gt; "Copy ID", pase the copied id here in "ChannelId".
-And for the end, send a message in the channel, right click on your nick and again right click -&gt; "Copy ID", then paste the id here in "OwnersIds".
-How to use:
-To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
-To send a message, simply type it out and hit enter.</value>
+    <value>這個 Chatbot 可以讓你使用Discord頻道來接收和傳送信息。
+你可以參考技術文件或閱讀下文來了解如何配置（技術文件附有圖片）
+技術文件：https://mccteam.github.io/guide/chat-bots.html#discord-bridge
+配置：
+首先你需要在Discord Developers Portal創建機器人。影片參考：https://www.youtube.com/watch?v=2FgMnZViNPA
+/!\ 注意 /!\：創建機器人時，你必須啟用"Message Content Intent"，"Server Members Intent" 和 "Presence Intent"，機器人才能正常運作。請小心不要遺留任何步驟！
+當創建機器人時，將建立的令牌（token）複製並貼在 "Token" 欄位（令牌十分重要，請小心保管）
+複製 Application ID，然後前往：https://bit.ly/2Spn2Q3
+貼上你複製的ID並在權限勾上管理員欄位，然後點擊下方的連結。
+連結將會開啟邀請頁面並顯示你擁有的伺服器。選擇你希望機器人進入的伺服器然後邀請它。
+你邀請了機器人後，打開你的Discord客戶端，前往設定 -&gt; 進階設定，然後啟用開發者模式。
+離開設定後，在伺服器列表中找到你剛才邀請機器人的伺服器，右鍵伺服器，點擊 "複製ID"，然後將ID貼到 "GuildId" 欄位。
+在伺服器中，選擇你希望用作機器人使用的頻道，右鍵頻道，點擊 "複製ID"，然後將ID貼到 "ChannelId" 欄位。
+最後，在頻道中傳送一則任意信息，然後右鍵你自己的名字，點擊 "複製ID"，然後將ID貼到 "OwnersIds" 欄位。
+如何使用：
+希望執行MCC指令時，在指令前加上點 "."。例如 ".move 143 64 735"。
+希望傳送聊天信息時，只需要直接傳送就好了。</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
     <value>The ID of a channel where you want to interact with the MCC using the bot.</value>
