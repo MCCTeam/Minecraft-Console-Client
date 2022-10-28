@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -59,46 +59,46 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -439,6 +439,93 @@ cooldown: {6}</value>
   <data name="bot.chatLog.invalid_file" xml:space="preserve">
     <value>路径'{0}'包含无效字符。</value>
   </data>
+  <data name="bot.DiscordBridge.canceled_sending" xml:space="preserve">
+    <value>Sending message to Discord was canceled due an error occuring. For more info enable Debug.</value>
+  </data>
+  <data name="bot.DiscordBridge.channel_not_found" xml:space="preserve">
+    <value>The provided channel with an id '{0}' has not been found!</value>
+  </data>
+  <data name="bot.DiscordBridge.command_executed" xml:space="preserve">
+    <value>The command was executed with the result</value>
+  </data>
+  <data name="bot.DiscordBridge.connected" xml:space="preserve">
+    <value>Succesfully connected with MCC!</value>
+  </data>
+  <data name="bot.DiscordBridge.desc" xml:space="preserve">
+    <value>This command allows you to specify in the which direction the messages will be relayed via the Discord Bridge chat bot.</value>
+  </data>
+  <data name="bot.DiscordBridge.direction" xml:space="preserve">
+    <value>Direction of the Discord Brdige has been switched to '{0}'!</value>
+  </data>
+  <data name="bot.DiscordBridge.direction.both" xml:space="preserve">
+    <value>Both</value>
+  </data>
+  <data name="bot.DiscordBridge.direction.discord" xml:space="preserve">
+    <value>Discord</value>
+  </data>
+  <data name="bot.DiscordBridge.direction.minecraft" xml:space="preserve">
+    <value>Minecraft</value>
+  </data>
+  <data name="bot.DiscordBridge.guild_not_found" xml:space="preserve">
+    <value>The provided guild/server with an id '{0}' has not been found!</value>
+  </data>
+  <data name="bot.DiscordBridge.invalid_direction" xml:space="preserve">
+    <value>Invalid direction provided! Available directions: both|b, minecraft|mc, discord|dsc. Example: "dscbridge direction mc"</value>
+  </data>
+  <data name="bot.DiscordBridge.missing_token" xml:space="preserve">
+    <value>Please provide a valid token!</value>
+  </data>
+  <data name="bot.DiscordBridge.unknown_error" xml:space="preserve">
+    <value>An unknown error has occured!</value>
+  </data>
+  <data name="bot.farmer.already_running" xml:space="preserve">
+    <value>The bot is already farming!</value>
+  </data>
+  <data name="bot.farmer.already_stopped" xml:space="preserve">
+    <value>The bot has already stopped farming!</value>
+  </data>
+  <data name="bot.farmer.crop_type" xml:space="preserve">
+    <value>Crop type</value>
+  </data>
+  <data name="bot.farmer.desc" xml:space="preserve">
+    <value>Farming bot</value>
+  </data>
+  <data name="bot.farmer.invalid_crop_type" xml:space="preserve">
+    <value>Invalid crop type provided (Types which you can use: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat)!</value>
+  </data>
+  <data name="bot.farmer.invalid_radius" xml:space="preserve">
+    <value>Invalid radius provided, you must provide a valid integer number greater than 0!</value>
+  </data>
+  <data name="bot.farmer.needs_inventory" xml:space="preserve">
+    <value>The Farmer bot needs Inventory Handling in order to work, please enable it!</value>
+  </data>
+  <data name="bot.farmer.needs_terrain" xml:space="preserve">
+    <value>The Farmer bot needs Terrain Handling in order to work, please enable it!</value>
+  </data>
+  <data name="bot.farmer.not_implemented" xml:space="preserve">
+    <value>Not implemented bellow 1.13!</value>
+  </data>
+  <data name="bot.farmer.radius" xml:space="preserve">
+    <value>Radius</value>
+  </data>
+  <data name="bot.farmer.started" xml:space="preserve">
+    <value>Started farming!</value>
+  </data>
+  <data name="bot.farmer.stopped" xml:space="preserve">
+    <value>Stopped farming!</value>
+  </data>
+  <data name="bot.farmer.stopping" xml:space="preserve">
+    <value>Stoping farming, this might take a second...</value>
+  </data>
+  <data name="bot.farmer.warining_allow_teleport" xml:space="preserve">
+    <value>You have enabled teleporting, this might get your bot account kicked and in the worst case scenario banned! Use with caution!</value>
+  </data>
+  <data name="bot.farmer.warining_force_unsafe" xml:space="preserve">
+    <value>You have enabled un-safe movement, the bot might get hurt!</value>
+  </data>
+  <data name="bot.farmer.warining_invalid_parameter" xml:space="preserve">
+    <value>Invalid parameter "{0}" provided (Use format: "key:value")!</value>
+  </data>
   <data name="bot.mailer.cmd" xml:space="preserve">
     <value>mailer 命令</value>
   </data>
@@ -543,8 +630,17 @@ cooldown: {6}</value>
   <data name="bot.map.rendered" xml:space="preserve">
     <value>成功接收到地图 '{0}' ，保存为 '{1}'</value>
   </data>
+  <data name="bot.map.resized_rendered_image" xml:space="preserve">
+    <value>Resized the rendered image of the map with id: '{0}' to {1}x{1}.</value>
+  </data>
   <data name="bot.map.scale" xml:space="preserve">
     <value>由于当前终端尺寸限制，地图大小由 ({0}x{1}) 缩小为 ({2}x{3}) 。</value>
+  </data>
+  <data name="bot.map.sent_to_discord" xml:space="preserve">
+    <value>Sent a rendered image of a map with an id '{0}' to the Discord via Discord Brdige chat bot!</value>
+  </data>
+  <data name="bot.map.sent_to_telegram" xml:space="preserve">
+    <value>Sent a rendered image of a map with an id '{0}' to the Telegram via Telegram Bridge chat bot!</value>
   </data>
   <data name="bot.replayCapture.cmd" xml:space="preserve">
     <value>replay 命令</value>
@@ -600,6 +696,53 @@ cooldown: {6}</value>
  timeinterval: {5}
  action: {6}</value>
   </data>
+  <data name="bot.TelegramBridge.canceled_sending" xml:space="preserve">
+    <value>Sending message to Telegram was canceled due an error occuring. For more info enable Debug.</value>
+  </data>
+  <data name="bot.TelegramBridge.command_executed" xml:space="preserve">
+    <value>The command was executed with the result</value>
+  </data>
+  <data name="bot.TelegramBridge.connected" xml:space="preserve">
+    <value>Succesfully connected with the MCC!</value>
+  </data>
+  <data name="bot.TelegramBridge.desc" xml:space="preserve">
+    <value>This command allows you to specify in the which direction the messages will be relayed via the Telegram Bridge chat bot.</value>
+  </data>
+  <data name="bot.TelegramBridge.direction" xml:space="preserve">
+    <value>Direction of the Telegram Brdige has been switched to '{0}'!</value>
+  </data>
+  <data name="bot.TelegramBridge.direction.both" xml:space="preserve">
+    <value>Both</value>
+  </data>
+  <data name="bot.TelegramBridge.direction.minecraft" xml:space="preserve">
+    <value>Minecraft</value>
+  </data>
+  <data name="bot.TelegramBridge.direction.Telegram" xml:space="preserve">
+    <value>Telegram</value>
+  </data>
+  <data name="bot.TelegramBridge.disconnected" xml:space="preserve">
+    <value>Disconnected from from the MCC!</value>
+  </data>
+  <data name="bot.TelegramBridge.invalid_direction" xml:space="preserve">
+    <value>Invalid direction provided! Available directions: both|b, minecraft|mc, telegram|tg|t. Example: "tgbridge direction mc"</value>
+  </data>
+  <data name="bot.TelegramBridge.missing_authorized_channels" xml:space="preserve">
+    <value>[WARNING] You have not provided any Channel IDs, for "Authorized_Chat_Ids" field, anyone who finds your bot will be able to send messages and commands to it!</value>
+  </data>
+  <data name="bot.TelegramBridge.missing_channel_id" xml:space="preserve">
+    <value>[WARNING] You have not provided a Channel ID, you will ONLY get replies to commands sent from Telegram!</value>
+  </data>
+  <data name="bot.TelegramBridge.missing_token" xml:space="preserve">
+    <value>Please provide a valid bot token!</value>
+  </data>
+  <data name="bot.TelegramBridge.unauthorized" xml:space="preserve">
+    <value>**🛑 Unauthorized access! 🛑
+
+Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file to gain access!**</value>
+  </data>
+  <data name="bot.TelegramBridge.unknown_error" xml:space="preserve">
+    <value>An unknown error has occured!</value>
+  </data>
   <data name="bot.testBot.said" xml:space="preserve">
     <value>Bot：{0}说：{1}</value>
   </data>
@@ -608,6 +751,9 @@ cooldown: {6}</value>
   </data>
   <data name="botname.Alerts" xml:space="preserve">
     <value>提醒</value>
+  </data>
+  <data name="botname.AntiAFK" xml:space="preserve">
+    <value>AntiAFK</value>
   </data>
   <data name="botname.AutoAttack" xml:space="preserve">
     <value>自动攻击</value>
@@ -636,11 +782,17 @@ cooldown: {6}</value>
   <data name="botname.ChatLog" xml:space="preserve">
     <value>聊天日志</value>
   </data>
+  <data name="botname.DiscordBridge" xml:space="preserve">
+    <value>DiscordBridge</value>
+  </data>
   <data name="botname.Farmer" xml:space="preserve">
     <value>自动种植</value>
   </data>
   <data name="botname.FollowPlayer" xml:space="preserve">
     <value>跟随玩家</value>
+  </data>
+  <data name="botname.HangmanGame" xml:space="preserve">
+    <value>HangmanGame</value>
   </data>
   <data name="botname.Mailer" xml:space="preserve">
     <value>邮差</value>
@@ -648,8 +800,26 @@ cooldown: {6}</value>
   <data name="botname.Map" xml:space="preserve">
     <value>地图</value>
   </data>
+  <data name="botname.PlayerListLogger" xml:space="preserve">
+    <value>PlayerListLogger</value>
+  </data>
+  <data name="botname.RemoteControl" xml:space="preserve">
+    <value>RemoteControl</value>
+  </data>
+  <data name="botname.ReplayCapture" xml:space="preserve">
+    <value>ReplayCapture</value>
+  </data>
   <data name="botname.Script" xml:space="preserve">
     <value>脚本</value>
+  </data>
+  <data name="botname.ScriptScheduler" xml:space="preserve">
+    <value>ScriptScheduler</value>
+  </data>
+  <data name="botname.TelegramBridge" xml:space="preserve">
+    <value>TelegramBridge</value>
+  </data>
+  <data name="botname.TestBot" xml:space="preserve">
+    <value>TestBot</value>
   </data>
   <data name="cache.converting" xml:space="preserve">
     <value>§8从磁盘转换会话缓存：{0}</value>
@@ -772,6 +942,21 @@ cooldown: {6}</value>
   <data name="cmd.bed.trying_to_use" xml:space="preserve">
     <value>试图在位于 (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}) 上的床上睡觉，结果：{3}</value>
   </data>
+  <data name="cmd.blockinfo.BlocksAround" xml:space="preserve">
+    <value>Blocks around</value>
+  </data>
+  <data name="cmd.blockinfo.BlockType" xml:space="preserve">
+    <value>Block type</value>
+  </data>
+  <data name="cmd.blockinfo.desc" xml:space="preserve">
+    <value>Reports the type of the block on the provided coordinates. (Use -s to report blocks around the target block).</value>
+  </data>
+  <data name="cmd.blockinfo.Negative" xml:space="preserve">
+    <value>Negative</value>
+  </data>
+  <data name="cmd.blockinfo.Positive" xml:space="preserve">
+    <value>Positive</value>
+  </data>
   <data name="cmd.bots.desc" xml:space="preserve">
     <value>列出全部 ChatBot ，加载或卸载一个 ChatBot。</value>
   </data>
@@ -865,6 +1050,33 @@ cooldown: {6}</value>
   </data>
   <data name="cmd.dropItem.unknown_item" xml:space="preserve">
     <value>未知物品：{0}</value>
+  </data>
+  <data name="cmd.enchant.clicked" xml:space="preserve">
+    <value>Sent a click to the server, if you have enough levels and if you have placed the items in the correct slots it should enchant!</value>
+  </data>
+  <data name="cmd.enchant.desc" xml:space="preserve">
+    <value>Enchant an item when you have the Enchantment table opened and the list of enchants recieved.</value>
+  </data>
+  <data name="cmd.enchant.enchanting_no_item" xml:space="preserve">
+    <value>You must put an item inside the enchanting table in slot 0!</value>
+  </data>
+  <data name="cmd.enchant.enchanting_no_lapis" xml:space="preserve">
+    <value>You must put at least 3 lapis lazuli inside the enchanting table in slot 1!</value>
+  </data>
+  <data name="cmd.enchant.enchanting_table_not_opened" xml:space="preserve">
+    <value>You must open a an enchanting table in order to use this option!</value>
+  </data>
+  <data name="cmd.enchant.invalid_slot" xml:space="preserve">
+    <value>Invalid slot provided (Available: top, middle, bottom)!</value>
+  </data>
+  <data name="cmd.enchant.no_enchantments" xml:space="preserve">
+    <value>You must first put an item to enchant to the enchanting table in order to get enchantments from the server, then you can execute this command!</value>
+  </data>
+  <data name="cmd.enchant.no_levels" xml:space="preserve">
+    <value>You do not have enouhg levels to enchant! (Your current level is {0}, you need to be level {1}).</value>
+  </data>
+  <data name="cmd.enchant.not_clicked" xml:space="preserve">
+    <value>Could not click!</value>
   </data>
   <data name="cmd.entityCmd.attacked" xml:space="preserve">
     <value>已攻击实体</value>
@@ -997,6 +1209,9 @@ cooldown: {6}</value>
   </data>
   <data name="cmd.follow.started" xml:space="preserve">
     <value>开始跟随 {0}！</value>
+  </data>
+  <data name="cmd.follow.stopped" xml:space="preserve">
+    <value>Stopped!</value>
   </data>
   <data name="cmd.follow.stopping" xml:space="preserve">
     <value>已停止！</value>
@@ -1508,6 +1723,59 @@ Recipes.Slots：合成的物品摆放方式，以从左到右、从上到下的�
   <data name="config.ChatBot.ChatLog" xml:space="preserve">
     <value>将聊天信息写入到日志文件中。</value>
   </data>
+  <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
+    <value>This bot allows you to send and recieve messages and commands via a Discord channel.
+For Setup you can either use the documentation or read here (Documentation has images).
+Documentation: https://mccteam.github.io/guide/chat-bots.html#discord-bridge
+Setup:
+First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
+/!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
+When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
+Copy the "Application ID" and go to: https://bit.ly/2Spn2Q3 .
+Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
+This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
+Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
+Exit the settings and right click on a server you have invited the bot to in the server list, then click "Copy ID", and paste the id here in "GuildId".
+Then right click on a channel where you want to interact with the bot and again right click -&gt; "Copy ID", pase the copied id here in "ChannelId".
+And for the end, send a message in the channel, right click on your nick and again right click -&gt; "Copy ID", then paste the id here in "OwnersIds".
+How to use:
+To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+To send a message, simply type it out and hit enter.</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
+    <value>The ID of a channel where you want to interact with the MCC using the bot.</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.Formats" xml:space="preserve">
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Discord message formatting, check the following: https://bit.ly/3F8CUCm</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
+    <value>The ID of a server/guild where you have invited the bot to.</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.MessageSendTimeout" xml:space="preserve">
+    <value>How long to wait (in seconds) if a message can not be sent to discord before canceling the task (minimum 1 second).</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.OwnersIds" xml:space="preserve">
+    <value>A list of IDs of people you want to be able to interact with the MCC using the bot.</value>
+  </data>
+  <data name="config.ChatBot.DiscordBridge.Token" xml:space="preserve">
+    <value>Your Discord Bot token.</value>
+  </data>
+  <data name="config.ChatBot.Farmer" xml:space="preserve">
+    <value>Automatically farms crops for you (plants, breaks and bonemeals them).
+Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
+Usage: "/farmer start" command and "/farmer stop" command.
+NOTE: This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues like not being able to bonemeal carrots/potatoes sometimes.
+or bot jumps onto the farm land and breaks it (this happens rarely but still happens). We are looking forward at improving this.
+It is recommended to keep the farming area walled off and flat to avoid the bot jumping.
+Also, if you have your farmland that is one block high, make it 2 or more blocks high so the bot does not fall through, as it can happen sometimes when the bot reconnects.
+The bot also does not pickup all items if they fly off to the side, we have a plan to implement this option in the future as well as drop off and bonemeal refill chest(s).</value>
+  </data>
+  <data name="config.ChatBot.Farmer.Delay_Between_Tasks" xml:space="preserve">
+    <value>Delay between tasks in seconds (Minimum 1 second)</value>
+  </data>
   <data name="config.ChatBot.FollowPlayer" xml:space="preserve">
     <value>让机器人跟随指定玩家
 注意这是一个实验性的功能，目前的寻路速度可能很慢，你可能需要时常等一会机器人来让它跟上你。
@@ -1545,11 +1813,22 @@ Recipes.Slots：合成的物品摆放方式，以从左到右、从上到下的�
   <data name="config.ChatBot.Map.Notify_On_First_Update" xml:space="preserve">
     <value>当第一次从服务器上收到一张地图时，发送一个通知。</value>
   </data>
+  <data name="config.ChatBot.Map.Rasize_Rendered_Image" xml:space="preserve">
+    <value>Resize an rendered image, this is useful when images that are rendered are small and when are being sent to Discord.</value>
+  </data>
   <data name="config.ChatBot.Map.Render_In_Console" xml:space="preserve">
     <value>是否在控制台中渲染地图。</value>
   </data>
+  <data name="config.ChatBot.Map.Resize_To" xml:space="preserve">
+    <value>The size that a rendered image should be resized to, in pixels (eg. 512).</value>
+  </data>
   <data name="config.ChatBot.Map.Save_To_File" xml:space="preserve">
     <value>是否将地图保存为文件。</value>
+  </data>
+  <data name="config.ChatBot.Map.Send_Rendered_To_Bridges" xml:space="preserve">
+    <value>Send a rendered map (saved to a file) to a Discord or a Telegram channel via the Discord or Telegram Bride chat bot (The Discord/Telegram Bridge chat bot must be enabled and configured!)
+You need to enable Save_To_File in order for this to work.
+We also recommend turning on resizing.</value>
   </data>
   <data name="config.ChatBot.PlayerListLogger" xml:space="preserve">
     <value>定期记录当前的玩家列表到文件中。</value>
@@ -1573,6 +1852,49 @@ Recipes.Slots：合成的物品摆放方式，以从左到右、从上到下的�
   <data name="config.ChatBot.ScriptScheduler" xml:space="preserve">
     <value>在加入服务器时、到达特定时间时或以设定的时间间隔执行命令或脚本文件
 详细使用方法请查看 https://mccteam.github.io/guide/chat-bots.html#script-scheduler</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
+    <value>This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
+/!\ NOTE: You can't send messages and commands from a group channel, you can only send them in the bot DM, but you can get the messages from the client in a group channel.
+-----------------------------------------------------------
+Setup:
+First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
+Click on "Start" button and read the bot reply, then type "/newbot", the Botfather will guide you through the bot creation.
+Once you create the bot, copy the API key that you have gotten, and put it into the "Token" field of "ChatBot.TelegramBridge" section (this section).
+/!\ Do not share this token with anyone else as it will give them the control over your bot. Save it securely.
+Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
+Click on "Start" button and type and send the following command ".chatid" to obtain the chat id. 
+Copy the chat id number (eg. 2627844670) and paste it in the "ChannelId" field and add it to the "Authorized_Chat_Ids" field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
+Now you can use the bot using it's DM.
+/!\ If you do not add the id of your chat DM with the bot to the "Authorized_Chat_Ids" field, ayone who finds your bot via search will be able to execute commands and send messages!
+/!\ An id pasted in to the "Authorized_Chat_Ids" should be a number/long, not a string!
+-----------------------------------------------------------
+NOTE: If you want to recieve messages to a group channel instead, make the channel temporarely public, invite the bot to it and make it an administrator, then set the channel to private if you want.
+Then set the "ChannelId" field to the @ of your channel (you must include the @ in the settings, eg. "@mysupersecretchannel"), this is the username you can see in the invite link of the channel.
+/!\ Only include the username with @ prefix, do not include the rest of the link. Example if you have "https://t.me/mysupersecretchannel", the "ChannelId" will be "@mysupersecretchannel".
+/!\ Note that you will not be able to send messages to the client from a group channel!
+-----------------------------------------------------------
+How to use the bot:
+To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+To send a message, simply type it out and hit enter.</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.Authorized_Chat_Ids" xml:space="preserve">
+    <value>A list of Chat IDs that are allowed to send messages and execute commands. To get an id of your chat DM with the bot use ".chatid" bot command in Telegram.</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.ChannelId" xml:space="preserve">
+    <value>An ID of a channel where you want to interact with the MCC using the bot.</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.Formats" xml:space="preserve">
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Telegram message formatting, check the following: https://sendpulse.com/blog/telegram-text-formatting</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
+    <value>How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).</value>
+  </data>
+  <data name="config.ChatBot.TelegramBridge.Token" xml:space="preserve">
+    <value>Your Telegram Bot token.</value>
   </data>
   <data name="config.ChatFormat" xml:space="preserve">
     <value>MCC会尽力检测聊天信息，但有些服务器有不寻常的聊天格式
@@ -1867,6 +2189,21 @@ Recipes.Slots：合成的物品摆放方式，以从左到右、从上到下的�
   <data name="debug.session_id" xml:space="preserve">
     <value>成功！(会话ID：{0})</value>
   </data>
+  <data name="Enchantment.bottom_slot" xml:space="preserve">
+    <value>Bottom slot</value>
+  </data>
+  <data name="Enchantment.enchantments_available" xml:space="preserve">
+    <value>Enchantments available</value>
+  </data>
+  <data name="Enchantment.levels" xml:space="preserve">
+    <value>Levels</value>
+  </data>
+  <data name="Enchantment.middle_slot" xml:space="preserve">
+    <value>Middle slot</value>
+  </data>
+  <data name="Enchantment.tops_slot" xml:space="preserve">
+    <value>Top slot</value>
+  </data>
   <data name="error.auth" xml:space="preserve">
     <value>§8在刷新身份验证时接收到服务器错误：{0}</value>
   </data>
@@ -1905,6 +2242,9 @@ Recipes.Slots：合成的物品摆放方式，以从左到右、从上到下的�
   </data>
   <data name="error.invalid_response" xml:space="preserve">
     <value>§8对握手包的响应无效</value>
+  </data>
+  <data name="error.inventoryhandling_not_enabled" xml:space="preserve">
+    <value>This feature requires Inventory Handling to be enabled in order to work!</value>
   </data>
   <data name="error.join" xml:space="preserve">
     <value>加入服务器时发生错误。</value>
@@ -1968,6 +2308,9 @@ Recipes.Slots：合成的物品摆放方式，以从左到右、从上到下的�
   </data>
   <data name="error.setting.argument_syntax" xml:space="preserve">
     <value>{0}：无效语法，应为 --argname=value 或 --section.argname=value</value>
+  </data>
+  <data name="error.terrain_not_enabled" xml:space="preserve">
+    <value>This feature requires Terrain And Movements to be enabled in order to work!</value>
   </data>
   <data name="error.timeout" xml:space="preserve">
     <value>连接超时</value>
@@ -2291,5 +2634,23 @@ MCC正在使用默认配置运行。</value>
   </data>
   <data name="config.Main.Advanced.LoadMccTrans" xml:space="preserve">
     <value>在可用时加载应用于MCC的翻译，关闭则仅使用英语。</value>
+  </data>
+  <data name="cmd.setrnd.format" xml:space="preserve">
+    <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
+  </data>
+  <data name="exception.palette.healthfield" xml:space="preserve">
+    <value>Please update health field handling for this Minecraft version.</value>
+  </data>
+  <data name="bot.DiscordBridge.disconnected" xml:space="preserve">
+    <value>Successfully disconnected with MCC!</value>
+  </data>
+  <data name="cmd.execmulti.prevent" xml:space="preserve">
+    <value>You can not use execmulti or execif within execmulti command!</value>
+  </data>
+  <data name="cmd.move.desc_force" xml:space="preserve">
+    <value>force unsafe movements like falling or touching fire</value>
+  </data>
+  <data name="bot.autodig.no_inv_handle" xml:space="preserve">
+    <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
   </data>
 </root>
