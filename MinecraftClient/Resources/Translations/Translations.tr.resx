@@ -347,7 +347,7 @@
     <value>Mevcut olta mevcut değil. Belki kırık veya düşük dayanıklılık?</value>
   </data>
   <data name="bot.autoFish.start" xml:space="preserve">
-    <value>auto-fishing başladı.</value>
+    <value>auto-fishing başlatır.</value>
   </data>
   <data name="bot.autoFish.start_at" xml:space="preserve">
     <value>Balık avı {0:0.0} saniye içinde başlayacak.</value>
@@ -359,7 +359,7 @@
     <value>Balıkçılıktan elde edilen tüm eşyalar (tamamen doğru değil):</value>
   </data>
   <data name="bot.autoFish.stop" xml:space="preserve">
-    <value>auto-fishing durdu.</value>
+    <value>auto-fishing durdurur.</value>
   </data>
   <data name="bot.autoFish.switch" xml:space="preserve">
     <value>{0} slotunda ki çubuğa geçin, dayanıklılık {1}/64.</value>
