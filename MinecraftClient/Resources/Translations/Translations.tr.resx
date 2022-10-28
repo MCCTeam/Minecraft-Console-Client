@@ -208,7 +208,7 @@
     <value>Başarıyla yüklendi</value>
   </data>
   <data name="bot.autoCraft.missing_material" xml:space="preserve">
-    <value>Missing material: {0}</value>
+    <value>Eksik eşya: {0}</value>
   </data>
   <data name="bot.autoCraft.no_recipe_name" xml:space="preserve">
     <value>Lütfen oluşturmak istediğiniz tarifin adını belirtin.</value>
@@ -341,7 +341,7 @@
     <value>auto-fishing durdurur.</value>
   </data>
   <data name="bot.autoFish.no_inv_handle" xml:space="preserve">
-    <value>Inventory handling etkin değil. Çubuk dayanıklılığı kontrol edilemiyor ve çubuklar değiştirilemiyor.</value>
+    <value>Inventory Handling etkin değil. Olta dayanıklılığı kontrol edilemiyor ve oltalar değiştirilemiyor.</value>
   </data>
   <data name="bot.autoFish.no_rod" xml:space="preserve">
     <value>Mevcut olta mevcut değil. Belki kırık veya düşük dayanıklılık?</value>
@@ -497,10 +497,10 @@ cooldown: {6}</value>
     <value>Geçersiz yarıçap sağlandı, 0dan büyük geçerli bir tam sayı sağlamalısınız!</value>
   </data>
   <data name="bot.farmer.needs_inventory" xml:space="preserve">
-    <value>Farmer botu kullanmak için Inventory Handling  özelliğini açın</value>
+    <value>Farmer botu kullanmak için Inventory Handling özelliğini açın!</value>
   </data>
   <data name="bot.farmer.needs_terrain" xml:space="preserve">
-    <value>Farmer botu kullanmak için Terrain Handling özelliğini açın</value>
+    <value>Farmer botu kullanmak için Terrain and Movements özelliğini etkinleştirin!</value>
   </data>
   <data name="bot.farmer.not_implemented" xml:space="preserve">
     <value>1.13ün altında çalışmaz!</value>
@@ -870,7 +870,7 @@ Erişim kazanmak için bu sohbetin kimliğini yapılandırma dosyasındaki "Auth
     <value>§8Profil anahtarı önbelleği diske yazılamadı: {0}</value>
   </data>
   <data name="cache.saving" xml:space="preserve">
-    <value>§8Saving session cache to disk</value>
+    <value>§8Oturum önbelleğini diske kaydetme</value>
   </data>
   <data name="cache.saving_keys" xml:space="preserve">
     <value>§8Profil anahtarı önbelleğini diske kaydediliyor</value>
@@ -1088,7 +1088,7 @@ Görüntü kafa karıştırıcıysa ayarlarda EnableEmoji=false öğesini deği�
     <value>Zırh</value>
   </data>
   <data name="cmd.entityCmd.customname" xml:space="preserve">
-    <value>Custom Name</value>
+    <value>Özel İsim</value>
   </data>
   <data name="cmd.entityCmd.distance" xml:space="preserve">
     <value>Mesafe</value>
@@ -1355,7 +1355,7 @@ Kullanım yardımı için '/inventory help &lt;action&gt;' kullanın.
     <value>oyuncu listesini alın.</value>
   </data>
   <data name="cmd.list.players" xml:space="preserve">
-    <value>PlayerList: {0}</value>
+    <value>Oyuncu listesi: {0}</value>
   </data>
   <data name="cmd.log.desc" xml:space="preserve">
     <value>konsola bazı metinler kaydedin.</value>
@@ -1392,7 +1392,7 @@ Chunk yükleme durumunu kontrol etmek için "/chunk status {0:0.0} {1:0.0} {2:0.
     <value>O yönde hareket edilemiyor.</value>
   </data>
   <data name="cmd.move.disable" xml:space="preserve">
-    <value>Devre dışı bırakılıyor Terrain and Movements.</value>
+    <value>Terrain and Movements özelliği artık devre dışı.</value>
   </data>
   <data name="cmd.move.enable" xml:space="preserve">
     <value>Bir sonraki sunucu oturumunda, yeniden doğmada veya dünya değişiminde Terrain and Movements etkinleştirin.</value>
@@ -1536,7 +1536,7 @@ Sunucunuzu denetlemek veya birisinin sizinle ne zaman konuştuğunu algılamak i
   <data name="config.ChatBot.AntiAfk" xml:space="preserve">
     <value>Otomatik AFK bağlantısının kesilmesini önlemek için düzenli veya rastgele bir komut gönderin veya botun rastgele dolaşmasını sağlayın
 /!\ Sunucu kurallarınızın AFK karşıtı mekanizmaları yasaklamadığından emin olun!
-/!\ arazi kullanımı kullanıyorsanız, botun dolaşmasını önlemek için bir muhafaza içinde! (Önerilen boyut 5x5x5)</value>
+/!\ Terrain and Movements kullanıyorsanız, botun güvensiz dolaşmasını önlemek için bir muhafaza bir bölge içinde olsun! (Önerilen boyut 5x5x5)</value>
   </data>
   <data name="config.ChatBot.AntiAfk.Command" xml:space="preserve">
     <value>Sunucuya gönderme komutu.</value>
@@ -1548,7 +1548,7 @@ Sunucunuzu denetlemek veya birisinin sizinle ne zaman konuştuğunu algılamak i
     <value>Komutu gönderirken gizlice girip girmeyeceği.</value>
   </data>
   <data name="config.ChatBot.AntiAfk.Use_Terrain_Handling" xml:space="preserve">
-    <value>Botun hareket etmesini sağlamak için terrain and movement kullanın.</value>
+    <value>Botun hareket etmesini sağlamak için Terrain and Movements özelliğini etkinleştirin.</value>
   </data>
   <data name="config.ChatBot.AntiAfk.Walk_Range" xml:space="preserve">
     <value>Botun rastgele hareket edebileceği menzil (Not: Menzil ne kadar büyük olursa, bot o kadar yavaş olur)</value>
@@ -1645,7 +1645,7 @@ Bloğun adlandırılması için lütfen bakınız. https://github.com/MCCTeam/Mi
   </data>
   <data name="config.ChatBot.AutoDrop" xml:space="preserve">
     <value>Öğeleri envantere otomatik olarak bırak
-Botu kullanmak için Inventory Handling i açın
+Botu kullanmak için Inventory Handling özelliğini açın
 Bu botla kullanabileceğiniz güncel öğe türlerinin listesi için bu dosyaya bakın:
 https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
   </data>
@@ -1663,7 +1663,7 @@ Botu manuel olarak kontrol etmek için "/fish" kullanabilirsiniz.
 /!\ Bu botu kullanmadan önce sunucu kurallarının otomatik çiftçiliğe izin verdiğinden emin olun</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Antidespawn" xml:space="preserve">
-    <value>Daha önce değiştirmediyseniz yanlış olarak saklayın.</value>
+    <value>Daha önce değiştirmediyseniz false olarak bırakın.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Auto_Rod_Switch" xml:space="preserve">
     <value>Mevcut olta müsait olmadığında envanterden yeni bir olta geçin.</value>
@@ -1693,7 +1693,7 @@ Botu manuel olarak kontrol etmek için "/fish" kullanabilirsiniz.
     <value>Etkinleştirildiğinde, hareket paketinin alınması üzerine olta varlığının konumundaki değişikliği yazdıracak olan yukarıdaki iki eşiği ayarlamak için kullanılır.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Mainhand" xml:space="preserve">
-    <value>Çubuğu tutmak için ana eli veya yan eli kullanın.</value>
+    <value>Oltayı tutmak için ana eli veya yan eli seçin.</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Movements" xml:space="preserve">
     <value>"1-&gt;2-&gt;3-&gt;4-&gt;3-&gt;2-&gt;1-&gt;2-&gt;..." sırasına göre hareket eder ve her seferinde konumunu veya yüzünü veya her ikisini değiştirebilir. Sadece kaplamanın değiştirilmesi tavsiye edilir.</value>
@@ -1991,31 +1991,31 @@ Kullanım örnekleri:"/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&
     <value>Kapatılırsa, emoji daha basit bir karakterle değiştirilir (/chunk status için).</value>
   </data>
   <data name="config.Main.Advanced.entity_handling" xml:space="preserve">
-    <value>Entity handling aç/kkapat.</value>
+    <value>Entity handling aç/kapat.</value>
   </data>
   <data name="config.Main.Advanced.exit_on_failure" xml:space="preserve">
     <value>Etkileşimli olmayan komut dosyalarında MCC kullanmak için bir hata oluştuğunda doğrudan çıkış yapılıp yapılmayacağı.</value>
   </data>
   <data name="config.Main.Advanced.internal_cmd_char" xml:space="preserve">
-    <value>Use "none", "slash"(/) or "backslash"(\).</value>
+    <value>Komut kullanımı için "none", "slash"(/) or "backslash"(\).</value>
   </data>
   <data name="config.Main.Advanced.inventory_handling" xml:space="preserve">
     <value>Inventory handling aç/kapat.</value>
   </data>
   <data name="config.Main.Advanced.language" xml:space="preserve">
-    <value>Oyun içi yerel ayar kodunu girin, https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239 adresini kontrol edin</value>
+    <value>Oyun içi dil seçeneğini girin, ne gireceğinizi bilmiyorsanız bağlantıya göz atın https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239</value>
   </data>
   <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
     <value>Dil kodu geçersiz!</value>
   </data>
   <data name="config.Main.Advanced.mc_forge" xml:space="preserve">
-    <value>"auto", "no" veya "force" kullanın. Zorla etkinleştirme yalnızca MC 1.13+ için çalışır.</value>
+    <value>"auto", "no" veya "force" kullanın. force seçeneği MC 1.13 ve üzeri için geçerli.</value>
   </data>
   <data name="config.Main.Advanced.mc_version" xml:space="preserve">
     <value>"auto" veya "1.X.X" değerlerini kullanın. Sunucu bilgisi alımını atlamanıza izin verir.</value>
   </data>
   <data name="config.Main.Advanced.message_cooldown" xml:space="preserve">
-    <value>Her mesajın sunucuya gönderilmesi arasındaki minimum aralığı (saniye cinsinden) kontrol eder.</value>
+    <value>Mesaj gönderilmesi için arasındaki minimum bekleme zamanı (saniye cinsinden).</value>
   </data>
   <data name="config.Main.Advanced.minecraft_realms" xml:space="preserve">
     <value>Minecraft Realms dünyalarına katılmak için desteği etkinleştirin.</value>
@@ -2027,7 +2027,7 @@ Kullanım örnekleri:"/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&
     <value>Terminalin genişliğinden görüntü boyutunu hesaplarken kullanılan minimum genişlik.</value>
   </data>
   <data name="config.Main.Advanced.move_head_while_walking" xml:space="preserve">
-    <value>Hile önleme tetikleyicilerinden kaçınmak için yürürken kafa hareketini etkinleştirin.</value>
+    <value>Anti hile sistemlerine yakalanmamak için yürürken kafa hareket etmesi.</value>
   </data>
   <data name="config.Main.Advanced.movement_speed" xml:space="preserve">
     <value>2den yüksek bir hareket hızı hile olarak kabul edilebilir.</value>
@@ -2071,7 +2071,7 @@ Kullanım örnekleri: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"<
     <value>"none", "bit_4", "bit_8" veya "bit_24" kullanın. Bu, hata ayıklama günlüğü açılarak kontrol edilebilir.</value>
   </data>
   <data name="config.Main.Advanced.terrain_and_movements" xml:space="preserve">
-    <value>Terrain and Movements Daha fazla ram, cpu, bant genişliği kullanır ancak hareket etmenizi sağlar.</value>
+    <value>Terrain and Movements daha fazla ram, cpu, bant genişliği kullanarak hareket etmenizi sağlar.</value>
   </data>
   <data name="config.Main.Advanced.timeout" xml:space="preserve">
     <value>Sunucu ile TCP bağlantı zaman aşımını özelleştirin. (saniyeler içinde)</value>
@@ -2086,10 +2086,10 @@ Kullanım örnekleri: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"<
     <value>Oyun sunucusunun adresi "Host" alan adı veya IP adresi ile doldurulabilir. ("Port" alanı silinebilir, otomatik olarak çözülecektir)</value>
   </data>
   <data name="config.Main.General.method" xml:space="preserve">
-    <value>Microsoft Account sign-in method: "mcc" VEYA "browser". Giriş her zaman başarısız olursa, lütfen "browser" bir kez kullanmayı deneyin.</value>
+    <value>Microsoft girişi için method: "mcc" VEYA "browser". Giriş her zaman başarısız olursa, lütfen "browser" seçeneğini bir kez kullanmayı deneyin.</value>
   </data>
   <data name="config.Main.General.server_info" xml:space="preserve">
-    <value>Account type: "mojang" VEYA "microsoft". Konsolda etkileşimli oturum açmayı da etkiler.</value>
+    <value>Hesap türü: "mojang" VEYA "microsoft". Konsolda etkileşimli oturum açmayı da etkiler.</value>
   </data>
   <data name="config.MCSettings" xml:space="preserve">
     <value>Aşağıdaki ayarlar sunucuya gönderilir ve yalnızca dış görünümünüz gibi sunucu tarafı öğelerini etkiler.</value>
@@ -2140,7 +2140,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>Yalnızca parola korumalı proxyler için gereklidir.</value>
   </data>
   <data name="config.saving" xml:space="preserve">
-    <value>§aGeçerli ayar {0} olarak kaydedilir</value>
+    <value>§aGeçerli ayarlar {0} dosyasına kaydediliyor</value>
   </data>
   <data name="config.Signature" xml:space="preserve">
     <value>Sohbet imzasıyla ilgili ayarlar (minecraft 1.19+ı etkiler)</value>
@@ -2254,13 +2254,13 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>§8El Sıkışma paketine geçersiz yanıt</value>
   </data>
   <data name="error.inventoryhandling_not_enabled" xml:space="preserve">
-    <value>Bu özelliğin çalışması için Inventory Handling in etkinleştirilmesi gerekir!</value>
+    <value>Bu özelliğin çalışması için Inventory Handling özelliğinin etkinleştirilmesi gerekir!</value>
   </data>
   <data name="error.join" xml:space="preserve">
     <value>Bu sunucuya katılmaya çalışırken bir hata oluştu.</value>
   </data>
   <data name="error.login" xml:space="preserve">
-    <value>Login failed :</value>
+    <value>Giriş başarısız : </value>
   </data>
   <data name="error.login.blocked" xml:space="preserve">
     <value>Yanlış kullanıcı adı/şifre, kara listeye alınmış IP veya çok fazla oturum açma.</value>
@@ -2320,7 +2320,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>{0}: Geçersiz sözdizimi, bekleniyor --argname=value veya --section.argname=value</value>
   </data>
   <data name="error.terrain_not_enabled" xml:space="preserve">
-    <value>Bu özelliğin çalışması için Terrain and Movements etkinleştirilmesi gerekir!</value>
+    <value>Bu özelliğin çalışması için Terrain and Movements özelliğini etkinleştirin!</value>
   </data>
   <data name="error.timeout" xml:space="preserve">
     <value>Bağlantı zamanaşımı</value>
@@ -2371,7 +2371,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>§cVarlıklar şu anda bu MC sürümü için kullanılmamakta.</value>
   </data>
   <data name="extra.entity_required" xml:space="preserve">
-    <value>Lütfen önce yapılandırma dosyasında EntityHandling i etkinleştirin.</value>
+    <value>Lütfen önce ayar dosyasında EntityHandling özelliğini etkinleştirin.</value>
   </data>
   <data name="extra.inventory_close" xml:space="preserve">
     <value>Envanter # {0} kapatıldı.</value>
@@ -2389,16 +2389,16 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>Envanter # {0} açıldı: {1}</value>
   </data>
   <data name="extra.inventory_required" xml:space="preserve">
-    <value>Lütfen önce yapılandırma dosyasında InventoryHandling i etkinleştirin.</value>
+    <value>Lütfen önce ayar dosyasında InventoryHandling özelliğini etkinleştirin.</value>
   </data>
   <data name="extra.terrainandmovement_disabled" xml:space="preserve">
-    <value>§cArazi ve Hareketler şu anda bu MC sürümü için kullanılmamakta.</value>
+    <value>§cTerrain and Movements bu MC sürümü için kullanılmamakta.</value>
   </data>
   <data name="extra.terrainandmovement_enabled" xml:space="preserve">
-    <value>Arazi ve Hareketler artık aktif.</value>
+    <value>Terrain and Movements artık aktif.</value>
   </data>
   <data name="extra.terrainandmovement_required" xml:space="preserve">
-    <value>Lütfen önce yapılandırma dosyasında Arazi ve Hareketleri etkinleştirin.</value>
+    <value>Lütfen önce ayar dosyasında Terrain and Movements etkinleştirin.</value>
   </data>
   <data name="filemonitor.fail" xml:space="preserve">
     <value>§8[{0}] FileSystemWatcher başlatılamadı, Polling kullanılarak yeniden denendi</value>
@@ -2437,7 +2437,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>§8Mod listesi:</value>
   </data>
   <data name="forge.no_mod" xml:space="preserve">
-    <value>§8Sunucu, Forge u modsuz çalıştırıyor.</value>
+    <value>§8Sunucuya Forge kullanılmadan giriş yapılıyor.</value>
   </data>
   <data name="forge.registry" xml:space="preserve">
     <value>§8{0} girişli kayıt alındı</value>
@@ -2452,7 +2452,7 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>§8Forge protokolü sürümü: {0}</value>
   </data>
   <data name="forge.with_mod" xml:space="preserve">
-    <value>§8Sunucu, Forge u {0} mod ile çalıştırıyor.</value>
+    <value>§8{0} Forge modu ile giriş yapılıyor.</value>
   </data>
   <data name="general.available_cmd" xml:space="preserve">
     <value>Kullanılabilir komutlar: {0}</value>
@@ -2530,11 +2530,11 @@ Minecraft oyun sunucusuna bağlantı güvenlik duvarı tarafından engelleniyors
     <value>Sunucu Adresi: </value>
   </data>
   <data name="mcc.joined" xml:space="preserve">
-    <value>Sunucu başarıyla bağlandı.
+    <value>Sunucuya başarıyla bağlanıldı.
 Sunucudan çıkmak için '{0}quit' yazın.</value>
   </data>
   <data name="mcc.link" xml:space="preserve">
-    <value>Link: {0}</value>
+    <value>Bağlantı: {0}</value>
   </data>
   <data name="mcc.login" xml:space="preserve">
     <value>Giriş :</value>
@@ -2643,7 +2643,7 @@ Giriş yapılıyor...</value>
     <value>§8{0}:{1} adresine bağlanılıyor</value>
   </data>
   <data name="config.Main.Advanced.LoadMccTrans" xml:space="preserve">
-    <value>Load translations applied to MCC when available, turn it off to use English only.</value>
+    <value>Mümkün olduğunda MCC için yerel çeviri kullanın, yalnızca İngilizce'yi kullanmak için bu özelliği false ayarlayın.</value>
   </data>
   <data name="cmd.setrnd.format" xml:space="preserve">
     <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
