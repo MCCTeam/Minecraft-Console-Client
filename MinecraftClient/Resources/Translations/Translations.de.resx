@@ -658,7 +658,7 @@ cooldown: {6}</value>
     <value>Konnte Skript '{0}' nicht starten ({1}).</value>
   </data>
   <data name="bot.script.file_not_found" xml:space="preserve">
-    <value>File not found: '{0}'</value>
+    <value>Datei nicht gefunden: '{0}'</value>
   </data>
   <data name="bot.script.not_found" xml:space="preserve">
     <value>§8[MCC] [{0}] Konnte Skriptdatei nicht finden: {1}</value>

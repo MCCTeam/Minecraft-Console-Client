@@ -45,25 +45,25 @@ namespace MinecraftClient.ChatBots
 
                 if (Config.MaxDatabaseSize <= 0)
                 {
-                    LogToConsole(BotName, Translations.TryGet("bot.mailer.init_fail.db_size"));
+                    LogToConsole(BotName, Translations.bot_mailer_init_fail_db_size);
                     checkSuccessed = false;
                 }
 
                 if (Config.MaxMailsPerPlayer <= 0)
                 {
-                    LogToConsole(BotName, Translations.TryGet("bot.mailer.init_fail.max_mails"));
+                    LogToConsole(BotName, Translations.bot_mailer_init_fail_max_mails);
                     checkSuccessed = false;
                 }
 
                 if (Config.MailRetentionDays <= 0)
                 {
-                    LogToConsole(BotName, Translations.TryGet("bot.mailer.init_fail.mail_retention"));
+                    LogToConsole(BotName, Translations.bot_mailer_init_fail_mail_retention);
                     checkSuccessed = false;
                 }
 
                 if (!checkSuccessed)
                 {
-                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    LogToConsole(BotName, Translations.general_bot_unload);
                     Enabled = false;
                 }
             }
@@ -218,32 +218,32 @@ namespace MinecraftClient.ChatBots
         /// </summary>
         public override void Initialize()
         {
-            LogDebugToConsoleTranslated("bot.mailer.init");
-            LogDebugToConsoleTranslated("bot.mailer.init.db" + Config.DatabaseFile);
-            LogDebugToConsoleTranslated("bot.mailer.init.ignore" + Config.IgnoreListFile);
-            LogDebugToConsoleTranslated("bot.mailer.init.public" + Config.PublicInteractions);
-            LogDebugToConsoleTranslated("bot.mailer.init.max_mails" + Config.MaxMailsPerPlayer);
-            LogDebugToConsoleTranslated("bot.mailer.init.db_size" + Config.MaxDatabaseSize);
-            LogDebugToConsoleTranslated("bot.mailer.init.mail_retention" + Config.MailRetentionDays + " days");
+            LogDebugToConsole(Translations.bot_mailer_init);
+            LogDebugToConsole(Translations.bot_mailer_init_db + Config.DatabaseFile);
+            LogDebugToConsole(Translations.bot_mailer_init_ignore + Config.IgnoreListFile);
+            LogDebugToConsole(Translations.bot_mailer_init_public + Config.PublicInteractions);
+            LogDebugToConsole(Translations.bot_mailer_init_max_mails + Config.MaxMailsPerPlayer);
+            LogDebugToConsole(Translations.bot_mailer_init_db_size + Config.MaxDatabaseSize);
+            LogDebugToConsole(Translations.bot_mailer_init_mail_retention + Config.MailRetentionDays + " days");
 
             if (!File.Exists(Config.DatabaseFile))
             {
-                LogToConsoleTranslated("bot.mailer.create.db", Path.GetFullPath(Config.DatabaseFile));
+                LogToConsole(string.Format(Translations.bot_mailer_create_db, Path.GetFullPath(Config.DatabaseFile)));
                 new MailDatabase().SaveToFile(Config.DatabaseFile);
             }
 
             if (!File.Exists(Config.IgnoreListFile))
             {
-                LogToConsoleTranslated("bot.mailer.create.ignore", Path.GetFullPath(Config.IgnoreListFile));
+                LogToConsole(string.Format(Translations.bot_mailer_create_ignore, Path.GetFullPath(Config.IgnoreListFile)));
                 new IgnoreList().SaveToFile(Config.IgnoreListFile);
             }
 
             lock (readWriteLock)
             {
-                LogDebugToConsoleTranslated("bot.mailer.load.db", Path.GetFullPath(Config.DatabaseFile));
+                LogDebugToConsole(string.Format(Translations.bot_mailer_load_db, Path.GetFullPath(Config.DatabaseFile)));
                 mailDatabase = MailDatabase.FromFile(Config.DatabaseFile);
 
-                LogDebugToConsoleTranslated("bot.mailer.load.ignore", Path.GetFullPath(Config.IgnoreListFile));
+                LogDebugToConsole(string.Format(Translations.bot_mailer_load_ignore, Path.GetFullPath(Config.IgnoreListFile)));
                 ignoreList = IgnoreList.FromFile(Config.IgnoreListFile);
             }
 
@@ -251,7 +251,7 @@ namespace MinecraftClient.ChatBots
             mailDbFileMonitor = new FileMonitor(Path.GetDirectoryName(Config.DatabaseFile)!, Path.GetFileName(Config.DatabaseFile), FileMonitorCallback);
             ignoreListFileMonitor = new FileMonitor(Path.GetDirectoryName(Config.IgnoreListFile)!, Path.GetFileName(Config.IgnoreListFile), FileMonitorCallback);
 
-            RegisterChatBotCommand("mailer", Translations.Get("bot.mailer.cmd"), "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
+            RegisterChatBotCommand("mailer", Translations.bot_mailer_cmd, "mailer <getmails|addignored|getignored|removeignored>", ProcessInternalCommand);
         }
 
         /// <summary>
@@ -299,7 +299,7 @@ namespace MinecraftClient.ChatBots
                                         if (message.Length <= maxMessageLength)
                                         {
                                             Mail mail = new(username, recipient, message, anonymous, DateTime.Now);
-                                            LogToConsoleTranslated("bot.mailer.saving", mail.ToString());
+                                            LogToConsole(string.Format(Translations.bot_mailer_saving, mail.ToString()));
                                             lock (readWriteLock)
                                             {
                                                 mailDatabase.Add(mail);
@@ -317,7 +317,7 @@ namespace MinecraftClient.ChatBots
                             break;
                     }
                 }
-                else LogDebugToConsoleTranslated("bot.mailer.user_ignored", username);
+                else LogDebugToConsole(string.Format(Translations.bot_mailer_user_ignored, username));
             }
         }
 
@@ -329,7 +329,7 @@ namespace MinecraftClient.ChatBots
             DateTime dateNow = DateTime.Now;
             if (nextMailSend < dateNow)
             {
-                LogDebugToConsoleTranslated("bot.mailer.process_mails", DateTime.Now);
+                LogDebugToConsole(string.Format(Translations.bot_mailer_process_mails, DateTime.Now));
 
                 // Process at most 3 mails at a time to avoid spamming. Other mails will be processed on next mail send
                 HashSet<string> onlinePlayersLowercase = new(GetOnlinePlayers().Select(name => name.ToLower()));
@@ -338,7 +338,7 @@ namespace MinecraftClient.ChatBots
                     string sender = mail.Anonymous ? "Anonymous" : mail.Sender;
                     SendPrivateMessage(mail.Recipient, sender + " mailed: " + mail.Content);
                     mail.SetDelivered();
-                    LogDebugToConsoleTranslated("bot.mailer.delivered", mail.ToString());
+                    LogDebugToConsole(string.Format(Translations.bot_mailer_delivered, mail.ToString()));
                 }
 
                 lock (readWriteLock)
@@ -377,10 +377,10 @@ namespace MinecraftClient.ChatBots
                 switch (commandName)
                 {
                     case "getmails": // Sorry, I (ReinforceZwei) replaced "=" to "-" because it would affect the parsing of translation file (key=value)
-                        return Translations.Get("bot.mailer.cmd.getmails", string.Join("\n", mailDatabase));
+                        return string.Format(Translations.bot_mailer_cmd_getmails, string.Join("\n", mailDatabase));
 
                     case "getignored":
-                        return Translations.Get("bot.mailer.cmd.getignored", string.Join("\n", ignoreList));
+                        return string.Format(Translations.bot_mailer_cmd_getignored, string.Join("\n", ignoreList));
 
                     case "addignored":
                     case "removeignored":
@@ -397,7 +397,7 @@ namespace MinecraftClient.ChatBots
                                         ignoreList.SaveToFile(Config.IgnoreListFile);
                                     }
                                 }
-                                return Translations.Get("bot.mailer.cmd.ignore.added", args[1]);
+                                return string.Format(Translations.bot_mailer_cmd_ignore_added, args[1]);
                             }
                             else
                             {
@@ -409,13 +409,13 @@ namespace MinecraftClient.ChatBots
                                         ignoreList.SaveToFile(Config.IgnoreListFile);
                                     }
                                 }
-                                return Translations.Get("bot.mailer.cmd.ignore.removed", args[1]);
+                                return string.Format(Translations.bot_mailer_cmd_ignore_removed, args[1]);
                             }
                         }
-                        else return Translations.Get("bot.mailer.cmd.ignore.invalid", commandName);
+                        else return string.Format(Translations.bot_mailer_cmd_ignore_invalid, commandName);
                 }
             }
-            return Translations.Get("bot.mailer.cmd.help") + ": /help mailer";
+            return Translations.bot_mailer_cmd_help + ": /help mailer";
         }
     }
 }

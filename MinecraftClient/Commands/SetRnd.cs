@@ -6,8 +6,8 @@ namespace MinecraftClient.Commands
     class SetRnd : Command
     {
         public override string CmdName { get { return "setrnd"; } }
-        public override string CmdUsage { get { return Translations.Get("cmd.setrnd.format"); } }
-        public override string CmdDesc { get { return "cmd.setrnd.desc"; } }
+        public override string CmdUsage { get { return Translations.cmd_setrnd_format; } }
+        public override string CmdDesc { get { return Translations.cmd_setrnd_desc; } }
         private static readonly Random rand = new();
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
@@ -32,7 +32,7 @@ namespace MinecraftClient.Commands
                         }
                         catch (Exception)
                         {
-                            return Translations.Get("cmd.setrndnum.format");
+                            return Translations.cmd_setrndnum_format;
                         }
 
                         // switch the values if they were entered in the wrong way
@@ -44,7 +44,7 @@ namespace MinecraftClient.Commands
                         {
                             return string.Format("Set %{0}% to {1}.", args[0], Settings.Config.AppVar.GetVar(args[0])); //Success
                         }
-                        else return Translations.Get("cmd.setrndnum.format");
+                        else return Translations.cmd_setrndnum_format;
                     }
                     else
                     {
@@ -59,7 +59,7 @@ namespace MinecraftClient.Commands
                         {
                             return string.Format("Set %{0}% to {1}.", args[0], Settings.Config.AppVar.GetVar(args[0])); //Success
                         }
-                        else return Translations.Get("cmd.setrndstr.format");
+                        else return Translations.cmd_setrndstr_format;
                     }
                 }
                 else return GetCmdDescTranslated();

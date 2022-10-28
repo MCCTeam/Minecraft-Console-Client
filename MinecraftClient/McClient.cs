@@ -181,7 +181,7 @@ namespace MinecraftClient
                 client.ReceiveBufferSize = 1024 * 1024;
                 client.ReceiveTimeout = Config.Main.Advanced.TcpTimeout * 1000; // Default: 30 seconds
                 handler = Protocol.ProtocolHandler.GetProtocolHandler(client, protocolversion, forgeInfo, this);
-                Log.Info(Translations.Get("mcc.version_supported"));
+                Log.Info(Translations.mcc_version_supported);
 
                 timeoutdetector = new(new Thread(new ParameterizedThreadStart(TimeoutDetector)), new CancellationTokenSource());
                 timeoutdetector.Item1.Name = "MCC Connection timeout detector";
@@ -195,7 +195,7 @@ namespace MinecraftClient
                             BotLoad(bot, false);
                         botsOnHold.Clear();
 
-                        Log.Info(Translations.Get("mcc.joined", Config.Main.Advanced.InternalCmdChar.ToLogString()));
+                        Log.Info(string.Format(Translations.mcc_joined, Config.Main.Advanced.InternalCmdChar.ToLogString()));
 
                         cmdprompt = new CancellationTokenSource();
                         ConsoleInteractive.ConsoleReader.BeginReadThread(cmdprompt);
@@ -204,21 +204,21 @@ namespace MinecraftClient
                     }
                     else
                     {
-                        Log.Error(Translations.Get("error.login_failed"));
+                        Log.Error(Translations.error_login_failed);
                         goto Retry;
                     }
                 }
                 catch (Exception e)
                 {
                     Log.Error(e.GetType().Name + ": " + e.Message);
-                    Log.Error(Translations.Get("error.join"));
+                    Log.Error(Translations.error_join);
                     goto Retry;
                 }
             }
             catch (SocketException e)
             {
                 Log.Error(e.Message);
-                Log.Error(Translations.Get("error.connect"));
+                Log.Error(Translations.error_connect);
                 goto Retry;
             }
 
@@ -232,7 +232,7 @@ namespace MinecraftClient
             }
             if (ReconnectionAttemptsLeft > 0)
             {
-                Log.Info(Translations.Get("mcc.reconnect", ReconnectionAttemptsLeft));
+                Log.Info(string.Format(Translations.mcc_reconnect, ReconnectionAttemptsLeft));
                 Thread.Sleep(5000);
                 ReconnectionAttemptsLeft--;
                 Program.Restart();
@@ -394,7 +394,7 @@ namespace MinecraftClient
                         if (((CancellationToken)o!).IsCancellationRequested)
                             return;
 
-                        OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.timeout"));
+                        OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.error_timeout);
                         return;
                     }
                 }
@@ -466,22 +466,22 @@ namespace MinecraftClient
             switch (reason)
             {
                 case ChatBot.DisconnectReason.ConnectionLost:
-                    message = Translations.Get("mcc.disconnect.lost");
+                    message = Translations.mcc_disconnect_lost;
                     Log.Info(message);
                     break;
 
                 case ChatBot.DisconnectReason.InGameKick:
-                    Log.Info(Translations.Get("mcc.disconnect.server"));
+                    Log.Info(Translations.mcc_disconnect_server);
                     Log.Info(message);
                     break;
 
                 case ChatBot.DisconnectReason.LoginRejected:
-                    Log.Info(Translations.Get("mcc.disconnect.login"));
+                    Log.Info(Translations.mcc_disconnect_login);
                     Log.Info(message);
                     break;
 
                 case ChatBot.DisconnectReason.UserLogout:
-                    throw new InvalidOperationException(Translations.Get("exception.user_logout"));
+                    throw new InvalidOperationException(Translations.exception_user_logout);
             }
 
             //Process AutoRelog last to make sure other bots can perform their cleanup tasks first (issue #1517)
@@ -636,15 +636,15 @@ namespace MinecraftClient
                     string help_cmdname = Command.GetArgs(command)[0].ToLower();
                     if (help_cmdname == "help")
                     {
-                        response_msg = Translations.Get("icmd.help");
+                        response_msg = Translations.icmd_help;
                     }
                     else if (cmds.ContainsKey(help_cmdname))
                     {
                         response_msg = cmds[help_cmdname].GetCmdDescTranslated();
                     }
-                    else response_msg = Translations.Get("icmd.unknown", command_name);
+                    else response_msg = string.Format(Translations.icmd_unknown, command_name);
                 }
-                else response_msg = Translations.Get("icmd.list", String.Join(", ", cmd_names.ToArray()), Config.Main.Advanced.InternalCmdChar.ToChar());
+                else response_msg = string.Format(Translations.icmd_list, String.Join(", ", cmd_names.ToArray()), Config.Main.Advanced.InternalCmdChar.ToChar());
             }
             else if (cmds.ContainsKey(command_name))
             {
@@ -660,7 +660,7 @@ namespace MinecraftClient
                     {
                         if (e is not ThreadAbortException)
                         {
-                            Log.Warn(Translations.Get("icmd.error", bot.ToString() ?? string.Empty, e.ToString()));
+                            Log.Warn(string.Format(Translations.icmd_error, bot.ToString() ?? string.Empty, e.ToString()));
                         }
                         else throw; //ThreadAbortException should not be caught
                     }
@@ -668,7 +668,7 @@ namespace MinecraftClient
             }
             else
             {
-                response_msg = Translations.Get("icmd.unknown", command_name);
+                response_msg = string.Format(Translations.icmd_unknown, command_name);
                 return false;
             }
 
@@ -2407,7 +2407,7 @@ namespace MinecraftClient
             {
                 inventoryHandlingRequested = false;
                 inventoryHandlingEnabled = true;
-                Log.Info(Translations.Get("extra.inventory_enabled"));
+                Log.Info(Translations.extra_inventory_enabled);
             }
 
             ClearInventories();
@@ -2426,7 +2426,7 @@ namespace MinecraftClient
             {
                 terrainAndMovementsEnabled = true;
                 terrainAndMovementsRequested = false;
-                Log.Info(Translations.Get("extra.terrainandmovement_enabled"));
+                Log.Info(Translations.extra_terrainandmovement_enabled);
             }
 
             if (terrainAndMovementsEnabled)
@@ -2576,7 +2576,7 @@ namespace MinecraftClient
                 case Direction.South:
                     break;
                 default:
-                    throw new ArgumentException(Translations.Get("exception.unknown_direction"), nameof(direction));
+                    throw new ArgumentException(Translations.exception_unknown_direction, nameof(direction));
             }
 
             UpdateLocation(location, yaw, pitch);
@@ -2611,7 +2611,7 @@ namespace MinecraftClient
 
             if (Config.Main.Advanced.ShowChatLinks)
                 foreach (string link in links)
-                    Log.Chat(Translations.Get("mcc.link", link));
+                    Log.Chat(string.Format(Translations.mcc_link, link));
 
             DispatchBotEvent(bot => bot.GetText(messageText));
             DispatchBotEvent(bot => bot.GetText(messageText, message.content));
@@ -2636,8 +2636,8 @@ namespace MinecraftClient
 
             if (inventoryID != 0)
             {
-                Log.Info(Translations.Get("extra.inventory_open", inventoryID, inventory.Title));
-                Log.Info(Translations.Get("extra.inventory_interact"));
+                Log.Info(string.Format(Translations.extra_inventory_open, inventoryID, inventory.Title));
+                Log.Info(Translations.extra_inventory_interact);
                 DispatchBotEvent(bot => bot.OnInventoryOpen(inventoryID));
             }
         }
@@ -2658,7 +2658,7 @@ namespace MinecraftClient
 
             if (inventoryID != 0)
             {
-                Log.Info(Translations.Get("extra.inventory_close", inventoryID));
+                Log.Info(string.Format(Translations.extra_inventory_close, inventoryID));
                 DispatchBotEvent(bot => bot.OnInventoryClose(inventoryID));
             }
         }
@@ -2712,22 +2712,22 @@ namespace MinecraftClient
 
                     StringBuilder sb = new();
 
-                    sb.AppendLine(Translations.TryGet("Enchantment.enchantments_available") + ":");
+                    sb.AppendLine(Translations.Enchantment_enchantments_available + ":");
 
-                    sb.AppendLine(Translations.TryGet("Enchantment.tops_slot") + ":\t"
+                    sb.AppendLine(Translations.Enchantment_tops_slot + ":\t"
                         + EnchantmentMapping.GetEnchantmentName(topEnchantment) + " "
                         + EnchantmentMapping.ConvertLevelToRomanNumbers(topEnchantmentLevel) + " ("
-                        + topEnchantmentLevelRequirement + " " + Translations.TryGet("Enchantment.levels") + ")");
+                        + topEnchantmentLevelRequirement + " " + Translations.Enchantment_levels + ")");
 
-                    sb.AppendLine(Translations.TryGet("Enchantment.middle_slot") + ":\t"
+                    sb.AppendLine(Translations.Enchantment_middle_slot + ":\t"
                         + EnchantmentMapping.GetEnchantmentName(middleEnchantment) + " "
                         + EnchantmentMapping.ConvertLevelToRomanNumbers(middleEnchantmentLevel) + " ("
-                        + middleEnchantmentLevelRequirement + " " + Translations.TryGet("Enchantment.levels") + ")");
+                        + middleEnchantmentLevelRequirement + " " + Translations.Enchantment_levels + ")");
 
-                    sb.AppendLine(Translations.TryGet("Enchantment.bottom_slot") + ":\t"
+                    sb.AppendLine(Translations.Enchantment_bottom_slot + ":\t"
                         + EnchantmentMapping.GetEnchantmentName(bottomEnchantment) + " "
                         + EnchantmentMapping.ConvertLevelToRomanNumbers(bottomEnchantmentLevel) + " ("
-                        + bottomEnchantmentLevelRequirement + " " + Translations.TryGet("Enchantment.levels") + ")");
+                        + bottomEnchantmentLevelRequirement + " " + Translations.Enchantment_levels + ")");
 
                     Log.Info(sb.ToString());
 
@@ -3138,12 +3138,12 @@ namespace MinecraftClient
             {
                 if (Config.Main.Advanced.AutoRespawn)
                 {
-                    Log.Info(Translations.Get("mcc.player_dead_respawn"));
+                    Log.Info(Translations.mcc_player_dead_respawn);
                     respawnTicks = 10;
                 }
                 else
                 {
-                    Log.Info(Translations.Get("mcc.player_dead", Config.Main.Advanced.InternalCmdChar.ToLogString()));
+                    Log.Info(string.Format(Translations.mcc_player_dead, Config.Main.Advanced.InternalCmdChar.ToLogString()));
                 }
                 DispatchBotEvent(bot => bot.OnDeath());
             }

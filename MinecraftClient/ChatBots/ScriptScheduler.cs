@@ -58,26 +58,26 @@ namespace MinecraftClient.ChatBots
                             || (task.Trigger_On_Interval.Enable && task.Trigger_On_Interval.MinTime > 0))
                         {
                             if (Settings.Config.Logging.DebugMessages)
-                                LogToConsole(BotName, Translations.TryGet("bot.scriptScheduler.loaded_task", Task2String(task)));
+                                LogToConsole(BotName, string.Format(Translations.bot_scriptScheduler_loaded_task, Task2String(task)));
                             task.Trigger_On_Interval_Countdown = Settings.DoubleToTick(task.Trigger_On_Interval.MinTime); //Init countdown for interval
                         }
                         else
                         {
                             if (Settings.Config.Logging.DebugMessages)
-                                LogToConsole(BotName, Translations.TryGet("bot.scriptScheduler.no_trigger", Task2String(task)));
+                                LogToConsole(BotName, string.Format(Translations.bot_scriptScheduler_no_trigger, Task2String(task)));
                         }
                     }
                     else
                     {
                         task.Action ??= string.Empty;
                         if (Settings.Config.Logging.DebugMessages)
-                            LogToConsole(BotName, Translations.TryGet("bot.scriptScheduler.no_action", Task2String(task)));
+                            LogToConsole(BotName, string.Format(Translations.bot_scriptScheduler_no_action, Task2String(task)));
                     }
                 }
 
                 if (Enabled && TaskList.Length == 0)
                 {
-                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    LogToConsole(BotName, Translations.general_bot_unload);
                     Enabled = false;
                 }
             }
@@ -189,7 +189,7 @@ namespace MinecraftClient.ChatBots
                                     if (!task.Trigger_On_Time_Already_Triggered)
                                     {
                                         task.Trigger_On_Time_Already_Triggered = true;
-                                        LogDebugToConsoleTranslated("bot.scriptScheduler.running_time", task.Action);
+                                        LogDebugToConsole(string.Format(Translations.bot_scriptScheduler_running_time, task.Action));
                                         PerformInternalCommand(task.Action);
                                     }
                                 }
@@ -207,7 +207,7 @@ namespace MinecraftClient.ChatBots
                     {
                         if (task.Trigger_On_Login || (firstlogin_done == false && task.Trigger_On_First_Login))
                         {
-                            LogDebugToConsoleTranslated("bot.scriptScheduler.running_login", task.Action);
+                            LogDebugToConsole(string.Format(Translations.bot_scriptScheduler_running_login, task.Action));
                             PerformInternalCommand(task.Action);
                         }
                     }
@@ -227,7 +227,7 @@ namespace MinecraftClient.ChatBots
                         task.Trigger_On_Interval_Countdown = random.Next(
                             Settings.DoubleToTick(task.Trigger_On_Interval.MinTime), Settings.DoubleToTick(task.Trigger_On_Interval.MaxTime)
                         );
-                        LogDebugToConsoleTranslated("bot.scriptScheduler.running_inverval", task.Action);
+                        LogDebugToConsole(string.Format(Translations.bot_scriptScheduler_running_inverval, task.Action));
                         PerformInternalCommand(task.Action);
                     }
                     else task.Trigger_On_Interval_Countdown--;
@@ -243,8 +243,8 @@ namespace MinecraftClient.ChatBots
 
         private static string Task2String(TaskConfig task)
         {
-            return Translations.Get(
-                "bot.scriptScheduler.task",
+            return string.Format(
+                Translations.bot_scriptScheduler_task,
                 task.Trigger_On_First_Login,
                 task.Trigger_On_Login,
                 task.Trigger_On_Times.Enable,

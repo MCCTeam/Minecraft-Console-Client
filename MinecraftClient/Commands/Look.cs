@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "look"; } }
         public override string CmdUsage { get { return "look <x y z|yaw pitch|up|down|east|west|north|south>"; } }
-        public override string CmdDesc { get { return "cmd.look.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_look_desc; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
@@ -21,11 +21,11 @@ namespace MinecraftClient.Commands
                     const double maxDistance = 8.0;
                     (bool hasBlock, Location target, Block block) = RaycastHelper.RaycastBlock(handler, maxDistance, false);
                     if (!hasBlock)
-                        return Translations.Get("cmd.look.noinspection", maxDistance);
+                        return string.Format(Translations.cmd_look_noinspection, maxDistance);
                     else
                     {
                         Location current = handler.GetCurrentLocation(), target_center = target.ToCenter();
-                        return Translations.Get("cmd.look.inspection", block.Type, target.X, target.Y, target.Z,
+                        return string.Format(Translations.cmd_look_inspection, block.Type, target.X, target.Y, target.Z,
                             current.Distance(target_center), current.EyesLocation().Distance(target_center));
                     }
                 }
@@ -41,7 +41,7 @@ namespace MinecraftClient.Commands
                         case "west": direction = Direction.West; break;
                         case "north": direction = Direction.North; break;
                         case "south": direction = Direction.South; break;
-                        default: return Translations.Get("cmd.look.unknown", dirStr);
+                        default: return string.Format(Translations.cmd_look_unknown, dirStr);
                     }
 
                     handler.UpdateLocation(handler.GetCurrentLocation(), direction);
@@ -55,7 +55,7 @@ namespace MinecraftClient.Commands
                         float pitch = float.Parse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture);
 
                         handler.UpdateLocation(handler.GetCurrentLocation(), yaw, pitch);
-                        return Translations.Get("cmd.look.at", yaw.ToString("0.00"), pitch.ToString("0.00"));
+                        return string.Format(Translations.cmd_look_at, yaw.ToString("0.00"), pitch.ToString("0.00"));
                     }
                     catch (FormatException) { return GetCmdDescTranslated(); }
                 }
@@ -67,14 +67,14 @@ namespace MinecraftClient.Commands
                         Location block = Location.Parse(current, args[0], args[1], args[2]);
                         handler.UpdateLocation(current, block);
 
-                        return Translations.Get("cmd.look.block", block);
+                        return string.Format(Translations.cmd_look_block, block);
                     }
                     catch (FormatException) { return CmdUsage; }
                     
                 }
                 else return GetCmdDescTranslated();
             }
-            else return Translations.Get("extra.terrainandmovement_required");
+            else return Translations.extra_terrainandmovement_required;
         }
     }
 }

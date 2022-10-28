@@ -65,19 +65,19 @@ namespace MinecraftClient.ChatBots
         {
             if (GetProtocolVersion() < Protocol18Handler.MC_1_13_Version)
             {
-                LogToConsole(Translations.TryGet("bot.farmer.not_implemented"));
+                LogToConsole(Translations.bot_farmer_not_implemented);
                 return;
             }
 
             if (!GetTerrainEnabled())
             {
-                LogToConsole(Translations.TryGet("bot.farmer.needs_terrain"));
+                LogToConsole(Translations.bot_farmer_needs_terrain);
                 return;
             }
 
             if (!GetInventoryEnabled())
             {
-                LogToConsole(Translations.TryGet("bot.farmer.needs_inventory"));
+                LogToConsole(Translations.bot_farmer_needs_inventory);
                 return;
             }
 
@@ -91,10 +91,10 @@ namespace MinecraftClient.ChatBots
                 if (args[0].Equals("stop", StringComparison.OrdinalIgnoreCase))
                 {
                     if (!running)
-                        return Translations.TryGet("bot.farmer.already_stopped");
+                        return Translations.bot_farmer_already_stopped;
 
                     running = false;
-                    return Translations.TryGet("bot.farmer.stopping");
+                    return Translations.bot_farmer_stopping;
                 }
 
                 if (args[0].Equals("start", StringComparison.OrdinalIgnoreCase))
@@ -102,10 +102,10 @@ namespace MinecraftClient.ChatBots
                     if (args.Length >= 2)
                     {
                         if (running)
-                            return Translations.TryGet("bot.farmer.already_running");
+                            return Translations.bot_farmer_already_running;
 
                         if (!Enum.TryParse(args[1], true, out CropType whatToFarm))
-                            return Translations.TryGet("bot.farmer.invalid_crop_type");
+                            return Translations.bot_farmer_invalid_crop_type;
 
                         int radius = 30;
 
@@ -123,7 +123,7 @@ namespace MinecraftClient.ChatBots
 
                                 if (!currentArg.Contains(':'))
                                 {
-                                    LogToConsole("§x§1§0" + Translations.TryGet("bot.farmer.warining_invalid_parameter", currentArg));
+                                    LogToConsole("§x§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
                                     continue;
                                 }
 
@@ -131,7 +131,7 @@ namespace MinecraftClient.ChatBots
 
                                 if (parts.Length != 2)
                                 {
-                                    LogToConsole("§x§1§0" + Translations.TryGet("bot.farmer.warining_invalid_parameter", currentArg));
+                                    LogToConsole("§x§1§0" + string.Format(Translations.bot_farmer_warining_invalid_parameter, currentArg));
                                     continue;
                                 }
 
@@ -140,11 +140,11 @@ namespace MinecraftClient.ChatBots
                                     case "r":
                                     case "radius":
                                         if (!int.TryParse(parts[1], NumberStyles.Any, CultureInfo.CurrentCulture, out radius))
-                                            LogToConsole("§x§1§0" + Translations.TryGet("bot.farmer.invalid_radius"));
+                                            LogToConsole("§x§1§0" + Translations.bot_farmer_invalid_radius);
 
                                         if (radius <= 0)
                                         {
-                                            LogToConsole("§x§1§0" + Translations.TryGet("bot.farmer.invalid_radius"));
+                                            LogToConsole("§x§1§0" + Translations.bot_farmer_invalid_radius);
                                             radius = 30;
                                         }
 
@@ -157,7 +157,7 @@ namespace MinecraftClient.ChatBots
 
                                         if (parts[1].Equals("true") || parts[1].Equals("1"))
                                         {
-                                            LogToConsole("§x§1§0" + Translations.TryGet("bot.farmer.warining_force_unsafe"));
+                                            LogToConsole("§x§1§0" + Translations.bot_farmer_warining_force_unsafe);
                                             allowUnsafe = true;
                                         }
                                         else allowUnsafe = false;
@@ -171,7 +171,7 @@ namespace MinecraftClient.ChatBots
 
                                         if (parts[1].Equals("true") || parts[1].Equals("1"))
                                         {
-                                            LogToConsole("§w§1§f" + Translations.TryGet("bot.farmer.warining_allow_teleport"));
+                                            LogToConsole("§w§1§f" + Translations.bot_farmer_warining_allow_teleport);
                                             allowTeleport = true;
                                         }
                                         else allowTeleport = false;
@@ -204,7 +204,7 @@ namespace MinecraftClient.ChatBots
                 }
             }
 
-            return Translations.TryGet("bot.farmer.desc") + ": " + commandDescription;
+            return Translations.bot_farmer_desc + ": " + commandDescription;
         }
 
         public override void AfterGameJoined()
@@ -220,9 +220,9 @@ namespace MinecraftClient.ChatBots
 
         private void MainPorcess()
         {
-            LogToConsole("§y§1§f" + Translations.TryGet("bot.farmer.started"));
-            LogToConsole("§y§1§f " + Translations.TryGet("bot.farmer.crop_type") + ": " + cropType);
-            LogToConsole("§y§1§f " + Translations.TryGet("bot.farmer.radius") + ": " + farmingRadius);
+            LogToConsole("§y§1§f" + Translations.bot_farmer_started);
+            LogToConsole("§y§1§f " + Translations.bot_farmer_crop_type + ": " + cropType);
+            LogToConsole("§y§1§f " + Translations.bot_farmer_radius + ": " + farmingRadius);
 
             while (running)
             {
@@ -442,7 +442,7 @@ namespace MinecraftClient.ChatBots
                 Thread.Sleep(Config.Delay_Between_Tasks * 1000);
             }
 
-            LogToConsole(Translations.TryGet("bot.farmer.stopped"));
+            LogToConsole(Translations.bot_farmer_stopped);
         }
 
         private Material GetMaterialForCropType(CropType type)

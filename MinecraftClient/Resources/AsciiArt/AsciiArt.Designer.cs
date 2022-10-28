@@ -22,14 +22,14 @@ namespace MinecraftClient {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class DefaultConfigResource {
+    internal class AsciiArt {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal DefaultConfigResource() {
+        internal AsciiArt() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace MinecraftClient {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MinecraftClient.DefaultConfigResource", typeof(DefaultConfigResource).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MinecraftClient.Resources.AsciiArt.AsciiArt", typeof(AsciiArt).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -75,9 +75,9 @@ namespace MinecraftClient {
         ///║║ 5 ║ 6 ║ 7 ║ 8 ║ 9 ║10 ║11 ║12 ║13 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_BrewingStand {
+        internal static string Container_BrewingStand {
             get {
-                return ResourceManager.GetString("ContainerType_BrewingStand", resourceCulture);
+                return ResourceManager.GetString("Container.BrewingStand", resourceCulture);
             }
         }
         
@@ -96,9 +96,9 @@ namespace MinecraftClient {
         ///║║10 ║11 ║12 ║13 ║14 ║15 ║16 ║17 ║18 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Crafting {
+        internal static string Container_Crafting {
             get {
-                return ResourceManager.GetString("ContainerType_Crafting", resourceCulture);
+                return ResourceManager.GetString("Container.Crafting", resourceCulture);
             }
         }
         
@@ -117,9 +117,9 @@ namespace MinecraftClient {
         ///║║ 2 ║ 3 ║ 4 ║ 5 ║ 6 ║ 7 ║ 8 ║ 9 ║10 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_EnchantingTable {
+        internal static string Container_EnchantingTable {
             get {
-                return ResourceManager.GetString("ContainerType_EnchantingTable", resourceCulture);
+                return ResourceManager.GetString("Container.EnchantingTable", resourceCulture);
             }
         }
         
@@ -138,9 +138,9 @@ namespace MinecraftClient {
         ///║╔═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╗║
         ///║║ 3 ║ 4 ║ 5 ║ 6 ║ 7 [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Furnace {
+        internal static string Container_Furnace {
             get {
-                return ResourceManager.GetString("ContainerType_Furnace", resourceCulture);
+                return ResourceManager.GetString("Container.Furnace", resourceCulture);
             }
         }
         
@@ -159,9 +159,9 @@ namespace MinecraftClient {
         ///║║ 9 ║10 ║11 ║12 ║13 ║14 ║15 ║16 ║17 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Generic_3x3 {
+        internal static string Container_Generic_3x3 {
             get {
-                return ResourceManager.GetString("ContainerType_Generic_3x3", resourceCulture);
+                return ResourceManager.GetString("Container.Generic_3x3", resourceCulture);
             }
         }
         
@@ -180,9 +180,9 @@ namespace MinecraftClient {
         ///║║27 ║28 ║29 ║30 ║31 ║32 ║33 ║34 ║35 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Generic_9x3 {
+        internal static string Container_Generic_9x3 {
             get {
-                return ResourceManager.GetString("ContainerType_Generic_9x3", resourceCulture);
+                return ResourceManager.GetString("Container.Generic_9x3", resourceCulture);
             }
         }
         
@@ -201,9 +201,9 @@ namespace MinecraftClient {
         ///║║36 ║37 ║38 ║39 ║40 ║41 ║42 ║43 ║44 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Generic_9x6 {
+        internal static string Container_Generic_9x6 {
             get {
-                return ResourceManager.GetString("ContainerType_Generic_9x6", resourceCulture);
+                return ResourceManager.GetString("Container.Generic_9x6", resourceCulture);
             }
         }
         
@@ -222,9 +222,9 @@ namespace MinecraftClient {
         ///║  ╚══╝         ╚══╝                  ║
         ///║                    [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Grindstone {
+        internal static string Container_Grindstone {
             get {
-                return ResourceManager.GetString("ContainerType_Grindstone", resourceCulture);
+                return ResourceManager.GetString("Container.Grindstone", resourceCulture);
             }
         }
         
@@ -243,9 +243,9 @@ namespace MinecraftClient {
         ///║║23 ║24 ║25 ║26 ║27 ║28 ║29 ║30 ║31 ║║
         ///║╚═══╩═══╩═══╩═══╩══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_Hopper {
+        internal static string Container_Hopper {
             get {
-                return ResourceManager.GetString("ContainerType_Hopper", resourceCulture);
+                return ResourceManager.GetString("Container.Hopper", resourceCulture);
             }
         }
         
@@ -264,186 +264,9 @@ namespace MinecraftClient {
         ///║║ 9 ║10 ║11 ║12 ║13 ║14 ║15 ║16 ║17 ║║
         ///║╠═══╬═══╬═══╬═══╬══ [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string ContainerType_PlayerInventory {
+        internal static string Container_PlayerInventory {
             get {
-                return ResourceManager.GetString("ContainerType_PlayerInventory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [mcc]
-        ///# Messages from MCC itself
-        ///mcc.help_us_translate=
-        ///mcc.run_with_default_settings=
-        ///mcc.settings_generated=
-        ///mcc.has_update=
-        ///mcc.login=Login :
-        ///mcc.login_basic_io=Bitte gib einen Nutzernamen oder eine E-Mail deiner Wahl ein.
-        ///mcc.password=Passwort :
-        ///mcc.password_basic_io=Bitte gib das Passwort für {0} ein.
-        ///mcc.password_hidden=Passwort : {0}
-        ///mcc.offline=§8Das Programm läuft im Offline-Modus.
-        ///mcc.session_invalid=§8Gespeicherte Session ungültig oder abgelaufen.
-        ///mcc.session_valid=§8Gespeicherte Ses [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Translation_de {
-            get {
-                return ResourceManager.GetString("Translation_de", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [mcc]
-        ///# Messages from MCC itself
-        ///mcc.help_us_translate=Help us translate MCC: {0}
-        ///mcc.run_with_default_settings=\nMCC is running with default settings.
-        ///mcc.settings_generated=§cSettings file MinecraftClient.ini has been generated.
-        ///mcc.has_update=§eNew version of MCC available: {0}
-        ///mcc.login=Login :
-        ///mcc.login_basic_io=Please type the username or email of your choice.
-        ///mcc.password=Password: 
-        ///mcc.password_basic_io=Please type the password for {0}.
-        ///mcc.password_hidden=Password(invisible): {0}
-        ///mcc.offline=§8You  [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Translation_en {
-            get {
-                return ResourceManager.GetString("Translation_en", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [mcc]
-        ///# Messages from MCC itself
-        ///mcc.help_us_translate=
-        ///mcc.run_with_default_settings=
-        ///mcc.settings_generated=
-        ///mcc.has_update=
-        ///mcc.login=Connexion :
-        ///mcc.login_basic_io=Veuillez saisir un nom d&apos;utilisateur ou une adresse email.
-        ///mcc.password=Mot de passe :
-        ///mcc.password_basic_io=Saisissez le mot de passe pour {0}.
-        ///mcc.password_hidden=Mot de passe : {0}
-        ///mcc.offline=§8Vous avez choisi d&apos;utiliser le mode hors ligne.
-        ///mcc.session_invalid=§8Le cache de la session est invalide ou a expiré.
-        ///mcc.session_va [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Translation_fr {
-            get {
-                return ResourceManager.GetString("Translation_fr", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [mcc]
-        ///# Messages from MCC itself
-        ///mcc.help_us_translate=
-        ///mcc.run_with_default_settings=
-        ///mcc.settings_generated=
-        ///mcc.has_update=
-        ///mcc.login=Логин :
-        ///mcc.login_basic_io=Пожалуйста, введите имя пользователя или email по вашему выбору.
-        ///mcc.password=Пароль:
-        ///mcc.password_basic_io=Пожалуйста, введите пароль для {0}.
-        ///mcc.password_hidden=Пароль: {0}
-        ///mcc.offline=§8Вы выбрали запуск в автономном режиме.
-        ///mcc.session_invalid=§8Кэшированная сессия недействительна или истекла.
-        ///mcc.session_valid=§8Кэшированная се [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Translation_ru {
-            get {
-                return ResourceManager.GetString("Translation_ru", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [mcc]
-        ///# Messages from MCC itself
-        ///mcc.help_us_translate=MCCyi çevirmemize yardımcı olun: {0}
-        ///mcc.run_with_default_settings=\nMCC varsayılan ayarlarla çalışıyor.
-        ///mcc.settings_generated=§cAyarlar dosyası MinecraftClient.ini oluşturuldu.
-        ///mcc.has_update=§eMCCnin yeni sürümü mevcut: {0}
-        ///mcc.login=Login :
-        ///mcc.login_basic_io=Lütfen tercih ettiğiniz kullanıcı adını veya e-posta adresini yazın.
-        ///mcc.password=Password :
-        ///mcc.password_basic_io=Lütfen {0} için şifreyi yazın.
-        ///mcc.password_hidden=Password : {0}
-        ///m [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Translation_tr {
-            get {
-                return ResourceManager.GetString("Translation_tr", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [mcc]
-        ///# Messages from MCC itself
-        ///mcc.help_us_translate=
-        ///mcc.run_with_default_settings=
-        ///mcc.settings_generated=
-        ///mcc.has_update=
-        ///mcc.login=Đăng nhập:
-        ///mcc.login_basic_io=Hãy nhập địa chỉ email hoặc tên tài khoản của bạn:
-        ///mcc.password=Mật khẩu:
-        ///mcc.password_basic_io=Hãy nhập mật khẩu cho {0}.
-        ///mcc.password_hidden=Password : {0}
-        ///mcc.offline=§8Bạn chọn sử dụng chế độ ngoại tuyến.
-        ///mcc.session_invalid=§8Phiên không hợp lệ hoặc đã hết hạn.
-        ///mcc.session_valid=§8Phiên vẫn còn hợp lệ cho {0}.
-        ///mcc.profile_ke [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Translation_vi {
-            get {
-                return ResourceManager.GetString("Translation_vi", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [mcc]
-        ///# Messages from MCC itself
-        ///mcc.help_us_translate=帮助我们翻译MCC：{0}
-        ///mcc.run_with_default_settings=\nMCC正在使用默认配置运行。
-        ///mcc.settings_generated=§c配置文件 MinecraftClient.ini 已经生成。
-        ///mcc.has_update=§e新版本的MCC已经推出：{0}
-        ///mcc.login=账户名：
-        ///mcc.login_basic_io=请输入用户名或邮箱。
-        ///mcc.password=密码：
-        ///mcc.password_basic_io=请输入用户 {0} 的密码。
-        ///mcc.password_hidden=密码(不会显示)：{0}
-        ///mcc.offline=§8您正在使用离线模式。
-        ///mcc.session_invalid=§8会话缓存无效或已过期。
-        ///mcc.session_valid=§8{0}的会话缓存仍然有效。
-        ///mcc.profile_key_invalid=§8缓存的聊天签名密钥需要刷新。
-        ///mcc.profile_key_valid=§8{0 [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Translation_zh_Hans {
-            get {
-                return ResourceManager.GetString("Translation_zh_Hans", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to [mcc]
-        ///# Messages from MCC itself
-        ///mcc.help_us_translate=幫助我們翻譯MCC：{0}
-        ///mcc.run_with_default_settings=\nMCC正在使用預設配置執行。
-        ///mcc.settings_generated=§c配置檔案 MinecraftClient.ini 已經生成。
-        ///mcc.has_update=§e新版本的MCC已經推出：{0}
-        ///mcc.login=賬戶名：
-        ///mcc.login_basic_io=請輸入使用者名稱或郵箱。
-        ///mcc.password=密碼：
-        ///mcc.password_basic_io=請輸入使用者 {0} 的密碼。
-        ///mcc.password_hidden=密碼(不會顯示)：{0}
-        ///mcc.offline=§8您正在使用離線模式。
-        ///mcc.session_invalid=§8會話快取無效或已過期。
-        ///mcc.session_valid=§8{0}的會話快取仍然有效。
-        ///mcc.profile_key_invalid=§8快取的聊天簽名金鑰需要重新整理。
-        ///mcc.profile_key_valid [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string Translation_zh_Hant {
-            get {
-                return ResourceManager.GetString("Translation_zh_Hant", resourceCulture);
+                return ResourceManager.GetString("Container_PlayerInventory", resourceCulture);
             }
         }
     }
