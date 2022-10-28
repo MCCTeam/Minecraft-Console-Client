@@ -658,7 +658,7 @@ cooldown: {6}</value>
     <value>指令碼'{0}'執行失敗 ({1})。</value>
   </data>
   <data name="bot.script.file_not_found" xml:space="preserve">
-    <value>找不到檔案：'{0}'</value>
+    <value>找不到檔案： '{0}'</value>
   </data>
   <data name="bot.script.not_found" xml:space="preserve">
     <value>§8[MCC] [{0}] 找不到指令碼檔案：{1}</value>
