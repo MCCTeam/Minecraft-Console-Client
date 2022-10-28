@@ -2178,7 +2178,7 @@ For Telegram message formatting, check the following: https://sendpulse.com/blog
     <value>§8已成功从磁盘中加载聊天签名密钥。</value>
   </data>
   <data name="debug.request" xml:space="preserve">
-    <value>§8正在请求{0}</value>
+    <value>§8正在请求{0}...</value>
   </data>
   <data name="debug.session_cache_fail" xml:space="preserve">
     <value>§8无法从磁盘加载缓存的会话数据。</value>
