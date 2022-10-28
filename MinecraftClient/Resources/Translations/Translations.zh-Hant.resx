@@ -142,10 +142,10 @@
     <value>攻擊冷卻時間值不能小於0，已使用自動作為預設值</value>
   </data>
   <data name="bot.autoCraft.aborted" xml:space="preserve">
-    <value>製作被終止！請檢查可用材料。</value>
+    <value>合成被終止！請檢查可用材料。</value>
   </data>
   <data name="bot.autoCraft.alias" xml:space="preserve">
-    <value>自動製作ChatBot命令的別名</value>
+    <value>自動合成ChatBot命令的別名</value>
   </data>
   <data name="bot.autoCraft.available_cmd" xml:space="preserve">
     <value>可用命令：{0}。可使用 /autocraft help &lt;命令名&gt; 瞭解更多資訊。您可以使用 /ac 作為命令別名。</value>
@@ -154,7 +154,7 @@
     <value>容器#{0}被AutoCraft關閉</value>
   </data>
   <data name="bot.autoCraft.cmd" xml:space="preserve">
-    <value>自動製作ChatBot命令</value>
+    <value>自動合成ChatBot命令</value>
   </data>
   <data name="bot.autoCraft.cmd.list" xml:space="preserve">
     <value>已載入{0}個配方：{1}</value>
@@ -163,7 +163,7 @@
     <value>將配置重置為預設值</value>
   </data>
   <data name="bot.autoCraft.craft_fail" xml:space="preserve">
-    <value>製作失敗！等待更多材料</value>
+    <value>合成失敗！等待更多材料</value>
   </data>
   <data name="bot.autoCraft.debug.no_config" xml:space="preserve">
     <value>找不到配置。請新建一個。</value>
@@ -193,10 +193,10 @@
     <value>將預設示例配置寫入預設位置。</value>
   </data>
   <data name="bot.autoCraft.help.start" xml:space="preserve">
-    <value>開始製作。用法：/autocraft start &lt;配方名稱&gt;</value>
+    <value>開始合成。用法：/autocraft start &lt;配方名稱&gt;</value>
   </data>
   <data name="bot.autoCraft.help.stop" xml:space="preserve">
-    <value>停止當前正在進行的製作過程</value>
+    <value>停止當前正在進行的合成過程</value>
   </data>
   <data name="bot.autocraft.invaild_result" xml:space="preserve">
     <value>無效的輸出物品！</value>
@@ -211,7 +211,7 @@
     <value>缺失材料：{0}</value>
   </data>
   <data name="bot.autoCraft.no_recipe_name" xml:space="preserve">
-    <value>請指定要製作的配方名稱。</value>
+    <value>請指定要合成的配方名稱。</value>
   </data>
   <data name="bot.autoCraft.recipe_not_exist" xml:space="preserve">
     <value>指定的配方名稱不存在。請檢查配置檔案。</value>
@@ -220,13 +220,13 @@
     <value>AutoCraft啟動中：{0}</value>
   </data>
   <data name="bot.autoCraft.start_fail" xml:space="preserve">
-    <value>無法啟動AutoCraft。請檢查用於製作{0}的可用材料</value>
+    <value>無法啟動AutoCraft。請檢查用於合成{0}的可用材料</value>
   </data>
   <data name="bot.autoCraft.stop" xml:space="preserve">
     <value>AutoCraft已停止</value>
   </data>
   <data name="bot.autoCraft.table_not_found" xml:space="preserve">
-    <value>找不到工作臺</value>
+    <value>找不到工作台</value>
   </data>
   <data name="bot.autoCraft.timeout" xml:space="preserve">
     <value>動作超時！原因：{0}</value>
@@ -943,13 +943,13 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>試圖在位於 (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}) 上的床上睡覺，結果：{3}</value>
   </data>
   <data name="cmd.blockinfo.BlocksAround" xml:space="preserve">
-    <value>Blocks around</value>
+    <value>附近的方塊</value>
   </data>
   <data name="cmd.blockinfo.BlockType" xml:space="preserve">
-    <value>Block type</value>
+    <value>方塊類型</value>
   </data>
   <data name="cmd.blockinfo.desc" xml:space="preserve">
-    <value>Reports the type of the block on the provided coordinates. (Use -s to report blocks around the target block).</value>
+    <value>回報提供坐標的方塊種類。（使用 -s 來回報目標四周的方塊）</value>
   </data>
   <data name="cmd.blockinfo.Negative" xml:space="preserve">
     <value>Negative</value>
@@ -1052,31 +1052,31 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>未知物品：{0}</value>
   </data>
   <data name="cmd.enchant.clicked" xml:space="preserve">
-    <value>Sent a click to the server, if you have enough levels and if you have placed the items in the correct slots it should enchant!</value>
+    <value>已傳送按鍵給伺服器。如果你有足夠的經驗值和已將物品擺放在正確的物品欄，物品應該會被附魔！</value>
   </data>
   <data name="cmd.enchant.desc" xml:space="preserve">
-    <value>Enchant an item when you have the Enchantment table opened and the list of enchants recieved.</value>
+    <value>使用已開啟的附魔台來附魔物品。</value>
   </data>
   <data name="cmd.enchant.enchanting_no_item" xml:space="preserve">
-    <value>You must put an item inside the enchanting table in slot 0!</value>
+    <value>你必須將物品放在附魔台的欄位0！</value>
   </data>
   <data name="cmd.enchant.enchanting_no_lapis" xml:space="preserve">
-    <value>You must put at least 3 lapis lazuli inside the enchanting table in slot 1!</value>
+    <value>你必須在附魔台的欄位1放置至少3個青金石！</value>
   </data>
   <data name="cmd.enchant.enchanting_table_not_opened" xml:space="preserve">
-    <value>You must open a an enchanting table in order to use this option!</value>
+    <value>你必須先開啟附魔台才能使用這個選項！</value>
   </data>
   <data name="cmd.enchant.invalid_slot" xml:space="preserve">
-    <value>Invalid slot provided (Available: top, middle, bottom)!</value>
+    <value>提供了無效的欄位（可選：top, middle, bottom）</value>
   </data>
   <data name="cmd.enchant.no_enchantments" xml:space="preserve">
-    <value>You must first put an item to enchant to the enchanting table in order to get enchantments from the server, then you can execute this command!</value>
+    <value>你必須先將物品放置在附魔台並從伺服器獲得附魔選項才能使用這個指令！</value>
   </data>
   <data name="cmd.enchant.no_levels" xml:space="preserve">
-    <value>You do not have enouhg levels to enchant! (Your current level is {0}, you need to be level {1}).</value>
+    <value>你的等級不足夠附魔！（你目前等級為{0}，你需要等級{1}）</value>
   </data>
   <data name="cmd.enchant.not_clicked" xml:space="preserve">
-    <value>Could not click!</value>
+    <value>無法單擊！</value>
   </data>
   <data name="cmd.entityCmd.attacked" xml:space="preserve">
     <value>已攻擊實體</value>
@@ -1211,7 +1211,7 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>開始跟隨 {0}！</value>
   </data>
   <data name="cmd.follow.stopped" xml:space="preserve">
-    <value>Stopped!</value>
+    <value>已停止！</value>
   </data>
   <data name="cmd.follow.stopping" xml:space="preserve">
     <value>已停止！</value>
@@ -2639,24 +2639,24 @@ MCC正在使用預設配置執行。</value>
     <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
   </data>
   <data name="exception.palette.healthfield" xml:space="preserve">
-    <value>Please update health field handling for this Minecraft version.</value>
+    <value>請為此Minecraft版本更新血量欄位處理。</value>
   </data>
   <data name="bot.DiscordBridge.disconnected" xml:space="preserve">
-    <value>Successfully disconnected with MCC!</value>
+    <value>成功與 MCC 斷開連線</value>
   </data>
   <data name="cmd.execmulti.prevent" xml:space="preserve">
-    <value>You can not use execmulti or execif within execmulti command!</value>
+    <value>你不能在 execmulti 指令中使用 execmulti 或 execif 指令</value>
   </data>
   <data name="cmd.move.desc_force" xml:space="preserve">
-    <value>force unsafe movements like falling or touching fire</value>
+    <value>強制進行不安全的移動，例如掉落或觸碰火</value>
   </data>
   <data name="bot.autodig.no_inv_handle" xml:space="preserve">
-    <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
+    <value>庫存處理未啟用，無法自動切換工具。</value>
   </data>
   <data name="mcc.use_new_config" xml:space="preserve">
-    <value>Please use the newly generated MinecraftClient.ini</value>
+    <value>請使用新建立的 MinecraftClient.ini</value>
   </data>
   <data name="mcc.backup_old_config" xml:space="preserve">
-    <value>The old MinecraftClient.ini has been backed up as {0}</value>
+    <value>已將舊的 MinecraftClient.ini 備份為 {0}</value>
   </data>
 </root>
