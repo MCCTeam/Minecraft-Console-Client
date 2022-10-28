@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>Kleur test: Uw terminal zou moeten tonen {0}</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
     <value>§cWeather change: It is no longer a thunderstorm.§r</value>
@@ -2550,7 +2550,7 @@ Typ '{0}quit' om de server te verlaten.</value>
     <value>§8U koos ervoor om in offline modus te werken.</value>
   </data>
   <data name="mcc.password" xml:space="preserve">
-    <value>Wachtwoord : </value>
+    <value>Wachtwoord: </value>
   </data>
   <data name="mcc.password_basic_io" xml:space="preserve">
     <value>Typ het wachtwoord voor {0}.</value>
