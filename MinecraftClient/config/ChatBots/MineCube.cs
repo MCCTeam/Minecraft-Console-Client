@@ -18,7 +18,7 @@ class MineCube : ChatBot
 	{
 		if (!GetTerrainEnabled())
 		{
-			LogToConsole(Translations.Get("extra.terrainandmovement_required"));
+			LogToConsole(Translations.extra_terrainandmovement_required);
 			UnloadBot();
 			return;
 		}

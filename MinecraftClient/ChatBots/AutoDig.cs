@@ -107,17 +107,17 @@ namespace MinecraftClient.ChatBots
         {
             if (!GetTerrainEnabled())
             {
-                LogToConsoleTranslated("extra.terrainandmovement_required");
-                LogToConsoleTranslated("general.bot_unload");
+                LogToConsole(Translations.extra_terrainandmovement_required);
+                LogToConsole(Translations.general_bot_unload);
                 UnloadBot();
                 return;
             }
 
             inventoryEnabled = GetInventoryEnabled();
             if (!inventoryEnabled && Config.Auto_Tool_Switch)
-                LogToConsoleTranslated("bot.autodig.no_inv_handle");
+                LogToConsole(Translations.bot_autodig_no_inv_handle);
 
-            RegisterChatBotCommand("digbot", Translations.Get("bot.digbot.cmd"), GetHelp(), CommandHandler);
+            RegisterChatBotCommand("digbot", Translations.bot_autodig_cmd, GetHelp(), CommandHandler);
         }
 
         public string CommandHandler(string cmd, string[] args)
@@ -132,10 +132,10 @@ namespace MinecraftClient.ChatBots
                             counter = 0;
                             state = State.WaitingStart;
                         }
-                        return Translations.Get("bot.autodig.start");
+                        return Translations.bot_autodig_start;
                     case "stop":
                         StopDigging();
-                        return Translations.Get("bot.autodig.stop");
+                        return Translations.bot_autodig_stop;
                     case "help":
                         return GetCommandHelp(args.Length >= 2 ? args[1] : "");
                     default:
@@ -150,7 +150,7 @@ namespace MinecraftClient.ChatBots
             if (Config.Auto_Start_Delay > 0)
             {
                 double delay = Config.Auto_Start_Delay;
-                LogToConsole(Translations.Get("bot.autodig.start_delay", delay));
+                LogToConsole(string.Format(Translations.bot_autodig_start_delay, delay));
                 lock (stateLock)
                 {
                     counter = Settings.DoubleToTick(delay);
@@ -201,7 +201,7 @@ namespace MinecraftClient.ChatBots
                     case State.Digging:
                         if (++counter > Settings.DoubleToTick(Config.Dig_Timeout))
                         {
-                            LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autodig.dig_timeout"));
+                            LogToConsole(GetTimestamp() + ": " + Translations.bot_autodig_dig_timeout);
                             state = State.WaitingStart;
                             counter = 0;
                         }
@@ -223,7 +223,7 @@ namespace MinecraftClient.ChatBots
                     {
                         AlreadyWaitting = true;
                         if (Config.Log_Block_Dig)
-                            LogToConsole(Translations.Get("cmd.dig.too_far"));
+                            LogToConsole(Translations.cmd_dig_too_far);
                     }
                     return false;
                 }
@@ -233,7 +233,7 @@ namespace MinecraftClient.ChatBots
                     {
                         AlreadyWaitting = true;
                         if (Config.Log_Block_Dig)
-                            LogToConsole(Translations.Get("cmd.dig.no_block"));
+                            LogToConsole(Translations.cmd_dig_no_block);
                     }
                     return false;
                 }
@@ -247,12 +247,12 @@ namespace MinecraftClient.ChatBots
                         {
                             currentDig = blockLoc;
                             if (Config.Log_Block_Dig)
-                                LogToConsole(Translations.Get("cmd.dig.dig", blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString()));
+                                LogToConsole(string.Format(Translations.cmd_dig_dig, blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString()));
                             return true;
                         }
                         else
                         {
-                            LogToConsole(Translations.Get("cmd.dig.fail"));
+                            LogToConsole(Translations.cmd_dig_fail);
                             return false;
                         }
                     }
@@ -262,7 +262,7 @@ namespace MinecraftClient.ChatBots
                         {
                             AlreadyWaitting = true;
                             if (Config.Log_Block_Dig)
-                                LogToConsole(Translations.Get("bot.autodig.not_allow"));
+                                LogToConsole(Translations.bot_autodig_not_allow);
                         }
                         return false;
                     }
@@ -273,7 +273,7 @@ namespace MinecraftClient.ChatBots
                     {
                         AlreadyWaitting = true;
                         if (Config.Log_Block_Dig)
-                            LogToConsole(Translations.Get("bot.autodig.not_allow"));
+                            LogToConsole(Translations.bot_autodig_not_allow);
                     }
                     return false;
                 }
@@ -308,12 +308,12 @@ namespace MinecraftClient.ChatBots
                     {
                         currentDig = target;
                         if (Config.Log_Block_Dig)
-                            LogToConsole(Translations.Get("cmd.dig.dig", target.X, target.Y, target.Z, targetBlock.GetTypeString()));
+                            LogToConsole(string.Format(Translations.cmd_dig_dig, target.X, target.Y, target.Z, targetBlock.GetTypeString()));
                         return true;
                     }
                     else
                     {
-                        LogToConsole(Translations.Get("cmd.dig.fail"));
+                        LogToConsole(Translations.cmd_dig_fail);
                         return false;
                     }
                 }
@@ -323,7 +323,7 @@ namespace MinecraftClient.ChatBots
                     {
                         AlreadyWaitting = true;
                         if (Config.Log_Block_Dig)
-                            LogToConsole(Translations.Get("cmd.dig.no_block"));
+                            LogToConsole(Translations.cmd_dig_no_block);
                     }
                     return false;
                 }
@@ -342,12 +342,12 @@ namespace MinecraftClient.ChatBots
                         {
                             currentDig = blockLoc;
                             if (Config.Log_Block_Dig)
-                                LogToConsole(Translations.Get("cmd.dig.dig", blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString()));
+                                LogToConsole(string.Format(Translations.cmd_dig_dig, blockLoc.X, blockLoc.Y, blockLoc.Z, block.GetTypeString()));
                             return true;
                         }
                         else
                         {
-                            LogToConsole(Translations.Get("cmd.dig.fail"));
+                            LogToConsole(Translations.cmd_dig_fail);
                             return false;
                         }
                     }
@@ -357,7 +357,7 @@ namespace MinecraftClient.ChatBots
                 {
                     AlreadyWaitting = true;
                     if (Config.Log_Block_Dig)
-                        LogToConsole(Translations.Get("cmd.dig.no_block"));
+                        LogToConsole(Translations.cmd_dig_no_block);
                 }
                 return false;
             }
@@ -404,7 +404,7 @@ namespace MinecraftClient.ChatBots
 
         private static string GetHelp()
         {
-            return Translations.Get("bot.autodig.available_cmd", "start, stop, help");
+            return string.Format(Translations.bot_autodig_available_cmd, "start, stop, help");
         }
 
         private string GetCommandHelp(string cmd)
@@ -412,9 +412,9 @@ namespace MinecraftClient.ChatBots
             return cmd.ToLower() switch
             {
 #pragma warning disable format // @formatter:off
-                "start"     =>   Translations.Get("bot.autodig.help.start"),
-                "stop"      =>   Translations.Get("bot.autodig.help.stop"),
-                "help"      =>   Translations.Get("bot.autodig.help.help"),
+                "start"     =>   Translations.bot_autodig_help_start,
+                "stop"      =>   Translations.bot_autodig_help_stop,
+                "help"      =>   Translations.bot_autodig_help_help,
                 _           =>    GetHelp(),
 #pragma warning restore format // @formatter:on
             };

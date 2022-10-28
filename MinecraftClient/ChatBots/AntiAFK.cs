@@ -43,7 +43,7 @@ namespace MinecraftClient.ChatBots
                 if (Walk_Range <= 0)
                 {
                     Walk_Range = 5;
-                    LogToConsole(BotName, Translations.TryGet("bot.antiafk.invalid_walk_range"));
+                    LogToConsole(BotName, Translations.bot_antiafk_invalid_walk_range);
                 }
 
                 Delay.min = Math.Max(1.0, Delay.min);
@@ -55,7 +55,7 @@ namespace MinecraftClient.ChatBots
                 if (Delay.min > Delay.max)
                 {
                     (Delay.min, Delay.max) = (Delay.max, Delay.min);
-                    LogToConsole(BotName, Translations.TryGet("bot.antiafk.swapping"));
+                    LogToConsole(BotName, Translations.bot_antiafk_swapping);
                 }
 
                 Command ??= string.Empty;
@@ -96,7 +96,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (!GetTerrainEnabled())
                 {
-                    LogToConsole(Translations.TryGet("bot.antiafk.not_using_terrain_handling"));
+                    LogToConsole(Translations.bot_antiafk_not_using_terrain_handling);
                 }
             }
         }

@@ -1,0 +1,7 @@
+files:
+  - source: /MinecraftClient/Resources/Translations/Translations.resx
+    translation: /MinecraftClient/Resources/Translations/Translations%osx_code%
+  - source: /MinecraftClient/Resources/AsciiArt/AsciiArt.resx
+    translation: /MinecraftClient/Resources/AsciiArt/AsciiArt%osx_code%
+  - source: /README.md
+    translation: /README/README-%language%.md
