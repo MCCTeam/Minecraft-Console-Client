@@ -7,12 +7,12 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "changeslot"; } }
         public override string CmdUsage { get { return "changeslot <1-9>"; } }
-        public override string CmdDesc { get { return "cmd.changeSlot.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_changeSlot_desc; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (!handler.GetInventoryEnabled())
-                return Translations.Get("extra.inventory_required");
+                return Translations.extra_inventory_required;
 
             if (HasArg(command))
             {
@@ -23,17 +23,17 @@ namespace MinecraftClient.Commands
                 }
                 catch (FormatException)
                 {
-                    return Translations.Get("cmd.changeSlot.nan");
+                    return Translations.cmd_changeSlot_nan;
                 }
                 if (slot >= 1 && slot <= 9)
                 {
                     if (handler.ChangeSlot(slot -= 1))
                     {
-                        return Translations.Get("cmd.changeSlot.changed", (slot += 1));
+                        return string.Format(Translations.cmd_changeSlot_changed, (slot += 1));
                     }
                     else
                     {
-                        return Translations.Get("cmd.changeSlot.fail");
+                        return Translations.cmd_changeSlot_fail;
                     }
                 }
             }

@@ -107,24 +107,24 @@ namespace MinecraftClient.Protocol.Handlers
 
             if (handler.GetTerrainEnabled() && protocolVersion > MC_1_19_2_Version)
             {
-                log.Error(Translations.Get("extra.terrainandmovement_disabled"));
+                log.Error(Translations.extra_terrainandmovement_disabled);
                 handler.SetTerrainEnabled(false);
             }
 
             if (handler.GetInventoryEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_2_Version))
             {
-                log.Error(Translations.Get("extra.inventory_disabled"));
+                log.Error(Translations.extra_inventory_disabled);
                 handler.SetInventoryEnabled(false);
             }
             if (handler.GetEntityHandlingEnabled() && (protocolVersion < MC_1_10_Version || protocolVersion > MC_1_19_2_Version))
             {
-                log.Error(Translations.Get("extra.entity_disabled"));
+                log.Error(Translations.extra_entity_disabled);
                 handler.SetEntityHandlingEnabled(false);
             }
 
             // Block palette
             if (protocolVersion > MC_1_19_2_Version && handler.GetTerrainEnabled())
-                throw new NotImplementedException(Translations.Get("exception.palette.block"));
+                throw new NotImplementedException(Translations.exception_palette_block);
 
             if (protocolVersion >= MC_1_19_Version)
                 Block.Palette = new Palette119();
@@ -143,7 +143,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             // Entity palette
             if (protocolVersion > MC_1_19_2_Version && handler.GetEntityHandlingEnabled())
-                throw new NotImplementedException(Translations.Get("exception.palette.entity"));
+                throw new NotImplementedException(Translations.exception_palette_entity);
 
             if (protocolVersion >= MC_1_19_Version)
                 entityPalette = new EntityPalette119();
@@ -164,7 +164,7 @@ namespace MinecraftClient.Protocol.Handlers
 
             // Item palette
             if (protocolVersion > MC_1_19_2_Version && handler.GetInventoryEnabled())
-                throw new NotImplementedException(Translations.Get("exception.palette.item"));
+                throw new NotImplementedException(Translations.exception_palette_item);
 
             if (protocolVersion >= MC_1_19_Version)
                 itemPalette = new ItemPalette119();
@@ -587,7 +587,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         bool lastVerifyResult = player.IsMessageChainLegal();
                                         verifyResult = player.VerifyMessage(signedChat, timestamp, salt, ref headerSignature, ref precedingSignature, lastSeenMessages);
                                         if (lastVerifyResult && !verifyResult)
-                                            log.Warn(Translations.Get("chat.message_chain_broken", senderDisplayName));
+                                            log.Warn(string.Format(Translations.chat_message_chain_broken, senderDisplayName));
                                     }
                                 }
 
@@ -649,7 +649,7 @@ namespace MinecraftClient.Protocol.Handlers
                                         bool lastVerifyResult = player.IsMessageChainLegal();
                                         verifyResult = player.VerifyMessageHead(ref precedingSignature, ref headerSignature, ref bodyDigest);
                                         if (lastVerifyResult && !verifyResult)
-                                            log.Warn(Translations.Get("chat.message_chain_broken", player.Name));
+                                            log.Warn(string.Format(Translations.chat_message_chain_broken, player.Name));
                                     }
                                 }
                             }
@@ -1647,7 +1647,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                                 int healthField; // See https://wiki.vg/Entity_metadata#Living_Entity
                                 if (protocolVersion > MC_1_19_2_Version)
-                                    throw new NotImplementedException(Translations.Get("exception.palette.healthfield"));
+                                    throw new NotImplementedException(Translations.exception_palette_healthfield);
                                 else if (protocolVersion >= MC_1_17_Version) // 1.17 and above
                                     healthField = 9;
                                 else if (protocolVersion >= MC_1_14_Version) // 1.14 and above
@@ -1655,7 +1655,7 @@ namespace MinecraftClient.Protocol.Handlers
                                 else if (protocolVersion >= MC_1_10_Version) // 1.10 and above
                                     healthField = 7;
                                 else
-                                    throw new NotImplementedException(Translations.Get("exception.palette.healthfield"));
+                                    throw new NotImplementedException(Translations.exception_palette_healthfield);
 
                                 if (metadata.TryGetValue(healthField, out object? healthObj) && healthObj != null && healthObj.GetType() == typeof(float))
                                     handler.OnEntityHealth(EntityID, (float)healthObj);
@@ -1788,7 +1788,7 @@ namespace MinecraftClient.Protocol.Handlers
                 if (innerException is ThreadAbortException || innerException is SocketException || innerException.InnerException is SocketException)
                     throw; //Thread abort or Connection lost rather than invalid data
                 throw new System.IO.InvalidDataException(
-                    Translations.Get("exception.packet_process",
+                    string.Format(Translations.exception_packet_process,
                         packetPalette.GetIncommingTypeById(packetID),
                         packetID,
                         protocolVersion,
@@ -1953,12 +1953,12 @@ namespace MinecraftClient.Protocol.Handlers
                 }
                 else if (packetID == 0x02) //Login successful
                 {
-                    log.Info(Translations.Get("mcc.server_offline"));
+                    log.Info(Translations.mcc_server_offline);
                     login_phase = false;
 
                     if (!pForge.CompleteForgeHandshake())
                     {
-                        log.Error(Translations.Get("error.forge"));
+                        log.Error(Translations.error_forge);
                         return false;
                     }
 
@@ -1978,11 +1978,11 @@ namespace MinecraftClient.Protocol.Handlers
             RSACryptoServiceProvider RSAService = CryptoHandler.DecodeRSAPublicKey(serverPublicKey)!;
             byte[] secretKey = CryptoHandler.ClientAESPrivateKey ?? CryptoHandler.GenerateAESPrivateKey();
 
-            log.Debug(Translations.Get("debug.crypto"));
+            log.Debug(Translations.debug_crypto);
 
             if (serverIDhash != "-")
             {
-                log.Info(Translations.Get("mcc.session"));
+                log.Info(Translations.mcc_session);
 
                 bool needCheckSession = true;
                 if (session.ServerPublicKey != null && session.SessionPreCheckTask != null
@@ -2005,7 +2005,7 @@ namespace MinecraftClient.Protocol.Handlers
                     }
                     else
                     {
-                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.Get("mcc.session_fail"));
+                        handler.OnConnectionLost(ChatBot.DisconnectReason.LoginRejected, Translations.mcc_session_fail);
                         return false;
                     }
                 }
@@ -2047,7 +2047,7 @@ namespace MinecraftClient.Protocol.Handlers
                 (int packetID, Queue<byte> packetData) = ReadNextPacket();
                 if (packetID < 0 || loopPrevention-- < 0) // Failed to read packet or too many iterations (issue #1150)
                 {
-                    handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.Get("error.invalid_encrypt"));
+                    handler.OnConnectionLost(ChatBot.DisconnectReason.ConnectionLost, Translations.error_invalid_encrypt);
                     return false;
                 }
                 else if (packetID == 0x00) //Login rejected
@@ -2083,7 +2083,7 @@ namespace MinecraftClient.Protocol.Handlers
 
                     if (!pForge.CompleteForgeHandshake())
                     {
-                        log.Error(Translations.Get("error.forge_encrypt"));
+                        log.Error(Translations.error_forge_encrypt);
                         return false;
                     }
 
@@ -2221,7 +2221,7 @@ namespace MinecraftClient.Protocol.Handlers
                             // Check for forge on the server.
                             Protocol18Forge.ServerInfoCheckForge(jsonData, ref forgeInfo);
 
-                            ConsoleIO.WriteLineFormatted(Translations.Get("mcc.server_protocol", version, protocolVersion + (forgeInfo != null ? Translations.Get("mcc.with_forge") : "")));
+                            ConsoleIO.WriteLineFormatted(string.Format(Translations.mcc_server_protocol, version, protocolVersion + (forgeInfo != null ? Translations.mcc_with_forge : "")));
 
                             return true;
                         }

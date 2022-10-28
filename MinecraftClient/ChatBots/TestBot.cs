@@ -14,11 +14,11 @@
 
             if (IsPrivateMessage(text, ref message, ref username))
             {
-                LogToConsoleTranslated("bot.testBot.told", username, message);
+                LogToConsole(string.Format(Translations.bot_testBot_told, username, message));
             }
             else if (IsChatMessage(text, ref message, ref username))
             {
-                LogToConsoleTranslated("bot.testBot.said", username, message);
+                LogToConsole(string.Format(Translations.bot_testBot_said, username, message));
             }
         }
     }

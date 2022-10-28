@@ -41,16 +41,16 @@ namespace MinecraftClient.ChatBots
         {
             if (!GetEntityHandlingEnabled())
             {
-                LogToConsoleTranslated("extra.entity_required");
-                LogToConsoleTranslated("general.bot_unload");
+                LogToConsole(Translations.extra_entity_required);
+                LogToConsole(Translations.general_bot_unload);
                 UnloadBot();
                 return;
             }
 
             if (!GetTerrainEnabled())
             {
-                LogToConsoleTranslated("extra.terrainandmovement_required");
-                LogToConsoleTranslated("general.bot_unload");
+                LogToConsole(Translations.extra_terrainandmovement_required);
+                LogToConsole(Translations.general_bot_unload);
                 UnloadBot();
                 return;
             }
@@ -65,44 +65,48 @@ namespace MinecraftClient.ChatBots
                 if (args[0].Equals("stop", StringComparison.OrdinalIgnoreCase))
                 {
                     if (_playerToFollow == null)
-                        return Translations.TryGet("cmd.follow.already_stopped");
+                        return Translations.cmd_follow_already_stopped;
 
                     _playerToFollow = null;
-                    return Translations.TryGet("cmd.follow.stopping");
+                    return Translations.cmd_follow_stopping;
                 }
                 else
                 {
                     if (!IsValidName(args[0]))
-                        return Translations.TryGet("cmd.follow.invalid_name");
+                        return Translations.cmd_follow_invalid_name;
 
                     Entity? player = GetEntities().Values.ToList().Find(entity =>
                         entity.Type == EntityType.Player && !string.IsNullOrEmpty(entity.Name) && entity.Name.Equals(args[0], StringComparison.OrdinalIgnoreCase));
 
                     if (player == null)
-                        return Translations.TryGet("cmd.follow.invalid_player");
+                        return Translations.cmd_follow_invalid_player;
 
                     if (!CanMoveThere(player.Location))
-                        return Translations.TryGet("cmd.follow.cant_reach_player");
+                        return Translations.cmd_follow_cant_reach_player;
 
                     if (_playerToFollow != null && _playerToFollow.Equals(args[0], StringComparison.OrdinalIgnoreCase))
-                        return Translations.TryGet("cmd.follow.already_following", _playerToFollow);
+                        return string.Format(Translations.cmd_follow_already_following, _playerToFollow);
 
-                    string result = Translations.TryGet(_playerToFollow != null ? "cmd.follow.switched" : "cmd.follow.started", player.Name!);
+                    string result;
+                    if (_playerToFollow != null)
+                        result = string.Format(Translations.cmd_follow_switched, player.Name!);
+                    else
+                        result = string.Format(Translations.cmd_follow_started, player.Name!);
                     _playerToFollow = args[0].Trim().ToLower();
 
-                    LogToConsoleTranslated("cmd.follow.note");
+                    LogToConsole(Translations.cmd_follow_note);
 
                     if (args.Length == 2 && args[1].Equals("-f", StringComparison.OrdinalIgnoreCase))
                     {
                         _unsafeEnabled = true;
-                        LogToConsoleTranslated("cmd.follow.unsafe_enabled");
+                        LogToConsole(Translations.cmd_follow_unsafe_enabled);
                     }
 
                     return result;
                 }
             }
 
-            return Translations.TryGet("cmd.follow.desc") + ": " + Translations.TryGet("cmd.follow.usage");
+            return Translations.cmd_follow_desc + ": " + Translations.cmd_follow_usage;
         }
 
         public override void Update()
@@ -146,8 +150,8 @@ namespace MinecraftClient.ChatBots
 
             if (_playerToFollow != null && !string.IsNullOrEmpty(entity.Name) && _playerToFollow.Equals(entity.Name, StringComparison.OrdinalIgnoreCase))
             {
-                LogToConsoleTranslated("cmd.follow.player_came_to_the_range", _playerToFollow);
-                LogToConsoleTranslated("cmd.follow.resuming");
+                LogToConsole(string.Format(Translations.cmd_follow_player_came_to_the_range, _playerToFollow));
+                LogToConsole(Translations.cmd_follow_resuming);
             }
         }
 
@@ -158,8 +162,8 @@ namespace MinecraftClient.ChatBots
 
             if (_playerToFollow != null && !string.IsNullOrEmpty(entity.Name) && _playerToFollow.Equals(entity.Name, StringComparison.OrdinalIgnoreCase))
             {
-                LogToConsoleTranslated("cmd.follow.player_left_the_range", _playerToFollow);
-                LogToConsoleTranslated("cmd.follow.pausing");
+                LogToConsole(string.Format(Translations.cmd_follow_player_left_the_range, _playerToFollow));
+                LogToConsole(Translations.cmd_follow_pausing);
             }
         }
 
@@ -167,8 +171,8 @@ namespace MinecraftClient.ChatBots
         {
             if (_playerToFollow != null && !string.IsNullOrEmpty(name) && _playerToFollow.Equals(name, StringComparison.OrdinalIgnoreCase))
             {
-                LogToConsoleTranslated("cmd.follow.player_left", _playerToFollow);
-                LogToConsoleTranslated("cmd.follow.stopping");
+                LogToConsole(string.Format(Translations.cmd_follow_player_left, _playerToFollow));
+                LogToConsole(Translations.cmd_follow_stopping);
                 _playerToFollow = null;
             }
         }

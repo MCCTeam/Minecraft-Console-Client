@@ -25,12 +25,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\AppIcon.ico" />
-    <Content Include="Resources\containers\ContainerType.BrewingStand.txt" />
-    <Content Include="Resources\containers\ContainerType.Crafting.txt" />
-    <Content Include="Resources\containers\ContainerType.Generic_3x3.txt" />
-    <Content Include="Resources\containers\ContainerType.Generic_9x3.txt" />
-    <Content Include="Resources\containers\ContainerType.Generic_9x6.txt" />
-    <Content Include="Resources\containers\ContainerType.PlayerInventory.txt" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DnsClient" Version="1.6.1" />
@@ -78,8 +72,27 @@
     <ProjectReference Include="..\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive\ConsoleInteractive.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Update="DefaultConfigResource.resx">
-      <Generator></Generator>
+    <Compile Update="Resources\AsciiArt\AsciiArt.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AsciiArt.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\Translations\Translations.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Translations.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\AsciiArt\AsciiArt.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>AsciiArt.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>MinecraftClient</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Translations\Translations.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Translations.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>MinecraftClient</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

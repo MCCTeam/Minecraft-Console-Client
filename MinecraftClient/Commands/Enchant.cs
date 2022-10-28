@@ -8,12 +8,12 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "enchant"; } }
         public override string CmdUsage { get { return "enchant <top|middle|bottom>"; } }
-        public override string CmdDesc { get { return "cmd.enchant.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_enchant_desc; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {
             if (!handler.GetInventoryEnabled())
-                return Translations.TryGet("error.inventoryhandling_not_enabled");
+                return Translations.error_inventoryhandling_not_enabled;
 
             if (HasArg(command))
             {
@@ -28,7 +28,7 @@ namespace MinecraftClient.Commands
                 };
 
                 if (slotId == -1)
-                    return Translations.TryGet("cmd.enchant.invalid_slot");
+                    return Translations.cmd_enchant_invalid_slot;
 
                 Container? enchantingTable = null;
 
@@ -42,28 +42,28 @@ namespace MinecraftClient.Commands
                 }
 
                 if (enchantingTable == null)
-                    return Translations.TryGet("cmd.enchant.enchanting_table_not_opened");
+                    return Translations.cmd_enchant_enchanting_table_not_opened;
 
                 int[] emptySlots = enchantingTable.GetEmpytSlots();
 
                 if (emptySlots.Contains(0))
-                    return Translations.TryGet("cmd.enchant.enchanting_no_item");
+                    return Translations.cmd_enchant_enchanting_no_item;
 
                 if (emptySlots.Contains(1))
-                    return Translations.TryGet("cmd.enchant.enchanting_no_lapis");
+                    return Translations.cmd_enchant_enchanting_no_lapis;
 
                 Item lapisSlot = enchantingTable.Items[1];
 
                 if (lapisSlot.Type != ItemType.LapisLazuli)
-                    return Translations.TryGet("cmd.enchant.enchanting_no_lapis");
+                    return Translations.cmd_enchant_enchanting_no_lapis;
 
                 if (lapisSlot.Count < 3)
-                    return Translations.TryGet("cmd.enchant.enchanting_no_lapis");
+                    return Translations.cmd_enchant_enchanting_no_lapis;
 
                 EnchantmentData? enchantment = handler.GetLastEnchantments();
 
                 if (enchantment == null)
-                    return Translations.TryGet("cmd.enchant.no_enchantments");
+                    return Translations.cmd_enchant_no_enchantments;
 
                 short requiredLevel = slotId switch
                 {
@@ -74,9 +74,9 @@ namespace MinecraftClient.Commands
                 };
 
                 if (handler.GetLevel() < requiredLevel)
-                    return Translations.TryGet("cmd.enchant.no_levels", handler.GetLevel(), requiredLevel);
+                    return string.Format(Translations.cmd_enchant_no_levels, handler.GetLevel(), requiredLevel);
 
-                return handler.ClickContainerButton(enchantingTable.ID, slotId) ? Translations.TryGet("cmd.enchant.clicked") : Translations.TryGet("cmd.enchant.not_clicked");
+                return handler.ClickContainerButton(enchantingTable.ID, slotId) ? Translations.cmd_enchant_clicked : Translations.cmd_enchant_not_clicked;
             }
 
             return GetCmdDescTranslated();

@@ -48,26 +48,26 @@ namespace MinecraftClient.ChatBots
                         Config.Enabled = true;
                         inventoryUpdated = 0;
                         OnUpdateFinish();
-                        return Translations.Get("bot.autoDrop.on");
+                        return Translations.bot_autoDrop_on;
                     case "off":
                         Config.Enabled = false;
-                        return Translations.Get("bot.autoDrop.off");
+                        return Translations.bot_autoDrop_off;
                     case "add":
                         if (args.Length >= 2)
                         {
                             if (Enum.TryParse(args[1], true, out ItemType item))
                             {
                                 Config.Items.Add(item);
-                                return Translations.Get("bot.autoDrop.added", item.ToString());
+                                return string.Format(Translations.bot_autoDrop_added, item.ToString());
                             }
                             else
                             {
-                                return Translations.Get("bot.autoDrop.incorrect_name", args[1]);
+                                return string.Format(Translations.bot_autoDrop_incorrect_name, args[1]);
                             }
                         }
                         else
                         {
-                            return Translations.Get("cmd.inventory.help.usage") + ": add <item name>";
+                            return Translations.cmd_inventory_help_usage + ": add <item name>";
                         }
                     case "remove":
                         if (args.Length >= 2)
@@ -77,30 +77,30 @@ namespace MinecraftClient.ChatBots
                                 if (Config.Items.Contains(item))
                                 {
                                     Config.Items.Remove(item);
-                                    return Translations.Get("bot.autoDrop.removed", item.ToString());
+                                    return string.Format(Translations.bot_autoDrop_removed, item.ToString());
                                 }
                                 else
                                 {
-                                    return Translations.Get("bot.autoDrop.not_in_list");
+                                    return Translations.bot_autoDrop_not_in_list;
                                 }
                             }
                             else
                             {
-                                return Translations.Get("bot.autoDrop.incorrect_name", args[1]);
+                                return string.Format(Translations.bot_autoDrop_incorrect_name, args[1]);
                             }
                         }
                         else
                         {
-                            return Translations.Get("cmd.inventory.help.usage") + ": remove <item name>";
+                            return Translations.cmd_inventory_help_usage + ": remove <item name>";
                         }
                     case "list":
                         if (Config.Items.Count > 0)
                         {
-                            return Translations.Get("bot.autoDrop.list", Config.Items.Count, string.Join("\n", Config.Items));
+                            return string.Format(Translations.bot_autoDrop_list, Config.Items.Count, string.Join("\n", Config.Items));
                         }
                         else
                         {
-                            return Translations.Get("bot.autoDrop.no_item");
+                            return Translations.bot_autoDrop_no_item;
                         }
                     case "mode":
                         if (args.Length >= 2)
@@ -117,15 +117,15 @@ namespace MinecraftClient.ChatBots
                                     Config.Mode = DropMode.everything;
                                     break;
                                 default:
-                                    return Translations.Get("bot.autoDrop.unknown_mode"); // Unknwon mode. Available modes: Include, Exclude, Everything
+                                    return Translations.bot_autoDrop_unknown_mode; // Unknwon mode. Available modes: Include, Exclude, Everything
                             }
                             inventoryUpdated = 0;
                             OnUpdateFinish();
-                            return Translations.Get("bot.autoDrop.switched", Config.Mode.ToString()); // Switched to {0} mode.
+                            return string.Format(Translations.bot_autoDrop_switched, Config.Mode.ToString()); // Switched to {0} mode.
                         }
                         else
                         {
-                            return Translations.Get("bot.autoDrop.unknown_mode");
+                            return Translations.bot_autoDrop_unknown_mode;
                         }
                     default:
                         return GetHelp();
@@ -139,20 +139,20 @@ namespace MinecraftClient.ChatBots
 
         private static string GetHelp()
         {
-            return Translations.Get("general.available_cmd", "on, off, add, remove, list, mode");
+            return string.Format(Translations.general_available_cmd, "on, off, add, remove, list, mode");
         }
 
         public override void Initialize()
         {
             if (!GetInventoryEnabled())
             {
-                LogToConsoleTranslated("extra.inventory_required");
-                LogToConsoleTranslated("general.bot_unload");
+                LogToConsole(Translations.extra_inventory_required);
+                LogToConsole(Translations.general_bot_unload);
                 UnloadBot();
                 return;
             }
-            RegisterChatBotCommand("autodrop", Translations.Get("bot.autoDrop.cmd"), GetHelp(), CommandHandler);
-            RegisterChatBotCommand("ad", Translations.Get("bot.autoDrop.alias"), GetHelp(), CommandHandler);
+            RegisterChatBotCommand("autodrop", Translations.bot_autoDrop_cmd, GetHelp(), CommandHandler);
+            RegisterChatBotCommand("ad", Translations.bot_autoDrop_alias, GetHelp(), CommandHandler);
         }
 
         public override void Update()
@@ -185,7 +185,7 @@ namespace MinecraftClient.ChatBots
                 if (!GetInventories().ContainsKey(inventoryUpdated))
                 {
                     // Inventory updated but no inventory ?
-                    LogDebugToConsoleTranslated("bot.autoDrop.no_inventory", inventoryUpdated);
+                    LogDebugToConsole(string.Format(Translations.bot_autoDrop_no_inventory, inventoryUpdated));
                     return;
                 }
                 var inventory = GetInventories()[inventoryUpdated];

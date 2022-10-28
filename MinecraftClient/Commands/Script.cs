@@ -6,7 +6,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "script"; } }
         public override string CmdUsage { get { return "script <scriptname>"; } }
-        public override string CmdDesc { get { return "cmd.script.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_script_desc; } }
 
         public override string Run(McClient handler, string command, Dictionary<string, object>? localVars)
         {

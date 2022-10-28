@@ -51,7 +51,7 @@ namespace MinecraftClient
                     return master.Handler;
                 if (_handler != null)
                     return _handler;
-                throw new InvalidOperationException(Translations.Get("exception.chatbot.init"));
+                throw new InvalidOperationException(Translations.exception_chatbot_init);
             }
         }
 
@@ -843,7 +843,7 @@ namespace MinecraftClient
         /// <param name="text">Log text to write</param>
         protected void LogToConsole(object? text)
         {
-            string botName = Translations.GetOrNull("botname." + GetType().Name) ?? GetType().Name;
+            string botName = Translations.ResourceManager.GetString("botname." + GetType().Name) ?? GetType().Name;
             if (_handler == null || master == null)
                 ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", botName, text));
             else
@@ -864,8 +864,9 @@ namespace MinecraftClient
             }
         }
 
-        protected static void LogToConsole(string botName, object? text)
+        protected static void LogToConsole(string originBotName, object? text)
         {
+            string botName = Translations.ResourceManager.GetString(originBotName) ?? originBotName;
             ConsoleIO.WriteLogLine(String.Format("[{0}] {1}", botName, text));
             string logfile = Settings.Config.AppVar.ExpandVars(Config.Main.Advanced.ChatbotLogFile);
 
@@ -900,7 +901,7 @@ namespace MinecraftClient
         /// <param name="args"></param>
         protected void LogToConsoleTranslated(string key, params object[] args)
         {
-            LogToConsole(Translations.TryGet(key, args));
+            LogToConsole(string.Format(Translations.ResourceManager.GetString(key) ?? key, args));
         }
 
         /// <summary>
@@ -910,7 +911,7 @@ namespace MinecraftClient
         /// <param name="args"></param>
         protected void LogDebugToConsoleTranslated(string key, params object?[] args)
         {
-            LogDebugToConsole(Translations.TryGet(key, args));
+            LogDebugToConsole(string.Format(Translations.ResourceManager.GetString(key) ?? key, args));
         }
 
         /// <summary>
@@ -923,8 +924,8 @@ namespace MinecraftClient
         {
             if (Settings.Config.Logging.DebugMessages)
             {
-                string botName = Translations.GetOrNull("botname." + GetType().Name) ?? GetType().Name;
-                ConsoleIO.WriteLogLine(Translations.Get("chatbot.reconnect", botName));
+                string botName = Translations.ResourceManager.GetString("botname." + GetType().Name) ?? GetType().Name;
+                ConsoleIO.WriteLogLine(string.Format(Translations.chatbot_reconnect, botName));
             }
             McClient.ReconnectionAttemptsLeft = ExtraAttempts;
             Program.Restart(delaySeconds);

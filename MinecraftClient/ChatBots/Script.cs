@@ -118,7 +118,7 @@ namespace MinecraftClient.ChatBots
                     caller = type.Name;
                 }
                 catch { }
-                ConsoleIO.WriteLineFormatted(Translations.Get("bot.script.not_found", caller, filename));
+                ConsoleIO.WriteLineFormatted(string.Format(Translations.bot_script_not_found, caller, filename));
             }
 
             return false;
@@ -134,14 +134,14 @@ namespace MinecraftClient.ChatBots
                 thread = null;
 
                 if (!String.IsNullOrEmpty(owner))
-                    SendPrivateMessage(owner, Translations.Get("bot.script.pm.loaded", file));
+                    SendPrivateMessage(owner, string.Format(Translations.bot_script_pm_loaded, file));
             }
             else
             {
-                LogToConsoleTranslated("bot.script.file_not_found", System.IO.Path.GetFullPath(file));
+                LogToConsole(string.Format(Translations.bot_script_file_not_found, System.IO.Path.GetFullPath(file)));
 
                 if (!String.IsNullOrEmpty(owner))
-                    SendPrivateMessage(owner, Translations.Get("bot.script.file_not_found", file));
+                    SendPrivateMessage(owner, string.Format(Translations.bot_script_file_not_found, file));
 
                 UnloadBot(); //No need to keep the bot active
             }
@@ -162,7 +162,7 @@ namespace MinecraftClient.ChatBots
                         }
                         catch (CSharpException e)
                         {
-                            string errorMessage = Translations.Get("bot.script.fail", file, e.ExceptionType);
+                            string errorMessage = string.Format(Translations.bot_script_fail, file, e.ExceptionType);
                             LogToConsole(errorMessage);
                             if (owner != null)
                                 SendPrivateMessage(owner, errorMessage);

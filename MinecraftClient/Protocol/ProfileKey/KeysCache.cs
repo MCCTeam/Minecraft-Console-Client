@@ -116,7 +116,7 @@ namespace MinecraftClient.Protocol.Keys
             if (File.Exists(KeysCacheFilePlaintext))
             {
                 if (Settings.Config.Logging.DebugMessages)
-                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.loading_keys", KeysCacheFilePlaintext));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loading_keys, KeysCacheFilePlaintext));
 
                 try
                 {
@@ -135,35 +135,35 @@ namespace MinecraftClient.Protocol.Keys
                                     PlayerKeyPair playerKeyPair = PlayerKeyPair.FromString(value);
                                     keys[login] = playerKeyPair;
                                     if (Settings.Config.Logging.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded_keys", playerKeyPair.ExpiresAt.ToString()));
+                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loaded_keys, playerKeyPair.ExpiresAt.ToString()));
                                 }
                                 catch (InvalidDataException e)
                                 {
                                     if (Settings.Config.Logging.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string_keys", value, e.Message));
+                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_string_keys, value, e.Message));
                                 }
                                 catch (FormatException e)
                                 {
                                     if (Settings.Config.Logging.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string_keys", value, e.Message));
+                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_string_keys, value, e.Message));
                                 }
                                 catch (ArgumentNullException e)
                                 {
                                     if (Settings.Config.Logging.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string_keys", value, e.Message));
+                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_string_keys, value, e.Message));
 
                                 }
                             }
                             else if (Settings.Config.Logging.DebugMessages)
                             {
-                                ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_line_keys", line));
+                                ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_line_keys, line));
                             }
                         }
                     }
                 }
                 catch (IOException e)
                 {
-                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.read_fail_plain_keys", e.Message));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_read_fail_plain_keys, e.Message));
                 }
             }
 
@@ -176,7 +176,7 @@ namespace MinecraftClient.Protocol.Keys
         private static void SaveToDisk()
         {
             if (Config.Logging.DebugMessages)
-                Translations.WriteLineFormatted("cache.saving_keys");
+                ConsoleIO.WriteLineFormatted(Translations.cache_saving_keys, acceptnewlines: true);
 
             List<string> KeysCacheLines = new()
             {
@@ -192,7 +192,7 @@ namespace MinecraftClient.Protocol.Keys
             }
             catch (IOException e)
             {
-                ConsoleIO.WriteLineFormatted(Translations.Get("cache.save_fail_keys", e.Message));
+                ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_save_fail_keys, e.Message));
             }
         }
     }
