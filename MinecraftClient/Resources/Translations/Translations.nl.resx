@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>Kleur test: Uw terminal zou moeten tonen {0}</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
     <value>§cWeather change: It is no longer a thunderstorm.§r</value>
@@ -2479,40 +2479,40 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Unknown command '{0}'. Use 'help' for command list.</value>
   </data>
   <data name="mcc.connecting" xml:space="preserve">
-    <value>Connecting to {0}...</value>
+    <value>Aansluiten op {0}...</value>
   </data>
   <data name="mcc.disconnect.login" xml:space="preserve">
-    <value>Login failed :</value>
+    <value>Inloggen mislukt :</value>
   </data>
   <data name="mcc.disconnect.lost" xml:space="preserve">
-    <value>Connection has been lost.</value>
+    <value>De verbinding is verbroken.</value>
   </data>
   <data name="mcc.disconnect.server" xml:space="preserve">
-    <value>Disconnected by Server :</value>
+    <value>Afgesloten door server :</value>
   </data>
   <data name="mcc.disconnected" xml:space="preserve">
-    <value>Not connected to any server. Use '{0}help' for help.</value>
+    <value>Niet verbonden met een server. Gebruik '{0}help' voor help.</value>
   </data>
   <data name="mcc.fetching_key" xml:space="preserve">
-    <value>Fetching profile key from Microsoft.</value>
+    <value>Profiel sleutel ophalen bij Microsoft.</value>
   </data>
   <data name="mcc.forge" xml:space="preserve">
-    <value>Checking if server is running Forge...</value>
+    <value>Controleren of server Forge draait...</value>
   </data>
   <data name="mcc.forgeforce" xml:space="preserve">
-    <value>Force-enabling Forge support.</value>
+    <value>Forceer het inschakelen van Forge ondersteuning.</value>
   </data>
   <data name="mcc.found" xml:space="preserve">
-    <value>§8Found server {0}:{1} for domain {2}</value>
+    <value>§8Gevonden server {0}:{1} voor domein {2}</value>
   </data>
   <data name="mcc.gen_new_config" xml:space="preserve">
     <value>New configuration file "{0}" is generated.</value>
   </data>
   <data name="mcc.generator.done" xml:space="preserve">
-    <value>Succesfully generated {0} palette using the dataset: {1}</value>
+    <value>Succesvol gegenereerd {0} palet met behulp van de dataset: {1}</value>
   </data>
   <data name="mcc.generator.generating" xml:space="preserve">
-    <value>Generating {0} palette using the dataset: {1}</value>
+    <value>Het genereren van {0} palet met behulp van de dataset: {1}</value>
   </data>
   <data name="mcc.handshake" xml:space="preserve">
     <value>§8Handshake successful. (Server ID: {0})</value>
@@ -2530,8 +2530,8 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Server IP : </value>
   </data>
   <data name="mcc.joined" xml:space="preserve">
-    <value>Server was successfully joined.
-Type '{0}quit' to leave the server.</value>
+    <value>Server is succesvol verbonden.
+Typ '{0}quit' om de server te verlaten.</value>
   </data>
   <data name="mcc.link" xml:space="preserve">
     <value>Link: {0}</value>
@@ -2540,101 +2540,101 @@ Type '{0}quit' to leave the server.</value>
     <value>Login :</value>
   </data>
   <data name="mcc.login_basic_io" xml:space="preserve">
-    <value>Please type the username or email of your choice.</value>
+    <value>Typ de gebruikersnaam of e-mail van uw keuze.</value>
   </data>
   <data name="mcc.not_found" xml:space="preserve">
-    <value>§8Failed to perform SRV lookup for {0}
+    <value>§8SRV-zoekopdracht niet uitgevoerd voor {0}
 {1}: {2}</value>
   </data>
   <data name="mcc.offline" xml:space="preserve">
-    <value>§8You chose to run in offline mode.</value>
+    <value>§8U koos ervoor om in offline modus te werken.</value>
   </data>
   <data name="mcc.password" xml:space="preserve">
-    <value>Password: </value>
+    <value>Wachtwoord: </value>
   </data>
   <data name="mcc.password_basic_io" xml:space="preserve">
-    <value>Please type the password for {0}.</value>
+    <value>Typ het wachtwoord voor {0}.</value>
   </data>
   <data name="mcc.password_hidden" xml:space="preserve">
     <value>Password(invisible): {0}</value>
   </data>
   <data name="mcc.player_dead" xml:space="preserve">
-    <value>You are dead. Type '{0}respawn' to respawn.</value>
+    <value>Je bent dood. Typ '{0}respawn' om opnieuw te respawnen.</value>
   </data>
   <data name="mcc.player_dead_respawn" xml:space="preserve">
-    <value>You are dead. Automatically respawning after 1 second.</value>
+    <value>Je bent dood. Automatisch respawnen na 1 seconde.</value>
   </data>
   <data name="mcc.press_exit" xml:space="preserve">
-    <value>Or press Enter to exit Minecraft Console Client.</value>
+    <value>Of druk op Enter om Minecraft Console Client af te sluiten.</value>
   </data>
   <data name="mcc.profile_key_invalid" xml:space="preserve">
-    <value>§8Cached profile key needs to be refreshed.</value>
+    <value>§8Cached profile key moet ververst worden.</value>
   </data>
   <data name="mcc.profile_key_valid" xml:space="preserve">
-    <value>§8Cached profile key is still valid for {0}.</value>
+    <value>§8Cached profile key is nog steeds geldig voor {0}.</value>
   </data>
   <data name="mcc.realms_available" xml:space="preserve">
-    <value>You have access to the following Realms worlds</value>
+    <value>Je hebt toegang tot de volgende Realms werelden</value>
   </data>
   <data name="mcc.realms_join" xml:space="preserve">
-    <value>Use realms:&lt;index&gt; as server IP to join a Realms world</value>
+    <value>Gebruik realms:&lt;index&gt; als server IP om een Realms wereld te betreden</value>
   </data>
   <data name="mcc.reconnect" xml:space="preserve">
-    <value>Waiting 5 seconds ({0} attempts left)...</value>
+    <value>Wacht 5 seconden ({0} pogingen over)...</value>
   </data>
   <data name="mcc.resolve" xml:space="preserve">
-    <value>Resolving {0}...</value>
+    <value>Het oplossen van {0}...</value>
   </data>
   <data name="mcc.restart" xml:space="preserve">
-    <value>Restarting Minecraft Console Client...</value>
+    <value>Herstarten Minecraft Console Client...</value>
   </data>
   <data name="mcc.restart_delay" xml:space="preserve">
-    <value>Waiting {0} seconds before restarting...</value>
+    <value>Wacht {0} seconden voor het herstarten...</value>
   </data>
   <data name="mcc.retrieve" xml:space="preserve">
-    <value>Retrieving Server Info...</value>
+    <value>Server informatie ophalen...</value>
   </data>
   <data name="mcc.run_with_default_settings" xml:space="preserve">
     <value>
 MCC is running with default settings.</value>
   </data>
   <data name="mcc.server_offline" xml:space="preserve">
-    <value>§8Server is in offline mode.</value>
+    <value>§8Server is in offline modus.</value>
   </data>
   <data name="mcc.server_protocol" xml:space="preserve">
-    <value>§8Server version : {0} (protocol v{1})</value>
+    <value>§8Server versie : {0} (protocol v{1})</value>
   </data>
   <data name="mcc.server_version" xml:space="preserve">
-    <value>Server version : </value>
+    <value>Server versie : </value>
   </data>
   <data name="mcc.session" xml:space="preserve">
-    <value>Checking Session...</value>
+    <value>Sessie controleren...</value>
   </data>
   <data name="mcc.session_fail" xml:space="preserve">
-    <value>Failed to check session.</value>
+    <value>Sessie niet gecontroleerd.</value>
   </data>
   <data name="mcc.session_invalid" xml:space="preserve">
-    <value>§8Cached session is invalid or expired.</value>
+    <value>§8Cached sessie is ongeldig of verlopen.</value>
   </data>
   <data name="mcc.session_valid" xml:space="preserve">
-    <value>§8Cached session is still valid for {0}.</value>
+    <value>§8Cached sessie is nog steeds geldig voor {0}.</value>
   </data>
   <data name="mcc.settings_generated" xml:space="preserve">
     <value>§cSettings file MinecraftClient.ini has been generated.</value>
   </data>
   <data name="mcc.single_cmd" xml:space="preserve">
-    <value>§7Command §8 {0} §7 sent.</value>
+    <value>§7Command §8 {0} §7 gestuurd.</value>
   </data>
   <data name="mcc.unknown_version" xml:space="preserve">
-    <value>§8Unknown or not supported MC version {0}.
-Switching to autodetection mode.</value>
+    <value>§8Onbekende of niet ondersteunde MC-versie {0}.
+Overschakelen naar automatische detectie.</value>
   </data>
   <data name="mcc.use_version" xml:space="preserve">
-    <value>§8Using Minecraft version {0} (protocol v{1})</value>
+    <value>§8Met behulp van Minecraft versie {0} (protocol v{1})</value>
   </data>
   <data name="mcc.version_supported" xml:space="preserve">
-    <value>Version is supported.
-Logging in...</value>
+    <value>Versie wordt ondersteund.
+Inloggen...</value>
   </data>
   <data name="mcc.with_forge" xml:space="preserve">
     <value>, with Forge</value>
