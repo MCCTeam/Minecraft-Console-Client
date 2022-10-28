@@ -2176,7 +2176,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>§cFailed to write to settings file {0}§r</value>
   </data>
   <data name="debug.color_test" xml:space="preserve">
-    <value>Color test: Your terminal should display {0}</value>
+    <value>Kleur test: Uw terminal zou moeten tonen {0}</value>
   </data>
   <data name="debug.crypto" xml:space="preserve">
     <value>§8Crypto keys &amp; hash generated.</value>
@@ -2556,7 +2556,7 @@ Typ '{0}quit' om de server te verlaten.</value>
     <value>Typ het wachtwoord voor {0}.</value>
   </data>
   <data name="mcc.password_hidden" xml:space="preserve">
-    <value>Password(invisible): {0}</value>
+    <value>Wachtwoord : {0}</value>
   </data>
   <data name="mcc.player_dead" xml:space="preserve">
     <value>Je bent dood. Typ '{0}respawn' om opnieuw te respawnen.</value>
