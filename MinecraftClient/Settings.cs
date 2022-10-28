@@ -147,9 +147,8 @@ namespace MinecraftClient
                     {
                         string newFilePath = Path.ChangeExtension(filepath, ".backup.ini");
                         File.Copy(filepath, newFilePath, true);
-                        ConsoleIO.WriteLineFormatted("§cPlease use the newly generated MinecraftClient.ini");
-                        ConsoleIO.WriteLineFormatted("§cThe old MinecraftClient.ini has been backed up as " + newFilePath);
-                        ConsoleIO.WriteLine(Translations.mcc_run_with_default_settings);
+                        ConsoleIO.WriteLineFormatted("§c" + Translations.mcc_use_new_config);
+                        ConsoleIO.WriteLineFormatted("§c" + string.Format(Translations.mcc_backup_old_config, newFilePath));
                         return new(false, true);
                     }
                 }

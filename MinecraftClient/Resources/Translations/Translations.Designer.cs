@@ -6886,6 +6886,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The old MinecraftClient.ini has been backed up as {0}.
+        /// </summary>
+        internal static string mcc_backup_old_config {
+            get {
+                return ResourceManager.GetString("mcc.backup_old_config", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Connecting to {0}....
         /// </summary>
         internal static string mcc_connecting {
@@ -7327,6 +7336,15 @@ namespace MinecraftClient {
         internal static string mcc_unknown_version {
             get {
                 return ResourceManager.GetString("mcc.unknown_version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please use the newly generated MinecraftClient.ini.
+        /// </summary>
+        internal static string mcc_use_new_config {
+            get {
+                return ResourceManager.GetString("mcc.use_new_config", resourceCulture);
             }
         }
         

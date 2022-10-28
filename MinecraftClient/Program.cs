@@ -133,7 +133,15 @@ namespace MinecraftClient
                 newlyGenerated = true;
             }
 
-            if (!loadSucceed)
+            if (needWriteDefaultSetting)
+            {
+                Config.Main.Advanced.Language = Settings.GetDefaultGameLanguage();
+                WriteBackSettings(false);
+                if (newlyGenerated)
+                    ConsoleIO.WriteLineFormatted(Translations.mcc_settings_generated);
+                ConsoleIO.WriteLine(Translations.mcc_run_with_default_settings);
+            }
+            else if (!loadSucceed)
             {
                 ConsoleInteractive.ConsoleReader.StopReadThread();
                 string command = " ";
@@ -167,14 +175,6 @@ namespace MinecraftClient
                     }
                 }
                 return;
-            }
-            else if (needWriteDefaultSetting)
-            {
-                Config.Main.Advanced.Language = Settings.GetDefaultGameLanguage();
-                WriteBackSettings(false);
-                if (newlyGenerated)
-                    ConsoleIO.WriteLineFormatted(Translations.mcc_settings_generated);
-                ConsoleIO.WriteLine(Translations.mcc_run_with_default_settings);
             }
             else
             {
