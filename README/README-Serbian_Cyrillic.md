@@ -6,6 +6,7 @@
 
 [Документација](https://mccteam.github.io/) | [Преузимање](#download) | [Инсталација](https://mccteam.github.io/guide/installation.html) | [Подешавање](https://mccteam.github.io/guide/configuration.html) | [Коришћење](https://mccteam.github.io/guide/usage.html)
 
+
 [![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 
 </div>
@@ -47,17 +48,17 @@ If you'd like to contribute to Minecraft Console Client, great, just fork the re
 
 ## Превођење пројекта 🌍
 
-Ako желите да преведете пројекат на други језик проверите нашу секцију у документацији: [Како ажурирати/изменити или додати превод](https://mccteam.github.io/guide/contibuting.html#translations).
+To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
 
 Пројекат је тренутно предевен на следће језике (сортирано по Енглеском алфабету):
   * `de.ini` : Deutsch - German
   * `en.ini` : English - English
   * `fr.ini` : Français (France) - French
   * `ru.ini` : Русский (Russkiy) - Russian
+  * `tr.ini` : Türkçe (Türkiye) - Turkish
   * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
-  * `zh-Hans.ini` : 简体中文（中国大陆） - Chinese Simplified (China; Mandarin)
-  * `zh-Hans.ini` (76.92% translated) : 简体中文 - Chinese Simplified
-  * `zh-Hant.ini` (76.92% translated) : 繁體中文 - Chinese Traditional
+  * `zh-Hans.ini` : 简体中文 - Chinese Simplified
+  * `zh-Hant.ini` : 繁體中文 - Chinese Traditional
 
 ## Прављење извршне датотеке из кода 🏗️
 

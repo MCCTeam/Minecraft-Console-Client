@@ -2663,4 +2663,10 @@ Chuyển sang chế độ nhận diện tự động.</value>
   <data name="bot.autodig.no_inv_handle" xml:space="preserve">
     <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
   </data>
+  <data name="mcc.use_new_config" xml:space="preserve">
+    <value>Please use the newly generated MinecraftClient.ini</value>
+  </data>
+  <data name="mcc.backup_old_config" xml:space="preserve">
+    <value>The old MinecraftClient.ini has been backed up as {0}</value>
+  </data>
 </root>

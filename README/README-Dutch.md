@@ -2,7 +2,13 @@
 
 <img src="https://i.pics.rs/LLDhE.png" alt="Logo"/>
 
-https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest<a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
+# Minecraft Console Client (MCC)
+
+[Documentation](https://mccteam.github.io/) | [Download](#download) | [Installation](https://mccteam.github.io/guide/installation.html) | [Configuration](https://mccteam.github.io/guide/configuration.html) | [Usage](https://mccteam.github.io/guide/usage.html)
+
+[English](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README.md) | [Nederlands](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Dutch.md) | [Српски](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Serbian_Cyrillic.md) | [Türkçe](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Turkish.md) | [Tiếng Việt](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Vietnamese.md) | [简体中文](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Chinese_Simplified.md)
+
+[![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 
 </div>
 
@@ -43,17 +49,17 @@ Als je graag mee wilt helpen aan Minecraft Console Client, geweldig! Fork de rep
 
 ## Minecraft Console Client Vertalen 🌍
 
-Check out: [How to update or add translations for MCC](https://mccteam.github.io/guide/contibuting.html#translations).
+To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
 
 MCC now supports the following languages (Alphabetical order) :
-  * `de.ini` (26.73% translated) : Deutsch - German
+  * `de.ini` : Deutsch - German
   * `en.ini` : English - English
-  * `fr.ini` (26.73% translated) : Français (France) - French
-  * `ru.ini` (26.24% translated) : Русский (Russkiy) - Russian
-  * `tr.ini` (100.00% translated) : Türkçe (Türkiye) - Turkish
-  * `vi.ini` (26.24% translated) : Tiếng Việt (Việt Nam) - Vietnamese
-  * `zh-Hans.ini` (76.92% translated) : 简体中文 - Chinese Simplified
-  * `zh-Hant.ini` (76.92% translated) : 繁體中文 - Chinese Traditional
+  * `fr.ini` : Français (France) - French
+  * `ru.ini` : Русский (Russkiy) - Russian
+  * `tr.ini` : Türkçe (Türkiye) - Turkish
+  * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
+  * `zh-Hans.ini` : 简体中文 - Chinese Simplified
+  * `zh-Hant.ini` : 繁體中文 - Chinese Traditional
 
 ## Building from the source 🏗️
 

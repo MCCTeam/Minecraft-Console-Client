@@ -4,7 +4,9 @@
 
 # Minecraft Console Client (MCC)
 
-[Kütüphane](https://mccteam.github.io/) | [İndir](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) | [Kurulum](https://mccteam.github.io/guide/installation.html) | [Yapılandırma](https://mccteam.github.io/guide/configuration.html) | [Kullanım](https://mccteam.github.io/guide/usage.html)
+[Documentation](https://mccteam.github.io/) | [Download](#download) | [Installation](https://mccteam.github.io/guide/installation.html) | [Configuration](https://mccteam.github.io/guide/configuration.html) | [Usage](https://mccteam.github.io/guide/usage.html)
+
+[English](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README.md) | [Nederlands](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Dutch.md) | [Српски](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Serbian_Cyrillic.md) | [Türkçe](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Turkish.md) | [Tiếng Việt](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Vietnamese.md) | [简体中文](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Chinese_Simplified.md)
 
 [![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft-Console-Client/releases/latest) <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
 
@@ -47,7 +49,7 @@ Minecraft Console Client için katkıda bulunmak istiyorsanız, harika, _Master_
 
 ## Minecraft Console Client Çevirme 🌍
 
-Check out: [How to update or add translations for MCC](https://mccteam.github.io/guide/contibuting.html#translations).
+To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
 
 MCC artık aşağıdaki dilleri desteklemektedir (Alfabetik sıra) :
   * `de.ini` : Deutsch - German

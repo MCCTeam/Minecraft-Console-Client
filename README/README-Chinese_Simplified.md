@@ -47,17 +47,17 @@
 
 ## 翻译 Minecraft 控制台客户端 (MCC) 🌍
 
-请查看：[如何为MCC添加或更新翻译](https://mccteam.github.io/guide/contibuting.html#translations)。
+To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
 
 MCC 现在支持这些语言（按字母顺序排列）：
-  * `de.ini`: Deutsch - German
+  * `de.ini` : Deutsch - German
   * `en.ini`: English - English
-  * `fr.ini`: Français (France) - French
-  * `ru.ini`: Русский (Russkiy) - Russian
-  * `tr.ini` (100.00% translated) : Türkçe (Türkiye) - Turkish
-  * `vi.ini`: Tiếng Việt (Việt Nam) - Vietnamese
-  * `zh-Hant.ini`: 繁體中文 - Chinese Traditional
-  * `zh-Hans.ini`: 简体中文 - Chinese Simplified
+  * `fr.ini` : Français (France) - French
+  * `ru.ini` : Русский (Russkiy) - Russian
+  * `tr.ini` : Türkçe (Türkiye) - Turkish
+  * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
+  * `zh-Hans.ini` : 简体中文 - Chinese Simplified
+  * `zh-Hant.ini` : 繁體中文 - Chinese Traditional
 
 ## 从源码构建 🏗️
 
