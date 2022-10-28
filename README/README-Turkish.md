@@ -12,7 +12,7 @@
 
 </div>
 
-## **About ℹ️**
+## **Bilgilendirme ℹ️**
 
 **Minecraft Console Client (MCC)**, herhangi bir Minecraft Java sunucusuna bağlanmanıza, oyunu açmak zorunda kalmadan hızlı ve kolay bir şekilde komutlar göndermenize ve metin mesajları almanıza olanak tanıyan **Java** sürümü için hafif bir çapraz platform açık kaynaklı Minecraft TUI istemcisidir. Minecraft oyunu.
 
