@@ -4,7 +4,7 @@
 
 # Minecraft Console Client (MCC)
 
-[Documentation](https://mccteam.github.io/) | [Download](#download) | [Installation](https://mccteam.github.io/guide/installation.html) | [Configuration](https://mccteam.github.io/guide/configuration.html) | [Usage](https://mccteam.github.io/guide/usage.html)
+[Dökümanlar](https://mccteam.github.io/) | [İndir](#download) | [Kurulum](https://mccteam.github.io/guide/installation.html) | [Ayarlama](https://mccteam.github.io/guide/configuration.html) | [Kullanım](https://mccteam.github.io/guide/usage.html)
 
 [English](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README.md) | [Nederlands](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Dutch.md) | [Српски](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Serbian_Cyrillic.md) | [Türkçe](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Turkish.md) | [Tiếng Việt](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Vietnamese.md) | [简体中文](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Chinese_Simplified.md)
 
@@ -49,7 +49,7 @@ Minecraft Console Client için katkıda bulunmak istiyorsanız, harika, _Master_
 
 ## Minecraft Console Client Çevirme 🌍
 
-To improve translations for MCC, please visit: [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
+MCC çevirmek veya çeviri iyileştirmek içn lütfen şurayı ziyaret edin:  [Crowdin - Minecraft Console Client](https://crwd.in/minecraft-console-client).
 
 MCC artık aşağıdaki dilleri desteklemektedir (Alfabetik sıra) :
   * `de.ini` : Deutsch - German
@@ -61,7 +61,7 @@ MCC artık aşağıdaki dilleri desteklemektedir (Alfabetik sıra) :
   * `zh-Hans.ini` : 简体中文 - Chinese Simplified
   * `zh-Hant.ini` : 繁體中文 - Chinese Traditional
 
-## Building from the source 🏗️
+## Kaynaktan kurmak için🏗️
 
 Bu bölüm yeni [Kütüphaneler web sitemize](https://mccteam.github.io/guide/installation.html#building-from-the-source-code) taşındı.
 
