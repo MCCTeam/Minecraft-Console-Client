@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Resources;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -285,7 +284,7 @@ namespace MinecraftClient.ChatBots
 
         private bool CanSendMessages()
         {
-            return discordBotClient == null || discordChannel == null || bridgeDirection == BridgeDirection.Minecraft ? false : true;
+            return discordBotClient != null && discordChannel != null && bridgeDirection != BridgeDirection.Minecraft;
         }
 
         async Task MainAsync()
