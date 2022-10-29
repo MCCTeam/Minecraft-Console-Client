@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "bed"; } }
         public override string CmdUsage { get { return "bed leave|sleep <x> <y> <z>|sleep <radius>"; } }
-        public override string CmdDesc { get { return "cmd.bed.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_bed_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {
@@ -29,20 +29,20 @@ namespace MinecraftClient.Commands
                 if (subcommand.Equals("leave") || subcommand.Equals("l"))
                 {
                     handler.SendEntityAction(Protocol.EntityActionType.LeaveBed);
-                    return Translations.TryGet("cmd.bed.leaving");
+                    return Translations.cmd_bed_leaving;
                 }
 
                 if (subcommand.Equals("sleep") || subcommand.Equals("s"))
                 {
                     if (!handler.GetTerrainEnabled())
-                        return Translations.TryGet("error.terrain_not_enabled");
+                        return Translations.error_terrain_not_enabled;
 
                     if (args.Length == 2)
                     {
                         if (!int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int radius))
                             return CmdUsage;
 
-                        handler.GetLogger().Info(Translations.TryGet("cmd.bed.searching", radius));
+                        handler.GetLogger().Info(string.Format(Translations.cmd_bed_searching, radius));
 
                         Location current = handler.GetCurrentLocation();
                         Location bedLocation = current;
@@ -80,12 +80,12 @@ namespace MinecraftClient.Commands
                         }
 
                         if (!found)
-                            return Translations.TryGet("cmd.bed.bed_not_found");
+                            return Translations.cmd_bed_bed_not_found;
 
-                        handler.Log.Info(Translations.TryGet("cmd.bed.found_a_bed_at", bedLocation.X, bedLocation.Y, bedLocation.Z));
+                        handler.Log.Info(string.Format(Translations.cmd_bed_found_a_bed_at, bedLocation.X, bedLocation.Y, bedLocation.Z));
 
                         if (!Movement.CheckChunkLoading(handler.GetWorld(), current, bedLocation))
-                            return Translations.Get("cmd.move.chunk_not_loaded", bedLocation.X, bedLocation.Y, bedLocation.Z);
+                            return string.Format(Translations.cmd_move_chunk_not_loaded, bedLocation.X, bedLocation.Y, bedLocation.Z);
 
                         if (handler.MoveTo(bedLocation))
                         {
@@ -105,27 +105,27 @@ namespace MinecraftClient.Commands
 
                                 if (!atTheLocation)
                                 {
-                                    handler.Log.Info(Translations.TryGet("cmd.bed.failed_to_reach_in_time", bedLocation.X, bedLocation.Y, bedLocation.Z));
+                                    handler.Log.Info(string.Format(Translations.cmd_bed_failed_to_reach_in_time, bedLocation.X, bedLocation.Y, bedLocation.Z));
                                     return;
                                 }
 
-                                handler.Log.Info(Translations.TryGet("cmd.bed.moving", bedLocation.X, bedLocation.Y, bedLocation.Z));
+                                handler.Log.Info(string.Format(Translations.cmd_bed_moving, bedLocation.X, bedLocation.Y, bedLocation.Z));
 
                                 bool res = handler.PlaceBlock(bedLocation, Direction.Down);
 
-                                handler.Log.Info(Translations.TryGet(
-                                    "cmd.bed.trying_to_use",
+                                handler.Log.Info(string.Format(
+                                    Translations.cmd_bed_trying_to_use,
                                     bedLocation.X,
                                     bedLocation.Y,
                                     bedLocation.Z,
-                                    Translations.TryGet(res ? "cmd.bed.in" : "cmd.bed.not_in")
+                                    res ? Translations.cmd_bed_in : Translations.cmd_bed_not_in
                                 ));
                             });
 
                             return "";
                         }
 
-                        return Translations.Get("cmd.bed.cant_reach_safely");
+                        return Translations.cmd_bed_cant_reach_safely;
                     }
 
                     if (args.Length >= 3)
@@ -134,16 +134,16 @@ namespace MinecraftClient.Commands
                         Location blockCenter = block.ToCenter();
 
                         if (!handler.GetWorld().GetBlock(block).Type.IsBed())
-                            return Translations.TryGet("cmd.bed.not_a_bed", blockCenter.X, blockCenter.Y, blockCenter.Z);
+                            return string.Format(Translations.cmd_bed_not_a_bed, blockCenter.X, blockCenter.Y, blockCenter.Z);
 
                         bool res = handler.PlaceBlock(block, Direction.Down);
 
-                        return Translations.TryGet(
-                            "cmd.bed.trying_to_use",
+                        return string.Format(
+                            Translations.cmd_bed_trying_to_use,
                             blockCenter.X,
                             blockCenter.Y,
                             blockCenter.Z,
-                            Translations.TryGet(res ? "cmd.bed.in" : "cmd.bed.not_in")
+                            res ? Translations.cmd_bed_in : Translations.cmd_bed_not_in
                         );
                     }
                 }

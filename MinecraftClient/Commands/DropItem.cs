@@ -9,10 +9,8 @@ namespace MinecraftClient.Commands
     class DropItem : Command
     {
         public override string CmdName { get { return "dropitem"; } }
-
-        public override string CmdDesc { get { return "cmd.dropItem.desc"; } }
-
         public override string CmdUsage { get { return "/dropitem <itemtype>"; } }
+        public override string CmdDesc { get { return Translations.cmd_dropItem_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {
@@ -22,7 +20,7 @@ namespace MinecraftClient.Commands
         {
             if (!handler.GetInventoryEnabled())
             {
-                return Translations.Get("extra.inventory_required");
+                return Translations.extra_inventory_required;
             }
             if (HasArg(command))
             {
@@ -43,11 +41,11 @@ namespace MinecraftClient.Commands
                     {
                         handler.DoWindowAction(inventoryId, slot, WindowActionType.DropItemStack);
                     }
-                    return Translations.Get("cmd.dropItem.dropped", itemType.ToString(), inventoryId);
+                    return string.Format(Translations.cmd_dropItem_dropped, itemType.ToString(), inventoryId);
                 }
                 else
                 {
-                    return Translations.Get("cmd.dropItem.unknown_item", arg);
+                    return string.Format(Translations.cmd_dropItem_unknown_item, arg);
                 }
             }
             else

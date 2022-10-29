@@ -216,7 +216,7 @@ namespace MinecraftClient.Mapping
             else
                 chunkLoadedRatio = (world.chunkCnt - world.chunkLoadNotCompleted) / (double)world.chunkCnt;
 
-            string status = Translations.Get("cmd.move.chunk_loading_status",
+            string status = string.Format(Translations.cmd_move_chunk_loading_status,
                     chunkLoadedRatio, world.chunkCnt - world.chunkLoadNotCompleted, world.chunkCnt);
 
             return status;

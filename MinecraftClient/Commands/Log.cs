@@ -7,7 +7,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "log"; } }
         public override string CmdUsage { get { return "log <text>"; } }
-        public override string CmdDesc { get { return "cmd.log.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_log_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {

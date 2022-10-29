@@ -35,8 +35,8 @@ namespace MinecraftClient.ChatBots
                 string Log_File_Full = Settings.Config.AppVar.ExpandVars(Log_File);
                 if (String.IsNullOrEmpty(Log_File_Full) || Log_File_Full.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
                 {
-                    LogToConsole(BotName, Translations.TryGet("bot.chatLog.invalid_file", Log_File_Full));
-                    LogToConsole(BotName, Translations.TryGet("general.bot_unload"));
+                    LogToConsole(BotName, string.Format(Translations.bot_chatLog_invalid_file, Log_File_Full));
+                    LogToConsole(BotName, Translations.general_bot_unload);
                     Enabled = false;
                 }
             }

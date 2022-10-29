@@ -99,12 +99,12 @@ namespace MinecraftClient.ChatBots
             if (args.Length == 0 || (args.Length == 1 && (args[0].ToLower().Equals("list") || args[0].ToLower().Equals("l"))))
             {
                 if (cachedMaps.Count == 0)
-                    return Translations.TryGet("bot.map.no_maps");
+                    return Translations.bot_map_no_maps;
 
-                LogToConsoleTranslated("bot.map.received");
+                LogToConsole(Translations.bot_map_received);
 
                 foreach (var (key, value) in new SortedDictionary<int, McMap>(cachedMaps))
-                    LogToConsoleTranslated("bot.map.list_item", key, value.LastUpdated);
+                    LogToConsole(string.Format(Translations.bot_map_list_item, key, value.LastUpdated));
 
                 return "";
             }
@@ -119,7 +119,7 @@ namespace MinecraftClient.ChatBots
                     if (int.TryParse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture, out int mapId))
                     {
                         if (!cachedMaps.ContainsKey(mapId))
-                            return Translations.TryGet("bot.map.cmd.not_found", mapId);
+                            return string.Format(Translations.bot_map_cmd_not_found, mapId);
 
                         try
                         {
@@ -135,10 +135,10 @@ namespace MinecraftClient.ChatBots
                         catch (Exception e)
                         {
                             LogDebugToConsole(e.StackTrace!);
-                            return Translations.TryGet("bot.map.failed_to_render", mapId);
+                            return string.Format(Translations.bot_map_failed_to_render, mapId);
                         }
                     }
-                    return Translations.TryGet("bot.map.cmd.invalid_id");
+                    return Translations.bot_map_cmd_invalid_id;
                 }
             }
             return "";
@@ -172,7 +172,7 @@ namespace MinecraftClient.ChatBots
                 cachedMaps.Add(mapid, map);
 
                 if (Config.Notify_On_First_Update)
-                    LogToConsoleTranslated("bot.map.received_map", map.MapId);
+                    LogToConsole(string.Format(Translations.bot_map_received_map, map.MapId));
             }
             else
             {
@@ -232,7 +232,7 @@ namespace MinecraftClient.ChatBots
             }
             file.Close();
 
-            LogToConsole(Translations.TryGet("bot.map.rendered", map.MapId, fileName));
+            LogToConsole(string.Format(Translations.bot_map_rendered, map.MapId, fileName));
 
             if (Config.Rasize_Rendered_Image)
             {
@@ -243,7 +243,7 @@ namespace MinecraftClient.ChatBots
 
                     image.Resize(size);
                     image.Write(fileName);
-                    LogToConsole(Translations.TryGet("bot.map.resized_rendered_image", map.MapId, Config.Resize_To));
+                    LogToConsole(string.Format(Translations.bot_map_resized_rendered_image, map.MapId, Config.Resize_To));
                 }
             }
 
@@ -292,10 +292,10 @@ namespace MinecraftClient.ChatBots
                     newFileName = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + newFileName;
 
                     if (Config.Send_Rendered_To_Discord)
-                        LogToConsole(Translations.TryGet("bot.map.sent_to_discord", map.MapId));
+                        LogToConsole(string.Format(Translations.bot_map_sent_to_discord, map.MapId));
 
                     if (Config.Send_Rendered_To_Telegram)
-                        LogToConsole(Translations.TryGet("bot.map.sent_to_telegram", map.MapId));
+                        LogToConsole(string.Format(Translations.bot_map_sent_to_telegram, map.MapId));
 
                     // Wait for 2 seconds and then try until file is free for deletion
                     // 10 seconds timeout
@@ -313,7 +313,7 @@ namespace MinecraftClient.ChatBots
                                 if (File.Exists(newFileName))
                                     File.Delete(newFileName);
                             }
-                            catch (IOException e) { }
+                            catch (IOException) { }
                         }
                     });
                 }
@@ -331,7 +331,7 @@ namespace MinecraftClient.ChatBots
             int scaleY = (map.Height + consoleHeight - 1) / consoleHeight;
             int scale = Math.Max(scaleX, scaleY);
             if (scale > 1)
-                sb.AppendLine(Translations.Get("bot.map.scale", map.Width, map.Height, map.Width / scale, map.Height / scale));
+                sb.AppendLine(string.Format(Translations.bot_map_scale, map.Width, map.Height, map.Width / scale, map.Height / scale));
 
             for (int base_y = 0; base_y < map.Height; base_y += scale)
             {

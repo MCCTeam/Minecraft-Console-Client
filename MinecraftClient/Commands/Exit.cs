@@ -7,7 +7,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "exit"; } }
         public override string CmdUsage { get { return "exit"; } }
-        public override string CmdDesc { get { return "cmd.exit.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_exit_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {

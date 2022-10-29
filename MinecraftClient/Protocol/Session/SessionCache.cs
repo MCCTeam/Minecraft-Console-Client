@@ -125,7 +125,7 @@ namespace MinecraftClient.Protocol.Session
             if (File.Exists(SessionCacheFileMinecraft))
             {
                 if (Config.Logging.DebugMessages)
-                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.loading", Path.GetFileName(SessionCacheFileMinecraft)));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loading, Path.GetFileName(SessionCacheFileMinecraft)));
                 Json.JSONData mcSession = new(Json.JSONData.DataType.String);
                 try
                 {
@@ -158,7 +158,7 @@ namespace MinecraftClient.Protocol.Session
                                         clientID
                                     ));
                                     if (Config.Logging.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", login, session.ID));
+                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loaded, login, session.ID));
                                     sessions[login] = session;
                                 }
                                 catch (InvalidDataException) { /* Not a valid session */ }
@@ -172,7 +172,7 @@ namespace MinecraftClient.Protocol.Session
             if (File.Exists(SessionCacheFileSerialized))
             {
                 if (Config.Logging.DebugMessages)
-                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.converting", SessionCacheFileSerialized));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_converting, SessionCacheFileSerialized));
 
                 try
                 {
@@ -184,17 +184,17 @@ namespace MinecraftClient.Protocol.Session
                     foreach (KeyValuePair<string, SessionToken> item in sessionsTemp)
                     {
                         if (Config.Logging.DebugMessages)
-                            ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", item.Key, item.Value.ID));
+                            ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loaded, item.Key, item.Value.ID));
                         sessions[item.Key] = item.Value;
                     }
                 }
                 catch (IOException ex)
                 {
-                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.read_fail", ex.Message));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_read_fail, ex.Message));
                 }
                 catch (SerializationException ex2)
                 {
-                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.malformed", ex2.Message));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_malformed, ex2.Message));
                 }
             }
 
@@ -202,7 +202,7 @@ namespace MinecraftClient.Protocol.Session
             if (File.Exists(SessionCacheFilePlaintext))
             {
                 if (Config.Logging.DebugMessages)
-                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.loading_session", SessionCacheFilePlaintext));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loading_session, SessionCacheFilePlaintext));
 
                 try
                 {
@@ -218,25 +218,25 @@ namespace MinecraftClient.Protocol.Session
                                     string login = Settings.ToLowerIfNeed(keyValue[0]);
                                     SessionToken session = SessionToken.FromString(keyValue[1]);
                                     if (Config.Logging.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.loaded", login, session.ID));
+                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_loaded, login, session.ID));
                                     sessions[login] = session;
                                 }
                                 catch (InvalidDataException e)
                                 {
                                     if (Config.Logging.DebugMessages)
-                                        ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_string", keyValue[1], e.Message));
+                                        ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_string, keyValue[1], e.Message));
                                 }
                             }
                             else if (Config.Logging.DebugMessages)
                             {
-                                ConsoleIO.WriteLineFormatted(Translations.Get("cache.ignore_line", line));
+                                ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_ignore_line, line));
                             }
                         }
                     }
                 }
                 catch (IOException e)
                 {
-                    ConsoleIO.WriteLineFormatted(Translations.Get("cache.read_fail_plain", e.Message));
+                    ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_read_fail_plain, e.Message));
                 }
             }
 
@@ -249,7 +249,7 @@ namespace MinecraftClient.Protocol.Session
         private static void SaveToDisk()
         {
             if (Config.Logging.DebugMessages)
-                Translations.WriteLineFormatted("cache.saving");
+                ConsoleIO.WriteLineFormatted(Translations.cache_saving, acceptnewlines: true);
 
             List<string> sessionCacheLines = new()
             {
@@ -265,7 +265,7 @@ namespace MinecraftClient.Protocol.Session
             }
             catch (IOException e)
             {
-                ConsoleIO.WriteLineFormatted(Translations.Get("cache.save_fail", e.Message));
+                ConsoleIO.WriteLineFormatted(string.Format(Translations.cache_save_fail, e.Message));
             }
         }
     }

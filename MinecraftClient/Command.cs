@@ -33,8 +33,8 @@ namespace MinecraftClient
         /// <returns>Translated command description</returns>
         public string GetCmdDescTranslated()
         {
-            string s = string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc) ? "" : ": "; // If either one is empty, no colon :
-            return CmdUsage + s + Translations.TryGet(CmdDesc);
+            string s = (string.IsNullOrEmpty(CmdUsage) || string.IsNullOrEmpty(CmdDesc)) ? "" : ": "; // If either one is empty, no colon :
+            return CmdUsage + s + CmdDesc;
         }
 
         public void LogUsage(Logger.ILogger logger)
