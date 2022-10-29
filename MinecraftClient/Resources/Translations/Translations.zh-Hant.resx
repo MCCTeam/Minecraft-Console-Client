@@ -1853,47 +1853,47 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
 詳細使用方法請檢視 https://mccteam.github.io/guide/chat-bots.html#script-scheduler</value>
   </data>
   <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
-    <value>This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
-/!\ NOTE: You can't send messages and commands from a group channel, you can only send them in the bot DM, but you can get the messages from the client in a group channel.
+    <value>這個 Chatbot 可以讓你透過Telegram機器人私人信息使用Telegram頻道來接收和傳送信息。
+/!\ 注意：你不能從群組對話傳送信息和指令，你只能從私人信息傳送，但你可以從客戶端取得群組對話的信息。
 -----------------------------------------------------------
-Setup:
-First you need to create a Telegram bot and obtain an API key, to do so, go to Telegram and find @botfather
-Click on "Start" button and read the bot reply, then type "/newbot", the Botfather will guide you through the bot creation.
-Once you create the bot, copy the API key that you have gotten, and put it into the "Token" field of "ChatBot.TelegramBridge" section (this section).
-/!\ Do not share this token with anyone else as it will give them the control over your bot. Save it securely.
-Then launch the client and go to Telegram, find your newly created bot by searching for it with its username, and open a DM with it.
-Click on "Start" button and type and send the following command ".chatid" to obtain the chat id. 
-Copy the chat id number (eg. 2627844670) and paste it in the "ChannelId" field and add it to the "Authorized_Chat_Ids" field (in this section) (an id in "Authorized_Chat_Ids" field is a number/long, not a string!), then save the file.
-Now you can use the bot using it's DM.
-/!\ If you do not add the id of your chat DM with the bot to the "Authorized_Chat_Ids" field, ayone who finds your bot via search will be able to execute commands and send messages!
-/!\ An id pasted in to the "Authorized_Chat_Ids" should be a number/long, not a string!
+配置：
+首先你需要創建一個Telegram機器人並取得API鑰匙。請使用Telegram尋找 @botfather
+點擊開始按鈕，閱讀機器人的信息，然後輸入 "/newbot"。@botfather 將會引導你建立機器人。
+當成功建立機器人後，複製API鑰匙，然後貼在 "ChatBot.TelegramBridge" 部分中的 "Token" 欄位（本部分）
+/!\ 請勿與任何人分享API鑰匙，並將它儲存在安全的地方。
+然後啟動客戶端和你的Telegram，在Telegram中尋找你新建立的機器人並與機器人開啟私人信息。
+點擊開始按鈕，輸入並傳送 ".chatid" 指令來獲得聊天室ID。
+複製聊天室ID （例子：2627844670），然後貼在 "ChannelId" 欄位和 "Authorized_Chat_Ids" 欄位 （"Authorized_Chat_Ids" 欄位是一個數字而不是字串），儲存配置文件。
+現在你可以透過私人信息來使用機器人。
+/!\ 如果你沒有將聊天室ID加到 "Authorized_Chat_Ids" 欄位，任何找到你的機器人的人將能夠執行指令和傳送信息！
+/!\ "Authorized_Chat_Ids" 欄位中的ID應該是一個數字而不是字串！
 -----------------------------------------------------------
-NOTE: If you want to recieve messages to a group channel instead, make the channel temporarely public, invite the bot to it and make it an administrator, then set the channel to private if you want.
-Then set the "ChannelId" field to the @ of your channel (you must include the @ in the settings, eg. "@mysupersecretchannel"), this is the username you can see in the invite link of the channel.
-/!\ Only include the username with @ prefix, do not include the rest of the link. Example if you have "https://t.me/mysupersecretchannel", the "ChannelId" will be "@mysupersecretchannel".
-/!\ Note that you will not be able to send messages to the client from a group channel!
+注意：如果你希望透過群組來接收信息，將群組暫時改為公開，邀請你的機器人到群組並給與機器人管理員權限，最後將群組改為私人。
+然後將 "ChannelId" 欄位設為 @群組名稱（必須包括@，例子："@mysupersecretchannel"），你可以在頻道邀請連結看到這個使用者名稱。
+/!\ 只需包含使用者名稱加上@在前面，不需要包括剩下的連結。例如你的連結是 "https://t.me/mysupersecretchannel"，"ChannelId" 欄位將會是 "@mysupersecretchannel"。
+/!\ 注意，你將不能從群組傳送信息到客戶端！
 -----------------------------------------------------------
-How to use the bot:
-To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
-To send a message, simply type it out and hit enter.</value>
+如何使用：
+希望執行MCC指令時，在指令前加上點 "."。例如 ".move 143 64 735"。
+希望傳送聊天信息時，只需要直接傳送就好了。</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.Authorized_Chat_Ids" xml:space="preserve">
-    <value>A list of Chat IDs that are allowed to send messages and execute commands. To get an id of your chat DM with the bot use ".chatid" bot command in Telegram.</value>
+    <value>允許發送信息和執行指令的聊天室ID列表。要獲得你的私人聊天室ID，請在 Telegram 中使用 ".chatid" 指令。</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.ChannelId" xml:space="preserve">
-    <value>An ID of a channel where you want to interact with the MCC using the bot.</value>
+    <value>你想要使用機器人與 MCC 互動的頻道ID。</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.Formats" xml:space="preserve">
-    <value>Message formats
-Words wrapped with { and } are going to be replaced during the code execution, do not change them!
-For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Telegram message formatting, check the following: https://sendpulse.com/blog/telegram-text-formatting</value>
+    <value>信息格式
+被 { 與 } 包裹著的字將會在程式運行時被替換，不要修改它們！
+例如：{message} 將會被替換成真正的信息內容，{username} 將會被替換成使用者名稱，{timestamp} 會替換成現在時間。
+對於Telegram的信息格式，請查看：https://sendpulse.com/blog/telegram-text-formatting</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
-    <value>How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).</value>
+    <value>如果信息無法被傳送至Telegram時，要等候多少秒才取消傳送。（最小 1秒）</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.Token" xml:space="preserve">
-    <value>Your Telegram Bot token.</value>
+    <value>你的Telegram機器人的令牌。</value>
   </data>
   <data name="config.ChatFormat" xml:space="preserve">
     <value>MCC會盡力檢測聊天資訊，但有些伺服器有不尋常的聊天格式
@@ -2189,19 +2189,19 @@ For Telegram message formatting, check the following: https://sendpulse.com/blog
     <value>成功！(會話ID：{0})</value>
   </data>
   <data name="Enchantment.bottom_slot" xml:space="preserve">
-    <value>Bottom slot</value>
+    <value>下面的欄位</value>
   </data>
   <data name="Enchantment.enchantments_available" xml:space="preserve">
-    <value>Enchantments available</value>
+    <value>可選的附魔</value>
   </data>
   <data name="Enchantment.levels" xml:space="preserve">
-    <value>Levels</value>
+    <value>等級</value>
   </data>
   <data name="Enchantment.middle_slot" xml:space="preserve">
-    <value>Middle slot</value>
+    <value>中間的欄位</value>
   </data>
   <data name="Enchantment.tops_slot" xml:space="preserve">
-    <value>Top slot</value>
+    <value>上面的欄位</value>
   </data>
   <data name="error.auth" xml:space="preserve">
     <value>§8在重新整理身份驗證時接收到伺服器錯誤：{0}</value>
@@ -2243,7 +2243,7 @@ For Telegram message formatting, check the following: https://sendpulse.com/blog
     <value>§8對握手包的響應無效</value>
   </data>
   <data name="error.inventoryhandling_not_enabled" xml:space="preserve">
-    <value>This feature requires Inventory Handling to be enabled in order to work!</value>
+    <value>此功能需要啟用庫存處理才能運作！</value>
   </data>
   <data name="error.join" xml:space="preserve">
     <value>加入伺服器時發生錯誤。</value>
@@ -2309,7 +2309,7 @@ For Telegram message formatting, check the following: https://sendpulse.com/blog
     <value>{0}：無效語法，應為 --argname=value 或 --section.argname=value</value>
   </data>
   <data name="error.terrain_not_enabled" xml:space="preserve">
-    <value>This feature requires Terrain And Movements to be enabled in order to work!</value>
+    <value>此功能需要啟用地形和移動才能運作！</value>
   </data>
   <data name="error.timeout" xml:space="preserve">
     <value>連線超時</value>
@@ -2635,7 +2635,7 @@ MCC正在使用預設配置執行。</value>
     <value>在可用時載入應用於MCC的翻譯，關閉則僅使用英語。</value>
   </data>
   <data name="cmd.setrnd.format" xml:space="preserve">
-    <value>setrnd variable -7to17 OR setrnd variable string1 "\"string2\" string3"</value>
+    <value>setrnd variable -7to17 或 setrnd variable string1 "\"string2\" string3"</value>
   </data>
   <data name="exception.palette.healthfield" xml:space="preserve">
     <value>請為此Minecraft版本更新血量欄位處理。</value>
