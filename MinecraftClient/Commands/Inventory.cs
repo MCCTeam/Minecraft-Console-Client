@@ -12,7 +12,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "inventory"; } }
         public override string CmdUsage { get { return GetBasicUsage(); } }
-        public override string CmdDesc { get { return "cmd.inventory.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_inventory_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {
@@ -41,12 +41,12 @@ namespace MinecraftClient.Commands
                                         return GetCmdDescTranslated();
 
                                     if (handler.DoCreativeGive(slot, itemType, count, null))
-                                        return Translations.Get("cmd.inventory.creative_done", itemType, count, slot);
+                                        return string.Format(Translations.cmd_inventory_creative_done, itemType, count, slot);
                                     else
-                                        return Translations.Get("cmd.inventory.creative_fail");
+                                        return Translations.cmd_inventory_creative_fail;
                                 }
                                 else
-                                    return Translations.Get("cmd.inventory.need_creative");
+                                    return Translations.cmd_inventory_need_creative;
                             }
                             else
                                 return GetCmdDescTranslated();
@@ -64,12 +64,12 @@ namespace MinecraftClient.Commands
                             if (handler.GetGamemode() == 1)
                             {
                                 if (handler.DoCreativeGive(slot, ItemType.Null, 0, null))
-                                    return Translations.Get("cmd.inventory.creative_delete", slot);
+                                    return string.Format(Translations.cmd_inventory_creative_delete, slot);
                                 else
-                                    return Translations.Get("cmd.inventory.creative_fail");
+                                    return Translations.cmd_inventory_creative_fail;
                             }
                             else
-                                return Translations.Get("cmd.inventory.need_creative");
+                                return Translations.cmd_inventory_need_creative;
                         }
                         else
                             return GetCmdDescTranslated();
@@ -86,14 +86,14 @@ namespace MinecraftClient.Commands
                         if (availableIds.Count > 0)
                             inventoryId = availableIds.Max(); // use foreground container
                         else
-                            return Translations.Get("cmd.inventory.container_not_found");
+                            return Translations.cmd_inventory_container_not_found;
                     }
                     else if (args[0].ToLower().StartsWith("inventories") || args[0].ToLower().StartsWith("i"))
                     {
                         Dictionary<int, Container> inventories = handler.GetInventories();
                         List<int> availableIds = inventories.Keys.ToList();
                         StringBuilder response = new();
-                        response.AppendLine(Translations.Get("cmd.inventory.inventories_available"));
+                        response.AppendLine(Translations.cmd_inventory_inventories_available);
 
                         foreach (int id in availableIds)
                             response.AppendLine(String.Format(" #{0} - {1}§8", id, inventories[id].Title));
@@ -140,11 +140,11 @@ namespace MinecraftClient.Commands
                         });
 
                         if (foundItems.Count == 0)
-                            return Translations.Get("cmd.inventory.no_found_items");
+                            return Translations.cmd_inventory_no_found_items;
 
                         StringBuilder response = new();
 
-                        response.AppendLine(Translations.Get("cmd.inventory.found_items") + ":");
+                        response.AppendLine(Translations.cmd_inventory_found_items + ":");
 
                         foreach ((int invId, List<Item> itemsList) in new SortedDictionary<int, List<Item>>(foundItems))
                         {
@@ -173,20 +173,20 @@ namespace MinecraftClient.Commands
 
                     Container? inventory = handler.GetInventory(inventoryId);
                     if (inventory == null)
-                        return Translations.Get("cmd.inventory.not_exist", inventoryId);
+                        return string.Format(Translations.cmd_inventory_not_exist, inventoryId);
 
                     string action = args.Length > 1 ? args[1].ToLower() : "list";
                     if (action == "close")
                     {
                         if (handler.CloseInventory(inventoryId))
-                            return Translations.Get("cmd.inventory.close", inventoryId);
+                            return string.Format(Translations.cmd_inventory_close, inventoryId);
                         else
-                            return Translations.Get("cmd.inventory.close_fail", inventoryId);
+                            return string.Format(Translations.cmd_inventory_close_fail, inventoryId);
                     }
                     else if (action == "list")
                     {
                         StringBuilder response = new();
-                        response.Append(Translations.Get("cmd.inventory.inventory"));
+                        response.Append(Translations.cmd_inventory_inventory);
                         response.AppendLine(String.Format(" #{0} - {1}§8", inventoryId, inventory.Title));
 
                         string? asciiArt = inventory.Type.GetAsciiArt();
@@ -204,7 +204,7 @@ namespace MinecraftClient.Commands
                         }
 
                         if (inventoryId == 0)
-                            response.AppendLine(Translations.Get("cmd.inventory.hotbar", (handler.GetCurrentSlot() + 1)));
+                            response.AppendLine(string.Format(Translations.cmd_inventory_hotbar, (handler.GetCurrentSlot() + 1)));
 
                         response.Remove(response.Length - 1, 1); // Remove last '\n'
                         return response.ToString();
@@ -215,18 +215,18 @@ namespace MinecraftClient.Commands
                             return GetCmdDescTranslated();
 
                         WindowActionType actionType = WindowActionType.LeftClick;
-                        string keyName = "cmd.inventory.left";
+                        string keyName = Translations.cmd_inventory_left;
                         if (args.Length >= 4)
                         {
                             string b = args[3];
                             if (b.ToLower()[0] == 'r')
-                                (actionType, keyName) = (WindowActionType.RightClick, "cmd.inventory.right");
+                                (actionType, keyName) = (WindowActionType.RightClick, Translations.cmd_inventory_right);
                             else if (b.ToLower()[0] == 'm')
-                                (actionType, keyName) = (WindowActionType.MiddleClick, "cmd.inventory.middle");
+                                (actionType, keyName) = (WindowActionType.MiddleClick, Translations.cmd_inventory_middle);
                         }
 
                         handler.DoWindowAction(inventoryId, slot, actionType);
-                        return Translations.Get("cmd.inventory.clicking", Translations.Get(keyName), slot, inventoryId);
+                        return string.Format(Translations.cmd_inventory_clicking, keyName, slot, inventoryId);
                     }
                     else if (action == "shiftclick" && args.Length >= 3)
                     {
@@ -234,9 +234,9 @@ namespace MinecraftClient.Commands
                             return GetCmdDescTranslated();
 
                         if (!handler.DoWindowAction(inventoryId, slot, WindowActionType.ShiftClick))
-                            return Translations.Get("cmd.inventory.shiftclick_fail");
+                            return Translations.cmd_inventory_shiftclick_fail;
 
-                        return Translations.Get("cmd.inventory.shiftclick", slot, inventoryId);
+                        return string.Format(Translations.cmd_inventory_shiftclick, slot, inventoryId);
                     }
                     else if (action == "drop" && args.Length >= 3)
                     {
@@ -245,7 +245,7 @@ namespace MinecraftClient.Commands
 
                         // check item exist
                         if (!inventory.Items.ContainsKey(slot))
-                            return Translations.Get("cmd.inventory.no_item", slot);
+                            return string.Format(Translations.cmd_inventory_no_item, slot);
 
                         WindowActionType actionType = WindowActionType.DropItem;
                         if (args.Length >= 4 && args[3].ToLower() == "all")
@@ -254,9 +254,9 @@ namespace MinecraftClient.Commands
                         if (handler.DoWindowAction(inventoryId, slot, actionType))
                         {
                             if (actionType == WindowActionType.DropItemStack)
-                                return Translations.Get("cmd.inventory.drop_stack", slot);
+                                return string.Format(Translations.cmd_inventory_drop_stack, slot);
                             else
-                                return Translations.Get("cmd.inventory.drop", slot);
+                                return string.Format(Translations.cmd_inventory_drop, slot);
                         }
                         else
                             return "Failed";
@@ -267,7 +267,7 @@ namespace MinecraftClient.Commands
                 else
                 {
                     StringBuilder response = new();
-                    response.Append(Translations.Get("cmd.inventory.inventories")).Append(":\n");
+                    response.Append(Translations.cmd_inventory_inventories).Append(":\n");
                     foreach ((int invId, Container inv) in handler.GetInventories())
                         response.AppendLine(String.Format(" #{0}: {1}§8", invId, inv.Title));
                     response.Append(CmdUsage);
@@ -275,42 +275,44 @@ namespace MinecraftClient.Commands
                 }
             }
             else
-                return Translations.Get("extra.inventory_required");
+                return Translations.extra_inventory_required;
         }
 
         #region Methods for commands help
 
         private static string GetAvailableActions()
         {
-            return Translations.Get("cmd.inventory.help.available") + ": list, close, click, drop, creativegive, creativedelete.";
+            return Translations.cmd_inventory_help_available + ": list, close, click, drop, creativegive, creativedelete.";
         }
 
         private static string GetBasicUsage()
         {
-            return Translations.Get("cmd.inventory.help.basic") + ": /inventory <player|container|<id>> <action>.";
+            return Translations.cmd_inventory_help_basic + ": /inventory <player|container|<id>> <action>.";
         }
 
         private static string GetHelp()
         {
-            return Translations.Get("cmd.inventory.help.help", GetAvailableActions());
+            return string.Format(Translations.cmd_inventory_help_help, GetAvailableActions());
         }
 
         private static string GetSubCommandHelp(string cmd)
         {
-            string usageStr = ' ' + Translations.Get("cmd.inventory.help.usage") + ": ";
+            string usageStr = ' ' + Translations.cmd_inventory_help_usage + ": ";
             return cmd switch
             {
-                "list" => Translations.Get("cmd.inventory.help.list") + usageStr + "/inventory <player|container|<id>> list",
-                "close" => Translations.Get("cmd.inventory.help.close") + usageStr + "/inventory <player|container|<id>> close",
-                "click" => Translations.Get("cmd.inventory.help.click") + usageStr + "/inventory <player|container|<id>> click <slot> [left|right|middle]\nDefault is left click",
-                "shiftclick" => Translations.Get("cmd.inventory.help.shiftclick") + usageStr + "/inventory <player|container|<id>> shiftclick <slot>",
-                "drop" => Translations.Get("cmd.inventory.help.drop") + usageStr + "/inventory <player|container|<id>> drop <slot> [all]\nAll means drop full stack",
-                "creativegive" => Translations.Get("cmd.inventory.help.creativegive") + usageStr + "/inventory creativegive <slot> <itemtype> <amount>",
-                "creativedelete" => Translations.Get("cmd.inventory.help.creativedelete") + usageStr + "/inventory creativedelete <slot>",
-                "inventories" => Translations.Get("cmd.inventory.help.inventories") + usageStr + "/inventory inventories",
-                "search" => Translations.Get("cmd.inventory.help.search") + usageStr + "/inventory search <item type> [count]",
-                "help" => GetHelp(),
-                _ => Translations.Get("cmd.inventory.help.unknown") + GetAvailableActions(),
+#pragma warning disable format // @formatter:off
+                "list"           => Translations.cmd_inventory_help_list           + usageStr + "/inventory <player|container|<id>> list",
+                "close"          => Translations.cmd_inventory_help_close          + usageStr + "/inventory <player|container|<id>> close",
+                "click"          => Translations.cmd_inventory_help_click          + usageStr + "/inventory <player|container|<id>> click <slot> [left|right|middle]\nDefault is left click",
+                "shiftclick"     => Translations.cmd_inventory_help_shiftclick     + usageStr + "/inventory <player|container|<id>> shiftclick <slot>",
+                "drop"           => Translations.cmd_inventory_help_drop           + usageStr + "/inventory <player|container|<id>> drop <slot> [all]\nAll means drop full stack",
+                "creativegive"   => Translations.cmd_inventory_help_creativegive   + usageStr + "/inventory creativegive <slot> <itemtype> <amount>",
+                "creativedelete" => Translations.cmd_inventory_help_creativedelete + usageStr + "/inventory creativedelete <slot>",
+                "inventories"    => Translations.cmd_inventory_help_inventories    + usageStr + "/inventory inventories",
+                "search"         => Translations.cmd_inventory_help_search         + usageStr + "/inventory search <item type> [count]",
+                "help"           => GetHelp(),
+                _                => Translations.cmd_inventory_help_unknown        + GetAvailableActions(),
+#pragma warning restore format // @formatter:on
             };
         }
         #endregion

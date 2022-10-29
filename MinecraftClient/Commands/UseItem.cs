@@ -7,7 +7,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "useitem"; } }
         public override string CmdUsage { get { return "useitem"; } }
-        public override string CmdDesc { get { return "cmd.useitem.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_useitem_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {
@@ -18,9 +18,9 @@ namespace MinecraftClient.Commands
             if (handler.GetInventoryEnabled())
             {
                 handler.UseItemOnHand();
-                return Translations.Get("cmd.useitem.use");
+                return Translations.cmd_useitem_use;
             }
-            else return Translations.Get("extra.inventory_required");
+            else return Translations.extra_inventory_required;
         }
     }
 }

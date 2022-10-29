@@ -9,7 +9,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "bots"; } }
         public override string CmdUsage { get { return "bots [list|unload <bot name|all>]"; } }
-        public override string CmdDesc { get { return "cmd.bots.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_bots_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {
@@ -30,7 +30,7 @@ namespace MinecraftClient.Commands
                         int length = handler.GetLoadedChatBots().Count;
 
                         if (length == 0)
-                            return Translations.TryGet("cmd.bots.noloaded");
+                            return Translations.cmd_bots_noloaded;
 
                         for (int i = 0; i < length; i++)
                         {
@@ -41,7 +41,7 @@ namespace MinecraftClient.Commands
 
                         }
 
-                        return Translations.Get("cmd.bots.list") + ": " + sb.ToString();
+                        return Translations.cmd_bots_list + ": " + sb.ToString();
                     }
 
                 }
@@ -54,20 +54,20 @@ namespace MinecraftClient.Commands
                         if (botName.ToLower().Equals("all", StringComparison.OrdinalIgnoreCase))
                         {
                             if (handler.GetLoadedChatBots().Count == 0)
-                                return Translations.TryGet("cmd.bots.noloaded");
+                                return Translations.cmd_bots_noloaded;
 
                             handler.UnloadAllBots();
-                            return Translations.TryGet("cmd.bots.unloaded_all");
+                            return Translations.cmd_bots_unloaded_all;
                         }
                         else
                         {
                             ChatBot? bot = handler.GetLoadedChatBots().Find(bot => bot.GetType().Name.ToLower() == botName.ToLower());
 
                             if (bot == null)
-                                return Translations.TryGet("cmd.bots.notfound", botName);
+                                return string.Format(Translations.cmd_bots_notfound, botName);
 
                             handler.BotUnLoad(bot);
-                            return Translations.TryGet("cmd.bots.unloaded", botName);
+                            return string.Format(Translations.cmd_bots_unloaded, botName);
                         }
                     }
                 }

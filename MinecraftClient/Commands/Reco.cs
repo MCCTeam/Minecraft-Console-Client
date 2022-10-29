@@ -7,7 +7,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "reco"; } }
         public override string CmdUsage { get { return "reco [account]"; } }
-        public override string CmdDesc { get { return "cmd.reco.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_reco_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {
@@ -20,7 +20,7 @@ namespace MinecraftClient.Commands
             {
                 if (!Settings.Config.Main.Advanced.SetAccount(args[0]))
                 {
-                    return Translations.Get("cmd.connect.unknown", args[0]);
+                    return string.Format(Translations.cmd_connect_unknown, args[0]);
                 }
             }
             Program.Restart();

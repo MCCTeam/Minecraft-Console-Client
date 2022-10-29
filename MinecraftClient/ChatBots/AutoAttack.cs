@@ -48,7 +48,7 @@ namespace MinecraftClient.ChatBots
             {
                 if (Cooldown_Time.Custom && Cooldown_Time.value <= 0)
                 {
-                    LogToConsole(BotName, Translations.TryGet("bot.autoAttack.invalidcooldown"));
+                    LogToConsole(BotName, Translations.bot_autoAttack_invalidcooldown);
                     Cooldown_Time.value = 1.0;
                 }
             }
@@ -113,8 +113,8 @@ namespace MinecraftClient.ChatBots
         {
             if (!GetEntityHandlingEnabled())
             {
-                LogToConsoleTranslated("extra.entity_required");
-                LogToConsoleTranslated("general.bot_unload");
+                LogToConsole(Translations.extra_entity_required);
+                LogToConsole(Translations.general_bot_unload);
                 UnloadBot();
             }
         }

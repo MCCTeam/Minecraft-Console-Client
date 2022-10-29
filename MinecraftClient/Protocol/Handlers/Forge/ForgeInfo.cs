@@ -47,7 +47,7 @@ namespace MinecraftClient.Protocol.Handlers.Forge
                     Version = fmlVersion;
                     break;
                 default:
-                    throw new InvalidOperationException(Translations.Get("error.forgeforce"));
+                    throw new InvalidOperationException(Translations.error_forgeforce);
             }
         }
 

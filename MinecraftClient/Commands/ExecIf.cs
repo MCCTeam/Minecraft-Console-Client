@@ -10,7 +10,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "execif"; } }
         public override string CmdUsage { get { return "execif <condition/expression> ---> <command>"; } }
-        public override string CmdDesc { get { return "cmd.execif.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_execif_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {
@@ -74,8 +74,9 @@ namespace MinecraftClient.Commands
                         handler.PerformInternalCommand(resultCommand, ref output);
 
                         if (string.IsNullOrEmpty(output))
-                            handler.Log.Debug(Translations.TryGet("cmd.execif.executed_no_output", expressionText, resultCommand));
-                        else handler.Log.Debug(Translations.TryGet("cmd.execif.executed", expressionText, resultCommand, output));
+                            handler.Log.Debug(string.Format(Translations.cmd_execif_executed_no_output, expressionText, resultCommand));
+                        else
+                            handler.Log.Debug(string.Format(Translations.cmd_execif_executed, expressionText, resultCommand, output));
 
                         return "";
                     }
@@ -84,8 +85,8 @@ namespace MinecraftClient.Commands
                 }
                 catch (Exception e)
                 {
-                    handler.Log.Error(Translations.TryGet("cmd.execif.error_occured", command));
-                    handler.Log.Error(Translations.TryGet("cmd.execif.error", e.Message));
+                    handler.Log.Error(string.Format(Translations.cmd_execif_error_occured, command));
+                    handler.Log.Error(string.Format(Translations.cmd_execif_error, e.Message));
                     return "";
                 }
             }

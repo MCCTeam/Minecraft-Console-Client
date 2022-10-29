@@ -173,14 +173,14 @@ namespace MinecraftClient.ChatBots
         {
             if (!GetEntityHandlingEnabled())
             {
-                LogToConsoleTranslated("extra.entity_required");
+                LogToConsole(Translations.extra_entity_required);
                 state = FishingState.WaitJoinGame;
             }
             inventoryEnabled = GetInventoryEnabled();
             if (!inventoryEnabled)
-                LogToConsoleTranslated("bot.autoFish.no_inv_handle");
+                LogToConsole(Translations.bot_autoFish_no_inv_handle);
 
-            RegisterChatBotCommand("fish", Translations.Get("bot.autoFish.cmd"), GetHelp(), CommandHandler);
+            RegisterChatBotCommand("fish", Translations.bot_autoFish_cmd, GetHelp(), CommandHandler);
         }
 
         public string CommandHandler(string cmd, string[] args)
@@ -197,7 +197,7 @@ namespace MinecraftClient.ChatBots
                             counter = 0;
                             state = FishingState.StartMove;
                         }
-                        return Translations.Get("bot.autoFish.start");
+                        return Translations.bot_autoFish_start;
                     case "stop":
                         isFishing = false;
                         lock (stateLock)
@@ -208,14 +208,14 @@ namespace MinecraftClient.ChatBots
                             state = FishingState.Stopping;
                         }
                         StopFishing();
-                        return Translations.Get("bot.autoFish.stop");
+                        return Translations.bot_autoFish_stop;
                     case "status":
                         if (args.Length >= 2)
                         {
                             if (args[1] == "clear")
                             {
                                 fishItemCnt = new();
-                                return Translations.Get("bot.autoFish.status_clear");
+                                return Translations.bot_autoFish_status_clear;
                             }
                             else
                             {
@@ -225,12 +225,12 @@ namespace MinecraftClient.ChatBots
                         else
                         {
                             if (fishItemCnt.Count == 0)
-                                return Translations.Get("bot.autoFish.status_info");
+                                return Translations.bot_autoFish_status_info;
 
                             List<KeyValuePair<ItemType, uint>> orderedList = fishItemCnt.OrderBy(x => x.Value).ToList();
                             int maxLen = orderedList[^1].Value.ToString().Length;
                             StringBuilder sb = new();
-                            sb.Append(Translations.Get("bot.autoFish.status_info"));
+                            sb.Append(Translations.bot_autoFish_status_info);
                             foreach ((ItemType type, uint cnt) in orderedList)
                             {
                                 sb.Append(Environment.NewLine);
@@ -258,7 +258,7 @@ namespace MinecraftClient.ChatBots
             if (Config.Auto_Start)
             {
                 double delay = Config.Fishing_Delay;
-                LogToConsole(Translations.Get("bot.autoFish.start_at", delay));
+                LogToConsole(string.Format(Translations.bot_autoFish_start_at, delay));
                 lock (stateLock)
                 {
                     isFishing = false;
@@ -321,7 +321,7 @@ namespace MinecraftClient.ChatBots
                         {
                             if (castTimeout < 6000)
                                 castTimeout *= 2; // Exponential backoff
-                            LogToConsole(GetShortTimestamp() + ": " + Translations.Get("bot.autoFish.cast_timeout", castTimeout / 10.0));
+                            LogToConsole(GetShortTimestamp() + ": " + string.Format(Translations.bot_autoFish_cast_timeout, castTimeout / 10.0));
 
                             counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
@@ -330,7 +330,7 @@ namespace MinecraftClient.ChatBots
                     case FishingState.WaitingFishToBite:
                         if (++counter > Settings.DoubleToTick(Config.Fishing_Timeout))
                         {
-                            LogToConsole(GetShortTimestamp() + ": " + Translations.Get("bot.autoFish.fishing_timeout"));
+                            LogToConsole(GetShortTimestamp() + ": " + Translations.bot_autoFish_fishing_timeout);
 
                             counter = Settings.DoubleToTick(Config.Cast_Delay);
                             state = FishingState.WaitingToCast;
@@ -348,7 +348,7 @@ namespace MinecraftClient.ChatBots
                                 }
                                 else
                                 {
-                                    LogToConsole(Translations.Get("extra.terrainandmovement_required"));
+                                    LogToConsole(Translations.extra_terrainandmovement_required);
                                     state = FishingState.WaitJoinGame;
                                 }
                             }
@@ -364,7 +364,7 @@ namespace MinecraftClient.ChatBots
                         if (!ClientIsMoving())
                         {
                             LookAtLocation(nextYaw, nextPitch);
-                            LogToConsole(Translations.Get("bot.autoFish.update_lookat", nextYaw, nextPitch));
+                            LogToConsole(string.Format(Translations.bot_autoFish_update_lookat, nextYaw, nextPitch));
 
                             state = FishingState.DurabilityCheck;
                             goto case FishingState.DurabilityCheck;
@@ -399,7 +399,7 @@ namespace MinecraftClient.ChatBots
 
                 fishItemCounter = 15;
 
-                LogToConsole(GetShortTimestamp() + ": " + Translations.Get("bot.autoFish.throw"));
+                LogToConsole(GetShortTimestamp() + ": " + Translations.bot_autoFish_throw);
                 lock (stateLock)
                 {
                     fishingBobber = entity;
@@ -426,7 +426,7 @@ namespace MinecraftClient.ChatBots
 
                     if (Config.Antidespawn)
                     {
-                        LogToConsoleTranslated("bot.autoFish.despawn");
+                        LogToConsole(Translations.bot_autoFish_despawn);
 
                         lock (stateLock)
                         {
@@ -473,7 +473,7 @@ namespace MinecraftClient.ChatBots
             {
                 fishItemCounter = 15;
                 Item item = (Item)itemObj!;
-                LogToConsole(Translations.Get("bot.autoFish.got", item.ToFullString()));
+                LogToConsole(string.Format(Translations.bot_autoFish_got, item.ToFullString()));
                 if (fishItemCnt.ContainsKey(item.Type))
                     fishItemCnt[item.Type] += (uint)item.Count;
                 else
@@ -514,10 +514,10 @@ namespace MinecraftClient.ChatBots
         {
             ++fishCount;
             if (Config.Enable_Move && Config.Movements.Length > 0)
-                LogToConsole(GetShortTimestamp() + ": " + Translations.Get("bot.autoFish.caught_at",
+                LogToConsole(GetShortTimestamp() + ": " + string.Format(Translations.bot_autoFish_caught_at,
                     fishingBobber!.Location.X, fishingBobber!.Location.Y, fishingBobber!.Location.Z, fishCount));
             else
-                LogToConsole(GetShortTimestamp() + ": " + Translations.Get("bot.autoFish.caught", fishCount));
+                LogToConsole(GetShortTimestamp() + ": " + string.Format(Translations.bot_autoFish_caught, fishCount));
 
             lock (stateLock)
             {
@@ -558,7 +558,7 @@ namespace MinecraftClient.ChatBots
                 if (!Movement.CheckChunkLoading(GetWorld(), current, goal))
                 {
                     isMoveSuccessed = false;
-                    LogToConsole(Translations.Get("cmd.move.chunk_not_loaded", goal.X, goal.Y, goal.Z));
+                    LogToConsole(string.Format(Translations.cmd_move_chunk_not_loaded, goal.X, goal.Y, goal.Z));
                 }
                 else
                 {
@@ -568,11 +568,11 @@ namespace MinecraftClient.ChatBots
                 if (!isMoveSuccessed)
                 {
                     (nextYaw, nextPitch) = (GetYaw(), GetPitch());
-                    LogToConsole(Translations.Get("cmd.move.fail", goal));
+                    LogToConsole(string.Format(Translations.cmd_move_fail, goal));
                 }
                 else
                 {
-                    LogToConsole(Translations.Get("cmd.move.walk", goal, current));
+                    LogToConsole(string.Format(Translations.cmd_move_walk, goal, current));
                 }
             }
 
@@ -598,7 +598,7 @@ namespace MinecraftClient.ChatBots
             else
             {
                 if (!isWaitingRod)
-                    LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.no_rod"));
+                    LogToConsole(GetTimestamp() + ": " + Translations.bot_autoFish_no_rod);
 
                 if (Config.Auto_Rod_Switch)
                 {
@@ -609,7 +609,7 @@ namespace MinecraftClient.ChatBots
                             WindowAction(0, slot, WindowActionType.LeftClick);
                             WindowAction(0, itemSolt, WindowActionType.LeftClick);
                             WindowAction(0, slot, WindowActionType.LeftClick);
-                            LogToConsole(GetTimestamp() + ": " + Translations.Get("bot.autoFish.switch", slot, (64 - item.Damage)));
+                            LogToConsole(GetTimestamp() + ": " + string.Format(Translations.bot_autoFish_switch, slot, (64 - item.Damage)));
                             isWaitingRod = false;
                             return true;
                         }
@@ -623,7 +623,7 @@ namespace MinecraftClient.ChatBots
 
         private static string GetHelp()
         {
-            return Translations.Get("bot.autoFish.available_cmd", "start, stop, status, help");
+            return string.Format(Translations.bot_autoFish_available_cmd, "start, stop, status, help");
         }
 
         private string GetCommandHelp(string cmd)
@@ -631,10 +631,10 @@ namespace MinecraftClient.ChatBots
             return cmd.ToLower() switch
             {
 #pragma warning disable format // @formatter:off
-                "start"     =>   Translations.Get("bot.autoFish.help.start"),
-                "stop"      =>   Translations.Get("bot.autoFish.help.stop"),
-                "status"    =>   Translations.Get("bot.autoFish.help.status"),
-                "help"      =>   Translations.Get("bot.autoFish.help.help"),
+                "start"     =>   Translations.bot_autoFish_help_start,
+                "stop"      =>   Translations.bot_autoFish_help_stop,
+                "status"    =>   Translations.bot_autoFish_help_status,
+                "help"      =>   Translations.bot_autoFish_help_help,
                 _           =>   GetHelp(),
 #pragma warning restore format // @formatter:on
             };

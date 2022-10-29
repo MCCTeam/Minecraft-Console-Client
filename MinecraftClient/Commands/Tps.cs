@@ -8,7 +8,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "tps"; } }
         public override string CmdUsage { get { return "tps"; } }
-        public override string CmdDesc { get { return "cmd.tps.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_tps_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {
@@ -24,7 +24,7 @@ namespace MinecraftClient.Commands
                 color = "§e";  // Yellow
             else 
                 color = "§a"; // Green
-            return Translations.Get("cmd.tps.current") + ": " + color + tps;
+            return Translations.cmd_tps_current + ": " + color + tps;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace MinecraftClient.Commands
     {
         public override string CmdName { get { return "chunk"; } }
         public override string CmdUsage { get { return "chunk status [chunkX chunkZ|locationX locationY locationZ]"; } }
-        public override string CmdDesc { get { return "cmd.chunk.desc"; } }
+        public override string CmdDesc { get { return Translations.cmd_chunk_desc; } }
 
         public override void RegisterCommand(McClient handler, CommandDispatcher<CommandSource> dispatcher)
         {
@@ -37,16 +37,16 @@ namespace MinecraftClient.Commands
                         sb.Append(World.GetChunkLoadingStatus(handler.GetWorld()));
                         sb.Append('\n');
 
-                        sb.AppendLine(Translations.Get("cmd.chunk.current", current, current.ChunkX, current.ChunkZ));
+                        sb.AppendLine(string.Format(Translations.cmd_chunk_current, current, current.ChunkX, current.ChunkZ));
                         if (markedChunkPos != null)
                         {
-                            sb.Append(Translations.Get("cmd.chunk.marked"));
+                            sb.Append(Translations.cmd_chunk_marked);
                             if (args.Length == 1 + 3)
                                 sb.Append(String.Format("X:{0:0.00} Y:{1:0.00} Z:{2:0.00}, ", 
                                     double.Parse(args[1], NumberStyles.Any, CultureInfo.CurrentCulture), 
                                     double.Parse(args[2], NumberStyles.Any, CultureInfo.CurrentCulture), 
                                     double.Parse(args[3], NumberStyles.Any, CultureInfo.CurrentCulture)));
-                            sb.AppendLine(Translations.Get("cmd.chunk.chunk_pos", markChunkX, markChunkZ));;
+                            sb.AppendLine(string.Format(Translations.cmd_chunk_chunk_pos, markChunkX, markChunkZ));;
                         }
 
                         int consoleHeight = Math.Max(Math.Max(Console.BufferHeight, Settings.Config.Main.Advanced.MinTerminalHeight) - 2, 25);
@@ -132,7 +132,7 @@ namespace MinecraftClient.Commands
                         if (markedChunkPos != null &&
                             (((Math.Max(bottomMost, markChunkZ) - Math.Min(topMost, markChunkZ) + 1) > consoleHeight) ||
                             ((Math.Max(rightMost, markChunkX) - Math.Min(leftMost, markChunkX) + 1) > consoleWidth)))
-                            sb.AppendLine(Translations.Get("cmd.chunk.outside"));
+                            sb.AppendLine(Translations.cmd_chunk_outside);
                         else
                         {
                             topMost = Math.Min(topMost, markChunkZ);
@@ -170,7 +170,7 @@ namespace MinecraftClient.Commands
                             sb.Append('\n');
                         }
 
-                        sb.AppendLine(Translations.Get("cmd.chunk.icon", "§z  §r", "§w  §r", chunkStatusStr[0], chunkStatusStr[1], chunkStatusStr[2]));
+                        sb.AppendLine(string.Format(Translations.cmd_chunk_icon, "§z  §r", "§w  §r", chunkStatusStr[0], chunkStatusStr[1], chunkStatusStr[2]));
                         return sb.ToString();
                     }
                     else if (args[0] == "setloading") // For debugging
@@ -178,7 +178,7 @@ namespace MinecraftClient.Commands
                         Tuple<int, int>? chunkPos = ParseChunkPos(args);
                         if (chunkPos != null)
                         {
-                            handler.Log.Info(Translations.Get("cmd.chunk.for_debug"));
+                            handler.Log.Info(Translations.cmd_chunk_for_debug);
                             World world = handler.GetWorld();
                             (int chunkX, int chunkZ) = chunkPos;
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
@@ -195,7 +195,7 @@ namespace MinecraftClient.Commands
                         Tuple<int, int>? chunkPos = ParseChunkPos(args);
                         if (chunkPos != null)
                         {
-                            handler.Log.Info(Translations.Get("cmd.chunk.for_debug"));
+                            handler.Log.Info(Translations.cmd_chunk_for_debug);
                             World world = handler.GetWorld();
                             (int chunkX, int chunkZ) = chunkPos;
                             ChunkColumn? chunkColumn = world[chunkX, chunkZ];
@@ -212,7 +212,7 @@ namespace MinecraftClient.Commands
                         Tuple<int, int>? chunkPos = ParseChunkPos(args);
                         if (chunkPos != null)
                         {
-                            handler.Log.Info(Translations.Get("cmd.chunk.for_debug"));
+                            handler.Log.Info(Translations.cmd_chunk_for_debug);
                             World world = handler.GetWorld();
                             (int chunkX, int chunkZ) = chunkPos;
                             world[chunkX, chunkZ] = null;
