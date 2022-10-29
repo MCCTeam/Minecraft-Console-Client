@@ -524,7 +524,7 @@ cooldown: {6}</value>
     <value>你已啟用不安全的移動，機器人可能會受到傷害！</value>
   </data>
   <data name="bot.farmer.warining_invalid_parameter" xml:space="preserve">
-    <value>Invalid parameter "{0}" provided (Use format: "key:value")!</value>
+    <value>提供了無效的參數 "{0}"（正確格式："鍵:值"）</value>
   </data>
   <data name="bot.mailer.cmd" xml:space="preserve">
     <value>Mailer 命令</value>
@@ -631,16 +631,16 @@ cooldown: {6}</value>
     <value>成功接收到地圖 '{0}' ，儲存為 '{1}'</value>
   </data>
   <data name="bot.map.resized_rendered_image" xml:space="preserve">
-    <value>Resized the rendered image of the map with id: '{0}' to {1}x{1}.</value>
+    <value>已調整地圖ID '{0}' 的大小為 {1}x{1}。</value>
   </data>
   <data name="bot.map.scale" xml:space="preserve">
     <value>由於當前終端尺寸限制，地圖大小由 ({0}x{1}) 縮小為 ({2}x{3}) 。</value>
   </data>
   <data name="bot.map.sent_to_discord" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Discord via Discord Brdige chat bot!</value>
+    <value>已透過Discord Brdige傳送地圖ID '{0}' 的渲染圖片至Discord。</value>
   </data>
   <data name="bot.map.sent_to_telegram" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Telegram via Telegram Bridge chat bot!</value>
+    <value>已透過Telegram Brdige傳送地圖ID '{0}' 的渲染圖片至Telegram。</value>
   </data>
   <data name="bot.replayCapture.cmd" xml:space="preserve">
     <value>replay 命令</value>
@@ -697,19 +697,19 @@ cooldown: {6}</value>
  action: {6}</value>
   </data>
   <data name="bot.TelegramBridge.canceled_sending" xml:space="preserve">
-    <value>Sending message to Telegram was canceled due an error occuring. For more info enable Debug.</value>
+    <value>發生錯誤，已取消傳送信息至Telegram。打開除錯訊息以獲得更多資訊。</value>
   </data>
   <data name="bot.TelegramBridge.command_executed" xml:space="preserve">
     <value>指令已執行，結果為</value>
   </data>
   <data name="bot.TelegramBridge.connected" xml:space="preserve">
-    <value>Succesfully connected with the MCC!</value>
+    <value>成功與 MCC 連線</value>
   </data>
   <data name="bot.TelegramBridge.desc" xml:space="preserve">
-    <value>This command allows you to specify in the which direction the messages will be relayed via the Telegram Bridge chat bot.</value>
+    <value>這個指令允許你指定哪一個方向的信息會被Telegram Bridge轉送。</value>
   </data>
   <data name="bot.TelegramBridge.direction" xml:space="preserve">
-    <value>Direction of the Telegram Brdige has been switched to '{0}'!</value>
+    <value>Telegram Brdige信息轉送方向已更改為 {0}</value>
   </data>
   <data name="bot.TelegramBridge.direction.both" xml:space="preserve">
     <value>雙向</value>
@@ -721,24 +721,24 @@ cooldown: {6}</value>
     <value>Telegram</value>
   </data>
   <data name="bot.TelegramBridge.disconnected" xml:space="preserve">
-    <value>Disconnected from from the MCC!</value>
+    <value>成功與 MCC 斷開連線</value>
   </data>
   <data name="bot.TelegramBridge.invalid_direction" xml:space="preserve">
-    <value>Invalid direction provided! Available directions: both|b, minecraft|mc, telegram|tg|t. Example: "tgbridge direction mc"</value>
+    <value>無效的信息方向！可選：both|b, minecraft|mc, telegram|tg|t。例子："tgbridge direction mc"</value>
   </data>
   <data name="bot.TelegramBridge.missing_authorized_channels" xml:space="preserve">
-    <value>[WARNING] You have not provided any Channel IDs, for "Authorized_Chat_Ids" field, anyone who finds your bot will be able to send messages and commands to it!</value>
+    <value>[警告] 你未在 "Authorized_Chat_Ids" 欄位提供任何的頻道ID，任何找到你的機器人的人將能夠傳送信息和指令！</value>
   </data>
   <data name="bot.TelegramBridge.missing_channel_id" xml:space="preserve">
-    <value>[WARNING] You have not provided a Channel ID, you will ONLY get replies to commands sent from Telegram!</value>
+    <value>[警告] 你未提供頻道ID，你將只會收到從Telegram傳送的指令的回覆！</value>
   </data>
   <data name="bot.TelegramBridge.missing_token" xml:space="preserve">
-    <value>Please provide a valid bot token!</value>
+    <value>請提供有效的令牌！</value>
   </data>
   <data name="bot.TelegramBridge.unauthorized" xml:space="preserve">
-    <value>**🛑 Unauthorized access! 🛑
+    <value>**🛑 未授權的存取！ 🛑
 
-Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file to gain access!**</value>
+將此頻道的ID加到配置文件中的 "Authorized_Chat_Ids" 欄位以獲得存取授權！**</value>
   </data>
   <data name="bot.TelegramBridge.unknown_error" xml:space="preserve">
     <value>發生了未知的錯誤！</value>
@@ -1743,38 +1743,37 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
 希望傳送聊天信息時，只需要直接傳送就好了。</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
-    <value>The ID of a channel where you want to interact with the MCC using the bot.</value>
+    <value>你想要使用機器人與 MCC 互動的頻道ID。</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.Formats" xml:space="preserve">
-    <value>Message formats
-Words wrapped with { and } are going to be replaced during the code execution, do not change them!
-For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Discord message formatting, check the following: https://bit.ly/3F8CUCm</value>
+    <value>信息格式
+被 { 與 } 包裹著的字將會在程式運行時被替換，不要修改它們！
+例如：{message} 將會被替換成真正的信息內容，{username} 將會被替換成使用者名稱，{timestamp} 會替換成現在時間。
+對於Discord的信息格式，請查看：https://bit.ly/3F8CUCm</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
-    <value>The ID of a server/guild where you have invited the bot to.</value>
+    <value>你邀請機器人加入的伺服器的ID。</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.MessageSendTimeout" xml:space="preserve">
-    <value>How long to wait (in seconds) if a message can not be sent to discord before canceling the task (minimum 1 second).</value>
+    <value>如果信息無法被傳送至Discord時，要等候多少秒才取消傳送。（最小 1秒）</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.OwnersIds" xml:space="preserve">
-    <value>A list of IDs of people you want to be able to interact with the MCC using the bot.</value>
+    <value>你希望能夠使用機器人與 MCC 互動的使用者ID列表。</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.Token" xml:space="preserve">
-    <value>Your Discord Bot token.</value>
+    <value>你的Discord機器人的令牌。</value>
   </data>
   <data name="config.ChatBot.Farmer" xml:space="preserve">
-    <value>Automatically farms crops for you (plants, breaks and bonemeals them).
-Crop types available: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
-Usage: "/farmer start" command and "/farmer stop" command.
-NOTE: This a newly added bot, it is not perfect and was only tested in 1.19.2, there are some minor issues like not being able to bonemeal carrots/potatoes sometimes.
-or bot jumps onto the farm land and breaks it (this happens rarely but still happens). We are looking forward at improving this.
-It is recommended to keep the farming area walled off and flat to avoid the bot jumping.
-Also, if you have your farmland that is one block high, make it 2 or more blocks high so the bot does not fall through, as it can happen sometimes when the bot reconnects.
-The bot also does not pickup all items if they fly off to the side, we have a plan to implement this option in the future as well as drop off and bonemeal refill chest(s).</value>
+    <value>自動為你耕種農作物（種下，收成和骨粉催生）
+可用的農作物類型：Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
+使用方法："/farmer start" 指令和 "/farmer stop" 指令。
+注意：這是新加入的機器人，它不完美並只在 1.19.2 版本進行過測試。它有些小問題，例如有時候不能對蘿蔔或土豆使用骨粉催生；
+或機器人會在耕地上跳躍並破壞耕地（這很少發生，但還是有機率出現）。我們期待可以改善它。
+另外，如果你的耕地只有一格厚，請加厚至兩格以上，否則機器人在重新連線時有可能會穿過耕地並掉落。
+此外，如果機器人走到邊緣時將不會拾起所有的掉落物，我們已有計劃在未來新增這個選項，同時加入將農作物放到箱子及從箱子補充骨粉。</value>
   </data>
   <data name="config.ChatBot.Farmer.Delay_Between_Tasks" xml:space="preserve">
-    <value>Delay between tasks in seconds (Minimum 1 second)</value>
+    <value>每個任務之間的延遲時間（最小 1秒）</value>
   </data>
   <data name="config.ChatBot.FollowPlayer" xml:space="preserve">
     <value>讓機器人跟隨指定玩家
@@ -1814,21 +1813,21 @@ The bot also does not pickup all items if they fly off to the side, we have a pl
     <value>當第一次從伺服器上收到一張地圖時，傳送一個通知。</value>
   </data>
   <data name="config.ChatBot.Map.Rasize_Rendered_Image" xml:space="preserve">
-    <value>Resize an rendered image, this is useful when images that are rendered are small and when are being sent to Discord.</value>
+    <value>調整影像大小。當渲染圖像太小或傳送到Discord時，這很有用。</value>
   </data>
   <data name="config.ChatBot.Map.Render_In_Console" xml:space="preserve">
     <value>是否在控制檯中渲染地圖。</value>
   </data>
   <data name="config.ChatBot.Map.Resize_To" xml:space="preserve">
-    <value>The size that a rendered image should be resized to, in pixels (eg. 512).</value>
+    <value>渲染圖像應調整到的大小，以像素為單位（例如 512）。</value>
   </data>
   <data name="config.ChatBot.Map.Save_To_File" xml:space="preserve">
     <value>是否將地圖儲存為檔案。</value>
   </data>
   <data name="config.ChatBot.Map.Send_Rendered_To_Bridges" xml:space="preserve">
-    <value>Send a rendered map (saved to a file) to a Discord or a Telegram channel via the Discord or Telegram Bride chat bot (The Discord/Telegram Bridge chat bot must be enabled and configured!)
-You need to enable Save_To_File in order for this to work.
-We also recommend turning on resizing.</value>
+    <value>將已渲染地圖（保存到文件）透過Discord或Telegram Bridge傳送到Discord或Telegram頻道（Discord/Telegram Bridge必須已啟用並完成配置！）
+你需要啟用 Save_To_File 才能使用此功能。
+我們同時建議打開調整大小功能。</value>
   </data>
   <data name="config.ChatBot.PlayerListLogger" xml:space="preserve">
     <value>定期記錄當前的玩家列表到檔案中。</value>
