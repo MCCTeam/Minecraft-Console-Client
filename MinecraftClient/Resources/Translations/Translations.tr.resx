@@ -1911,7 +1911,7 @@ Telegram mesaj biçimlendirmesi için aşağıdakileri kontrol edin: https://sen
 Bu olduğunda, aşağıda sohbet biçimini yapılandırmanız gerekir, bkz. https://mccteam.github.io/guide/configuration.html#chat-format</value>
   </data>
   <data name="config.ChatFormat.Builtins" xml:space="preserve">
-    <value>Ortak mesaj biçimleri için MCC desteği. Özel biçimlerle çakışmaları önlemek için "yanlış" olarak ayarlayın.</value>
+    <value>Ortak mesaj biçimleri için MCC desteği. Özel biçimlerle çakışmaları önlemek için "false" olarak ayarlayın.</value>
   </data>
   <data name="config.ChatFormat.UserDefined" xml:space="preserve">
     <value>Algılama için aşağıdaki özel normal ifadelerin kullanılıp kullanılmayacağı.</value>
