@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>§cИзменение погоды: Дождь больше не идет.§r</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
     <value>§cWeather change: It is no longer a thunderstorm.§r</value>
