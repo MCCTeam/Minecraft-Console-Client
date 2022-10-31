@@ -118,55 +118,55 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>§cCambio de clima: Ya no está lloviendo.§r</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is no longer a thunderstorm.§r</value>
+    <value>§cCambio de clima: Ya no hay una tormenta de lluvia.§r</value>
   </data>
   <data name="bot.alerts.start_rain" xml:space="preserve">
-    <value>§cWeather change: It is raining now.§r</value>
+    <value>§cEl clima ha cambiado: Está lloviendo.§r</value>
   </data>
   <data name="bot.alerts.start_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is a thunderstorm.§r</value>
+    <value>§cEl clima ha cambiado: Hay una tormenta.§r</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
-    <value>Invalid walk range provided, must be a positive integer greater than 0, using default value of 5!</value>
+    <value>Rango inválido previsto de caminar, ¡Debe ser un número entero positivo mayor que 0, usando el valor por defecto de 5!</value>
   </data>
   <data name="bot.antiafk.not_using_terrain_handling" xml:space="preserve">
-    <value>The terrain handling is not enabled in the settings of the client, enable it if you want to use it with this bot. Using alternative (command) method.</value>
+    <value>El manejo del terreno no está activado en la configuración del cliente, activarlo si quieres usarlo con este bot. Usando el método alternativo(comando).</value>
   </data>
   <data name="bot.antiafk.swapping" xml:space="preserve">
-    <value>The time range begins with a bigger value, swapped them around.</value>
+    <value>El intervalo de tiempo comienza con un valor mayor, intercambiados a su alrededor.</value>
   </data>
   <data name="bot.autoAttack.invalidcooldown" xml:space="preserve">
-    <value>Attack cooldown value cannot be smaller than 0.</value>
+    <value>El valor del cooldown del ataque no puede ser más pequeño que 0.</value>
   </data>
   <data name="bot.autoCraft.aborted" xml:space="preserve">
-    <value>Crafting aborted! Check your available materials.</value>
+    <value>¡Crafteo abortado! Revisa tus materiales disponibles.</value>
   </data>
   <data name="bot.autoCraft.alias" xml:space="preserve">
-    <value>Auto-crafting ChatBot command alias</value>
+    <value>El ChatBot de comandos de auto-crafteo alias</value>
   </data>
   <data name="bot.autoCraft.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /autocraft help &lt;cmd name&gt; for more information. You may use /ac as command alias.</value>
+    <value>Comandos disponibles: {0}. Usa el comando /autocraft help &lt;cmd name&gt; para más información. Deberías usar /ac como alias del comando.</value>
   </data>
   <data name="bot.autoCraft.close_inventory" xml:space="preserve">
-    <value>Inventory #{0} was closed by AutoCraft</value>
+    <value>El inventario #{0} fue cerrado por AutoCrafteo</value>
   </data>
   <data name="bot.autoCraft.cmd" xml:space="preserve">
-    <value>Auto-crafting ChatBot command</value>
+    <value>Comando del ChatBot de auto-crafteo</value>
   </data>
   <data name="bot.autoCraft.cmd.list" xml:space="preserve">
-    <value>Total {0} recipes loaded: {1}</value>
+    <value>Total {0} recetas cargadas {1}</value>
   </data>
   <data name="bot.autoCraft.cmd.resetcfg" xml:space="preserve">
-    <value>Resetting your config to default</value>
+    <value>Reiniciando tu configuración a la predeterminada</value>
   </data>
   <data name="bot.autoCraft.craft_fail" xml:space="preserve">
-    <value>Crafting failed! Waiting for more materials</value>
+    <value>¡Crafteo fallado! Esperando por más materiales</value>
   </data>
   <data name="bot.autoCraft.debug.no_config" xml:space="preserve">
-    <value>No config found. Writing a new one.</value>
+    <value>No se encontró ninguno configuración. Escribiendo una nueva.</value>
   </data>
   <data name="bot.autoCraft.error.config" xml:space="preserve">
     <value>Error while parsing config: {0}</value>
