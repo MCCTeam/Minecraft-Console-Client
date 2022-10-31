@@ -121,7 +121,7 @@
     <value>§cИзменение погоды: Дождь больше не идет.§r</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is no longer a thunderstorm.§r</value>
+    <value>§cИзменение погоды: Гроза больше не идет.§r</value>
   </data>
   <data name="bot.alerts.start_rain" xml:space="preserve">
     <value>§cWeather change: It is raining now.§r</value>
