@@ -12,7 +12,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, 'README') }}
+    if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
 
     steps:
     - name: Setup Project Path
