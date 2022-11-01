@@ -196,7 +196,7 @@
     <value>İşçiliği başlatın. Kullanım: /autocraft start &lt;recipe name&gt;</value>
   </data>
   <data name="bot.autoCraft.help.stop" xml:space="preserve">
-    <value>Mevcut çalışan işçiliği işlemini durdur</value>
+    <value>Mevcut üretimi durdurun</value>
   </data>
   <data name="bot.autocraft.invaild_result" xml:space="preserve">
     <value>Geçersiz sonuç öğesi!</value>
@@ -278,7 +278,7 @@
  {1}</value>
   </data>
   <data name="bot.autoDrop.no_inventory" xml:space="preserve">
-    <value>{0} envanteri bulunamıyor!</value>
+    <value>Envanter {0} bulunamıyor!</value>
   </data>
   <data name="bot.autoDrop.no_item" xml:space="preserve">
     <value>Listede öğe yok</value>
@@ -347,10 +347,10 @@
     <value>Mevcut olta mevcut değil. Belki kırık veya düşük dayanıklılık?</value>
   </data>
   <data name="bot.autoFish.start" xml:space="preserve">
-    <value>auto-fishing başlatır.</value>
+    <value>auto-fishing başlat.</value>
   </data>
   <data name="bot.autoFish.start_at" xml:space="preserve">
-    <value>Balık avı {0:0.0} saniye içinde başlayacak.</value>
+    <value>Balık tutmaya {0:0.0} saniye içinde başlayacak.</value>
   </data>
   <data name="bot.autoFish.status_clear" xml:space="preserve">
     <value>Elde edilen eşyaların kaydı temizlendi.</value>
@@ -553,7 +553,7 @@ cooldown: {6}</value>
     <value>Yeni veritabanı dosyası oluşturma: {0}</value>
   </data>
   <data name="bot.mailer.create.ignore" xml:space="preserve">
-    <value>Yeni ignore listesi oluşturma: {0}</value>
+    <value>Yeni yok sayma listesi oluşturuluyor: {0}</value>
   </data>
   <data name="bot.mailer.delivered" xml:space="preserve">
     <value>Teslim edildi: {0}</value>
@@ -2664,10 +2664,10 @@ Giriş yapılıyor...</value>
     <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
   </data>
   <data name="mcc.use_new_config" xml:space="preserve">
-    <value>Please use the newly generated MinecraftClient.ini</value>
+    <value>Lütfen yeni oluşturulan MinecraftClient.ini dosyasını kullanınız.</value>
   </data>
   <data name="mcc.backup_old_config" xml:space="preserve">
-    <value>The old MinecraftClient.ini has been backed up as {0}</value>
+    <value>Eski MinecraftClient.ini dosyası {0} olarak yedeklendi</value>
   </data>
   <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
     <value>Temporary fix for Badpacket issue on some servers.</value>
