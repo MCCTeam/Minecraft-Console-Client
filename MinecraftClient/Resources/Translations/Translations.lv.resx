@@ -118,34 +118,34 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>§cLaikapstākļu maiņa: Vairs nelīst.§r</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is no longer a thunderstorm.§r</value>
+    <value>§cLaikapstākļu maiņa: vairs nav pērkona negaiss.§r</value>
   </data>
   <data name="bot.alerts.start_rain" xml:space="preserve">
-    <value>§cWeather change: It is raining now.§r</value>
+    <value>§cLaikapstākļu maiņa: Šobrīd līst lietus.§r</value>
   </data>
   <data name="bot.alerts.start_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is a thunderstorm.§r</value>
+    <value>§cLaikapstākļu maiņa: Tagad ir pērkona negaiss.§r</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
-    <value>Invalid walk range provided, must be a positive integer greater than 0, using default value of 5!</value>
+    <value>Norādītais nederīgs pārvietošanās diapazons. Tam ir jābūt pozitīvam veselam skaitlim, kas ir lielāks par 0, izmantojot noklusējuma vērtību 5!</value>
   </data>
   <data name="bot.antiafk.not_using_terrain_handling" xml:space="preserve">
-    <value>The terrain handling is not enabled in the settings of the client, enable it if you want to use it with this bot. Using alternative (command) method.</value>
+    <value>Apvidus apstrāde nav iespējota klienta iestatījumos, iespējojiet to, ja vēlaties to izmantot ar šo robotprogrammatūru. Izmantojot alternatīvo (komandu) metodi.</value>
   </data>
   <data name="bot.antiafk.swapping" xml:space="preserve">
-    <value>The time range begins with a bigger value, swapped them around.</value>
+    <value>Laika diapazons sākas ar lielāku vērtību, apmainīju tos.</value>
   </data>
   <data name="bot.autoAttack.invalidcooldown" xml:space="preserve">
-    <value>Attack cooldown value cannot be smaller than 0.</value>
+    <value>Uzbrukuma biežums nedrīkst būt mazāks par 0.</value>
   </data>
   <data name="bot.autoCraft.aborted" xml:space="preserve">
-    <value>Crafting aborted! Check your available materials.</value>
+    <value>Amatniecība pārtraukta! Pārbaudiet pieejamos materiālus.</value>
   </data>
   <data name="bot.autoCraft.alias" xml:space="preserve">
-    <value>Auto-crafting ChatBot command alias</value>
+    <value>Automātiskās amatniecības ChatBot komandas aizstājvards</value>
   </data>
   <data name="bot.autoCraft.available_cmd" xml:space="preserve">
     <value>Available commands: {0}. Use /autocraft help &lt;cmd name&gt; for more information. You may use /ac as command alias.</value>
