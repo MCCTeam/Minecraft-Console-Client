@@ -2332,7 +2332,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Не удается подключиться к серверу: эта версия не поддерживается!</value>
   </data>
   <data name="error.usage" xml:space="preserve">
-    <value>Usage:</value>
+    <value>Применение:</value>
   </data>
   <data name="error.version_different" xml:space="preserve">
     <value>§8Сервер сообщает о версии, отличной от установленной вручную. Вход в систему может не работать.</value>
