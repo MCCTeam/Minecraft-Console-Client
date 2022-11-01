@@ -2652,13 +2652,13 @@ Giriş yapılıyor...</value>
     <value>Lütfen bu Minecraft sürümü için sağlık alanı işlemeyi güncelleyin.</value>
   </data>
   <data name="bot.DiscordBridge.disconnected" xml:space="preserve">
-    <value>Successfully disconnected with MCC!</value>
+    <value>MCC ile bağlantınız başarılı bir şekilde kesildi!</value>
   </data>
   <data name="cmd.execmulti.prevent" xml:space="preserve">
-    <value>You can not use execmulti or execif within execmulti command!</value>
+    <value>Execmulti komuduyla execmulti ya da execif kullanamazsınız!</value>
   </data>
   <data name="cmd.move.desc_force" xml:space="preserve">
-    <value>force unsafe movements like falling or touching fire</value>
+    <value>düşme ve ateşe değme gibi güvenli olmayan haraketlere zorla</value>
   </data>
   <data name="bot.autodig.no_inv_handle" xml:space="preserve">
     <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
