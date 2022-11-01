@@ -898,7 +898,7 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
 Some messages won't be properly printed without this file.</value>
   </data>
   <data name="chat.request" xml:space="preserve">
-    <value>§8Performing request to {0}</value>
+    <value>§8Đang gửi yêu cầu tới {0}</value>
   </data>
   <data name="chatbot.reconnect" xml:space="preserve">
     <value>[{0}] Disconnecting and Reconnecting to the Server</value>
