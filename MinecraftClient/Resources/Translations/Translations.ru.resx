@@ -124,7 +124,7 @@
     <value>§cИзменение погоды: Гроза больше не идет.§r</value>
   </data>
   <data name="bot.alerts.start_rain" xml:space="preserve">
-    <value>§cWeather change: It is raining now.§r</value>
+    <value>§cИзменения погоды: Начался дождь.§r</value>
   </data>
   <data name="bot.alerts.start_thunderstorm" xml:space="preserve">
     <value>§cWeather change: It is a thunderstorm.§r</value>
