@@ -2332,7 +2332,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>Impossible de se connecter au serveur : Cette version n'est pas prise en charge !</value>
   </data>
   <data name="error.usage" xml:space="preserve">
-    <value>Usage:</value>
+    <value>Utilisation:</value>
   </data>
   <data name="error.version_different" xml:space="preserve">
     <value>§8Le serveur indique une version différente de celle réglée manuellement. La connexion pourrait échouer.</value>
