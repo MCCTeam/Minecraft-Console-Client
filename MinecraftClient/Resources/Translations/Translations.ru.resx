@@ -130,13 +130,13 @@
     <value>§cWeather change: It is a thunderstorm.§r</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
-    <value>Invalid walk range provided, must be a positive integer greater than 0, using default value of 5!</value>
+    <value>Указанный недопустимый диапазон обхода должен быть положительным целым числом, большим 0, используя значение по умолчанию 5!</value>
   </data>
   <data name="bot.antiafk.not_using_terrain_handling" xml:space="preserve">
-    <value>The terrain handling is not enabled in the settings of the client, enable it if you want to use it with this bot. Using alternative (command) method.</value>
+    <value>Обработка рельефа местности не включена в настройках клиента, включите ее, если вы хотите использовать ее с этим ботом. Используя альтернативный (командный) метод.</value>
   </data>
   <data name="bot.antiafk.swapping" xml:space="preserve">
-    <value>The time range begins with a bigger value, swapped them around.</value>
+    <value>Временной диапазон начинается с большего значения, поменяй их местами.</value>
   </data>
   <data name="bot.autoAttack.invalidcooldown" xml:space="preserve">
     <value>Значение кулдауна атаки не может быть меньше 0. По умолчанию используется auto.</value>
@@ -199,10 +199,10 @@
     <value>Остановить текущий запущенный процесс крафтинга</value>
   </data>
   <data name="bot.autocraft.invaild_result" xml:space="preserve">
-    <value>Invalid result item!</value>
+    <value>Некорректный результат предмета!.</value>
   </data>
   <data name="bot.autocraft.invaild_slots" xml:space="preserve">
-    <value>The number of slots does not match and has been adjusted automatically.</value>
+    <value>Количество слотов не совпадает и было скорректировано автоматически.</value>
   </data>
   <data name="bot.autoCraft.loaded" xml:space="preserve">
     <value>Успешно загружен</value>
@@ -232,34 +232,34 @@
     <value>Время выполнения действия истекло! Причина: {0}</value>
   </data>
   <data name="bot.autodig.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /digbot help &lt;cmd name&gt; for more information.</value>
+    <value>Доступные команды: {0}. Используйте /digbot help &lt;cmd name&gt; для получения дополнительной информации.</value>
   </data>
   <data name="bot.autodig.cmd" xml:space="preserve">
-    <value>Auto-digging ChatBot command</value>
+    <value>Чатбот авто-копание команды</value>
   </data>
   <data name="bot.autodig.dig_timeout" xml:space="preserve">
     <value>Digging block timeout, retry.</value>
   </data>
   <data name="bot.autodig.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /digbot help &lt;command name&gt;</value>
+    <value>Получить описание команды. Использование: /autocraft help &lt;имя команды&gt;.</value>
   </data>
   <data name="bot.autodig.help.start" xml:space="preserve">
-    <value>Start the automatic digging bot.</value>
+    <value>Запустить автоматического копаниющего бота.</value>
   </data>
   <data name="bot.autodig.help.stop" xml:space="preserve">
-    <value>Deactivate the automatic digging bot.</value>
+    <value>Отключить автоматического копающего бота.</value>
   </data>
   <data name="bot.autodig.not_allow" xml:space="preserve">
-    <value>The block currently pointed to is not in the allowed list.</value>
+    <value>Блок не находится в разрешенном списке.</value>
   </data>
   <data name="bot.autodig.start" xml:space="preserve">
-    <value>Automatic digging has started.</value>
+    <value>Автоматическое копание началось.</value>
   </data>
   <data name="bot.autodig.start_delay" xml:space="preserve">
-    <value>Digging will start in {0:0.0} second(s).</value>
+    <value>Копание начнется через {0:0.0} секунд(ы).</value>
   </data>
   <data name="bot.autodig.stop" xml:space="preserve">
-    <value>Auto-digging has been stopped.</value>
+    <value>Автоматическое копание остановлено.</value>
   </data>
   <data name="bot.autoDrop.added" xml:space="preserve">
     <value>Добавлен элемент {0}</value>
@@ -305,7 +305,7 @@
     <value>Неизвестный режим. Доступные режимы: Включить, Исключить, Все</value>
   </data>
   <data name="bot.autoFish.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /fish help &lt;cmd name&gt; for more information.</value>
+    <value>Доступные команды: {0}. Используйте /fish help &lt;cmd name&gt; для получения дополнительной информации.</value>
   </data>
   <data name="bot.autoFish.cast_timeout" xml:space="preserve">
     <value>Casting timeout and will soon retry. (Timeout increased to {0:0.0} sec).</value>
@@ -314,31 +314,31 @@
     <value>Поймал рыбу!</value>
   </data>
   <data name="bot.autoFish.caught_at" xml:space="preserve">
-    <value>Retract the fishing rod at ({0:0.0},{1:0.0},{2:0.0})! (Count: {3})</value>
+    <value>Снять удочку с рыбалки ({0:0.0},{1:0.0},{2:0.0})! (Количество - {3})</value>
   </data>
   <data name="bot.autoFish.cmd" xml:space="preserve">
-    <value>Auto-Fishing ChatBot command</value>
+    <value>Команды авторыбалки ChatBot</value>
   </data>
   <data name="bot.autoFish.despawn" xml:space="preserve">
-    <value>Fish floating despawn, will re-cast.</value>
+    <value>Поплавок пропал, пробуем заново.</value>
   </data>
   <data name="bot.autoFish.fishing_timeout" xml:space="preserve">
-    <value>Fishing timeout, will soon re-cast.</value>
+    <value>Тайм-аут рыбалки, скоро начнется повторно.</value>
   </data>
   <data name="bot.autoFish.got" xml:space="preserve">
-    <value>Fishing got {0}</value>
+    <value>Рыбалка получила {0}</value>
   </data>
   <data name="bot.autoFish.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /fish help &lt;command name&gt;</value>
+    <value>Получить описание команды. Использование: /fish help &lt;command name&gt;</value>
   </data>
   <data name="bot.autoFish.help.start" xml:space="preserve">
-    <value>Start auto-fishing.</value>
+    <value>Начать автоматическую рыбалку.</value>
   </data>
   <data name="bot.autoFish.help.status" xml:space="preserve">
-    <value>List all obtained items. Or use "/fish status clear" to clear the list.</value>
+    <value>Список всех полученных элементов. Или используйте "/fish status clear" чтобы очистить список.</value>
   </data>
   <data name="bot.autoFish.help.stop" xml:space="preserve">
-    <value>Stop auto-fishing.</value>
+    <value>Остановить автоматическую рыбалку.</value>
   </data>
   <data name="bot.autoFish.no_inv_handle" xml:space="preserve">
     <value>Inventory handling is not enabled. Cannot check rod durability and switch rods.</value>
@@ -347,19 +347,19 @@
     <value>Нет удочки под рукой. Может быть сломана?</value>
   </data>
   <data name="bot.autoFish.start" xml:space="preserve">
-    <value>Start auto-fishing.</value>
+    <value>Начать автоматическую рыбалку.</value>
   </data>
   <data name="bot.autoFish.start_at" xml:space="preserve">
-    <value>Fishing will start in {0:0.0} second(s).</value>
+    <value>Рыбалка начнется через {0:0.0} секунд(ы).</value>
   </data>
   <data name="bot.autoFish.status_clear" xml:space="preserve">
-    <value>The record of the obtained items has been cleared.</value>
+    <value>Запись о полученных элементах была очищена.</value>
   </data>
   <data name="bot.autoFish.status_info" xml:space="preserve">
-    <value>All items obtained from fishing (not entirely accurate):</value>
+    <value>Все предметы, полученные от рыбалки (не совсем точно):</value>
   </data>
   <data name="bot.autoFish.stop" xml:space="preserve">
-    <value>Stop auto-fishing.</value>
+    <value>Остановить автоматическую рыбалку.</value>
   </data>
   <data name="bot.autoFish.switch" xml:space="preserve">
     <value>Switch to the rod in slot {0}, durability {1}/64.</value>
