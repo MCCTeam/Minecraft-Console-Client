@@ -2260,7 +2260,7 @@ If the connection to the Minecraft game server is blocked by the firewall, set E
     <value>An error occured when attempting to join this server.</value>
   </data>
   <data name="error.login" xml:space="preserve">
-    <value>Login failed : </value>
+    <value>Inloggen mislukt : </value>
   </data>
   <data name="error.login.blocked" xml:space="preserve">
     <value>Incorrect username/password, blacklisted IP or too many logins.</value>
