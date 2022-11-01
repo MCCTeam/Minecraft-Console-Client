@@ -2666,4 +2666,7 @@ Melde an...</value>
   <data name="mcc.backup_old_config" xml:space="preserve">
     <value>The old MinecraftClient.ini has been backed up as {0}</value>
   </data>
+  <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
+    <value>Temporary fix for Badpacket issue on some servers.</value>
+  </data>
 </root>
