@@ -407,7 +407,7 @@
     <value>Warte {0:0.000} Sekunden vor erneuter Verbindung...</value>
   </data>
   <data name="bot.autoRespond.file_not_found" xml:space="preserve">
-    <value>File not found: '{0}'</value>
+    <value>Datei nicht gefunden: '{0}'</value>
   </data>
   <data name="bot.autoRespond.loaded_match" xml:space="preserve">
     <value>Loaded match:
@@ -2329,7 +2329,7 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
     <value>Kann nicht zum Server verbinden : Diese Version wird nicht unterstützt !</value>
   </data>
   <data name="error.usage" xml:space="preserve">
-    <value>Usage:</value>
+    <value>Benutzung:</value>
   </data>
   <data name="error.version_different" xml:space="preserve">
     <value>§8Der Server meldet eine andere Version als manuell angegeben. Login könnte fehlschlagen.</value>
