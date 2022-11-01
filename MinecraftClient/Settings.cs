@@ -508,6 +508,9 @@ namespace MinecraftClient
                     [TomlInlineComment("$config.Main.Advanced.movement_speed$")]
                     public int MovementSpeed = 2;
 
+                    [TomlInlineComment("$config.Main.Advanced.temporary_fix_badpacket$")]
+                    public bool TemporaryFixBadpacket = false;
+
                     [TomlInlineComment("$config.Main.Advanced.inventory_handling$")]
                     public bool InventoryHandling = false;
 
