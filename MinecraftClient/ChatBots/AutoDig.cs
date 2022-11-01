@@ -33,7 +33,7 @@ namespace MinecraftClient.ChatBots
             [TomlInlineComment("$config.ChatBot.AutoDig.Mode$")]
             public ModeType Mode = ModeType.lookat;
 
-            [TomlInlineComment("$config.ChatBot.AutoDig.Locations$")]
+            [TomlPrecedingComment("$config.ChatBot.AutoDig.Locations$")]
             public Coordination[] Locations = new Coordination[] { new(123.5, 64, 234.5), new(124.5, 63, 235.5) };
 
             [TomlInlineComment("$config.ChatBot.AutoDig.Location_Order$")]

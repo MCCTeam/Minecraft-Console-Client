@@ -5650,6 +5650,15 @@ namespace MinecraftClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Temporary fix for Badpacket issue on some servers..
+        /// </summary>
+        internal static string config_Main_Advanced_temporary_fix_badpacket {
+            get {
+                return ResourceManager.GetString("config.Main.Advanced.temporary_fix_badpacket", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use &quot;none&quot;, &quot;bit_4&quot;, &quot;bit_8&quot; or &quot;bit_24&quot;. This can be checked by opening the debug log..
         /// </summary>
         internal static string config_Main_Advanced_TerminalColorDepth {
