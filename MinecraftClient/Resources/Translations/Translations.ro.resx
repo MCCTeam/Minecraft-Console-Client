@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>§cSchimbare de vreme: Ploaia s-a oprit.§r</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is no longer a thunderstorm.§r</value>
+    <value>§cSchimbare de vreme: Furtuna cu tunete s-a oprit.§r</value>
   </data>
   <data name="bot.alerts.start_rain" xml:space="preserve">
-    <value>§cWeather change: It is raining now.§r</value>
+    <value>§cSchimbare de vreme: Ploaia a început.§r</value>
   </data>
   <data name="bot.alerts.start_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is a thunderstorm.§r</value>
+    <value>§cSchimbare de vreme: Furtuna de tunete a început.§r</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
     <value>Invalid walk range provided, must be a positive integer greater than 0, using default value of 5!</value>
@@ -2668,5 +2668,8 @@ Logging in...</value>
   </data>
   <data name="mcc.backup_old_config" xml:space="preserve">
     <value>The old MinecraftClient.ini has been backed up as {0}</value>
+  </data>
+  <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
+    <value>Temporary fix for Badpacket issue on some servers.</value>
   </data>
 </root>

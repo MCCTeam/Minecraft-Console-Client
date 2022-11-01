@@ -63,7 +63,7 @@ MCC now supports the following languages (Alphabetical order) :
 
 ## Building from the source 🏗️
 
-Этот раздел был перемещен на наш новый [сайт документации](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
+This section has been moved to our new [Documentation website](https://mccteam.github.io/guide/installation.html#building-from-the-source-code).
 
 ## License ⚖️
 
