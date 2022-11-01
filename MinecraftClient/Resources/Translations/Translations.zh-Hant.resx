@@ -2658,4 +2658,7 @@ MCC正在使用預設配置執行。</value>
   <data name="mcc.backup_old_config" xml:space="preserve">
     <value>已將舊的 MinecraftClient.ini 備份為 {0}</value>
   </data>
+  <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
+    <value>Temporary fix for Badpacket issue on some servers.</value>
+  </data>
 </root>
