@@ -130,7 +130,7 @@
     <value>§cHava değişikliği: Fırtınalı başlandı.§r</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
-    <value>Sağlanan geçersiz yürüyüş aralığı, varsayılan 5 değeri kullanılarak 0dan büyük bir pozitif tam sayı olmalıdır!</value>
+    <value>Geçersiz yürüyüş mesafesi, varsayılan 5 değeri kullanın veya 0dan büyük bir sayı belirleyin!</value>
   </data>
   <data name="bot.antiafk.not_using_terrain_handling" xml:space="preserve">
     <value>İstemci ayarlarında terrain and movement etkin değil, bu botla kullanmak istiyorsanız etkinleştirin. Alternatif (komut) yöntemini kullanma.</value>
@@ -166,10 +166,10 @@
     <value>Üretim başarısız oldu! Daha fazla malzeme bekliyorum</value>
   </data>
   <data name="bot.autoCraft.debug.no_config" xml:space="preserve">
-    <value>Yapılandırma bulunamadı. Yenisini yazın.</value>
+    <value>Ayarlar bulunamadı. Yenisini yazın.</value>
   </data>
   <data name="bot.autoCraft.error.config" xml:space="preserve">
-    <value>Yapılandırma ayrıştırılırken hata oluştu: {0}</value>
+    <value>Ayarlar okunurken hata oluştu: {0}</value>
   </data>
   <data name="bot.autoCraft.exception.duplicate" xml:space="preserve">
     <value>Belirtilen yinelenen tarif adı: {0}</value>
@@ -184,10 +184,10 @@
     <value>Mevcut tarifleri listeleyin.</value>
   </data>
   <data name="bot.autoCraft.help.load" xml:space="preserve">
-    <value>Yapılandırma dosyasını yükleyin.</value>
+    <value>Ayar dosyasını yükleyin.</value>
   </data>
   <data name="bot.autoCraft.help.reload" xml:space="preserve">
-    <value>Yapılandırma dosyasını yeniden yükleyin.</value>
+    <value>Ayar dosyasını yeniden yükleyin.</value>
   </data>
   <data name="bot.autoCraft.help.resetcfg" xml:space="preserve">
     <value>Varsayılan örnek yapılandırmayı varsayılan konuma yazın.</value>
@@ -214,7 +214,7 @@
     <value>Lütfen oluşturmak istediğiniz tarifin adını belirtin.</value>
   </data>
   <data name="bot.autoCraft.recipe_not_exist" xml:space="preserve">
-    <value>Belirtilen tarif adı mevcut değil. Yapılandırma dosyanızı kontrol edin.</value>
+    <value>Belirtilen tarif adı mevcut değil. Ayar dosyanızı kontrol edin.</value>
   </data>
   <data name="bot.autoCraft.start" xml:space="preserve">
     <value>AutoCraft başlatılıyor: {0}</value>
@@ -2661,7 +2661,7 @@ Giriş yapılıyor...</value>
     <value>düşme ve ateşe değme gibi güvenli olmayan haraketlere zorla</value>
   </data>
   <data name="bot.autodig.no_inv_handle" xml:space="preserve">
-    <value>Inventory handling is not enabled. Unable to switch tools automatically.</value>
+    <value>Inventory handling aktif değil. Aletler otomatik değiştirilemiyor.</value>
   </data>
   <data name="mcc.use_new_config" xml:space="preserve">
     <value>Lütfen yeni oluşturulan MinecraftClient.ini dosyasını kullanınız.</value>
@@ -2670,6 +2670,6 @@ Giriş yapılıyor...</value>
     <value>Eski MinecraftClient.ini dosyası {0} olarak yedeklendi</value>
   </data>
   <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
-    <value>Temporary fix for Badpacket issue on some servers.</value>
+    <value>Bazı sunucularda Kötü Paket sorunu için geçici düzeltme.</value>
   </data>
 </root>
