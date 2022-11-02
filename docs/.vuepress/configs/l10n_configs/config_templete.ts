@@ -1,14 +1,14 @@
 import type { SiteLocaleData  } from '@vuepress/shared'
 import type { DefaultThemeLocaleData } from '@vuepress/theme-default'
-import { head } from '../head.js'
+import { headConfig } from '../head.js'
 
 const Translation = require('../../translations/$LanguageCode$.json')
 
-export const mainConfig_$LanguageCodeEscaped$: SiteLocaleData  = {
+export const mainConfig_$LanguageCodeEscaped$  = {
     lang: '$LanguageCode$',
     title: Translation.title,
     description: Translation.description,
-    head: head
+    head: headConfig
 }
 
 export const defaultThemeConfig_$LanguageCodeEscaped$: DefaultThemeLocaleData = {

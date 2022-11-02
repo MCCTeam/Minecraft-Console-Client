@@ -278,7 +278,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     How it looks:
 
-    ![Chunk status](http://i.pics.rs/DDB9W.png)
+    ![Chunk status](/images/guide/ChunkStatus.png)
 
 ### `dig`
 
@@ -768,7 +768,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     An example of player inventory with annotated IDs in ASCII art and a list of items:
 
-    ![Picture Not Loaded!](http://i.pics.rs/33yn9.png "Player Inventory")
+    ![Player Inventory](/images/guide/PlayerInventory.png "Player Inventory")
 
 -   **Usage:**
 
