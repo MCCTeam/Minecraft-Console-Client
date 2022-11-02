@@ -299,85 +299,85 @@
     <value>Noņemts vienums {0}</value>
   </data>
   <data name="bot.autoDrop.switched" xml:space="preserve">
-    <value>Switched to {0} mode.</value>
+    <value>Pārslēgts uz režīmu {0}.</value>
   </data>
   <data name="bot.autoDrop.unknown_mode" xml:space="preserve">
-    <value>Unknwon mode. Available modes: Include, Exclude, Everything</value>
+    <value>Nezināms režīms. Pieejamie režīmi: Include, Exclude, Everything</value>
   </data>
   <data name="bot.autoFish.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /fish help &lt;cmd name&gt; for more information.</value>
+    <value>Pieejamās komandas: {0}. Izmantojiet /fish help &lt;komandas nosaukums&gt; lai iegūtu vairāk informācijas.</value>
   </data>
   <data name="bot.autoFish.cast_timeout" xml:space="preserve">
-    <value>Casting timeout and will soon retry. (Timeout increased to {0:0.0} sec).</value>
+    <value>Apraides noildze, un drīzumā tiks mēģināts vēlreiz. (Taimauts palielināts līdz {0:0.0} s).</value>
   </data>
   <data name="bot.autoFish.caught" xml:space="preserve">
-    <value>Retract the fishing rod. (Count: {0})</value>
+    <value>Ievelciet makšķeri. (Skaits: {0})</value>
   </data>
   <data name="bot.autoFish.caught_at" xml:space="preserve">
-    <value>Retract the fishing rod at ({0:0.0},{1:0.0},{2:0.0})! (Count: {3})</value>
+    <value>Ievelciet makšķeri uz ({0:0.0},{1:0.0},{2:0.0})! (Skaits: {3})</value>
   </data>
   <data name="bot.autoFish.cmd" xml:space="preserve">
-    <value>Auto-Fishing ChatBot command</value>
+    <value>AutoZvejošanas ChatBot komanda</value>
   </data>
   <data name="bot.autoFish.despawn" xml:space="preserve">
-    <value>Fish floating despawn, will re-cast.</value>
+    <value>Noķertā zivs pazuda, tiks pārmests.</value>
   </data>
   <data name="bot.autoFish.fishing_timeout" xml:space="preserve">
-    <value>Fishing timeout, will soon re-cast.</value>
+    <value>Makšķerēšanas taimauts, drīz tiks atkārtots.</value>
   </data>
   <data name="bot.autoFish.got" xml:space="preserve">
-    <value>Fishing got {0}</value>
+    <value>Makšķerēšana ieguva {0}</value>
   </data>
   <data name="bot.autoFish.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /fish help &lt;command name&gt;</value>
+    <value>Iegūstiet komandas aprakstu. Lietojums: /fish help &lt;komandas nosaukums&gt;</value>
   </data>
   <data name="bot.autoFish.help.start" xml:space="preserve">
-    <value>Start auto-fishing.</value>
+    <value>Sāciet automātisko makšķerēšanu.</value>
   </data>
   <data name="bot.autoFish.help.status" xml:space="preserve">
-    <value>List all obtained items. Or use "/fish status clear" to clear the list.</value>
+    <value>Uzskaitiet visus iegūtos vienumus. Vai arī izmantojiet "/fish status clear", lai notīrītu sarakstu.</value>
   </data>
   <data name="bot.autoFish.help.stop" xml:space="preserve">
-    <value>Stop auto-fishing.</value>
+    <value>Apstādiniet AutoMaksķerēšanu.</value>
   </data>
   <data name="bot.autoFish.no_inv_handle" xml:space="preserve">
-    <value>Inventory handling is not enabled. Cannot check rod durability and switch rods.</value>
+    <value>Inventāra apstrāde nav iespējota. Nevar pārbaudīt makšķeres izturību un pārslēgt makšķeres.</value>
   </data>
   <data name="bot.autoFish.no_rod" xml:space="preserve">
-    <value>Current fishing rod is not available. Maybe broken or low durability?</value>
+    <value>Pašreizējā makšķere nav pieejama. Varbūt salūzis vai zema izturība?</value>
   </data>
   <data name="bot.autoFish.start" xml:space="preserve">
-    <value>Start auto-fishing.</value>
+    <value>Sāciet automātisko makšķerēšanu.</value>
   </data>
   <data name="bot.autoFish.start_at" xml:space="preserve">
-    <value>Fishing will start in {0:0.0} second(s).</value>
+    <value>Makšķerēšana sāksies pēc {0:0.0} sekundes(-ēm).</value>
   </data>
   <data name="bot.autoFish.status_clear" xml:space="preserve">
-    <value>The record of the obtained items has been cleared.</value>
+    <value>Iegūto priekšmetu uzskaite ir notīrīta.</value>
   </data>
   <data name="bot.autoFish.status_info" xml:space="preserve">
-    <value>All items obtained from fishing (not entirely accurate):</value>
+    <value>Visas preces, kas iegūtas no makšķerēšanas (nav pilnīgi precīzi):</value>
   </data>
   <data name="bot.autoFish.stop" xml:space="preserve">
-    <value>Stop auto-fishing.</value>
+    <value>Apstādiniet AutoMakšķerēšanu.</value>
   </data>
   <data name="bot.autoFish.switch" xml:space="preserve">
-    <value>Switch to the rod in slot {0}, durability {1}/64.</value>
+    <value>Pārslēdzieties uz makšķeri slotā {0}, izturība {1}/64.</value>
   </data>
   <data name="bot.autoFish.throw" xml:space="preserve">
-    <value>Casting successfully.</value>
+    <value>Metiens veiksmīgs.</value>
   </data>
   <data name="bot.autoFish.update_lookat" xml:space="preserve">
-    <value>Update yaw = {0:0.00}, pitch = {1:0.00}.</value>
+    <value>Atjaunināts slīpums = {0:0.00}, augstums = {1:0.00}.</value>
   </data>
   <data name="bot.autoRelog.curr_dir" xml:space="preserve">
-    <value>Current directory was: {0}</value>
+    <value>Pašreizējais direktorijs bija: {0}</value>
   </data>
   <data name="bot.autoRelog.disconnect_msg" xml:space="preserve">
-    <value>Got disconnected with message: {0}</value>
+    <value>Atslēdzās ar ziņojumu: {0}</value>
   </data>
   <data name="bot.autoRelog.ignore_user_logout" xml:space="preserve">
-    <value>Disconnection initiated by User or MCC bot. Ignoring.</value>
+    <value>Atvienošanos ierosinājis lietotājs vai MCC bots. Ignorē.</value>
   </data>
   <data name="bot.autoRelog.launch" xml:space="preserve">
     <value>Launching with {0} reconnection attempts</value>
