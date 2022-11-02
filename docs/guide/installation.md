@@ -540,13 +540,13 @@ Click on the **Launch instance** button.
 
 Fill out the `Name` field with a name of your preference.
 
-![http://i.pics.rs/22ArI.png](http://i.pics.rs/WWzUM.png)
+![VPS Name](/images/guide/VPS_Name.png)
 
 For the **Application and OS images** select `Ubuntu Server 22.04 LTS (HVM), SSD Volume Type`.
 
 > **⚠️ VERY IMPORTANT: Make sure that it has `Free tier eligible` next to it.**
 
-![http://i.pics.rs/22ArI.png](http://i.pics.rs/22ArI.png)
+![VPS Select OS](/images/guide/VPS_SelectOS.png)
 
 For the **Instance type** select `t2.micro`.
 
@@ -554,7 +554,7 @@ For the **Key pair (login)** click on **Create new key pair** and name it `VpsRo
 
 > **⚠️ EXTREMELY IMPORTANT: Make sure that you save this file in a safe place and do not loose it, it's of an upmost importance since it's used to access the root/admin account of the VPS. Without it you will not be able to access the root account of the VPS! Also do not let it fall into wrong hands.**
 
-![http://i.pics.rs/jjD4d.png](http://i.pics.rs/jjD4d.png)
+![VPS Instance Type](/images/guide/VPS_InstanceType.png)
 
 For the **Network settings** check the following checkboxes on:
 
@@ -564,11 +564,11 @@ For the **Network settings** check the following checkboxes on:
 
 > **ℹ️ NOTE: The SSH traffic from Anywhere is not the best thing for security, you might want to enter IP addresses of your devices from which you want to access the VPS manually.**
 
-![http://i.pics.rs/77atQ.png](http://i.pics.rs/77atQ.png)
+![VPS Network Settings](/images/guide/VPS_NetworkSettings.png)
 
 For the **Storage** enter `30`.
 
-![http://i.pics.rs/cc4yz.png](http://i.pics.rs/cc4yz.png)
+![VPS Configure Storage](/images/guide/VPS_ConfigureStorage.png)
 
 Finally, review the **Summary** confirm that everything is as in the tutorial and that you will not be charged and click on the **Launch instance**. Once you've clicked on the button, it will take a couple of minutes for the instance to be available up and running.
 

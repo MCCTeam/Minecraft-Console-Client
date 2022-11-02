@@ -346,7 +346,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     How it looks like:
 
-    ![ASCII Art here](http://i.pics.rs/33yn9.png "ASCII Art here")
+    ![ASCII Art here](/images/guide/PlayerInventory.png "ASCII Art here")
 
 -   **Type:** `boolean`
 

@@ -2,12 +2,14 @@ import process from 'node:process'
 import { viteBundler } from '@vuepress/bundler-vite'
 import { webpackBundler } from '@vuepress/bundler-webpack'
 import { defineUserConfig } from '@vuepress/cli'
-// import { docsearchPlugin } from '@vuepress/plugin-docsearch'
 import { shikiPlugin } from '@vuepress/plugin-shiki'
 import { defaultTheme } from '@vuepress/theme-default'
 import { getDirname, path } from '@vuepress/utils'
+import { backToTopPlugin } from "@vuepress/plugin-back-to-top"
+import { externalLinkIconPlugin } from "@vuepress/plugin-external-link-icon"
+import { nprogressPlugin } from "@vuepress/plugin-nprogress"
 
-import { head } from './configs/head.js'
+import { headConfig } from './configs/head.js'
 import { mainConfig, defaultThemeConfig } from './configs/locales_config.js'
 
 const __dirname = getDirname(import.meta.url)
@@ -18,7 +20,7 @@ export default defineUserConfig({
   base: '/',
 
   // extra tags in `<head>`
-  head: head,
+  head: headConfig,
 
   // site-level locales config
   locales: mainConfig,
@@ -29,7 +31,7 @@ export default defineUserConfig({
   // configure default theme
   theme: defaultTheme({
     logo: "/images/MCC_logo.png",
-    repo: "https://github.com/MCCTeam/Minecraft-Console-Client",
+    repo: "MCCTeam/Minecraft-Console-Client",
     docsDir: 'docs',
 
     // theme-level locales config
@@ -53,6 +55,9 @@ export default defineUserConfig({
 
   // use plugins
   plugins: [
+    backToTopPlugin(),
+    externalLinkIconPlugin(),
+    nprogressPlugin(),
     // only enable shiki plugin in production mode
     isProd ? shikiPlugin({ theme: 'dark-plus' }) : [],
   ],
