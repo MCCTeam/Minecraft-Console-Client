@@ -380,7 +380,7 @@
     <value>Atvienošanos ierosinājis lietotājs vai MCC bots. Ignorē.</value>
   </data>
   <data name="bot.autoRelog.launch" xml:space="preserve">
-    <value>Launching with {0} reconnection attempts</value>
+    <value>Tiek palaists ar {0} atkārtota savienojuma mēģinājumiem</value>
   </data>
   <data name="bot.autoRelog.loaded" xml:space="preserve">
     <value>Loaded message: {0}</value>
