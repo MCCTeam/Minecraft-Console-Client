@@ -22,6 +22,6 @@ jobs:
         ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TARGET_REPO: MCCTeam/MCCTeam.github.io
         TARGET_BRANCH: master
-        BUILD_SCRIPT: yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:dev
+        BUILD_SCRIPT: yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:build
         BUILD_DIR: docs/.vuepress/dist
         CNAME: https://mccteam.github.io
