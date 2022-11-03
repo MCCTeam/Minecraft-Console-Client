@@ -19,7 +19,7 @@ jobs:
     - name: vuepress-deploy
       uses: jenkey2011/vuepress-deploy@master
       env:
-        ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ACCESS_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
         TARGET_REPO: MCCTeam/MCCTeam.github.io
         TARGET_BRANCH: master
         BUILD_SCRIPT: yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:build
