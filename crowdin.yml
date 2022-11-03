@@ -5,3 +5,9 @@ files:
     translation: /MinecraftClient/Resources/AsciiArt/AsciiArt.%osx_code%.resx
   - source: /README.md
     translation: /README/README-%language%.md
+  - source: /docs/.vuepress/translations/en.json
+    translation: /docs/.vuepress/translations/%osx_code%.json
+  - source: /docs/README.md
+    translation: /docs/%osx_code%/README.md
+  - source: /docs/guide/*.md
+    translation: /docs/%osx_code%/guide/%original_file_name%
