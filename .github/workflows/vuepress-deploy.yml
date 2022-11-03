@@ -1,16 +1,16 @@
-name: docs
+name: Deploy Document
 
 on:
   push:
     branches:
-      - main
-    paths-ignore:
-      - '**/__tests__/**'
-  workflow_dispatch:
+      - master
+    paths:
+      - 'docs'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'SKIP_DEPLOY') }}
     
     steps:
     - name: Checkout

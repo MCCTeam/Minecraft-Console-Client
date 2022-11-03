@@ -404,3 +404,4 @@ FodyWeavers.xsd
 
 # docs
 !/docs/.vuepress
+/docs/.vuepress/dist

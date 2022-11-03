@@ -2,7 +2,12 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+    paths:
+      - 'MinecraftClient'
+      - 'MinecraftClient.sln'
+      - 'ConsoleInteractive'
   
 env:
   PROJECT: "MinecraftClient"
