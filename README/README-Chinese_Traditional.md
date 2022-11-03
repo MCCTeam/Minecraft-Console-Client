@@ -31,7 +31,7 @@
 
 ## 取得幫助 🙋
 
-查看[網站](https://mccteam.github.io/)，[README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual)及[討論區](https://github.com/MCCTeam/Minecraft-Console-Client/discussions)：可能你的問題已經得到解答。 如果沒有，請建立[新討論串](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new)來提出你的問題。 如果你找到程式錯誤，請到[問題頁面](https://github.com/MCCTeam/Minecraft-Console-Client/issues)回報。
+Check out the [Website](https://mccteam.github.io/), [README](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#minecraft-console-client-user-manual) and existing [Discussions](https://github.com/MCCTeam/Minecraft-Console-Client/discussions): Maybe your question is answered there. If not, please open a [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) and ask your question. If you find a bug, please report it in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section. If not, please open a [New Discussion](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new) and ask your question. If you find a bug, please report it in the [Issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues) section. 如果沒有，請建立[新討論串](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/new)來提出你的問題。 如果你找到程式錯誤，請到[問題頁面](https://github.com/MCCTeam/Minecraft-Console-Client/issues)回報。
 
 ## Discord
 
@@ -39,11 +39,11 @@
 
 ## 幫助我們 ❤️
 
-我們是一個較小的社區，所以我們需要幫忙來實現新 Minecraft 版本的升級，修復程式錯誤以及擴展項目。 我們一直在尋找有動力的人來參與貢獻。 如果你覺得你是那個人，請查看[問題頁面](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) :)
+We are a small community so we need help to implement upgrades for new Minecraft versions, fixing bugs and expanding the project. We are always looking for motivated people to contribute. We are a small community so we need help to implement upgrades for new Minecraft versions, fixing bugs and expanding the project. We are always looking for motivated people to contribute. If you feel like it could be you, please have a look at the [issues](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) section :) 我們一直在尋找有動力的人來參與貢獻。 如果你覺得你是那個人，請查看[問題頁面](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+is%3Aopen+label%3Awaiting-for%3Acontributor) :)
 
 ## 如何貢獻 📝
 
-如果你希望為 Minecraft 主控台客戶端做出貢獻，很好，只需要 fork 倉庫並向 _Master_ 分支上提交 Pull Request 即可。 如果你希望為網站 / 線上文檔做出貢獻，請參閱[網站的 git 倉庫](https://github.com/MCCTeam/MCCTeam.github.io)。
+If you'd like to contribute to Minecraft Console Client, great, just fork the repository and submit a pull request on the _Master_ branch. To contribute to the website / online documentation see also the [Website repository](https://github.com/MCCTeam/MCCTeam.github.io). To contribute to the website / online documentation see also the [Website repository](https://github.com/MCCTeam/MCCTeam.github.io). 如果你希望為網站 / 線上文檔做出貢獻，請參閱[網站的 git 倉庫](https://github.com/MCCTeam/MCCTeam.github.io)。
 
 ![Alt](https://repobeats.axiom.co/api/embed/c8a6c7c47fde8fcbe3727a21eab46e6b39dff60d.svg "Repobeats analytics image")
 
@@ -67,10 +67,10 @@ MCC 現在支援以下的語言（按英文字母排序）：
 
 ## 許可 ⚖️
 
-除非特別說明，代碼均來自 MCC 團隊或貢獻者，並且可在 CDDL-1.0 許可下使用。 否則，許可證和原始作者將在原始文件開頭中提及。 CDDL-1.0 許可的主要條款基本上是以下內容：
+Unless specifically stated, the code is from the MCC Team or Contributors, and available under CDDL-1.0. Else, the license and original author are mentioned in source file headers. The main terms of the CDDL-1.0 license are basically the following: Else, the license and original author are mentioned in source file headers. The main terms of the CDDL-1.0 license are basically the following: 否則，許可證和原始作者將在原始文件開頭中提及。 CDDL-1.0 許可的主要條款基本上是以下內容：
 
--   You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial. The program itself may be open or closed source, free or commercial.
+-   You may use the licensed code in whole or in part in any program you desire, regardless of the license of the program as a whole (or rather, as excluding the code you are borrowing). The program itself may be open or closed source, free or commercial. The program itself may be open or closed source, free or commercial. The program itself may be open or closed source, free or commercial.
 -   However, in all cases, any modifications, improvements, or additions to the CDDL code (any code that is referenced in direct modifications to the CDDL code is considered an addition to the CDDL code, and so is bound by this requirement; e.g. a modification of a math function to use a fast lookup table makes that table itself an addition to the CDDL code, regardless of whether it's in a source code file of its own) must be made publicly and freely available in source, under the CDDL license itself.
--   In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
+-   In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code. In any program (source or binary) that uses CDDL code, recognition must be given to the source (either project or author) of the CDDL code. As well, modifications to the CDDL code (which must be distributed as source) may not remove notices indicating the ancestry of the code.
 
 More info at http://qstuff.blogspot.fr/2007/04/why-cddl.html Full license at http://opensource.org/licenses/CDDL-1.0
