@@ -1,0 +1,27 @@
+name: docs
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/__tests__/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: vuepress-deploy
+      uses: jenkey2011/vuepress-deploy@master
+      env:
+        ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TARGET_REPO: MCCTeam/MCCTeam.github.io
+        TARGET_BRANCH: master
+        BUILD_SCRIPT: yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:dev
+        BUILD_DIR: docs/.vuepress/dist
+        CNAME: https://mccteam.github.io
