@@ -8,6 +8,6 @@ files:
   - source: /docs/.vuepress/translations/en.json
     translation: /docs/.vuepress/translations/%osx_code%.json
   - source: /docs/README.md
-    translation: /docs/%osx_code%/README.md
+    translation: /docs/l10n/%osx_code%/README.md
   - source: /docs/guide/*.md
-    translation: /docs/%osx_code%/guide/%original_file_name%
+    translation: /docs/l10n/%osx_code%/guide/%original_file_name%
