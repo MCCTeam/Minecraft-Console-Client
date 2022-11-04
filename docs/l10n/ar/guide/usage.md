@@ -366,7 +366,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Also the instance of MCC is available with `MCC.`.
 
-    > **ℹ️ NOTE: All local variables are treated as strings in the app, when comparing their values, you can use `<variable> == "<value>"`, or better use [`.Equals`](https://www.programiz.com/csharp-programming/library/string/equals) method**
+    > **ℹ️ NOTE: All local variables are treated as strings in the app, when comparing their values, you can use `<variable> == "<value>"`, or better use [`. Equals`](https://www.programiz.com/csharp-programming/library/string/equals) method**
 
 -   **Usage:**
 
@@ -397,7 +397,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Using MCC class:
 
     ```
-    /execif MCC.GetHealth() == 20.0 ---> send Success!
+    /execif MCC. GetHealth() == 20.0 ---> send Success!
     ```
 
 
