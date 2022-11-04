@@ -136,7 +136,7 @@ ambysdotnet, Awpocalypse, azoundria, bearbear12345, bSun0000, Cat7373, dagonzaro
 
 **Contributors**
 
-Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, Daenges, dbear20, dogwatch, initsuj, JamieSinn, justcool393, lokulin, maxpowa, medxo, milutinke, Pokechu22, ReinforceZwei, repository, TheMeq, TheSnoozer, vkorn, v1RuX, yunusemregul, ZizzyDizzyMC, BruceChenQAQ, bradbyte _... And all the [GitHub contributors](https://github.com/MCCTeam/Minecraft-Console-Client/graphs/contributors)!_ And all the [GitHub contributors](https://github.com/MCCTeam/Minecraft-Console-Client/graphs/contributors)!</em>
+Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, Daenges, dbear20, dogwatch, initsuj, JamieSinn, justcool393, lokulin, maxpowa, medxo, milutinke, Pokechu22, ReinforceZwei, repository, TheMeq, TheSnoozer, vkorn, v1RuX, yunusemregul, ZizzyDizzyMC, BruceChenQAQ, bradbyte _... And all the [GitHub contributors](https://github.com/MCCTeam/Minecraft-Console-Client/graphs/contributors)!_
 
 **Libraries:**
 
@@ -150,14 +150,26 @@ Minecraft Console Client also borrows code from the following libraries:
 
 ## Disclaimer
 
-Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server. Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server. This app does not steal your password. If you don't trust it, don't use it or check & compile from the source code. If you don't trust it, don't use it or check & compile from the source code.
+Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server.
 
-Also, remember that when you connect to a server with this program, you will appear where you left the last time. Also, remember that when you connect to a server with this program, you will appear where you left the last time. This means that **you can die if you log in in an unsafe place on a survival server!** Use the script scheduler bot to send a teleport command after logging in.
+Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server. This app does not steal your password. If you don't trust it, don't use it or check & compile from the source code. If you don't trust it, don't use it or check & compile from the source code.
+
+Also, remember that when you connect to a server with this program, you will appear where you left the last time.
+
+This means that **you can die if you log in in an unsafe place on a survival server!**
+
+Use the script scheduler bot to send a teleport command after logging in.
 
 We remind you that **you may get banned** by your server for using this program. Use accordingly with server rules. Use accordingly with server rules.
 
 ## License
 
-Minecraft Console Client is a totally free of charge, open source project. The source code is available at [Github Repository](https://github.com/MCCTeam/Minecraft-Console-Client) The source code is available at [Github Repository](https://github.com/MCCTeam/Minecraft-Console-Client)
+Minecraft Console Client is a totally free of charge, open source project. The source code is available at [Github Repository](https://github.com/MCCTeam/Minecraft-Console-Client)
 
-Unless specifically stated, source code is from the MCC Team or Contributors, and available under CDDL-1.0. Unless specifically stated, source code is from the MCC Team or Contributors, and available under CDDL-1.0. More info about CDDL-1.0: [http://qstuff.blogspot.fr/2007/04/why-cddl.html](http://qstuff.blogspot.fr/2007/04/why-cddl.html) Full license at [http://opensource.org/licenses/CDDL-1.0](http://opensource.org/licenses/CDDL-1.0)
+The source code is available at [Github Repository](https://github.com/MCCTeam/Minecraft-Console-Client)
+
+Unless specifically stated, source code is from the MCC Team or Contributors, and available under CDDL-1.0.
+
+More info about CDDL-1.0: [http://qstuff.blogspot.fr/2007/04/why-cddl.html](http://qstuff.blogspot.fr/2007/04/why-cddl.html)
+
+Full license at [http://opensource.org/licenses/CDDL-1.0](http://opensource.org/licenses/CDDL-1.0)
