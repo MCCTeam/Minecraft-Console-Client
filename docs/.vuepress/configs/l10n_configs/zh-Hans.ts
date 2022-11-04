@@ -20,38 +20,38 @@ export const defaultThemeConfig_zh_Hans: DefaultThemeLocaleData = {
     navbar: [
         {
             text: Translation.navbar.AboutAndFeatures,
-            link: "/zh-Hans/guide/",
+            link: "/l10n/zh-Hans/guide/",
         },
         
         {
             text: Translation.navbar.Installation,
-            link: "/zh-Hans/guide/installation.md",
+            link: "/l10n/zh-Hans/guide/installation.md",
         },
       
         {
             text: Translation.navbar.Usage,
-            link: "/zh-Hans/guide/usage.md",
+            link: "/l10n/zh-Hans/guide/usage.md",
         },
       
         {
             text: Translation.navbar.Configuration,
-            link: "/zh-Hans/guide/configuration.md",
+            link: "/l10n/zh-Hans/guide/configuration.md",
         },
       
         {
             text: Translation.navbar.ChatBots,
-            link: "/zh-Hans/guide/chat-bots.md",
+            link: "/l10n/zh-Hans/guide/chat-bots.md",
         },
     ],
 
     sidebar: [
-        "/zh-Hans/guide/README.md", 
-        "/zh-Hans/guide/installation.md", 
-        "/zh-Hans/guide/usage.md", 
-        "/zh-Hans/guide/configuration.md", 
-        "/zh-Hans/guide/chat-bots.md", 
-        "/zh-Hans/guide/creating-bots.md", 
-        "/zh-Hans/guide/contibuting.md"
+        "/l10n/zh-Hans/guide/README.md", 
+        "/l10n/zh-Hans/guide/installation.md", 
+        "/l10n/zh-Hans/guide/usage.md", 
+        "/l10n/zh-Hans/guide/configuration.md", 
+        "/l10n/zh-Hans/guide/chat-bots.md", 
+        "/l10n/zh-Hans/guide/creating-bots.md", 
+        "/l10n/zh-Hans/guide/contibuting.md"
     ],
 
     // page meta

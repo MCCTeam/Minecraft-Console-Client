@@ -54,7 +54,7 @@ for LanguageCode in LanguageCodeList:
    if (LanguageCode == 'en'):
       content = content.replace("$PathToPage$", '', -1)
    else:
-      content = content.replace("$PathToPage$", '/' + LanguageCode, -1)
+      content = content.replace("$PathToPage$", '/l10n/' + LanguageCode, -1)
 
    print("Write ./l10n_configs/{}.ts".format(LanguageCode))
 
@@ -87,7 +87,7 @@ with open('./locales_config.ts', 'w+', encoding='utf-8') as file:
    for LanguageCode in LanguageCodeList:
       file.write(r"    '")
       if (LanguageCode != 'en'):
-         file.write(r"/")
+         file.write(r"/l10n/")
          file.write(LanguageCode)
       file.write(r"/': mainConfig_")
       file.write(LanguageCode.replace('-', '_', -1))
@@ -100,7 +100,7 @@ with open('./locales_config.ts', 'w+', encoding='utf-8') as file:
    for LanguageCode in LanguageCodeList:
       file.write(r"    '")
       if (LanguageCode != 'en'):
-         file.write(r"/")
+         file.write(r"/l10n/")
          file.write(LanguageCode)
       file.write(r"/': defaultThemeConfig_")
       file.write(LanguageCode.replace('-', '_', -1))

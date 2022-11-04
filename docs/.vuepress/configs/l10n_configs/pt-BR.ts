@@ -20,38 +20,38 @@ export const defaultThemeConfig_pt_BR: DefaultThemeLocaleData = {
     navbar: [
         {
             text: Translation.navbar.AboutAndFeatures,
-            link: "/pt-BR/guide/",
+            link: "/l10n/pt-BR/guide/",
         },
         
         {
             text: Translation.navbar.Installation,
-            link: "/pt-BR/guide/installation.md",
+            link: "/l10n/pt-BR/guide/installation.md",
         },
       
         {
             text: Translation.navbar.Usage,
-            link: "/pt-BR/guide/usage.md",
+            link: "/l10n/pt-BR/guide/usage.md",
         },
       
         {
             text: Translation.navbar.Configuration,
-            link: "/pt-BR/guide/configuration.md",
+            link: "/l10n/pt-BR/guide/configuration.md",
         },
       
         {
             text: Translation.navbar.ChatBots,
-            link: "/pt-BR/guide/chat-bots.md",
+            link: "/l10n/pt-BR/guide/chat-bots.md",
         },
     ],
 
     sidebar: [
-        "/pt-BR/guide/README.md", 
-        "/pt-BR/guide/installation.md", 
-        "/pt-BR/guide/usage.md", 
-        "/pt-BR/guide/configuration.md", 
-        "/pt-BR/guide/chat-bots.md", 
-        "/pt-BR/guide/creating-bots.md", 
-        "/pt-BR/guide/contibuting.md"
+        "/l10n/pt-BR/guide/README.md", 
+        "/l10n/pt-BR/guide/installation.md", 
+        "/l10n/pt-BR/guide/usage.md", 
+        "/l10n/pt-BR/guide/configuration.md", 
+        "/l10n/pt-BR/guide/chat-bots.md", 
+        "/l10n/pt-BR/guide/creating-bots.md", 
+        "/l10n/pt-BR/guide/contibuting.md"
     ],
 
     // page meta

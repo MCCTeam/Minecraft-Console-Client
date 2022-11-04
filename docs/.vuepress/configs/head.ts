@@ -7,7 +7,7 @@ export const headConfig: HeadConfig[] = [
             rel: 'icon',
             type: 'image/png',
             sizes: '16x16',
-            href: `/images/icons/favicon-16x16.png`,
+            href: `/icons/favicon-16x16.png`,
         },
     ],
     [
@@ -16,7 +16,7 @@ export const headConfig: HeadConfig[] = [
             rel: 'icon',
             type: 'image/png',
             sizes: '32x32',
-            href: `/images/icons/favicon-32x32.png`,
+            href: `/icons/favicon-32x32.png`,
         },
     ],
     ['link', { rel: 'manifest', href: '/manifest.webmanifest' }],
@@ -25,7 +25,7 @@ export const headConfig: HeadConfig[] = [
     ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }],
     [
         'link',
-        { rel: 'apple-touch-icon', href: `/images/icons/apple-touch-icon.png` },
+        { rel: 'apple-touch-icon', href: `/icons/apple-touch-icon.png` },
     ],
     ['meta', { name: 'msapplication-TileColor', content: '#3eaf7c' }],
     ['meta', { name: 'theme-color', content: '#3eaf7c' }],

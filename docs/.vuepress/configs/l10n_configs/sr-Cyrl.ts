@@ -20,38 +20,38 @@ export const defaultThemeConfig_sr_Cyrl: DefaultThemeLocaleData = {
     navbar: [
         {
             text: Translation.navbar.AboutAndFeatures,
-            link: "/sr-Cyrl/guide/",
+            link: "/l10n/sr-Cyrl/guide/",
         },
         
         {
             text: Translation.navbar.Installation,
-            link: "/sr-Cyrl/guide/installation.md",
+            link: "/l10n/sr-Cyrl/guide/installation.md",
         },
       
         {
             text: Translation.navbar.Usage,
-            link: "/sr-Cyrl/guide/usage.md",
+            link: "/l10n/sr-Cyrl/guide/usage.md",
         },
       
         {
             text: Translation.navbar.Configuration,
-            link: "/sr-Cyrl/guide/configuration.md",
+            link: "/l10n/sr-Cyrl/guide/configuration.md",
         },
       
         {
             text: Translation.navbar.ChatBots,
-            link: "/sr-Cyrl/guide/chat-bots.md",
+            link: "/l10n/sr-Cyrl/guide/chat-bots.md",
         },
     ],
 
     sidebar: [
-        "/sr-Cyrl/guide/README.md", 
-        "/sr-Cyrl/guide/installation.md", 
-        "/sr-Cyrl/guide/usage.md", 
-        "/sr-Cyrl/guide/configuration.md", 
-        "/sr-Cyrl/guide/chat-bots.md", 
-        "/sr-Cyrl/guide/creating-bots.md", 
-        "/sr-Cyrl/guide/contibuting.md"
+        "/l10n/sr-Cyrl/guide/README.md", 
+        "/l10n/sr-Cyrl/guide/installation.md", 
+        "/l10n/sr-Cyrl/guide/usage.md", 
+        "/l10n/sr-Cyrl/guide/configuration.md", 
+        "/l10n/sr-Cyrl/guide/chat-bots.md", 
+        "/l10n/sr-Cyrl/guide/creating-bots.md", 
+        "/l10n/sr-Cyrl/guide/contibuting.md"
     ],
 
     // page meta

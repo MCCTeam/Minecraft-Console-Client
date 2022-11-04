@@ -5,9 +5,9 @@ on:
     branches:
       - master
     paths:
-      - 'MinecraftClient'
-      - 'MinecraftClient.sln'
-      - 'ConsoleInteractive'
+      - MinecraftClient/**
+      - ConsoleInteractive/**
+      - MinecraftClient.sln
   workflow_dispatch:
   
 env:
