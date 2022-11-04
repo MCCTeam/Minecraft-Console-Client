@@ -21,26 +21,36 @@ export const defaultThemeConfig_pt_BR: DefaultThemeLocaleData = {
         {
             text: Translation.navbar.AboutAndFeatures,
             link: "/l10n/pt-BR/guide/",
+            activeMatch: "/l10n/pt-BR/index.html",
         },
         
         {
             text: Translation.navbar.Installation,
             link: "/l10n/pt-BR/guide/installation.md",
+            activeMatch: "/l10n/pt-BR/guide/installation.html",
         },
       
         {
             text: Translation.navbar.Usage,
             link: "/l10n/pt-BR/guide/usage.md",
+            activeMatch: "/l10n/pt-BR/guide/usage.html",
         },
       
         {
             text: Translation.navbar.Configuration,
             link: "/l10n/pt-BR/guide/configuration.md",
+            activeMatch: "/l10n/pt-BR/guide/configuration.html",
         },
       
         {
             text: Translation.navbar.ChatBots,
             link: "/l10n/pt-BR/guide/chat-bots.md",
+            activeMatch: "/l10n/pt-BR/guide/chat-bots.html",
+        },
+      
+        {
+            text: Translation.helpUsTranslate,
+            link: "https://crwd.in/minecraft-console-client",
         },
     ],
 

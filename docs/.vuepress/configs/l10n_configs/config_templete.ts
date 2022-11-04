@@ -20,26 +20,36 @@ export const defaultThemeConfig_$LanguageCodeEscaped$: DefaultThemeLocaleData = 
         {
             text: Translation.navbar.AboutAndFeatures,
             link: "$PathToPage$/guide/",
+            activeMatch: "$PathToPage$/index.html",
         },
         
         {
             text: Translation.navbar.Installation,
             link: "$PathToPage$/guide/installation.md",
+            activeMatch: "$PathToPage$/guide/installation.html",
         },
       
         {
             text: Translation.navbar.Usage,
             link: "$PathToPage$/guide/usage.md",
+            activeMatch: "$PathToPage$/guide/usage.html",
         },
       
         {
             text: Translation.navbar.Configuration,
             link: "$PathToPage$/guide/configuration.md",
+            activeMatch: "$PathToPage$/guide/configuration.html",
         },
       
         {
             text: Translation.navbar.ChatBots,
             link: "$PathToPage$/guide/chat-bots.md",
+            activeMatch: "$PathToPage$/guide/chat-bots.html",
+        },
+      
+        {
+            text: Translation.helpUsTranslate,
+            link: "https://crwd.in/minecraft-console-client",
         },
     ],
 

@@ -21,26 +21,36 @@ export const defaultThemeConfig_ja: DefaultThemeLocaleData = {
         {
             text: Translation.navbar.AboutAndFeatures,
             link: "/l10n/ja/guide/",
+            activeMatch: "/l10n/ja/index.html",
         },
         
         {
             text: Translation.navbar.Installation,
             link: "/l10n/ja/guide/installation.md",
+            activeMatch: "/l10n/ja/guide/installation.html",
         },
       
         {
             text: Translation.navbar.Usage,
             link: "/l10n/ja/guide/usage.md",
+            activeMatch: "/l10n/ja/guide/usage.html",
         },
       
         {
             text: Translation.navbar.Configuration,
             link: "/l10n/ja/guide/configuration.md",
+            activeMatch: "/l10n/ja/guide/configuration.html",
         },
       
         {
             text: Translation.navbar.ChatBots,
             link: "/l10n/ja/guide/chat-bots.md",
+            activeMatch: "/l10n/ja/guide/chat-bots.html",
+        },
+      
+        {
+            text: Translation.helpUsTranslate,
+            link: "https://crwd.in/minecraft-console-client",
         },
     ],
 
