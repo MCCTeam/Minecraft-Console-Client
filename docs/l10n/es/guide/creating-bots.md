@@ -41,14 +41,14 @@ Paste the following example code:
 ```csharp
 //MCCScript 1.0
 
-MCC.LoadBot(new ExampleChatBot());
+MCC. LoadBot(new ExampleChatBot());
 
 //MCCScript Extensions
 
 // The code and comments above are defining a "Script Metadata" section
 
 // Every single chat bot (script) must be a class which extends the ChatBot class.
-// Your class must be instantiates in the "Script Metadata" section and passed to MCC.LoadBot function.
+// Your class must be instantiates in the "Script Metadata" section and passed to MCC. LoadBot function.
 class ExampleChatBot : ChatBot
 {
     // This method will be called when the script has been initialized for the first time, it's called only once
@@ -115,22 +115,22 @@ By the default the following packages are loaded:
 
 ```csharp
 using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Net;
-using System.Threading;
+using System. Collections.Generic;
+using System. Text.RegularExpressions;
+using System. Linq;
+using System. Text;
+using System. IO;
+using System. Net;
+using System. Threading;
 using MinecraftClient;
-using MinecraftClient.Mapping;
-using MinecraftClient.Inventory;
+using MinecraftClient. Mapping;
+using MinecraftClient.
 ```
 
 Example:
 
 ```csharp
-//using System.Collections.Immutable
+//using System. Collections.Immutable
 //dll MyDll.dll
 ```
 
@@ -139,10 +139,10 @@ Full Example:
 ```csharp
 //MCCScript 1.0
 
-//using System.Collections.Immutable
+//using System. Collections.Immutable
 //dll MyDll.dll
 
-MCC.LoadBot(new ExampleChatBot());
+MCC. LoadBot(new ExampleChatBot());
 
 //MCCScript Extensions
 ```
