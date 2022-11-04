@@ -16,7 +16,7 @@ Using the command line parameters:
 
 Simply run `MinecraftClient.exe`
 
-> **ℹ️ NOTE: On Windows it's best using [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/install) for the best experience and looks. Some features like emojis in the [`/chunk`](#chunk) command do not work in CMD or Powershell 5**
+> **ℹ️ NOTE: On Windows it's best using [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/install) for the best experience and looks. ℹ️ NOTE: On Windows it's best using [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/install) for the best experience and looks. Some features like emojis in the [`/chunk`](#chunk) command do not work in CMD or Powershell 5**
 
 ## Linux, macOS
 
@@ -164,9 +164,9 @@ MinecraftClient.exe <myconfig.ini> <login> <password> <server> [--other settings
 
 These commands can be performed from the chat prompt, scripts or remote control.
 
-From chat prompt, commands must by default be prepended with a slash, eg. `/quit`.
+From chat prompt, commands must by default be prepended with a slash, eg. `/quit`. `/quit`.
 
-In scripts and remote control, no slash is needed to perform the command, eg. `quit`.
+In scripts and remote control, no slash is needed to perform the command, eg. `quit`. `quit`.
 
 > **ℹ️ NOTE: Some commands may not be documented yet or are defined in description of Chat Bots, use `/help` to list them all, or you can contribute to this page.**
 
@@ -222,7 +222,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 -   **Description:**
 
-    Allows you to list and unload a specific bot or all bots. Useful when debugging and developing scripts.
+    Allows you to list and unload a specific bot or all bots. Useful when debugging and developing scripts. Useful when debugging and developing scripts.
 
 -   **使用方法：**
 
@@ -362,7 +362,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Allows you to execute a command if a specific condition is met.
 
-    The condition is a C# expression and the local variables you set using [`set`](#set), [`setrnd`](#setrnd) or the configuration file can be used. The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool.
+    The condition is a C# expression and the local variables you set using [`set`](#set), [`setrnd`](#setrnd) or the configuration file can be used. The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool. The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool.
 
     Also the instance of MCC is available with `MCC.`.
 
@@ -452,7 +452,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Reloads settings from MinecraftClient.ini and Chat Bots.
 
-    > **ℹ️ NOTE: Some settings won't be reloaded since they are used before the client initialization. Also, settings provided by the command line paramteres will be overriden. This also does not reload the ReplayBot due to technical limitations.**
+    > **ℹ️ NOTE: Some settings won't be reloaded since they are used before the client initialization. Also, settings provided by the command line paramteres will be overriden. This also does not reload the ReplayBot due to technical limitations. Also, settings provided by the command line paramteres will be overriden. This also does not reload the ReplayBot due to technical limitations.**
 
 -   **使用方法：**
 
@@ -678,7 +678,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 -   **Description:**
 
-    Wait X ticks (10 ticks = ~1 second. Only for scripts)
+    Wait X ticks (10 ticks = ~1 second. Only for scripts) Only for scripts)
 
 -   **使用方法：**
 
@@ -705,7 +705,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 -   **使用方法：**
 
     ```
-    /move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]: walk or start walking. "-f": force unsafe movements like falling or touching fire
+    /move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]: walk or start walking. "-f": force unsafe movements like falling or touching fire "-f": force unsafe movements like falling or touching fire
     ```
 
 -   **Examples:**
