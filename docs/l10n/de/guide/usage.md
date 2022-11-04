@@ -236,7 +236,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 -   **Description:**
 
-    Allows you to list and unload a specific bot or all bots. Useful when debugging and developing scripts.
+    Allows you to list and unload a specific bot or all bots.
+
+    Useful when debugging and developing scripts.
 
 -   **Benutzung:**
 
@@ -404,7 +406,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Allows you to execute a command if a specific condition is met.
 
-    The condition is a C# expression and the local variables you set using [`set`](#set), [`setrnd`](#setrnd) or the configuration file can be used. The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool.
+    The condition is a C# expression and the local variables you set using [`set`](#set), [`setrnd`](#setrnd) or the configuration file can be used.
+
+    The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool.
 
     Also the instance of MCC is available with `MCC.`.
 
