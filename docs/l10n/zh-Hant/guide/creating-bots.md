@@ -8,7 +8,7 @@
 
 ## Notes
 
-> **ℹ️ NOTE: For now this page contains only the bare basics of the Chat Bot API, enough of details to teach you how to make basic Chat Bots. For more details you need to take a look at the [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) and [Examples](#examples). This page will be improved in the future.**
+> **ℹ️ NOTE: For now this page contains only the bare basics of the Chat Bot API, enough of details to teach you how to make basic Chat Bots. ℹ️ NOTE: For now this page contains only the bare basics of the Chat Bot API, enough of details to teach you how to make basic Chat Bots. For more details you need to take a look at the [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) and [Examples](#examples). This page will be improved in the future. This page will be improved in the future.**
 
 **Minecraft Console Client** has a rich C# API which allows you to create Chat Bots (effectively plugins) which can help you create complex automations which normal scripts may not be able to do.
 
@@ -76,6 +76,34 @@ class ExampleChatBot : ChatBot
         }
     }
 }
+// Your class must be instantiates in the "Script Metadata" section and passed to MCC.LoadBot function.
+class ExampleChatBot : ChatBot
+{
+    // This method will be called when the script has been initialized for the first time, it's called only once
+    // Here you can initialize variables, eg. Dictionaries. etc...
+    public override void Initialize()
+    {
+        LogToConsole("An example Chat Bot has been initialized!");
+    }
+
+    // This is a function that will be run when we get a chat message from a server
+    // In this example it just detects the type of the message and prints it out
+    public override void GetText(string text)
+    {
+        string message = "";
+        string username = "";
+        text = GetVerbatim(text);
+
+        if (IsPrivateMessage(text, ref message, ref username))
+        {
+            LogToConsole(username + " has sent you a private message: " + message);
+        }
+        else if (IsChatMessage(text, ref message, ref username))
+        {
+            LogToConsole(username + " has said: " + message);
+        }
+    }
+}
 ```
 
 Start MCC, connect to a server and run the following internal command: `/script ExampleChatBot.cs`.
@@ -91,7 +119,7 @@ Chat Bot (Script) structure is the following:
 <chat bot class>
 ```
 
-**Script Metadata** is a section with a custom format that mixes in C# with our format using comments. Every single Chat Bot (Script) must have this section at the beginning in order to work.
+**Script Metadata** is a section with a custom format that mixes in C# with our format using comments. Every single Chat Bot (Script) must have this section at the beginning in order to work. Every single Chat Bot (Script) must have this section at the beginning in order to work.
 
 ### Script Metadata Format
 
@@ -153,7 +181,7 @@ After the end of the **Script Metadata** section, you basically can define any n
 
 There are no required methods, everything is optional.
 
-When the Chat Bot (Script) has been initialized for the first time the `Initialize` method will be called. In it you can initialize variables, eg. Dictionaries, etc..
+When the Chat Bot (Script) has been initialized for the first time the `Initialize` method will be called. In it you can initialize variables, eg. Dictionaries, etc.. In it you can initialize variables, eg. Dictionaries, etc..
 
 > **ℹ️ NOTE: For allocating resources like a database connection, we recommend allocating them in `AfterGameJoined` and freeing them in `OnDisconnect`**.
 
