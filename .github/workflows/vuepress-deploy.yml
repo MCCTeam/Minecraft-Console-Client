@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - 'docs'
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:

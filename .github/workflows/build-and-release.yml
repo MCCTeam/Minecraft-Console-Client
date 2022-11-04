@@ -8,6 +8,7 @@ on:
       - 'MinecraftClient'
       - 'MinecraftClient.sln'
       - 'ConsoleInteractive'
+  workflow_dispatch:
   
 env:
   PROJECT: "MinecraftClient"
