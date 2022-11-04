@@ -362,7 +362,7 @@
     <value>停止自動釣魚。</value>
   </data>
   <data name="bot.autoFish.switch" xml:space="preserve">
-    <value>切換到位於揹包 {0} 位置的魚竿，剩餘耐用 {1}/64。</value>
+    <value>切換到位於背包 {0} 位置的魚竿，剩餘耐用 {1}/64。</value>
   </data>
   <data name="bot.autoFish.throw" xml:space="preserve">
     <value>拋竿成功。</value>
@@ -491,7 +491,7 @@ cooldown: {6}</value>
     <value>耕作機器人</value>
   </data>
   <data name="bot.farmer.invalid_crop_type" xml:space="preserve">
-    <value>提供了無效的農作物類型（可選的類型：Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat）</value>
+    <value>提供了無效的農作物類型（可選的類型：Beetroot（甜菜根）, Carrot（蘿蔔）, Melon（西瓜）, Netherwart（地獄疙瘩）, Pumpkin（南瓜）, Potato（馬鈴薯）, Wheat（小麥））</value>
   </data>
   <data name="bot.farmer.invalid_radius" xml:space="preserve">
     <value>提供了無效的半徑。你必須提供一個大於0的整數。</value>
@@ -1586,7 +1586,7 @@ cooldown: {6}</value>
     <value>"health"（生命值）或 "distance"（距離）。當使用"single"模式時，以哪一個屬性確定優先順序。</value>
   </data>
   <data name="config.ChatBot.AutoCraft" xml:space="preserve">
-    <value>自動使用揹包中的物品進行合成。
+    <value>自動使用背包中的物品進行合成。
 請看 https://mccteam.github.io/guide/chat-bots.html#auto-craft
 你需要啟用庫存處理來使用這個功能
 如果需要使用工作臺，你還需要啟用地形處理。</value>
@@ -1598,7 +1598,8 @@ cooldown: {6}</value>
     <value>合成失敗時應該怎麼處理，"abort"（中止）或 "wait"（等待）。</value>
   </data>
   <data name="config.ChatBot.AutoCraft.Recipes" xml:space="preserve">
-    <value>Recipes.Name：給該配方起一個獨一無二的名字。（不能包含空白字元）Recipes.Type：合成型別，"player"（揹包2x2）或 "table"（工作臺3x3）
+    <value>Recipes.Name：給該配方起一個獨一無二的名字。（不能包含空白字元）
+Recipes.Type：合成型別，"player"（背包2x2）或 "table"（工作臺3x3）
 Recipes.Result：合成的目標物品
 Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的格式填寫。需留空請填寫"Null"。
 最新的物品命名請看：https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
@@ -1641,7 +1642,7 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>"lookat"，"fixedpos" 或 "both"。挖掘看向的方塊還是固定位置的方塊，或者是兩個條件都滿足的方塊。</value>
   </data>
   <data name="config.ChatBot.AutoDrop" xml:space="preserve">
-    <value>自動從揹包/庫存中丟棄指定的物品
+    <value>自動從背包/庫存中丟棄指定的物品
 你需要啟用庫存處理來使用這個功能。
 可用物品請看 https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
   </data>
@@ -1649,7 +1650,7 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>"include"（丟棄列表中的物品），"exclude"（丟棄列表外的所有物品） 或 "everything"（丟棄所有物品）</value>
   </data>
   <data name="config.ChatBot.AutoEat" xml:space="preserve">
-    <value>在飽食度較低是自動在揹包中尋找食物食用。
+    <value>在飽食度較低是自動在背包中尋找食物食用。
 你需要啟用庫存處理來使用這個功能。</value>
   </data>
   <data name="config.ChatBot.AutoFishing" xml:space="preserve">
@@ -1661,7 +1662,7 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>如果你之前沒有啟用過這個選項，請保持它為 false 。</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Auto_Rod_Switch" xml:space="preserve">
-    <value>在當前魚竿不可用後自動切換到揹包中的其他魚竿。（需要啟用庫存處理）</value>
+    <value>在當前魚竿不可用後自動切換到背包中的其他魚竿。（需要啟用庫存處理）</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Auto_Start" xml:space="preserve">
     <value>是否在進入伺服器後自動開始釣魚，禁用此功能後，你需要使用"/usehand"手動使用魚竿一次。</value>
@@ -1765,9 +1766,9 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
   </data>
   <data name="config.ChatBot.Farmer" xml:space="preserve">
     <value>自動為你耕種農作物（種下，收成和骨粉催生）
-可用的農作物類型：Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat.
+可用的農作物類型：Beetroot（甜菜根）, Carrot（蘿蔔）, Melon（西瓜）, Netherwart（地獄疙瘩）, Pumpkin（南瓜）, Potato（馬鈴薯）, Wheat（小麥）
 使用方法："/farmer start" 指令和 "/farmer stop" 指令。
-注意：這是新加入的機器人，它不完美並只在 1.19.2 版本進行過測試。它有些小問題，例如有時候不能對蘿蔔或土豆使用骨粉催生；
+注意：這是新加入的機器人，它不完美並只在 1.19.2 版本進行過測試。它有些小問題，例如有時候不能對蘿蔔或馬鈴薯使用骨粉催生；
 或機器人會在耕地上跳躍並破壞耕地（這很少發生，但還是有機率出現）。我們期待可以改善它。
 另外，如果你的耕地只有一格厚，請加厚至兩格以上，否則機器人在重新連線時有可能會穿過耕地並掉落。
 此外，如果機器人走到邊緣時將不會拾起所有的掉落物，我們已有計劃在未來新增這個選項，同時加入將農作物放到箱子及從箱子補充骨粉。</value>
@@ -1989,7 +1990,7 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>MCC內部命令的字首，可使用 "none", "slash"(/) 或 "backslash"(\)。</value>
   </data>
   <data name="config.Main.Advanced.inventory_handling" xml:space="preserve">
-    <value>啟用庫存處理（可操作揹包、箱子等容器）。</value>
+    <value>啟用庫存處理（可操作背包、箱子等容器）。</value>
   </data>
   <data name="config.Main.Advanced.language" xml:space="preserve">
     <value>請使用Minecraft的語言程式碼填寫，詳見 https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239</value>
@@ -2081,7 +2082,7 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>帳戶型別：mojang 或是 microsoft。此項設定也會影響互動式登入。</value>
   </data>
   <data name="config.MCSettings" xml:space="preserve">
-    <value>下面的設定將會被髮送到遊戲伺服器，隻影響一些伺服器端的東西，比如你的面板。</value>
+    <value>下面的設定將會被發送到遊戲伺服器，只影響一些伺服器端的東西，比如你的皮膚。</value>
   </data>
   <data name="config.MCSettings.ChatColors" xml:space="preserve">
     <value>這允許你在伺服器端禁用聊天顏色。</value>
@@ -2659,6 +2660,6 @@ MCC正在使用預設配置執行。</value>
     <value>已將舊的 MinecraftClient.ini 備份為 {0}</value>
   </data>
   <data name="config.Main.Advanced.temporary_fix_badpacket" xml:space="preserve">
-    <value>Temporary fix for Badpacket issue on some servers.</value>
+    <value>某些伺服器上 Badpacket 問題的臨時修補。</value>
   </data>
 </root>

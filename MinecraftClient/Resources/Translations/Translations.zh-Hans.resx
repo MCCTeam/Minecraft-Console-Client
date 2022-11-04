@@ -1211,7 +1211,7 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>开始跟随 {0}！</value>
   </data>
   <data name="cmd.follow.stopped" xml:space="preserve">
-    <value>Stopped!</value>
+    <value>已停止！</value>
   </data>
   <data name="cmd.follow.stopping" xml:space="preserve">
     <value>已停止！</value>

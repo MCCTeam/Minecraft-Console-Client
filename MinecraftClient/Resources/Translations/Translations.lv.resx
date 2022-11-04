@@ -118,269 +118,269 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>§cLaikapstākļu maiņa: Vairs nelīst.§r</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is no longer a thunderstorm.§r</value>
+    <value>§cLaikapstākļu maiņa: vairs nav pērkona negaiss.§r</value>
   </data>
   <data name="bot.alerts.start_rain" xml:space="preserve">
-    <value>§cWeather change: It is raining now.§r</value>
+    <value>§cLaikapstākļu maiņa: Šobrīd līst lietus.§r</value>
   </data>
   <data name="bot.alerts.start_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is a thunderstorm.§r</value>
+    <value>§cLaikapstākļu maiņa: Tagad ir pērkona negaiss.§r</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
-    <value>Invalid walk range provided, must be a positive integer greater than 0, using default value of 5!</value>
+    <value>Norādītais nederīgs pārvietošanās diapazons. Tam ir jābūt pozitīvam veselam skaitlim, kas ir lielāks par 0, izmantojot noklusējuma vērtību 5!</value>
   </data>
   <data name="bot.antiafk.not_using_terrain_handling" xml:space="preserve">
-    <value>The terrain handling is not enabled in the settings of the client, enable it if you want to use it with this bot. Using alternative (command) method.</value>
+    <value>Apvidus apstrāde nav iespējota klienta iestatījumos, iespējojiet to, ja vēlaties to izmantot ar šo robotprogrammatūru. Izmantojot alternatīvo (komandu) metodi.</value>
   </data>
   <data name="bot.antiafk.swapping" xml:space="preserve">
-    <value>The time range begins with a bigger value, swapped them around.</value>
+    <value>Laika diapazons sākas ar lielāku vērtību, apmainīju tos.</value>
   </data>
   <data name="bot.autoAttack.invalidcooldown" xml:space="preserve">
-    <value>Attack cooldown value cannot be smaller than 0.</value>
+    <value>Uzbrukuma biežums nedrīkst būt mazāks par 0.</value>
   </data>
   <data name="bot.autoCraft.aborted" xml:space="preserve">
-    <value>Crafting aborted! Check your available materials.</value>
+    <value>Amatniecība pārtraukta! Pārbaudiet pieejamos materiālus.</value>
   </data>
   <data name="bot.autoCraft.alias" xml:space="preserve">
-    <value>Auto-crafting ChatBot command alias</value>
+    <value>Automātiskās amatniecības ChatBot komandas aizstājvards</value>
   </data>
   <data name="bot.autoCraft.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /autocraft help &lt;cmd name&gt; for more information. You may use /ac as command alias.</value>
+    <value>Pieejamās komandas: {0}. Izmantojiet /autocraft palīdzība &lt;/autocraft help&gt;, lai iegūtu vairāk informācijas. Kā komandas aizstājvārdu varat izmantot /ac.</value>
   </data>
   <data name="bot.autoCraft.close_inventory" xml:space="preserve">
-    <value>Inventory #{0} was closed by AutoCraft</value>
+    <value>AutoAmatniecība aiztaisīja inventāru #{0}</value>
   </data>
   <data name="bot.autoCraft.cmd" xml:space="preserve">
-    <value>Auto-crafting ChatBot command</value>
+    <value>AutoAmatniecībās ChatBot komanda</value>
   </data>
   <data name="bot.autoCraft.cmd.list" xml:space="preserve">
-    <value>Total {0} recipes loaded: {1}</value>
+    <value>Kopā ielādētas {0} receptes: {1}</value>
   </data>
   <data name="bot.autoCraft.cmd.resetcfg" xml:space="preserve">
-    <value>Resetting your config to default</value>
+    <value>Notiek noklusējuma konfigurācijas atiestatīšana</value>
   </data>
   <data name="bot.autoCraft.craft_fail" xml:space="preserve">
-    <value>Crafting failed! Waiting for more materials</value>
+    <value>Izgatavošana neizdevās! Gaida vairāk materiālu</value>
   </data>
   <data name="bot.autoCraft.debug.no_config" xml:space="preserve">
-    <value>No config found. Writing a new one.</value>
+    <value>Netika atrasta konfigurācija. Tiek izveidota jauna.</value>
   </data>
   <data name="bot.autoCraft.error.config" xml:space="preserve">
-    <value>Error while parsing config: {0}</value>
+    <value>Kļūda, analizējot konfigurāciju: {0}</value>
   </data>
   <data name="bot.autoCraft.exception.duplicate" xml:space="preserve">
-    <value>Duplicate recipe name specified: {0}</value>
+    <value>Norādīts dublikāta receptes nosaukums: {0}</value>
   </data>
   <data name="bot.autoCraft.exception.name_miss" xml:space="preserve">
-    <value>Missing recipe name while parsing a recipe</value>
+    <value>Parsējot recepti, trūkst receptes nosaukuma</value>
   </data>
   <data name="bot.autoCraft.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /autocraft help &lt;command name&gt;</value>
+    <value>Iegūstiet komandas aprakstu. Lietojums: /autocraft palīdzība &lt;komandas nosaukums&gt;</value>
   </data>
   <data name="bot.autoCraft.help.list" xml:space="preserve">
-    <value>List available recipes.</value>
+    <value>Norādiet pieejamās receptes.</value>
   </data>
   <data name="bot.autoCraft.help.load" xml:space="preserve">
-    <value>Load the config file.</value>
+    <value>Ielādējiet konfigurācijas failu.</value>
   </data>
   <data name="bot.autoCraft.help.reload" xml:space="preserve">
-    <value>Reload the config file.</value>
+    <value>Pārlādējiet konfigurācijas failu.</value>
   </data>
   <data name="bot.autoCraft.help.resetcfg" xml:space="preserve">
-    <value>Write the default example config to default location.</value>
+    <value>Ierakstiet noklusējuma konfigurācijas piemēru noklusējuma vietā.</value>
   </data>
   <data name="bot.autoCraft.help.start" xml:space="preserve">
-    <value>Start the crafting. Usage: /autocraft start &lt;recipe name&gt;</value>
+    <value>Sāciet amatniecību. Lietojums: /autocraft start &lt;receptes nosaukums&gt;</value>
   </data>
   <data name="bot.autoCraft.help.stop" xml:space="preserve">
-    <value>Stop the current running crafting process</value>
+    <value>Apturiet pašreizējo darbināšanas procesu</value>
   </data>
   <data name="bot.autocraft.invaild_result" xml:space="preserve">
-    <value>Invalid result item!</value>
+    <value>Nederīgs rezultāta lieta!</value>
   </data>
   <data name="bot.autocraft.invaild_slots" xml:space="preserve">
-    <value>The number of slots does not match and has been adjusted automatically.</value>
+    <value>Brīvo vietu skaits neatbilst un ir pielāgots automātiski.</value>
   </data>
   <data name="bot.autoCraft.loaded" xml:space="preserve">
-    <value>Successfully loaded</value>
+    <value>Veiksmīgi ielādēts</value>
   </data>
   <data name="bot.autoCraft.missing_material" xml:space="preserve">
-    <value>Missing material: {0}</value>
+    <value>Trūkst materiāla: {0}</value>
   </data>
   <data name="bot.autoCraft.no_recipe_name" xml:space="preserve">
-    <value>Please specify the recipe name you want to craft.</value>
+    <value>Lūdzu, norādiet receptes nosaukumu, kuru vēlaties izmantot.</value>
   </data>
   <data name="bot.autoCraft.recipe_not_exist" xml:space="preserve">
-    <value>Specified recipe name does not exist. Check your config file.</value>
+    <value>Norādītais receptes nosaukums nepastāv. Pārbaudiet savu konfigurācijas failu.</value>
   </data>
   <data name="bot.autoCraft.start" xml:space="preserve">
-    <value>Starting AutoCraft: {0}</value>
+    <value>AutoAmatniecība tiek palaista: {0}</value>
   </data>
   <data name="bot.autoCraft.start_fail" xml:space="preserve">
-    <value>AutoCraft cannot be started. Check your available materials for crafting {0}</value>
+    <value>AutoAmatniecību nevar palaist. Pārbaudiet pieejamos materiālus, lai uztaisītu {0}</value>
   </data>
   <data name="bot.autoCraft.stop" xml:space="preserve">
-    <value>AutoCraft stopped</value>
+    <value>AutoAmatniecība apstājās</value>
   </data>
   <data name="bot.autoCraft.table_not_found" xml:space="preserve">
-    <value>table not found</value>
+    <value>darbošanās galds nav atrasts</value>
   </data>
   <data name="bot.autoCraft.timeout" xml:space="preserve">
-    <value>Action timeout! Reason: {0}</value>
+    <value>Darbības noildze! Iemesls: {0}</value>
   </data>
   <data name="bot.autodig.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /digbot help &lt;cmd name&gt; for more information.</value>
+    <value>Pieejamās komandas: {0}. Izmantojiet /digbot palīdzību &lt;komandas nosaukums&gt; lai iegūtu vairāk informācijas.</value>
   </data>
   <data name="bot.autodig.cmd" xml:space="preserve">
-    <value>Auto-digging ChatBot command</value>
+    <value>AutoRakšanas ChatBot komanda</value>
   </data>
   <data name="bot.autodig.dig_timeout" xml:space="preserve">
-    <value>Digging block timeout, retry.</value>
+    <value>Rakšanas bloka taimauts, mēģiniet vēlreiz.</value>
   </data>
   <data name="bot.autodig.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /digbot help &lt;command name&gt;</value>
+    <value>Iegūstiet komandas aprakstu. Lietojums: /digbot palīdzība &lt;komandas nosaukums&gt;</value>
   </data>
   <data name="bot.autodig.help.start" xml:space="preserve">
-    <value>Start the automatic digging bot.</value>
+    <value>Ieslēdziet automātisko rakšanas robotu.</value>
   </data>
   <data name="bot.autodig.help.stop" xml:space="preserve">
-    <value>Deactivate the automatic digging bot.</value>
+    <value>Izslēdziet automātisko rakšanas robotu.</value>
   </data>
   <data name="bot.autodig.not_allow" xml:space="preserve">
-    <value>The block currently pointed to is not in the allowed list.</value>
+    <value>Bloks, uz kuru pašlaik ir norādīts, nav atļauto sarakstā.</value>
   </data>
   <data name="bot.autodig.start" xml:space="preserve">
-    <value>Automatic digging has started.</value>
+    <value>Ir sākusies automātiskā rakšana.</value>
   </data>
   <data name="bot.autodig.start_delay" xml:space="preserve">
-    <value>Digging will start in {0:0.0} second(s).</value>
+    <value>Rakšana sāksies pēc {0:0.0} sekundes(-ēm).</value>
   </data>
   <data name="bot.autodig.stop" xml:space="preserve">
-    <value>Auto-digging has been stopped.</value>
+    <value>Automātiskā rakšana ir apturēta.</value>
   </data>
   <data name="bot.autoDrop.added" xml:space="preserve">
-    <value>Added item {0}</value>
+    <value>Pievienots vienums {0}</value>
   </data>
   <data name="bot.autoDrop.alias" xml:space="preserve">
-    <value>AutoDrop ChatBot command alias</value>
+    <value>AutoIzmešanas ChatBot komandas aizstājvārds</value>
   </data>
   <data name="bot.autoDrop.cmd" xml:space="preserve">
-    <value>AutoDrop ChatBot command</value>
+    <value>AutoIzmešanas ChatBot komanda</value>
   </data>
   <data name="bot.autoDrop.incorrect_name" xml:space="preserve">
-    <value>Incorrect item name {0}. Please try again.</value>
+    <value>Nepareizs vienuma nosaukums {0}. Lūdzu mēģiniet vēlreiz.</value>
   </data>
   <data name="bot.autoDrop.list" xml:space="preserve">
-    <value>Total {0} in the list:
+    <value>Kopā {0} sarakstā:
  {1}</value>
   </data>
   <data name="bot.autoDrop.no_inventory" xml:space="preserve">
-    <value>Cannot find inventory {0}!</value>
+    <value>Nevar atrast inventāru {0}!</value>
   </data>
   <data name="bot.autoDrop.no_item" xml:space="preserve">
-    <value>No item in the list</value>
+    <value>Sarakstā nav neviena vienuma</value>
   </data>
   <data name="bot.autoDrop.no_mode" xml:space="preserve">
-    <value>Cannot read drop mode from config. Using include mode.</value>
+    <value>Nevar nolasīt nomešanas režīmu no konfigurācijas. Iekļaušanas režīma izmantošana.</value>
   </data>
   <data name="bot.autoDrop.not_in_list" xml:space="preserve">
-    <value>Item not in the list</value>
+    <value>Vienums nav sarakstā</value>
   </data>
   <data name="bot.autoDrop.off" xml:space="preserve">
-    <value>AutoDrop disabled</value>
+    <value>AutoIzmešana atspējota</value>
   </data>
   <data name="bot.autoDrop.on" xml:space="preserve">
-    <value>AutoDrop enabled</value>
+    <value>AutoIzmešana iespējota</value>
   </data>
   <data name="bot.autoDrop.removed" xml:space="preserve">
-    <value>Removed item {0}</value>
+    <value>Noņemts vienums {0}</value>
   </data>
   <data name="bot.autoDrop.switched" xml:space="preserve">
-    <value>Switched to {0} mode.</value>
+    <value>Pārslēgts uz režīmu {0}.</value>
   </data>
   <data name="bot.autoDrop.unknown_mode" xml:space="preserve">
-    <value>Unknwon mode. Available modes: Include, Exclude, Everything</value>
+    <value>Nezināms režīms. Pieejamie režīmi: Include, Exclude, Everything</value>
   </data>
   <data name="bot.autoFish.available_cmd" xml:space="preserve">
-    <value>Available commands: {0}. Use /fish help &lt;cmd name&gt; for more information.</value>
+    <value>Pieejamās komandas: {0}. Izmantojiet /fish help &lt;komandas nosaukums&gt; lai iegūtu vairāk informācijas.</value>
   </data>
   <data name="bot.autoFish.cast_timeout" xml:space="preserve">
-    <value>Casting timeout and will soon retry. (Timeout increased to {0:0.0} sec).</value>
+    <value>Apraides noildze, un drīzumā tiks mēģināts vēlreiz. (Taimauts palielināts līdz {0:0.0} s).</value>
   </data>
   <data name="bot.autoFish.caught" xml:space="preserve">
-    <value>Retract the fishing rod. (Count: {0})</value>
+    <value>Ievelciet makšķeri. (Skaits: {0})</value>
   </data>
   <data name="bot.autoFish.caught_at" xml:space="preserve">
-    <value>Retract the fishing rod at ({0:0.0},{1:0.0},{2:0.0})! (Count: {3})</value>
+    <value>Ievelciet makšķeri uz ({0:0.0},{1:0.0},{2:0.0})! (Skaits: {3})</value>
   </data>
   <data name="bot.autoFish.cmd" xml:space="preserve">
-    <value>Auto-Fishing ChatBot command</value>
+    <value>AutoZvejošanas ChatBot komanda</value>
   </data>
   <data name="bot.autoFish.despawn" xml:space="preserve">
-    <value>Fish floating despawn, will re-cast.</value>
+    <value>Noķertā zivs pazuda, tiks pārmests.</value>
   </data>
   <data name="bot.autoFish.fishing_timeout" xml:space="preserve">
-    <value>Fishing timeout, will soon re-cast.</value>
+    <value>Makšķerēšanas taimauts, drīz tiks atkārtots.</value>
   </data>
   <data name="bot.autoFish.got" xml:space="preserve">
-    <value>Fishing got {0}</value>
+    <value>Makšķerēšana ieguva {0}</value>
   </data>
   <data name="bot.autoFish.help.help" xml:space="preserve">
-    <value>Get the command description. Usage: /fish help &lt;command name&gt;</value>
+    <value>Iegūstiet komandas aprakstu. Lietojums: /fish help &lt;komandas nosaukums&gt;</value>
   </data>
   <data name="bot.autoFish.help.start" xml:space="preserve">
-    <value>Start auto-fishing.</value>
+    <value>Sāciet automātisko makšķerēšanu.</value>
   </data>
   <data name="bot.autoFish.help.status" xml:space="preserve">
-    <value>List all obtained items. Or use "/fish status clear" to clear the list.</value>
+    <value>Uzskaitiet visus iegūtos vienumus. Vai arī izmantojiet "/fish status clear", lai notīrītu sarakstu.</value>
   </data>
   <data name="bot.autoFish.help.stop" xml:space="preserve">
-    <value>Stop auto-fishing.</value>
+    <value>Apstādiniet AutoMaksķerēšanu.</value>
   </data>
   <data name="bot.autoFish.no_inv_handle" xml:space="preserve">
-    <value>Inventory handling is not enabled. Cannot check rod durability and switch rods.</value>
+    <value>Inventāra apstrāde nav iespējota. Nevar pārbaudīt makšķeres izturību un pārslēgt makšķeres.</value>
   </data>
   <data name="bot.autoFish.no_rod" xml:space="preserve">
-    <value>Current fishing rod is not available. Maybe broken or low durability?</value>
+    <value>Pašreizējā makšķere nav pieejama. Varbūt salūzis vai zema izturība?</value>
   </data>
   <data name="bot.autoFish.start" xml:space="preserve">
-    <value>Start auto-fishing.</value>
+    <value>Sāciet automātisko makšķerēšanu.</value>
   </data>
   <data name="bot.autoFish.start_at" xml:space="preserve">
-    <value>Fishing will start in {0:0.0} second(s).</value>
+    <value>Makšķerēšana sāksies pēc {0:0.0} sekundes(-ēm).</value>
   </data>
   <data name="bot.autoFish.status_clear" xml:space="preserve">
-    <value>The record of the obtained items has been cleared.</value>
+    <value>Iegūto priekšmetu uzskaite ir notīrīta.</value>
   </data>
   <data name="bot.autoFish.status_info" xml:space="preserve">
-    <value>All items obtained from fishing (not entirely accurate):</value>
+    <value>Visas preces, kas iegūtas no makšķerēšanas (nav pilnīgi precīzi):</value>
   </data>
   <data name="bot.autoFish.stop" xml:space="preserve">
-    <value>Stop auto-fishing.</value>
+    <value>Apstādiniet AutoMakšķerēšanu.</value>
   </data>
   <data name="bot.autoFish.switch" xml:space="preserve">
-    <value>Switch to the rod in slot {0}, durability {1}/64.</value>
+    <value>Pārslēdzieties uz makšķeri slotā {0}, izturība {1}/64.</value>
   </data>
   <data name="bot.autoFish.throw" xml:space="preserve">
-    <value>Casting successfully.</value>
+    <value>Metiens veiksmīgs.</value>
   </data>
   <data name="bot.autoFish.update_lookat" xml:space="preserve">
-    <value>Update yaw = {0:0.00}, pitch = {1:0.00}.</value>
+    <value>Atjaunināts slīpums = {0:0.00}, augstums = {1:0.00}.</value>
   </data>
   <data name="bot.autoRelog.curr_dir" xml:space="preserve">
-    <value>Current directory was: {0}</value>
+    <value>Pašreizējais direktorijs bija: {0}</value>
   </data>
   <data name="bot.autoRelog.disconnect_msg" xml:space="preserve">
-    <value>Got disconnected with message: {0}</value>
+    <value>Atslēdzās ar ziņojumu: {0}</value>
   </data>
   <data name="bot.autoRelog.ignore_user_logout" xml:space="preserve">
-    <value>Disconnection initiated by User or MCC bot. Ignoring.</value>
+    <value>Atvienošanos ierosinājis lietotājs vai MCC bots. Ignorē.</value>
   </data>
   <data name="bot.autoRelog.launch" xml:space="preserve">
-    <value>Launching with {0} reconnection attempts</value>
+    <value>Tiek palaists ar {0} atkārtota savienojuma mēģinājumiem</value>
   </data>
   <data name="bot.autoRelog.loaded" xml:space="preserve">
     <value>Loaded message: {0}</value>
@@ -458,7 +458,7 @@ cooldown: {6}</value>
     <value>Direction of the Discord Brdige has been switched to '{0}'!</value>
   </data>
   <data name="bot.DiscordBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>Abi</value>
   </data>
   <data name="bot.DiscordBridge.direction.discord" xml:space="preserve">
     <value>Discord</value>
@@ -467,120 +467,120 @@ cooldown: {6}</value>
     <value>Minecraft</value>
   </data>
   <data name="bot.DiscordBridge.guild_not_found" xml:space="preserve">
-    <value>The provided guild/server with an id '{0}' has not been found!</value>
+    <value>Norādītā ģilde/serveris ar id '{0}' nav atrasts!</value>
   </data>
   <data name="bot.DiscordBridge.invalid_direction" xml:space="preserve">
-    <value>Invalid direction provided! Available directions: both|b, minecraft|mc, discord|dsc. Example: "dscbridge direction mc"</value>
+    <value>Norādīts nederīgs virziens! Pieejamās norādes: both|b, minecraft|mc, discord|dsc. Piemērs: "dscbridge direction mc"</value>
   </data>
   <data name="bot.DiscordBridge.missing_token" xml:space="preserve">
-    <value>Please provide a valid token!</value>
+    <value>Lūdzu, norādiet derīgu žetonu!</value>
   </data>
   <data name="bot.DiscordBridge.unknown_error" xml:space="preserve">
-    <value>An unknown error has occured!</value>
+    <value>Radās nezināma kļūda!</value>
   </data>
   <data name="bot.farmer.already_running" xml:space="preserve">
-    <value>The bot is already farming!</value>
+    <value>Bots jau saimnieko!</value>
   </data>
   <data name="bot.farmer.already_stopped" xml:space="preserve">
-    <value>The bot has already stopped farming!</value>
+    <value>Bots jau ir pārtraucis lauksaimniecību!</value>
   </data>
   <data name="bot.farmer.crop_type" xml:space="preserve">
-    <value>Crop type</value>
+    <value>Kultūrauga veids</value>
   </data>
   <data name="bot.farmer.desc" xml:space="preserve">
-    <value>Farming bot</value>
+    <value>Lauksaimniecības bots</value>
   </data>
   <data name="bot.farmer.invalid_crop_type" xml:space="preserve">
-    <value>Invalid crop type provided (Types which you can use: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat)!</value>
+    <value>Norādīts nederīgs ražas veids (veidi, kurus varat izmantot: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat)!</value>
   </data>
   <data name="bot.farmer.invalid_radius" xml:space="preserve">
-    <value>Invalid radius provided, you must provide a valid integer number greater than 0!</value>
+    <value>Norādīts nederīgs rādiuss, jums ir jānorāda derīgs vesels skaitlis, kas ir lielāks par 0!</value>
   </data>
   <data name="bot.farmer.needs_inventory" xml:space="preserve">
-    <value>The Farmer bot needs Inventory Handling in order to work, please enable it!</value>
+    <value>Lai lauksaimniecības bots darbotos, ir nepieciešama inventāra apstrāde. Lūdzu, iespējojiet to!</value>
   </data>
   <data name="bot.farmer.needs_terrain" xml:space="preserve">
-    <value>The Farmer bot needs Terrain Handling in order to work, please enable it!</value>
+    <value>Lai lauksaimniecības bots strādātu, ir nepieciešama reljefa apstrāde. Lūdzu, iespējojiet to!</value>
   </data>
   <data name="bot.farmer.not_implemented" xml:space="preserve">
-    <value>Not implemented bellow 1.13!</value>
+    <value>Nav iespējots zemāk par 1.13!</value>
   </data>
   <data name="bot.farmer.radius" xml:space="preserve">
-    <value>Radius</value>
+    <value>Radiuss</value>
   </data>
   <data name="bot.farmer.started" xml:space="preserve">
-    <value>Started farming!</value>
+    <value>Sācis saimniekot!</value>
   </data>
   <data name="bot.farmer.stopped" xml:space="preserve">
-    <value>Stopped farming!</value>
+    <value>Beidza saimniekot!</value>
   </data>
   <data name="bot.farmer.stopping" xml:space="preserve">
-    <value>Stoping farming, this might take a second...</value>
+    <value>Pārtrauc lauksaimniecību, tas var aizņemt kādu sekundi...</value>
   </data>
   <data name="bot.farmer.warining_allow_teleport" xml:space="preserve">
-    <value>You have enabled teleporting, this might get your bot account kicked and in the worst case scenario banned! Use with caution!</value>
+    <value>Jūs esat iespējojis teleportēšanos, tādēļ jūsu robota profils var tikt izmests un sliktākajā gadījumā tikt izbanots! Lietojiet piesardzīgi!</value>
   </data>
   <data name="bot.farmer.warining_force_unsafe" xml:space="preserve">
-    <value>You have enabled un-safe movement, the bot might get hurt!</value>
+    <value>Jūs esat iespējojis nedrošu kustību, bots var tikt ievainots!</value>
   </data>
   <data name="bot.farmer.warining_invalid_parameter" xml:space="preserve">
-    <value>Invalid parameter "{0}" provided (Use format: "key:value")!</value>
+    <value>Norādīts nederīgs parametrs "{0}" (izmantojiet formātu: "key:value")!</value>
   </data>
   <data name="bot.mailer.cmd" xml:space="preserve">
-    <value>mailer command</value>
+    <value>pasta komanda</value>
   </data>
   <data name="bot.mailer.cmd.getignored" xml:space="preserve">
-    <value>--- Ignore list ---
+    <value>--- Ignorēto saraksts ---
 {0}</value>
   </data>
   <data name="bot.mailer.cmd.getmails" xml:space="preserve">
-    <value>--- Mails in database ---
+    <value>--- Pasta sūtījumi datubāzē ---
 {0}</value>
   </data>
   <data name="bot.mailer.cmd.help" xml:space="preserve">
-    <value>See usage</value>
+    <value>Skatiet lietojumu</value>
   </data>
   <data name="bot.mailer.cmd.ignore.added" xml:space="preserve">
-    <value>Added {0} to the ignore list!</value>
+    <value>Pievienots {0} ignorēšanas sarakstam!</value>
   </data>
   <data name="bot.mailer.cmd.ignore.invalid" xml:space="preserve">
-    <value>Missing or invalid name. Usage: {0} &lt;username&gt;</value>
+    <value>Neesošs vai nederīgs nosaukums. Lietojums: {0} &lt;lietotājvārds&gt;</value>
   </data>
   <data name="bot.mailer.cmd.ignore.removed" xml:space="preserve">
-    <value>Removed {0} from the ignore list!</value>
+    <value>{0} noņemts no ignorēto cilvēku saraksta!</value>
   </data>
   <data name="bot.mailer.create.db" xml:space="preserve">
-    <value>Creating new database file: {0}</value>
+    <value>Jauna datu bāzes faila izveide: {0}</value>
   </data>
   <data name="bot.mailer.create.ignore" xml:space="preserve">
-    <value>Creating new ignore list: {0}</value>
+    <value>Jauna ignorēšanas saraksta izveide: {0}</value>
   </data>
   <data name="bot.mailer.delivered" xml:space="preserve">
-    <value>Delivered: {0}</value>
+    <value>Piegādāts: {0}</value>
   </data>
   <data name="bot.mailer.init" xml:space="preserve">
-    <value>Initializing Mailer with settings:</value>
+    <value>Pasūtītāja inicializācija ar iestatījumiem:</value>
   </data>
   <data name="bot.mailer.init.db" xml:space="preserve">
-    <value> - Database File: {0}</value>
+    <value> - Datu bāzes fails: {0}</value>
   </data>
   <data name="bot.mailer.init.db_size" xml:space="preserve">
-    <value> - Max Database Size: {0}</value>
+    <value> - Maksimālais datu bāzes lielums: {0}</value>
   </data>
   <data name="bot.mailer.init.ignore" xml:space="preserve">
-    <value> - Ignore List: {0}</value>
+    <value> - Ignorēto saraksts: {0}</value>
   </data>
   <data name="bot.mailer.init.mail_retention" xml:space="preserve">
-    <value> - Mail Retention: {0}</value>
+    <value> - Pasta saglabāšana: {0}</value>
   </data>
   <data name="bot.mailer.init.max_mails" xml:space="preserve">
-    <value> - Max Mails per Player: {0}</value>
+    <value> - Maksimālais vēstuļu skaits vienam spēlētājam: {0}</value>
   </data>
   <data name="bot.mailer.init.public" xml:space="preserve">
-    <value> - Public Interactions: {0}</value>
+    <value> - Publiskā mijiedarbība: {0}</value>
   </data>
   <data name="bot.mailer.init_fail.db_size" xml:space="preserve">
-    <value>Cannot enable Mailer: Max Database Size must be greater than zero. Please review the settings.</value>
+    <value>Nevar iespējot pasta ziņojumus: maksimālajam datu bāzes izmēram ir jābūt lielākam par nulli. Lūdzu, pārskatiet iestatījumus.</value>
   </data>
   <data name="bot.mailer.init_fail.mail_retention" xml:space="preserve">
     <value>Cannot enable Mailer: Mail Retention must be greater than zero. Please review the settings.</value>
@@ -712,7 +712,7 @@ cooldown: {6}</value>
     <value>Direction of the Telegram Brdige has been switched to '{0}'!</value>
   </data>
   <data name="bot.TelegramBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>Abi</value>
   </data>
   <data name="bot.TelegramBridge.direction.minecraft" xml:space="preserve">
     <value>Minecraft</value>
@@ -741,7 +741,7 @@ cooldown: {6}</value>
 Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file to gain access!**</value>
   </data>
   <data name="bot.TelegramBridge.unknown_error" xml:space="preserve">
-    <value>An unknown error has occured!</value>
+    <value>Radās nezināma kļūda!</value>
   </data>
   <data name="bot.testBot.said" xml:space="preserve">
     <value>Bot: {0} said : {1}</value>

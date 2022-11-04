@@ -14,7 +14,7 @@
 
 ## List of built-in Chat Bots
 
--   [Alerts](#alerts)
+-   [提醒](#alerts)
 -   [Anti AFK](#anti-afk)
 -   [Auto Attack](#auto-attack)
 -   [Auto Craft](#auto-craft)
@@ -27,14 +27,14 @@
 -   [Chat Log](#chat-log)
 -   [Follow Player](#follow-player)
 -   [Hangman](#hangman)
--   [Mailer](#mailer)
--   [Map](#map)
+-   [邮差](#mailer)
+-   [地图](#map)
 -   [PlayerList Logger](#playerlist-logger)
 -   [Remote Control](#remote-control)
 -   [Replay Mod](#replay-mod)
 -   [Script Scheduler](#script-scheduler)
 
-## Alerts
+## 提醒
 
 -   **Description:**
 
@@ -58,6 +58,7 @@
 
     -   **Default:** `false`
 
+
     #### `Beep_Enabled`
 
     -   **Description:**
@@ -70,41 +71,45 @@
 
     -   **Default:** `true`
 
+
     #### `Trigger_By_Words`
 
     -   **Description:**
 
-        Triggers an alert after receiving a specified keyword.
+        在收到指定的关键词后触发提醒。
 
     -   **Available values:** `true` and `false`.
 
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     #### `Trigger_By_Rain`
 
     -   **Description:**
 
-        Trigger alerts when it rains and when it stops.
-
+        在开始下雨和停止下雨时触发提醒。
+        
     -   **Available values:** `true` and `false`.
 
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     #### `Trigger_By_Thunderstorm`
 
     -   **Description:**
 
-        Triggers alerts at the beginning and end of thunderstorms.
+        在雷暴天气的开始与结束触发提醒。
 
     -   **Available values:** `true` and `false`.
 
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     #### `Log_To_File`
 
@@ -118,6 +123,7 @@
 
     -   **Default:** `false`
 
+
     #### `Log_File`
 
     -   **Description:**
@@ -128,11 +134,12 @@
 
     -   **Default:** `"alerts-log.txt"`
 
+
     #### `Matches`
 
     -   **Description:**
 
-        List of words/strings to alert you on.
+        触发提醒的聊天关键词列表。
 
     -   **Type:** `array of strings`
 
@@ -142,11 +149,12 @@
         Matches = [ "Yourname", " whispers ", "-> me", "admin", ".com", ]
         ```
 
+
     #### `Excludes`
 
     -   **Description:**
 
-        List of words/strings to NOT alert you on.
+        出现这些关键词后该条消息一定不触发提醒。
 
     -   **Type:** `array of strings`
 
@@ -178,20 +186,21 @@
 
     -   **Default:** `false`
 
+
     #### `Delay`
 
     -   **Description:**
 
         The time interval for execution in seconds.
 
-        If the `min` and `max` are the same, the time interval will be consistent.
-        However if they are not the same, the plugin will choose a random number between `min` and `max`, this is useful if you want to have a random interval to trick anti afk plugins.
+        If the `min` and `max` are the same, the time interval will be consistent. If the `min` and `max` are the same, the time interval will be consistent. However if they are not the same, the plugin will choose a random number between `min` and `max`, this is useful if you want to have a random interval to trick anti afk plugins.
 
     -   **Format:** `{ min = <seconds>, max = <seconds> }`
 
     -   **Type:** `inline table with min and max fields which have type of double`
 
     -   **Default:** `{ min = 60.0, max = 60.0 }`
+
 
     #### `Command`
 
@@ -203,6 +212,7 @@
 
     -   **Default:** `/ping`
 
+
     #### `Use_Sneak`
 
     -   **Description:**
@@ -213,6 +223,7 @@
 
     -   **Default:** `false`
 
+
     #### `Use_Terrain_Handling`
 
     -   **Description:**
@@ -221,13 +232,14 @@
 
         This will enable your bot to randomly move about, thus a better anti afk effect.
 
-        > **ℹ️ NOTE: You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5)**
+        > **ℹ️ NOTE: You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5) (Recommended size 5x5x5)**
 
     -   **Available values:** `true` and `false`.
 
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     #### `Walk_Range`
 
@@ -238,6 +250,7 @@
         The bigger the slower the bot might be at calculating the path, recommended 2-5.
 
     -   **Default:** `5`
+
 
     #### `Walk_Retries`
 
@@ -273,6 +286,7 @@
 
     -   **Default:** `false`
 
+
     #### `Mode`
 
     -   **Description:**
@@ -291,6 +305,7 @@
 
     -   **Default:** `single`
 
+
     #### `Priority`
 
     -   **Description:**
@@ -303,6 +318,7 @@
     -   **Type:** `string`
 
     -   **Default:** `distance`
+
 
     #### `Cooldown_Time`
 
@@ -321,6 +337,7 @@
     -   **Example:** `Cooldown_Time = { Custom = true, value = 1.5 }`
 
     -   **Default:** `{ Custom = false, value = 1.0 }`
+
 
     #### `Interaction`
 
@@ -344,6 +361,7 @@
 
     -   **Default:** `Attack`
 
+
     #### `Attack_Hostile`
 
     -   **Description:**
@@ -355,6 +373,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
 
     #### `Attack_Passive`
 
@@ -368,6 +387,7 @@
 
     -   **Default:** `false`
 
+
     #### `List_Mode`
 
     -   **Description:**
@@ -379,6 +399,7 @@
     -   **Type:** `string`
 
     -   **Default:** `whitelist`
+
 
     #### `Entites_List`
 
@@ -426,6 +447,7 @@
 
     **Section:** **`ChatBot.AutoCraft`**
 
+
     #### `Enabled`
 
     -   **Description:**
@@ -437,6 +459,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     #### `CraftingTable`
 
@@ -460,6 +483,7 @@
         CraftingTable = { X = 123.0, Y = 65.0, Z = 456.0 }
         ```
 
+
     #### `OnFailure`
 
     -   **Description:**
@@ -474,6 +498,7 @@
 
     -   **Default:** `abort`
 
+
     ### Defining a recipe
 
     The recipes are defines as a separate new sub-section `[[ChatBot.AutoCraft.Recipes]]` of the `[ChatBot.AutoCraft]` section.
@@ -486,7 +511,7 @@
 
         **Type**: `string`
 
-    -   `Type`
+    -   `类型`
 
         **Avaliable values:** `player` and `table`
 
@@ -502,8 +527,7 @@
 
     -   `Slots`
 
-        This setting is an array/list of material names (strings) that go into an each slot (max 9 elements).
-        Empty slots should be marked with `"Null"`
+        This setting is an array/list of material names (strings) that go into an each slot (max 9 elements). Empty slots should be marked with `"Null"` Empty slots should be marked with `"Null"`
 
         **Type:** `array of strings`
 
@@ -513,7 +537,7 @@
         Slots = [ "<material/item type>", "<material/item type>", ... ]
         ```
 
-        > **ℹ️ NOTE: If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
+        > **ℹ️ NOTE: If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]` Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
 
         > **ℹ️ NOTE: All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
 
@@ -581,6 +605,7 @@
 
     **Section:** **`ChatBot.AutoDig`**
 
+
     #### `Enabled`
 
     -   **Description:**
@@ -592,6 +617,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     #### `Mode`
 
@@ -616,6 +642,7 @@
     -   **Type:** `string`
 
     -   **Default:** `lookat`
+
 
     #### `Locations`
 
@@ -642,6 +669,7 @@
         ]
         ```
 
+
     #### `Location_Order`
 
     -   **Description:**
@@ -662,6 +690,7 @@
 
     -   **Default:** `distance`
 
+
     #### `Auto_Start_Delay`
 
     -   **Description:**
@@ -674,6 +703,7 @@
 
     -   **Default:** `3.0`
 
+
     #### `Dig_Timeout`
 
     -   **Description:**
@@ -683,6 +713,7 @@
     -   **Type:** `float`
 
     -   **Default:** `60.0`
+
 
     #### `Log_Block_Dig`
 
@@ -696,6 +727,7 @@
 
     -   **Default:** `true`
 
+
     #### `List_Type`
 
     -   **Description:**
@@ -707,6 +739,7 @@
     -   **Type:** `string`
 
     -   **Default:** `whitelist`
+
 
     #### `Blocks`
 
@@ -748,6 +781,7 @@
 
     -   **Default:** `false`
 
+
     #### `Mode`
 
     -   **Description:**
@@ -773,6 +807,7 @@
     -   **Type:** `string`
 
     -   **Default:** `include`
+
 
     #### `Items`
 
@@ -814,6 +849,7 @@
 
     -   **Default:** `false`
 
+
     #### `Threshold`
 
     -   **Description:**
@@ -849,6 +885,7 @@
 
     **Section:** **`ChatBot.AutoFishing`**
 
+
     #### `Enabled`
 
     -   **Description:**
@@ -861,6 +898,7 @@
 
     -   **Default:** `false`
 
+
     #### `Antidespawn`
 
     -   **Description:**
@@ -872,6 +910,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     #### `Mainhand`
 
@@ -888,6 +927,7 @@
 
     -   **Default:** `true`
 
+
     #### `Auto_Start`
 
     -   **Description:**
@@ -900,6 +940,7 @@
 
     -   **Default:** `true`
 
+
     #### `Cast_Delay`
 
     -   **Description:**
@@ -909,6 +950,7 @@
     -   **Type:** `float`
 
     -   **Default:** `0.4`
+
 
     #### `Fishing_Delay`
 
@@ -922,6 +964,7 @@
 
     -   **Default:** `3.0`
 
+
     #### `Fishing_Timeout`
 
     -   **Description:**
@@ -931,6 +974,7 @@
     -   **Type:** `float`
 
     -   **Default:** `300.0`
+
 
     #### `Durability_Limit`
 
@@ -944,17 +988,19 @@
 
     -   **Default:** `2`
 
+
     #### `Auto_Rod_Switch`
 
     -   **Description:**
 
-        Switch to a new rod from inventory after the current rod is unavailable.
+        在当前鱼竿不可用后自动切换到背包中的其他鱼竿。（需要启用库存处理）
 
     -   **Available values:** `true` and `false`.
 
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
 
     #### `Stationary_Threshold`
 
@@ -972,6 +1018,7 @@
 
     -   **Default:** `0.001`
 
+
     #### `Hook_Threshold`
 
     -   **Description:**
@@ -985,6 +1032,7 @@
     -   **Type:** `float`
 
     -   **Default:** `0.2`
+
 
     #### `Log_Fish_Bobber`
 
@@ -1000,6 +1048,7 @@
 
     -   **Default:** `false`
 
+
     #### `Enable_Move`
 
     -   **Description:**
@@ -1013,6 +1062,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     ### Adding a position/movement
 
@@ -1054,6 +1104,7 @@
         facing = { yaw = 12.34, pitch = -23.45 }
         ```
 
+
     #### Full example
 
     ```toml
@@ -1087,14 +1138,14 @@
 
     -   **Default:** `false`
 
+
     #### `Delay`
 
     -   **Description:**
 
         The delay time before joining the server.
 
-        If the `min` and `max` are the same, the time will be consistent, however, if you want a random time, you can set `min` and `max` to different values to get a random time.
-        The time format is in seconds, and the type is double. (eg. `37.0`)
+        If the `min` and `max` are the same, the time will be consistent, however, if you want a random time, you can set `min` and `max` to different values to get a random time. The time format is in seconds, and the type is double. (eg. `37.0`) The time format is in seconds, and the type is double. (eg. `37.0`)
 
     -   **Format:** `{ min = <seconds (double)>, max = <seconds (double)> }`
 
@@ -1103,6 +1154,7 @@
     -   **Example:** `{ min = 8.0, max = 60.0 }`
 
     -   **Default:** `{ min = 3.0, max = 3.0 }`
+
 
     #### `Retries`
 
@@ -1116,6 +1168,7 @@
 
     -   **Default:** `-1`
 
+
     #### `Ignore_Kick_Message`
 
     -   **Description:**
@@ -1125,6 +1178,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     #### `Kick_Messages`
 
@@ -1164,6 +1218,7 @@
 
     -   **Default:** `false`
 
+
     #### `Matches_File`
 
     -   **Description:**
@@ -1179,6 +1234,7 @@
     -   **Type:** `string`
 
     -   **Default:** `matches.ini`
+
 
     #### `Match_Colors`
 
@@ -1216,6 +1272,7 @@
 
     -   **Default:** `false`
 
+
     #### `Add_DateTime`
 
     -   **Description:**
@@ -1226,6 +1283,7 @@
 
     -   **Default:** `true`
 
+
     #### `Log_File`
 
     -   **Description:**
@@ -1233,6 +1291,7 @@
         This setting specifies the name of the Chat Log file that will be created.
 
     -   **Default:** `chatlog-%username%-%serverip%.txt`
+
 
     #### `Filter`
 
@@ -1270,7 +1329,7 @@
 
     This bot enables you to make a bot follow a specific player.
 
-    > **ℹ️ NOTE: The bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you, it's similar to making animals follow you when you're holding food in your hand. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more.**
+    > **ℹ️ NOTE: The bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you, it's similar to making animals follow you when you're holding food in your hand. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more.**
 
     > **ℹ️ NOTE: You need to have [terrainandmovements](configuration.md#terrainandmovements) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
 
@@ -1290,6 +1349,7 @@
 
     -   **Default:** `false`
 
+
     #### `Update_Limit`
 
     -   **Description:**
@@ -1301,6 +1361,7 @@
     -   **Type:** `float`
 
     -   **Default:** `1.5`
+
 
     #### `Stop_At_Distance`
 
@@ -1348,6 +1409,7 @@
 
     -   **Default:** `true`
 
+
     #### `FileWords_EN`
 
     -   **Description:**
@@ -1358,6 +1420,7 @@
 
     -   **Default:** `hangman-en.txt`
     -   **Example**: [`words-en.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt)
+
 
     #### `FileWords_FR`
 
@@ -1370,7 +1433,7 @@
     -   **Default:** `hangman-fr.txt`
     -   **Example**: [`words-fr.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)
 
-## Mailer
+## 邮差
 
 -   **Description:**
 
@@ -1383,8 +1446,7 @@
     -   `/tell <Bot> mail [RECIPIENT] [MESSAGE]`: Save your message for future delivery
     -   `/tell <Bot> tellonym [RECIPIENT] [MESSAGE]`: Same, but the recipient will receive an anonymous mail
 
-    The bot will automatically deliver the mail when the recipient is online.
-    The bot also offers a /mailer command from the MCC command prompt:
+    The bot will automatically deliver the mail when the recipient is online. The bot will automatically deliver the mail when the recipient is online. The bot also offers a /mailer command from the MCC command prompt:
 
     -   `/mailer getmails`
 
@@ -1402,7 +1464,7 @@
 
         Show all ignored players.
 
-    > **⚠️WARNING: The bot identifies players by their name (Not by UUID!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!).**
+    > **⚠️WARNING: The bot identifies players by their name (Not by UUID!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!).**
 
     > **⚠️WARNING: Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `RemoteControl` only if you trust server admins.**
 
@@ -1418,6 +1480,7 @@
 
     **Section:** **`ChatBot.Mailer`**
 
+
     #### `Enabled`
 
     -   **Description:**
@@ -1430,6 +1493,7 @@
 
     -   **Default:** `false`
 
+
     #### `DatabaseFile`
 
     -   **Description:**
@@ -1440,16 +1504,17 @@
 
     -   **Default:** `MailerDatabase.ini`
 
+
     #### `IgnoreListFile`
 
     -   **Description:**
 
-        This setting specifies the path to the file where the Mailer Chat Bot will load people who are to be ignored by the Chat Bot.
-        If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line.
+        This setting specifies the path to the file where the Mailer Chat Bot will load people who are to be ignored by the Chat Bot. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line.
 
         This file will be auto created by the Mailer Chat Bot.
 
     -   **Default:** `MailerIgnoreList.ini`
+
 
     #### `PublicInteractions`
 
@@ -1463,6 +1528,7 @@
 
     -   **Default:** `false`
 
+
     #### `MaxMailsPerPlayer`
 
     -   **Description:**
@@ -1472,6 +1538,7 @@
     -   **Type:** `integer`
 
     -   **Default:** `10`
+
 
     #### `MaxDatabaseSize`
 
@@ -1483,6 +1550,7 @@
 
     -   **Default:** `10000` (10 MB)
 
+
     #### `MailRetentionDays`
 
     -   **Description:**
@@ -1493,7 +1561,7 @@
 
     -   **Default:** `30`
 
-## Map
+## 地图
 
 -   **Description:**
 
@@ -1531,6 +1599,7 @@
 
     -   **Default:** `false`
 
+
     #### `Should_Resize`
 
     -   **Description:**
@@ -1549,6 +1618,7 @@
 
     -   **Default:** `false`
 
+
     #### `Resize_To`
 
     -   **Description:**
@@ -1558,6 +1628,7 @@
     -   **Type:** `integer`
 
     -   **Default:** `256`
+
 
     #### `Auto_Render_On_Update`
 
@@ -1573,6 +1644,7 @@
 
     -   **Default:** `false`
 
+
     #### `Delete_All_On_Unload`
 
     -   **Description:**
@@ -1584,6 +1656,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
 
     #### `Notify_On_First_Update`
 
@@ -1600,7 +1673,7 @@
 ## PlayerList Logger
 -   **Description:**
 
-    Log the list of players periodically into a textual file.
+    定期记录当前的玩家列表到文件中。
 
 -   **Settings:**
 
@@ -1616,6 +1689,7 @@
 
     -   **Default:** `false`
 
+
     #### `File`
 
     -   **Description:**
@@ -1623,6 +1697,7 @@
         This setting specifies the name of the player list Log file that will be created.
 
     -   **Default:** `playerlog.txt`
+
 
     #### `Delay`
 
@@ -1660,6 +1735,7 @@
 
     -   **Default:** `false`
 
+
     #### `AutoTpaccept`
 
     -   **Description:**
@@ -1671,6 +1747,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
 
     #### `AutoTpaccept_Everyone`
 
@@ -1712,6 +1789,7 @@
 
     -   **Default:** `false`
 
+
     #### `Backup_Interval`
 
     -   **Description:**
@@ -1745,6 +1823,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
     ### Defining a task
 
@@ -1815,6 +1894,7 @@
             ```toml
             Trigger_On_Interval = { Enable = true, MinTime = 30.0, MaxTime = 160.0 }
             ```
+
 
     ### Full example
 
