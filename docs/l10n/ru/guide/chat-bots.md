@@ -569,15 +569,13 @@
 
     ```toml
     # Stone Bricks using the player inventory
-    [[ChatBot.AutoCraft.Recipes]]
-    Name = "Recipe-Name-1"
+    [[ChatBot.AutoCraft.Recipes]] Name = "Recipe-Name-1"
     Type = "player"
     Result = "StoneBricks"
     Slots = [ "Stone", "Stone", "Stone", "Stone", ]
 
     # Stone Bricks using a crafting table
-    [[ChatBot.AutoCraft.Recipes]]
-    Name = "Recipe-Name-2"
+    [[ChatBot.AutoCraft.Recipes]] Name = "Recipe-Name-2"
     Type = "table"
     Result = "StoneBricks"
     Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]
@@ -1108,11 +1106,9 @@
     #### Full example
 
     ```toml
-    [[ChatBot.AutoFishing.Movements]]
-    facing = { yaw = 12.34, pitch = -23.45 }
+    [[ChatBot.AutoFishing.Movements]] facing = { yaw = 12.34, pitch = -23.45 }
 
-    [[ChatBot.AutoFishing.Movements]]
-    XYZ = { x = 123.45, y = 64.0, z = -654.32 }
+    [[ChatBot.AutoFishing.Movements]] XYZ = { x = 123.45, y = 64.0, z = -654.32 }
     facing = { yaw = -25.14, pitch = 36.25 }
     ```
 
@@ -1835,8 +1831,7 @@
         **Subsection format:**
 
         ```toml
-        [[ChatBot.ScriptScheduler.TaskList]]
-        <setting> = <value>
+        [[ChatBot.ScriptScheduler.TaskList]] <setting> = <value>
         <setting> = <value>
         ```
 
@@ -1903,16 +1898,14 @@
     [ChatBot.ScriptScheduler]
     Enabled = true
 
-        [[ChatBot.ScriptScheduler.TaskList]]
-        Task_Name = "Task Name 1"
+        [[ChatBot.ScriptScheduler.TaskList]] Task_Name = "Task Name 1"
         Trigger_On_First_Login = false
         Trigger_On_Login = false
         Trigger_On_Times = { Enable = true, Times = [ 14:00:00, ] }
         Trigger_On_Interval = { Enable = true, MinTime = 3.6, MaxTime = 4.8 }
         Action = "send /hello"
 
-        [[ChatBot.ScriptScheduler.TaskList]]
-        Task_Name = "Task Name 2"
+        [[ChatBot.ScriptScheduler.TaskList]] Task_Name = "Task Name 2"
         Trigger_On_First_Login = false
         Trigger_On_Login = true
         Trigger_On_Times = { Enable = false, Times = [ ] }
