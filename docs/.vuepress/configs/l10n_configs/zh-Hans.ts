@@ -5,7 +5,7 @@ import { headConfig } from '../head.js'
 
 const Translation = require('../../translations/zh-Hans.json')
 
-export const mainConfig_zh_Hans  = {
+export const mainConfig_zh_Hans: SiteLocaleData  = {
     lang: 'zh-Hans',
     title: Translation.title,
     description: Translation.description,
@@ -13,7 +13,7 @@ export const mainConfig_zh_Hans  = {
 }
 
 export const defaultThemeConfig_zh_Hans: DefaultThemeLocaleData = {
-    selectLanguageName: Translation.theme.selectLanguageName,
+    selectLanguageName: "简体中文",
     selectLanguageText: Translation.theme.selectLanguageText,
     selectLanguageAriaLabel: Translation.theme.selectLanguageAriaLabel,
 

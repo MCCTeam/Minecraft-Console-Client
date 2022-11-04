@@ -1,5 +1,39 @@
 import os
 
+LangNameMap = {
+   "af": "Afrikaans",
+   "ar": "اللغة العربية",
+   "ca": "Català",
+   "cs": "	Čeština",
+   "da": "Dansk",
+   "de": "Deutsch",
+   "el": "Ελληνικά",
+   "en": "English",
+   "es": "Español",
+   "fi": "Suomi",
+   "fr": "Français",
+   "he": "עברית",
+   "hu": "Magyar",
+   "it": "Italiano",
+   "ja": "日本語",
+   "ko": "한국어",
+   "lv": "Latviešu",
+   "nl": "Nederlands",
+   "no": "Norsk",
+   "pl": "Polski",
+   "pt": "Português (Portugal)",
+   "pt-br": "Português (Brasil)",
+   "ro": "Română",
+   "ru": "Русский",
+   "sr-Cyrl": "Српски (Cyrillic)",
+   "sv": "Svenska",
+   "tr": "Türkçe",
+   "uk": "Українська",
+   "vi": "Tiếng Việt",
+   "zh-Hans": "简体中文",
+   "zh-Hant": "繁體中文",
+}
+
 print('Read  ../translations/*.json')
 LanguageCodeList = [ code.replace('.json', '') for code in os.listdir('../translations/') ]
 
@@ -10,6 +44,8 @@ with open('./l10n_configs/config_templete.ts', 'r', encoding='utf-8') as file:
 
 for LanguageCode in LanguageCodeList:
    content = templete
+
+   content = content.replace("$LanguageName$", LangNameMap[LanguageCode], -1)
 
    content = content.replace("$LanguageCode$", LanguageCode, -1)
 
