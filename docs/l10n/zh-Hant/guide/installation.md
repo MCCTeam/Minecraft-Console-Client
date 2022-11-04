@@ -18,7 +18,7 @@ If you're not the kind of person that likes textual tutorials, our community has
 
 In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download)
 
-> **⚠️ IMPORTANT: If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
+⚠️ IMPORTANT: If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.
 
 #### How to install .NET on your platform
 
@@ -87,7 +87,7 @@ Requirements:
 
     -   Linux:
 
-        > **ℹ️ NOTE: If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)**
+        > **ℹ️ NOTE: If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. ℹ️ NOTE: If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)**
 
     -   [Install Git on macOS](https://git-scm.com/download/mac)
 
@@ -155,14 +155,14 @@ docker build -t minecraft-console-client:latest .
 
 **Start the container using Docker:**
 
-> **⚠️ VERY IMPORTANT ⚠️: There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
+> **⚠️ VERY IMPORTANT ⚠️: There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
 
 ```bash
-# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
+# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. # You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
 docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
-Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P` and then after `CTRL + Q`. To reattach use the `docker attach` command.
+Now you could login and the Client is running. Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P` and then after `CTRL + Q`. To reattach use the `docker attach` command. To reattach use the `docker attach` command.
 
 **Start the container using docker-compose:**
 
@@ -175,7 +175,7 @@ If you don't want to map a volume, you have to comment out or delete the entire 
 #- './data:/opt/data'
 ```
 
-Make sure you are in the directory the `docker-compose.yml` is stored before you attempt to start. If you do so, you can start the container:
+Make sure you are in the directory the `docker-compose.yml` is stored before you attempt to start. If you do so, you can start the container: If you do so, you can start the container:
 
 ```bash
 docker-compose run MCC
@@ -194,7 +194,7 @@ docker-compose up
 docker-compose up -d #for deamonized running in the background
 ```
 
-Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`. As above, you can stop and remove the container using
+Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`. As above, you can stop and remove the container using If you want that functionality, please use the first method: `docker-compose run MCC`. As above, you can stop and remove the container using
 
 ```bash
 docker-compose down
@@ -202,9 +202,9 @@ docker-compose down
 
 ## Run on Android
 
-It is possible to run the Minecraft Console Client on Android through Termux and Ubuntu 22.04 in it, however it requires a manual setup with a lot of commands, be careful no to skip any steps. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed.
+It is possible to run the Minecraft Console Client on Android through Termux and Ubuntu 22.04 in it, however it requires a manual setup with a lot of commands, be careful no to skip any steps. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed.
 
-> **ℹ️ NOTE: This section is going to get a bit technical, I'll try my best to make everything as simple as possible. If you are having trouble following along or if you encounter any issues, feel free to open up a discussion on our Github repository page.**
+> **ℹ️ NOTE: This section is going to get a bit technical, I'll try my best to make everything as simple as possible. ℹ️ NOTE: This section is going to get a bit technical, I'll try my best to make everything as simple as possible. If you are having trouble following along or if you encounter any issues, feel free to open up a discussion on our Github repository page.**
 
 > **ℹ️ NOTE: You're required to have some bare basic knowledge of Linux, if you do not know anything about it, watch [this video](https://www.youtube.com/watch?v=SkB-eRCzWIU) to get familiar with basic commands.**
 
@@ -220,7 +220,7 @@ Go to [the Termux Github latest release](https://github.com/termux/termux-app/re
 
 > **ℹ️ NOTE: If your file manager does not let you run APK files, install and use `File Manager +` and give it a permission to install 3rd party applications when asked.**
 
-> **⚠️ VERY IMPORTANT ⚠️: Once you have installed Termux, open it, bring down the Android menu for notifications, on Termux notification, drag down until you see the following options: `Exit | Acquire wakelock`, press on the `Acquire wakelock` and allow Termux to have a battery optimization exclusion permission when asked. If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background!**
+> **⚠️ VERY IMPORTANT ⚠️: Once you have installed Termux, open it, bring down the Android menu for notifications, on Termux notification, drag down until you see the following options: `Exit | Acquire wakelock`, press on the `Acquire wakelock` and allow Termux to have a battery optimization exclusion permission when asked. If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background! If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background!**
 
 #### Installing Ubuntu 22.04
 
@@ -253,7 +253,7 @@ Once the script has downloaded, run it with:
 bash ubuntu.sh
 ```
 
-Then you will be asked a question, enter `Y` and press `Enter`. Once the installation is complete, you can start Ubuntu with:
+Then you will be asked a question, enter `Y` and press `Enter`. Once the installation is complete, you can start Ubuntu with: Once the installation is complete, you can start Ubuntu with:
 
 ```bash
 ./startubuntu.sh
@@ -353,13 +353,19 @@ Options:
 
 path-to-application:
   The path to an application .dll file to execute.
+  --info            Display .NET information.
+  --list-sdks       Display the installed SDKs.
+  --list-runtimes   Display the installed runtimes.
+
+path-to-application:
+  The path to an application .dll file to execute.
 ```
 
 #### Installing MCC
 
 Finally, we can install MCC.
 
-> **⚠️ IMPORTANT: If you have a 32 ARM processor, you need to build the MCC yourself, take a look at the [Building From Source](#building-from-the-source-code) section. Also make sure to be using the appropriate `-r` parameter value for your architecture.**
+> **⚠️ IMPORTANT: If you have a 32 ARM processor, you need to build the MCC yourself, take a look at the [Building From Source](#building-from-the-source-code) section. Also make sure to be using the appropriate `-r` parameter value for your architecture. Also make sure to be using the appropriate `-r` parameter value for your architecture.**
 
 Let's make a folder where the MCC will be stored with the following command:
 
@@ -418,7 +424,7 @@ Also, here are some linux tutorials for people who are new to it:
 
 ## Run on a VPS
 
-> **ℹ️ NOTE: This is a new section, if you find a mistake, please report it by opening an Issue in our [Github repository](https://github.com/MCCTeam/Minecraft-Console-Client). Thank you!**
+> **ℹ️ NOTE: This is a new section, if you find a mistake, please report it by opening an Issue in our [Github repository](https://github.com/MCCTeam/Minecraft-Console-Client). Thank you! Thank you!**
 
 The **Minecraft Console Client** can be run on a VPS 24 hours, 7 days a week.
 
@@ -433,7 +439,7 @@ The **Minecraft Console Client** can be run on a VPS 24 hours, 7 days a week.
 
 ### What is a VPS?
 
-VPS stands for a **V**irtual **P**rivate **S**erver, it's basically a remote virtual PC that is running in the cloud, 24 hours a day, 7 days in week. To be precise, it's a virtual machine that runs on top of a host operating system (eg. Proxmox).
+VPS stands for a **V**irtual **P**rivate **S**erver, it's basically a remote virtual PC that is running in the cloud, 24 hours a day, 7 days in week. To be precise, it's a virtual machine that runs on top of a host operating system (eg. Proxmox). To be precise, it's a virtual machine that runs on top of a host operating system (eg. Proxmox).
 
 You can use a VPS for hosting a website, or a an app, or a game server, or your own VPN, or the Minecraft Console Client.
 
@@ -457,7 +463,7 @@ Here is a [Youtube video](https://youtu.be/42fwh_1KP_o) that explains it in more
 
     If you're new to this, you can learn about it here:
 
-    - [What is Linux? by Bennett Bytes](https://www.youtube.com/watch?v=JsWQUOEL0N8)
+    - [What is Linux? by Bennett Bytes by Bennett Bytes](https://www.youtube.com/watch?v=JsWQUOEL0N8)
     - [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
     - [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
     - [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
@@ -514,17 +520,17 @@ You also may want to search for better deals.
 
 > **⚠️ VERY IMPORTANT: This will require you to have a valid debit card that can be used on internet and a mobile phone number, as well as giving that info to Amazon corporation.**
 
-> **⚠️ WARNING: Scammers often get AWS VPS and use it to mass login on to stolen Microsoft accounts, some AWS IP addresses might be blocked by Microsoft because of that, if so, you might need to switch regions or to use a Proxy. To debug if your IP has been banned by Microsoft, use the `ping <ip>` and `traceroute <ip>` commands.**
+> **⚠️ WARNING: Scammers often get AWS VPS and use it to mass login on to stolen Microsoft accounts, some AWS IP addresses might be blocked by Microsoft because of that, if so, you might need to switch regions or to use a Proxy. To debug if your IP has been banned by Microsoft, use the `ping <ip>` and `traceroute <ip>` commands. To debug if your IP has been banned by Microsoft, use the `ping <ip>` and `traceroute <ip>` commands.**
 
 > **⚠️ WARNING: Related to the warning above, if you have issues logging with Microsoft and you're not banned, you may want to check the Security center on your account and approve the login from the VPS, this can be the case for some users.**
 
-> **ℹ️ NOTE: If you're not banned, sometimes fetching the keys can take some time, try giving it a minute or two, if it still hangs, hit some keys to refresh the screen, or try restarting and running again. If it still happens, use tmux instead of screen.**
+> **ℹ️ NOTE: If you're not banned, sometimes fetching the keys can take some time, try giving it a minute or two, if it still hangs, hit some keys to refresh the screen, or try restarting and running again. If it still happens, use tmux instead of screen. If it still happens, use tmux instead of screen.**
 
-Register on AWS and enter all of your billing info and a phone number. Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an-aws-vps).
+Register on AWS and enter all of your billing info and a phone number. Register on AWS and enter all of your billing info and a phone number. Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an-aws-vps).
 
 ### Initial Amazon VPS setup
 
-> **ℹ️ NOTE: Skip this section if you're not using AWS. Go to [Initial VPS setup](#initial-vps-setup)**
+> **ℹ️ NOTE: Skip this section if you're not using AWS. ℹ️ NOTE: Skip this section if you're not using AWS. Go to [Initial VPS setup](#initial-vps-setup)**
 
 When you register and open the `AWS Console`, click on the Search field on the top of the page and search for: `EC2`
 
@@ -546,7 +552,7 @@ For the **Instance type** select `t2.micro`.
 
 For the **Key pair (login)** click on **Create new key pair** and name it `VpsRoot`, leave the rest of settings as default and click **Create key pair**, this will generate a RSA private key that will be automatically downloaded.
 
-> **⚠️ EXTREMELY IMPORTANT: Make sure that you save this file in a safe place and do not loose it, it's of an upmost importance since it's used to access the root/admin account of the VPS. Without it you will not be able to access the root account of the VPS! Also do not let it fall into wrong hands.**
+> **⚠️ EXTREMELY IMPORTANT: Make sure that you save this file in a safe place and do not loose it, it's of an upmost importance since it's used to access the root/admin account of the VPS. Without it you will not be able to access the root account of the VPS! Also do not let it fall into wrong hands. Without it you will not be able to access the root account of the VPS! Also do not let it fall into wrong hands.**
 
 ![VPS Instance Type](/images/guide/VPS_InstanceType.png)
 
@@ -564,7 +570,7 @@ For the **Storage** enter `30`.
 
 ![VPS Configure Storage](/images/guide/VPS_ConfigureStorage.png)
 
-Finally, review the **Summary** confirm that everything is as in the tutorial and that you will not be charged and click on the **Launch instance**. Once you've clicked on the button, it will take a couple of minutes for the instance to be available up and running.
+Finally, review the **Summary** confirm that everything is as in the tutorial and that you will not be charged and click on the **Launch instance**. Once you've clicked on the button, it will take a couple of minutes for the instance to be available up and running. Once you've clicked on the button, it will take a couple of minutes for the instance to be available up and running.
 
 Once the instance is up and running, go to it's details and copy the `Public DNS v4 IP`.
 
@@ -628,7 +634,7 @@ Once you've logged in to your VPS you need to create a new user and give it SSH 
 
 In this tutorial we will be using `mcc` as a name for the user account that will be running the MCC.
 
-> **ℹ️ NOTE: You may be wondering why we're creating a separate user account and making it be accessible over SSH only. This is for security reasons, if you do not want to do this, you're free to skip it, but be careful.**
+> **ℹ️ NOTE: You may be wondering why we're creating a separate user account and making it be accessible over SSH only. This is for security reasons, if you do not want to do this, you're free to skip it, but be careful. This is for security reasons, if you do not want to do this, you're free to skip it, but be careful.**
 
 To create a new user named `mcc` execute the following command:
 
@@ -690,7 +696,7 @@ Make a new empty file named `authorized_keys`:
 touch authorized_keys
 ```
 
-Do no close the Git bash/Terminal emulator. On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account. Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called).
+Do no close the Git bash/Terminal emulator. On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account. Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called). On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account. Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called).
 
 Type the following command:
 
@@ -768,7 +774,7 @@ Let's check if everything is working correctly:
 sudo systemctl status sshd
 ```
 
-If everything has been configured as it should be you should see `active (running)` as a status of the service. If not, open the config file again and check for mistakes.
+If everything has been configured as it should be you should see `active (running)` as a status of the service. If not, open the config file again and check for mistakes. If not, open the config file again and check for mistakes.
 
 Press `q` to exit the log mode.
 
@@ -866,6 +872,12 @@ Options:
 
 path-to-application:
   The path to an application .dll file to execute.
+  --info            Display .NET information.
+  --list-sdks       Display the installed SDKs.
+  --list-runtimes   Display the installed runtimes.
+
+path-to-application:
+  The path to an application .dll file to execute.
 ```
 
 If you do not get this output and the installation was not successful, [try other methods](https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#2204).
@@ -874,7 +886,7 @@ If it was successful, you can now install the MCC.
 
 ### Installing MCC on a VPS
 
-Now that you have .NET Core 6.0 and a user account, you should install the `screen` utility, you will need this in order to keep the MCC running once you close down the SSH session (if you do not have it, the MCC will just stop working once you disconnect). You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time.
+Now that you have .NET Core 6.0 and a user account, you should install the `screen` utility, you will need this in order to keep the MCC running once you close down the SSH session (if you do not have it, the MCC will just stop working once you disconnect). You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time. You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time.
 
 > **ℹ️ NOTE: There is also a Docker method, if you're using Docker, you do not need the `screen` program.**
 
