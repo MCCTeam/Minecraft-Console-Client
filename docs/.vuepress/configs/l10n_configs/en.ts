@@ -5,7 +5,7 @@ import { headConfig } from '../head.js'
 
 const Translation = require('../../translations/en.json')
 
-export const mainConfig_en  = {
+export const mainConfig_en: SiteLocaleData  = {
     lang: 'en',
     title: Translation.title,
     description: Translation.description,
@@ -13,7 +13,7 @@ export const mainConfig_en  = {
 }
 
 export const defaultThemeConfig_en: DefaultThemeLocaleData = {
-    selectLanguageName: Translation.theme.selectLanguageName,
+    selectLanguageName: "English",
     selectLanguageText: Translation.theme.selectLanguageText,
     selectLanguageAriaLabel: Translation.theme.selectLanguageAriaLabel,
 

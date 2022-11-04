@@ -24,4 +24,5 @@ jobs:
         TARGET_BRANCH: master
         BUILD_SCRIPT: yarn --cwd ./docs/ && yarn --cwd ./docs/ docs:build
         BUILD_DIR: docs/.vuepress/dist
+        COMMIT_MESSAGE: Build from ${{ github.sha }}
         CNAME: https://mccteam.github.io
