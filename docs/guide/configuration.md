@@ -105,7 +105,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Mojang accounts are going to stop working soon for everyone, they already are not working for some people.**
-    
+
     </div>
 
 -   **Type:** `string`
@@ -233,9 +233,10 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**Admins can impersonate players on versions older than 1.19**
+    **Admins can impersonate players on versions older than 1.19**
 
     </div>
+
 
 #### `MinecraftVersion`
 
@@ -262,7 +263,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **MCC supports only 1.4.6 - 1.19.2**
-    
+
     </div>
 
 #### `EnableForge`
@@ -284,7 +285,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Force-enabling only works for MC 1.13 +**
-    
+
     </div>
 
 #### `BrandInfo`
@@ -301,7 +302,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **For playing on Hypixel you need to use `vanilla`**
-    
+
     </div>
 
 #### `ChatbotLogFile`
@@ -384,7 +385,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**This feature is currently not supported in `1.4.6 - 1.6`.**
+    **This feature is currently not supported in `1.4.6 - 1.6`.**
 
     </div>
 
@@ -407,7 +408,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **This feature is currently not supported in `1.4.6 - 1.9`.**
-    
+
     </div>
 
 -   **Type:** `boolean`
@@ -423,7 +424,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **This feature is currently not supported in `1.4.6 - 1.9`.**
-    
+
     </div>
 
 -   **Type:** `boolean`
@@ -433,7 +434,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
-    
+
     </div>
 
 #### `SessionCache`
@@ -486,7 +487,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Only works on Windows XP-8 or Windows 10 with old console**
-    
+
     </div>
 
 #### `ExitOnFailure`
@@ -532,7 +533,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Make sure the spawn point is safe**
-    
+
     </div>
 
 #### `MinecraftRealms`
@@ -814,7 +815,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Not filtering anything by default**
-    
+
     </div>
 
 #### `DebugFilterRegex`
@@ -832,7 +833,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Not filtering anything by default**
-    
+
     </div>
 
 #### `FilterMode`
@@ -870,7 +871,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **%username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
-    
+
     </div>
 
 #### `PrependTimestamp`
@@ -908,7 +909,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **`%username%`, `%serverip%`, `%datetime%` are reserved variables**
-    
+
     </div>
 
 -   **Section header:** `Logging`
@@ -954,7 +955,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **Make sure your server rules allow Proxies or VPNs before setting the setting to `true`, or you may face consequences!**
-    
+
     </div>
 
 #### `Server`

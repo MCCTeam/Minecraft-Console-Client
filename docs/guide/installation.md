@@ -20,9 +20,7 @@ In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-
 **If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
-
 
 </div>
 
@@ -96,7 +94,7 @@ Requirements:
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)** 
-        
+
         </div>
 
     -   [Install Git on macOS](https://git-scm.com/download/mac)
@@ -127,7 +125,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `'-r linux-64` with an appropriate `-r <your RID>` (Example for arm: `-r linux-arm64`)**
-        
+
         </div>
 
     - On macOS:
@@ -139,7 +137,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `'-r osx-64` with an appropriate `-r <your RID>` (Example for arm: `-r osx.12-arm64`)**
-        
+
         </div>
 
 If the build has succeeded, the compiled binary `MinecraftClient` will be in:
@@ -382,7 +380,7 @@ Once the file has been downloaded, you need to run the following commands in ord
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **If you're using a different download link, update the file name in this command to match your version.**
-    
+
     </div>
 
 2. `export DOTNET_ROOT=/root/.dotnet`
@@ -390,7 +388,7 @@ Once the file has been downloaded, you need to run the following commands in ord
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
-    
+
     </div>
 
 3. `mkdir -p "$DOTNET_ROOT" && tar zxf "$DOTNET_FILE" -C "$DOTNET_ROOT"`
@@ -551,7 +549,7 @@ Here is a [Youtube video](https://youtu.be/42fwh_1KP_o) that explains it in more
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Make sure to allow the installation to add it to the context menu**
-    
+
     </div>
 
 2. `ssh` and `ssh-keygen` commands (On Windows they're available with Gitbash, on macOs and Linux they should be available by default, it not, search on how to install them)
@@ -602,7 +600,7 @@ Some of the reliable and cheap hosting providers (sorted for price/performance):
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Does not have Ubuntu 22.04 in the dropdown menu when ordering, you will have to re-install later or ask support to do it.**
-    
+
     </div>
 
 -   [OVH Cloud](https://www.ovhcloud.com/de/vps/)
