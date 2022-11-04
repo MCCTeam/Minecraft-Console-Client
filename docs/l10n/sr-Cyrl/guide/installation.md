@@ -20,9 +20,7 @@ In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https
 
 <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-
 **If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
-
 
 </div>
 
