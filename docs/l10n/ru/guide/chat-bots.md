@@ -67,6 +67,7 @@
     -   **Default:** `false`
 
 
+
     #### `Beep_Enabled`
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
@@ -84,6 +85,7 @@
     -   **Default:** `true`
 
 
+
     #### `Trigger_By_Words`
 
     -   **Description:**
@@ -95,6 +97,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     #### `Trigger_By_Rain`
@@ -110,6 +113,7 @@
     -   **Default:** `false`
 
 
+
     #### `Trigger_By_Thunderstorm`
 
     -   **Description:**
@@ -121,6 +125,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     #### `Log_To_File`
@@ -136,6 +141,7 @@
     -   **Default:** `false`
 
 
+
     #### `Log_File`
 
     -   **Description:**
@@ -145,6 +151,7 @@
     -   **Type:** `string`
 
     -   **Default:** `"alerts-log.txt"`
+
 
 
     #### `Matches`
@@ -160,6 +167,7 @@
         ```toml
         Matches = [ "Yourname", " whispers ", "-> me", "admin", ".com", ]
         ```
+
 
 
     #### `Excludes`
@@ -199,6 +207,7 @@
     -   **Default:** `false`
 
 
+
     #### `Delay`
 
     -   **Description:**
@@ -214,6 +223,7 @@
     -   **Default:** `{ min = 60.0, max = 60.0 }`
 
 
+
     #### `Command`
 
     -   **Description:**
@@ -223,6 +233,7 @@
     -   **Type:** `string`
 
     -   **Default:** `/ping`
+
 
 
     #### `Use_Sneak`
@@ -236,7 +247,14 @@
     -   **Default:** `false`
 
 
+
     #### `Use_Terrain_Handling`
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5)**
+
+    </div>
 
     -   **Description:**
 
@@ -244,17 +262,12 @@
 
         This will enable your bot to randomly move about, thus a better anti afk effect.
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5)**
-
-      </div>
-
     -   **Available values:** `true` and `false`.
 
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     #### `Walk_Range`
@@ -268,31 +281,32 @@
     -   **Default:** `5`
 
 
+
     #### `Walk_Retries`
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **This happens on each trigger of the task, so it does not permanently switch to alternative method.**
+
+    </div>
 
     -   **Description:**
 
         This is the number of times the bot will try to pathfind, if he can't find a valid path for 20 times, he will use the command method.
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **This happens on each trigger of the task, so it does not permanently switch to alternative method.**
-
-      </div>
-
     -   **Default:** `20`
 
 ## Auto Attack
 
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+**You need to have [inventoryhandling](configuration.md#inventoryhandling) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
+
+</div>
+
 -   **Description:**
 
     Automatically attacks mobs around you, you can configure it to attack both hostile and passive mobs and only certain mobs or all mobs.
-
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **You need to have [inventoryhandling](configuration.md#inventoryhandling) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
-
-    </div>
 
 -   **Settings:**
 
@@ -309,6 +323,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     #### `Mode`
@@ -330,6 +345,7 @@
     -   **Default:** `single`
 
 
+
     #### `Priority`
 
     -   **Description:**
@@ -342,6 +358,7 @@
     -   **Type:** `string`
 
     -   **Default:** `distance`
+
 
 
     #### `Cooldown_Time`
@@ -361,6 +378,7 @@
     -   **Example:** `Cooldown_Time = { Custom = true, value = 1.5 }`
 
     -   **Default:** `{ Custom = false, value = 1.0 }`
+
 
 
     #### `Interaction`
@@ -386,6 +404,7 @@
     -   **Default:** `Attack`
 
 
+
     #### `Attack_Hostile`
 
     -   **Description:**
@@ -397,6 +416,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
 
 
     #### `Attack_Passive`
@@ -412,6 +432,7 @@
     -   **Default:** `false`
 
 
+
     #### `List_Mode`
 
     -   **Description:**
@@ -423,6 +444,7 @@
     -   **Type:** `string`
 
     -   **Default:** `whitelist`
+
 
 
     #### `Entites_List`
@@ -443,15 +465,15 @@
 
 ## Auto Craft
 
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+**You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for basic crafting in the inventory to work, in addition if you want to use a crafting table, you need to enable [terrainandmovements](configuration.md#terrainandmovements) in order for bot to be able to reach the crafting table.**
+
+</div>
+
 -   **Description:**
 
     Automatically craft items in your inventory or in a crafting table.
-
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for basic crafting in the inventory to work, in addition if you want to use a crafting table, you need to enable [terrainandmovements](configuration.md#terrainandmovements) in order for bot to be able to reach the crafting table.**
-
-    </div>
 
 -   **Commands:**
 
@@ -476,6 +498,7 @@
     **Section:** **`ChatBot.AutoCraft`**
 
 
+
     #### `Enabled`
 
     -   **Description:**
@@ -487,6 +510,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     #### `CraftingTable`
@@ -512,6 +536,7 @@
         ```
 
 
+
     #### `OnFailure`
 
     -   **Description:**
@@ -527,7 +552,14 @@
     -   **Default:** `abort`
 
 
+
     ### Defining a recipe
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **If you're using `table` you need to set the `CraftingTable` setting.**
+
+    </div>
 
     The recipes are defines as a separate new sub-section `[[ChatBot.AutoCraft.Recipes]]` of the `[ChatBot.AutoCraft]` section.
 
@@ -542,12 +574,6 @@
     -   `Тип`
 
         **Avaliable values:** `player` and `table`
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **If you're using `table` you need to set the `CraftingTable` setting.**
-
-    </div>
 
     -   `Result`
 
@@ -569,17 +595,6 @@
         Slots = [ "<material/item type>", "<material/item type>", ... ]
         ```
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
-
-    </div>
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-    **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
-
-    </div>
 
         **Slots are indexed as following:**
 
@@ -623,6 +638,10 @@
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
+    **If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
+
+    **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
+
     **Make sure to provide materials for your bot by placing them in inventory first.**
 
     </div>
@@ -656,6 +675,7 @@
     **Section:** **`ChatBot.AutoDig`**
 
 
+
     #### `Enabled`
 
     -   **Description:**
@@ -667,6 +687,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     #### `Mode`
@@ -692,6 +713,7 @@
     -   **Type:** `string`
 
     -   **Default:** `lookat`
+
 
 
     #### `Locations`
@@ -720,6 +742,7 @@
         ```
 
 
+
     #### `Location_Order`
 
     -   **Description:**
@@ -741,6 +764,7 @@
     -   **Default:** `distance`
 
 
+
     #### `Auto_Start_Delay`
 
     -   **Description:**
@@ -754,6 +778,7 @@
     -   **Default:** `3.0`
 
 
+
     #### `Dig_Timeout`
 
     -   **Description:**
@@ -763,6 +788,7 @@
     -   **Type:** `float`
 
     -   **Default:** `60.0`
+
 
 
     #### `Log_Block_Dig`
@@ -778,6 +804,7 @@
     -   **Default:** `true`
 
 
+
     #### `List_Type`
 
     -   **Description:**
@@ -789,6 +816,7 @@
     -   **Type:** `string`
 
     -   **Default:** `whitelist`
+
 
 
     #### `Blocks`
@@ -836,6 +864,7 @@
     -   **Default:** `false`
 
 
+
     #### `Mode`
 
     -   **Description:**
@@ -861,6 +890,7 @@
     -   **Type:** `string`
 
     -   **Default:** `include`
+
 
 
     #### `Items`
@@ -910,6 +940,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     #### `Threshold`
@@ -964,6 +995,7 @@
     **Section:** **`ChatBot.AutoFishing`**
 
 
+
     #### `Enabled`
 
     -   **Description:**
@@ -977,6 +1009,7 @@
     -   **Default:** `false`
 
 
+
     #### `Antidespawn`
 
     -   **Description:**
@@ -988,6 +1021,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     #### `Mainhand`
@@ -1006,6 +1040,7 @@
     -   **Default:** `true`
 
 
+
     #### `Auto_Start`
 
     -   **Description:**
@@ -1019,6 +1054,7 @@
     -   **Default:** `true`
 
 
+
     #### `Cast_Delay`
 
     -   **Description:**
@@ -1028,6 +1064,7 @@
     -   **Type:** `float`
 
     -   **Default:** `0.4`
+
 
 
     #### `Fishing_Delay`
@@ -1043,6 +1080,7 @@
     -   **Default:** `3.0`
 
 
+
     #### `Fishing_Timeout`
 
     -   **Description:**
@@ -1052,6 +1090,7 @@
     -   **Type:** `float`
 
     -   **Default:** `300.0`
+
 
 
     #### `Durability_Limit`
@@ -1067,6 +1106,7 @@
     -   **Default:** `2`
 
 
+
     #### `Auto_Rod_Switch`
 
     -   **Description:**
@@ -1078,6 +1118,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
 
 
     #### `Stationary_Threshold`
@@ -1097,6 +1138,7 @@
     -   **Default:** `0.001`
 
 
+
     #### `Hook_Threshold`
 
     -   **Description:**
@@ -1110,6 +1152,7 @@
     -   **Type:** `float`
 
     -   **Default:** `0.2`
+
 
 
     #### `Log_Fish_Bobber`
@@ -1127,6 +1170,7 @@
     -   **Default:** `false`
 
 
+
     #### `Enable_Move`
 
     -   **Description:**
@@ -1140,6 +1184,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     ### Adding a position/movement
@@ -1183,6 +1228,7 @@
         ```
 
 
+
     #### Full example
 
     ```toml
@@ -1215,6 +1261,7 @@
     -   **Default:** `false`
 
 
+
     #### `Delay`
 
     -   **Description:**
@@ -1230,6 +1277,7 @@
     -   **Example:** `{ min = 8.0, max = 60.0 }`
 
     -   **Default:** `{ min = 3.0, max = 3.0 }`
+
 
 
     #### `Retries`
@@ -1249,6 +1297,7 @@
     -   **Default:** `-1`
 
 
+
     #### `Ignore_Kick_Message`
 
     -   **Description:**
@@ -1258,6 +1307,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     #### `Kick_Messages`
@@ -1307,6 +1357,7 @@
     -   **Default:** `false`
 
 
+
     #### `Matches_File`
 
     -   **Description:**
@@ -1326,6 +1377,7 @@
     -   **Type:** `string`
 
     -   **Default:** `matches.ini`
+
 
 
     #### `Match_Colors`
@@ -1369,6 +1421,7 @@
     -   **Default:** `false`
 
 
+
     #### `Add_DateTime`
 
     -   **Description:**
@@ -1380,6 +1433,7 @@
     -   **Default:** `true`
 
 
+
     #### `Log_File`
 
     -   **Description:**
@@ -1387,6 +1441,7 @@
         This setting specifies the name of the Chat Log file that will be created.
 
     -   **Default:** `chatlog-%username%-%serverip%.txt`
+
 
 
     #### `Filter`
@@ -1454,6 +1509,7 @@
     -   **Default:** `false`
 
 
+
     #### `Update_Limit`
 
     -   **Description:**
@@ -1465,6 +1521,7 @@
     -   **Type:** `float`
 
     -   **Default:** `1.5`
+
 
 
     #### `Stop_At_Distance`
@@ -1508,6 +1565,7 @@
     -   **Default:** `false`
 
 
+
     #### `English`
 
     -   **Description:**
@@ -1517,6 +1575,7 @@
     -   **Available values:** `true` and `false`.
 
     -   **Default:** `true`
+
 
 
     #### `FileWords_EN`
@@ -1533,6 +1592,7 @@
 
     -   **Default:** `hangman-en.txt`
     -   **Example**: [`words-en.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt)
+
 
 
     #### `FileWords_FR`
@@ -1606,6 +1666,7 @@
     **Section:** **`ChatBot.Mailer`**
 
 
+
     #### `Enabled`
 
     -   **Description:**
@@ -1619,6 +1680,7 @@
     -   **Default:** `false`
 
 
+
     #### `DatabaseFile`
 
     -   **Description:**
@@ -1630,6 +1692,7 @@
     -   **Default:** `MailerDatabase.ini`
 
 
+
     #### `IgnoreListFile`
 
     -   **Description:**
@@ -1639,6 +1702,7 @@
         This file will be auto created by the Mailer Chat Bot.
 
     -   **Default:** `MailerIgnoreList.ini`
+
 
 
     #### `PublicInteractions`
@@ -1654,6 +1718,7 @@
     -   **Default:** `false`
 
 
+
     #### `MaxMailsPerPlayer`
 
     -   **Description:**
@@ -1665,6 +1730,7 @@
     -   **Default:** `10`
 
 
+
     #### `MaxDatabaseSize`
 
     -   **Description:**
@@ -1674,6 +1740,7 @@
     -   **Type:** `integer`
 
     -   **Default:** `10000` (10 MB)
+
 
 
     #### `MailRetentionDays`
@@ -1729,6 +1796,7 @@
     -   **Default:** `false`
 
 
+
     #### `Should_Resize`
 
     -   **Description:**
@@ -1756,6 +1824,7 @@
     -   **Default:** `false`
 
 
+
     #### `Resize_To`
 
     -   **Description:**
@@ -1765,6 +1834,7 @@
     -   **Type:** `integer`
 
     -   **Default:** `256`
+
 
 
     #### `Auto_Render_On_Update`
@@ -1786,6 +1856,7 @@
     -   **Default:** `false`
 
 
+
     #### `Delete_All_On_Unload`
 
     -   **Description:**
@@ -1797,6 +1868,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
 
 
     #### `Notify_On_First_Update`
@@ -1831,6 +1903,7 @@
     -   **Default:** `false`
 
 
+
     #### `File`
 
     -   **Description:**
@@ -1838,6 +1911,7 @@
         This setting specifies the name of the player list Log file that will be created.
 
     -   **Default:** `playerlog.txt`
+
 
 
     #### `Delay`
@@ -1881,6 +1955,7 @@
     -   **Default:** `false`
 
 
+
     #### `AutoTpaccept`
 
     -   **Description:**
@@ -1892,6 +1967,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `true`
+
 
 
     #### `AutoTpaccept_Everyone`
@@ -1947,6 +2023,7 @@
     -   **Default:** `false`
 
 
+
     #### `Backup_Interval`
 
     -   **Description:**
@@ -1980,6 +2057,7 @@
     -   **Type:** `boolean`
 
     -   **Default:** `false`
+
 
 
     ### Defining a task
@@ -2054,6 +2132,7 @@
             ```toml
             Trigger_On_Interval = { Enable = true, MinTime = 30.0, MaxTime = 160.0 }
             ```
+
 
 
     ### Full example
