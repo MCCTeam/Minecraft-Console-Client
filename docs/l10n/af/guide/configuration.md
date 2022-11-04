@@ -144,7 +144,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you define which language you want to use.
 
-    When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages. These files describe how some messages should be printed depending on your preferred language.
+    When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages.These files describe how some messages should be printed depending on your preferred language.
 
     The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file.
 
