@@ -4,7 +4,7 @@
 
 By the default all of the configurations are stored in the configuration file named `MinecraftClient.ini` which is created the first time you run the program, but you also can specify your own configuration file by providing a path to it as a first parameter when starting the MCC, check out [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
 
-> **⚠️ IMPORTANT WARNING: Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
+> **⚠️ IMPORTANT WARNING: Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
 
 ## Notes
 
@@ -70,7 +70,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This is the setting where you provide the address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically)
+    This is the setting where you provide the address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically) (The "Port" field can be deleted, it will be resolved automatically)
 
     Host can also fill in the nickname of the server in the "Server List" below.
 
@@ -136,9 +136,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you define which language you want to use.
 
-    When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages. These files describe how some messages should be printed depending on your preferred language.
+    When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages. These files describe how some messages should be printed depending on your preferred language. These files describe how some messages should be printed depending on your preferred language.
 
-    The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file.
+    The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file. You may choose another language in the configuration file.
 
     To find your language code, check [this link](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239s).
 
@@ -156,7 +156,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting is where you can change the title of the program window if you want to. You can use the variables in it.
+    This setting is where you can change the title of the program window if you want to. You can use the variables in it. You can use the variables in it.
 
 -   **Type:** `string`
 
@@ -204,7 +204,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting is where you can set the owners of the bots/client which can be used by some plugins. The names are separated as strings within an array, separated by commas.
+    This setting is where you can set the owners of the bots/client which can be used by some plugins. The names are separated as strings within an array, separated by commas. The names are separated as strings within an array, separated by commas.
 
 -   **Format:**
 
@@ -270,7 +270,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting is where you can change how MCC identifies itself to the server. It can be whatever you like, example: `vanilla`, `mcc`, `empty`.
+    This setting is where you can change how MCC identifies itself to the server. It can be whatever you like, example: `vanilla`, `mcc`, `empty`. It can be whatever you like, example: `vanilla`, `mcc`, `empty`.
 
 -   **Type:** `string`
 
@@ -420,7 +420,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Use `no`, `fast` (5s timeout), or `yes`. Required for joining some servers.
+    Use `no`, `fast` (5s timeout), or `yes`. Required for joining some servers. Required for joining some servers.
 
 -   **Type:** `string`
 
@@ -504,7 +504,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting allows you to define a custom timeout period in seconds. Use only if you know what you're doing.
+    This setting allows you to define a custom timeout period in seconds. Use only if you know what you're doing. Use only if you know what you're doing.
 
 -   **Type:** `integer`
 
@@ -564,7 +564,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This section allows you to add multiple server aliases which enables fast and easy switching between servers. Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias.
+    This section allows you to add multiple server aliases which enables fast and easy switching between servers. Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias. Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias.
 
 -   **Usage examples:**
 
@@ -591,13 +591,13 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Affects only Minecraft 1.19+. This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
+    Affects only Minecraft 1.19+. Affects only Minecraft 1.19+. This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
 
 #### `LoginWithSecureProfile`
 
 -   **Description:**
 
-    Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with `enforce-secure-profile=true`
+    Microsoft accounts only. Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with `enforce-secure-profile=true`
 
 -   **Type:** `boolean`
 
@@ -617,7 +617,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Whether to sign the messages contained in the commands sent by the MCC. For example, the message in `/msg` and `/me`
+    Whether to sign the messages contained in the commands sent by the MCC. For example, the message in `/msg` and `/me` For example, the message in `/msg` and `/me`
 
 -   **Type:** `boolean`
 
@@ -711,7 +711,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting allows you to define if your want to see info messages. Most of the messages from MCC.
+    This setting allows you to define if your want to see info messages. Most of the messages from MCC. Most of the messages from MCC.
 
 -   **Type:** `boolean`
 
@@ -797,7 +797,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `console-log.txt`
 
-    > **ℹ️ NOTE: %username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
+    > **ℹ️ NOTE: %username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. ℹ️ NOTE: %username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
 
 #### `PrependTimestamp`
 
@@ -878,7 +878,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    The proxy server IP and port. 代理伺服器必須允許HTTPS登入。
+    The proxy server IP and port. 代理伺服器必須允許HTTPS登入。 代理伺服器必須允許HTTPS登入。
 
 -   **Format:**
 
@@ -913,7 +913,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ``
+-   **Default:** `` ``
 
 #### `Password`
 
@@ -923,7 +923,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ``
+-   **Default:** `` ``
 
 ## MCSettings section
 
