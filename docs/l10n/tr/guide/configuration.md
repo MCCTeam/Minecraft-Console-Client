@@ -913,7 +913,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ``
+-   **Default:** `` ``
 
 #### `Password`
 
@@ -923,7 +923,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ``
+-   **Default:** `` ``
 
 ## MCSettings section
 
