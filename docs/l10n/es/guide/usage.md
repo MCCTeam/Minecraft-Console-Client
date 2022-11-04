@@ -397,7 +397,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Using MCC class:
 
     ```
-    /execif MCC.GetHealth() == 20.0 ---> send Success!
+    /execif MCC. GetHealth() == 20.0 ---> send Success!
     ```
 
 
