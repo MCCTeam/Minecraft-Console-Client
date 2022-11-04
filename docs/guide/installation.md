@@ -85,17 +85,17 @@ If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in
 
 ### Linux, macOS
 
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+**If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)** 
+
+</div>
+
 Requirements:
 
 -   Git
 
     -   Linux:
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-        **If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)** 
-
-        </div>
 
     -   [Install Git on macOS](https://git-scm.com/download/mac)
 
