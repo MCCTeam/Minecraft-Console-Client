@@ -118,25 +118,25 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="bot.alerts.end_rain" xml:space="preserve">
-    <value>§cWeather change: It is no longer raining.§r</value>
+    <value>§cWetteränderung: Es regnet nicht mehr.§r</value>
   </data>
   <data name="bot.alerts.end_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is no longer a thunderstorm.§r</value>
+    <value>§cWetteränderung: Es ist kein Gewitter mehr.§r</value>
   </data>
   <data name="bot.alerts.start_rain" xml:space="preserve">
-    <value>§cWeather change: It is raining now.§r</value>
+    <value>§cWetteränderung: Es regnet jetzt.§r</value>
   </data>
   <data name="bot.alerts.start_thunderstorm" xml:space="preserve">
-    <value>§cWeather change: It is a thunderstorm.§r</value>
+    <value>§cWetteränderung: Es gewittert jetzt.§r</value>
   </data>
   <data name="bot.antiafk.invalid_walk_range" xml:space="preserve">
-    <value>Invalid walk range provided, must be a positive integer greater than 0, using default value of 5!</value>
+    <value>Ungültiger Laufbereich angegeben, muss eine positive ganze Zahl größer als 0 sein, mit einem Standardwert von 5!</value>
   </data>
   <data name="bot.antiafk.not_using_terrain_handling" xml:space="preserve">
-    <value>The terrain handling is not enabled in the settings of the client, enable it if you want to use it with this bot. Using alternative (command) method.</value>
+    <value>Das Geländehandling ist in den Einstellungen des Clients nicht aktiviert, aktivieren Sie es, wenn Sie es mit diesem Bot verwenden möchten. Verwendung einer alternativen (Befehl) Methode.</value>
   </data>
   <data name="bot.antiafk.swapping" xml:space="preserve">
-    <value>The time range begins with a bigger value, swapped them around.</value>
+    <value>Die Zeitspanne beginnt mit einem größeren Wert, die beiden Werte wurden vertauscht.</value>
   </data>
   <data name="bot.autoAttack.invalidcooldown" xml:space="preserve">
     <value>Angriffscooldown kann nicht kleiner als 0 sein. Benutze Auto als Standard.</value>
@@ -199,10 +199,10 @@
     <value>Stoppe den aktuell laufenden Crafting-Prozess</value>
   </data>
   <data name="bot.autocraft.invaild_result" xml:space="preserve">
-    <value>Invalid result item!</value>
+    <value>Ungültiges Ergebnis-Element!</value>
   </data>
   <data name="bot.autocraft.invaild_slots" xml:space="preserve">
-    <value>The number of slots does not match and has been adjusted automatically.</value>
+    <value>Die Anzahl der Plätze stimmt nicht überein und wurde automatisch angepasst.</value>
   </data>
   <data name="bot.autoCraft.loaded" xml:space="preserve">
     <value>Erfolgreich geladen</value>
@@ -407,7 +407,7 @@
     <value>Warte {0:0.000} Sekunden vor erneuter Verbindung...</value>
   </data>
   <data name="bot.autoRespond.file_not_found" xml:space="preserve">
-    <value>File not found: '{0}'</value>
+    <value>Datei nicht gefunden: '{0}'</value>
   </data>
   <data name="bot.autoRespond.loaded_match" xml:space="preserve">
     <value>Loaded match:
@@ -2329,7 +2329,7 @@ Usage examples: "/tell &lt;mybot&gt; connect Server1", "/connect Server2"</value
     <value>Kann nicht zum Server verbinden : Diese Version wird nicht unterstützt !</value>
   </data>
   <data name="error.usage" xml:space="preserve">
-    <value>Usage:</value>
+    <value>Benutzung:</value>
   </data>
   <data name="error.version_different" xml:space="preserve">
     <value>§8Der Server meldet eine andere Version als manuell angegeben. Login könnte fehlschlagen.</value>

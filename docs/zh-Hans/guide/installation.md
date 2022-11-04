@@ -1,4 +1,4 @@
-# Installation
+# 安装
 
 -   [YouTube Tutorials](#youtube-tutorials)
 -   [Download a compiled binary](#download-a-compiled-binary)
@@ -26,7 +26,7 @@ In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https
 -   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
 -   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
 
-#### Download
+#### 下载
 
 You can download a compiled binary file of the latest build from our Releases section on Git Hub: [Download](https://github.com/MCCTeam/Minecraft-Console-Client/releases)
 
@@ -155,16 +155,14 @@ docker build -t minecraft-console-client:latest .
 
 **Start the container using Docker:**
 
-> **⚠️ VERY IMPORTANT ⚠️: There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
+> **⚠️ VERY IMPORTANT ⚠️: There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
 
 ```bash
-# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
+# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. # You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
 docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
-Now you could login and the Client is running.
-To detach from the Client but still keep it running in the Background press: `CTRL + P` and then after `CTRL + Q`.
-To reattach use the `docker attach` command.
+Now you could login and the Client is running. Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P` and then after `CTRL + Q`. To reattach use the `docker attach` command. To reattach use the `docker attach` command.
 
 **Start the container using docker-compose:**
 
@@ -196,8 +194,7 @@ docker-compose up
 docker-compose up -d #for deamonized running in the background
 ```
 
-Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`.
-As above, you can stop and remove the container using
+Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`. As above, you can stop and remove the container using If you want that functionality, please use the first method: `docker-compose run MCC`. As above, you can stop and remove the container using
 
 ```bash
 docker-compose down
@@ -213,7 +210,7 @@ It is possible to run the Minecraft Console Client on Android through Termux and
 
 > **ℹ️ NOTE: Here we're installing everything on the root account for simplicity sake, if you want to make a user account, make sure you update the command which reference the `/root` directory with your home directory.**
 
-### Installation
+### 安装
 
 #### Termux
 
@@ -256,8 +253,7 @@ Once the script has downloaded, run it with:
 bash ubuntu.sh
 ```
 
-Then you will be asked a question, enter `Y` and press `Enter`.
-Once the installation is complete, you can start Ubuntu with:
+Then you will be asked a question, enter `Y` and press `Enter`. Once the installation is complete, you can start Ubuntu with: Once the installation is complete, you can start Ubuntu with:
 
 ```bash
 ./startubuntu.sh
@@ -411,8 +407,7 @@ To stop MCC from running you can press `CTRL + C`
 
 To edit the configuration/settings, you need a text editor, we recommend Nano, as it's very simple to use, if you have followed the installation steps above, you should be familiar with it, if not, check out [this tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).
 
-For downloading files, you can use the `wget` file we have installed, simply run:
-`wget your_link_here` (you have examples above, and a video tutorial down bellow).
+For downloading files, you can use the `wget` file we have installed, simply run: `wget your_link_here` (you have examples above, and a video tutorial down bellow).
 
 Also, here are some linux tutorials for people who are new to it:
 
@@ -696,9 +691,7 @@ Make a new empty file named `authorized_keys`:
 touch authorized_keys
 ```
 
-Do no close the Git bash/Terminal emulator.
-On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account.
-Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called).
+Do no close the Git bash/Terminal emulator. On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account. Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called). On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account. Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called).
 
 Type the following command:
 
@@ -776,8 +769,7 @@ Let's check if everything is working correctly:
 sudo systemctl status sshd
 ```
 
-If everything has been configured as it should be you should see `active (running)` as a status of the service.
-If not, open the config file again and check for mistakes.
+If everything has been configured as it should be you should see `active (running)` as a status of the service. If not, open the config file again and check for mistakes. If not, open the config file again and check for mistakes.
 
 Press `q` to exit the log mode.
 

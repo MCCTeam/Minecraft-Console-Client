@@ -128,51 +128,36 @@ ORelio, ReinforceZwei, milutinke, BruceChenQAQ, bradbyte
 
 **Ideas**
 
-ambysdotnet, Awpocalypse, azoundria, bearbear12345, bSun0000, Cat7373, dagonzaros, Dids,
-Elvang, fuckofftwice, GeorgH93, initsuj, JamieSinn, joshbean39, LehmusFIN, maski, medxo,
-mobdon, MousePak, TNT-UP, TorchRJ, yayes2, Yoann166, ZizzyDizzyMC and [many more](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+%5BIdea%5D+is%3Aopen).
+ambysdotnet, Awpocalypse, azoundria, bearbear12345, bSun0000, Cat7373, dagonzaros, Dids, Elvang, fuckofftwice, GeorgH93, initsuj, JamieSinn, joshbean39, LehmusFIN, maski, medxo, mobdon, MousePak, TNT-UP, TorchRJ, yayes2, Yoann166, ZizzyDizzyMC and [many more](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+%5BIdea%5D+is%3Aopen).
 
 **Bug Hunters**
 
-1092CQ, ambysdotnet, bearbear12345, c0dei, Cat7373, Chtholly, Darkaegis, dbear20,
-DigitalSniperz, doranchak, drXor, FantomHD, gerik43, ibspa, iTzMrpitBull, JamieSinn,
-k3ldon, KenXeiko, link3321, lyze237, mattman00000, Nicconyancat, Pokechu22, ridgewell,
-Ryan6578, Solethia, TNT-UP, TorchRJ, TRTrident, WeedIsGood, xp9kus, Yoann166 and [many more](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+%5BBUG%5D+is%3Aopen+).
+1092CQ, ambysdotnet, bearbear12345, c0dei, Cat7373, Chtholly, Darkaegis, dbear20, DigitalSniperz, doranchak, drXor, FantomHD, gerik43, ibspa, iTzMrpitBull, JamieSinn, k3ldon, KenXeiko, link3321, lyze237, mattman00000, Nicconyancat, Pokechu22, ridgewell, Ryan6578, Solethia, TNT-UP, TorchRJ, TRTrident, WeedIsGood, xp9kus, Yoann166 and [many more](https://github.com/MCCTeam/Minecraft-Console-Client/issues?q=is%3Aissue+%5BBUG%5D+is%3Aopen+).
 
-**Contributors**
+**贡献者**
 
-Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, Daenges, dbear20, dogwatch,
-initsuj, JamieSinn, justcool393, lokulin, maxpowa, medxo, milutinke, Pokechu22,
-ReinforceZwei, repository, TheMeq, TheSnoozer, vkorn, v1RuX, yunusemregul, ZizzyDizzyMC,
-BruceChenQAQ, bradbyte
-_... And all the [GitHub contributors](https://github.com/MCCTeam/Minecraft-Console-Client/graphs/contributors)!_
+Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, Daenges, dbear20, dogwatch, initsuj, JamieSinn, justcool393, lokulin, maxpowa, medxo, milutinke, Pokechu22, ReinforceZwei, repository, TheMeq, TheSnoozer, vkorn, v1RuX, yunusemregul, ZizzyDizzyMC, BruceChenQAQ, bradbyte _... And all the [GitHub contributors](https://github.com/MCCTeam/Minecraft-Console-Client/graphs/contributors)!_ And all the [GitHub contributors](https://github.com/MCCTeam/Minecraft-Console-Client/graphs/contributors)!</em>
 
 **Libraries:**
 
 Minecraft Console Client also borrows code from the following libraries:
 
-| Name         | Purpose           | Author           | License |
-| ------------ | ----------------- | ---------------- | ------- |
-| Biko         | Proxy handling    | Benton Stark     | MIT     |
-| Heijden.Dns  | DNS SRV Lookup    | Geoffrey Huntley | MIT     |
-| DotNetZip    | Zlib compression  | Dino Chiesa      | MS-PL   |
+| Name        | Purpose          | Author           | License |
+| ----------- | ---------------- | ---------------- | ------- |
+| Biko        | Proxy handling   | Benton Stark     | MIT     |
+| Heijden.Dns | DNS SRV Lookup   | Geoffrey Huntley | MIT     |
+| DotNetZip   | Zlib compression | Dino Chiesa      | MS-PL   |
 
 ## Disclaimer
 
-Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server.
-This app does not steal your password. If you don't trust it, don't use it or check & compile from the source code.
+Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server. Even if everything should work, we are not responsible for any damage this app could cause to your computer or your server. This app does not steal your password. If you don't trust it, don't use it or check & compile from the source code. If you don't trust it, don't use it or check & compile from the source code.
 
-Also, remember that when you connect to a server with this program, you will appear where you left the last time.
-This means that **you can die if you log in in an unsafe place on a survival server!**
-Use the script scheduler bot to send a teleport command after logging in.
+Also, remember that when you connect to a server with this program, you will appear where you left the last time. Also, remember that when you connect to a server with this program, you will appear where you left the last time. This means that **you can die if you log in in an unsafe place on a survival server!** Use the script scheduler bot to send a teleport command after logging in.
 
-We remind you that **you may get banned** by your server for using this program. Use accordingly with server rules.
+We remind you that **you may get banned** by your server for using this program. Use accordingly with server rules. Use accordingly with server rules.
 
 ## License
 
-Minecraft Console Client is a totally free of charge, open source project.
-The source code is available at [Github Repository](https://github.com/MCCTeam/Minecraft-Console-Client)
+Minecraft Console Client is a totally free of charge, open source project. The source code is available at [Github Repository](https://github.com/MCCTeam/Minecraft-Console-Client) The source code is available at [Github Repository](https://github.com/MCCTeam/Minecraft-Console-Client)
 
-Unless specifically stated, source code is from the MCC Team or Contributors, and available under CDDL-1.0.
-More info about CDDL-1.0: [http://qstuff.blogspot.fr/2007/04/why-cddl.html](http://qstuff.blogspot.fr/2007/04/why-cddl.html)
-Full license at [http://opensource.org/licenses/CDDL-1.0](http://opensource.org/licenses/CDDL-1.0)
+Unless specifically stated, source code is from the MCC Team or Contributors, and available under CDDL-1.0. Unless specifically stated, source code is from the MCC Team or Contributors, and available under CDDL-1.0. More info about CDDL-1.0: [http://qstuff.blogspot.fr/2007/04/why-cddl.html](http://qstuff.blogspot.fr/2007/04/why-cddl.html) Full license at [http://opensource.org/licenses/CDDL-1.0](http://opensource.org/licenses/CDDL-1.0)

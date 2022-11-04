@@ -1,4 +1,4 @@
-# Configuration
+# 配置
 
 **Minecraft Console Client** can be both configured by the [command line parameters](usage.md#command-line-parameters) and the configuration file.
 
@@ -136,10 +136,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you define which language you want to use.
 
-    When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages.
-    These files describe how some messages should be printed depending on your preferred language.
+    When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages. These files describe how some messages should be printed depending on your preferred language. These files describe how some messages should be printed depending on your preferred language.
 
-    The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file.
+    The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file. You may choose another language in the configuration file.
 
     To find your language code, check [this link](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239s).
 
@@ -157,7 +156,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting is where you can change the title of the program window if you want to. You can use the variables in it.
+    This setting is where you can change the title of the program window if you want to. You can use the variables in it. You can use the variables in it.
 
 -   **Type:** `string`
 
@@ -271,8 +270,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting is where you can change how MCC identifies itself to the server.
-    It can be whatever you like, example: `vanilla`, `mcc`, `empty`.
+    This setting is where you can change how MCC identifies itself to the server. It can be whatever you like, example: `vanilla`, `mcc`, `empty`. It can be whatever you like, example: `vanilla`, `mcc`, `empty`.
 
 -   **Type:** `string`
 
@@ -422,8 +420,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Use `no`, `fast` (5s timeout), or `yes`.
-    Required for joining some servers.
+    Use `no`, `fast` (5s timeout), or `yes`. Required for joining some servers. Required for joining some servers.
 
 -   **Type:** `string`
 
@@ -594,8 +591,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Affects only Minecraft 1.19+.
-    This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
+    Affects only Minecraft 1.19+. Affects only Minecraft 1.19+. This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
 
 #### `LoginWithSecureProfile`
 
@@ -621,8 +617,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Whether to sign the messages contained in the commands sent by the MCC.
-    For example, the message in `/msg` and `/me`
+    Whether to sign the messages contained in the commands sent by the MCC. For example, the message in `/msg` and `/me` For example, the message in `/msg` and `/me`
 
 -   **Type:** `boolean`
 
@@ -642,7 +637,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Use yellow color block to mark chat that have been modified by the server.
+    是否使用黄色色块标识被服务器更改过的聊天。
 
 -   **Type:** `boolean`
 
@@ -716,8 +711,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting allows you to define if your want to see info messages.
-    Most of the messages from MCC.
+    This setting allows you to define if your want to see info messages. Most of the messages from MCC. Most of the messages from MCC.
 
 -   **Type:** `boolean`
 
@@ -860,8 +854,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    If Mojang session services or Microsoft login services are blocked on your network or your ip is blacklisted or rate limited by Microsoft, set the value to
-    `true`.
+    If Mojang session services or Microsoft login services are blocked on your network or your ip is blacklisted or rate limited by Microsoft, set the value to `true`.
 
 -   **Type:** `boolean`
 
@@ -871,7 +864,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Whether to connect to the game server through a proxy.
+    是否通过代理连接Minecraft游戏服务器。
 
     If connecting to a port 25565 (Minecraft) is blocked on your network, set the value to `true` to login and connect using the proxy.
 
@@ -885,8 +878,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    The proxy server IP and port.
-    Proxy server must allow HTTPS for login, and non-443 ports for playing.
+    The proxy server IP and port. The proxy server IP and port. Proxy server must allow HTTPS for login, and non-443 ports for playing.
 
 -   **Format:**
 
@@ -921,7 +913,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ` `
+-   **Default:** ``
 
 #### `Password`
 
@@ -931,7 +923,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ` `
+-   **Default:** ``
 
 ## MCSettings section
 
