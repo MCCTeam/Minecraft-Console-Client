@@ -92,10 +92,7 @@ MinecraftClient.exe --help
 > **ℹ️ NOTE: On Linux and macOS, you need to type: `./MinecraftClient` instead of `MinecraftClient.exe`**
 
 ```bash
-MinecraftClient.exe --help
-MinecraftClient.exe <username> <password> <server>
-MinecraftClient.exe <username> <password> <server> "/mycommand"
-MinecraftClient.exe --setting=value [--other settings]
+MinecraftClient.exe --help MinecraftClient.exe <username> <password> <server> MinecraftClient.exe <username> <password> <server> "/mycommand" MinecraftClient.exe --setting=value [--other settings]
 MinecraftClient.exe --section.setting=value [--other settings]
 MinecraftClient.exe <settings-file.ini> [--other settings]
 ```
@@ -103,14 +100,11 @@ MinecraftClient.exe <settings-file.ini> [--other settings]
 Examples:
 
 ```bash
-# Logging in as a user: notch, with a password: password123 onto a server with the ip: mc.someserver.com:25565
-MinecraftClient.exe notch password123 mc.someserver.com:25565
+# Logging in as a user: notch, with a password: password123 onto a server with the ip: mc.someserver.com:25565 MinecraftClient.exe notch password123 mc.someserver.com:25565
 
-# Overriding a setting from MinecraftClient.ini using a command line parameter
-MinecraftClient.exe --debugmessages=false
+# Overriding a setting from MinecraftClient.ini using a command line parameter MinecraftClient.exe --debugmessages=false
 
-# Providing a custom settings ini file and overriding a language to Chinese
-MinecraftClient.exe CustomSettingsFile.ini --language=zh
+# Providing a custom settings ini file and overriding a language to Chinese MinecraftClient.exe CustomSettingsFile.ini --language=zh
 ```
 
 ### Rules of using the command line parameters
@@ -366,7 +360,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Also the instance of MCC is available with `MCC.`.
 
-    > **ℹ️ NOTE: All local variables are treated as strings in the app, when comparing their values, you can use `<variable> == "<value>"`, or better use [`.Equals`](https://www.programiz.com/csharp-programming/library/string/equals) method**
+    > **ℹ️ NOTE: All local variables are treated as strings in the app, when comparing their values, you can use `<variable> == "<value>"`, or better use [`. Equals`](https://www.programiz.com/csharp-programming/library/string/equals) method**
 
 -   **Usage:**
 
@@ -397,7 +391,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Using MCC class:
 
     ```
-    /execif MCC.GetHealth() == 20.0 ---> send Success!
+    /execif MCC. GetHealth() == 20.0 ---> send Success!
     ```
 
 
