@@ -1145,7 +1145,7 @@
 
         The delay time before joining the server.
 
-        If the `min` and `max` are the same, the time will be consistent, however, if you want a random time, you can set `min` and `max` to different values to get a random time. The time format is in seconds, and the type is double. (eg. `37.0`)
+        If the `min` and `max` are the same, the time will be consistent, however, if you want a random time, you can set `min` and `max` to different values to get a random time. The time format is in seconds, and the type is double. (eg. `37.0`) (eg. `37.0`)
 
     -   **Format:** `{ min = <seconds (double)>, max = <seconds (double)> }`
 
