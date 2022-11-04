@@ -22,7 +22,7 @@ Simply run `MinecraftClient.exe`
 
 </div>
 
-## Linux, macOS
+## Linux/macOS:
 
 To run the client you need to type the following command in your terminal emulator:
 
