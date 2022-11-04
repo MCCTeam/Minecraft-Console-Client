@@ -2,11 +2,7 @@
 
 <img src="https://i.pics.rs/LLDhE.png" alt="Логотип"/>
 
-# Клиент консоли Minecraft (MCC)
-
-[Documentation](https://mccteam.github.io/) | [Download](#скачать) | [Installation](https://mccteam.github.io/guide/installation.html) | [Configuration](https://mccteam.github.io/guide/configuration.html) | [Usage](https://mccteam.github.io/guide/usage. tml)
-
-[English](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README.md) | [Nederlands](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Dutch.md) | [Српски](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Serbian_Cyrillic. d) | [Türkçe](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-Turkish.md) | [Tie<unk> ́ng Vie<unk> <unk> t](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-README-Vietnamese.md) | [简体中文](https://github.com/MCC/Minecraft-Console-Client/blob/master/README/README-Chinese_Simplified.md)
+t](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/README/README-README-Vietnamese.md) | [简体中文](https://github.com/MCC/Minecraft-Console-Client/blob/master/README/README-Chinese_Simplified.md)
 
 [![GitHub Actions build status](https://github.com/MCCTeam/Minecraft-Console-Client/workflows/build-and-release.yml/badge.svg)](https://github.com/MCCTeam/Minecraft- <a href="https://discord.gg/sfBv4TtpC9"><img src="https://img.shields.io/discord/1018553894831403028?color=5865F2&logo=discord&logoColor=white" alt="Наш дискорд сервер" /></a>
 
