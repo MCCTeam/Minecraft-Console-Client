@@ -17,7 +17,9 @@ Using the command line parameters:
 Simply run `MinecraftClient.exe`
 
 ::: tip
+
 **On Windows it's best using [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/install) for the best experience and looks. Some features like emojis in the [`/chunk`](#chunk) command do not work in CMD or Powershell 5**
+
 :::
 
 ## Linux, macOS
@@ -29,6 +31,7 @@ To run the client you need to type the following command in your terminal emulat
 ```
 
 If you want to keep it running in the background you can use `screen` (Linux only)
+
 Example:
 
 ```bash
@@ -93,7 +96,9 @@ MinecraftClient.exe --help
 ### Quick usage of MCC with examples
 
 ::: tip
+
 **On Linux and macOS, you need to type: `./MinecraftClient` instead of `MinecraftClient.exe`**
+
 :::
 
 ```bash
@@ -174,7 +179,9 @@ From chat prompt, commands must by default be prepended with a slash, eg. `/quit
 In scripts and remote control, no slash is needed to perform the command, eg. `quit`.
 
 ::: tip
+
 **Some commands may not be documented yet or are defined in description of Chat Bots, use `/help` to list them all, or you can contribute to this page.**
+
 :::
 
 ### `animation`
@@ -259,7 +266,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Change your selected slot in the hotbar.
 
     ::: tip
+
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+    
     :::
 
 -   **Usage:**
@@ -275,11 +284,15 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Displays the chunk loading status in a nice way.
 
     ::: warning
+
     **To use this feature you need to enable the [Terrain and Movements](configuration.md#terrainandmovements)**
+    
     :::
 
     ::: tip
+
     **You need a terminal with emoji support, like Powershell 7, Windows Terminal or Alacritty, if you do not want emoji support and want to use cmd or powershell 5, disable emojis with: [`enableemoji`](configuration.md#enableemoji)**
+    
     :::
 
 -   **Usage:**
@@ -323,7 +336,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Drop all items of a specific type from your inventory.
 
     ::: tip
+
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+    
     :::
 
 -   **Usage:**
@@ -333,7 +348,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     ```
 
     ::: tip
+
     **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
+    
     :::
 
 -   **Example:**
@@ -349,7 +366,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Attack an entity, use an entity or get a list of entities around you.
 
     ::: tip
+
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) and [Entity Handling](configuration.md#entityhandling) enabled in order for this to work.**
+    
     :::
 
 -   **Usage:**
@@ -367,7 +386,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     ```
 
     ::: tip
+
     **All entity types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/EntityType.cs).**
+    
     :::
 
 -   **Examples:**
@@ -390,7 +411,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Also the instance of MCC is available with `MCC.`.
 
     ::: tip
+
     **All local variables are treated as strings in the app, when comparing their values, you can use `<variable> == "<value>"`, or better use [`.Equals`](https://www.programiz.com/csharp-programming/library/string/equals) method**
+    
     :::
 
 -   **Usage:**
@@ -411,17 +434,20 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /execif test2 == "1" ---> send Success 2!
     ```
 
+
     Basic C# expression:
 
     ```
     /execif 1 + 2 + 3 == 6 ---> send Success!
     ```
 
+
     Using MCC class:
 
     ```
     /execif MCC.GetHealth() == 20.0 ---> send Success!
     ```
+
 
     Using in combination with [`execmulti`](#execmulti):
 
@@ -467,7 +493,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     ```
 
     ::: tip
+
     **`[account]` is an account alias defined in accounts file, for more info check out [accountlist](configuration.html#accountlist)**
+    
     :::
 
 ### `reload`
@@ -477,7 +505,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Reloads settings from MinecraftClient.ini and Chat Bots.
 
     ::: tip
+
     **Some settings won't be reloaded since they are used before the client initialization. Also, settings provided by the command line paramteres will be overriden. This also does not reload the ReplayBot due to technical limitations.**
+    
     :::
 
 -   **Usage:**
@@ -499,11 +529,15 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     ```
 
     ::: tip
+
     **`<server>` is either a server IP or a server alias defined in servers file, for more info check out [serverlist](configuration.html#serverlist)**
+    
     :::
 
     ::: tip
+
     **`[account]` is an account alias defined in accounts file, for more info check out [accountlist](configuration.html#accountlist)**
+    
     :::
 
 ### `script`
@@ -641,11 +675,15 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Use item in the hand, this can be used to do a right click on items which open menus on servers.
 
     ::: tip
+
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+    
     :::
 
     ::: warning
+
     **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`**
+    
     :::
 
 -   **Usage:**
@@ -669,15 +707,21 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     -   loom
 
     ::: tip
+
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) and [Terrain and Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
+    
     :::
 
     ::: tip
+
     **Not all inventories have a GUI representation in an ASCII art format.**
+    
     :::
 
     ::: warning
+
     **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`.**
+    
     :::
 
 -   **Usage:**
@@ -699,15 +743,21 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Make the bot follow a player.
 
     ::: tip
+
     **This command is avaliable only with [Follow Player](chat-bots.md#follow-player) Chat Bot enabled.**
+    
     :::
 
     ::: tip
+
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+    
     :::
 
     ::: tip
+
     **You need to have [Enity Handling](configuration.md#entityhandling) enabled in order for this to work.**
+    
     :::
 
 -   **Usage:**
@@ -747,11 +797,15 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Used for moving when terrain and movements feature is enabled.
 
     ::: tip
+
     **You need to have [Terrain and Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
+    
     :::
 
     ::: warning
+
     **The [Terrain and Movements](configuration.md#terrainandmovements) is currently not supported in `1.4.6 - 1.6`.**
+    
     :::
 
 -   **Usage:**
@@ -809,11 +863,15 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Used for inventory manipulation.
 
     ::: tip
+
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
+    
     :::
 
     ::: warning
+
     **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`.**
+    
     :::
 
     MCC defines inventories as containers internally, so player's inventory, chests, droppers, dispensers, hoppers, chest minecarts, barrels, furnaces, etc... are all considered a container, and each one of them has it's ID, the words container and inventory can be used interchangeably.
@@ -821,7 +879,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Inventory has slots and each one of them has an id.
 
     ::: tip
+
     **This command DOES NOT physically open a container (eg. chest), for that you need to use [`useblock`](#useblock) command first.**
+    
     :::
 
     An example of player inventory with annotated IDs in ASCII art and a list of items:
@@ -837,7 +897,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     ```
 
     ::: tip
+
     **player and container can be simplified with p and c accordingly**
+    
     :::
 
     Actions:
@@ -859,7 +921,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     ```
 
     ::: tip
+
     **The default click is left click**
+    
     :::
 
     Close an inventory:
@@ -875,7 +939,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     ```
 
     ::: tip
+
     **To drop all items from a slot, you can use: `all`**
+    
     ::: 
 
     Give an item to the player inventory from a creative menu when in the creative mode:
@@ -885,7 +951,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     ```
 
     ::: tip
+
     **To find item types, check out [this list](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs)**
+    
     :::
 
     Delete an item from a player's inventory when in the creative mode:
@@ -957,7 +1025,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     ```
 
     ::: tip
+
     **To find item types, check out [this list](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs)**
+    
     :::
 
     Delete an item from a player's inventory in slot number/id `36` when in the creative mode:
@@ -985,5 +1055,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     Show commands help.
 
     ::: tip
+
     **Use "/send /help" for server help**
+    
     :::
