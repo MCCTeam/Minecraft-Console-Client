@@ -25,4 +25,3 @@ features:
     details: 1.4 - 1.19.2
 footer: Made by MCC Team with ❤️
 ---
-

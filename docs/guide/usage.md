@@ -1,4 +1,4 @@
-# 用法
+# Usage
 
 How to run the program:
 
@@ -26,7 +26,8 @@ To run the client you need to type the following command in your terminal emulat
 ./MinecraftClient
 ```
 
-If you want to keep it running in the background you can use `screen` (Linux only) Example:
+If you want to keep it running in the background you can use `screen` (Linux only)
+Example:
 
 ```bash
 # Start the screen
@@ -176,7 +177,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Swing your main or off hand.
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /animation <mainhand|offhand>
@@ -188,7 +189,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Allows you to make the bot sleep easily, all about sleeping in one command.
 
--   **使用方法：**
+-   **Usage:**
 
     Basic usage: `bed leave|sleep <x> <y> <z>|sleep <radius>`
 
@@ -222,9 +223,10 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 -   **Description:**
 
-    Allows you to list and unload a specific bot or all bots. Useful when debugging and developing scripts. Useful when debugging and developing scripts.
+    Allows you to list and unload a specific bot or all bots.
+    Useful when debugging and developing scripts.
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /bots <list|unload <bot name|all>>
@@ -252,7 +254,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     > **ℹ️ NOTE: You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /changeslot <1-9>
@@ -268,7 +270,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     > **ℹ️ NOTE: You need a terminal with emoji support, like Powershell 7, Windows Terminal or Alacritty, if you do not want emoji support and want to use cmd or powershell 5, disable emojis with: [`enableemoji`](configuration.md#enableemoji)**
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /chunk status [chunkX chunkZ|locationX locationY locationZ]
@@ -284,7 +286,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Dig a block on a specific coordinate.
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /dig <x> <y> <z>
@@ -310,7 +312,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     > **ℹ️ NOTE: You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /dropitem <itemtype>
@@ -332,7 +334,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     > **ℹ️ NOTE: You need to have [Inventory Handling](configuration.md#inventoryhandling) and [Entity Handling](configuration.md#entityhandling) enabled in order for this to work.**
 
--   **使用方法：**
+-   **Usage:**
 
     Basic usage:
 
@@ -362,13 +364,14 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Allows you to execute a command if a specific condition is met.
 
-    The condition is a C# expression and the local variables you set using [`set`](#set), [`setrnd`](#setrnd) or the configuration file can be used. The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool. The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool.
+    The condition is a C# expression and the local variables you set using [`set`](#set), [`setrnd`](#setrnd) or the configuration file can be used.
+    The condition is always returned as a boolean, so only comparison can be done, if needed cast the expression result to bool.
 
     Also the instance of MCC is available with `MCC.`.
 
     > **ℹ️ NOTE: All local variables are treated as strings in the app, when comparing their values, you can use `<variable> == "<value>"`, or better use [`.Equals`](https://www.programiz.com/csharp-programming/library/string/equals) method**
 
--   **使用方法：**
+-   **Usage:**
 
     Basic usage: `/execif <condition (C# expression)> ---> <command>`
 
@@ -386,20 +389,17 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /execif test2 == "1" ---> send Success 2!
     ```
 
-
     Basic C# expression:
 
     ```
     /execif 1 + 2 + 3 == 6 ---> send Success!
     ```
 
-
     Using MCC class:
 
     ```
     /execif MCC.GetHealth() == 20.0 ---> send Success!
     ```
-
 
     Using in combination with [`execmulti`](#execmulti):
 
@@ -415,7 +415,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Commands are separated by `->`
 
--   **使用方法：**
+-   **Usage:**
 
     Basic usage: `execmulti <command 1> -> <command 2> -> <command 3> -> ...`
 
@@ -438,7 +438,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Disconnect and reconnect to the server
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /reco [account]
@@ -452,9 +452,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Reloads settings from MinecraftClient.ini and Chat Bots.
 
--   **使用方法：**
-
     > **ℹ️ NOTE: Some settings won't be reloaded since they are used before the client initialization. Also, settings provided by the command line paramteres will be overriden. This also does not reload the ReplayBot due to technical limitations.**
+
+-   **Usage:**
 
     ```
     /reload
@@ -466,7 +466,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Go to the given server and resume the script
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /connect <server> [account]
@@ -482,7 +482,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Run a script containing a list of commands
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /script <script name>
@@ -494,7 +494,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Send a message or a command to the server
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /send <text>
@@ -506,7 +506,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Use this to respawn if you are dead (like clicking "respawn" in-game)
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /respawn
@@ -518,7 +518,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Display some text in the console (useful for scripts)
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /log <text>
@@ -536,7 +536,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     List players logged in to the server (uses tab list info sent by server)
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /list
@@ -548,7 +548,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Set a value which can be used as `%variable%` in further commands
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /set <variable>=<value>
@@ -566,7 +566,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Set a `%variable%` randomly to one of the provided values
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /setrnd <variable> string1 "\"string2\" string3"
@@ -586,7 +586,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Toggle sneaking.
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /Sneak
@@ -598,7 +598,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Get the server TPS (Ticks Per Second).
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /tps
@@ -614,7 +614,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     > **⚠️ WARNING: The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`**
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /useitem
@@ -640,7 +640,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     > **⚠️ WARNING: The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`.**
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /useblock <x> <y> <z>
@@ -662,7 +662,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     > **ℹ️ NOTE: You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.** > **ℹ️ NOTE: You need to have [Enity Handling](configuration.md#entityhandling) enabled in order for this to work.**
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /follow <player name|stop>
@@ -678,9 +678,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
 -   **Description:**
 
--   **使用方法：**
-
     Wait X ticks (10 ticks = ~1 second. Only for scripts)
+
+-   **Usage:**
 
     ```
     /wait <time>
@@ -702,7 +702,8 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     > **⚠️ WARNING: The [Terrain and Movements](configuration.md#terrainandmovements) is currently not supported in `1.4.6 - 1.6`.**
 
--   **使用方法：**
+-   **Usage:**
+
     ```
     /move <on|off|get|up|down|east|west|north|south|center|x y z|gravity [on|off]> [-f]: walk or start walking. "-f": force unsafe movements like falling or touching fire
     ```
@@ -733,7 +734,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Used for looking at direction when terrain and movements is enabled
 
--   **使用方法：**
+-   **Usage:**
 
     ```
     /look <x y z|yaw pitch|up|down|east|west|north|south>
@@ -769,7 +770,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     ![Player Inventory](/images/guide/PlayerInventory.png "Player Inventory")
 
--   **使用方法：**
+-   **Usage:**
 
     Basic usage:
 

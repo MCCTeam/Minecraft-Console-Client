@@ -6,9 +6,9 @@ For now you can use our article from the [Git Hub repository Wiki](https://githu
 
 ## Translations
 
-MCC 现在支持这些语言（按字母顺序排列）：
+MCC now supports the following languages (Alphabetical order) :
   * `de.ini` : Deutsch - German
-  * **`en.ini`: English - English**
+  * **`en.ini` : English - English**
   * `fr.ini` : Français (France) - French
   * `ru.ini` : Русский (Russkiy) - Russian
   * `vi.ini` : Tiếng Việt (Việt Nam) - Vietnamese
@@ -37,6 +37,7 @@ MCC 现在支持这些语言（按字母顺序排列）：
     * For example:
         * Translation `fr.ini` applies to `fr_ca`, `fr_fr`.
         * Translation `zh-Hans.ini` applies to `zh_cn`.
+
 4. Add the new translation to the code. (Optional)
     * **If you are not familiar with programming, you can skip this step and just write the above information in your PR or issue.**
     * Add the newly created translation file `xx.ini` to the project `/Resources/lang/xx.ini`.
@@ -70,6 +71,6 @@ MCC 现在支持这些语言（按字母顺序排列）：
 
 4. In the English README, above the "About" section, add the name of the language and a hyperlink to `README-xx.md`.
 
-## 贡献者
+## Contributors
 
 [Check out our contributors on Github](https://github.com/MCCTeam/Minecraft-Console-Client/graphs/contributors).

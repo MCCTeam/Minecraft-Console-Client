@@ -2,7 +2,13 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+    paths:
+      - 'MinecraftClient'
+      - 'MinecraftClient.sln'
+      - 'ConsoleInteractive'
+  workflow_dispatch:
   
 env:
   PROJECT: "MinecraftClient"
