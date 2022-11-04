@@ -18,7 +18,7 @@ If you're not the kind of person that likes textual tutorials, our community has
 
 In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download)
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
 
@@ -85,7 +85,7 @@ If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in
 
 ### Linux, macOS
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)** 
 
@@ -122,7 +122,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
         dotnet publish MinecraftClient -f net6.0 -r linux-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+        <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
         **If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `'-r linux-64` with an appropriate `-r <your RID>` (Example for arm: `-r linux-arm64`)**
 
@@ -134,7 +134,7 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
         dotnet publish MinecraftClient -f net6.0 -r osx-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+        <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
         **If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `'-r osx-64` with an appropriate `-r <your RID>` (Example for arm: `-r osx.12-arm64`)**
 
@@ -152,13 +152,13 @@ Requirements:
 -   Git
 -   Docker
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **This section is for more advanced users, if you do not know how to install git or docker, you can take a look at other sections for Git, and search on how to install Docker on your system.**
 
 </div>
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **Pay attention at warnings, Docker currently works, but you must start the containers in the interactive mode or MCC will crash, we're working on solving this.**
 
@@ -179,7 +179,7 @@ docker build -t minecraft-console-client:latest .
 
 **Start the container using Docker:**
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+<div class="custom-container danger"><p class="custom-container-title">重要警告</p>
 
 **There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
 
@@ -238,19 +238,19 @@ docker-compose down
 
 It is possible to run the Minecraft Console Client on Android through Termux and Ubuntu 22.04 in it, however it requires a manual setup with a lot of commands, be careful no to skip any steps. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **This section is going to get a bit technical, I'll try my best to make everything as simple as possible. If you are having trouble following along or if you encounter any issues, feel free to open up a discussion on our Github repository page.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **You're required to have some bare basic knowledge of Linux, if you do not know anything about it, watch [this video](https://www.youtube.com/watch?v=SkB-eRCzWIU) to get familiar with basic commands.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **Here we're installing everything on the root account for simplicity sake, if you want to make a user account, make sure you update the command which reference the `/root` directory with your home directory.**
 
@@ -260,7 +260,7 @@ It is possible to run the Minecraft Console Client on Android through Termux and
 
 #### Termux
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **The Play Store version of Termux is outdated and not supported, do not use it, use the the [Github one](https://github.com/termux/termux-app/releases/latest/).**
 
@@ -268,13 +268,13 @@ It is possible to run the Minecraft Console Client on Android through Termux and
 
 Go to [the Termux Github latest release](https://github.com/termux/termux-app/releases/latest/), download the `debug_universal.apk`, unzip it and run it.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **If your file manager does not let you run APK files, install and use `File Manager +` and give it a permission to install 3rd party applications when asked.**
 
 </div>
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+<div class="custom-container danger"><p class="custom-container-title">重要警告</p>
 
 **Once you have installed Termux, open it, bring down the Android menu for notifications, on Termux notification, drag down until you see the following options: `Exit | Acquire wakelock`, press on the `Acquire wakelock` and allow Termux to have a battery optimization exclusion permission when asked. If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background!**
 
@@ -287,7 +287,7 @@ At this stage, you have 2 options:
 1. Following this textual tutorial
 2. Watching a [Youtube tutorial for installing Ubuntu](https://www.youtube.com/watch?v=5yit2t7smpM)
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **If you decide to watch the Youtube tutorial, watch only up to `1:58`, the steps after are not needed and might just confuse you.**
 
@@ -301,7 +301,7 @@ Once you have Termux installed open it up and run the following command one afte
 2. `pkg upgrade`
 3. `pkg install proot wget`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **If you're asked to press Y/N during the update/upgrade command process, just enter Y and press Enter**
 
@@ -327,7 +327,7 @@ Once the installation is complete, you can start Ubuntu with:
 ./startubuntu.sh
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **Now every time you open Termux after it has been closed, in order to access Ubuntu you have to use this command**
 
@@ -365,13 +365,13 @@ First you need to download .NET 6.0, you can do it with the following command:
 wget https://download.visualstudio.microsoft.com/download/pr/901f7928-5479-4d32-a9e5-ba66162ca0e4/d00b935ec4dc79a27f5bde00712ed3d7/dotnet-sdk-6.0.400-linux-arm64.tar.gz
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **This tutorial assumes that you have 64 bit version of ARM processor, if you happen to have a 32-bit version replace the link in the command above with [this one](https://download.visualstudio.microsoft.com/download/pr/cf567026-a29a-41aa-bc3a-e4e1ad0df480/0925d411e8e09e31ba7a39a3eb0e29af/aspnetcore-runtime-6.0.8-linux-arm.tar.gz)**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **This tutorial assumes that you're following along and using Ubuntu 22.04, if you're using a different distro, like Alpine, go to [here](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) and copy an appropriate link for your distro.**
 
@@ -381,7 +381,7 @@ Once the file has been downloaded, you need to run the following commands in ord
 
 1. `DOTNET_FILE=dotnet-sdk-6.0.400-linux-arm64.tar.gz`
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **If you're using a different download link, update the file name in this command to match your version.**
 
@@ -389,7 +389,7 @@ Once the file has been downloaded, you need to run the following commands in ord
 
 2. `export DOTNET_ROOT=/root/.dotnet`
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
 
@@ -400,7 +400,7 @@ Once the file has been downloaded, you need to run the following commands in ord
 
 Now we need to tell our shell to know where the `dotnet` command is, for future sessions, since the commands above just tell this current session where the `dotnet` is located.
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **You will need a basic knowledge of Nano text editor, if you do not know how to use it, watch this [Youtube video tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A)**
 
@@ -419,7 +419,7 @@ export DOTNET_ROOT=/root/.dotnet/
 export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
 ```
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
 
@@ -461,7 +461,7 @@ path-to-application:
 
 Finally, we can install MCC.
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **If you have a 32 ARM processor, you need to build the MCC yourself, take a look at the [Building From Source](#building-from-the-source-code) section. Also make sure to be using the appropriate `-r` parameter value for your architecture.**
 
@@ -526,7 +526,7 @@ Also, here are some linux tutorials for people who are new to it:
 
 ## Run on a VPS
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **This is a new section, if you find a mistake, please report it by opening an Issue in our [Github repository](https://github.com/MCCTeam/Minecraft-Console-Client). Thank you!**
 
@@ -557,7 +557,7 @@ Here is a [Youtube video](https://youtu.be/42fwh_1KP_o) that explains it in more
 
     Download and install [Gitbash](https://git-scm.com/downloads).
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Make sure to allow the installation to add it to the context menu**
 
@@ -596,7 +596,7 @@ The MCC is not expensive to run, so it can run on basically any hardware, you do
 
 **Where to buy a VPS?**
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+<div class="custom-container danger"><p class="custom-container-title">重要警告</p>
 
 **In this tutorial we will be using `Ubuntu 22.04`, make sure to select it as the OS when buying a VPS.**
 
@@ -608,7 +608,7 @@ Some of the reliable and cheap hosting providers (sorted for price/performance):
 
     **Minimum price**: `2.50 EUR / month`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Does not have Ubuntu 22.04 in the dropdown menu when ordering, you will have to re-install later or ask support to do it.**
 
@@ -636,25 +636,25 @@ You also may want to search for better deals.
 
 #### AWS EC2 VPS
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+<div class="custom-container danger"><p class="custom-container-title">重要警告</p>
 
 **This will require you to have a valid debit card that can be used on internet and a mobile phone number, as well as giving that info to Amazon corporation.**
 
 </div>
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **Scammers often get AWS VPS and use it to mass login on to stolen Microsoft accounts, some AWS IP addresses might be blocked by Microsoft because of that, if so, you might need to switch regions or to use a Proxy. To debug if your IP has been banned by Microsoft, use the `ping <ip>` and `traceroute <ip>` commands.**
 
 </div>
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **Related to the warning above, if you have issues logging with Microsoft and you're not banned, you may want to check the Security center on your account and approve the login from the VPS, this can be the case for some users.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **If you're not banned, sometimes fetching the keys can take some time, try giving it a minute or two, if it still hangs, hit some keys to refresh the screen, or try restarting and running again. If it still happens, use tmux instead of screen.**
 
@@ -666,7 +666,7 @@ Register on AWS and enter all of your billing info and a phone number. Once you'
 
 ### Initial Amazon VPS setup
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **Skip this section if you're not using AWS. Go to [Initial VPS setup](#initial-vps-setup)**
 
@@ -674,7 +674,7 @@ Register on AWS and enter all of your billing info and a phone number. Once you'
 
 When you register and open the `AWS Console`, click on the Search field on the top of the page and search for: `EC2`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **Make sure to select the region closest to you for the minimal latency**
 
@@ -688,7 +688,7 @@ Fill out the `Name` field with a name of your preference.
 
 For the **Application and OS images** select `Ubuntu Server 22.04 LTS (HVM), SSD Volume Type`.
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+<div class="custom-container danger"><p class="custom-container-title">重要警告</p>
 
 **Make sure that it has `Free tier eligible` next to it.**
 
@@ -700,7 +700,7 @@ For the **Instance type** select `t2.micro`.
 
 For the **Key pair (login)** click on **Create new key pair** and name it `VpsRoot`, leave the rest of settings as default and click **Create key pair**, this will generate a RSA private key that will be automatically downloaded.
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+<div class="custom-container danger"><p class="custom-container-title">重要警告</p>
 
 **Make sure that you save this file in a safe place and do not loose it, it's of an upmost importance since it's used to access the root/admin account of the VPS. Without it you will not be able to access the root account of the VPS! Also do not let it fall into wrong hands.**
 
@@ -714,7 +714,7 @@ For the **Network settings** check the following checkboxes on:
 -   `Allow HTTPs traffic from the internet`
 -   `Allow HTTP traffic from the internet`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **The SSH traffic from Anywhere is not the best thing for security, you might want to enter IP addresses of your devices from which you want to access the VPS manually.**
 
@@ -738,13 +738,13 @@ In order to login with SSH, you are going to use the following command:
 ssh -i <name of your private root key here> ubuntu@<your public dns v4 ip here>
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **`<` and `>` are not typed, that is just a notation for a placeholder!**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **`ubuntu` is a default root account username for Ubuntu on AWS!**
 
@@ -762,7 +762,7 @@ Now you can continue to [Creating a new user](#creating-a-new-user)
 
 ### Initial VPS setup
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **This section if for those who do not use AWS, if you use AWS skip it**
 
@@ -780,7 +780,7 @@ If you're on Windows open `Git Bash`, on mac OS and Linux open a `Terminal` and 
 ssh <username>@<ip>
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **If you're given a custom port other than `22` by your host, you should add `-p <port here>` before the username (eg. `ssh -p <port here> <username>@<ip>`) or `:<port>` after the ip (eg. `ssh <username>@<ip>:<port>`)**
 
@@ -806,7 +806,7 @@ Once you've logged in to your VPS you need to create a new user and give it SSH 
 
 In this tutorial we will be using `mcc` as a name for the user account that will be running the MCC.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **You may be wondering why we're creating a separate user account and making it be accessible over SSH only. This is for security reasons, if you do not want to do this, you're free to skip it, but be careful.**
 
@@ -824,13 +824,13 @@ Now we need to give it a password, execute the following command, type the passw
 sudo passwd mcc
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **When you're typing a password it will not be displayed on the screen, but you're typing it for real.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **Make sure you have a strong password!**
 
@@ -984,7 +984,7 @@ Example:
 ssh -i MCC_Key mcc@3.71.108.69
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **If you've changed the `Port`, make sure you add a `-p <your port here>` option after the `-i <key>` option (eg. `ssh -i MCC_Key -p 8973 mcc@3.71.108.69`)!**
 
@@ -998,13 +998,13 @@ Now you can install .NET Core 6 and MCC.
 
 ### Installing .NET Core 6
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **If your VPS has an ARM CPU, follow [this](#installing-net-on-arm) part of the documentation and then return to section after this one.**
 
 </div>
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **With newer versions of .NET Core 6 on Ubuntu 22.04 you might get the following error: `A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders`, if you get it, use [this solution](https://github.com/dotnet/sdk/issues/27082#issuecomment-1211143446)**
 
@@ -1090,7 +1090,7 @@ If it was successful, you can now install the MCC.
 
 Now that you have .NET Core 6.0 and a user account, you should install the `screen` utility, you will need this in order to keep the MCC running once you close down the SSH session (if you do not have it, the MCC will just stop working once you disconnect). You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time. You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **There is also a Docker method, if you're using Docker, you do not need the `screen` program.**
 
@@ -1112,7 +1112,7 @@ Now you can install the MCC:
 
 How to use the `screen` command?
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **If you have issues with Screen command, like output not being properly formatted or program handing/freezing, try using tmux, click [here](https://www.youtube.com/watch?v=Yl7NFenTgIo) to learn how to use it.**
 
@@ -1124,13 +1124,13 @@ To start a screen, type:
 screen -S mcc
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **`mcc` here is the name of the screen, you can use whatever you like, but if you've used a different name, make sure you use that one instead of the `mcc` in the following commands.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **You need to make a screen only once, however if you reboot your VPS, you need to start it on each reboot.**
 
