@@ -32,201 +32,201 @@ Para ejecutar **Minecraft Console Client** necesitas [.NET 6.0 o superior](https
 
 #### Descarga
 
-You can download a compiled binary file of the latest build from our Releases section on Git Hub: [Download](https://github.com/MCCTeam/Minecraft-Console-Client/releases)
+Puede descargar la última versión en nuestra sección de Versiones en Git Hub: [Click Aquí](https://github.com/MCCTeam/Minecraft-Console-Client/releases)
 
 ## Compilar desde el código fuente
 
 ### Windows
 
-Requirements:
+Requisitos:
 
 -   [Git](https://www.git-scm.com/)
--   [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
+-   [.NET 6.0 o superior](https://dotnet.microsoft.com/en-us/download) o [Visual Studio](https://visualstudio.microsoft.com/) configurado para el desarrollo de aplicaciones C#
 
-#### Cloning using Git
+#### Clonar usando Git
 
-Install [Git](https://www.git-scm.com/)
+Instala aquí: [Git](https://git-scm.com/)
 
-1. Make a new folder where you want to keep the source code
-2. Then open it up, hold `SHIFT` and do a `right-click` on the empty white space in the folder
-3. Click on `Git Bash Here` in the context menu
-4. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+1. Cree una nueva carpeta donde quiera conservar el código fuente
+2. Entra en la carpeta que has creado, mantén `SHIFT` y haz `Click-derecho` en el espacio vacío
+3. Haga clic en `Git Bash Here` en el menú contextual
+4. Clone el [Repositorio de Git Hub](https://github.com/MCCTeam/Minecraft-Console-Client) escribiendo y ejecutando el siguiente comando:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
-5. Once the repository has been cloned, you can close the `Git Bash` terminal emulator
-6. Open up the new cloned folder
+5. Una vez que el repositorio haya terminado de clonarse, puede cerrar la Consola de Comandos
+6. Abra la nueva carpeta clonada
 
-#### Building using the Visual Studio
+#### Compilar usando Visual Studio
 
-1. Open up the `MinecraftClient.sln` via Visual Studio
+1. Abra `MinecraftClient.sln` con Visual Studio
 2. Right click on `MinecraftClient` solution in the `Solution Explorer`
-3. Click on `Properties`
+3. Haga clic en `Propiedades`
 4. Open up the `Build` tab and select configuration `Release`
-5. Press `CTRL + S` and close the file
+5. Presione `CTRL + S` y cierre el archivo
 6. Right click on `MinecraftClient` solution in the `Solution Explorer`
 7. Click `Build`
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net6.0/win-x64/publish` folder.
+Si la compilación ha tenido éxito, el binario compilado `MinecraftClient.exe` estará en la carpeta: `MinecraftClient/bin/Release/net6.0/win-x64/publish`
 
-#### Building using .NET manually without Visual Studio
+#### Compilar manualmente usando .NET sin Visual Studio
 
-1. Open the `Minecraft-Console-Client` folder you've cloned or downloaded
-2. Open the PowerShell (`Right-Click` on the whitespace and click `Open PowerShell`, or in Windows Explorer: `File -> Open PowerShell`)
-3. Run the following command to build the project:
+1. Abra la carpeta `Minecraft-Console-Client` que ha clonado o descargado
+2. Abra PowerShell (`Click derecho` en el espacio en blanco y haga clic en `Abrir PowerShell`, o en el Explorador de Windows: `Archivo -> Abrir PowerShell`)
+3. Ejecute el siguiente comando para compilar el proyecto:
 
 ```bash
 dotnet publish MinecraftClient -f net6.0 -r win-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
 ```
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net6.0/win-x64/publish` folder.
+Si la compilación ha tenido éxito, el binario compilado `MinecraftClient.exe` estará en la carpeta: `MinecraftClient/bin/Release/net6.0/win-x64/publish`
 
-### Linux, macOS
+### Linux/macOS:
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)** 
+**Si estás usando Linux, asumiremos que puedes instalar git por tu cuenta. Si no sabes cómo, búscalo para tu distribución, debería ser fácil. (Distros basadas en Debian: `apt install git`, Basado en Arch: `pacman -S git`)** 
 
 </div>
 
-Requirements:
+Requisitos:
 
 -   Git
 
     -   Linux:
 
-    -   [Install Git on macOS](https://git-scm.com/download/mac)
+    -   [Instalar Git en macOS](https://git-scm.com/download/mac)
 
--   .NET SDK 6.0 or new-er
+-   .NET SDK 6.0 o superior
 
     -   [Instalar .NET en Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
     -   [Instalar .NET en macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
 
-#### Cloning using Git
+#### Clonar usando Git
 
-1. Open up a terminal emulator and navigate to the folder where you will store the MCC
-2. Recursively clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+1. Abra una terminal y entre a la carpeta donde guardará MCC
+2. Clone el [Repositorio de Git Hub](https://github.com/MCCTeam/Minecraft-Console-Client) escribiendo y ejecutando el siguiente comando:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
-3. Go to the folder you've cloned (should be `Minecraft-Console-Client`)
-4. Run the following command to build the project:
+3. Vaya a la carpeta que ha clonado (debería ser `Minecraft-Console-Client`)
+4. Ejecute el siguiente comando para compilar el proyecto:
 
-    - On Linux:
+    - En Linux:
 
         ```bash
         dotnet publish MinecraftClient -f net6.0 -r linux-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+        <div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-        **If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `'-r linux-64` with an appropriate `-r <your RID>` (Example for arm: `-r linux-arm64`)**
+        **Si estás usando Linux que sea ARM, 32-bit, basado en Rhel, Usando Musl o Tirzen, [encuentre el RID apropiado](https://docs. icrosoft.com/en-us/dotnet/core/rid-catalog#linux-rids) para tu plataforma y reemplaza el `'-r linux-64` con un apropiado `-r <your RID>` (Ejemplo para arm: `-r linux-arm64`)**
 
         </div>
 
-    - On macOS:
+    - En macOS:
 
         ```bash
         dotnet publish MinecraftClient -f net6.0 -r osx-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+        <div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-        **If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `'-r osx-64` with an appropriate `-r <your RID>` (Example for arm: `-r osx.12-arm64`)**
+        **Si no estás usando MAC con Intel, encuentre un RID apropiado para tu procesador ARM, [encuentra el RID apropiado](https://docs. icrosoft.com/en-us/dotnet/core/rid-catalog#macos-rids) y reemplaza el `'-r osx-64` con un `-r apropiado <your RID>` (Ejemplo para arm: `-r osx.12-arm64`)**
 
         </div>
 
-If the build has succeeded, the compiled binary `MinecraftClient` will be in:
+Si la compilación ha tenido éxito, el binario compilado `MinecraftClient` estará en:
 
 -   Linux: `MinecraftClient/bin/Release/net6.0/linux-x64/publish/`
 -   macOS: `MinecraftClient/bin/Release/net6.0/osx-x64/publish/`
 
-## Using Docker
+## Usando Docker
 
-Requirements:
+Requisitos:
 
 -   Git
 -   Docker
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**This section is for more advanced users, if you do not know how to install git or docker, you can take a look at other sections for Git, and search on how to install Docker on your system.**
-
-</div>
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**Pay attention at warnings, Docker currently works, but you must start the containers in the interactive mode or MCC will crash, we're working on solving this.**
+**Esta sección es para usuarios más avanzados, si no sabes cómo instalar git o docker, puede echar un vistazo a otras secciones para Git, y buscar sobre cómo instalar Docker en su sistema.**
 
 </div>
 
-1. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+<div class="custom-container warning"><p class="custom-container-title">ADVERTENCIA</p>
+
+**Preste atención a las advertencias, Docker funciona actualmente, pero debe iniciar los contenedores en el modo interactivo o MCC se bloqueará, estamos trabajando en resolver esto.**
+
+</div>
+
+1. Clone el [Repositorio de Git Hub](https://github.com/MCCTeam/Minecraft-Console-Client) escribiendo y ejecutando el siguiente comando:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
-2. Navigate to `Minecraft-Console-Client/Docker`
-3. Build the image using the following command
+2. Vaya a `Minecraft-Console-Client/Docker`
+3. Compile la imagen usando el siguiente comando:
 
 ```bash
 docker build -t minecraft-console-client:latest .
 ```
 
-**Start the container using Docker:**
+**Iniciar el contenedor usando Docker:**
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+<div class="custom-container danger"><p class="custom-container-title">ADVERTENCIA</p>
 
-**There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
+**Hay un error con ConsoleInteractive que causa un fallo cuando un contenedor se inicia en modo sin cabeza(headless), así que necesita usar el modo interactivo. No reinicie los contenedores de manera clásica, Deténgalo y entonces inícielo con el modo interactivo (este comando), después de eso simplemente desacopla con `CTRL + P` y luego `CTRL + Q`.**
 
 </div>
 
 ```bash
-# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
+# También puede ignorar el parámetro -v si no quiere montar el volumen, eso depende de usted. If you don't it's harder to edit the .ini file if thats something you want to do
 docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
-Now you could login and the Client is running.
+Ahora puede iniciar sesión y el Cliente se estará ejecutando.
 
-To detach from the Client but still keep it running in the Background press: `CTRL + P` and then after `CTRL + Q`.
+Para desacoplarse del cliente pero mantenerlo funcionando en segundo plano presione: `CTRL + P` y después `CTRL + Q`.
 
-To reattach use the `docker attach` command.
+Para reacoplarse use el comando: `docker attach`
 
-**Start the container using docker-compose:**
+**Iniciar el contenedor usando docker-compose:**
 
-By default, the volume of the container gets mapped into a new folder named `data` in the same folder the `docker-compose.yml` is stored.
+Por defecto, el volumen del contenedor se mapea en una nueva carpeta llamada `data` en la misma carpeta `docker-compose.yml` está almacenado.
 
-If you don't want to map a volume, you have to comment out or delete the entire volumes section:
+Si no desea mapear un volumen, tiene que ** ** o eliminar la entera sección de volúmenes:
 
 ```yml
-#volumes:
+#volúmenes:
 #- './data:/opt/data'
 ```
 
-Make sure you are in the directory the `docker-compose.yml` is stored before you attempt to start. If you do so, you can start the container:
+Asegúrese de que está en el directorio en el que se almacena `docker-compose.yml` antes de intentar iniciarlo. Cuando lo haga, puede iniciar el contenedor:
 
 ```bash
 docker-compose run MCC
 ```
 
-Remember to remove the container after usage:
+Recuerde eliminar el contenedor después de usarlo:
 
 ```bash
 docker-compose down
 ```
 
-If you use the INI file and entered your data (username, password, server) there, you can start your container using
+Si utiliza el archivo INI e ingresó sus datos (nombre de usuario, contraseña, servidor) en ese entonces, puede iniciar su contenedor usando:
 
 ```bash
 docker-compose up
-docker-compose up -d #for deamonized running in the background
+docker-compose up -d #para ejecutar deamonized en segundo plano
 ```
 
-Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`.
+Tenga en cuenta que no podrá interactuar con el cliente usando `docker-compose up`. Si desea esa funcionalidad, utilice el primer método: `docker-compose run MCC`.
 
 As above, you can stop and remove the container using
 
