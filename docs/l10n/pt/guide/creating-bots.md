@@ -8,11 +8,11 @@
 
 ## Notes
 
-::: tip
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
 **For now this page contains only the bare basics of the Chat Bot API, enough of details to teach you how to make basic Chat Bots. For more details you need to take a look at the [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) and [Examples](#examples). This page will be improved in the future.**
 
-:::
+</div>
 
 **Minecraft Console Client** has a rich C# API which allows you to create Chat Bots (effectively plugins) which can help you create complex automations which normal scripts may not be able to do.
 
@@ -36,11 +36,11 @@ More in-depth:
 
 This introduction assumes that you have the basic knowledge of C#.
 
-::: tip
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
 **Here we will use terms Chat Bot and Script interchangeably**
 
-:::
+</div>
 
 Create a new empty file and name it `ExampleChatBot.cs` in the same folder where you have your MCC installed.
 
@@ -115,11 +115,11 @@ MCC. LoadBot(new YourChatBotClassNameHere());
 
 **Script Metadata** section allows for including C# packages and libraries with: `//using <namespace>` and `/dll <dll name>`.
 
-::: tip
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
 **Avoid adding whitespace between `//` and keywords**
 
-:::
+</div>
 
 By the default the following packages are loaded:
 
@@ -163,11 +163,11 @@ There are no required methods, everything is optional.
 
 When the Chat Bot (Script) has been initialized for the first time the `Initialize` method will be called. In it you can initialize variables, eg. Dictionaries, etc..
 
-::: tip
+<div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
 **For allocating resources like a database connection, we recommend allocating them in `AfterGameJoined` and freeing them in `OnDisconnect`**
 
-:::.
+</div>.
 
 ## Examples
 
