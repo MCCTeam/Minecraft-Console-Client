@@ -20,38 +20,38 @@ export const defaultThemeConfig_it: DefaultThemeLocaleData = {
     navbar: [
         {
             text: Translation.navbar.AboutAndFeatures,
-            link: "/it/guide/",
+            link: "/l10n/it/guide/",
         },
         
         {
             text: Translation.navbar.Installation,
-            link: "/it/guide/installation.md",
+            link: "/l10n/it/guide/installation.md",
         },
       
         {
             text: Translation.navbar.Usage,
-            link: "/it/guide/usage.md",
+            link: "/l10n/it/guide/usage.md",
         },
       
         {
             text: Translation.navbar.Configuration,
-            link: "/it/guide/configuration.md",
+            link: "/l10n/it/guide/configuration.md",
         },
       
         {
             text: Translation.navbar.ChatBots,
-            link: "/it/guide/chat-bots.md",
+            link: "/l10n/it/guide/chat-bots.md",
         },
     ],
 
     sidebar: [
-        "/it/guide/README.md", 
-        "/it/guide/installation.md", 
-        "/it/guide/usage.md", 
-        "/it/guide/configuration.md", 
-        "/it/guide/chat-bots.md", 
-        "/it/guide/creating-bots.md", 
-        "/it/guide/contibuting.md"
+        "/l10n/it/guide/README.md", 
+        "/l10n/it/guide/installation.md", 
+        "/l10n/it/guide/usage.md", 
+        "/l10n/it/guide/configuration.md", 
+        "/l10n/it/guide/chat-bots.md", 
+        "/l10n/it/guide/creating-bots.md", 
+        "/l10n/it/guide/contibuting.md"
     ],
 
     // page meta

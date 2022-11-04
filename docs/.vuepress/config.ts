@@ -8,6 +8,8 @@ import { getDirname, path } from '@vuepress/utils'
 import { backToTopPlugin } from "@vuepress/plugin-back-to-top"
 import { externalLinkIconPlugin } from "@vuepress/plugin-external-link-icon"
 import { nprogressPlugin } from "@vuepress/plugin-nprogress"
+import { searchPlugin } from "@vuepress/plugin-search";
+import { activeHeaderLinksPlugin } from '@vuepress/plugin-active-header-links'
 
 import { headConfig } from './configs/head.js'
 import { mainConfig, defaultThemeConfig } from './configs/locales_config.js'
@@ -32,6 +34,7 @@ export default defineUserConfig({
   theme: defaultTheme({
     logo: "/images/MCC_logo.png",
     repo: "MCCTeam/Minecraft-Console-Client",
+    docsBranch: 'master',
     docsDir: 'docs',
 
     // theme-level locales config
@@ -60,5 +63,15 @@ export default defineUserConfig({
     nprogressPlugin(),
     // only enable shiki plugin in production mode
     isProd ? shikiPlugin({ theme: 'dark-plus' }) : [],
+    searchPlugin({
+        maxSuggestions: 15,
+        hotKeys: ["s", "/"],
+        locales: {
+            "/": {
+                placeholder: "Search",
+            },
+        },
+    }),
+    activeHeaderLinksPlugin(),
   ],
 })
