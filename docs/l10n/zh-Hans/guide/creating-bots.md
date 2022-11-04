@@ -127,7 +127,9 @@ Chat Bot (Script) structure is the following:
 <chat bot class>
 ```
 
-**Script Metadata** is a section with a custom format that mixes in C# with our format using comments. Every single Chat Bot (Script) must have this section at the beginning in order to work. Every single Chat Bot (Script) must have this section at the beginning in order to work.
+**Script Metadata** is a section with a custom format that mixes in C# with our format using comments. Every single Chat Bot (Script) must have this section at the beginning in order to work.
+
+Every single Chat Bot (Script) must have this section at the beginning in order to work.
 
 ### Script Metadata Format
 
@@ -193,7 +195,9 @@ After the end of the **Script Metadata** section, you basically can define any n
 
 There are no required methods, everything is optional.
 
-When the Chat Bot (Script) has been initialized for the first time the `Initialize` method will be called. In it you can initialize variables, eg. Dictionaries, etc.. In it you can initialize variables, eg. Dictionaries, etc..
+When the Chat Bot (Script) has been initialized for the first time the `Initialize` method will be called. In it you can initialize variables, eg. Dictionaries, etc..
+
+In it you can initialize variables, eg. Dictionaries, etc..
 
 <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
