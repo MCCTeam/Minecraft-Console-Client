@@ -18,7 +18,7 @@ If you're not the kind of person that likes textual tutorials, our community has
 
 In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download)
 
-> **⚠️ IMPORTANT: If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
+⚠️ IMPORTANT: If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.
 
 #### How to install .NET on your platform
 
@@ -340,12 +340,8 @@ dotnet
 You should get a help page:
 
 ```bash
-root@localhost:~# dotnet
-
-Usage: dotnet [options]
-Usage: dotnet [path-to-application]
-
-Options:
+root@localhost:~# dotnet Usage: dotnet [options]
+Usage: dotnet [path-to-application] Options:
   -h|--help         Display help.
   --info            Display .NET information.
   --list-sdks       Display the installed SDKs.
@@ -546,7 +542,7 @@ For the **Instance type** select `t2.micro`.
 
 For the **Key pair (login)** click on **Create new key pair** and name it `VpsRoot`, leave the rest of settings as default and click **Create key pair**, this will generate a RSA private key that will be automatically downloaded.
 
-> **⚠️ EXTREMELY IMPORTANT: Make sure that you save this file in a safe place and do not loose it, it's of an upmost importance since it's used to access the root/admin account of the VPS. Without it you will not be able to access the root account of the VPS! Also do not let it fall into wrong hands.**
+> **⚠️ EXTREMELY IMPORTANT: Make sure that you save this file in a safe place and do not loose it, it's of an upmost importance since it's used to access the root/admin account of the VPS. Without it you will not be able to access the root account of the VPS! Without it you will not be able to access the root account of the VPS! Also do not let it fall into wrong hands.**
 
 ![VPS Instance Type](/images/guide/VPS_InstanceType.png)
 
@@ -856,9 +852,7 @@ You should get:
 
 ```
 Usage: dotnet [options]
-Usage: dotnet [path-to-application]
-
-Options:
+Usage: dotnet [path-to-application] Options:
   -h|--help         Display help.
   --info            Display .NET information.
   --list-sdks       Display the installed SDKs.
