@@ -2,15 +2,102 @@
 import type { SiteLocaleConfig } from '@vuepress/shared'
 import type { LocaleConfig } from '@vuepress/shared'
 
+import { mainConfig_af, defaultThemeConfig_af } from './l10n_configs/af.js'
+import { mainConfig_ar, defaultThemeConfig_ar } from './l10n_configs/ar.js'
+import { mainConfig_ca, defaultThemeConfig_ca } from './l10n_configs/ca.js'
+import { mainConfig_cs, defaultThemeConfig_cs } from './l10n_configs/cs.js'
+import { mainConfig_da, defaultThemeConfig_da } from './l10n_configs/da.js'
+import { mainConfig_de, defaultThemeConfig_de } from './l10n_configs/de.js'
+import { mainConfig_el, defaultThemeConfig_el } from './l10n_configs/el.js'
 import { mainConfig_en, defaultThemeConfig_en } from './l10n_configs/en.js'
+import { mainConfig_es, defaultThemeConfig_es } from './l10n_configs/es.js'
+import { mainConfig_fi, defaultThemeConfig_fi } from './l10n_configs/fi.js'
+import { mainConfig_fr, defaultThemeConfig_fr } from './l10n_configs/fr.js'
+import { mainConfig_he, defaultThemeConfig_he } from './l10n_configs/he.js'
+import { mainConfig_hu, defaultThemeConfig_hu } from './l10n_configs/hu.js'
+import { mainConfig_it, defaultThemeConfig_it } from './l10n_configs/it.js'
+import { mainConfig_ja, defaultThemeConfig_ja } from './l10n_configs/ja.js'
+import { mainConfig_ko, defaultThemeConfig_ko } from './l10n_configs/ko.js'
+import { mainConfig_lv, defaultThemeConfig_lv } from './l10n_configs/lv.js'
+import { mainConfig_nl, defaultThemeConfig_nl } from './l10n_configs/nl.js'
+import { mainConfig_no, defaultThemeConfig_no } from './l10n_configs/no.js'
+import { mainConfig_pl, defaultThemeConfig_pl } from './l10n_configs/pl.js'
+import { mainConfig_pt_BR, defaultThemeConfig_pt_BR } from './l10n_configs/pt-BR.js'
+import { mainConfig_pt, defaultThemeConfig_pt } from './l10n_configs/pt.js'
+import { mainConfig_ro, defaultThemeConfig_ro } from './l10n_configs/ro.js'
+import { mainConfig_ru, defaultThemeConfig_ru } from './l10n_configs/ru.js'
+import { mainConfig_sr_Cyrl, defaultThemeConfig_sr_Cyrl } from './l10n_configs/sr-Cyrl.js'
+import { mainConfig_sv, defaultThemeConfig_sv } from './l10n_configs/sv.js'
+import { mainConfig_tr, defaultThemeConfig_tr } from './l10n_configs/tr.js'
+import { mainConfig_uk, defaultThemeConfig_uk } from './l10n_configs/uk.js'
+import { mainConfig_vi, defaultThemeConfig_vi } from './l10n_configs/vi.js'
 import { mainConfig_zh_Hans, defaultThemeConfig_zh_Hans } from './l10n_configs/zh-Hans.js'
+import { mainConfig_zh_Hant, defaultThemeConfig_zh_Hant } from './l10n_configs/zh-Hant.js'
 
 export const mainConfig: SiteLocaleConfig = {
+    '/af/': mainConfig_af,
+    '/ar/': mainConfig_ar,
+    '/ca/': mainConfig_ca,
+    '/cs/': mainConfig_cs,
+    '/da/': mainConfig_da,
+    '/de/': mainConfig_de,
+    '/el/': mainConfig_el,
     '/': mainConfig_en,
+    '/es/': mainConfig_es,
+    '/fi/': mainConfig_fi,
+    '/fr/': mainConfig_fr,
+    '/he/': mainConfig_he,
+    '/hu/': mainConfig_hu,
+    '/it/': mainConfig_it,
+    '/ja/': mainConfig_ja,
+    '/ko/': mainConfig_ko,
+    '/lv/': mainConfig_lv,
+    '/nl/': mainConfig_nl,
+    '/no/': mainConfig_no,
+    '/pl/': mainConfig_pl,
+    '/pt-BR/': mainConfig_pt_BR,
+    '/pt/': mainConfig_pt,
+    '/ro/': mainConfig_ro,
+    '/ru/': mainConfig_ru,
+    '/sr-Cyrl/': mainConfig_sr_Cyrl,
+    '/sv/': mainConfig_sv,
+    '/tr/': mainConfig_tr,
+    '/uk/': mainConfig_uk,
+    '/vi/': mainConfig_vi,
     '/zh-Hans/': mainConfig_zh_Hans,
+    '/zh-Hant/': mainConfig_zh_Hant,
 }
 
 export const defaultThemeConfig: LocaleConfig = {
+    '/af/': defaultThemeConfig_af,
+    '/ar/': defaultThemeConfig_ar,
+    '/ca/': defaultThemeConfig_ca,
+    '/cs/': defaultThemeConfig_cs,
+    '/da/': defaultThemeConfig_da,
+    '/de/': defaultThemeConfig_de,
+    '/el/': defaultThemeConfig_el,
     '/': defaultThemeConfig_en,
+    '/es/': defaultThemeConfig_es,
+    '/fi/': defaultThemeConfig_fi,
+    '/fr/': defaultThemeConfig_fr,
+    '/he/': defaultThemeConfig_he,
+    '/hu/': defaultThemeConfig_hu,
+    '/it/': defaultThemeConfig_it,
+    '/ja/': defaultThemeConfig_ja,
+    '/ko/': defaultThemeConfig_ko,
+    '/lv/': defaultThemeConfig_lv,
+    '/nl/': defaultThemeConfig_nl,
+    '/no/': defaultThemeConfig_no,
+    '/pl/': defaultThemeConfig_pl,
+    '/pt-BR/': defaultThemeConfig_pt_BR,
+    '/pt/': defaultThemeConfig_pt,
+    '/ro/': defaultThemeConfig_ro,
+    '/ru/': defaultThemeConfig_ru,
+    '/sr-Cyrl/': defaultThemeConfig_sr_Cyrl,
+    '/sv/': defaultThemeConfig_sv,
+    '/tr/': defaultThemeConfig_tr,
+    '/uk/': defaultThemeConfig_uk,
+    '/vi/': defaultThemeConfig_vi,
     '/zh-Hans/': defaultThemeConfig_zh_Hans,
+    '/zh-Hant/': defaultThemeConfig_zh_Hant,
 }
