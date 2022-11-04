@@ -44,7 +44,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.Alerts`**
+    **Section:** **`ChatBot. Alerts`**
 
     #### `Enabled`
 
@@ -172,7 +172,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.AntiAFK`**
+    **Section:** **`ChatBot. AntiAFK`**
 
     #### `Enabled`
 
@@ -272,7 +272,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.AutoAttack`**
+    **Section:** **`ChatBot. AutoAttack`**
 
     #### `Enabled`
 
@@ -445,7 +445,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.AutoCraft`**
+    **Section:** **`ChatBot. AutoCraft`**
 
 
     #### `Enabled`
@@ -501,9 +501,9 @@
 
     ### Defining a recipe
 
-    The recipes are defines as a separate new sub-section `[[ChatBot.AutoCraft.Recipes]]` of the `[ChatBot.AutoCraft]` section.
+    The recipes are defines as a separate new sub-section `[[ChatBot. AutoCraft. Recipes]]` of the `[ChatBot. AutoCraft]` section.
 
-    The `[[ChatBot.AutoCraft.Recipes]]` section needs to contain the following settings:
+    The `[[ChatBot. AutoCraft. Recipes]]` section needs to contain the following settings:
 
     -   `Name`
 
@@ -569,14 +569,14 @@
 
     ```toml
     # Stone Bricks using the player inventory
-    [[ChatBot.AutoCraft.Recipes]]
+    [[ChatBot. AutoCraft. Recipes]]
     Name = "Recipe-Name-1"
     Type = "player"
     Result = "StoneBricks"
     Slots = [ "Stone", "Stone", "Stone", "Stone", ]
 
     # Stone Bricks using a crafting table
-    [[ChatBot.AutoCraft.Recipes]]
+    [[ChatBot. AutoCraft. Recipes]]
     Name = "Recipe-Name-2"
     Type = "table"
     Result = "StoneBricks"
@@ -603,7 +603,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.AutoDig`**
+    **Section:** **`ChatBot. AutoDig`**
 
 
     #### `Enabled`
@@ -767,7 +767,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.AutoDrop`**
+    **Section:** **`ChatBot. AutoDrop`**
 
     #### `Enabled`
 
@@ -835,7 +835,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.AutoEat`**
+    **Section:** **`ChatBot. AutoEat`**
 
     #### `Enabled`
 
@@ -883,7 +883,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.AutoFishing`**
+    **Section:** **`ChatBot. AutoFishing`**
 
 
     #### `Enabled`
@@ -1055,7 +1055,7 @@
 
         Some plugins do not allow the player to fish in one place for a long time. This setting allows the player to change position/angle after each catch.
 
-        Each position is added as a new `[[ChatBot.AutoFishing.Movements]]` subsection, more on that bellow.
+        Each position is added as a new `[[ChatBot. AutoFishing. Movements]]` subsection, more on that bellow.
 
     -   **Available values:** `true` and `false`.
 
@@ -1066,7 +1066,7 @@
 
     ### Adding a position/movement
 
-    Each position/movement is added as a new `[[ChatBot.AutoFishing.Movements]]` subsection of `[ChatBot.AutoFishing]`.
+    Each position/movement is added as a new `[[ChatBot. AutoFishing. Movements]]` subsection of `[ChatBot. AutoFishing]`.
 
     **Avaliable settings/options:**
 
@@ -1108,10 +1108,10 @@
     #### Full example
 
     ```toml
-    [[ChatBot.AutoFishing.Movements]]
+    [[ChatBot. AutoFishing. Movements]]
     facing = { yaw = 12.34, pitch = -23.45 }
 
-    [[ChatBot.AutoFishing.Movements]]
+    [[ChatBot. AutoFishing. Movements]]
     XYZ = { x = 123.45, y = 64.0, z = -654.32 }
     facing = { yaw = -25.14, pitch = 36.25 }
     ```
@@ -1124,7 +1124,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.AutoRelog`**
+    **Section:** **`ChatBot. AutoRelog`**
 
     #### `Enabled`
 
@@ -1204,7 +1204,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.AutoRespond`**
+    **Section:** **`ChatBot. AutoRespond`**
 
     #### `Enabled`
 
@@ -1260,7 +1260,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.ChatLog`**
+    **Section:** **`ChatBot. ChatLog`**
 
     #### `Enabled`
 
@@ -1335,7 +1335,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.FollowPlayer`**
+    **Section:** **`ChatBot. FollowPlayer`**
 
     #### `Enabled`
 
@@ -1387,7 +1387,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.HangmanGame`**
+    **Section:** **`ChatBot. HangmanGame`**
 
     #### `Enabled`
 
@@ -1479,7 +1479,7 @@
 
 *   **Settings:**
 
-    **Section:** **`ChatBot.Mailer`**
+    **Section:** **`ChatBot. Mailer`**
 
 
     #### `Enabled`
@@ -1510,7 +1510,7 @@
 
     -   **Description:**
 
-        This setting specifies the path to the file where the Mailer Chat Bot will load people who are to be ignored by the Chat Bot. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line.
+        This setting specifies the path to the file where the Mailer Chat Bot will load people who are to be ignored by the Chat Bot. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line.
 
         This file will be auto created by the Mailer Chat Bot.
 
@@ -1586,7 +1586,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.Map`**
+    **Section:** **`ChatBot. Map`**
 
     #### `Enabled`
 
@@ -1678,7 +1678,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.PlayerListLogger`**
+    **Section:** **`ChatBot. PlayerListLogger`**
 
     #### `Enabled`
 
@@ -1722,7 +1722,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.RemoteControl`**
+    **Section:** **`ChatBot. RemoteControl`**
 
     #### `Enabled`
 
@@ -1776,7 +1776,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.ReplayCapture`**
+    **Section:** **`ChatBot. ReplayCapture`**
 
     #### `Enabled`
 
@@ -1811,7 +1811,7 @@
 
 -   **Settings:**
 
-    **Section:** **`ChatBot.ScriptScheduler`**
+    **Section:** **`ChatBot. ScriptScheduler`**
 
     #### `Enabled`
 
@@ -1830,12 +1830,12 @@
 
     -   **Description:**
 
-        Each task is defined as a new subsection `[[ChatBot.ScriptScheduler.TaskList]]` of the section: `[ChatBot.ScriptScheduler]`.
+        Each task is defined as a new subsection `[[ChatBot. ScriptScheduler. TaskList]]` of the section: `[ChatBot. ScriptScheduler]`.
 
         **Subsection format:**
 
         ```toml
-        [[ChatBot.ScriptScheduler.TaskList]]
+        [[ChatBot. ScriptScheduler. TaskList]]
         <setting> = <value>
         <setting> = <value>
         ```
@@ -1900,10 +1900,10 @@
     ### Full example
 
     ```toml
-    [ChatBot.ScriptScheduler]
+    [ChatBot. ScriptScheduler]
     Enabled = true
 
-        [[ChatBot.ScriptScheduler.TaskList]]
+        [[ChatBot. ScriptScheduler. TaskList]]
         Task_Name = "Task Name 1"
         Trigger_On_First_Login = false
         Trigger_On_Login = false
@@ -1911,7 +1911,7 @@
         Trigger_On_Interval = { Enable = true, MinTime = 3.6, MaxTime = 4.8 }
         Action = "send /hello"
 
-        [[ChatBot.ScriptScheduler.TaskList]]
+        [[ChatBot. ScriptScheduler. TaskList]]
         Task_Name = "Task Name 2"
         Trigger_On_First_Login = false
         Trigger_On_Login = true
