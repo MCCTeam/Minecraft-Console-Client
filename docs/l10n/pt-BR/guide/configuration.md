@@ -29,18 +29,16 @@ Full Example:
 
 ```toml
 [SectionNameHere]
-Setting_Name = "this is some name"
-Setting_Something = 15
+Setting_Name = "this is some name" Setting_Something = 15
 
 [OtherSection]
-# This is a comment explaining what this setting/option does
-Other_Setting = true  # This also is a comment
+# This is a comment explaining what this setting/option does Other_Setting = true  # This also is a comment
 
 [ThirdSection]
 Section_Enabled = true
 colors = [ "red", "yellow", "green" ]
 
-[ThirdSection.Subsection]
+[ThirdSection. Subsection]
 Coordinate = { x = 145, y = 64, y = 2045 }
 ```
 
@@ -48,7 +46,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 ### Main General section
 
--   **Section header:** `Main.General`
+-   **Section header:** `Main. General`
 
 #### `Account`
 
@@ -128,7 +126,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 ### Main Advanced section
 
--   **Section header:** `Main.Advanced`
+-   **Section header:** `Main. Advanced`
 
 #### `Language`
 
@@ -234,7 +232,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Type:** `string`
 
--   **Version format:** `1.X.X`
+-   **Version format:** `1. X.X`
 
 -   **Type:** `string`
 
@@ -534,7 +532,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 ### Account List section
 
--   **Section header:** `Main.Advanced.AccountList`
+-   **Section header:** `Main. Advanced. AccountList`
 
 -   **Description:**
 
@@ -560,7 +558,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 ### Server List section
 
--   **Section header:** `Main.Advanced.ServerList`
+-   **Section header:** `Main. Advanced. ServerList`
 
 -   **Description:**
 
@@ -829,7 +827,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This section allows you to define your own custom settings/variables which you can use in scripts, bots or other setting fields.
 
-    To define a variable/setting, simply make a new line with the following format under the `[AppVar.VarStirng]` section:
+    To define a variable/setting, simply make a new line with the following format under the `[AppVar. VarStirng]` section:
 
     > **ℹ️ NOTE: `%username%`, `%serverip%`, `%datetime%` are reserved variables**
 
@@ -913,7 +911,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ``
+-   **Default:** `` ``
 
 #### `Password`
 
@@ -923,7 +921,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ``
+-   **Default:** `` ``
 
 ## MCSettings section
 
@@ -1018,7 +1016,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 ## MCSettings Skin section
 
--   **Section header:** `MCSettings.Skin`
+-   **Section header:** `MCSettings. Skin`
 
 -   **Description:**
 
