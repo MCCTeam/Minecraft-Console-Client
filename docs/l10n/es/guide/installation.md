@@ -18,7 +18,7 @@ If you're not the kind of person that likes textual tutorials, our community has
 
 In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download)
 
-> **⚠️ IMPORTANT: If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
+If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.
 
 #### How to install .NET on your platform
 
@@ -457,7 +457,7 @@ Here is a [Youtube video](https://youtu.be/42fwh_1KP_o) that explains it in more
 
     If you're new to this, you can learn about it here:
 
-    - [What is Linux? by Bennett Bytes](https://www.youtube.com/watch?v=JsWQUOEL0N8)
+    - [What is Linux? by Bennett Bytes by Bennett Bytes](https://www.youtube.com/watch?v=JsWQUOEL0N8)
     - [Linux Terminal Introduction by ExplainingComputers](https://www.youtube.com/watch?v=SkB-eRCzWIU)
     - [Linux Crash Course - nano (command-line text editor) by Learn Linux TV](https://www.youtube.com/watch?v=DLeATFgGM-A)
     - [Linux Crash Course - The wget Command by Learn Linux TV](https://www.youtube.com/watch?v=F80Z5qd2b_4)
