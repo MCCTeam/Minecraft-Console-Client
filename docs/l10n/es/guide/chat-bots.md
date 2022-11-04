@@ -1465,7 +1465,7 @@
 
         Show all ignored players.
 
-    > **⚠️WARNING: The bot identifies players by their name (Not by UUID!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!).**
+    > **⚠️WARNING: The bot identifies players by their name (Not by UUID!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!). Never write something to the bot you wouldn't say in the normal chat (You have been warned!).**
 
     > **⚠️WARNING: Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `RemoteControl` only if you trust server admins.**
 
