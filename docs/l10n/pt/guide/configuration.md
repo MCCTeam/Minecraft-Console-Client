@@ -228,13 +228,12 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     BotOwners = [ "milutinke", "bradbyte", "BruceChen", ]
     ```
 
-
-
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**Admins can impersonate players on versions older than 1.19**
+    **Admins can impersonate players on versions older than 1.19**
 
     </div>
+
 
 #### `MinecraftVersion`
 
@@ -382,7 +381,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
-**This feature is currently not supported in `1.4.6 - 1.6`.**
+    **This feature is currently not supported in `1.4.6 - 1.6`.**
 
     </div>
 
