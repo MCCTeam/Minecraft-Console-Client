@@ -22,7 +22,7 @@ LangNameMap = {
    "no": "Norsk",
    "pl": "Polski",
    "pt": "Português (Portugal)",
-   "pt-br": "Português (Brasil)",
+   "pt-BR": "Português (Brasil)",
    "ro": "Română",
    "ru": "Русский",
    "sr-Cyrl": "Српски (Cyrillic)",
