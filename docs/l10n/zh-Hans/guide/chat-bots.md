@@ -897,15 +897,16 @@
 
     #### `Items`
 
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
+
+    </div>
+
     -   **Description:**
 
         This setting is where you can specify the list of items which you want to drop, or keep.
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
-
-      </div>
 
     -   **Format:** `[ "<item type>", "<item type>", ...]`
 
@@ -1286,17 +1287,17 @@
 
     #### `Retries`
 
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **This might get you banned by the server owners.**
+
+    </div>
+
     -   **Description:**
 
         Number of retries.
 
         Use `-1` for infinite retries.
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **This might get you banned by the server owners.**
-
-      </div>
 
     -   **Default:** `-1`
 
@@ -1364,6 +1365,12 @@
 
     #### `Matches_File`
 
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **This file is not created by default, we recommend making a clone of the [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini) and changing it according to your needs.**
+
+    </div>
+
     -   **Description:**
 
         This setting specifies the path to the file which contains the list of rules for detecting of keywords and responding on them.
@@ -1371,12 +1378,6 @@
         To find out how to configure the rules, take a look at the [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini) which has very detailed examples and a lot of comments.
 
         _PS: In the future we will document the rules here with examples too._
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **This file is not created by default, we recommend making a clone of the [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini) and changing it according to your needs.**
-
-      </div>
 
     -   **Type:** `string`
 
@@ -1386,6 +1387,12 @@
 
     #### `Match_Colors`
 
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **This feature uses the `§` symbol for color matching**
+
+    </div>
+
     -   **Description:**
 
         This setting specifies if the Auto Respond Chat Bot should keep the color formatting send by the server.
@@ -1393,12 +1400,6 @@
         You can use this when you need to match text by colors.
 
         List of all color codes: [here](https://minecraft.tools/en/color-code.php)
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **This feature uses the `§` symbol for color matching**
-
-      </div>
 
     -   **Type:** `boolean`
 
@@ -1584,15 +1585,15 @@
 
     #### `FileWords_EN`
 
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **This settings file is for English and is not created by the default**
+
+    </div>
+
     -   **Description:**
 
         This setting specifies the path to the file which Hangman will use for the list of words, each word is added on a separate line.
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **This settings file is for English and is not created by the default**
-
-      </div>
 
     -   **Default:** `hangman-en.txt`
     -   **Example**: [`words-en.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-en.txt)
@@ -1601,15 +1602,15 @@
 
     #### `FileWords_FR`
 
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **This settings file is for French and is not created by the default**
+
+    </div>
+
     -   **Description:**
 
         This setting is same as the above but for French.
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **This settings file is for French and is not created by the default**
-
-      </div>
 
     -   **Default:** `hangman-fr.txt`
     -   **Example**: [`words-fr.txt`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/hangman-fr.txt)
@@ -1803,23 +1804,23 @@
 
     #### `Should_Resize`
 
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **The bigger the size, the less is the quality.**
+
+    </div>
+
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **For upscaling your maps you could use (getting a bit better quality): https://deepai.org/machine-learning-model/torch-srgan**
+
+    </div>
+
     -   **Description:**
 
         This setting specifies if the Map Chat Bot should resize the image.
 
         The default map size is `128x128`.
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **The bigger the size, the less is the quality.**
-
-      </div>
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **For upscaling your maps you could use (getting a bit better quality): https://deepai.org/machine-learning-model/torch-srgan**
-
-      </div>
 
     -   **Available values:** `true` and `false`.
 
@@ -1843,15 +1844,15 @@
 
     #### `Auto_Render_On_Update`
 
+    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+
+    **On some versions older than 1.17 this could cause some performance issue on older hardware if there a lot of maps being rendered, since map updates are sent multiple times a second. Be careful.**
+
+    </div>
+
     -   **Description:**
 
         This setting specifies if the Map Chat Bot should automatically render maps as they're received from the servers.
-
-        <div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-      **On some versions older than 1.17 this could cause some performance issue on older hardware if there a lot of maps being rendered, since map updates are sent multiple times a second. Be careful.**
-
-      </div>
 
     -   **Available values:** `true` and `false`.
 
@@ -2066,6 +2067,12 @@
 
     ### Defining a task
 
+    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+
+    **It is recommended that you align subsections to the right by one tab or 4 spaces for better readability.**
+
+    </div>
+
     -   **Description:**
 
         Each task is defined as a new subsection `[[ChatBot.ScriptScheduler.TaskList]]` of the section: `[ChatBot.ScriptScheduler]`.
@@ -2077,12 +2084,6 @@
         <setting> = <value>
         <setting> = <value>
         ```
-
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-      **It is recommended that you align subsections to the right by one tab or 4 spaces for better readability.**
-
-      </div>
 
         **Avaliable settings/options:**
 
