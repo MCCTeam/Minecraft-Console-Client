@@ -193,7 +193,7 @@
 
         The time interval for execution in seconds.
 
-        If the `min` and `max` are the same, the time interval will be consistent. However if they are not the same, the plugin will choose a random number between `min` and `max`, this is useful if you want to have a random interval to trick anti afk plugins.
+        If the `min` and `max` are the same, the time interval will be consistent. If the `min` and `max` are the same, the time interval will be consistent. However if they are not the same, the plugin will choose a random number between `min` and `max`, this is useful if you want to have a random interval to trick anti afk plugins.
 
     -   **Format:** `{ min = <seconds>, max = <seconds> }`
 
@@ -232,7 +232,7 @@
 
         This will enable your bot to randomly move about, thus a better anti afk effect.
 
-        > **ℹ️ NOTE: You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5)**
+        > **ℹ️ NOTE: You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5) (Recommended size 5x5x5)**
 
     -   **Available values:** `true` and `false`.
 
@@ -347,7 +347,7 @@
 
         -   `Attack`
 
-            Just attack a mob. (Default)
+            Just attack a mob. (Default) (Default)
 
         -   `Interact`
 
@@ -527,7 +527,7 @@
 
     -   `Slots`
 
-        This setting is an array/list of material names (strings) that go into an each slot (max 9 elements). Empty slots should be marked with `"Null"`
+        This setting is an array/list of material names (strings) that go into an each slot (max 9 elements). Empty slots should be marked with `"Null"` Empty slots should be marked with `"Null"`
 
         **Type:** `array of strings`
 
@@ -537,7 +537,7 @@
         Slots = [ "<material/item type>", "<material/item type>", ... ]
         ```
 
-        > **ℹ️ NOTE: If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
+        > **ℹ️ NOTE: If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]` Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
 
         > **ℹ️ NOTE: All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
 
@@ -969,7 +969,7 @@
 
     -   **Description:**
 
-        How long the fish bite is not detected is considered a timeout. It will re-cast after the timeout.
+        How long the fish bite is not detected is considered a timeout. It will re-cast after the timeout. It will re-cast after the timeout.
 
     -   **Type:** `float`
 
@@ -1053,7 +1053,7 @@
 
     -   **Description:**
 
-        Some plugins do not allow the player to fish in one place for a long time. This setting allows the player to change position/angle after each catch.
+        Some plugins do not allow the player to fish in one place for a long time. This setting allows the player to change position/angle after each catch. This setting allows the player to change position/angle after each catch.
 
         Each position is added as a new `[[ChatBot.AutoFishing.Movements]]` subsection, more on that bellow.
 
@@ -1145,7 +1145,7 @@
 
         The delay time before joining the server.
 
-        If the `min` and `max` are the same, the time will be consistent, however, if you want a random time, you can set `min` and `max` to different values to get a random time. The time format is in seconds, and the type is double. (eg. `37.0`)
+        If the `min` and `max` are the same, the time will be consistent, however, if you want a random time, you can set `min` and `max` to different values to get a random time. The time format is in seconds, and the type is double. (eg. `37.0`) The time format is in seconds, and the type is double. (eg. `37.0`)
 
     -   **Format:** `{ min = <seconds (double)>, max = <seconds (double)> }`
 
@@ -1329,7 +1329,7 @@
 
     This bot enables you to make a bot follow a specific player.
 
-    > **ℹ️ NOTE: The bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you, it's similar to making animals follow you when you're holding food in your hand. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more.**
+    > **ℹ️ NOTE: The bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you, it's similar to making animals follow you when you're holding food in your hand. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more.**
 
     > **ℹ️ NOTE: You need to have [terrainandmovements](configuration.md#terrainandmovements) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
 
@@ -1447,7 +1447,7 @@
     -   `/tell <Bot> mail [RECIPIENT] [MESSAGE]`: Save your message for future delivery
     -   `/tell <Bot> tellonym [RECIPIENT] [MESSAGE]`: Same, but the recipient will receive an anonymous mail
 
-    The bot will automatically deliver the mail when the recipient is online. The bot also offers a /mailer command from the MCC command prompt:
+    The bot will automatically deliver the mail when the recipient is online. The bot will automatically deliver the mail when the recipient is online. The bot also offers a /mailer command from the MCC command prompt:
 
     -   `/mailer getmails`
 
@@ -1465,7 +1465,7 @@
 
         Show all ignored players.
 
-    > **⚠️WARNING: The bot identifies players by their name (Not by UUID!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!).**
+    > **⚠️WARNING: The bot identifies players by their name (Not by UUID!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!).**
 
     > **⚠️WARNING: Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `RemoteControl` only if you trust server admins.**
 
@@ -1510,7 +1510,7 @@
 
     -   **Description:**
 
-        This setting specifies the path to the file where the Mailer Chat Bot will load people who are to be ignored by the Chat Bot. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line.
+        This setting specifies the path to the file where the Mailer Chat Bot will load people who are to be ignored by the Chat Bot. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line. If you want to prevent someone from using this chat bot, add him in this file by writing his nickname on a new line.
 
         This file will be auto created by the Mailer Chat Bot.
 
@@ -1572,7 +1572,7 @@
 
     The maps are **rendered** into `Rendered_Maps` folder.
 
-    > **⚠️WARNING: This bot has only been tested on Windows 10, it may not work on Linux or Mac OS due to .NET BitMap API. We're looking forward to swap the underlaying Bitmap API dependency with a library.**
+    > **⚠️WARNING: This bot has only been tested on Windows 10, it may not work on Linux or Mac OS due to .NET BitMap API. We're looking forward to swap the underlaying Bitmap API dependency with a library. We're looking forward to swap the underlaying Bitmap API dependency with a library.**
 
 -   **Commands:**
 
@@ -1637,7 +1637,7 @@
 
         This setting specifies if the Map Chat Bot should automatically render maps as they're received from the servers.
 
-        > **⚠️WARNING: On some versions older than 1.17 this could cause some performance issue on older hardware if there a lot of maps being rendered, since map updates are sent multiple times a second. Be careful.**
+        > **⚠️WARNING: On some versions older than 1.17 this could cause some performance issue on older hardware if there a lot of maps being rendered, since map updates are sent multiple times a second. Be careful. Be careful.**
 
     -   **Available values:** `true` and `false`.
 
@@ -1868,7 +1868,7 @@
 
             -   `Enable` - Enables/Disables the setting (Boolean, so either `true` or `false`)
 
-            -   `Times` - An array/list of times on which the task should run/trigger (each element is of the [Local Time](https://toml.io/en/v1.0.0#local-time) type, eg. `14:00:00`, so: `hours:minutes:seconds`)
+            -   `Times` - An array/list of times on which the task should run/trigger (each element is of the [Local Time](https://toml.io/en/v1.0.0#local-time) type, eg. `14:00:00`, so: `hours:minutes:seconds`) `14:00:00`, so: `hours:minutes:seconds`)
 
             **Example**:
 
@@ -1884,9 +1884,9 @@
 
             -   `Enable` - Enables/Disables the setting (Boolean, so either `true` or `false`)
 
-            -   `MinTime` - Time in seconds (the type is `double`, eg. `3.14`)
+            -   `MinTime` - Time in seconds (the type is `double`, eg. `3.14`) `3.14`)
 
-            -   `MaxTime` - Time in seconds (the type is `double`, eg. `3.14`)
+            -   `MaxTime` - Time in seconds (the type is `double`, eg. `3.14`) `3.14`)
 
             **If `MinTime` and `MaxTime` are the same, the interval will be consistent, however if they are not, the ChatBot will generate a random interval in between those two numbers provided, each time the task is run.**
 
