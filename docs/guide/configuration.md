@@ -4,7 +4,9 @@
 
 By the default all of the configurations are stored in the configuration file named `MinecraftClient.ini` which is created the first time you run the program, but you also can specify your own configuration file by providing a path to it as a first parameter when starting the MCC, check out [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
 
-> **⚠️ IMPORTANT WARNING: Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
+::: warning
+**Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
+:::
 
 ## Notes
 
@@ -98,7 +100,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you define the type of your account: `mojang` or `microsoft`
 
-    > **ℹ️ NOTE: Mojang accounts are going to stop working soon for everyone, they already are not working for some people.**
+    ::: tip
+    **Mojang accounts are going to stop working soon for everyone, they already are not working for some people.**
+    :::
 
 -   **Type:** `string`
 
@@ -223,7 +227,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     BotOwners = [ "milutinke", "bradbyte", "BruceChen", ]
     ```
 
-    > **⚠️ WARNING: Admins can impersonate players on versions older than 1.19**
+    ::: warning
+**Admins can impersonate players on versions older than 1.19**
+:::
 
 #### `MinecraftVersion`
 
@@ -247,7 +253,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     MinecraftVersion = "1.18.2"
     ```
 
-    > **ℹ️ NOTE: MCC supports only 1.4.6 - 1.19.2**
+    ::: tip
+    **MCC supports only 1.4.6 - 1.19.2**
+    :::
 
 #### `EnableForge`
 
@@ -265,7 +273,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `auto`
 
-    > **ℹ️ NOTE: Force-enabling only works for MC 1.13 +**
+    ::: tip
+    **Force-enabling only works for MC 1.13 +**
+    :::
 
 #### `BrandInfo`
 
@@ -278,7 +288,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `mcc`
 
-    > **ℹ️ NOTE: For playing on Hypixel you need to use `vanilla`**
+    ::: tip
+    **For playing on Hypixel you need to use `vanilla`**
+    :::
 
 #### `ChatbotLogFile`
 
@@ -358,13 +370,17 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you can set if you want to enable terrain movement, so you can use command like `/move` and some bots.
 
-    > **⚠️ WARNING: This feature is currently not supported in `1.4.6 - 1.6`.**
+    ::: warning
+**This feature is currently not supported in `1.4.6 - 1.6`.**
+:::
 
 -   **Type:** `boolean`
 
 -   **Default:** `false`
 
-> **ℹ️ NOTE: Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
+::: tip
+**Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
+:::
 
 #### `InventoryHandling`
 
@@ -372,7 +388,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you can set if you want to enable inventory handling using the `/inventory` command.
 
-    > **⚠️ WARNING: This feature is currently not supported in `1.4.6 - 1.9`.**
+    ::: warning
+    **This feature is currently not supported in `1.4.6 - 1.9`.**
+    :::
 
 -   **Type:** `boolean`
 
@@ -384,13 +402,17 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you can set if you want to enable interactions with entities such as players, mobs, minecarts, etc..
 
-    > **⚠️ WARNING: This feature is currently not supported in `1.4.6 - 1.9`.**
+    ::: warning
+    **This feature is currently not supported in `1.4.6 - 1.9`.**
+    :::
 
 -   **Type:** `boolean`
 
 -   **Default:** `false`
 
-    > **ℹ️ NOTE: Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
+    ::: tip
+    **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
+    :::
 
 #### `SessionCache`
 
@@ -439,7 +461,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `true`
 
-    > **ℹ️ NOTE: Only works on Windows XP-8 or Windows 10 with old console**
+    ::: tip
+    **Only works on Windows XP-8 or Windows 10 with old console**
+    :::
 
 #### `ExitOnFailure`
 
@@ -481,7 +505,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
-    > **ℹ️ NOTE: Make sure the spawn point is safe**
+    ::: tip
+    **Make sure the spawn point is safe**
+    :::
 
 #### `MinecraftRealms`
 
@@ -533,7 +559,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `2`
 
-> **⚠️ WARNING: A movement speed higher than 2 may be considered cheating by some plugins.**
+::: warning
+**A movement speed higher than 2 may be considered cheating by some plugins.**
+:::
 
 ### Account List section
 
@@ -755,7 +783,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `.*`
 
-    > **ℹ️ NOTE: Not filtering anything by default**
+    ::: tip
+    **Not filtering anything by default**
+    :::
 
 #### `DebugFilterRegex`
 
@@ -769,7 +799,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `.*`
 
-    > **ℹ️ NOTE: Not filtering anything by default**
+    ::: tip
+    **Not filtering anything by default**
+    :::
 
 #### `FilterMode`
 
@@ -803,7 +835,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `console-log.txt`
 
-    > **ℹ️ NOTE: %username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
+    ::: tip
+    **%username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
+    :::
 
 #### `PrependTimestamp`
 
@@ -837,7 +871,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     To define a variable/setting, simply make a new line with the following format under the `[AppVar.VarStirng]` section:
 
-    > **ℹ️ NOTE: `%username%`, `%serverip%`, `%datetime%` are reserved variables**
+    ::: tip
+    **`%username%`, `%serverip%`, `%datetime%` are reserved variables**
+    :::
 
 -   **Section header:** `Logging`
 
@@ -879,7 +915,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
-    > **⚠️ WARNING: Make sure your server rules allow Proxies or VPNs before setting the setting to `true`, or you may face consequences!**
+    ::: warning
+    **Make sure your server rules allow Proxies or VPNs before setting the setting to `true`, or you may face consequences!**
+    :::
 
 #### `Server`
 
