@@ -190,7 +190,11 @@ docker build -t minecraft-console-client:latest .
 docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
-Now you could login and the Client is running. Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P` and then after `CTRL + Q`. To reattach use the `docker attach` command. To reattach use the `docker attach` command.
+Now you could login and the Client is running.
+
+Now you could login and the Client is running. To detach from the Client but still keep it running in the Background press: `CTRL + P` and then after `CTRL + Q`. To reattach use the `docker attach` command.
+
+To reattach use the `docker attach` command.
 
 **Start the container using docker-compose:**
 
@@ -222,7 +226,9 @@ docker-compose up
 docker-compose up -d #for deamonized running in the background
 ```
 
-Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`. As above, you can stop and remove the container using If you want that functionality, please use the first method: `docker-compose run MCC`. As above, you can stop and remove the container using
+Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`. As above, you can stop and remove the container using If you want that functionality, please use the first method: `docker-compose run MCC`.
+
+As above, you can stop and remove the container using
 
 ```bash
 docker-compose down
@@ -313,7 +319,9 @@ Once the script has downloaded, run it with:
 bash ubuntu.sh
 ```
 
-Then you will be asked a question, enter `Y` and press `Enter`. Once the installation is complete, you can start Ubuntu with: Once the installation is complete, you can start Ubuntu with:
+Then you will be asked a question, enter `Y` and press `Enter`. Once the installation is complete, you can start Ubuntu with:
+
+Once the installation is complete, you can start Ubuntu with:
 
 ```bash
 ./startubuntu.sh
@@ -505,7 +513,9 @@ To stop MCC from running you can press `CTRL + C`
 
 To edit the configuration/settings, you need a text editor, we recommend Nano, as it's very simple to use, if you have followed the installation steps above, you should be familiar with it, if not, check out [this tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A).
 
-For downloading files, you can use the `wget` file we have installed, simply run: `wget your_link_here` (you have examples above, and a video tutorial down bellow).
+For downloading files, you can use the `wget` file we have installed, simply run:
+
+`wget your_link_here` (you have examples above, and a video tutorial down bellow).
 
 Also, here are some linux tutorials for people who are new to it:
 
@@ -650,7 +660,9 @@ You also may want to search for better deals.
 
 </div>
 
-Register on AWS and enter all of your billing info and a phone number. Register on AWS and enter all of your billing info and a phone number. Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an-aws-vps).
+Register on AWS and enter all of your billing info and a phone number.
+
+Register on AWS and enter all of your billing info and a phone number. Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an-aws-vps).
 
 ### Initial Amazon VPS setup
 
@@ -868,7 +880,11 @@ Make a new empty file named `authorized_keys`:
 touch authorized_keys
 ```
 
-Do no close the Git bash/Terminal emulator. On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account. Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called). On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account. Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called).
+Do no close the Git bash/Terminal emulator. On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account. Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called).
+
+On your PC, make a new folder where you are going to store your SSH keys that you're going to use to log in to the user account.
+
+Open the folder, and right click on the empty white space (not on files), if you're on Windows click **Git Bash here**, on mac OS and Linux click on **Open Terminal** (or whatever it is called).
 
 Type the following command:
 
@@ -946,7 +962,9 @@ Let's check if everything is working correctly:
 sudo systemctl status sshd
 ```
 
-If everything has been configured as it should be you should see `active (running)` as a status of the service. If not, open the config file again and check for mistakes. If not, open the config file again and check for mistakes.
+If everything has been configured as it should be you should see `active (running)` as a status of the service. If not, open the config file again and check for mistakes.
+
+If not, open the config file again and check for mistakes.
 
 Press `q` to exit the log mode.
 
