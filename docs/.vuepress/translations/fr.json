@@ -1,6 +1,7 @@
 {
     "title": "Minecraft Console Client",
     "description": "Documentation website for the Minecraft Console Client (MCC)",
+    "helpUsTranslate": "Help us translate",
     "theme": {
         "selectLanguageName": "English",
         "selectLanguageText": "Languages",
@@ -8,9 +9,9 @@
         "editLinkText": "Edit this page",
         "lastUpdatedText": "Last Updated",
         "contributorsText": "Contributors",
-        "tip": "tip",
-        "warning": "warning",
-        "danger": "danger",
+        "tip": "Tip",
+        "warning": "Warning",
+        "danger": "Danger",
         "notFound": [
             "There's nothing here.",
             "How did we get here?",

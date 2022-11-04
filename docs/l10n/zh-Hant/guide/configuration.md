@@ -4,7 +4,9 @@
 
 By the default all of the configurations are stored in the configuration file named `MinecraftClient.ini` which is created the first time you run the program, but you also can specify your own configuration file by providing a path to it as a first parameter when starting the MCC, check out [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
 
-> **⚠️ IMPORTANT WARNING: Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
+::: warning
+**Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
+:::
 
 ## Notes
 
@@ -70,7 +72,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This is the setting where you provide the address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically)
+    This is the setting where you provide the address of the game server, "Host" can be filled in with domain name or IP address. (The "Port" field can be deleted, it will be resolved automatically) (The "Port" field can be deleted, it will be resolved automatically)
 
     Host can also fill in the nickname of the server in the "Server List" below.
 
@@ -98,7 +100,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you define the type of your account: `mojang` or `microsoft`
 
-    > **ℹ️ NOTE: Mojang accounts are going to stop working soon for everyone, they already are not working for some people.**
+    ::: tip **Mojang accounts are going to stop working soon for everyone, they already are not working for some people.**
+:::
 
 -   **Type:** `string`
 
@@ -136,9 +139,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you define which language you want to use.
 
-    When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages. These files describe how some messages should be printed depending on your preferred language.
+    When connecting to 1.6+ servers, you will need a translation file to display properly some chat messages. These files describe how some messages should be printed depending on your preferred language. These files describe how some messages should be printed depending on your preferred language.
 
-    The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file.
+    The client will automatically load `en_GB.lang` from your Minecraft folder if Minecraft is installed on your computer, or download it from Mojang's servers. You may choose another language in the configuration file. You may choose another language in the configuration file.
 
     To find your language code, check [this link](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239s).
 
@@ -156,7 +159,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting is where you can change the title of the program window if you want to. You can use the variables in it.
+    This setting is where you can change the title of the program window if you want to. You can use the variables in it. You can use the variables in it.
 
 -   **Type:** `string`
 
@@ -204,7 +207,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting is where you can set the owners of the bots/client which can be used by some plugins. The names are separated as strings within an array, separated by commas.
+    This setting is where you can set the owners of the bots/client which can be used by some plugins. The names are separated as strings within an array, separated by commas. The names are separated as strings within an array, separated by commas.
 
 -   **Format:**
 
@@ -222,7 +225,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     BotOwners = [ "milutinke", "bradbyte", "BruceChen", ]
     ```
 
-    > **⚠️ WARNING: Admins can impersonate players on versions older than 1.19**
+    ::: warning **Admins can impersonate players on versions older than 1.19**
+:::
 
 #### `MinecraftVersion`
 
@@ -246,7 +250,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     MinecraftVersion = "1.18.2"
     ```
 
-    > **ℹ️ NOTE: MCC supports only 1.4.6 - 1.19.2**
+    ::: tip **MCC supports only 1.4.6 - 1.19.2**
+:::
 
 #### `EnableForge`
 
@@ -264,19 +269,21 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `auto`
 
-    > **ℹ️ NOTE: Force-enabling only works for MC 1.13 +**
+    ::: tip **Force-enabling only works for MC 1.13 +**
+:::
 
 #### `BrandInfo`
 
 -   **Description:**
 
-    This setting is where you can change how MCC identifies itself to the server. It can be whatever you like, example: `vanilla`, `mcc`, `empty`.
+    This setting is where you can change how MCC identifies itself to the server. It can be whatever you like, example: `vanilla`, `mcc`, `empty`. It can be whatever you like, example: `vanilla`, `mcc`, `empty`.
 
 -   **Type:** `string`
 
 -   **Default:** `mcc`
 
-    > **ℹ️ NOTE: For playing on Hypixel you need to use `vanilla`**
+    ::: tip **For playing on Hypixel you need to use `vanilla`**
+:::
 
 #### `ChatbotLogFile`
 
@@ -356,13 +363,16 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you can set if you want to enable terrain movement, so you can use command like `/move` and some bots.
 
-    > **⚠️ WARNING: This feature is currently not supported in `1.4.6 - 1.6`.**
+    ::: warning **This feature is currently not supported in `1.4.6 - 1.6`.**
+:::
 
 -   **Type:** `boolean`
 
 -   **Default:** `false`
 
-> **ℹ️ NOTE: Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
+::: tip
+**Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
+:::
 
 #### `InventoryHandling`
 
@@ -370,7 +380,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you can set if you want to enable inventory handling using the `/inventory` command.
 
-    > **⚠️ WARNING: This feature is currently not supported in `1.4.6 - 1.9`.**
+    ::: warning **This feature is currently not supported in `1.4.6 - 1.9`.**
+:::
 
 -   **Type:** `boolean`
 
@@ -382,13 +393,15 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you can set if you want to enable interactions with entities such as players, mobs, minecarts, etc..
 
-    > **⚠️ WARNING: This feature is currently not supported in `1.4.6 - 1.9`.**
+    ::: warning **This feature is currently not supported in `1.4.6 - 1.9`.**
+:::
 
 -   **Type:** `boolean`
 
 -   **Default:** `false`
 
-    > **ℹ️ NOTE: Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
+    ::: tip **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
+:::
 
 #### `SessionCache`
 
@@ -420,7 +433,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Use `no`, `fast` (5s timeout), or `yes`. Required for joining some servers.
+    Use `no`, `fast` (5s timeout), or `yes`. Required for joining some servers. Required for joining some servers.
 
 -   **Type:** `string`
 
@@ -436,7 +449,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `true`
 
-    > **ℹ️ NOTE: Only works on Windows XP-8 or Windows 10 with old console**
+    ::: tip **Only works on Windows XP-8 or Windows 10 with old console**
+:::
 
 #### `ExitOnFailure`
 
@@ -478,7 +492,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
-    > **ℹ️ NOTE: Make sure the spawn point is safe**
+    ::: tip **Make sure the spawn point is safe**
+:::
 
 #### `MinecraftRealms`
 
@@ -504,7 +519,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting allows you to define a custom timeout period in seconds. Use only if you know what you're doing.
+    This setting allows you to define a custom timeout period in seconds. Use only if you know what you're doing. Use only if you know what you're doing.
 
 -   **Type:** `integer`
 
@@ -530,7 +545,9 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `2`
 
-> **⚠️ WARNING: A movement speed higher than 2 may be considered cheating by some plugins.**
+::: warning
+**A movement speed higher than 2 may be considered cheating by some plugins.**
+:::
 
 ### Account List section
 
@@ -564,7 +581,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This section allows you to add multiple server aliases which enables fast and easy switching between servers. Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias.
+    This section allows you to add multiple server aliases which enables fast and easy switching between servers. Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias. Aliases cannot contain dots or spaces, and the name "localhost" cannot be used as an alias.
 
 -   **Usage examples:**
 
@@ -591,13 +608,13 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Affects only Minecraft 1.19+. This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
+    Affects only Minecraft 1.19+. Affects only Minecraft 1.19+. This section contains settings related to a new chat reporting (signing and verifying) feature introduced by Mojang.
 
 #### `LoginWithSecureProfile`
 
 -   **Description:**
 
-    Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with `enforce-secure-profile=true`
+    Microsoft accounts only. Microsoft accounts only. If disabled, will not be able to sign chat and join servers configured with `enforce-secure-profile=true`
 
 -   **Type:** `boolean`
 
@@ -617,7 +634,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    Whether to sign the messages contained in the commands sent by the MCC. For example, the message in `/msg` and `/me`
+    Whether to sign the messages contained in the commands sent by the MCC. For example, the message in `/msg` and `/me` For example, the message in `/msg` and `/me`
 
 -   **Type:** `boolean`
 
@@ -711,7 +728,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Description:**
 
-    This setting allows you to define if your want to see info messages. Most of the messages from MCC.
+    This setting allows you to define if your want to see info messages. Most of the messages from MCC. Most of the messages from MCC.
 
 -   **Type:** `boolean`
 
@@ -749,7 +766,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `.*`
 
-    > **ℹ️ NOTE: Not filtering anything by default**
+    ::: tip **Not filtering anything by default**
+:::
 
 #### `DebugFilterRegex`
 
@@ -763,7 +781,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `.*`
 
-    > **ℹ️ NOTE: Not filtering anything by default**
+    ::: tip **Not filtering anything by default**
+:::
 
 #### `FilterMode`
 
@@ -797,7 +816,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `console-log.txt`
 
-    > **ℹ️ NOTE: %username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
+    ::: tip **%username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
+:::
 
 #### `PrependTimestamp`
 
@@ -831,7 +851,8 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     To define a variable/setting, simply make a new line with the following format under the `[AppVar.VarStirng]` section:
 
-    > **ℹ️ NOTE: `%username%`, `%serverip%`, `%datetime%` are reserved variables**
+    ::: tip **`%username%`, `%serverip%`, `%datetime%` are reserved variables**
+:::
 
 -   **Section header:** `Logging`
 
@@ -872,13 +893,14 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
-    > **⚠️ WARNING: Make sure your server rules allow Proxies or VPNs before setting the setting to `true`, or you may face consequences!**
+    ::: warning **Make sure your server rules allow Proxies or VPNs before setting the setting to `true`, or you may face consequences!**
+:::
 
 #### `Server`
 
 -   **Description:**
 
-    The proxy server IP and port. 代理伺服器必須允許HTTPS登入。
+    The proxy server IP and port. 代理伺服器必須允許HTTPS登入。 代理伺服器必須允許HTTPS登入。
 
 -   **Format:**
 
@@ -913,7 +935,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ``
+-   **Default:** `` ``
 
 #### `Password`
 
@@ -923,7 +945,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     Only needed for password protected proxies.
 
--   **Default:** ``
+-   **Default:** `` ``
 
 ## MCSettings section
 

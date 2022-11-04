@@ -38,7 +38,7 @@ MCC 現在支援以下的語言（按英文字母排序）：
         * Translation `fr.ini` applies to `fr_ca`, `fr_fr`.
         * Translation `zh-Hans.ini` applies to `zh_cn`.
 
-4. Add the new translation to the code. (Optional)
+4. Add the new translation to the code. (Optional) (Optional)
     * **If you are not familiar with programming, you can skip this step and just write the above information in your PR or issue.**
     * Add the newly created translation file `xx.ini` to the project `/Resources/lang/xx.ini`.
     * Open `/DefaultConfigResource.resx`.
@@ -65,7 +65,7 @@ MCC 現在支援以下的語言（按英文字母排序）：
 
 1. Get the English version of the README.md from [here](https://raw.githubusercontent.com/MCCTeam/Minecraft-Console-Client/master/README.md).
 
-2. See `Add new translation -> 1.` for the target language code. Assume it is `xx`.
+2. See `Add new translation -> 1.` for the target language code. Assume it is `xx`. Assume it is `xx`.
 
 3. Complete the translation according to the English README.md and name the translated version as `README-xx.md`.
 

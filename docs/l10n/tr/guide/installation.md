@@ -18,7 +18,7 @@ If you're not the kind of person that likes textual tutorials, our community has
 
 In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download)
 
-> **⚠️ IMPORTANT: If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
+⚠️ IMPORTANT: If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.
 
 #### How to install .NET on your platform
 
@@ -87,7 +87,8 @@ Requirements:
 
     -   Linux:
 
-        > **ℹ️ NOTE: If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)**
+        ::: tip **If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)**
+:::
 
     -   [Install Git on macOS](https://git-scm.com/download/mac)
 
@@ -114,7 +115,8 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
         dotnet publish MinecraftClient -f net6.0 -r linux-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
-        > **ℹ️ NOTE: If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `'-r linux-64` with an appropriate `-r <your RID>` (Example for arm: `-r linux-arm64`)**
+        ::: tip **If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `'-r linux-64` with an appropriate `-r <your RID>` (Example for arm: `-r linux-arm64`)**
+:::
 
     - On macOS:
 
@@ -122,7 +124,8 @@ git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
         dotnet publish MinecraftClient -f net6.0 -r osx-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
-        > **ℹ️ NOTE: If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `'-r osx-64` with an appropriate `-r <your RID>` (Example for arm: `-r osx.12-arm64`)**
+        ::: tip **If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `'-r osx-64` with an appropriate `-r <your RID>` (Example for arm: `-r osx.12-arm64`)**
+:::
 
 If the build has succeeded, the compiled binary `MinecraftClient` will be in:
 
@@ -136,9 +139,13 @@ Requirements:
 -   Git
 -   Docker
 
-> **ℹ️ NOTE: This section is for more advanced users, if you do not know how to install git or docker, you can take a look at other sections for Git, and search on how to install Docker on your system.**
+::: tip
+**This section is for more advanced users, if you do not know how to install git or docker, you can take a look at other sections for Git, and search on how to install Docker on your system.**
+:::
 
-> **⚠️ WARNING: Pay attention at warnings, Docker currently works, but you must start the containers in the interactive mode or MCC will crash, we're working on solving this.**
+::: warning
+**Pay attention at warnings, Docker currently works, but you must start the containers in the interactive mode or MCC will crash, we're working on solving this.**
+:::
 
 1. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
 
@@ -155,7 +162,9 @@ docker build -t minecraft-console-client:latest .
 
 **Start the container using Docker:**
 
-> **⚠️ VERY IMPORTANT ⚠️: There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
+::: danger
+**There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
+:::
 
 ```bash
 # You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
@@ -204,23 +213,35 @@ docker-compose down
 
 It is possible to run the Minecraft Console Client on Android through Termux and Ubuntu 22.04 in it, however it requires a manual setup with a lot of commands, be careful no to skip any steps. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed.
 
-> **ℹ️ NOTE: This section is going to get a bit technical, I'll try my best to make everything as simple as possible. If you are having trouble following along or if you encounter any issues, feel free to open up a discussion on our Github repository page.**
+::: tip
+**This section is going to get a bit technical, I'll try my best to make everything as simple as possible. If you are having trouble following along or if you encounter any issues, feel free to open up a discussion on our Github repository page.**
+:::
 
-> **ℹ️ NOTE: You're required to have some bare basic knowledge of Linux, if you do not know anything about it, watch [this video](https://www.youtube.com/watch?v=SkB-eRCzWIU) to get familiar with basic commands.**
+::: tip
+**You're required to have some bare basic knowledge of Linux, if you do not know anything about it, watch [this video](https://www.youtube.com/watch?v=SkB-eRCzWIU) to get familiar with basic commands.**
+:::
 
-> **ℹ️ NOTE: Here we're installing everything on the root account for simplicity sake, if you want to make a user account, make sure you update the command which reference the `/root` directory with your home directory.**
+::: tip
+**Here we're installing everything on the root account for simplicity sake, if you want to make a user account, make sure you update the command which reference the `/root` directory with your home directory.**
+:::
 
 ### Kurulum
 
 #### Termux
 
-> **⚠️ IMPORTANT: The Play Store version of Termux is outdated and not supported, do not use it, use the the [Github one](https://github.com/termux/termux-app/releases/latest/).**
+::: warning
+**The Play Store version of Termux is outdated and not supported, do not use it, use the the [Github one](https://github.com/termux/termux-app/releases/latest/).**
+:::
 
 Go to [the Termux Github latest release](https://github.com/termux/termux-app/releases/latest/), download the `debug_universal.apk`, unzip it and run it.
 
-> **ℹ️ NOTE: If your file manager does not let you run APK files, install and use `File Manager +` and give it a permission to install 3rd party applications when asked.**
+::: tip
+**If your file manager does not let you run APK files, install and use `File Manager +` and give it a permission to install 3rd party applications when asked.**
+:::
 
-> **⚠️ VERY IMPORTANT ⚠️: Once you have installed Termux, open it, bring down the Android menu for notifications, on Termux notification, drag down until you see the following options: `Exit | Acquire wakelock`, press on the `Acquire wakelock` and allow Termux to have a battery optimization exclusion permission when asked. If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background!**
+::: danger
+**Once you have installed Termux, open it, bring down the Android menu for notifications, on Termux notification, drag down until you see the following options: `Exit | Acquire wakelock`, press on the `Acquire wakelock` and allow Termux to have a battery optimization exclusion permission when asked. If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background!**
+:::
 
 #### Installing Ubuntu 22.04
 
@@ -229,7 +250,9 @@ At this stage, you have 2 options:
 1. Following this textual tutorial
 2. Watching a [Youtube tutorial for installing Ubuntu](https://www.youtube.com/watch?v=5yit2t7smpM)
 
-> **ℹ️ NOTE: If you decide to watch the Youtube tutorial, watch only up to `1:58`, the steps after are not needed and might just confuse you.**
+::: tip
+**If you decide to watch the Youtube tutorial, watch only up to `1:58`, the steps after are not needed and might just confuse you.**
+:::
 
 In order to install Ubuntu 22.04 in Termux you require `wget` and `proot`, we're going to install them in the next step.
 
@@ -239,7 +262,9 @@ Once you have Termux installed open it up and run the following command one afte
 2. `pkg upgrade`
 3. `pkg install proot wget`
 
-> **ℹ️ NOTE: If you're asked to press Y/N during the update/upgrade command process, just enter Y and press Enter**
+::: tip
+**If you're asked to press Y/N during the update/upgrade command process, just enter Y and press Enter**
+:::
 
 Then you need to download an installation script using the following command:
 
@@ -259,7 +284,9 @@ Then you will be asked a question, enter `Y` and press `Enter`. Once the install
 ./startubuntu.sh
 ```
 
-> **ℹ️ NOTE: Now every time you open Termux after it has been closed, in order to access Ubuntu you have to use this command**
+::: tip
+**Now every time you open Termux after it has been closed, in order to access Ubuntu you have to use this command**
+:::
 
 #### Installing .NET on ARM
 
@@ -293,26 +320,31 @@ First you need to download .NET 6.0, you can do it with the following command:
 wget https://download.visualstudio.microsoft.com/download/pr/901f7928-5479-4d32-a9e5-ba66162ca0e4/d00b935ec4dc79a27f5bde00712ed3d7/dotnet-sdk-6.0.400-linux-arm64.tar.gz
 ```
 
-> **ℹ️ NOTE: This tutorial assumes that you have 64 bit version of ARM processor, if you happen to have a 32-bit version replace the link in the command above with [this one](https://download.visualstudio.microsoft.com/download/pr/cf567026-a29a-41aa-bc3a-e4e1ad0df480/0925d411e8e09e31ba7a39a3eb0e29af/aspnetcore-runtime-6.0.8-linux-arm.tar.gz)**.
+::: tip
+**This tutorial assumes that you have 64 bit version of ARM processor, if you happen to have a 32-bit version replace the link in the command above with [this one](https://download.visualstudio.microsoft.com/download/pr/cf567026-a29a-41aa-bc3a-e4e1ad0df480/0925d411e8e09e31ba7a39a3eb0e29af/aspnetcore-runtime-6.0.8-linux-arm.tar.gz)** :::.
 
-> **ℹ️ NOTE: This tutorial assumes that you're following along and using Ubuntu 22.04, if you're using a different distro, like Alpine, go to [here](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) and copy an appropriate link for your distro.**
+::: tip
+**This tutorial assumes that you're following along and using Ubuntu 22.04, if you're using a different distro, like Alpine, go to [here](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) and copy an appropriate link for your distro.**
+:::
 
 Once the file has been downloaded, you need to run the following commands in order:
 
-1. `DOTNET_FILE=dotnet-sdk-6.0.400-linux-arm64.tar.gz`
-
-    > **⚠️ IMPORTANT: If you're using a different download link, update the file name in this command to match your version.**
+1. `DOTNET_FILE=dotnet-sdk-6.0.400-linux-arm64.tar.gz` ::: warning **If you're using a different download link, update the file name in this command to match your version.**
+:::
 
 2. `export DOTNET_ROOT=/root/.dotnet`
 
-    > **⚠️ IMPORTANT: Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
+    ::: warning **Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
+:::
 
 3. `mkdir -p "$DOTNET_ROOT" && tar zxf "$DOTNET_FILE" -C "$DOTNET_ROOT"`
 4. `export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools`
 
 Now we need to tell our shell to know where the `dotnet` command is, for future sessions, since the commands above just tell this current session where the `dotnet` is located.
 
-> **⚠️ IMPORTANT: You will need a basic knowledge of Nano text editor, if you do not know how to use it, watch this [Youtube video tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A)**
+::: warning
+**You will need a basic knowledge of Nano text editor, if you do not know how to use it, watch this [Youtube video tutorial](https://www.youtube.com/watch?v=DLeATFgGM-A)**
+:::
 
 To enable this, we need to edit our `/root/.bashrc` file with the following command:
 
@@ -327,7 +359,9 @@ export DOTNET_ROOT=/root/.dotnet/
 export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
 ```
 
-> **⚠️ IMPORTANT: Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
+::: warning
+**Here we're installing .NET in `/root`, if you're installing it somewhere else, make sure to set your own path!**
+:::
 
 Save the file usign the following combination of keys: `CTRL + X`, type `Y` and press Enter.
 
@@ -359,7 +393,9 @@ path-to-application:
 
 Finally, we can install MCC.
 
-> **⚠️ IMPORTANT: If you have a 32 ARM processor, you need to build the MCC yourself, take a look at the [Building From Source](#building-from-the-source-code) section. Also make sure to be using the appropriate `-r` parameter value for your architecture.**
+::: warning
+**If you have a 32 ARM processor, you need to build the MCC yourself, take a look at the [Building From Source](#building-from-the-source-code) section. Also make sure to be using the appropriate `-r` parameter value for your architecture.**
+:::
 
 Let's make a folder where the MCC will be stored with the following command:
 
@@ -418,7 +454,9 @@ Also, here are some linux tutorials for people who are new to it:
 
 ## Run on a VPS
 
-> **ℹ️ NOTE: This is a new section, if you find a mistake, please report it by opening an Issue in our [Github repository](https://github.com/MCCTeam/Minecraft-Console-Client). Thank you!**
+::: tip
+**This is a new section, if you find a mistake, please report it by opening an Issue in our [Github repository](https://github.com/MCCTeam/Minecraft-Console-Client). Thank you!**
+:::
 
 The **Minecraft Console Client** can be run on a VPS 24 hours, 7 days a week.
 
@@ -445,7 +483,8 @@ Here is a [Youtube video](https://youtu.be/42fwh_1KP_o) that explains it in more
 
     Download and install [Gitbash](https://git-scm.com/downloads).
 
-    > **ℹ️ NOTE: Make sure to allow the installation to add it to the context menu**
+    ::: tip **Make sure to allow the installation to add it to the context menu**
+:::
 
 2. `ssh` and `ssh-keygen` commands (On Windows they're available with Gitbash, on macOs and Linux they should be available by default, it not, search on how to install them)
 
@@ -480,7 +519,9 @@ The MCC is not expensive to run, so it can run on basically any hardware, you do
 
 **Where to buy a VPS?**
 
-> **⚠️ VERY IMPORTANT: In this tutorial we will be using `Ubuntu 22.04`, make sure to select it as the OS when buying a VPS.**
+::: danger
+**In this tutorial we will be using `Ubuntu 22.04`, make sure to select it as the OS when buying a VPS.**
+:::
 
 Some of the reliable and cheap hosting providers (sorted for price/performance):
 
@@ -488,7 +529,8 @@ Some of the reliable and cheap hosting providers (sorted for price/performance):
 
     **Minimum price**: `2.50 EUR / month`
 
-    > **ℹ️ NOTE: Does not have Ubuntu 22.04 in the dropdown menu when ordering, you will have to re-install later or ask support to do it.**
+    ::: tip **Does not have Ubuntu 22.04 in the dropdown menu when ordering, you will have to re-install later or ask support to do it.**
+:::
 
 -   [OVH Cloud](https://www.ovhcloud.com/de/vps/)
 
@@ -512,23 +554,35 @@ You also may want to search for better deals.
 
 #### AWS EC2 VPS
 
-> **⚠️ VERY IMPORTANT: This will require you to have a valid debit card that can be used on internet and a mobile phone number, as well as giving that info to Amazon corporation.**
+::: danger
+**This will require you to have a valid debit card that can be used on internet and a mobile phone number, as well as giving that info to Amazon corporation.**
+:::
 
-> **⚠️ WARNING: Scammers often get AWS VPS and use it to mass login on to stolen Microsoft accounts, some AWS IP addresses might be blocked by Microsoft because of that, if so, you might need to switch regions or to use a Proxy. To debug if your IP has been banned by Microsoft, use the `ping <ip>` and `traceroute <ip>` commands.**
+::: warning
+**Scammers often get AWS VPS and use it to mass login on to stolen Microsoft accounts, some AWS IP addresses might be blocked by Microsoft because of that, if so, you might need to switch regions or to use a Proxy. To debug if your IP has been banned by Microsoft, use the `ping <ip>` and `traceroute <ip>` commands.**
+:::
 
-> **⚠️ WARNING: Related to the warning above, if you have issues logging with Microsoft and you're not banned, you may want to check the Security center on your account and approve the login from the VPS, this can be the case for some users.**
+::: warning
+**Related to the warning above, if you have issues logging with Microsoft and you're not banned, you may want to check the Security center on your account and approve the login from the VPS, this can be the case for some users.**
+:::
 
-> **ℹ️ NOTE: If you're not banned, sometimes fetching the keys can take some time, try giving it a minute or two, if it still hangs, hit some keys to refresh the screen, or try restarting and running again. If it still happens, use tmux instead of screen.**
+::: tip
+**If you're not banned, sometimes fetching the keys can take some time, try giving it a minute or two, if it still hangs, hit some keys to refresh the screen, or try restarting and running again. If it still happens, use tmux instead of screen.**
+:::
 
 Register on AWS and enter all of your billing info and a phone number. Once you're done, you can continue to [Setting up the Amazon VPS](#setting-up-an-aws-vps).
 
 ### Initial Amazon VPS setup
 
-> **ℹ️ NOTE: Skip this section if you're not using AWS. Go to [Initial VPS setup](#initial-vps-setup)**
+::: tip
+**Skip this section if you're not using AWS. Go to [Initial VPS setup](#initial-vps-setup)**
+:::
 
 When you register and open the `AWS Console`, click on the Search field on the top of the page and search for: `EC2`
 
-> **ℹ️ NOTE: Make sure to select the region closest to you for the minimal latency**
+::: tip
+**Make sure to select the region closest to you for the minimal latency**
+:::
 
 Click on the **Launch instance** button.
 
@@ -538,7 +592,9 @@ Fill out the `Name` field with a name of your preference.
 
 For the **Application and OS images** select `Ubuntu Server 22.04 LTS (HVM), SSD Volume Type`.
 
-> **⚠️ VERY IMPORTANT: Make sure that it has `Free tier eligible` next to it.**
+::: danger
+**Make sure that it has `Free tier eligible` next to it.**
+:::
 
 ![VPS Select OS](/images/guide/VPS_SelectOS.png)
 
@@ -546,7 +602,9 @@ For the **Instance type** select `t2.micro`.
 
 For the **Key pair (login)** click on **Create new key pair** and name it `VpsRoot`, leave the rest of settings as default and click **Create key pair**, this will generate a RSA private key that will be automatically downloaded.
 
-> **⚠️ EXTREMELY IMPORTANT: Make sure that you save this file in a safe place and do not loose it, it's of an upmost importance since it's used to access the root/admin account of the VPS. Without it you will not be able to access the root account of the VPS! Also do not let it fall into wrong hands.**
+::: danger
+**Make sure that you save this file in a safe place and do not loose it, it's of an upmost importance since it's used to access the root/admin account of the VPS. Without it you will not be able to access the root account of the VPS! Also do not let it fall into wrong hands.**
+:::
 
 ![VPS Instance Type](/images/guide/VPS_InstanceType.png)
 
@@ -556,7 +614,9 @@ For the **Network settings** check the following checkboxes on:
 -   `Allow HTTPs traffic from the internet`
 -   `Allow HTTP traffic from the internet`
 
-> **ℹ️ NOTE: The SSH traffic from Anywhere is not the best thing for security, you might want to enter IP addresses of your devices from which you want to access the VPS manually.**
+::: tip
+**The SSH traffic from Anywhere is not the best thing for security, you might want to enter IP addresses of your devices from which you want to access the VPS manually.**
+:::
 
 ![VPS Network Settings](/images/guide/VPS_NetworkSettings.png)
 
@@ -576,9 +636,13 @@ In order to login with SSH, you are going to use the following command:
 ssh -i <name of your private root key here> ubuntu@<your public dns v4 ip here>
 ```
 
-> **ℹ️ NOTE: `<` and `>` are not typed, that is just a notation for a placeholder!**
+::: tip
+**`<` and `>` are not typed, that is just a notation for a placeholder!**
+:::
 
-> **ℹ️ NOTE: `ubuntu` is a default root account username for Ubuntu on AWS!**
+::: tip
+**`ubuntu` is a default root account username for Ubuntu on AWS!**
+:::
 
 Example:
 
@@ -592,7 +656,9 @@ Now you can continue to [Creating a new user](#creating-a-new-user)
 
 ### Initial VPS setup
 
-> **ℹ️ NOTE: This section if for those who do not use AWS, if you use AWS skip it**
+::: tip
+**This section if for those who do not use AWS, if you use AWS skip it**
+:::
 
 When you order the VPS, most likely you will be asked to provide the root account name and password, if it is the case, name the account as `root` and give it a password of your choice.
 
@@ -606,7 +672,9 @@ If you're on Windows open `Git Bash`, on mac OS and Linux open a `Terminal` and 
 ssh <username>@<ip>
 ```
 
-> **ℹ️ NOTE: If you're given a custom port other than `22` by your host, you should add `-p <port here>` before the username (eg. `ssh -p <port here> <username>@<ip>`) or `:<port>` after the ip (eg. `ssh <username>@<ip>:<port>`)**
+::: tip
+**If you're given a custom port other than `22` by your host, you should add `-p <port here>` before the username (eg. `ssh -p <port here> <username>@<ip>`) or `:<port>` after the ip (eg. `ssh <username>@<ip>:<port>`)**
+:::
 
 Example:
 
@@ -628,7 +696,9 @@ Once you've logged in to your VPS you need to create a new user and give it SSH 
 
 In this tutorial we will be using `mcc` as a name for the user account that will be running the MCC.
 
-> **ℹ️ NOTE: You may be wondering why we're creating a separate user account and making it be accessible over SSH only. This is for security reasons, if you do not want to do this, you're free to skip it, but be careful.**
+::: tip
+**You may be wondering why we're creating a separate user account and making it be accessible over SSH only. This is for security reasons, if you do not want to do this, you're free to skip it, but be careful.**
+:::
 
 To create a new user named `mcc` execute the following command:
 
@@ -642,9 +712,13 @@ Now we need to give it a password, execute the following command, type the passw
 sudo passwd mcc
 ```
 
-> **ℹ️ NOTE: When you're typing a password it will not be displayed on the screen, but you're typing it for real.**
+::: tip
+**When you're typing a password it will not be displayed on the screen, but you're typing it for real.**
+:::
 
-> **ℹ️ NOTE: Make sure you have a strong password!**
+::: tip
+**Make sure you have a strong password!**
+:::
 
 Now we need to give our user account the admin permissions:
 
@@ -788,7 +862,9 @@ Example:
 ssh -i MCC_Key mcc@3.71.108.69
 ```
 
-> **ℹ️ NOTE: If you've changed the `Port`, make sure you add a `-p <your port here>` option after the `-i <key>` option (eg. `ssh -i MCC_Key -p 8973 mcc@3.71.108.69`)!**
+::: tip
+**If you've changed the `Port`, make sure you add a `-p <your port here>` option after the `-i <key>` option (eg. `ssh -i MCC_Key -p 8973 mcc@3.71.108.69`)!**
+:::
 
 If did everything correctly you should see a Linux prompt and a welcome message if there is one on your provider.
 
@@ -798,9 +874,13 @@ Now you can install .NET Core 6 and MCC.
 
 ### Installing .NET Core 6
 
-> **ℹ️ NOTE: If your VPS has an ARM CPU, follow [this](#installing-net-on-arm) part of the documentation and then return to section after this one.**
+::: tip
+**If your VPS has an ARM CPU, follow [this](#installing-net-on-arm) part of the documentation and then return to section after this one.**
+:::
 
-> **⚠️ WARNING: With newer versions of .NET Core 6 on Ubuntu 22.04 you might get the following error: `A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders`, if you get it, use [this solution](https://github.com/dotnet/sdk/issues/27082#issuecomment-1211143446)**
+::: warning
+**With newer versions of .NET Core 6 on Ubuntu 22.04 you might get the following error: `A fatal error occurred, the folder [/usr/share/dotnet/host/fxr] does not contain any version-numbered child folders`, if you get it, use [this solution](https://github.com/dotnet/sdk/issues/27082#issuecomment-1211143446)**
+:::
 
 Log in as the user you've created.
 
@@ -876,7 +956,9 @@ If it was successful, you can now install the MCC.
 
 Now that you have .NET Core 6.0 and a user account, you should install the `screen` utility, you will need this in order to keep the MCC running once you close down the SSH session (if you do not have it, the MCC will just stop working once you disconnect). You can look at the `screen` like a window, except it's in a terminal, it lets you have multiple "windows" open at the same time.
 
-> **ℹ️ NOTE: There is also a Docker method, if you're using Docker, you do not need the `screen` program.**
+::: tip
+**There is also a Docker method, if you're using Docker, you do not need the `screen` program.**
+:::
 
 You also can learn about the screen command from [this Youtube tutorial](https://youtu.be/_ZJiEX4rmN4).
 
@@ -894,7 +976,9 @@ Now you can install the MCC:
 
 How to use the `screen` command?
 
-> **⚠️ WARNING: If you have issues with Screen command, like output not being properly formatted or program handing/freezing, try using tmux, click [here](https://www.youtube.com/watch?v=Yl7NFenTgIo) to learn how to use it.**
+::: warning
+**If you have issues with Screen command, like output not being properly formatted or program handing/freezing, try using tmux, click [here](https://www.youtube.com/watch?v=Yl7NFenTgIo) to learn how to use it.**
+:::
 
 To start a screen, type:
 
@@ -902,9 +986,13 @@ To start a screen, type:
 screen -S mcc
 ```
 
-> **ℹ️ NOTE: `mcc` here is the name of the screen, you can use whatever you like, but if you've used a different name, make sure you use that one instead of the `mcc` in the following commands.**
+::: tip
+**`mcc` here is the name of the screen, you can use whatever you like, but if you've used a different name, make sure you use that one instead of the `mcc` in the following commands.**
+:::
 
-> **ℹ️ NOTE: You need to make a screen only once, however if you reboot your VPS, you need to start it on each reboot.**
+::: tip
+**You need to make a screen only once, however if you reboot your VPS, you need to start it on each reboot.**
+:::
 
 Now you will be in the screen, now you can start the MCC and detach from the screen.
 
