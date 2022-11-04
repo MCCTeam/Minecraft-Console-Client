@@ -142,11 +142,11 @@ Allyoutoo, Aragas, Bancey, bearbear12345, corbanmailloux, Daenges, dbear20, dogw
 
 Minecraft Console Client also borrows code from the following libraries:
 
-| Name        | Purpose          | Author           | License |
-| ----------- | ---------------- | ---------------- | ------- |
-| Biko        | Proxy handling   | Benton Stark     | MIT     |
-| Heijden.Dns | DNS SRV Lookup   | Geoffrey Huntley | MIT     |
-| DotNetZip   | Zlib compression | Dino Chiesa      | MS-PL   |
+| Name         | Purpose          | Author           | License |
+| ------------ | ---------------- | ---------------- | ------- |
+| Biko         | Proxy handling   | Benton Stark     | MIT     |
+| Heijden. Dns | DNS SRV Lookup   | Geoffrey Huntley | MIT     |
+| DotNetZip    | Zlib compression | Dino Chiesa      | MS-PL   |
 
 ## Disclaimer
 
