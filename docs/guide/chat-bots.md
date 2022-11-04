@@ -232,11 +232,11 @@
         Should the bot use [Terrain Handling](configuration.md#terrainandmovements) instead of the command method.
 
         This will enable your bot to randomly move about, thus a better anti afk effect.
-        
+
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **You need to enable [Terrain Handling](configuration.md#terrainandmovements) in the settings and it's recommended to put the bot into an enclosure not to wander off. (Recommended size 5x5x5)**
-        
+
         </div>
 
     -   **Available values:** `true` and `false`.
@@ -264,7 +264,7 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **This happens on each trigger of the task, so it does not permanently switch to alternative method.**
-        
+
         </div>
 
     -   **Default:** `20`
@@ -278,7 +278,7 @@
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **You need to have [inventoryhandling](configuration.md#inventoryhandling) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
-    
+
     </div>
 
 -   **Settings:**
@@ -429,7 +429,7 @@
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for basic crafting in the inventory to work, in addition if you want to use a crafting table, you need to enable [terrainandmovements](configuration.md#terrainandmovements) in order for bot to be able to reach the crafting table.**
-    
+
     </div>
 
 -   **Commands:**
@@ -521,7 +521,7 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **If you're using `table` you need to set the `CraftingTable` setting.**
-        
+
         </div>
 
     -   `Result`
@@ -548,13 +548,13 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
-        
+
         </div>
 
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
-        
+
         </div>
 
         **Slots are indexed as following:**
@@ -602,7 +602,7 @@
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Make sure to provide materials for your bot by placing them in inventory first.**
-    
+
     </div>
 
 ## Auto Dig
@@ -614,13 +614,13 @@
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **You need to have [inventoryhandling](configuration.md#inventoryhandling) and [terrainandmovements](configuration.md#terrainandmovements) enabled in order for this bot to work.**
-    
+
     </div>
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.**
-    
+
     </div>
 
 -   **Commands:**
@@ -785,7 +785,7 @@
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for this bot to work**
-    
+
     </div>
 
 -   **Settings:**
@@ -839,7 +839,7 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
-        
+
         </div>
 
     -   **Format:** `[ "<item type>", "<item type>", ...]`
@@ -859,7 +859,7 @@
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **You need to have [inventoryhandling](configuration.md#inventoryhandling) enabled in order for this bot to work**
-    
+
     </div>
 
 -   **Settings:**
@@ -897,25 +897,25 @@
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **You need to have [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
-    
+
     </div>
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **To use the automatic rod switching and durability check feature, you need to enable [inventoryhandling](configuration.md#inventoryhandling).**
-    
+
     </div>
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Note: To adjust the position or angle after catching a fish, you need to enable [terrainandmovements](configuration.md#terrainandmovements).**
-    
+
     </div>
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **A fishing rod with **Mending enchantment** is strongly recommended.**
-    
+
     </div>
 
     **Steps for using this bot (with the default setting)**
@@ -1195,7 +1195,7 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **This might get you banned by the server owners.**
-        
+
         </div>
 
     -   **Default:** `-1`
@@ -1231,13 +1231,13 @@
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `AutoRespond` only if you trust server admins.**
-        
+
     </div>
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **This bot may get spammy depending on your rules, although the global [messagecooldown](configuration.md#messagecooldown) setting can help you avoiding accidental spam.**
-    
+
     </div>
 
 -   **Settings:**
@@ -1269,7 +1269,7 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **This file is not created by default, we recommend making a clone of the [`sample-matches.ini`](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/config/sample-matches.ini) and changing it according to your needs.**
-        
+
         </div>
 
     -   **Type:** `string`
@@ -1289,7 +1289,7 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **This feature uses the `§` symbol for color matching**
-        
+
         </div>
 
     -   **Type:** `boolean`
@@ -1373,13 +1373,13 @@
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **The bot can be slow at times, you need to walk with a normal speed and to sometimes stop for it to be able to keep up with you, it's similar to making animals follow you when you're holding food in your hand. This is due to a slow pathfinding algorithm, we're working on getting a better one. You can tweak the update limit and find what works best for you. (NOTE: Do not but a very low one, because you might achieve the opposite, this might clog the thread for terrain handling) and thus slow the bot even more.**
-    
+
     </div>
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **You need to have [terrainandmovements](configuration.md#terrainandmovements) and [entityhandling](configuration.md#entityhandling) enabled in order for this bot to work.**
-    
+
     </div>
 
 -   **Settings:**
@@ -1433,7 +1433,7 @@
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **If the bot does not respond to bot owners, see the [Detecting chat messages](https://github.com/MCCTeam/Minecraft-Console-Client/tree/master/MinecraftClient/config#detecting-chat-messages) section.**
-    
+
     </div>
 
 -   **Settings:**
@@ -1469,7 +1469,7 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **This settings file is for English and is not created by the default**
-        
+
         </div>
 
     -   **Default:** `hangman-en.txt`
@@ -1484,7 +1484,7 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **This settings file is for French and is not created by the default**
-        
+
         </div>
 
     -   **Default:** `hangman-fr.txt`
@@ -1525,13 +1525,13 @@
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **The bot identifies players by their name (Not by UUID!). A nickname plugin or a Minecraft rename may cause mails going to the wrong player! Never write something to the bot you wouldn't say in the normal chat (You have been warned!).**
-    
+
     </div>
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `RemoteControl` only if you trust server admins.**
-    
+
     </div>
 
     **Mailer Network:**
@@ -1634,7 +1634,7 @@
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **This bot has only been tested on Windows 10, it may not work on Linux or Mac OS due to .NET BitMap API. We're looking forward to swap the underlaying Bitmap API dependency with a library.**
-    
+
     </div>
 
 -   **Commands:**
@@ -1674,13 +1674,13 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **The bigger the size, the less is the quality.**
-        
+
         </div>
 
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **For upscaling your maps you could use (getting a bit better quality): https://deepai.org/machine-learning-model/torch-srgan**
-        
+
         </div>
 
     -   **Available values:** `true` and `false`.
@@ -1708,7 +1708,7 @@
         <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
         **On some versions older than 1.17 this could cause some performance issue on older hardware if there a lot of maps being rendered, since map updates are sent multiple times a second. Be careful.**
-        
+
         </div>
 
     -   **Available values:** `true` and `false`.
@@ -1789,7 +1789,7 @@
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **Server admins can spoof PMs (`/tellraw`, `/nick`) so enable `RemoteControl` only if you trust server admins.**
-    
+
     </div>
 
 -   **Settings:**
@@ -1841,19 +1841,19 @@
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **This bot does not work for 1.19, we need maintainers for it.**
-    
+
     </div>
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
     **Please note that due to technical limitations, the client player (you) will not be shown in the replay file**
-    
+
     </div>
 
     <div class="custom-container warning"><p class="custom-container-title">Warning</p>
 
     **You SHOULD use `/replay stop` or exit the program gracefully with `/quit` OR THE REPLAY FILE MAY GET CORRUPT!**
-    
+
     </div>
 
 -   **Settings:**
@@ -1923,7 +1923,7 @@
         <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
         **It is recommended that you align subsections to the right by one tab or 4 spaces for better readability.**
-        
+
         </div>
 
         **Avaliable settings/options:**
