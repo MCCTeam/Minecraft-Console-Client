@@ -1,40 +1,40 @@
-# Installation
+# Instalación
 
--   [YouTube Tutorials](#youtube-tutorials)
--   [Download a compiled binary](#download-a-compiled-binary)
--   [Building from the source code](#building-from-the-source-code)
--   [Run using Docker](#using-docker)
--   [Run on Android](#run-on-android)
--   [Run MCC 24/7 on a VPS](#run-on-a-vps)
+-   [Tutoriales en YouTube](#youtube-tutorials)
+-   [Descarga los binarios compilados](#download-a-compiled-binary)
+-   [Compilar desde el código fuente](#building-from-the-source-code)
+-   [Ejecutar usando Docker](#using-docker)
+-   [Ejecutar en Android](#run-on-android)
+-   [Ejecutar MCC 24/7 en un Servidor Privado Virtual](#run-on-a-vps)
 
-## YouTube Tutorials
+## Tutoriales en YouTube
 
-If you're not the kind of person that likes textual tutorials, our community has made video tutorials available on YouTube.
+Si no eres el tipo de persona que le gusten los tutoriales en texto, nuestra comunidad ha hecho videotutoriales disponibles en YouTube.
 
--   [Installation on Windows by Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
--   [Installation on Windows + Auto AFK and More by Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
+-   [Instalación en Windows hecho por Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
+-   [Instalación en Windows + Auto AFK y más hecho por Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
 
-## Download a compiled binary
+## Descarga los binarios compilados
 
-In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download)
+Para ejecutar **Minecraft Console Client** necesitas [.NET 6.0 o superior](https://dotnet.microsoft.com/en-us/download)
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">ADVERTENCIA</p>
 
-**If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
+**Si ya tienes .NET, pero una versión anterior a `6.0`, por favor actualiza a `6.0`, ya que MCC puede no funcionar como se esperaba o en absoluto.**
 
 </div>
 
-#### How to install .NET on your platform
+#### Cómo instalar .NET en su plataforma
 
--   [Install .NET on Windows](https://docs.microsoft.com/en-us/dotnet/core/install/windows)
--   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
--   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
+-   [Instalar .NET en Windows](https://docs.microsoft.com/en-us/dotnet/core/install/windows)
+-   [Instalar .NET en Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
+-   [Instalar .NET en macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
 
-#### Download
+#### Descarga
 
 You can download a compiled binary file of the latest build from our Releases section on Git Hub: [Download](https://github.com/MCCTeam/Minecraft-Console-Client/releases)
 
-## Building from the source code
+## Compilar desde el código fuente
 
 ### Windows
 
@@ -101,8 +101,8 @@ Requirements:
 
 -   .NET SDK 6.0 or new-er
 
-    -   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
-    -   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
+    -   [Instalar .NET en Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
+    -   [Instalar .NET en macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
 
 #### Cloning using Git
 
@@ -234,7 +234,7 @@ As above, you can stop and remove the container using
 docker-compose down
 ```
 
-## Run on Android
+## Ejecutar en Android
 
 It is possible to run the Minecraft Console Client on Android through Termux and Ubuntu 22.04 in it, however it requires a manual setup with a lot of commands, be careful no to skip any steps. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed.
 
@@ -1094,8 +1094,8 @@ sudo apt install screen -y
 
 Now you can install the MCC:
 
--   [Download a compiled binary](#download-a-compiled-binary)
--   [Building from the source code](#building-from-the-source-code)
+-   [Descarga los binarios compilados](#download-a-compiled-binary)
+-   [Compilar desde el código fuente](#building-from-the-source-code)
 -   [Run using Docker](#using-docker) (Doesn't require the `screen` command)
 
 How to use the `screen` command?
