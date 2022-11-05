@@ -710,7 +710,7 @@ namespace MinecraftClient
         /// <param name="hard">Marks if bots need to be hard reloaded</param>
         public void ReloadSettings()
         {
-            Program.ReloadSettings();
+            Program.ReloadSettings(true);
             ReloadBots();
         }
 

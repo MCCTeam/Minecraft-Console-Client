@@ -674,9 +674,9 @@ namespace MinecraftClient
         /// <summary>
         /// Reloads settings
         /// </summary>
-        public static void ReloadSettings()
+        public static void ReloadSettings(bool keepAccountAndServerSettings = false)
         {
-            if(Settings.LoadFromFile(settingsIniPath).Item1)
+            if(Settings.LoadFromFile(settingsIniPath, keepAccountAndServerSettings).Item1)
                 ConsoleIO.WriteLine(string.Format(Translations.config_load, settingsIniPath));
         }
 
@@ -692,7 +692,7 @@ namespace MinecraftClient
         /// Disconnect the current client from the server and restart it
         /// </summary>
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
-        public static void Restart(int delaySeconds = 0)
+        public static void Restart(int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
             ConsoleInteractive.ConsoleReader.StopReadThread();
             new Thread(new ThreadStart(delegate
@@ -705,7 +705,7 @@ namespace MinecraftClient
                     Thread.Sleep(delaySeconds * 1000);
                 }
                 ConsoleIO.WriteLine(Translations.mcc_restart);
-                ReloadSettings();
+                ReloadSettings(keepAccountAndServerSettings);
                 InitializeClient();
             })).Start();
         }

@@ -58,6 +58,10 @@ namespace MinecraftClient
             public static bool InteractiveMode = true;
 
             public static bool GravityEnabled = true;
+
+            public static bool KeepAccountSettings = false;
+
+            public static bool KeepServerSettings = false;
         }
 
         public class GlobalConfig
@@ -125,8 +129,13 @@ namespace MinecraftClient
 
         }
 
-        public static Tuple<bool, bool> LoadFromFile(string filepath)
+        public static Tuple<bool, bool> LoadFromFile(string filepath, bool keepAccountAndServerSettings = false)
         {
+            bool keepAccountSettings = InternalConfig.KeepAccountSettings;
+            bool keepServerSettings = InternalConfig.KeepServerSettings;
+            if (keepAccountAndServerSettings)
+                InternalConfig.KeepAccountSettings = InternalConfig.KeepServerSettings = true;
+
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             TomlDocument document;
             try
@@ -156,6 +165,13 @@ namespace MinecraftClient
                 ConsoleIO.WriteLineFormatted(Translations.config_load_fail);
                 ConsoleIO.WriteLine(ex.GetFullMessage());
                 return new(false, false);
+            }
+            finally
+            {
+                if (!keepAccountSettings)
+                    InternalConfig.KeepAccountSettings = false;
+                if (!keepServerSettings)
+                    InternalConfig.KeepServerSettings = false;
             }
             return new(true, false);
         }
@@ -257,12 +273,14 @@ namespace MinecraftClient
                     {
                         case 0:
                             InternalConfig.Login = argument;
+                            InternalConfig.KeepAccountSettings = true;
                             break;
                         case 1:
                             InternalConfig.Password = argument;
                             break;
                         case 2:
                             Config.Main.SetServerIP(new MainConfig.ServerInfoConfig(argument), true);
+                            InternalConfig.KeepServerSettings = true;
                             break;
                         case 3:
                             // SingleCommand = argument; 
@@ -373,7 +391,8 @@ namespace MinecraftClient
 
                     General.Account.Login ??= string.Empty;
                     General.Account.Password ??= string.Empty;
-                    InternalConfig.Login = General.Account.Login;
+                    if (!InternalConfig.KeepAccountSettings)
+                        InternalConfig.Login = General.Account.Login;
 
                     General.Server.Host ??= string.Empty;
 
@@ -404,23 +423,26 @@ namespace MinecraftClient
                         ConsoleIO.WriteLogLine("[Settings] " + Translations.config_Main_Advanced_language_invaild);
                     }
 
-                    if (!string.IsNullOrWhiteSpace(General.Server.Host))
+                    if (!InternalConfig.KeepServerSettings)
                     {
-                        string[] sip = General.Server.Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
-                        General.Server.Host = sip[0];
-                        InternalConfig.ServerIP = General.Server.Host;
-
-                        if (sip.Length > 1)
+                        if (!string.IsNullOrWhiteSpace(General.Server.Host))
                         {
-                            try { General.Server.Port = Convert.ToUInt16(sip[1]); }
-                            catch (FormatException) { }
-                        }
-                    }
+                            string[] sip = General.Server.Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
+                            General.Server.Host = sip[0];
+                            InternalConfig.ServerIP = General.Server.Host;
 
-                    if (General.Server.Port.HasValue)
-                        InternalConfig.ServerPort = General.Server.Port.Value;
-                    else
-                        SetServerIP(General.Server, true);
+                            if (sip.Length > 1)
+                            {
+                                try { General.Server.Port = Convert.ToUInt16(sip[1]); }
+                                catch (FormatException) { }
+                            }
+                        }
+
+                        if (General.Server.Port.HasValue)
+                            InternalConfig.ServerPort = General.Server.Port.Value;
+                        else
+                            SetServerIP(General.Server, true);
+                    }
 
                     for (int i = 0; i < Advanced.BotOwners.Count; ++i)
                         Advanced.BotOwners[i] = ToLowerIfNeed(Advanced.BotOwners[i]);
@@ -579,7 +601,8 @@ namespace MinecraftClient
                     {
                         if (AccountList.TryGetValue(accountAlias, out AccountInfoConfig accountInfo))
                         {
-                            Settings.Config.Main.General.Account = accountInfo;
+                            InternalConfig.Login = accountInfo.Login;
+                            InternalConfig.Password = accountInfo.Password;
                             return true;
                         }
                         else
