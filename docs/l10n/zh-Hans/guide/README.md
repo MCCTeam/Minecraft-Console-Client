@@ -24,7 +24,7 @@ It was originally made by [ORelio](https://github.com/ORelio) in 2012 on the [Mi
 
 ## Features
 
--   Chat
+-   聊天
 
     -   Send and receive chat messages
     -   [Log chat history](chat-bots.md#chat-log)
