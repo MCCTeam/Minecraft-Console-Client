@@ -296,15 +296,15 @@ En esta etapa, tienes dos opciones:
 
 </div>
 
-In order to install Ubuntu 22.04 in Termux you require `wget` and `proot`, we're going to install them in the next step.
+Para instalar Ubuntu 22.04 en Termux necesitas `wget` y `pRoot`, vamos a instalarlos en los siguientes pasos.
 
-Once you have Termux installed open it up and run the following command one after other (in order):
+Una vez que tenga Termux instalado, ábralo y ejecute el siguiente comando uno tras otro (en orden):
 
 1. `pkg update`
 2. `pkg upgrade`
 3. `pkg install proot wget`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
 **If you're asked to press Y/N during the update/upgrade command process, just enter Y and press Enter**
 
