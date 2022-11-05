@@ -424,7 +424,7 @@ namespace MinecraftClient
                         if (!string.IsNullOrWhiteSpace(General.Server.Host))
                         {
                             string[] sip = General.Server.Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
-                            General.Server.Host = ToLowerIfNeed(sip[0]);
+                            General.Server.Host = sip[0];
                             InternalConfig.ServerIP = General.Server.Host;
 
                             if (sip.Length > 1)
