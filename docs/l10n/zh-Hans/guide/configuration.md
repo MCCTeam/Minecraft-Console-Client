@@ -1,5 +1,5 @@
 - - -
-title: "Configuration" redirectFrom: ["/g/conf/index.html", "/g/conf.html"]
+title: Configuration redirectFrom: ["/g/conf/index.html", "/g/conf.html"]
 - - -
 # 配置
 
