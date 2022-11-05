@@ -18,7 +18,7 @@ namespace MinecraftClient.Commands
                     return string.Format(Translations.cmd_connect_unknown, args[0]);
                 }
             }
-            Program.Restart();
+            Program.Restart(keepAccountAndServerSettings: true);
             return "";
         }
     }

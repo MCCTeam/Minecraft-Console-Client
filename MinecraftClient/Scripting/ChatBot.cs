@@ -920,7 +920,7 @@ namespace MinecraftClient
         /// </summary>
         /// <param name="ExtraAttempts">In case of failure, maximum extra attempts before aborting</param>
         /// <param name="delaySeconds">Optional delay, in seconds, before restarting</param>
-        protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0)
+        protected void ReconnectToTheServer(int ExtraAttempts = 3, int delaySeconds = 0, bool keepAccountAndServerSettings = false)
         {
             if (Settings.Config.Logging.DebugMessages)
             {
@@ -928,7 +928,7 @@ namespace MinecraftClient
                 ConsoleIO.WriteLogLine(string.Format(Translations.chatbot_reconnect, botName));
             }
             McClient.ReconnectionAttemptsLeft = ExtraAttempts;
-            Program.Restart(delaySeconds);
+            Program.Restart(delaySeconds, keepAccountAndServerSettings);
         }
 
         /// <summary>
