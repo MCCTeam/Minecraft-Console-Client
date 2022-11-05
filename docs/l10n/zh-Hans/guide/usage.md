@@ -1,3 +1,6 @@
+- - -
+title: "Usage"
+- - -
 # 用法
 
 How to run the program:
@@ -350,7 +353,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
-    **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
+    **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
 
     </div>
 
@@ -388,7 +391,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
-    **All entity types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/EntityType.cs).**
+    **All entity types can be found [here](https://mccteam.github.io/r/entity/#L15).**
 
     </div>
 
@@ -954,7 +957,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
-    **To find item types, check out [this list](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs)**
+    **To find item types, check out [this list](https://mccteam.github.io/r/item/#L12)**
 
     </div>
 
@@ -1028,7 +1031,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
-    **To find item types, check out [this list](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs)**
+    **To find item types, check out [this list](https://mccteam.github.io/r/item/#L12)**
 
     </div>
 
