@@ -1,5 +1,5 @@
 ---
-title: "Home"
+title: Home
 home: верно
 heroImage: /images/MCC_logo_with_edge.png
 tagline: 'Консольный клиент Minecraft (MCC) — лёгкий открытый клиент Minecraft, реализованный в C#'
