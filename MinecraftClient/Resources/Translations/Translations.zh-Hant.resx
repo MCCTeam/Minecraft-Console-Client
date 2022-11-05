@@ -1571,7 +1571,7 @@ cooldown: {6}</value>
     <value>每次攻擊間的冷卻時間，設定 "Custom = false" 以讓MCC自動計算攻擊速度。</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Entites_List" xml:space="preserve">
-    <value>所有可用的實體型別可以在這裏找到：https://bit.ly/3Rg68lp</value>
+    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Interaction" xml:space="preserve">
     <value>可選項："Interact"（互動），"Attack"（攻擊） 或 "InteractAt"（互動並攻擊）</value>
@@ -1586,10 +1586,10 @@ cooldown: {6}</value>
     <value>"health"（生命值）或 "distance"（距離）。當使用"single"模式時，以哪一個屬性確定優先順序。</value>
   </data>
   <data name="config.ChatBot.AutoCraft" xml:space="preserve">
-    <value>自動使用背包中的物品進行合成。
-請看 https://mccteam.github.io/guide/chat-bots.html#auto-craft
-你需要啟用庫存處理來使用這個功能
-如果需要使用工作臺，你還需要啟用地形處理。</value>
+    <value>Automatically craft items in your inventory
+See https://mccteam.github.io/g/bots/#auto-craft for how to use
+You need to enable Inventory Handling to use this bot
+You should also enable Terrain and Movements if you need to use a crafting table</value>
   </data>
   <data name="config.ChatBot.AutoCraft.CraftingTable" xml:space="preserve">
     <value>如果你打算使用工作臺，請填寫它所在的位置。（需要啟用地形處理）</value>
@@ -1598,18 +1598,18 @@ cooldown: {6}</value>
     <value>合成失敗時應該怎麼處理，"abort"（中止）或 "wait"（等待）。</value>
   </data>
   <data name="config.ChatBot.AutoCraft.Recipes" xml:space="preserve">
-    <value>Recipes.Name：給該配方起一個獨一無二的名字。（不能包含空白字元）
-Recipes.Type：合成型別，"player"（背包2x2）或 "table"（工作臺3x3）
-Recipes.Result：合成的目標物品
-Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的格式填寫。需留空請填寫"Null"。
-最新的物品命名請看：https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+    <value>Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
+Recipes.Type: crafting table type: "player" or "table"
+Recipes.Result: the resulting item
+Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
+For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDig" xml:space="preserve">
-    <value>自動挖掘方塊。
-你需要啟用地形處理來使用這個功能。
-你可以使用 "/digbot start" 和 "/digbot stop" 指令來控制 AutoDig 的啟停。
-由於MCC目前還不支援精確計算方塊的碰撞體積，在獲取看向的方塊時，視線上所有的方塊都被看作是完整的立方體。
-查詢方塊的名字，請訪問 https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/Material.cs</value>
+    <value>Auto-digging blocks.
+You need to enable Terrain Handling to use this bot
+You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
+Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
+For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
   </data>
   <data name="config.ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
     <value>進入遊戲後等待多少秒後開始自動挖掘，設定為-1禁用自動開始。</value>
@@ -1642,9 +1642,9 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>"lookat"，"fixedpos" 或 "both"。挖掘看向的方塊還是固定位置的方塊，或者是兩個條件都滿足的方塊。</value>
   </data>
   <data name="config.ChatBot.AutoDrop" xml:space="preserve">
-    <value>自動從背包/庫存中丟棄指定的物品
-你需要啟用庫存處理來使用這個功能。
-可用物品請看 https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+    <value>Automatically drop items in inventory
+You need to enable Inventory Handling to use this bot
+See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDrop.Mode" xml:space="preserve">
     <value>"include"（丟棄列表中的物品），"exclude"（丟棄列表外的所有物品） 或 "everything"（丟棄所有物品）</value>
@@ -1654,9 +1654,10 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
 你需要啟用庫存處理來使用這個功能。</value>
   </data>
   <data name="config.ChatBot.AutoFishing" xml:space="preserve">
-    <value>使用魚竿自動釣魚。指南：https://mccteam.github.io/guide/chat-bots.html#auto-fishing
-你可以使用"/fish"命令來手動進行控制。
-/!\ 啟用前請確保伺服器允許自動釣魚。</value>
+    <value>Automatically catch fish using a fishing rod
+Guide: https://mccteam.github.io/g/bots/#auto-fishing
+You can use "/fish" to control the bot manually.
+/!\ Make sure server rules allow automated farming before using this bot</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Antidespawn" xml:space="preserve">
     <value>如果你之前沒有啟用過這個選項，請保持它為 false 。</value>
@@ -1725,32 +1726,32 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>將聊天資訊寫入到日誌檔案中。</value>
   </data>
   <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
-    <value>這個 Chatbot 可以讓你使用Discord頻道來接收和傳送信息。
-你可以參考技術文件或閱讀下文來了解如何配置（技術文件附有圖片）
-技術文件：https://mccteam.github.io/guide/chat-bots.html#discord-bridge
-配置：
-首先你需要在Discord Developers Portal創建機器人。影片參考：https://www.youtube.com/watch?v=2FgMnZViNPA
-/!\ 注意 /!\：創建機器人時，你必須啟用"Message Content Intent"，"Server Members Intent" 和 "Presence Intent"，機器人才能正常運作。請小心不要遺留任何步驟！
-當創建機器人時，將建立的令牌（token）複製並貼在 "Token" 欄位（令牌十分重要，請小心保管）
-複製 Application ID，然後前往：https://bit.ly/2Spn2Q3
-貼上你複製的ID並在權限勾上管理員欄位，然後點擊下方的連結。
-連結將會開啟邀請頁面並顯示你擁有的伺服器。選擇你希望機器人進入的伺服器然後邀請它。
-你邀請了機器人後，打開你的Discord客戶端，前往設定 -&gt; 進階設定，然後啟用開發者模式。
-離開設定後，在伺服器列表中找到你剛才邀請機器人的伺服器，右鍵伺服器，點擊 "複製ID"，然後將ID貼到 "GuildId" 欄位。
-在伺服器中，選擇你希望用作機器人使用的頻道，右鍵頻道，點擊 "複製ID"，然後將ID貼到 "ChannelId" 欄位。
-最後，在頻道中傳送一則任意信息，然後右鍵你自己的名字，點擊 "複製ID"，然後將ID貼到 "OwnersIds" 欄位。
-如何使用：
-希望執行MCC指令時，在指令前加上點 "."。例如 ".move 143 64 735"。
-希望傳送聊天信息時，只需要直接傳送就好了。</value>
+    <value>This bot allows you to send and recieve messages and commands via a Discord channel.
+For Setup you can either use the documentation or read here (Documentation has images).
+Documentation: https://mccteam.github.io/g/bots/#discord-bridge
+Setup:
+First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
+/!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
+When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
+Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
+Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
+This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
+Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
+Exit the settings and right click on a server you have invited the bot to in the server list, then click "Copy ID", and paste the id here in "GuildId".
+Then right click on a channel where you want to interact with the bot and again right click -&gt; "Copy ID", pase the copied id here in "ChannelId".
+And for the end, send a message in the channel, right click on your nick and again right click -&gt; "Copy ID", then paste the id here in "OwnersIds".
+How to use:
+To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+To send a message, simply type it out and hit enter.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
     <value>你想要使用機器人與 MCC 互動的頻道ID。</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.Formats" xml:space="preserve">
-    <value>信息格式
-被 { 與 } 包裹著的字將會在程式運行時被替換，不要修改它們！
-例如：{message} 將會被替換成真正的信息內容，{username} 將會被替換成使用者名稱，{timestamp} 會替換成現在時間。
-對於Discord的信息格式，請查看：https://bit.ly/3F8CUCm</value>
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
     <value>你邀請機器人加入的伺服器的ID。</value>
@@ -1850,8 +1851,8 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>每間隔多少秒自動儲存一次回放檔案，以秒為單位。使用-1禁用自動儲存。</value>
   </data>
   <data name="config.ChatBot.ScriptScheduler" xml:space="preserve">
-    <value>在加入伺服器時、到達特定時間時或以設定的時間間隔執行命令或指令碼檔案
-詳細使用方法請檢視 https://mccteam.github.io/guide/chat-bots.html#script-scheduler</value>
+    <value>Schedule commands and scripts to launch on various events such as server join, date/time or time interval
+See https://mccteam.github.io/g/bots/#script-scheduler for more info</value>
   </data>
   <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
     <value>這個 Chatbot 可以讓你透過Telegram機器人私人信息使用Telegram頻道來接收和傳送信息。
@@ -1885,10 +1886,10 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>你想要使用機器人與 MCC 互動的頻道ID。</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.Formats" xml:space="preserve">
-    <value>信息格式
-被 { 與 } 包裹著的字將會在程式運行時被替換，不要修改它們！
-例如：{message} 將會被替換成真正的信息內容，{username} 將會被替換成使用者名稱，{timestamp} 會替換成現在時間。
-對於Telegram的信息格式，請查看：https://sendpulse.com/blog/telegram-text-formatting</value>
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
     <value>如果信息無法被傳送至Telegram時，要等候多少秒才取消傳送。（最小 1秒）</value>
@@ -1897,8 +1898,8 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>你的Telegram機器人的令牌。</value>
   </data>
   <data name="config.ChatFormat" xml:space="preserve">
-    <value>MCC會盡力檢測聊天資訊，但有些伺服器有不尋常的聊天格式
-當這種情況發生時，你需要在下面自定義匹配聊天所用的正規表示式，詳見 https://mccteam.github.io/guide/configuration.html#chat-format</value>
+    <value>MCC does it best to detect chat messages, but some server have unusual chat formats
+When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section</value>
   </data>
   <data name="config.ChatFormat.Builtins" xml:space="preserve">
     <value>是否啟用MCC內建的聊天檢測規則。設定為 false 以避免與自定義格式衝突。</value>
@@ -1907,11 +1908,11 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>是否啟用下方的自定義正規表示式進行聊天檢測。</value>
   </data>
   <data name="config.Head" xml:space="preserve">
-    <value>啟動配置檔案
+    <value>Startup Config File
+Please do not record extraneous data in this file as it will be overwritten by MCC.
 
-對 MCC（Minecraft 命令列客戶端）不熟悉？請看這個文件：https://mccteam.github.io/guide/configuration.html
-
-想升級到較新的版本嗎？請訪問 https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
+New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
+Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
   </data>
   <data name="config.load" xml:space="preserve">
     <value>已從 {0} 載入設定。</value>
@@ -1993,7 +1994,7 @@ Recipes.Slots：合成的物品擺放方式，以從左到右、從上到下的�
     <value>啟用庫存處理（可操作背包、箱子等容器）。</value>
   </data>
   <data name="config.Main.Advanced.language" xml:space="preserve">
-    <value>請使用Minecraft的語言程式碼填寫，詳見 https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239</value>
+    <value>Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html</value>
   </data>
   <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
     <value>無效的語言程式碼！</value>
