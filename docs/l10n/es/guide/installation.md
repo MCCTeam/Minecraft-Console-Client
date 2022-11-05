@@ -1,351 +1,354 @@
-# Installation
+- - -
+title: Installation
+- - -
+# Instalación
 
--   [YouTube Tutorials](#youtube-tutorials)
--   [Download a compiled binary](#download-a-compiled-binary)
--   [Building from the source code](#building-from-the-source-code)
--   [Run using Docker](#using-docker)
--   [Run on Android](#run-on-android)
--   [Run MCC 24/7 on a VPS](#run-on-a-vps)
+-   [Tutoriales en YouTube](#youtube-tutorials)
+-   [Descarga los binarios compilados](#download-a-compiled-binary)
+-   [Compilar desde el código fuente](#building-from-the-source-code)
+-   [Ejecutar usando Docker](#using-docker)
+-   [Ejecutar en Android](#run-on-android)
+-   [Ejecutar MCC 24/7 en un Servidor Privado Virtual](#run-on-a-vps)
 
-## YouTube Tutorials
+## Tutoriales en YouTube
 
-If you're not the kind of person that likes textual tutorials, our community has made video tutorials available on YouTube.
+Si no eres el tipo de persona que le gusten los tutoriales en texto, nuestra comunidad ha hecho videotutoriales disponibles en YouTube.
 
--   [Installation on Windows by Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
--   [Installation on Windows + Auto AFK and More by Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
+-   [Instalación en Windows hecho por Daenges](https://www.youtube.com/watch?v=BkCqOCa2uQw)
+-   [Instalación en Windows + Auto AFK y más hecho por Dexter113](https://www.youtube.com/watch?v=FxJ0KFIHDrY)
 
-## Download a compiled binary
+## Descarga los binarios compilados
 
-In order to run **Minecraft Console Client** you need [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download)
+Para ejecutar **Minecraft Console Client** necesitas [.NET 6.0 o superior](https://dotnet.microsoft.com/en-us/download)
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">ADVERTENCIA</p>
 
-**If you already have .NET, but an older version than `6.0`, please update to `6.0` since MCC might not work as expected or at all.**
+**Si ya tienes .NET, pero una versión anterior a `6.0`, por favor actualiza a `6.0`, ya que MCC puede no funcionar como se esperaba o en absoluto.**
 
 </div>
 
-#### How to install .NET on your platform
+#### Cómo instalar .NET en su plataforma
 
--   [Install .NET on Windows](https://docs.microsoft.com/en-us/dotnet/core/install/windows)
--   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
--   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
+-   [Instalar .NET en Windows](https://docs.microsoft.com/en-us/dotnet/core/install/windows)
+-   [Instalar .NET en Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
+-   [Instalar .NET en macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
 
-#### Download
+#### Descarga
 
-You can download a compiled binary file of the latest build from our Releases section on Git Hub: [Download](https://github.com/MCCTeam/Minecraft-Console-Client/releases)
+Puede descargar la última versión en nuestra sección de Versiones en Git Hub: [Click Aquí](https://github.com/MCCTeam/Minecraft-Console-Client/releases)
 
-## Building from the source code
+## Compilar desde el código fuente
 
 ### Windows
 
-Requirements:
+Requisitos:
 
 -   [Git](https://www.git-scm.com/)
--   [.NET 6.0 or new-er](https://dotnet.microsoft.com/en-us/download) or [Visual Studio](https://visualstudio.microsoft.com/) configured for C# app development
+-   [.NET 6.0 o superior](https://dotnet.microsoft.com/en-us/download) o [Visual Studio](https://visualstudio.microsoft.com/) configurado para el desarrollo de aplicaciones C#
 
-#### Cloning using Git
+#### Clonar usando Git
 
-Install [Git](https://www.git-scm.com/)
+Instala aquí: [Git](https://git-scm.com/)
 
-1. Make a new folder where you want to keep the source code
-2. Then open it up, hold `SHIFT` and do a `right-click` on the empty white space in the folder
-3. Click on `Git Bash Here` in the context menu
-4. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+1. Cree una nueva carpeta donde quiera conservar el código fuente
+2. Entra en la carpeta que has creado, mantén `SHIFT` y haz `Click-derecho` en el espacio vacío
+3. Haga clic en `Git Bash Here` en el menú contextual
+4. Clone el [Repositorio de Git Hub](https://github.com/MCCTeam/Minecraft-Console-Client) escribiendo y ejecutando el siguiente comando:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
-5. Once the repository has been cloned, you can close the `Git Bash` terminal emulator
-6. Open up the new cloned folder
+5. Una vez que el repositorio haya terminado de clonarse, puede cerrar la Consola de Comandos
+6. Abra la nueva carpeta clonada
 
-#### Building using the Visual Studio
+#### Compilar usando Visual Studio
 
-1. Open up the `MinecraftClient.sln` via Visual Studio
+1. Abra `MinecraftClient.sln` con Visual Studio
 2. Right click on `MinecraftClient` solution in the `Solution Explorer`
-3. Click on `Properties`
+3. Haga clic en `Propiedades`
 4. Open up the `Build` tab and select configuration `Release`
-5. Press `CTRL + S` and close the file
+5. Presione `CTRL + S` y cierre el archivo
 6. Right click on `MinecraftClient` solution in the `Solution Explorer`
 7. Click `Build`
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net6.0/win-x64/publish` folder.
+Si la compilación ha tenido éxito, el binario compilado `MinecraftClient.exe` estará en la carpeta: `MinecraftClient/bin/Release/net6.0/win-x64/publish`
 
-#### Building using .NET manually without Visual Studio
+#### Compilar manualmente usando .NET sin Visual Studio
 
-1. Open the `Minecraft-Console-Client` folder you've cloned or downloaded
-2. Open the PowerShell (`Right-Click` on the whitespace and click `Open PowerShell`, or in Windows Explorer: `File -> Open PowerShell`)
-3. Run the following command to build the project:
+1. Abra la carpeta `Minecraft-Console-Client` que ha clonado o descargado
+2. Abra PowerShell (`Click derecho` en el espacio en blanco y haga clic en `Abrir PowerShell`, o en el Explorador de Windows: `Archivo -> Abrir PowerShell`)
+3. Ejecute el siguiente comando para compilar el proyecto:
 
 ```bash
 dotnet publish MinecraftClient -f net6.0 -r win-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
 ```
 
-If the build has succeeded, the compiled binary `MinecraftClient.exe` will be in `MinecraftClient/bin/Release/net6.0/win-x64/publish` folder.
+Si la compilación ha tenido éxito, el binario compilado `MinecraftClient.exe` estará en la carpeta: `MinecraftClient/bin/Release/net6.0/win-x64/publish`
 
-### Linux, macOS
+### Linux/macOS:
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**If you're using Linux we will assume that you should be able to install git on your own. If you don't know how, search it up for your distribution, it should be easy. (Debian based distros: `apt install git`, Arch based: `pacman -S git`)** 
+**Si estás usando Linux, asumiremos que puedes instalar git por tu cuenta. Si no sabes cómo, búscalo para tu distribución, debería ser fácil. (Distros basadas en Debian: `apt install git`, Basado en Arch: `pacman -S git`)** 
 
 </div>
 
-Requirements:
+Requisitos:
 
 -   Git
 
     -   Linux:
 
-    -   [Install Git on macOS](https://git-scm.com/download/mac)
+    -   [Instalar Git en macOS](https://git-scm.com/download/mac)
 
--   .NET SDK 6.0 or new-er
+-   .NET SDK 6.0 o superior
 
-    -   [Install .NET on Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
-    -   [Install .NET on macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
+    -   [Instalar .NET en Linux](https://docs.microsoft.com/en-us/dotnet/core/install/linux)
+    -   [Instalar .NET en macOS](https://docs.microsoft.com/en-us/dotnet/core/install/macos)
 
-#### Cloning using Git
+#### Clonar usando Git
 
-1. Open up a terminal emulator and navigate to the folder where you will store the MCC
-2. Recursively clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+1. Abra una terminal y entre a la carpeta donde guardará MCC
+2. Clone el [Repositorio de Git Hub](https://github.com/MCCTeam/Minecraft-Console-Client) escribiendo y ejecutando el siguiente comando:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
-3. Go to the folder you've cloned (should be `Minecraft-Console-Client`)
-4. Run the following command to build the project:
+3. Vaya a la carpeta que ha clonado (debería ser `Minecraft-Console-Client`)
+4. Ejecute el siguiente comando para compilar el proyecto:
 
-    - On Linux:
+    - En Linux:
 
         ```bash
         dotnet publish MinecraftClient -f net6.0 -r linux-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+        <div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-        **If you're using Linux that is either ARM, 32-bit, Rhel based, Using Musl, or Tirzen, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#linux-rids) for your platform and replace the `'-r linux-64` with an appropriate `-r <your RID>` (Example for arm: `-r linux-arm64`)**
+        **Si estás usando Linux que sea ARM, 32-bit, basado en Rhel, Usando Musl o Tirzen, [encuentre el RID apropiado](https://docs. icrosoft.com/en-us/dotnet/core/rid-catalog#linux-rids) para tu plataforma y reemplaza el `'-r linux-64` con un apropiado `-r <your RID>` (Ejemplo para arm: `-r linux-arm64`)**
 
         </div>
 
-    - On macOS:
+    - En macOS:
 
         ```bash
         dotnet publish MinecraftClient -f net6.0 -r osx-x64 --no-self-contained -c Release -p:UseAppHost=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None
         ```
 
-        <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+        <div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-        **If you're not using MAC with Intel, find an appropriate RID for your ARM processor, [find an appropriate RID](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog#macos-rids) and replace the `'-r osx-64` with an appropriate `-r <your RID>` (Example for arm: `-r osx.12-arm64`)**
+        **Si no estás usando MAC con Intel, encuentre un RID apropiado para tu procesador ARM, [encuentra el RID apropiado](https://docs. icrosoft.com/en-us/dotnet/core/rid-catalog#macos-rids) y reemplaza el `'-r osx-64` con un `-r apropiado <your RID>` (Ejemplo para arm: `-r osx.12-arm64`)**
 
         </div>
 
-If the build has succeeded, the compiled binary `MinecraftClient` will be in:
+Si la compilación ha tenido éxito, el binario compilado `MinecraftClient` estará en:
 
 -   Linux: `MinecraftClient/bin/Release/net6.0/linux-x64/publish/`
 -   macOS: `MinecraftClient/bin/Release/net6.0/osx-x64/publish/`
 
-## Using Docker
+## Usando Docker
 
-Requirements:
+Requisitos:
 
 -   Git
 -   Docker
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**This section is for more advanced users, if you do not know how to install git or docker, you can take a look at other sections for Git, and search on how to install Docker on your system.**
-
-</div>
-
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
-
-**Pay attention at warnings, Docker currently works, but you must start the containers in the interactive mode or MCC will crash, we're working on solving this.**
+**Esta sección es para usuarios más avanzados, si no sabes cómo instalar git o docker, puede echar un vistazo a otras secciones para Git, y buscar sobre cómo instalar Docker en su sistema.**
 
 </div>
 
-1. Clone the [Git Hub Repository](https://github.com/MCCTeam/Minecraft-Console-Client) by typing end executing the following command:
+<div class="custom-container warning"><p class="custom-container-title">ADVERTENCIA</p>
+
+**Preste atención a las advertencias, Docker funciona actualmente, pero debe iniciar los contenedores en el modo interactivo o MCC se bloqueará, estamos trabajando en resolver esto.**
+
+</div>
+
+1. Clone el [Repositorio de Git Hub](https://github.com/MCCTeam/Minecraft-Console-Client) escribiendo y ejecutando el siguiente comando:
 
 ```bash
 git clone https://github.com/MCCTeam/Minecraft-Console-Client.git --recursive
 ```
 
-2. Navigate to `Minecraft-Console-Client/Docker`
-3. Build the image using the following command
+2. Vaya a `Minecraft-Console-Client/Docker`
+3. Compile la imagen usando el siguiente comando:
 
 ```bash
 docker build -t minecraft-console-client:latest .
 ```
 
-**Start the container using Docker:**
+**Iniciar el contenedor usando Docker:**
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+<div class="custom-container danger"><p class="custom-container-title">ADVERTENCIA</p>
 
-**There is a bug with the ConsoleInteractive which causes a crash when a container is started in a headless mode, so you need to use the interactive mode. Do not restart containers in a classic way, stop then and start them with interactive mode (this command), after that simply detach with `CTRL + P` and then `CTRL + Q`.**
+**Hay un error con ConsoleInteractive que causa un fallo cuando un contenedor se inicia en modo sin cabeza(headless), así que necesita usar el modo interactivo. No reinicie los contenedores de manera clásica, Deténgalo y entonces inícielo con el modo interactivo (este comando), después de eso simplemente desacopla con `CTRL + P` y luego `CTRL + Q`.**
 
 </div>
 
 ```bash
-# You could also ignore the -v parameter if you dont want to mount the volume that is up to you. If you don't it's harder to edit the .ini file if thats something you want to do
+# También puede ignorar el parámetro -v si no quiere montar el volumen, eso depende de usted. Si no lo hace, es más difícil editar el archivo de configuración .ini si es algo que se quiere hacer.
 docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
-Now you could login and the Client is running.
+Ahora puede iniciar sesión y el Cliente se estará ejecutando.
 
-To detach from the Client but still keep it running in the Background press: `CTRL + P` and then after `CTRL + Q`.
+Para desacoplarse del cliente pero mantenerlo funcionando en segundo plano presione: `CTRL + P` y después `CTRL + Q`.
 
-To reattach use the `docker attach` command.
+Para reacoplarse use el comando: `docker attach`
 
-**Start the container using docker-compose:**
+**Iniciar el contenedor usando docker-compose:**
 
-By default, the volume of the container gets mapped into a new folder named `data` in the same folder the `docker-compose.yml` is stored.
+Por defecto, el volumen del contenedor se mapea en una nueva carpeta llamada `data` en la misma carpeta `docker-compose.yml` está almacenado.
 
-If you don't want to map a volume, you have to comment out or delete the entire volumes section:
+Si no desea mapear un volumen, tiene que ** ** o eliminar la entera sección de volúmenes:
 
 ```yml
-#volumes:
+#volúmenes:
 #- './data:/opt/data'
 ```
 
-Make sure you are in the directory the `docker-compose.yml` is stored before you attempt to start. If you do so, you can start the container:
+Asegúrese de que está en el directorio en el que se almacena `docker-compose.yml` antes de intentar iniciarlo. Cuando lo haga, puede iniciar el contenedor:
 
 ```bash
 docker-compose run MCC
 ```
 
-Remember to remove the container after usage:
+Recuerde eliminar el contenedor después de usarlo:
 
 ```bash
 docker-compose down
 ```
 
-If you use the INI file and entered your data (username, password, server) there, you can start your container using
+Si utiliza el archivo INI e ingresó sus datos (nombre de usuario, contraseña, servidor) en ese entonces, puede iniciar su contenedor usando:
 
 ```bash
 docker-compose up
-docker-compose up -d #for deamonized running in the background
+docker-compose up -d #para ejecutar deamonized en segundo plano
 ```
 
-Note that you won't be able to interact with the client using `docker-compose up`. If you want that functionality, please use the first method: `docker-compose run MCC`.
+Tenga en cuenta que no podrá interactuar con el cliente usando `docker-compose up`. Si desea esa funcionalidad, utilice el primer método: `docker-compose run MCC`.
 
-As above, you can stop and remove the container using
+Igual que anteriormente, puede detener y remover el contenedor usando:
 
 ```bash
 docker-compose down
 ```
 
-## Run on Android
+## Ejecutar en Android
 
-It is possible to run the Minecraft Console Client on Android through Termux and Ubuntu 22.04 in it, however it requires a manual setup with a lot of commands, be careful no to skip any steps. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed.
+Es posible ejecutar el cliente de la consola de Minecraft en Android a través de Termux y Ubuntu 22.04 en él, sin embargo requiere una configuración manual de varios comandos, tenga cuidado de NO OMITIR ningún paso. Tenga en cuenta que esto puede tardar entre 10 y 20 minutos o más en completar dependiendo de su nivel de conocimiento técnico, Velocidad de Internet y velocidad del CPU.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**This section is going to get a bit technical, I'll try my best to make everything as simple as possible. If you are having trouble following along or if you encounter any issues, feel free to open up a discussion on our Github repository page.**
-
-</div>
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**You're required to have some bare basic knowledge of Linux, if you do not know anything about it, watch [this video](https://www.youtube.com/watch?v=SkB-eRCzWIU) to get familiar with basic commands.**
+**Esta sección va a ser un poco técnica, voy a hacer todo lo posible para que sea lo más simple posible. Si tiene problemas para continuar o si encuentra algún problema, no dude en abrir una discusión en nuestro repositorio de Github.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**Here we're installing everything on the root account for simplicity sake, if you want to make a user account, make sure you update the command which reference the `/root` directory with your home directory.**
+**Necesitas tener algunos conocimientos básicos de Linux, si no sabes nada, mira [este video](https://www.youtube.com/watch?v=SkB-eRCzWIU) para familiarizarse con los comandos básicos.**
 
 </div>
 
-### Installation
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
+
+**Aquí estaremos instalando todo en la cuenta root por simplicidad, si quieres crear una cuenta de usuario, asegúrate de actualizar el comando que hace referencia al directorio `/root` con tu directorio de inicio.**
+
+</div>
+
+### Instalación
 
 #### Termux
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">ADVERTENCIA</p>
 
-**The Play Store version of Termux is outdated and not supported, do not use it, use the the [Github one](https://github.com/termux/termux-app/releases/latest/).**
-
-</div>
-
-Go to [the Termux Github latest release](https://github.com/termux/termux-app/releases/latest/), download the `debug_universal.apk`, unzip it and run it.
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**If your file manager does not let you run APK files, install and use `File Manager +` and give it a permission to install 3rd party applications when asked.**
+**La versión de Termux en Play Store está desactualizada y no está soportada, no la utilices, usa la versión oficial en [Github](https://github.com/termux/termux-app/releases/latest/).**
 
 </div>
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+Vaya a [la última versión de Termux en Github](https://github.com/termux/termux-app/releases/latest/), descargue `debug_universal.apk`, descomprima y ejecute.
 
-**Once you have installed Termux, open it, bring down the Android menu for notifications, on Termux notification, drag down until you see the following options: `Exit | Acquire wakelock`, press on the `Acquire wakelock` and allow Termux to have a battery optimization exclusion permission when asked. If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background!**
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
+
+**Si tu gestor de archivos no te permite ejecutar archivos APK, instala y usa `File Manager +` y dale permiso para instalar aplicaciones de terceros cuando se te pregunte.**
 
 </div>
 
-#### Installing Ubuntu 22.04
+<div class="custom-container danger"><p class="custom-container-title">ADVERTENCIA</p>
 
-At this stage, you have 2 options:
+**Una vez instalado Termux, ábralo, baje el menú de notificaciones, en la notificación de Termux, arrastre hacia abajo hasta que vea las siguientes opciones: `Exit | Acquire wakelock`, presione en `Acquire wakelock` y permita a Termux tener permsio de exclusión de optimización de batería cuándo se pregunte. Si no lo haces, ¡tu rendimiento será reducido y Termux podría ser cerrado por Android mientras se ejecuta en segundo plano!**
 
-1. Following this textual tutorial
-2. Watching a [Youtube tutorial for installing Ubuntu](https://www.youtube.com/watch?v=5yit2t7smpM)
+</div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+#### Instalando Ubuntu 22.04
+
+En esta etapa, tienes dos opciones:
+
+1. Siguiendo con este mismo tutorial en texto
+2. Ver un videotutorial en Youtube para [instalar Ubuntu en Termux](https://www.youtube.com/watch?v=5yit2t7smpM)
+
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
 **If you decide to watch the Youtube tutorial, watch only up to `1:58`, the steps after are not needed and might just confuse you.**
 
 </div>
 
-In order to install Ubuntu 22.04 in Termux you require `wget` and `proot`, we're going to install them in the next step.
+Para instalar Ubuntu 22.04 en Termux necesitas `wget` y `pRoot`, vamos a instalarlos en los siguientes pasos.
 
-Once you have Termux installed open it up and run the following command one after other (in order):
+Una vez que tenga Termux instalado, ábralo y ejecute el siguiente comando uno tras otro (en orden):
 
 1. `pkg update`
 2. `pkg upgrade`
 3. `pkg install proot wget`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**If you're asked to press Y/N during the update/upgrade command process, just enter Y and press Enter**
+**Si se le pide que presione Y/N durante el proceso de actualización(pasos Update/Upgrade), simplemente ingrese Y, y presione Enter**
 
 </div>
 
-Then you need to download an installation script using the following command:
+Ahora necesita descargar un script de instalación usando el siguiente comando:
 
 ```bash
 wget https://raw.githubusercontent.com/MFDGaming/ubuntu-in-termux/master/ubuntu.sh
 ```
 
-Once the script has downloaded, run it with:
+Una vez descargado el script, ejecútelo con:
 
 ```bash
 bash ubuntu.sh
 ```
 
-Then you will be asked a question, enter `Y` and press `Enter`.
+Entonces se le hará una pregunta, ingrese `Y`, y presione `Enter`.
 
-Once the installation is complete, you can start Ubuntu with:
+Una vez finalizada la instalación, puedes iniciar Ubuntu con:
 
 ```bash
 ./startubuntu.sh
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**Now every time you open Termux after it has been closed, in order to access Ubuntu you have to use this command**
+**Ahora cada vez que abra Termux después de que se haya cerrado, para acceder a Ubuntu tiene que usar este comando**
 
 </div>
 
-#### Installing .NET on ARM
+#### Instalando .NET en ARM
 
-Since there are issues installing .NET 6.0 via the APT package manager at the time of writing, we will have to install it manually.
+Ya que hay problemas al instalar .NET 6.0 a través del gestor de paquetes APT en el momento en el que este documento se escribió, tendremos que instalarlo manualmente.
 
-First we need to update the APT package manager repositories and install dependencies.
+Primero necesitamos actualizar los repositorios del gestor de paquetes APT e instalar sus dependencias.
 
-To update the APT repositories, run the following command:
+Para actualizar los repositorios APT, ejecute el siguiente comando:
 
 ```bash
 apt update -y && apt upgrade -y
 ```
 
-After you did it, we need to install dependencies for .NET, with the following command:
+Después de hacerlo, necesitamos instalar dependencias para .NET, con el siguiente comando:
 
 ```bash
 apt install wget nano unzip libc6 libgcc1 libgssapi-krb5-2 libstdc++6 zlib1g libicu70 libssl3 -y
@@ -1094,8 +1097,8 @@ sudo apt install screen -y
 
 Now you can install the MCC:
 
--   [Download a compiled binary](#download-a-compiled-binary)
--   [Building from the source code](#building-from-the-source-code)
+-   [Descarga los binarios compilados](#download-a-compiled-binary)
+-   [Compilar desde el código fuente](#building-from-the-source-code)
 -   [Run using Docker](#using-docker) (Doesn't require the `screen` command)
 
 How to use the `screen` command?

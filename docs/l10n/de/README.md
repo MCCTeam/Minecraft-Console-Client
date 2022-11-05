@@ -1,4 +1,5 @@
 ---
+title: Home
 home: true
 heroImage: /images/MCC_logo_with_edge.png
 tagline: 'Minecraft Console Client (MCC) is a lightweight open-source Minecraft Java client implemented in C#'

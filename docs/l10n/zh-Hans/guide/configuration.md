@@ -1,10 +1,13 @@
+- - -
+title: Configuration redirectFrom: ["/g/conf/index.html", "/g/conf.html"]
+- - -
 # 配置
 
 **Minecraft Console Client** can be both configured by the [command line parameters](usage.md#command-line-parameters) and the configuration file.
 
 By the default all of the configurations are stored in the configuration file named `MinecraftClient.ini` which is created the first time you run the program, but you also can specify your own configuration file by providing a path to it as a first parameter when starting the MCC, check out [Usage](usage.md#quick-usage-of-mcc-with-examples) for examples.
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **Recently we have changed the configuration format from INI to TOML, the documentation had to be updated. If you spot a mistake, please report it on our Discord or in the repository as an issue.**
 
@@ -102,7 +105,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you define the type of your account: `mojang` or `microsoft`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Mojang accounts are going to stop working soon for everyone, they already are not working for some people.**
 
@@ -230,7 +233,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     BotOwners = [ "milutinke", "bradbyte", "BruceChen", ]
     ```
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **Admins can impersonate players on versions older than 1.19**
 
@@ -259,7 +262,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
     MinecraftVersion = "1.18.2"
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **MCC supports only 1.4.6 - 1.19.2**
 
@@ -281,7 +284,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `auto`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Force-enabling only works for MC 1.13 +**
 
@@ -297,7 +300,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `mcc`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **For playing on Hypixel you need to use `vanilla`**
 
@@ -381,7 +384,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you can set if you want to enable terrain movement, so you can use command like `/move` and some bots.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **This feature is currently not supported in `1.4.6 - 1.6`.**
 
@@ -391,7 +394,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
 
@@ -403,7 +406,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you can set if you want to enable inventory handling using the `/inventory` command.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **This feature is currently not supported in `1.4.6 - 1.9`.**
 
@@ -419,7 +422,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     This setting is where you can set if you want to enable interactions with entities such as players, mobs, minecarts, etc..
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **This feature is currently not supported in `1.4.6 - 1.9`.**
 
@@ -429,7 +432,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Sometimes the latest versions might not support this straight away, since Mojang often makes changes to this.**
 
@@ -483,7 +486,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `true`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Only works on Windows XP-8 or Windows 10 with old console**
 
@@ -529,7 +532,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Make sure the spawn point is safe**
 
@@ -585,7 +588,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `2`
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">警告</p>
 
 **A movement speed higher than 2 may be considered cheating by some plugins.**
 
@@ -814,7 +817,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `.*`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Not filtering anything by default**
 
@@ -832,7 +835,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `.*`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Not filtering anything by default**
 
@@ -870,7 +873,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `console-log.txt`
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **%username% and %serverip% will be substituted with your username and the IP address of the server you are connected to. So you can use something like: `console-log-%username%-%serverip%.txt`**
 
@@ -908,7 +911,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
     To define a variable/setting, simply make a new line with the following format under the `[AppVar.VarStirng]` section:
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **`%username%`, `%serverip%`, `%datetime%` are reserved variables**
 
@@ -953,7 +956,7 @@ Coordinate = { x = 145, y = 64, y = 2045 }
 
 -   **Default:** `false`
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **Make sure your server rules allow Proxies or VPNs before setting the setting to `true`, or you may face consequences!**
 
