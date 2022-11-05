@@ -306,49 +306,49 @@ Una vez que tenga Termux instalado, ábralo y ejecute el siguiente comando uno t
 
 <div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**If you're asked to press Y/N during the update/upgrade command process, just enter Y and press Enter**
+**Si se le pide que presione Y/N durante el proceso de actualización(pasos Update/Upgrade), simplemente ingrese Y, y presione Enter**
 
 </div>
 
-Then you need to download an installation script using the following command:
+Ahora necesita descargar un script de instalación usando el siguiente comando:
 
 ```bash
 wget https://raw.githubusercontent.com/MFDGaming/ubuntu-in-termux/master/ubuntu.sh
 ```
 
-Once the script has downloaded, run it with:
+Una vez descargado el script, ejecútelo con:
 
 ```bash
 bash ubuntu.sh
 ```
 
-Then you will be asked a question, enter `Y` and press `Enter`.
+Entonces se le hará una pregunta, ingrese `Y`, y presione `Enter`.
 
-Once the installation is complete, you can start Ubuntu with:
+Una vez finalizada la instalación, puedes iniciar Ubuntu con:
 
 ```bash
 ./startubuntu.sh
 ```
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**Now every time you open Termux after it has been closed, in order to access Ubuntu you have to use this command**
+**Ahora cada vez que abra Termux después de que se haya cerrado, para acceder a Ubuntu tiene que usar este comando**
 
 </div>
 
-#### Installing .NET on ARM
+#### Instalando .NET en ARM
 
-Since there are issues installing .NET 6.0 via the APT package manager at the time of writing, we will have to install it manually.
+Ya que hay problemas al instalar .NET 6.0 a través del gestor de paquetes APT en el momento en el que este documento se escribió, tendremos que instalarlo manualmente.
 
-First we need to update the APT package manager repositories and install dependencies.
+Primero necesitamos actualizar los repositorios del gestor de paquetes APT e instalar sus dependencias.
 
-To update the APT repositories, run the following command:
+Para actualizar los repositorios APT, ejecute el siguiente comando:
 
 ```bash
 apt update -y && apt upgrade -y
 ```
 
-After you did it, we need to install dependencies for .NET, with the following command:
+Después de hacerlo, necesitamos instalar dependencias para .NET, con el siguiente comando:
 
 ```bash
 apt install wget nano unzip libc6 libgcc1 libgssapi-krb5-2 libstdc++6 zlib1g libicu70 libssl3 -y
