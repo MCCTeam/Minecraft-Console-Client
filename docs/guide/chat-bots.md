@@ -1,3 +1,7 @@
+---
+title: "Chat Bots"
+redirectFrom: ["/g/bots/index.html", "/g/bots.html"]
+---
 # Chat Bots
 
 -   [About](#about)
@@ -431,7 +435,7 @@
 
         A list of mobs which are either whitelisted or blacklisted, the mode is set in `List_Mode` setting.
 
-        You can find the full list of mobs [here](https://bit.ly/3Rg68lp).
+        You can find the full list of mobs [here](https://mccteam.github.io/r/entity/#L15).
 
     -   **Format:** `["<entity type>", "<entity type>", ...]`
 
@@ -616,7 +620,7 @@
 
     **If you have a case where you have to leave some fields empty, use `"Null"` to mark them as empty. Example for stone bricks: `Slots = [ "Stone", "Stone", "Null", "Stone", "Stone", "Null", "Null", "Null", "Null", ]`**
 
-    **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
+    **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
 
     **Make sure to provide materials for your bot by placing them in inventory first.**
 
@@ -792,7 +796,7 @@
 
         This setting specifies the list of blocks which either should not should not be dug out.
 
-        **The list of block types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/Material.cs).**
+        **The list of block types can be found [here](https://mccteam.github.io/r/block/#L15).**
 
     -   **Format:** `[ "<block type>", "<block type>", ...]`
 
@@ -862,7 +866,7 @@
 
     <div class="custom-container tip"><p class="custom-container-title">Tip</p>
 
-    **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
+    **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
 
     </div>
 
