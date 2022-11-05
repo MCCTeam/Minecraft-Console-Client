@@ -1,3 +1,6 @@
+- - -
+title: "Contributing"
+- - -
 # Contributing
 
 At this moment this page needs to be created.
@@ -32,7 +35,7 @@ MCC 現在支援以下的語言（按英文字母排序）：
         * Translation `zh-Hans.ini` applies to `zh-Hans`, `zh`, `zh-CN`, `zh-SG`.
 
 3. Which game languages are recommended to use this translation?
-    * Check out the table in [this link](https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239), where the `Locale Code` column indicates the language code in minecraft.
+    * Check out the table in [this link](https://mccteam.github.io/r/l-code/), where the `Locale Code` column indicates the language code in minecraft.
     * You will need to indicate which locale codes this translation applies to.
     * For example:
         * Translation `fr.ini` applies to `fr_ca`, `fr_fr`.
