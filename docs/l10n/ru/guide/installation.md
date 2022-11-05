@@ -1,3 +1,6 @@
+- - -
+title: "Installation"
+- - -
 # Установка
 
 -   [YouTube Tutorials](#youtube-tutorials)
