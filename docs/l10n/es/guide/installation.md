@@ -186,7 +186,7 @@ docker build -t minecraft-console-client:latest .
 </div>
 
 ```bash
-# También puede ignorar el parámetro -v si no quiere montar el volumen, eso depende de usted. If you don't it's harder to edit the .ini file if thats something you want to do
+# También puede ignorar el parámetro -v si no quiere montar el volumen, eso depende de usted. Si no lo hace, es más difícil editar el archivo de configuración .ini si es algo que se quiere hacer.
 docker run -it -v <PATH_ON_YOUR_MACHINE_TO_MOUNT>:/opt/data minecraft-console-client:latest
 ```
 
@@ -228,7 +228,7 @@ docker-compose up -d #para ejecutar deamonized en segundo plano
 
 Tenga en cuenta que no podrá interactuar con el cliente usando `docker-compose up`. Si desea esa funcionalidad, utilice el primer método: `docker-compose run MCC`.
 
-As above, you can stop and remove the container using
+Igual que anteriormente, puede detener y remover el contenedor usando:
 
 ```bash
 docker-compose down
@@ -236,58 +236,58 @@ docker-compose down
 
 ## Ejecutar en Android
 
-It is possible to run the Minecraft Console Client on Android through Termux and Ubuntu 22.04 in it, however it requires a manual setup with a lot of commands, be careful no to skip any steps. Note that this might take anywhere from 10 to 20 minutes or more to do depending on your technical knowledge level, Internet speed and CPU speed.
+Es posible ejecutar el cliente de la consola de Minecraft en Android a través de Termux y Ubuntu 22.04 en él, sin embargo requiere una configuración manual de varios comandos, tenga cuidado de NO OMITIR ningún paso. Tenga en cuenta que esto puede tardar entre 10 y 20 minutos o más en completar dependiendo de su nivel de conocimiento técnico, Velocidad de Internet y velocidad del CPU.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**This section is going to get a bit technical, I'll try my best to make everything as simple as possible. If you are having trouble following along or if you encounter any issues, feel free to open up a discussion on our Github repository page.**
-
-</div>
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**You're required to have some bare basic knowledge of Linux, if you do not know anything about it, watch [this video](https://www.youtube.com/watch?v=SkB-eRCzWIU) to get familiar with basic commands.**
+**Esta sección va a ser un poco técnica, voy a hacer todo lo posible para que sea lo más simple posible. Si tiene problemas para continuar o si encuentra algún problema, no dude en abrir una discusión en nuestro repositorio de Github.**
 
 </div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
-**Here we're installing everything on the root account for simplicity sake, if you want to make a user account, make sure you update the command which reference the `/root` directory with your home directory.**
+**Necesitas tener algunos conocimientos básicos de Linux, si no sabes nada, mira [este video](https://www.youtube.com/watch?v=SkB-eRCzWIU) para familiarizarse con los comandos básicos.**
 
 </div>
 
-### Installation
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
+
+**Aquí estaremos instalando todo en la cuenta root por simplicidad, si quieres crear una cuenta de usuario, asegúrate de actualizar el comando que hace referencia al directorio `/root` con tu directorio de inicio.**
+
+</div>
+
+### Instalación
 
 #### Termux
 
-<div class="custom-container warning"><p class="custom-container-title">Warning</p>
+<div class="custom-container warning"><p class="custom-container-title">ADVERTENCIA</p>
 
-**The Play Store version of Termux is outdated and not supported, do not use it, use the the [Github one](https://github.com/termux/termux-app/releases/latest/).**
-
-</div>
-
-Go to [the Termux Github latest release](https://github.com/termux/termux-app/releases/latest/), download the `debug_universal.apk`, unzip it and run it.
-
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
-
-**If your file manager does not let you run APK files, install and use `File Manager +` and give it a permission to install 3rd party applications when asked.**
+**La versión de Termux en Play Store está desactualizada y no está soportada, no la utilices, usa la versión oficial en [Github](https://github.com/termux/termux-app/releases/latest/).**
 
 </div>
 
-<div class="custom-container danger"><p class="custom-container-title">Danger</p>
+Vaya a [la última versión de Termux en Github](https://github.com/termux/termux-app/releases/latest/), descargue `debug_universal.apk`, descomprima y ejecute.
 
-**Once you have installed Termux, open it, bring down the Android menu for notifications, on Termux notification, drag down until you see the following options: `Exit | Acquire wakelock`, press on the `Acquire wakelock` and allow Termux to have a battery optimization exclusion permission when asked. If you do not do this, your performance will be poorer and the Termux might get killed by Android while running in the background!**
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
+
+**Si tu gestor de archivos no te permite ejecutar archivos APK, instala y usa `File Manager +` y dale permiso para instalar aplicaciones de terceros cuando se te pregunte.**
 
 </div>
 
-#### Installing Ubuntu 22.04
+<div class="custom-container danger"><p class="custom-container-title">ADVERTENCIA</p>
 
-At this stage, you have 2 options:
+**Una vez instalado Termux, ábralo, baje el menú de notificaciones, en la notificación de Termux, arrastre hacia abajo hasta que vea las siguientes opciones: `Exit | Acquire wakelock`, presione en `Acquire wakelock` y permita a Termux tener permsio de exclusión de optimización de batería cuándo se pregunte. Si no lo haces, ¡tu rendimiento será reducido y Termux podría ser cerrado por Android mientras se ejecuta en segundo plano!**
 
-1. Following this textual tutorial
-2. Watching a [Youtube tutorial for installing Ubuntu](https://www.youtube.com/watch?v=5yit2t7smpM)
+</div>
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+#### Instalando Ubuntu 22.04
+
+En esta etapa, tienes dos opciones:
+
+1. Siguiendo con este mismo tutorial en texto
+2. Ver un videotutorial en Youtube para [instalar Ubuntu en Termux](https://www.youtube.com/watch?v=5yit2t7smpM)
+
+<div class="custom-container tip"><p class="custom-container-title">Consejo</p>
 
 **If you decide to watch the Youtube tutorial, watch only up to `1:58`, the steps after are not needed and might just confuse you.**
 
