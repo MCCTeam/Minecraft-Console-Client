@@ -383,79 +383,79 @@
     <value>Tiek palaists ar {0} atkārtota savienojuma mēģinājumiem</value>
   </data>
   <data name="bot.autoRelog.loaded" xml:space="preserve">
-    <value>Loaded message: {0}</value>
+    <value>Ielādēts ziņojums: {0}</value>
   </data>
   <data name="bot.autoRelog.loading" xml:space="preserve">
-    <value>Loading messages from file: {0}</value>
+    <value>Notiek ziņojumu ielāde no faila: {0}</value>
   </data>
   <data name="bot.autoRelog.no_kick_msg" xml:space="preserve">
-    <value>Initializing without a kick message file</value>
+    <value>Inicializēšana bez izmešanas ziņojuma faila</value>
   </data>
   <data name="bot.autoRelog.not_found" xml:space="preserve">
-    <value>File not found: {0}</value>
+    <value>Fails nav atrasts: {0}</value>
   </data>
   <data name="bot.autoRelog.reconnect" xml:space="preserve">
-    <value>Message contains '{0}'. Reconnecting.</value>
+    <value>Ziņojumā ir “{0}”. Notiek savienojuma atjaunošana.</value>
   </data>
   <data name="bot.autoRelog.reconnect_always" xml:space="preserve">
-    <value>Ignoring kick message, reconnecting anyway.</value>
+    <value>Tiek ignorēts izmešanas ziņojums, tomēr tiek atjaunināts savienojums.</value>
   </data>
   <data name="bot.autoRelog.reconnect_ignore" xml:space="preserve">
-    <value>Message not containing any defined keywords. Ignoring.</value>
+    <value>Ziņojumā nav definētu atslēgvārdu. Ignorē.</value>
   </data>
   <data name="bot.autoRelog.wait" xml:space="preserve">
-    <value>Waiting {0:0.000} seconds before reconnecting...</value>
+    <value>Gaida {0:0.000} sekundes pirms atkārtotas savienojuma izveides...</value>
   </data>
   <data name="bot.autoRespond.file_not_found" xml:space="preserve">
-    <value>File not found: '{0}'</value>
+    <value>Fails nav atrasts: '{0}'</value>
   </data>
   <data name="bot.autoRespond.loaded_match" xml:space="preserve">
-    <value>Loaded match:
+    <value>Ielādēta atbilstība:
 {0}</value>
   </data>
   <data name="bot.autoRespond.loading" xml:space="preserve">
-    <value>Loading matches from '{0}'</value>
+    <value>Notiek atbilstības ielāde no '{0}'</value>
   </data>
   <data name="bot.autoRespond.match" xml:space="preserve">
-    <value>match: {0}
+    <value>atbilst: {0}
 regex: {1}
-action: {2}
-actionPrivate: {3}
-actionOther: {4}
-ownersOnly: {5}
-cooldown: {6}</value>
+darbība: {2}
+DarbībaPrivāta: {3}
+DarbībaCita: {4}
+Tikai īpašnieki: {5}
+Kūldauns: {6}</value>
   </data>
   <data name="bot.autoRespond.match_run" xml:space="preserve">
-    <value>Running action: {0}</value>
+    <value>Notiek darbība: {0}</value>
   </data>
   <data name="bot.autoRespond.no_action" xml:space="preserve">
-    <value>No action for match:
+    <value>Nekādas darbības attiecībā uz sakritību:
 {0}</value>
   </data>
   <data name="bot.autoRespond.no_trigger" xml:space="preserve">
-    <value>This match will never trigger:
+    <value>Šī sakritība nekad neizraisīs:
 {0}</value>
   </data>
   <data name="bot.chatLog.invalid_file" xml:space="preserve">
-    <value>Path '{0}' contains invalid characters.</value>
+    <value>Ceļā “{0}” ir nederīgas rakstzīmes.</value>
   </data>
   <data name="bot.DiscordBridge.canceled_sending" xml:space="preserve">
-    <value>Sending message to Discord was canceled due an error occuring. For more info enable Debug.</value>
+    <value>Ziņojuma sūtīšana uz Discord tika atcelta kļūdas dēļ. Lai iegūtu papildinformāciju, iespējojiet atkļūdošanu.</value>
   </data>
   <data name="bot.DiscordBridge.channel_not_found" xml:space="preserve">
-    <value>The provided channel with an id '{0}' has not been found!</value>
+    <value>Norādītais kanāls ar id '{0}' nav atrasts!</value>
   </data>
   <data name="bot.DiscordBridge.command_executed" xml:space="preserve">
-    <value>The command was executed with the result</value>
+    <value>Komanda tika izpildīta ar rezultātu</value>
   </data>
   <data name="bot.DiscordBridge.connected" xml:space="preserve">
-    <value>Succesfully connected with MCC!</value>
+    <value>Veiksmīgi izveidots savienojums ar MCC!</value>
   </data>
   <data name="bot.DiscordBridge.desc" xml:space="preserve">
-    <value>This command allows you to specify in the which direction the messages will be relayed via the Discord Bridge chat bot.</value>
+    <value>Šī komanda ļauj norādīt, kādā virzienā ziņojumi tiks pārraidīti, izmantojot Discord Bridge tērzēšanas botu.</value>
   </data>
   <data name="bot.DiscordBridge.direction" xml:space="preserve">
-    <value>Direction of the Discord Brdige has been switched to '{0}'!</value>
+    <value>Discord tilta virziens ir pārslēgts uz “{0}”!</value>
   </data>
   <data name="bot.DiscordBridge.direction.both" xml:space="preserve">
     <value>Abi</value>
@@ -583,88 +583,88 @@ cooldown: {6}</value>
     <value>Nevar iespējot pasta ziņojumus: maksimālajam datu bāzes izmēram ir jābūt lielākam par nulli. Lūdzu, pārskatiet iestatījumus.</value>
   </data>
   <data name="bot.mailer.init_fail.mail_retention" xml:space="preserve">
-    <value>Cannot enable Mailer: Mail Retention must be greater than zero. Please review the settings.</value>
+    <value>Nevar iespējot pasta sūtījumu: pasta saglabāšanai ir jābūt lielākai par nulli. Lūdzu, pārskatiet iestatījumus.</value>
   </data>
   <data name="bot.mailer.init_fail.max_mails" xml:space="preserve">
-    <value>Cannot enable Mailer: Max Mails per Player must be greater than zero. Please review the settings.</value>
+    <value>Nevar iespējot pasta sūtījumu: maksimālajam pasta skaitam vienam spēlētājam ir jābūt lielākam par nulli. Lūdzu, pārskatiet iestatījumus.</value>
   </data>
   <data name="bot.mailer.load.db" xml:space="preserve">
-    <value>Loading database file: {0}</value>
+    <value>Notiek datu bāzes faila ielāde: {0}</value>
   </data>
   <data name="bot.mailer.load.ignore" xml:space="preserve">
-    <value>Loading ignore list: </value>
+    <value>Notiek ignorēšanas saraksta ielāde: </value>
   </data>
   <data name="bot.mailer.process_mails" xml:space="preserve">
-    <value>Looking for mails to send @ {0}</value>
+    <value>Meklē vēstules, ko nosūtīt @ {0}</value>
   </data>
   <data name="bot.mailer.saving" xml:space="preserve">
-    <value>Saving message: {0}</value>
+    <value>Saglabā ziņojumu: {0}</value>
   </data>
   <data name="bot.mailer.user_ignored" xml:space="preserve">
-    <value>{0} is ignored!</value>
+    <value>{0} tiek ignorēts!</value>
   </data>
   <data name="bot.map.cmd.desc" xml:space="preserve">
-    <value>Render maps (item maps)</value>
+    <value>Renderēt kartes (vienumu kartes)</value>
   </data>
   <data name="bot.map.cmd.invalid_id" xml:space="preserve">
-    <value>Invalid ID provided, must be a number!</value>
+    <value>Norādīts nederīgs ID, ir jābūt skaitlim!</value>
   </data>
   <data name="bot.map.cmd.not_found" xml:space="preserve">
-    <value>A map with id '{0}' does not exists!</value>
+    <value>Karte ar id '{0}' neeksistē!</value>
   </data>
   <data name="bot.map.failed_to_render" xml:space="preserve">
-    <value>Failed to render the map with id: '{0}'</value>
+    <value>Neizdevās renderēt karti ar id: '{0}'</value>
   </data>
   <data name="bot.map.list_item" xml:space="preserve">
-    <value>- Map id: {0} (Last Updated: {1})</value>
+    <value>- Kartes id: {0} (pēdējo reizi atjaunināts: {1})</value>
   </data>
   <data name="bot.map.no_maps" xml:space="preserve">
-    <value>No maps received!</value>
+    <value>Nav saņemta neviena karte!</value>
   </data>
   <data name="bot.map.received" xml:space="preserve">
-    <value>The list of received maps from the server:</value>
+    <value>No servera saņemto karšu saraksts:</value>
   </data>
   <data name="bot.map.received_map" xml:space="preserve">
-    <value>Received a new Map, with Id: {0}</value>
+    <value>Saņēma jaunu karti ar id: {0}</value>
   </data>
   <data name="bot.map.rendered" xml:space="preserve">
-    <value>Succesfully rendered a map with id '{0}' to: '{1}'</value>
+    <value>Veiksmīgi renderēta karte ar id '{0}' uz: '{1}'</value>
   </data>
   <data name="bot.map.resized_rendered_image" xml:space="preserve">
-    <value>Resized the rendered image of the map with id: '{0}' to {1}x{1}.</value>
+    <value>Kartes ar id: '{0}' renderētā attēla izmērs ir mainīts uz {1}x{1}.</value>
   </data>
   <data name="bot.map.scale" xml:space="preserve">
-    <value>The size of the map is reduced from ({0}x{1}) to ({2}x{3}) due to the size limitation of the current terminal.</value>
+    <value>Pašreizējā termināļa lieluma ierobežojuma dēļ kartes izmērs ir samazināts no ({0}x{1}) uz ({2}x{3}).</value>
   </data>
   <data name="bot.map.sent_to_discord" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Discord via Discord Brdige chat bot!</value>
+    <value>Nosūtīja atveidotu kartes attēlu ar id “{0}” uz Discord, izmantojot Discord Bridge tērzēšanas botu!</value>
   </data>
   <data name="bot.map.sent_to_telegram" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Telegram via Telegram Bridge chat bot!</value>
+    <value>Nosūtīja uz Telegram atveidotu kartes attēlu ar id “{0}”, izmantojot Telegram Bridge tērzēšanas robotu!</value>
   </data>
   <data name="bot.replayCapture.cmd" xml:space="preserve">
-    <value>replay command</value>
+    <value>atkārtošanas komanda</value>
   </data>
   <data name="bot.replayCapture.created" xml:space="preserve">
-    <value>Replay file created.</value>
+    <value>Atkārtoti atskaņošanas fails ir izveidots.</value>
   </data>
   <data name="bot.replayCapture.restart" xml:space="preserve">
-    <value>Record was stopped. Restart the program to start another record.</value>
+    <value>Ieraksts tika apturēts. Restartējiet programmu, lai sāktu citu ierakstu.</value>
   </data>
   <data name="bot.replayCapture.stopped" xml:space="preserve">
-    <value>Record stopped.</value>
+    <value>Ieraksts apturēts.</value>
   </data>
   <data name="bot.script.fail" xml:space="preserve">
-    <value>Script '{0}' failed to run ({1}).</value>
+    <value>Skriptu '{0}' neizdevās palaist ({1}).</value>
   </data>
   <data name="bot.script.file_not_found" xml:space="preserve">
-    <value>File not found: '{0}'</value>
+    <value>Fails nav atrasts: '{0}'</value>
   </data>
   <data name="bot.script.not_found" xml:space="preserve">
-    <value>§8[MCC] [{0}] Cannot find script file: {1}</value>
+    <value>§8[MCC] [{0}] Nevar atrast skripta failu: {1}</value>
   </data>
   <data name="bot.script.pm.loaded" xml:space="preserve">
-    <value>Script '{0}' loaded.</value>
+    <value>Skripts "{0}" ir ielādēts.</value>
   </data>
   <data name="bot.scriptScheduler.loaded_task" xml:space="preserve">
     <value>Loaded task:
@@ -700,7 +700,7 @@ cooldown: {6}</value>
     <value>Sending message to Telegram was canceled due an error occuring. For more info enable Debug.</value>
   </data>
   <data name="bot.TelegramBridge.command_executed" xml:space="preserve">
-    <value>The command was executed with the result</value>
+    <value>Komanda tika izpildīta ar rezultātu</value>
   </data>
   <data name="bot.TelegramBridge.connected" xml:space="preserve">
     <value>Succesfully connected with the MCC!</value>
@@ -1572,7 +1572,7 @@ You need to enable Entity Handling to use this bot
     <value>How long to wait between each attack. Set "Custom = false" to let MCC calculate it.</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Entites_List" xml:space="preserve">
-    <value>All entity types can be found here: https://bit.ly/3Rg68lp</value>
+    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Interaction" xml:space="preserve">
     <value>Possible values: "Interact", "Attack" (default), "InteractAt" (Interact and Attack).</value>
@@ -1588,7 +1588,7 @@ You need to enable Entity Handling to use this bot
   </data>
   <data name="config.ChatBot.AutoCraft" xml:space="preserve">
     <value>Automatically craft items in your inventory
-See https://mccteam.github.io/guide/chat-bots.html#auto-craft for how to use
+See https://mccteam.github.io/g/bots/#auto-craft for how to use
 You need to enable Inventory Handling to use this bot
 You should also enable Terrain and Movements if you need to use a crafting table</value>
   </data>
@@ -1603,15 +1603,14 @@ You should also enable Terrain and Movements if you need to use a crafting table
 Recipes.Type: crafting table type: "player" or "table"
 Recipes.Result: the resulting item
 Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
-For the naming of the items, please see:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDig" xml:space="preserve">
     <value>Auto-digging blocks.
 You need to enable Terrain Handling to use this bot
 You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
 Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
-For the naming of the block, please see https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/Material.cs</value>
+For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
   </data>
   <data name="config.ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
     <value>How many seconds to wait after entering the game to start digging automatically, set to -1 to disable automatic start.</value>
@@ -1646,8 +1645,7 @@ For the naming of the block, please see https://github.com/MCCTeam/Minecraft-Con
   <data name="config.ChatBot.AutoDrop" xml:space="preserve">
     <value>Automatically drop items in inventory
 You need to enable Inventory Handling to use this bot
-See this file for an up-to-date list of item types you can use with this bot:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDrop.Mode" xml:space="preserve">
     <value>"include", "exclude" or "everything". Include: drop item IN the list. Exclude: drop item NOT IN the list</value>
@@ -1658,7 +1656,7 @@ You need to enable Inventory Handling to use this bot</value>
   </data>
   <data name="config.ChatBot.AutoFishing" xml:space="preserve">
     <value>Automatically catch fish using a fishing rod
-Guide: https://mccteam.github.io/guide/chat-bots.html#auto-fishing
+Guide: https://mccteam.github.io/g/bots/#auto-fishing
 You can use "/fish" to control the bot manually.
 /!\ Make sure server rules allow automated farming before using this bot</value>
   </data>
@@ -1731,12 +1729,12 @@ Server admins can spoof chat messages (/nick, /tellraw) so keep this in mind whe
   <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
     <value>This bot allows you to send and recieve messages and commands via a Discord channel.
 For Setup you can either use the documentation or read here (Documentation has images).
-Documentation: https://mccteam.github.io/guide/chat-bots.html#discord-bridge
+Documentation: https://mccteam.github.io/g/bots/#discord-bridge
 Setup:
 First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
 /!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
 When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
-Copy the "Application ID" and go to: https://bit.ly/2Spn2Q3 .
+Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
 Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
 This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
 Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
@@ -1754,7 +1752,7 @@ To send a message, simply type it out and hit enter.</value>
     <value>Message formats
 Words wrapped with { and } are going to be replaced during the code execution, do not change them!
 For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Discord message formatting, check the following: https://bit.ly/3F8CUCm</value>
+For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
     <value>The ID of a server/guild where you have invited the bot to.</value>
@@ -1861,7 +1859,7 @@ Please note that due to technical limitations, the client player (you) will not 
   </data>
   <data name="config.ChatBot.ScriptScheduler" xml:space="preserve">
     <value>Schedule commands and scripts to launch on various events such as server join, date/time or time interval
-See https://mccteam.github.io/guide/chat-bots.html#script-scheduler for more info</value>
+See https://mccteam.github.io/g/bots/#script-scheduler for more info</value>
   </data>
   <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
     <value>This bot allows you to send and receive messages and commands via a Telegram Bot DM or to receive messages in a Telegram channel.
@@ -1898,7 +1896,7 @@ To send a message, simply type it out and hit enter.</value>
     <value>Message formats
 Words wrapped with { and } are going to be replaced during the code execution, do not change them!
 For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
-For Telegram message formatting, check the following: https://sendpulse.com/blog/telegram-text-formatting</value>
+For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
     <value>How long to wait (in seconds) if a message can not be sent to Telegram before canceling the task (minimum 1 second).</value>
@@ -1908,7 +1906,7 @@ For Telegram message formatting, check the following: https://sendpulse.com/blog
   </data>
   <data name="config.ChatFormat" xml:space="preserve">
     <value>MCC does it best to detect chat messages, but some server have unusual chat formats
-When this happens, you'll need to configure chat format below, see https://mccteam.github.io/guide/configuration.html#chat-format</value>
+When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section</value>
   </data>
   <data name="config.ChatFormat.Builtins" xml:space="preserve">
     <value>MCC support for common message formats. Set "false" to avoid conflicts with custom formats.</value>
@@ -1920,7 +1918,7 @@ When this happens, you'll need to configure chat format below, see https://mccte
     <value>Startup Config File
 Please do not record extraneous data in this file as it will be overwritten by MCC.
 
-New to Minecraft Console Client? Check out this document: https://mccteam.github.io/guide/configuration.html
+New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
 Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
   </data>
   <data name="config.load" xml:space="preserve">
@@ -2003,7 +2001,7 @@ Usage examples: "/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&gt; P
     <value>Toggle inventory handling.</value>
   </data>
   <data name="config.Main.Advanced.language" xml:space="preserve">
-    <value>Fill in with in-game locale code, check https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239</value>
+    <value>Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html</value>
   </data>
   <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
     <value>The language code is invalid!</value>

@@ -1,3 +1,6 @@
+- - -
+title: Creating Chat Bots
+- - -
 # Creating Chat Bots
 
 -   [Notes](#notes)
@@ -8,7 +11,7 @@
 
 ## Notes
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **For now this page contains only the bare basics of the Chat Bot API, enough of details to teach you how to make basic Chat Bots. For more details you need to take a look at the [ChatBot.cs](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Scripting/ChatBot.cs) and [Examples](#examples). This page will be improved in the future.**
 
@@ -36,7 +39,7 @@ More in-depth:
 
 This introduction assumes that you have the basic knowledge of C#.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **Here we will use terms Chat Bot and Script interchangeably**
 
@@ -147,7 +150,7 @@ MCC.LoadBot(new YourChatBotClassNameHere());
 
 **Script Metadata** section allows for including C# packages and libraries with: `//using <namespace>` and `/dll <dll name>`.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **Avoid adding whitespace between `//` and keywords**
 
@@ -199,7 +202,7 @@ When the Chat Bot (Script) has been initialized for the first time the `Initiali
 
 In it you can initialize variables, eg. Dictionaries, etc..
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **For allocating resources like a database connection, we recommend allocating them in `AfterGameJoined` and freeing them in `OnDisconnect`**
 

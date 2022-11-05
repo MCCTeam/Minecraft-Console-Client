@@ -1,4 +1,5 @@
 ---
+title: Home
 home: true
 heroImage: /images/MCC_logo_with_edge.png
 tagline: 'Minecraft Konsol C#''a uyarlanmış sistemi yormayan, açık kaynak kodlu bir Minecraft Java istemcisidir.'

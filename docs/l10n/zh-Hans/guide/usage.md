@@ -1,3 +1,6 @@
+- - -
+title: Usage
+- - -
 # 用法
 
 How to run the program:
@@ -16,7 +19,7 @@ Using the command line parameters:
 
 Simply run `MinecraftClient.exe`
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **On Windows it's best using [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/install) for the best experience and looks. Some features like emojis in the [`/chunk`](#chunk) command do not work in CMD or Powershell 5**
 
@@ -95,7 +98,7 @@ MinecraftClient.exe --help
 
 ### Quick usage of MCC with examples
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **On Linux and macOS, you need to type: `./MinecraftClient` instead of `MinecraftClient.exe`**
 
@@ -178,7 +181,7 @@ From chat prompt, commands must by default be prepended with a slash, eg. `/quit
 
 In scripts and remote control, no slash is needed to perform the command, eg. `quit`. `quit`.
 
-<div class="custom-container tip"><p class="custom-container-title">Tip</p>
+<div class="custom-container tip"><p class="custom-container-title">提示</p>
 
 **Some commands may not be documented yet or are defined in description of Chat Bots, use `/help` to list them all, or you can contribute to this page.**
 
@@ -266,7 +269,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Change your selected slot in the hotbar.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
@@ -284,13 +287,13 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Displays the chunk loading status in a nice way.
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **To use this feature you need to enable the [Terrain and Movements](configuration.md#terrainandmovements)**
 
     </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need a terminal with emoji support, like Powershell 7, Windows Terminal or Alacritty, if you do not want emoji support and want to use cmd or powershell 5, disable emojis with: [`enableemoji`](configuration.md#enableemoji)**
 
@@ -336,7 +339,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Drop all items of a specific type from your inventory.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
@@ -348,9 +351,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /dropitem <itemtype>
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
-    **All item types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs).**
+    **All item types can be found [here](https://mccteam.github.io/r/item/#L12).**
 
     </div>
 
@@ -366,7 +369,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Attack an entity, use an entity or get a list of entities around you.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) and [Entity Handling](configuration.md#entityhandling) enabled in order for this to work.**
 
@@ -386,9 +389,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /entity
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
-    **All entity types can be found [here](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/EntityType.cs).**
+    **All entity types can be found [here](https://mccteam.github.io/r/entity/#L15).**
 
     </div>
 
@@ -412,7 +415,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Also the instance of MCC is available with `MCC.`.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **All local variables are treated as strings in the app, when comparing their values, you can use `<variable> == "<value>"`, or better use [`.Equals`](https://www.programiz.com/csharp-programming/library/string/equals) method**
 
@@ -494,7 +497,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /reco [account]
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **`[account]` is an account alias defined in accounts file, for more info check out [accountlist](configuration.html#accountlist)**
 
@@ -506,7 +509,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Reloads settings from MinecraftClient.ini and Chat Bots.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Some settings won't be reloaded since they are used before the client initialization. Also, settings provided by the command line paramteres will be overriden. This also does not reload the ReplayBot due to technical limitations.**
 
@@ -530,13 +533,13 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /connect <server> [account]
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **`<server>` is either a server IP or a server alias defined in servers file, for more info check out [serverlist](configuration.html#serverlist)**
 
     </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **`[account]` is an account alias defined in accounts file, for more info check out [accountlist](configuration.html#accountlist)**
 
@@ -676,13 +679,13 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Use item in the hand, this can be used to do a right click on items which open menus on servers.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
     </div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`**
 
@@ -708,19 +711,19 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     -   shulker
     -   loom
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) and [Terrain and Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
 
     </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Not all inventories have a GUI representation in an ASCII art format.**
 
     </div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`.**
 
@@ -744,19 +747,19 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Make the bot follow a player.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **This command is avaliable only with [Follow Player](chat-bots.md#follow-player) Chat Bot enabled.**
 
     </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
     </div>
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need to have [Enity Handling](configuration.md#entityhandling) enabled in order for this to work.**
 
@@ -798,13 +801,13 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Used for moving when terrain and movements feature is enabled.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need to have [Terrain and Movements](configuration.md#terrainandmovements) enabled in order for this to work.**
 
     </div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **The [Terrain and Movements](configuration.md#terrainandmovements) is currently not supported in `1.4.6 - 1.6`.**
 
@@ -864,13 +867,13 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Used for inventory manipulation.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **You need to have [Inventory Handling](configuration.md#inventoryhandling) enabled in order for this to work.**
 
     </div>
 
-    <div class="custom-container warning"><p class="custom-container-title">Warning</p>
+    <div class="custom-container warning"><p class="custom-container-title">警告</p>
 
     **The [Inventory Handling](configuration.md#inventoryhandling) is currently not supported in `1.4.6 - 1.9`.**
 
@@ -880,7 +883,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Inventory has slots and each one of them has an id.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **This command DOES NOT physically open a container (eg. chest), for that you need to use [`useblock`](#useblock) command first.**
 
@@ -898,7 +901,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /inventory <player|container|<id>> <action> [action parameters] | /inventory <inventories/i> | /inventory <search/s> <item type> [amount]
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **player and container can be simplified with p and c accordingly**
 
@@ -922,7 +925,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /inventory <player|container|<id>> <click|shiftclick> <slot id> [left|right|middle]
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **The default click is left click**
 
@@ -940,7 +943,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /inventory <player|id> drop <slot id> <number of items|all>
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **To drop all items from a slot, you can use: `all`**
 
@@ -952,9 +955,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /inventory creativegive <slot id> <item type> <amount>
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
-    **To find item types, check out [this list](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs)**
+    **To find item types, check out [this list](https://mccteam.github.io/r/item/#L12)**
 
     </div>
 
@@ -1026,9 +1029,9 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
     /inventory creativegive 36 diamondblock 64
     ```
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
-    **To find item types, check out [this list](https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs)**
+    **To find item types, check out [this list](https://mccteam.github.io/r/item/#L12)**
 
     </div>
 
@@ -1056,7 +1059,7 @@ In scripts and remote control, no slash is needed to perform the command, eg. `q
 
     Show commands help.
 
-    <div class="custom-container tip"><p class="custom-container-title">Tip</p>
+    <div class="custom-container tip"><p class="custom-container-title">提示</p>
 
     **Use "/send /help" for server help**
 
