@@ -1,3 +1,7 @@
+---
+title: "Configuration"
+redirectFrom: ["/g/conf/index.html", "/g/conf.html"]
+---
 # Configuration
 
 **Minecraft Console Client** can be both configured by the [command line parameters](usage.md#command-line-parameters) and the configuration file.
