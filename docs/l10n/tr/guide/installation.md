@@ -1,3 +1,6 @@
+- - -
+title: "Installation"
+- - -
 # Kurulum
 
 -   [YouTube Tutorials](#youtube-tutorials)
