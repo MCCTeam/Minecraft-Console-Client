@@ -383,79 +383,79 @@
     <value>Tiek palaists ar {0} atkārtota savienojuma mēģinājumiem</value>
   </data>
   <data name="bot.autoRelog.loaded" xml:space="preserve">
-    <value>Loaded message: {0}</value>
+    <value>Ielādēts ziņojums: {0}</value>
   </data>
   <data name="bot.autoRelog.loading" xml:space="preserve">
-    <value>Loading messages from file: {0}</value>
+    <value>Notiek ziņojumu ielāde no faila: {0}</value>
   </data>
   <data name="bot.autoRelog.no_kick_msg" xml:space="preserve">
-    <value>Initializing without a kick message file</value>
+    <value>Inicializēšana bez izmešanas ziņojuma faila</value>
   </data>
   <data name="bot.autoRelog.not_found" xml:space="preserve">
-    <value>File not found: {0}</value>
+    <value>Fails nav atrasts: {0}</value>
   </data>
   <data name="bot.autoRelog.reconnect" xml:space="preserve">
-    <value>Message contains '{0}'. Reconnecting.</value>
+    <value>Ziņojumā ir “{0}”. Notiek savienojuma atjaunošana.</value>
   </data>
   <data name="bot.autoRelog.reconnect_always" xml:space="preserve">
-    <value>Ignoring kick message, reconnecting anyway.</value>
+    <value>Tiek ignorēts izmešanas ziņojums, tomēr tiek atjaunināts savienojums.</value>
   </data>
   <data name="bot.autoRelog.reconnect_ignore" xml:space="preserve">
-    <value>Message not containing any defined keywords. Ignoring.</value>
+    <value>Ziņojumā nav definētu atslēgvārdu. Ignorē.</value>
   </data>
   <data name="bot.autoRelog.wait" xml:space="preserve">
-    <value>Waiting {0:0.000} seconds before reconnecting...</value>
+    <value>Gaida {0:0.000} sekundes pirms atkārtotas savienojuma izveides...</value>
   </data>
   <data name="bot.autoRespond.file_not_found" xml:space="preserve">
-    <value>File not found: '{0}'</value>
+    <value>Fails nav atrasts: '{0}'</value>
   </data>
   <data name="bot.autoRespond.loaded_match" xml:space="preserve">
-    <value>Loaded match:
+    <value>Ielādēta atbilstība:
 {0}</value>
   </data>
   <data name="bot.autoRespond.loading" xml:space="preserve">
-    <value>Loading matches from '{0}'</value>
+    <value>Notiek atbilstības ielāde no '{0}'</value>
   </data>
   <data name="bot.autoRespond.match" xml:space="preserve">
-    <value>match: {0}
+    <value>atbilst: {0}
 regex: {1}
-action: {2}
-actionPrivate: {3}
-actionOther: {4}
-ownersOnly: {5}
-cooldown: {6}</value>
+darbība: {2}
+DarbībaPrivāta: {3}
+DarbībaCita: {4}
+Tikai īpašnieki: {5}
+Kūldauns: {6}</value>
   </data>
   <data name="bot.autoRespond.match_run" xml:space="preserve">
-    <value>Running action: {0}</value>
+    <value>Notiek darbība: {0}</value>
   </data>
   <data name="bot.autoRespond.no_action" xml:space="preserve">
-    <value>No action for match:
+    <value>Nekādas darbības attiecībā uz sakritību:
 {0}</value>
   </data>
   <data name="bot.autoRespond.no_trigger" xml:space="preserve">
-    <value>This match will never trigger:
+    <value>Šī sakritība nekad neizraisīs:
 {0}</value>
   </data>
   <data name="bot.chatLog.invalid_file" xml:space="preserve">
-    <value>Path '{0}' contains invalid characters.</value>
+    <value>Ceļā “{0}” ir nederīgas rakstzīmes.</value>
   </data>
   <data name="bot.DiscordBridge.canceled_sending" xml:space="preserve">
-    <value>Sending message to Discord was canceled due an error occuring. For more info enable Debug.</value>
+    <value>Ziņojuma sūtīšana uz Discord tika atcelta kļūdas dēļ. Lai iegūtu papildinformāciju, iespējojiet atkļūdošanu.</value>
   </data>
   <data name="bot.DiscordBridge.channel_not_found" xml:space="preserve">
-    <value>The provided channel with an id '{0}' has not been found!</value>
+    <value>Norādītais kanāls ar id '{0}' nav atrasts!</value>
   </data>
   <data name="bot.DiscordBridge.command_executed" xml:space="preserve">
-    <value>The command was executed with the result</value>
+    <value>Komanda tika izpildīta ar rezultātu</value>
   </data>
   <data name="bot.DiscordBridge.connected" xml:space="preserve">
-    <value>Succesfully connected with MCC!</value>
+    <value>Veiksmīgi izveidots savienojums ar MCC!</value>
   </data>
   <data name="bot.DiscordBridge.desc" xml:space="preserve">
-    <value>This command allows you to specify in the which direction the messages will be relayed via the Discord Bridge chat bot.</value>
+    <value>Šī komanda ļauj norādīt, kādā virzienā ziņojumi tiks pārraidīti, izmantojot Discord Bridge tērzēšanas botu.</value>
   </data>
   <data name="bot.DiscordBridge.direction" xml:space="preserve">
-    <value>Direction of the Discord Brdige has been switched to '{0}'!</value>
+    <value>Discord tilta virziens ir pārslēgts uz “{0}”!</value>
   </data>
   <data name="bot.DiscordBridge.direction.both" xml:space="preserve">
     <value>Abi</value>
@@ -583,88 +583,88 @@ cooldown: {6}</value>
     <value>Nevar iespējot pasta ziņojumus: maksimālajam datu bāzes izmēram ir jābūt lielākam par nulli. Lūdzu, pārskatiet iestatījumus.</value>
   </data>
   <data name="bot.mailer.init_fail.mail_retention" xml:space="preserve">
-    <value>Cannot enable Mailer: Mail Retention must be greater than zero. Please review the settings.</value>
+    <value>Nevar iespējot pasta sūtījumu: pasta saglabāšanai ir jābūt lielākai par nulli. Lūdzu, pārskatiet iestatījumus.</value>
   </data>
   <data name="bot.mailer.init_fail.max_mails" xml:space="preserve">
-    <value>Cannot enable Mailer: Max Mails per Player must be greater than zero. Please review the settings.</value>
+    <value>Nevar iespējot pasta sūtījumu: maksimālajam pasta skaitam vienam spēlētājam ir jābūt lielākam par nulli. Lūdzu, pārskatiet iestatījumus.</value>
   </data>
   <data name="bot.mailer.load.db" xml:space="preserve">
-    <value>Loading database file: {0}</value>
+    <value>Notiek datu bāzes faila ielāde: {0}</value>
   </data>
   <data name="bot.mailer.load.ignore" xml:space="preserve">
-    <value>Loading ignore list: </value>
+    <value>Notiek ignorēšanas saraksta ielāde: </value>
   </data>
   <data name="bot.mailer.process_mails" xml:space="preserve">
-    <value>Looking for mails to send @ {0}</value>
+    <value>Meklē vēstules, ko nosūtīt @ {0}</value>
   </data>
   <data name="bot.mailer.saving" xml:space="preserve">
-    <value>Saving message: {0}</value>
+    <value>Saglabā ziņojumu: {0}</value>
   </data>
   <data name="bot.mailer.user_ignored" xml:space="preserve">
-    <value>{0} is ignored!</value>
+    <value>{0} tiek ignorēts!</value>
   </data>
   <data name="bot.map.cmd.desc" xml:space="preserve">
-    <value>Render maps (item maps)</value>
+    <value>Renderēt kartes (vienumu kartes)</value>
   </data>
   <data name="bot.map.cmd.invalid_id" xml:space="preserve">
-    <value>Invalid ID provided, must be a number!</value>
+    <value>Norādīts nederīgs ID, ir jābūt skaitlim!</value>
   </data>
   <data name="bot.map.cmd.not_found" xml:space="preserve">
-    <value>A map with id '{0}' does not exists!</value>
+    <value>Karte ar id '{0}' neeksistē!</value>
   </data>
   <data name="bot.map.failed_to_render" xml:space="preserve">
-    <value>Failed to render the map with id: '{0}'</value>
+    <value>Neizdevās renderēt karti ar id: '{0}'</value>
   </data>
   <data name="bot.map.list_item" xml:space="preserve">
-    <value>- Map id: {0} (Last Updated: {1})</value>
+    <value>- Kartes id: {0} (pēdējo reizi atjaunināts: {1})</value>
   </data>
   <data name="bot.map.no_maps" xml:space="preserve">
-    <value>No maps received!</value>
+    <value>Nav saņemta neviena karte!</value>
   </data>
   <data name="bot.map.received" xml:space="preserve">
-    <value>The list of received maps from the server:</value>
+    <value>No servera saņemto karšu saraksts:</value>
   </data>
   <data name="bot.map.received_map" xml:space="preserve">
-    <value>Received a new Map, with Id: {0}</value>
+    <value>Saņēma jaunu karti ar id: {0}</value>
   </data>
   <data name="bot.map.rendered" xml:space="preserve">
-    <value>Succesfully rendered a map with id '{0}' to: '{1}'</value>
+    <value>Veiksmīgi renderēta karte ar id '{0}' uz: '{1}'</value>
   </data>
   <data name="bot.map.resized_rendered_image" xml:space="preserve">
-    <value>Resized the rendered image of the map with id: '{0}' to {1}x{1}.</value>
+    <value>Kartes ar id: '{0}' renderētā attēla izmērs ir mainīts uz {1}x{1}.</value>
   </data>
   <data name="bot.map.scale" xml:space="preserve">
-    <value>The size of the map is reduced from ({0}x{1}) to ({2}x{3}) due to the size limitation of the current terminal.</value>
+    <value>Pašreizējā termināļa lieluma ierobežojuma dēļ kartes izmērs ir samazināts no ({0}x{1}) uz ({2}x{3}).</value>
   </data>
   <data name="bot.map.sent_to_discord" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Discord via Discord Brdige chat bot!</value>
+    <value>Nosūtīja atveidotu kartes attēlu ar id “{0}” uz Discord, izmantojot Discord Bridge tērzēšanas botu!</value>
   </data>
   <data name="bot.map.sent_to_telegram" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Telegram via Telegram Bridge chat bot!</value>
+    <value>Nosūtīja uz Telegram atveidotu kartes attēlu ar id “{0}”, izmantojot Telegram Bridge tērzēšanas robotu!</value>
   </data>
   <data name="bot.replayCapture.cmd" xml:space="preserve">
-    <value>replay command</value>
+    <value>atkārtošanas komanda</value>
   </data>
   <data name="bot.replayCapture.created" xml:space="preserve">
-    <value>Replay file created.</value>
+    <value>Atkārtoti atskaņošanas fails ir izveidots.</value>
   </data>
   <data name="bot.replayCapture.restart" xml:space="preserve">
-    <value>Record was stopped. Restart the program to start another record.</value>
+    <value>Ieraksts tika apturēts. Restartējiet programmu, lai sāktu citu ierakstu.</value>
   </data>
   <data name="bot.replayCapture.stopped" xml:space="preserve">
-    <value>Record stopped.</value>
+    <value>Ieraksts apturēts.</value>
   </data>
   <data name="bot.script.fail" xml:space="preserve">
-    <value>Script '{0}' failed to run ({1}).</value>
+    <value>Skriptu '{0}' neizdevās palaist ({1}).</value>
   </data>
   <data name="bot.script.file_not_found" xml:space="preserve">
-    <value>File not found: '{0}'</value>
+    <value>Fails nav atrasts: '{0}'</value>
   </data>
   <data name="bot.script.not_found" xml:space="preserve">
-    <value>§8[MCC] [{0}] Cannot find script file: {1}</value>
+    <value>§8[MCC] [{0}] Nevar atrast skripta failu: {1}</value>
   </data>
   <data name="bot.script.pm.loaded" xml:space="preserve">
-    <value>Script '{0}' loaded.</value>
+    <value>Skripts "{0}" ir ielādēts.</value>
   </data>
   <data name="bot.scriptScheduler.loaded_task" xml:space="preserve">
     <value>Loaded task:
@@ -700,7 +700,7 @@ cooldown: {6}</value>
     <value>Sending message to Telegram was canceled due an error occuring. For more info enable Debug.</value>
   </data>
   <data name="bot.TelegramBridge.command_executed" xml:space="preserve">
-    <value>The command was executed with the result</value>
+    <value>Komanda tika izpildīta ar rezultātu</value>
   </data>
   <data name="bot.TelegramBridge.connected" xml:space="preserve">
     <value>Succesfully connected with the MCC!</value>
