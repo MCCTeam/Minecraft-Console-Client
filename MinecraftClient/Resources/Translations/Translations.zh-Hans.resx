@@ -417,13 +417,13 @@
     <value>正在从'{0}'加载匹配项</value>
   </data>
   <data name="bot.autoRespond.match" xml:space="preserve">
-    <value>match: {0}
-regex: {1}
-action: {2}
-actionPrivate: {3}
-actionOther: {4}
-ownersOnly: {5}
-cooldown: {6}</value>
+    <value>匹配： {0}
+正则： {1}
+动作： {2}
+私聊消息动作： {3}
+其他消息动作： {4}
+仅响应所有者： {5}
+冷却时间： {6}</value>
   </data>
   <data name="bot.autoRespond.match_run" xml:space="preserve">
     <value>进行操作：{0}</value>
@@ -440,25 +440,25 @@ cooldown: {6}</value>
     <value>路径'{0}'包含无效字符。</value>
   </data>
   <data name="bot.DiscordBridge.canceled_sending" xml:space="preserve">
-    <value>Sending message to Discord was canceled due an error occuring. For more info enable Debug.</value>
+    <value>发生错误，已取消发送信息至Discord。打开调试日志以获得更多信息。</value>
   </data>
   <data name="bot.DiscordBridge.channel_not_found" xml:space="preserve">
-    <value>The provided channel with an id '{0}' has not been found!</value>
+    <value>找不到ID为 '{0}' 的频道！</value>
   </data>
   <data name="bot.DiscordBridge.command_executed" xml:space="preserve">
-    <value>The command was executed with the result</value>
+    <value>指令已执行，结果为</value>
   </data>
   <data name="bot.DiscordBridge.connected" xml:space="preserve">
-    <value>Succesfully connected with MCC!</value>
+    <value>成功与 MCC 连接！</value>
   </data>
   <data name="bot.DiscordBridge.desc" xml:space="preserve">
-    <value>This command allows you to specify in the which direction the messages will be relayed via the Discord Bridge chat bot.</value>
+    <value>这个指令允许你指定哪一个方向的信息会被Discord Bridge转发。</value>
   </data>
   <data name="bot.DiscordBridge.direction" xml:space="preserve">
-    <value>Direction of the Discord Brdige has been switched to '{0}'!</value>
+    <value>Discord Brdige信息转发方向已更改为 {0} ！</value>
   </data>
   <data name="bot.DiscordBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>全部</value>
   </data>
   <data name="bot.DiscordBridge.direction.discord" xml:space="preserve">
     <value>Discord</value>
@@ -467,64 +467,64 @@ cooldown: {6}</value>
     <value>Minecraft</value>
   </data>
   <data name="bot.DiscordBridge.guild_not_found" xml:space="preserve">
-    <value>The provided guild/server with an id '{0}' has not been found!</value>
+    <value>找不到ID为 '{0}' 的服务器！</value>
   </data>
   <data name="bot.DiscordBridge.invalid_direction" xml:space="preserve">
-    <value>Invalid direction provided! Available directions: both|b, minecraft|mc, discord|dsc. Example: "dscbridge direction mc"</value>
+    <value>无效的信息方向！可选：both|b，minecraft|mc，discord|dsc。例如："dscbridge direction mc"</value>
   </data>
   <data name="bot.DiscordBridge.missing_token" xml:space="preserve">
-    <value>Please provide a valid token!</value>
+    <value>请提供一个有效的令牌！</value>
   </data>
   <data name="bot.DiscordBridge.unknown_error" xml:space="preserve">
-    <value>An unknown error has occured!</value>
+    <value>发生了未知错误 ！</value>
   </data>
   <data name="bot.farmer.already_running" xml:space="preserve">
-    <value>The bot is already farming!</value>
+    <value>机器人已经在耕种了！</value>
   </data>
   <data name="bot.farmer.already_stopped" xml:space="preserve">
-    <value>The bot has already stopped farming!</value>
+    <value>机器人已停止耕作！</value>
   </data>
   <data name="bot.farmer.crop_type" xml:space="preserve">
-    <value>Crop type</value>
+    <value>农作物类型</value>
   </data>
   <data name="bot.farmer.desc" xml:space="preserve">
-    <value>Farming bot</value>
+    <value>耕作机器人</value>
   </data>
   <data name="bot.farmer.invalid_crop_type" xml:space="preserve">
-    <value>Invalid crop type provided (Types which you can use: Beetroot, Carrot, Melon, Netherwart, Pumpkin, Potato, Wheat)!</value>
+    <value>提供了无效的农作物类型（可选的类型：Beetroot（甜菜根）, Carrot（萝卜）, Melon（西瓜）, Netherwart（地狱疣）, Pumpkin（南瓜）, Potato（马铃薯）, Wheat（小麦））</value>
   </data>
   <data name="bot.farmer.invalid_radius" xml:space="preserve">
-    <value>Invalid radius provided, you must provide a valid integer number greater than 0!</value>
+    <value>所提供的半径无效，您必须提供一个大于0的整数！</value>
   </data>
   <data name="bot.farmer.needs_inventory" xml:space="preserve">
-    <value>The Farmer bot needs Inventory Handling in order to work, please enable it!</value>
+    <value>自动种植机器人需要库存处理才能运作，请启用库存处理！</value>
   </data>
   <data name="bot.farmer.needs_terrain" xml:space="preserve">
-    <value>The Farmer bot needs Terrain Handling in order to work, please enable it!</value>
+    <value>自动种植机器人需要地形处理才能运作，请启用地形处理！</value>
   </data>
   <data name="bot.farmer.not_implemented" xml:space="preserve">
-    <value>Not implemented bellow 1.13!</value>
+    <value>不支持1.13以下的版本！</value>
   </data>
   <data name="bot.farmer.radius" xml:space="preserve">
-    <value>Radius</value>
+    <value>半径</value>
   </data>
   <data name="bot.farmer.started" xml:space="preserve">
-    <value>Started farming!</value>
+    <value>开始耕种！</value>
   </data>
   <data name="bot.farmer.stopped" xml:space="preserve">
-    <value>Stopped farming!</value>
+    <value>停止耕种！</value>
   </data>
   <data name="bot.farmer.stopping" xml:space="preserve">
-    <value>Stoping farming, this might take a second...</value>
+    <value>正在停止耕作，这可能需要几秒钟...</value>
   </data>
   <data name="bot.farmer.warining_allow_teleport" xml:space="preserve">
-    <value>You have enabled teleporting, this might get your bot account kicked and in the worst case scenario banned! Use with caution!</value>
+    <value>您已启用传送，你的帐号可能因此被踢出甚至被封禁。请小心使用！</value>
   </data>
   <data name="bot.farmer.warining_force_unsafe" xml:space="preserve">
-    <value>You have enabled un-safe movement, the bot might get hurt!</value>
+    <value>您已启用不安全的移动，机器人可能会受到伤害！</value>
   </data>
   <data name="bot.farmer.warining_invalid_parameter" xml:space="preserve">
-    <value>Invalid parameter "{0}" provided (Use format: "key:value")!</value>
+    <value>提供了无效的参数 "{0}"（正确格式："键:值"）</value>
   </data>
   <data name="bot.mailer.cmd" xml:space="preserve">
     <value>mailer 命令</value>
@@ -631,16 +631,16 @@ cooldown: {6}</value>
     <value>成功接收到地图 '{0}' ，保存为 '{1}'</value>
   </data>
   <data name="bot.map.resized_rendered_image" xml:space="preserve">
-    <value>Resized the rendered image of the map with id: '{0}' to {1}x{1}.</value>
+    <value>已调整地图ID '{0}' 的大小为 {1}x{1}。</value>
   </data>
   <data name="bot.map.scale" xml:space="preserve">
     <value>由于当前终端尺寸限制，地图大小由 ({0}x{1}) 缩小为 ({2}x{3}) 。</value>
   </data>
   <data name="bot.map.sent_to_discord" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Discord via Discord Brdige chat bot!</value>
+    <value>已通过Discord Brdige发送ID为 '{0}' 的地图至Discord。</value>
   </data>
   <data name="bot.map.sent_to_telegram" xml:space="preserve">
-    <value>Sent a rendered image of a map with an id '{0}' to the Telegram via Telegram Bridge chat bot!</value>
+    <value>已通过Telegram Brdige发送ID为 '{0}' 的地图至Telegram。</value>
   </data>
   <data name="bot.replayCapture.cmd" xml:space="preserve">
     <value>replay 命令</value>
@@ -688,31 +688,31 @@ cooldown: {6}</value>
     <value>时间 / 运行中的操作：{0}</value>
   </data>
   <data name="bot.scriptScheduler.task" xml:space="preserve">
-    <value>triggeronfirstlogin: {0}
- triggeronlogin: {1}
- triggerontime: {2}
- triggeroninterval: {3}
- timevalue: {4}
- timeinterval: {5}
- action: {6}</value>
+    <value>首次登录时触发: {0}
+ 登录时触发: {1}
+ 指定时刻触发: {2}
+ 指定时间间隔触发: {3}
+ 时刻触发配置: {4}
+ 间隔触发配置: {5}
+ 动作: {6}</value>
   </data>
   <data name="bot.TelegramBridge.canceled_sending" xml:space="preserve">
-    <value>Sending message to Telegram was canceled due an error occuring. For more info enable Debug.</value>
+    <value>发生错误，已取消发送信息至Telegram。打开调试日志以获得更多信息。</value>
   </data>
   <data name="bot.TelegramBridge.command_executed" xml:space="preserve">
-    <value>The command was executed with the result</value>
+    <value>指令已执行，结果为</value>
   </data>
   <data name="bot.TelegramBridge.connected" xml:space="preserve">
-    <value>Succesfully connected with the MCC!</value>
+    <value>成功与 MCC 连接！</value>
   </data>
   <data name="bot.TelegramBridge.desc" xml:space="preserve">
-    <value>This command allows you to specify in the which direction the messages will be relayed via the Telegram Bridge chat bot.</value>
+    <value>这个指令允许你指定哪一个方向的信息会被Telegram Bridge转发。</value>
   </data>
   <data name="bot.TelegramBridge.direction" xml:space="preserve">
-    <value>Direction of the Telegram Brdige has been switched to '{0}'!</value>
+    <value>Telegram Brdige信息转发方向已更改为 {0} ！</value>
   </data>
   <data name="bot.TelegramBridge.direction.both" xml:space="preserve">
-    <value>Both</value>
+    <value>全部</value>
   </data>
   <data name="bot.TelegramBridge.direction.minecraft" xml:space="preserve">
     <value>Minecraft</value>
@@ -721,27 +721,27 @@ cooldown: {6}</value>
     <value>Telegram</value>
   </data>
   <data name="bot.TelegramBridge.disconnected" xml:space="preserve">
-    <value>Disconnected from from the MCC!</value>
+    <value>成功与 MCC 断开连接！</value>
   </data>
   <data name="bot.TelegramBridge.invalid_direction" xml:space="preserve">
-    <value>Invalid direction provided! Available directions: both|b, minecraft|mc, telegram|tg|t. Example: "tgbridge direction mc"</value>
+    <value>无效的信息方向！可选：both|b，minecraft|mc，telegram|tg|t。例如："tgbridge direction mc"</value>
   </data>
   <data name="bot.TelegramBridge.missing_authorized_channels" xml:space="preserve">
-    <value>[WARNING] You have not provided any Channel IDs, for "Authorized_Chat_Ids" field, anyone who finds your bot will be able to send messages and commands to it!</value>
+    <value>[警告] 你未在 "Authorized_Chat_Ids" 字段提供任何的频道ID，任何找到你的机器人的人将能够对齐发送信息和指令！</value>
   </data>
   <data name="bot.TelegramBridge.missing_channel_id" xml:space="preserve">
-    <value>[WARNING] You have not provided a Channel ID, you will ONLY get replies to commands sent from Telegram!</value>
+    <value>[警告] 你未提供频道ID，你将只会收到从Telegram发送的指令的回复！</value>
   </data>
   <data name="bot.TelegramBridge.missing_token" xml:space="preserve">
-    <value>Please provide a valid bot token!</value>
+    <value>请提供有效的机器人令牌！</value>
   </data>
   <data name="bot.TelegramBridge.unauthorized" xml:space="preserve">
-    <value>**🛑 Unauthorized access! 🛑
+    <value>**🛑 未授权的访问！ 🛑
 
-Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file to gain access!**</value>
+将此频道的ID加到配置文档中的 "Authorized_Chat_Ids" 字段以获得访问授权！**</value>
   </data>
   <data name="bot.TelegramBridge.unknown_error" xml:space="preserve">
-    <value>An unknown error has occured!</value>
+    <value>发生了未知错误 ！</value>
   </data>
   <data name="bot.testBot.said" xml:space="preserve">
     <value>Bot：{0}说：{1}</value>
@@ -801,13 +801,13 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>地图</value>
   </data>
   <data name="botname.PlayerListLogger" xml:space="preserve">
-    <value>PlayerListLogger</value>
+    <value>玩家列表记录</value>
   </data>
   <data name="botname.RemoteControl" xml:space="preserve">
-    <value>RemoteControl</value>
+    <value>远程控制</value>
   </data>
   <data name="botname.ReplayCapture" xml:space="preserve">
-    <value>ReplayCapture</value>
+    <value>回放捕捉</value>
   </data>
   <data name="botname.Script" xml:space="preserve">
     <value>脚本</value>
@@ -819,7 +819,7 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>TelegramBridge</value>
   </data>
   <data name="botname.TestBot" xml:space="preserve">
-    <value>TestBot</value>
+    <value>测试机器人</value>
   </data>
   <data name="cache.converting" xml:space="preserve">
     <value>§8从磁盘转换会话缓存：{0}</value>
@@ -943,19 +943,19 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>试图在位于 (X: {0:0.0}, Y: {1:0.0}, Z: {2:0.0}) 上的床上睡觉，结果：{3}</value>
   </data>
   <data name="cmd.blockinfo.BlocksAround" xml:space="preserve">
-    <value>Blocks around</value>
+    <value>附近的方块</value>
   </data>
   <data name="cmd.blockinfo.BlockType" xml:space="preserve">
-    <value>Block type</value>
+    <value>方块类型</value>
   </data>
   <data name="cmd.blockinfo.desc" xml:space="preserve">
-    <value>Reports the type of the block on the provided coordinates. (Use -s to report blocks around the target block).</value>
+    <value>输出位于提供的坐标的方块类型。（使用 -s 来回报目标四周的方块）</value>
   </data>
   <data name="cmd.blockinfo.Negative" xml:space="preserve">
-    <value>Negative</value>
+    <value>负部分</value>
   </data>
   <data name="cmd.blockinfo.Positive" xml:space="preserve">
-    <value>Positive</value>
+    <value>正部分</value>
   </data>
   <data name="cmd.bots.desc" xml:space="preserve">
     <value>列出全部 ChatBot ，加载或卸载一个 ChatBot。</value>
@@ -1052,31 +1052,31 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>未知物品：{0}</value>
   </data>
   <data name="cmd.enchant.clicked" xml:space="preserve">
-    <value>Sent a click to the server, if you have enough levels and if you have placed the items in the correct slots it should enchant!</value>
+    <value>已发送按键给服务器。如果你有足够的经验值和已将物品摆放在正确的物品栏，物品应该会被附魔！</value>
   </data>
   <data name="cmd.enchant.desc" xml:space="preserve">
-    <value>Enchant an item when you have the Enchantment table opened and the list of enchants recieved.</value>
+    <value>使用已打开的附魔台来附魔物品。</value>
   </data>
   <data name="cmd.enchant.enchanting_no_item" xml:space="preserve">
-    <value>You must put an item inside the enchanting table in slot 0!</value>
+    <value>你必须将物品放在附魔台的0号槽位中！</value>
   </data>
   <data name="cmd.enchant.enchanting_no_lapis" xml:space="preserve">
-    <value>You must put at least 3 lapis lazuli inside the enchanting table in slot 1!</value>
+    <value>你必须在附魔台的1号槽位放置至少3个青金石！</value>
   </data>
   <data name="cmd.enchant.enchanting_table_not_opened" xml:space="preserve">
-    <value>You must open a an enchanting table in order to use this option!</value>
+    <value>您必须先打开一个附魔台才能使用此功能！</value>
   </data>
   <data name="cmd.enchant.invalid_slot" xml:space="preserve">
-    <value>Invalid slot provided (Available: top, middle, bottom)!</value>
+    <value>提供了无效的槽位（可选：top，middle，bottom）</value>
   </data>
   <data name="cmd.enchant.no_enchantments" xml:space="preserve">
-    <value>You must first put an item to enchant to the enchanting table in order to get enchantments from the server, then you can execute this command!</value>
+    <value>你必须先将物品放置在附魔台并从服务器获得附魔选项后才能使用这个指令！</value>
   </data>
   <data name="cmd.enchant.no_levels" xml:space="preserve">
-    <value>You do not have enouhg levels to enchant! (Your current level is {0}, you need to be level {1}).</value>
+    <value>你的等级不足以进行附魔！（目前等级 {0}，附魔所需等级 {1}）</value>
   </data>
   <data name="cmd.enchant.not_clicked" xml:space="preserve">
-    <value>Could not click!</value>
+    <value>无法点击！</value>
   </data>
   <data name="cmd.entityCmd.attacked" xml:space="preserve">
     <value>已攻击实体</value>
@@ -1571,7 +1571,7 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>每次攻击间的冷却时间，设置 "Custom = false" 以让MCC自动计算攻击速度。</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Entites_List" xml:space="preserve">
-    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
+    <value>你可以在这里找到所有的实体名称：https://mccteam.github.io/r/entity/#L15</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Interaction" xml:space="preserve">
     <value>可选项："Interact"（交互），"Attack"（攻击） 或 "InteractAt"（交互并攻击）</value>
@@ -1586,10 +1586,10 @@ Add the ID of this chat to "Authorized_Chat_Ids" field in the configuration file
     <value>"health"（生命值）或 "distance"（距离）。当使用"single"模式时，以哪一个属性确定优先级。</value>
   </data>
   <data name="config.ChatBot.AutoCraft" xml:space="preserve">
-    <value>Automatically craft items in your inventory
-See https://mccteam.github.io/g/bots/#auto-craft for how to use
-You need to enable Inventory Handling to use this bot
-You should also enable Terrain and Movements if you need to use a crafting table</value>
+    <value>自动使用背包中的物品进行合成。
+请看 https://mccteam.github.io/g/bots/#auto-craft
+你需要启用库存处理来使用这个功能
+如果需要使用工作台，你还需要启用地形处理。</value>
   </data>
   <data name="config.ChatBot.AutoCraft.CraftingTable" xml:space="preserve">
     <value>如果你打算使用工作台，请填写它所在的位置。（需要启用地形处理）</value>
@@ -1598,18 +1598,18 @@ You should also enable Terrain and Movements if you need to use a crafting table
     <value>合成失败时应该怎么处理，"abort"（中止）或 "wait"（等待）。</value>
   </data>
   <data name="config.ChatBot.AutoCraft.Recipes" xml:space="preserve">
-    <value>Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
-Recipes.Type: crafting table type: "player" or "table"
-Recipes.Result: the resulting item
-Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
-For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
+    <value>Recipes.Name：给该配方起一个独一无二的名字。（不能包含空白字符）
+Recipes.Type：合成类型，"player"（背包2x2）或 "table"（工作台3x3）
+Recipes.Result：合成的目标物品
+Recipes.Slots：合成的物品摆放方式，以从左到右、从上到下的格式填写。需留空请填写"Null"
+最新的物品命名请看：https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDig" xml:space="preserve">
-    <value>Auto-digging blocks.
-You need to enable Terrain Handling to use this bot
-You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
-Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
-For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
+    <value>自动挖掘方块。
+你需要启用地形处理来使用这个功能。
+你可以使用 "/digbot start" 和 "/digbot stop" 指令来控制 AutoDig 的启停。
+由于MCC目前还不支持精确计算方块的碰撞体积，在获取看向的方块时，视线上所有的方块都被看作是完整的立方体。
+查询方块的名称，请访问 https://mccteam.github.io/r/block/#L15</value>
   </data>
   <data name="config.ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
     <value>进入游戏后等待多少秒后开始自动挖掘，设置为-1禁用自动开始。</value>
