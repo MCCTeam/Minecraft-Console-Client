@@ -1,5 +1,5 @@
 ---
-title: "Chat Bots"
+title: Chat Bots
 redirectFrom: ["/g/bots/index.html", "/g/bots.html"]
 ---
 # Chat Bots
