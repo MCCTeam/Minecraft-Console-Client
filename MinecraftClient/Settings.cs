@@ -346,36 +346,32 @@ namespace MinecraftClient
                 /// <returns>True if the server IP was valid and loaded, false otherwise</returns>
                 public bool SetServerIP(ServerInfoConfig serverInfo, bool checkAlias)
                 {
-                    string serverStr = ToLowerIfNeed(serverInfo.Host);
-                    string[] sip = serverStr.Split(new[] { ":", "：" }, StringSplitOptions.None);
-                    string host = sip[0];
+                    string[] sip = serverInfo.Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
+                    string host = ToLowerIfNeed(sip[0]);
                     ushort port = 25565;
 
-                    if (sip.Length > 1)
+                    if (serverInfo.Port.HasValue)
                     {
-                        if (serverInfo.Port != null)
-                        {
-                            port = (ushort)serverInfo.Port;
-                        }
-                        else
-                        {
-                            try { port = Convert.ToUInt16(sip[1]); }
-                            catch (FormatException) { return false; }
-                        }
+                        port = serverInfo.Port.Value;
+                    }
+                    else if (sip.Length > 1)
+                    {
+                        try { port = Convert.ToUInt16(sip[1]); }
+                        catch (FormatException) { return false; }
                     }
 
                     if (host == "localhost" || host.Contains('.'))
                     {
                         //Server IP (IP or domain names contains at least a dot)
-                        if (sip.Length == 1 && serverInfo.Port == null && host.Contains('.') && host.Any(c => char.IsLetter(c)) &&
-                            Settings.Config.Main.Advanced.ResolveSrvRecords != MainConfigHealper.MainConfig.AdvancedConfig.ResolveSrvRecordType.no)
+                        if (sip.Length == 1 && !serverInfo.Port.HasValue && host.Contains('.') && host.Any(c => char.IsLetter(c)) &&
+                            Settings.Config.Main.Advanced.ResolveSrvRecords != ResolveSrvRecordType.no)
                             //Domain name without port may need Minecraft SRV Record lookup
                             ProtocolHandler.MinecraftServiceLookup(ref host, ref port);
                         InternalConfig.ServerIP = host;
                         InternalConfig.ServerPort = port;
                         return true;
                     }
-                    else if (checkAlias && Advanced.ServerList.TryGetValue(serverStr, out ServerInfoConfig serverStr2))
+                    else if (checkAlias && Advanced.ServerList.TryGetValue(sip[0], out ServerInfoConfig serverStr2))
                     {
                         return SetServerIP(serverStr2, false);
                     }
@@ -428,7 +424,7 @@ namespace MinecraftClient
                         if (!string.IsNullOrWhiteSpace(General.Server.Host))
                         {
                             string[] sip = General.Server.Host.Split(new[] { ":", "：" }, StringSplitOptions.None);
-                            General.Server.Host = sip[0];
+                            General.Server.Host = ToLowerIfNeed(sip[0]);
                             InternalConfig.ServerIP = General.Server.Host;
 
                             if (sip.Length > 1)
