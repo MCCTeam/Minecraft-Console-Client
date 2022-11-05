@@ -1,5 +1,5 @@
 - - -
-title: "About & Features"
+title: About & Features
 - - -
 # Introduction
 
