@@ -1572,7 +1572,7 @@ Bu botu kullanmak için Entity Handling i etkinleştirmeniz gerekiyor
     <value>Her saldırı arasında ne kadar bekleneceği. MCCnin hesaplamasına izin vermek için "Custom = false" olarak ayarlayın.</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Entites_List" xml:space="preserve">
-    <value>Tüm varlık türleri burada bulunabilir: https://bit.ly/3Rg68lp</value>
+    <value>All entity types can be found here: https://mccteam.github.io/r/entity/#L15</value>
   </data>
   <data name="config.ChatBot.AutoAttack.Interaction" xml:space="preserve">
     <value>Olası değerler: "Interact", "Attack" (varsayılan), "InteractAt" (Interact ve Attack).</value>
@@ -1587,10 +1587,10 @@ Bu botu kullanmak için Entity Handling i etkinleştirmeniz gerekiyor
     <value>"health" veya "distance". Yalnızca tekli mod kullanılırken gereklidir</value>
   </data>
   <data name="config.ChatBot.AutoCraft" xml:space="preserve">
-    <value>Envanterinizdeki öğeleri otomatik olarak craftlayın
-Nasıl kullanılacağı hakkında https://mccteam.github.io/guide/chat-bots.html#auto-craft adresine bakın
-Bu botu kullanmak için Inventory Handling i etkinleştirmeniz gerekiyor
-Bir çalışma masası kullanmanız gerekiyorsa, terrain and movement özelliğini etkinleştirmelisiniz.</value>
+    <value>Automatically craft items in your inventory
+See https://mccteam.github.io/g/bots/#auto-craft for how to use
+You need to enable Inventory Handling to use this bot
+You should also enable Terrain and Movements if you need to use a crafting table</value>
   </data>
   <data name="config.ChatBot.AutoCraft.CraftingTable" xml:space="preserve">
     <value>Kullanmayı düşünüyorsanız, çalışma masasının konumu. terrain and movement etkinleştirilmelidir.</value>
@@ -1599,19 +1599,18 @@ Bir çalışma masası kullanmanız gerekiyorsa, terrain and movement özelliği
     <value>İşleme hatası, "abort" veya "wait" bu durumunda ne yapılmalı.</value>
   </data>
   <data name="config.ChatBot.AutoCraft.Recipes" xml:space="preserve">
-    <value>Recipes.Name: Adı istediğiniz gibi olabilir ve tarifi temsil etmek için kullanılır.
-Recipes.Type: çalışma masası türü: "player" veya "table"
-Recipes.Result: ortaya çıkan öğe
-Recipes.Slots: Tüm slotlardan, soldan sağa, yukarıdan aşağıya doğru sayılır. Lütfen boş slotlar için "Null" doldurunuz.
-Öğelerin adlandırılması için lütfen bakınız:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+    <value>Recipes.Name: The name can be whatever you like and it is used to represent the recipe.
+Recipes.Type: crafting table type: "player" or "table"
+Recipes.Result: the resulting item
+Recipes.Slots: All slots, counting from left to right, top to bottom. Please fill in "Null" for empty slots.
+For the naming of the items, please see: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDig" xml:space="preserve">
     <value>Auto-digging blocks.
-Botu kullanmak için terrain and movement açmanız gerekiyor
-AutoDig in başlatılmasını ve durdurulmasını kontrol etmek için "/digbot start" ve "/digbot stop" kullanabilirsiniz.
-MCC henüz blokların çarpışma hacminin doğru bir şekilde hesaplanmasını desteklemediğinden, bakış açısının konumu elde edilirken tüm bloklar tam küpler olarak kabul edilir.
-Bloğun adlandırılması için lütfen bakınız. https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Mapping/Material.cs</value>
+You need to enable Terrain Handling to use this bot
+You can use "/digbot start" and "/digbot stop" to control the start and stop of AutoDig.
+Since MCC does not yet support accurate calculation of the collision volume of blocks, all blocks are considered as complete cubes when obtaining the position of the lookahead.
+For the naming of the block, please see https://mccteam.github.io/r/block/#L15</value>
   </data>
   <data name="config.ChatBot.AutoDig.Auto_Start_Delay" xml:space="preserve">
     <value>Oyuna girdikten sonra otomatik olarak kazmaya başlamak için kaç saniye bekleneceğini, otomatik başlatmayı devre dışı bırakmak için -1 olarak ayarlayın.</value>
@@ -1644,10 +1643,9 @@ Bloğun adlandırılması için lütfen bakınız. https://github.com/MCCTeam/Mi
     <value>"lookat", "fixedpos" veya "both". Bakılan bloğun kazılması, bloğun sabit bir konumda olması veya tamamıyla karşılanması gereken bloğun kazılması.</value>
   </data>
   <data name="config.ChatBot.AutoDrop" xml:space="preserve">
-    <value>Öğeleri envantere otomatik olarak bırak
-Botu kullanmak için Inventory Handling özelliğini açın
-Bu botla kullanabileceğiniz güncel öğe türlerinin listesi için bu dosyaya bakın:
-https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/Inventory/ItemType.cs</value>
+    <value>Automatically drop items in inventory
+You need to enable Inventory Handling to use this bot
+See this file for an up-to-date list of item types you can use with this bot: https://mccteam.github.io/r/item/#L12</value>
   </data>
   <data name="config.ChatBot.AutoDrop.Mode" xml:space="preserve">
     <value>"include", "exclude" veya "everything". Include: öğeyi listeye bırakın. Hariç tut: listede OLMAYAN öğeyi bırak</value>
@@ -1657,10 +1655,10 @@ https://github.com/MCCTeam/Minecraft-Console-Client/blob/master/MinecraftClient/
 Botu kullanmak için Inventory Handling i açın</value>
   </data>
   <data name="config.ChatBot.AutoFishing" xml:space="preserve">
-    <value>Bir olta kullanarak balıkları otomatik olarak yakalayın
-Kılavuz: https://mccteam.github.io/guide/chat-bots.html#auto-fishing
-Botu manuel olarak kontrol etmek için "/fish" kullanabilirsiniz.
-/!\ Bu botu kullanmadan önce sunucu kurallarının otomatik çiftçiliğe izin verdiğinden emin olun</value>
+    <value>Automatically catch fish using a fishing rod
+Guide: https://mccteam.github.io/g/bots/#auto-fishing
+You can use "/fish" to control the bot manually.
+/!\ Make sure server rules allow automated farming before using this bot</value>
   </data>
   <data name="config.ChatBot.AutoFishing.Antidespawn" xml:space="preserve">
     <value>Daha önce değiştirmediyseniz false olarak bırakın.</value>
@@ -1729,32 +1727,32 @@ Sunucu yöneticileri sohbet mesajlarını (/nick, /tellraw) taklit edebilir, bu 
     <value>Sohbet mesajlarını diskteki bir dosyaya kaydeder.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge" xml:space="preserve">
-    <value>Bu bot, bir Discord kanalı üzerinden mesaj ve komut göndermenize ve almanıza olanak tanır.
-Kurulum için belgeleri kullanabilir veya burayı okuyabilirsiniz (Belgelerde resimler vardır).
-Belgeler: https://mccteam.github.io/guide/chat-bots.html#discord-bridge
-Kurulum:
-Öncelikle Discord Developers Portalda bir Bot oluşturmanız gerekiyor, işte bir video eğitimi: https://www.youtube.com/watch?v=2FgMnZViNPA .
-/!\ ÖNEMLİ /!\: Bir bot oluştururken, ETKİNLEŞTİRMENİZ GEREKİR "Message Content Intent", "Server Members Intent" ve "Presence Intent" botun çalışması için! Ayrıca dikkatlice takip edin, hiçbir adımı kaçırmayın!
-Bot yaparken oluşturulan token kopyalayın ve buraya yapıştırın. "Token" alan (belirteçler önemlidir, onları güvende tutun).
-Kopyala "Application ID" ve şu adrese gidin: https://bit.ly/2Spn2Q3 .
-Kopyaladığınız kimliği yapıştırın ve kontrol edin. "Administrator" izinler alanında, ardından alttaki bağlantıya tıklayın.
-Bu, sunucularınızla bir davet menüsü açacak, botu davet etmek istediğiniz sunucuyu seçecek ve onu davet edecektir.
-Botu davet ettikten sonra Discord istemcinize gidin ve Kullanıcı Ayarlar -&gt; Gelişmiş ve "Geliştirici Modu".
-Ayarlardan çıkın ve sunucu listesinde botu davet ettiğiniz bir sunucuya sağ tıklayın, ardından "IDyi kopyala", ve kimliği buraya yapıştırın "GuildId".
-Ardından botla etkileşim kurmak istediğiniz kanala sağ tıklayın ve tekrar sağ tıklayın -&gt; "IDyi kopyalayın", kopyalanan kimliği buraya yapıştırın "ChannelId".
-Ve son olarak kanala mesaj atın, nickinize sağ tıklayın ve tekrar sağ tıklayın -&gt; "IDyi kopyalayın", sonra kimliği buraya yapıştırın "OwnersIds".
-Nasıl kullanılır:
-Bir MCC komutunu yürütmek için, diyelim prefix nokta "." ile örnek: ".move 143 64 735" .
-Bir mesaj göndermek için, sadece yazın ve enter tuşuna basın.</value>
+    <value>This bot allows you to send and recieve messages and commands via a Discord channel.
+For Setup you can either use the documentation or read here (Documentation has images).
+Documentation: https://mccteam.github.io/g/bots/#discord-bridge
+Setup:
+First you need to create a Bot on the Discord Developers Portal, here is a video tutorial: https://www.youtube.com/watch?v=2FgMnZViNPA .
+/!\ IMPORTANT /!\: When creating a bot, you MUST ENABLE "Message Content Intent", "Server Members Intent" and "Presence Intent" in order for bot to work! Also follow along carefully do not miss any steps!
+When making a bot, copy the generated token and paste it here in "Token" field (tokens are important, keep them safe).
+Copy the "Application ID" and go to: https://discordapi.com/permissions.html .
+Paste the id you have copied and check the "Administrator" field in permissions, then click on the link at the bottom.
+This will open an invitation menu with your servers, choose the server you want to invite the bot on and invite him.
+Once you've invited the bot, go to your Discord client and go to Settings -&gt; Advanced and Enable "Developer Mode".
+Exit the settings and right click on a server you have invited the bot to in the server list, then click "Copy ID", and paste the id here in "GuildId".
+Then right click on a channel where you want to interact with the bot and again right click -&gt; "Copy ID", pase the copied id here in "ChannelId".
+And for the end, send a message in the channel, right click on your nick and again right click -&gt; "Copy ID", then paste the id here in "OwnersIds".
+How to use:
+To execute an MCC command, prefix it with a dot ".", example: ".move 143 64 735" .
+To send a message, simply type it out and hit enter.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.ChannelId" xml:space="preserve">
     <value>Botu kullanarak MCC ile etkileşim kurmak istediğiniz kanalın kimliği.</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.Formats" xml:space="preserve">
-    <value>Mesaj biçimleri
-{ ve } ile sarılmış kelimeler kod yürütme sırasında değiştirilecektir, onları değiştirmeyin!
-Örneğin. {message} gerçek bir mesajla değiştirilecek, {username} bir kullanıcı adıyla, {timestamp} geçerli saatle değiştirilecek.
-Discord mesaj biçimlendirme için şunları kontrol edin: https://bit.ly/3F8CUCm</value>
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Discord message formatting, check the following: https://mccteam.github.io/r/dc-fmt.html</value>
   </data>
   <data name="config.ChatBot.DiscordBridge.GuildId" xml:space="preserve">
     <value>Botu davet ettiğiniz server/guild kimliği.</value>
@@ -1860,8 +1858,8 @@ Teknik sınırlamalar nedeniyle, istemci oynatıcının (sizin) tekrar dosyasın
     <value>Tekrar oynatılan dosyanın saniye cinsinden ne kadar süreyle otomatik olarak kaydedilmesi gerekir. Devre dışı bırakmak için -1i kullanın.</value>
   </data>
   <data name="config.ChatBot.ScriptScheduler" xml:space="preserve">
-    <value>Sunucuya katılma, tarih/saat veya zaman aralığı gibi çeşitli olaylarda başlatılacak komutları ve komut dosyalarını zamanlayın
-Daha fazla bilgi için https://mccteam.github.io/guide/chat-bots.html#script-scheduler adresine bakın</value>
+    <value>Schedule commands and scripts to launch on various events such as server join, date/time or time interval
+See https://mccteam.github.io/g/bots/#script-scheduler for more info</value>
   </data>
   <data name="config.ChatBot.TelegramBridge" xml:space="preserve">
     <value>Bu bot, bir Telegram Bot DM aracılığıyla mesaj ve komut gönderip almanıza veya bir Telegram kanalında mesaj almanıza olanak tanır.
@@ -1895,10 +1893,10 @@ Bir mesaj göndermek için, sadece yazın ve enter tuşuna basın.</value>
     <value>Botu kullanarak MCC ile etkileşim kurmak istediğiniz kanalın kimliği.</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.Formats" xml:space="preserve">
-    <value>Mesaj biçimleri
-{ ve } ile sarılmış kelimeler kod yürütme sırasında değiştirilecektir, onları değiştirmeyin!
-Örneğin. {message} gerçek bir mesajla değiştirilecek, {username} bir kullanıcı adıyla, {timestamp} geçerli saatle değiştirilecek.
-Telegram mesaj biçimlendirmesi için aşağıdakileri kontrol edin: https://sendpulse.com/blog/telegram-text-formatting</value>
+    <value>Message formats
+Words wrapped with { and } are going to be replaced during the code execution, do not change them!
+For example. {message} is going to be replace with an actual message, {username} will be replaced with an username, {timestamp} with the current time.
+For Telegram message formatting, check the following: https://mccteam.github.io/r/tg-fmt.html</value>
   </data>
   <data name="config.ChatBot.TelegramBridge.MessageSendTimeout" xml:space="preserve">
     <value>Görev iptal edilmeden önce Telegrama bir mesaj gönderilemiyorsa (en az 1 saniye) ne kadar bekleneceği (saniye cinsinden).</value>
@@ -1907,8 +1905,8 @@ Telegram mesaj biçimlendirmesi için aşağıdakileri kontrol edin: https://sen
     <value>Telegram Bot tokeni.</value>
   </data>
   <data name="config.ChatFormat" xml:space="preserve">
-    <value>MCC, sohbet mesajlarını algılamak için elinden gelenin en iyisini yapar, ancak bazı sunucuların alışılmadık sohbet biçimleri vardır
-Bu olduğunda, aşağıda sohbet biçimini yapılandırmanız gerekir, bkz. https://mccteam.github.io/guide/configuration.html#chat-format</value>
+    <value>MCC does it best to detect chat messages, but some server have unusual chat formats
+When this happens, you'll need to configure chat format below, see https://mccteam.github.io/g/conf/#chat-format-section</value>
   </data>
   <data name="config.ChatFormat.Builtins" xml:space="preserve">
     <value>Ortak mesaj biçimleri için MCC desteği. Özel biçimlerle çakışmaları önlemek için "false" olarak ayarlayın.</value>
@@ -1917,11 +1915,11 @@ Bu olduğunda, aşağıda sohbet biçimini yapılandırmanız gerekir, bkz. http
     <value>Algılama için aşağıdaki özel normal ifadelerin kullanılıp kullanılmayacağı.</value>
   </data>
   <data name="config.Head" xml:space="preserve">
-    <value>Başlangıç Yapılandırma Dosyası
-MCC tarafından üzerine yazılacağı için lütfen bu dosyaya fazladan veri kaydetmeyin.
+    <value>Startup Config File
+Please do not record extraneous data in this file as it will be overwritten by MCC.
 
-Minecraft Konsol İstemcisinde yeni misiniz? Bu belgeye göz atın: https://mccteam.github.io/guide/configuration.html
-Daha yeni bir sürüme yükseltmek mi istiyorsunuz? https://github.com/MCCTeam/Minecraft-Console-Client/#download adresine bakın</value>
+New to Minecraft Console Client? Check out this document: https://mccteam.github.io/g/conf.html
+Want to upgrade to a newer version? See https://github.com/MCCTeam/Minecraft-Console-Client/#download</value>
   </data>
   <data name="config.load" xml:space="preserve">
     <value>Ayarlar {0} adresinden yüklendi</value>
@@ -2003,7 +2001,7 @@ Kullanım örnekleri:"/tell &lt;mybot&gt; reco Player2", "/connect &lt;serverip&
     <value>Inventory handling aç/kapat.</value>
   </data>
   <data name="config.Main.Advanced.language" xml:space="preserve">
-    <value>Oyun içi dil seçeneğini girin, ne gireceğinizi bilmiyorsanız bağlantıya göz atın https://github.com/MCCTeam/Minecraft-Console-Client/discussions/2239</value>
+    <value>Fill in with in-game locale code, check https://mccteam.github.io/r/l-code.html</value>
   </data>
   <data name="config.Main.Advanced.language.invaild" xml:space="preserve">
     <value>Dil kodu geçersiz!</value>
