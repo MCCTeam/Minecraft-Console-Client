@@ -19,6 +19,7 @@ using static MinecraftClient.Settings.ChatFormatConfigHelper;
 using static MinecraftClient.Settings.HeadCommentHealper;
 using static MinecraftClient.Settings.LoggingConfigHealper;
 using static MinecraftClient.Settings.MainConfigHealper;
+using static MinecraftClient.Settings.MainConfigHealper.MainConfig;
 using static MinecraftClient.Settings.MainConfigHealper.MainConfig.AdvancedConfig;
 using static MinecraftClient.Settings.MCSettingsConfigHealper;
 using static MinecraftClient.Settings.SignatureConfigHelper;
@@ -47,11 +48,9 @@ namespace MinecraftClient
 
             public static ushort ServerPort = 25565;
 
-            public static string Login = string.Empty;
+            public static AccountInfoConfig Account = new();
 
             public static string Username = string.Empty;
-
-            public static string Password = string.Empty;
 
             public static string MinecraftVersion = string.Empty;
 
@@ -252,6 +251,7 @@ namespace MinecraftClient
         public static void LoadArguments(string[] args)
         {
             int positionalIndex = 0;
+            bool skipPassword = false;
 
             foreach (string argument in args)
             {
@@ -272,11 +272,20 @@ namespace MinecraftClient
                     switch (positionalIndex)
                     {
                         case 0:
-                            InternalConfig.Login = argument;
+                            if (Config.Main.Advanced.AccountList.TryGetValue(argument, out AccountInfoConfig accountInfo))
+                            {
+                                InternalConfig.Account = accountInfo;
+                                skipPassword = true;
+                            }
+                            else
+                            {
+                                InternalConfig.Account.Login = argument;
+                            }
                             InternalConfig.KeepAccountSettings = true;
                             break;
                         case 1:
-                            InternalConfig.Password = argument;
+                            if (!skipPassword)
+                                InternalConfig.Account.Password = argument;
                             break;
                         case 2:
                             Config.Main.SetServerIP(new MainConfig.ServerInfoConfig(argument), true);
@@ -388,7 +397,12 @@ namespace MinecraftClient
                     General.Account.Login ??= string.Empty;
                     General.Account.Password ??= string.Empty;
                     if (!InternalConfig.KeepAccountSettings)
-                        InternalConfig.Login = General.Account.Login;
+                    {
+                        if (Advanced.AccountList.TryGetValue(General.Account.Login, out AccountInfoConfig account))
+                            InternalConfig.Account = account;
+                        else
+                            InternalConfig.Account = General.Account;
+                    }
 
                     General.Server.Host ??= string.Empty;
 
@@ -597,8 +611,7 @@ namespace MinecraftClient
                     {
                         if (AccountList.TryGetValue(accountAlias, out AccountInfoConfig accountInfo))
                         {
-                            InternalConfig.Login = accountInfo.Login;
-                            InternalConfig.Password = accountInfo.Password;
+                            InternalConfig.Account = accountInfo;
                             return true;
                         }
                         else
@@ -894,7 +907,7 @@ namespace MinecraftClient
                                 switch (varname_lower)
                                 {
                                     case "username": result.Append(InternalConfig.Username); break;
-                                    case "login": result.Append(InternalConfig.Login); break;
+                                    case "login": result.Append(InternalConfig.Account.Login); break;
                                     case "serverip": result.Append(InternalConfig.ServerIP); break;
                                     case "serverport": result.Append(InternalConfig.ServerPort); break;
                                     case "datetime":

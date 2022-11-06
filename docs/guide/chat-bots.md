@@ -1,7 +1,10 @@
 ---
 title: Chat Bots
-redirectFrom: ["/g/bots/index.html", "/g/bots.html"]
+redirectFrom:
+    - "/g/bots/index.html"
+    - "/g/bots.html"
 ---
+
 # Chat Bots
 
 -   [About](#about)

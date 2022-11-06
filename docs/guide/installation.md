@@ -1,6 +1,7 @@
 ---
 title: Installation
 ---
+
 # Installation
 
 -   [YouTube Tutorials](#youtube-tutorials)

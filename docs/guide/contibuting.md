@@ -1,6 +1,7 @@
 ---
 title: Contributing
 ---
+
 # Contributing
 
 At this moment this page needs to be created.
