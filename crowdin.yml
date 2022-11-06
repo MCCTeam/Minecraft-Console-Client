@@ -8,5 +8,25 @@
   {
     "source": "/MinecraftClient/Resources/Translations/Translations.resx",
     "translation": "/MinecraftClient/Resources/Translations/Translations.%osx_code%.resx"
+  },
+  {
+    "source": "/MinecraftClient/Resources/AsciiArt/AsciiArt.resx",
+    "translation": "/MinecraftClient/Resources/AsciiArt/AsciiArt.%osx_code%.resx"
+  },
+  {
+    "source": "/README.md",
+    "translation": "/docs/.vuepress/public/README/README-%language%.md"
+  },
+  {
+    "source": "/docs/.vuepress/translations/en.json",
+    "translation": "/docs/.vuepress/translations/%osx_code%.json"
+  },
+  {
+    "source": "/docs/README.md",
+    "translation": "/docs/l10n/%osx_code%/README.md"
+  },
+  {
+    "source": "/docs/guide/*.md",
+    "translation": "/docs/l10n/%osx_code%/guide/%original_file_name%"
   }
 ]
