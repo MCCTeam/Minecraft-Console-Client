@@ -32,70 +32,70 @@ jobs:
 
         create_pull_request: false
 
-        dryrun_action: true
+        dryrun_action: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
         CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
 
-  # build:
-  #   runs-on: ubuntu-latest
-  #   if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
+  build:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'SKIP_BUILD') }}
 
-  #   steps:
-  #   - name: Setup Project Path
-  #     run: |
-  #       echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
+    steps:
+    - name: Setup Project Path
+      run: |
+        echo project-path=${{ github.workspace }}/${{ env.PROJECT }} >> $GITHUB_ENV
     
-  #   - name: Setup Output Paths
-  #     run: |
-  #       echo win-x64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
-  #       echo win-x86-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x86/publish/ >> $GITHUB_ENV
-  #       echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
-  #       echo osx-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-x64/publish/ >> $GITHUB_ENV
-  #       echo linux-arm64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-arm64/publish/ >> $GITHUB_ENV
+    - name: Setup Output Paths
+      run: |
+        echo win-x64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x64/publish/ >> $GITHUB_ENV
+        echo win-x86-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/win-x86/publish/ >> $GITHUB_ENV
+        echo linux-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-x64/publish/ >> $GITHUB_ENV
+        echo osx-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/osx-x64/publish/ >> $GITHUB_ENV
+        echo linux-arm64-out-path=${{ env.project-path }}/bin/Release/${{ env.target-version }}/linux-arm64/publish/ >> $GITHUB_ENV
 
-  #   - name: Setup .NET SDK
-  #     uses: actions/setup-dotnet@v2.1.0
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v2.1.0
 
-  #   - name: Checkout
-  #     uses: actions/checkout@v2
-  #     with:
-  #       fetch-depth: 0
-  #       submodules: 'true'
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        submodules: 'true'
 
-  #   - name: Get Version DateTime
-  #     id: date-version
-  #     uses: nanzm/get-time-action@v1.0
-  #     with:
-  #       timeZone: 0
-  #       format: 'YYYY-MM-DD'
+    - name: Get Version DateTime
+      id: date-version
+      uses: nanzm/get-time-action@v1.0
+      with:
+        timeZone: 0
+        format: 'YYYY-MM-DD'
 
-  #   - name: VersionInfo
-  #     run: |
-  #       COMMIT=$(echo ${{ github.sha }} | cut -c 1-7)
-  #       echo '' >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
-  #       echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
+    - name: VersionInfo
+      run: |
+        COMMIT=$(echo ${{ github.sha }} | cut -c 1-7)
+        echo '' >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
+        echo "[assembly: AssemblyConfiguration(\"GitHub build ${{ github.run_number }}, built on ${{ steps.date-version.outputs.time }} from commit $COMMIT\")]" >> ${{ env.project-path }}/Properties/AssemblyInfo.cs
 
-  #   - name: Build for Windows x64
-  #     run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x64 ${{ env.compile-flags }}
+    - name: Build for Windows x64
+      run: dotnet publish ${{ env.project-path }}.sln -f ${{ env.target-version }} -r win-x64 ${{ env.compile-flags }}
 
-  #   - name: Zip Windows x64 Build
-  #     run: zip -qq -r windows-x64.zip *
-  #     working-directory: ${{ env.win-x64-out-path }}
+    - name: Zip Windows x64 Build
+      run: zip -qq -r windows-x64.zip *
+      working-directory: ${{ env.win-x64-out-path }}
 
-  #   - name: Get Release DateTime
-  #     id: date-release
-  #     uses: nanzm/get-time-action@v1.0
-  #     with:
-  #       timeZone: 0
-  #       format: 'YYYYMMDD'
+    - name: Get Release DateTime
+      id: date-release
+      uses: nanzm/get-time-action@v1.0
+      with:
+        timeZone: 0
+        format: 'YYYYMMDD'
 
-  #   - name: Windows x64 Release
-  #     uses: tix-factory/release-manager@v1
-  #     with:
-  #       github_token: ${{ secrets.GITHUB_TOKEN }}
-  #       mode: uploadReleaseAsset
-  #       filePath: ${{ env.win-x64-out-path }}windows-x64.zip
-  #       assetName: ${{ env.PROJECT }}-windows-x64.zip
-  #       tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
+    - name: Windows x64 Release
+      uses: tix-factory/release-manager@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        mode: uploadReleaseAsset
+        filePath: ${{ env.win-x64-out-path }}windows-x64.zip
+        assetName: ${{ env.PROJECT }}-windows-x64.zip
+        tag: ${{ format('{0}-{1}', steps.date-release.outputs.time, github.run_number) }}
