@@ -1,0 +1,4 @@
+files:
+  - source: /MinecraftClient/Resources/Translations/Translations.resx
+    translation: /MinecraftClient/Resources/Translations/Translations.%osx_code%.resx
+    
